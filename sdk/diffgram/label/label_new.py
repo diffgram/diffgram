@@ -3,7 +3,7 @@ import warnings
 
 def label_new(self, 
 			  label,
-			  ignore_duplicates=True,
+			  allow_duplicates=False,
 			  print_success=True):
 	"""
 
@@ -26,10 +26,10 @@ def label_new(self,
 
 	label_file_id = self.name_to_file_id.get(name, None)
 
-	if ignore_duplicates is True:
+	if allow_duplicates is False:
 		if label_file_id:
 			warnings.warn("\n\n '" + name + "' label already exists and was skipped." + \
-				"\n Set ignore_duplicates = False to bypass this check. \n")
+				"\n Set allow_duplicates = True to bypass this check. \n")
 			return
 
 	endpoint = "/api/v1/project/" + self.project_string_id + \
