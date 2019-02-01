@@ -140,3 +140,5 @@ $RECYCLE.BIN/
 
 sdk/setup.py
 sdk/samples/settings_debug.py
+*.bat
+sdk/samples/settings.py
