@@ -11,7 +11,12 @@ def import_bulk():
 	pass
 
 
-def single(self, packet):
+def single(self, 
+		   packet,
+		   job=None,
+		   convert_names_to_label_files=True,
+		   print_success=True
+		   ):
 	"""
 	Import single packet of data of the form:
 
@@ -80,6 +85,15 @@ def single(self, packet):
 	if media_type == "image":	
 		instance = check_instance_list(packet)
 
+		if instance:
+			if convert_names_to_label_files is True:
+				# Convert "name" label (ie == "cat") to Diffgram label_file id
+				for index, instance in enumerate(packet["instance_list"]):
+	
+					instance = self.convert_label(instance, instance["name"])
+					packet["instance_list"][index] = instance
+
+
 	if media_type == "video":
 		if "frame_packet_map" not in packet:
 			raise Exception(" 'frame_packet_map' key is not defined in packet")
@@ -100,21 +114,27 @@ def single(self, packet):
 	# QUESTION Should we be testing all? User option maybe?
 	# (Otherwise invalid ones get discarded when it hits API)
 
-	instance_type = instance.get("type", None)
-	if not instance_type:
-		raise Exception(" type is not defined in the first instance \
-							of instance_list. Options are 'tag', 'box', 'polygon'.")
+	if instance:
+		instance_type = instance.get("type", None)
+		if not instance_type:
+			raise Exception(" type is not defined in the first instance \
+								of instance_list. Options are 'tag', 'box', 'polygon'.")
 
-	if instance_type not in ['tag', 'box', 'polygon']:
-		raise Exception(" invalid instance type. Options are 'tag', 'box', 'polygon'.")
+		if instance_type not in ['tag', 'box', 'polygon']:
+			raise Exception(" invalid instance type. Options are 'tag', 'box', 'polygon'.")
 
-	if "label_file" not in instance:
-		raise Exception(" label_file is not defined in the first instance \
-							of instance_list. ")
+		if "label_file" not in instance:
+			raise Exception(" label_file is not defined in the first instance \
+								of instance_list. ")
 
-	if "id" not in instance["label_file"]:
-		raise Exception(" label_file is not defined in the first instance \
-							of instance_list. ")
+		if "id" not in instance["label_file"]:
+			raise Exception(" label_file is not defined in the first instance \
+								of instance_list. ")
+
+
+	if job:
+		packet["job_id"] = job.id
+		packet["mode"] = "attach_to_job"
 
 	endpoint = "/api/v1/project/" + self.project_string_id + "/input/packet"
 
@@ -125,16 +145,24 @@ def single(self, packet):
 	if data["log"]["success"] is False:
 		raise Exception(data["log"]["errors"])
 
+	if data["log"]["success"] is True:
+		if print_success is True:
+			print("Packet success")
+
 
 
 def check_instance_list(packet):
-	if "instance_list" not in packet:
-		raise Exception(" 'instance_list' key is not defined in packet")
 
-	if type(packet["instance_list"]) != list:
-		raise Exception("instance_list is not array like")
+	# instance list is optional
 
-	if len(packet["instance_list"]) == 0:
-		raise Exception("'instance_list' is empty")
+	if "instance_list" in packet:
+
+		if type(packet["instance_list"]) != list:
+			raise Exception("instance_list is not array like")
+
+		if len(packet["instance_list"]) == 0:
+			raise Exception("'instance_list' is empty")
 	
-	return packet["instance_list"][0]
+		return packet["instance_list"][0]
+
+	return None

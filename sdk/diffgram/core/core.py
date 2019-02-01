@@ -1,19 +1,21 @@
 import requests
-from input.packet import single
-from file.view import get_label_file_dict
-from file.directory import get_directory_list
-from convert.convert import convert_label
+from diffgram.input.packet import single
+from diffgram.file.view import get_label_file_dict
+from diffgram.file.directory import get_directory_list
+from diffgram.convert.convert import convert_label
+from diffgram.label.label_new import label_new
 
 
 class Diffgram():
 
 
-	def __init__(self):
+	def __init__(self,
+				 debug = False):
 
 		self.session = requests.Session()
 		self.project_string_id = None
 
-		self.debug = False
+		self.debug = debug
 
 		if self.debug is True:
 			self.host = "http://127.0.0.1:8080"
@@ -24,7 +26,13 @@ class Diffgram():
 		self.name_to_file_id = None
 
 
-	def auth(self, client_id, client_secret, project_string_id):
+	def auth(self, 
+			client_id, 
+			client_secret, 
+			project_string_id,
+			set_default_directory = True,
+			refresh_local_label_dict = True
+			):
 		"""
 		Define authorization configuration
 
@@ -42,8 +50,16 @@ class Diffgram():
 		self.session.auth = (client_id, client_secret)
 		self.project_string_id = project_string_id
 
+		if set_default_directory is True:
+			self.set_default_directory()
 
-	def set_default_directory(self, directory_id=None):
+		if refresh_local_label_dict is True:
+			# Refresh local labels from Diffgram project
+			self.get_label_file_dict()
+
+
+	def set_default_directory(self, 
+						     directory_id=None):
 		"""
 		-> If no id is provided fetch directory list for project
 		and set first directory to default.
@@ -81,3 +97,4 @@ setattr(Diffgram, "input_packet_single", single)
 setattr(Diffgram, "get_label_file_dict", get_label_file_dict)
 setattr(Diffgram, "get_directory_list", get_directory_list)
 setattr(Diffgram, "convert_label", convert_label)
+setattr(Diffgram, "label_new", label_new)

@@ -138,3 +138,5 @@ $RECYCLE.BIN/
 
 .vs
 
+sdk/setup.py
+sdk/samples/settings_debug.py

@@ -1,7 +1,7 @@
 
 instance_alpha = {
 					'type': 'box',
-					'name': 'test',
+					'name': 'cat',
 					'x_max': 128, 
 					'x_min': 48,
 					'y_min': 97,
@@ -11,7 +11,7 @@ instance_alpha = {
 
 instance_bravo = {
 					'type': 'box',
-					'name': 'test',
+					'name': 'cat',
 					'x_max': 128, 
 					'x_min': 1,
 					'y_min': 1,
@@ -25,11 +25,11 @@ frame_packet = {'instance_list' : [instance_alpha, instance_bravo],
 				}
 
 image_packet = {'instance_list' : [instance_alpha, instance_bravo],
-				  'media' : {
-					  'url' : "https://www.readersdigest.ca/wp-content/uploads/sites/14/2011/01/4-ways-cheer-up-depressed-cat.jpg",
-					  'type' : 'image'
-					  }
-				  }
+				'media' : {
+					'url' : "https://www.readersdigest.ca/wp-content/uploads/sites/14/2011/01/4-ways-cheer-up-depressed-cat.jpg",
+					'type' : 'image'
+					}
+				}
 
 video_packet = {'frame_packet_map' : {
 					0 : frame_packet,
