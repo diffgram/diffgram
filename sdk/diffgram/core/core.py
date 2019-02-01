@@ -19,6 +19,7 @@ class Diffgram():
 
 		if self.debug is True:
 			self.host = "http://127.0.0.1:8080"
+			print(diffgram.__version__)
 		else:
 			self.host = "https://diffgram.com"
 
