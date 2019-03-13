@@ -4,6 +4,11 @@ from diffgram.file.view import get_label_file_dict
 from diffgram.file.directory import get_directory_list
 from diffgram.convert.convert import convert_label
 from diffgram.label.label_new import label_new
+from diffgram import __version__
+
+
+from diffgram.brain.brain import Brain
+from diffgram.file.file_constructor import FileConstructor
 
 
 class Diffgram():
@@ -19,12 +24,23 @@ class Diffgram():
 
 		if self.debug is True:
 			self.host = "http://127.0.0.1:8080"
-			print(diffgram.__version__)
+			print("Debug", __version__)
 		else:
 			self.host = "https://diffgram.com"
 
 		self.directory_id = None
 		self.name_to_file_id = None
+
+		self.file = None
+
+
+	def get_model(self):
+
+		#print(self)
+		brain = Brain(self)
+
+		return brain
+
 
 
 	def auth(self, 
@@ -57,6 +73,10 @@ class Diffgram():
 		if refresh_local_label_dict is True:
 			# Refresh local labels from Diffgram project
 			self.get_label_file_dict()
+
+
+		self.file = FileConstructor(self)
+
 
 
 	def set_default_directory(self, 
