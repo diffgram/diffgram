@@ -177,12 +177,11 @@ class FileConstructor():
 			self.client.host + endpoint, 
 			json = packet)
 
+		self.client.handle_errors(response)
+		
 		data = response.json()
 
 		# TODO return file info
-
-		if data["log"]["success"] is False:
-			raise Exception(data["log"]["errors"])
 
 		if data["log"]["success"] is True:
 			if print_success is True:
