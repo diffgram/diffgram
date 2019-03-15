@@ -42,6 +42,19 @@ class Diffgram():
 		return brain
 
 
+	def handle_errors(self, 
+				      response):
+
+		if response.status_code == 400:
+			raise Exception(response.json()["log"]["error"])
+
+		if response.status_code == 403:
+			raise Exception("Invalid permission")
+
+		if response.status_code == 500:
+			raise Exception("Diffgram internal error, please try again later.")
+
+
 
 	def auth(self, 
 			client_id, 
@@ -76,7 +89,6 @@ class Diffgram():
 
 
 		self.file = FileConstructor(self)
-
 
 
 	def set_default_directory(self, 
