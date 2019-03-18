@@ -43,6 +43,9 @@ class Brain():
 	def predict_from_url(
 			self,
 			url):
+		"""
+		url, string, web end point to get file
+		"""
 
 		request = {}
 		request['url'] = url
@@ -68,4 +71,36 @@ class Brain():
 			pass
 
 		return None
+
+
+	def predict_from_local(
+			self,
+			path):
+		"""
+		Make a prediction from a local file.
+		Creates a Diffgram file object and runs prediction.
+
+		This is roughly equal to running file.from_local() and predict()
+	    but in one request to Diffgram (instead of two).
+
+		path, string, file path
+		"""
+
+		files = {'file': open(path, 'rb')}
+
+		options = {'immediate_mode' : 'True'}
+				
+		endpoint = "/api/v1/project/" +  self.client.project_string_id \
+			+ "/inference/from_local"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			files = files,
+			headers = options)
+
+		self.client.handle_errors(response)
+		
+		data = response.json()
+
+		# TODO handle creation of Inference and Instancte objects	
 
