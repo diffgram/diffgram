@@ -18,6 +18,35 @@ class FileConstructor():
 
 		self.client = client
 
+
+	def from_local(
+		self,
+		path):
+		"""
+		Create a Diffgram file from local path
+
+		path, string, file path
+
+		returns, TBD
+		"""
+		
+		files = {'file': open(path, 'rb')}
+
+		# TODO define options and clarify in docs
+		options = {'immediate_mode' : 'True'}
+		
+		endpoint = "/api/v1/project/" +  self.client.project_string_id \
+			+ "/input/from_local"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			files = files,
+			headers = options)
+
+		self.client.handle_errors(response)
+		
+		data = response.json()
+		
 		
 
 	def from_url(
@@ -125,7 +154,8 @@ class FileConstructor():
 					# Convert "name" label (ie == "cat") to Diffgram label_file id
 					for index, instance in enumerate(packet["instance_list"]):
 	
-						instance = convert_label(instance, instance["name"])
+						# TODO do we really want to be passing self here?
+						instance = convert_label(self, instance, instance["name"])
 						packet["instance_list"][index] = instance
 
 
