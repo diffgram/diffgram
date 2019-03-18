@@ -37,4 +37,4 @@ image_packet = {'instance_list' : [instance_alpha, instance_bravo],
 				}
 	
 
-diffgram.input_packet_single(image_packet)
+diffgram.file.from_packet(image_packet)

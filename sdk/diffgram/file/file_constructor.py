@@ -74,7 +74,7 @@ class FileConstructor():
 
 	
 
-	def import_packet(
+	def from_packet(
 		self, 
 		packet,
 		job=None,

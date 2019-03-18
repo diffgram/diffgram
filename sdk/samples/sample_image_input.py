@@ -14,12 +14,12 @@ image_packet = {'media' : {
 				}
 
 # Single
-client.input_packet_single(image_packet)
+client.file.from_packet(image_packet)
 
 
 # Multiple
 packet_list = [image_packet, image_packet, image_packet]
 
 for packet in packet_list:
-	client.input_packet_single(packet)
+	client.file.from_packet(packet)
 
