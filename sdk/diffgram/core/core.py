@@ -1,5 +1,4 @@
 import requests
-from diffgram.input.packet import single
 from diffgram.file.view import get_label_file_dict
 from diffgram.file.directory import get_directory_list
 from diffgram.convert.convert import convert_label
@@ -28,6 +27,8 @@ class Diffgram():
 		else:
 			self.host = "https://diffgram.com"
 
+			# TODO support for staging URLs...
+
 		self.directory_id = None
 		self.name_to_file_id = None
 
@@ -46,7 +47,10 @@ class Diffgram():
 				      response):
 
 		if response.status_code == 400:
-			raise Exception(response.json()["log"]["error"])
+			try:
+				raise Exception(response.json()["log"]["error"])
+			except:
+				raise Exception(response.text)
 
 		if response.status_code == 403:
 			raise Exception("Invalid permission")
@@ -126,7 +130,6 @@ class Diffgram():
 
 
 
-setattr(Diffgram, "input_packet_single", single)
 setattr(Diffgram, "get_label_file_dict", get_label_file_dict)
 setattr(Diffgram, "get_directory_list", get_directory_list)
 setattr(Diffgram, "convert_label", convert_label)
