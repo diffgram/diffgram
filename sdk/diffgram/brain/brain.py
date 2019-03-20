@@ -104,3 +104,37 @@ class Brain():
 
 		# TODO handle creation of Inference and Instancte objects	
 
+	def predict_from_file(
+			self,
+			file_id):
+		"""
+		file_id, int, diffgram file id
+
+		Assumes singular file for now
+		"""
+
+		request = {}
+		request['file_list'] = [{'id' : file_id}]
+		request['ai_name'] = self.name
+		request['wait_for_inference'] = True
+
+		endpoint = "/api/project/" + self.client.project_string_id + \
+			"/inference/add"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			json = request)
+
+		self.client.handle_errors(response)
+
+		data = response.json()
+
+		# TODO create Inference() object...		
+		# How we want to return / work with that
+
+		self.client.handle_errors(response)
+
+		if data["log"]["success"] is True:
+			pass
+
+		return None
