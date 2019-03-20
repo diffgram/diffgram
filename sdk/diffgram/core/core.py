@@ -61,14 +61,17 @@ class Diffgram():
 
 
 	def auth(self, 
-			client_id, 
-			client_secret, 
 			project_string_id,
+			client_id = None, 
+			client_secret = None,
 			set_default_directory = True,
 			refresh_local_label_dict = True
 			):
 		"""
 		Define authorization configuration
+
+		If no client_id / secret is provided it assumes project is public
+		And if project isn't public it will return a 403 permission denied.
 
 		Arguments
 			client_id, string
@@ -81,9 +84,11 @@ class Diffgram():
 		Future
 			More gracefully intial setup (ie validate upon setting)
 		"""
-		self.session.auth = (client_id, client_secret)
 		self.project_string_id = project_string_id
 
+		if client_id and client_secret:
+			self.session.auth = (client_id, client_secret)
+			
 		if set_default_directory is True:
 			self.set_default_directory()
 
