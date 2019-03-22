@@ -86,7 +86,8 @@ class Brain():
 
 		files = {'file': open(path, 'rb')}
 
-		options = {'immediate_mode' : 'True'}
+		options = { 'immediate_mode' : 'True',
+					'ai_name' : self.name}
 				
 		endpoint = "/api/v1/project/" +  self.client.project_string_id \
 			+ "/inference/from_local"
@@ -94,7 +95,7 @@ class Brain():
 		response = self.client.session.post(
 			self.client.host + endpoint, 
 			files = files,
-			headers = options)
+			data = options)
 
 		self.client.handle_errors(response)
 		
