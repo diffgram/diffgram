@@ -7,7 +7,7 @@ project = Diffgram(
 
 brain = project.get_model(name = "my model")
 
-# 3 differnt methods to do predictions
+# 3 different methods to do predictions
 
 # Local
 path = ""
