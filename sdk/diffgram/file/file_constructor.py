@@ -77,16 +77,16 @@ class FileConstructor():
 			url, 
 			media_type="image"):
 		"""
-		WIP
+
 		"""
 
 		packet = {'media' : {}}
 		packet['media']['url'] = url
 		packet['media']['type'] = media_type
 
-		file = self.from_packet(packet = packet)
+		self.from_packet(packet = packet)
 		
-		return file
+		return True
 		
 
 	def from_diffgram_id():
@@ -234,7 +234,8 @@ class FileConstructor():
 		# TODO better handling input vs file
 
 		if data["log"]["success"] is True:
-			pass
+			
+			return True
 
 			# TODO return file data here if in immediate mode
 			# else return input class? / handle this properly
