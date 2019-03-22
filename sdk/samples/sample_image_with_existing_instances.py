@@ -1,9 +1,8 @@
 import settings
-from diffgram.core.core import Diffgram
+from diffgram import Diffgram
 
-diffgram = Diffgram()
-
-diffgram.auth(client_id = settings.CLIENT_ID,
+project = Diffgram(
+			  client_id = settings.CLIENT_ID,
 			  client_secret = settings.CLIENT_SECRET,
 			  project_string_id = settings.PROJECT_STRING_ID)
 
@@ -37,4 +36,4 @@ image_packet = {'instance_list' : [instance_alpha, instance_bravo],
 				}
 	
 
-diffgram.file.from_packet(image_packet)
+project.file.from_packet(image_packet)
