@@ -8,13 +8,18 @@ from diffgram import __version__
 
 from diffgram.brain.brain import Brain
 from diffgram.file.file_constructor import FileConstructor
+from diffgram.brain.train import Train
 
 
 class Diffgram():
 
 
-	def __init__(self,
-				 debug = False):
+	def __init__(
+		self,
+		project_string_id,
+		client_id = None, 
+		client_secret = None,
+		debug = False):
 
 		self.session = requests.Session()
 		self.project_string_id = None
@@ -32,13 +37,23 @@ class Diffgram():
 		self.directory_id = None
 		self.name_to_file_id = None
 
-		self.file = None
+		self.auth(
+			project_string_id = project_string_id,
+			client_id = client_id, 
+			client_secret = client_secret)
+
+		self.file = FileConstructor(self)
+		self.train = Train(self)
 
 
-	def get_model(self):
+	def get_model(
+			self,
+			name = None):
 
 		#print(self)
-		brain = Brain(self)
+		brain = Brain(
+					self,
+					name)
 
 		return brain
 
@@ -97,8 +112,6 @@ class Diffgram():
 			self.get_label_file_dict()
 
 
-		self.file = FileConstructor(self)
-
 
 	def set_default_directory(self, 
 						     directory_id=None):
@@ -133,7 +146,7 @@ class Diffgram():
 			{'directory_id': str(self.directory_id)})
 
 
-
+# TODO review not using this pattern anymore
 
 setattr(Diffgram, "get_label_file_dict", get_label_file_dict)
 setattr(Diffgram, "get_directory_list", get_directory_list)
