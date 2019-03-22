@@ -19,6 +19,23 @@ class FileConstructor():
 		self.client = client
 
 
+	def file_from_response(
+			self, 
+			file_dict):
+			"""
+			file_dict, dict, file information from Diffgram
+
+			returns file, class File object
+			"""
+
+			file = File(
+				id = file_dict['id']
+				)
+
+			return file
+
+
+
 	def from_local(
 		self,
 		path):
@@ -27,7 +44,7 @@ class FileConstructor():
 
 		path, string, file path
 
-		returns, TBD
+		returns file, class File object
 		"""
 		
 		files = {'file': open(path, 'rb')}
@@ -46,6 +63,12 @@ class FileConstructor():
 		self.client.handle_errors(response)
 		
 		data = response.json()
+
+		#print(data)
+
+		if data["log"]["success"] is True:
+			file = self.file_from_response(file_dict = data['file'])
+			return file
 		
 		
 
@@ -61,14 +84,12 @@ class FileConstructor():
 		packet['media']['url'] = url
 		packet['media']['type'] = media_type
 
-		self.import_packet(packet = packet)
-
-		file = File()
+		file = self.from_packet(packet = packet)
 		
 		return file
 		
 
-	def from_diffgram_hash():
+	def from_diffgram_id():
 
 		pass
 
@@ -78,8 +99,7 @@ class FileConstructor():
 		self, 
 		packet,
 		job=None,
-		convert_names_to_label_files=True,
-		print_success=True
+		convert_names_to_label_files=True
 		):
 		"""
 		Import single packet of data of the form:
@@ -211,12 +231,15 @@ class FileConstructor():
 		
 		data = response.json()
 
-		# TODO return file info
+		# TODO better handling input vs file
 
 		if data["log"]["success"] is True:
-			if print_success is True:
-				print("Packet success")
+			pass
 
+			# TODO return file data here if in immediate mode
+			# else return input class? / handle this properly
+			#file = self.file_from_response(file_dict = data['file'])
+			#return file
 
 
 	def check_instance_list(self, packet):

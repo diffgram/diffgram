@@ -2,9 +2,11 @@
 class File():
 
 
-	def __init__(self):
+	def __init__(
+		self,
+		id = None):
 
-		self.id = None
+		self.id = id
 
 
 	def something():
