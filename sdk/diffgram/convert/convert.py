@@ -3,7 +3,7 @@
 def convert_label(self, instance, name):
 
 	instance["label_file"] = {}
-	label_file_id = self.name_to_file_id.get(name, None)
+	label_file_id = self.client.name_to_file_id.get(name, None)
 
 	if not label_file_id:
 		raise Exception(" \n '" + name + "' label is not in your project. \n " + \
