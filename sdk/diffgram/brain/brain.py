@@ -1,9 +1,15 @@
 from copy import deepcopy
 
+from diffgram.brain.inference import Inference
+
 
 class Brain():
 
-	def __init__(self, client):
+	def __init__(
+			self, 
+			client,
+			name=None,
+			id=None):
 
 		# If someone calls auth on client
 		# We don't want existing models effected.
@@ -13,31 +19,28 @@ class Brain():
 		if self.client.project_string_id is None:
 			raise Exception("\n Client must be authenticated use client.auth()")
 
-		self.name = None
-		self.id = None
+		self.name = name
+		self.id = id
+		self.status = None
 
 
-	def predict(self, file):
-		"""
+	def inference_from_response(
+			self, 
+			dict):
 
-		WIP for passing file object
-		in case where diffgram already has file.
+		# Assumes object detection
+		# TODO condition on method
 
-		returns an inference object
-		"""
+		inference = Inference(
+			method = "object_detection",
+			id = dict['id'],
+			status = dict['status'],
+			box_list = dict['box_list'],
+			score_list = dict['score_list'],
+			label_list = dict['label_list']
+			)
 
-		# main 
-
-		print(file.id)
-
-		endpoint = "/api/v1/project/" + self.client.project_string_id + "/input/packet"
-
-		response = self.client.session.post(self.client.host + endpoint, 
-											json = file.id)
-
-		data = response.json()
-
-		print(data)
+		return inference
 
 
 	def predict_from_url(
@@ -62,15 +65,10 @@ class Brain():
 
 		data = response.json()
 
-		# TODO create Inference() object...		
-		# How we want to return / work with that
-
 		self.client.handle_errors(response)
 
-		if data["log"]["success"] is True:
-			pass
-
-		return None
+		inference = self.inference_from_response(data['inference'])
+		return inference
 
 
 	def predict_from_local(
@@ -102,7 +100,11 @@ class Brain():
 		
 		data = response.json()
 
-		# TODO handle creation of Inference and Instancte objects	
+		inference = self.inference_from_response(data['inference'])
+		return inference
+
+		# TODO handle creation of Inference and Instance objects	
+
 
 	def predict_from_file(
 			self,
@@ -118,6 +120,7 @@ class Brain():
 		request['ai_name'] = self.name
 		request['wait_for_inference'] = True
 
+
 		endpoint = "/api/project/" + self.client.project_string_id + \
 			"/inference/add"
 
@@ -129,12 +132,29 @@ class Brain():
 
 		data = response.json()
 
-		# TODO create Inference() object...		
-		# How we want to return / work with that
+		inference = self.inference_from_response(data['inference'])
+		return inference
+
+
+	def check_status(
+		  self):
+		"""
+		
+
+		"""
+
+		request = {}
+		request['ai_name'] = self.name
+
+		endpoint = "/api/v1/project/" + self.client.project_string_id + \
+			"/brain/status"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			json = request)
 
 		self.client.handle_errors(response)
 
-		if data["log"]["success"] is True:
-			pass
+		data = response.json()
 
-		return None
+		self.status = data['ai']['status']
