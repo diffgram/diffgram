@@ -26,6 +26,9 @@ def get_directory_list(self):
 			   "/directory/list"
 
 	response = self.session.get(self.host + endpoint)
+
+	self.handle_errors(response)
+
 	directory_list = response.json()
 
 	return directory_list
