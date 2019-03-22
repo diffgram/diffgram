@@ -45,6 +45,8 @@ def get_label_file_dict(self):
 
 	response = self.session.get(self.host + endpoint)
 
+	self.handle_errors(response)
+
 	data = response.json()
 
 	if data["log"]["success"] == True:
