@@ -7,11 +7,13 @@ project = Diffgram(
 
 brain = project.get_model(name = "my model")
 
+# 3 differnt methods to do predictions
+
 # Local
 path = ""
 inference = brain.predict_from_local(path)
 
-# URL
+# URL (Recommended over from local, works for cloud providers)
 url = ""
 inference = brain.predict_from_url(url)
 

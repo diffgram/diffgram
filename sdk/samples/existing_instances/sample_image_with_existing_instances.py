@@ -35,4 +35,6 @@ image_packet = {'instance_list' : [instance_alpha, instance_bravo],
 				}
 	
 
-project.file.from_packet(image_packet)
+result = project.file.from_packet(image_packet)
+
+print(result)
