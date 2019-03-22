@@ -1,11 +1,9 @@
-import settings
 from diffgram import Diffgram
 
 project = Diffgram(
-			client_id = settings.CLIENT_ID,
-			client_secret = settings.CLIENT_SECRET,
-			project_string_id = settings.PROJECT_STRING_ID
-			)
+			project_string_id = "replace_with_project_string",
+			client_id = "replace_with_client_id",
+			client_secret = "replace_with_client_secret")
 
 # Construct new training with all defaults
 

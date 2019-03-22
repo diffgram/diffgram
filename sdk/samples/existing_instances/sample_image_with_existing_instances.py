@@ -1,13 +1,11 @@
-import settings
 from diffgram import Diffgram
 
 project = Diffgram(
-			  client_id = settings.CLIENT_ID,
-			  client_secret = settings.CLIENT_SECRET,
-			  project_string_id = settings.PROJECT_STRING_ID)
+			project_string_id = "replace_with_project_string",
+			client_id = "replace_with_client_id",
+			client_secret = "replace_with_client_secret"	)
 
-
-# Two example "instances" an instance is a single instance of an annotation
+# Two example box "instances" an instance is a single instance of an annotation
 
 instance_alpha = {
 					'type': 'box',
@@ -27,6 +25,7 @@ instance_bravo = {
 					'y_max': 128
 				}
 
+# Combine into image packet
 
 image_packet = {'instance_list' : [instance_alpha, instance_bravo],
 				'media' : {
