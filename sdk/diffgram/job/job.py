@@ -8,23 +8,45 @@ class Job():
 			     client,
 				 job = None):
 
+		# TODO review use of deep copy
 		self.client = deepcopy(client)
 
 		if self.client.project_string_id is None:
 			raise Exception("\n No project string id in client.")
 
-		if job:
-			self.id = job.id
-			self.name = job.name
-			self.status = job.status
-			self.created_time = job.created_time
+		# TODO review way to set all properties 
+		# from existing job update
+		#self.name = job.name
+		#self.status = job.status
+		#self.created_time = job.created_time
 
+
+	def serialize(self):
+
+		return {
+			'name': self.name,
+			'instance_type': self.instance_type,
+			'share': self.share,
+			'type': self.type,
+			'permission': self.permission,
+			'field': self.field,
+			'category': self.category,
+			'review_by_human_freqeuncy': self.review_by_human_freqeuncy,
+			'label_mode': self.label_mode,
+			'passes_per_file': self.passes_per_file
+		}
 
 	def new(self,
 			name,
 			instance_type = "box",
-			share = "project",
-			job_type = "Normal",		
+			share = "Project",
+			job_type = "Normal",	
+			permission = "all_secure_users",
+			field = "Other",
+			category = "visual",
+			review_by_human_freqeuncy = "every_3rd_pass",
+			label_mode = "closed_all_available",
+			passes_per_file = 1,
 			file_list = None,
 			guide = None,
 			launch = False
@@ -44,29 +66,35 @@ class Job():
 
 		# QUESTION create job object eariler instead of after response?
 
-		my_job = {
-			'name': name,
-			'instance_type': instance_type,
-			'share': share,
-			'type': job_type
-			}
+		job = Job(client = self.client)
+
+		job.name = name
+		job.instance_type = instance_type
+		job.share = {'type': share}
+		job.type = job_type   # careful rename to type from job_type
+		job.permission = permission
+		job.field = field
+		job.category = category
+		job.review_by_human_freqeuncy = review_by_human_freqeuncy
+		job.label_mode = label_mode
+		job.passes_per_file = passes_per_file
+
 
 		endpoint = "/api/v1/project/" + self.client.project_string_id + \
 				   "/job/new"
 
 		response = self.client.session.post(
 						self.client.host + endpoint,
-						json = my_job)
+						json = job.serialize())
 
 		self.client.handle_errors(response)
 
 		data = response.json()
 
-		if data.log.success == True:	
+		if data["log"]["success"] == True:	
 
-			job = Job(
-					client = self.client,
-					job = data.job)
+			# TODO review better way to update fields
+			job.id = data["job"]["id"]
 
 
 		if file_list:
@@ -112,6 +140,8 @@ class Job():
 		endpoint = "/api/v1/project/" + self.client.project_string_id + \
 				   "/job/file/attach"
 
+		file_list = [file.serialize() for file in file_list]
+
 		update_dict = {'file_list_selected' : file_list,
 					   'job_id' : self.id,
 					   'add_or_remove' : add_or_remove}
@@ -123,7 +153,7 @@ class Job():
 
 		data = response.json()
 
-		if data.log.success == True:
+		if data["log"]["success"] == True:
 			print("File update success")
 
 
@@ -156,7 +186,7 @@ class Job():
 
 		data = response.json()
 
-		if data.log.success == True:
+		if data["log"]["success"] == True:
 			print("Launched")
 			return True
 
@@ -199,7 +229,7 @@ class Job():
 
 		data = response.json()
 
-		if data.log.success == True:
+		if data["log"]["success"] == True:
 			print("File update success")
 			return True
 
