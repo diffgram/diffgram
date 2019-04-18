@@ -71,6 +71,10 @@ class Job():
 
 		if file_list:
 
+			# Careful we want to call job here not self
+			# Since job will have a different id
+			# self is constructor
+
 			job.file_update(file_list = file_list)
 
 
@@ -80,8 +84,7 @@ class Job():
 
 		if guide:
 
-			pass
-			# TODO attach guide to job here
+			job.guide_update(guide = guide)
 
 
 		return job
@@ -134,8 +137,10 @@ class Job():
 			self,
 		
 		Expects
+			None
 
 		Returns
+			True if success
 
 		"""
 	
@@ -153,4 +158,49 @@ class Job():
 
 		if data.log.success == True:
 			print("Launched")
+			return True
 
+		return False
+
+
+
+		
+	def guide_update(
+			self, 
+			guide,
+			kind = "default",
+			action = "update"
+			):
+		"""
+
+		Arguments
+			self,
+			guide, class Guide object
+			kind options ["default", "review"]
+			update_or_remove options ["update", "remove"]
+		
+		Expects
+
+		Returns
+			None, prints update
+
+		"""
+	
+		endpoint = "/api/v1/guide/attach/job"
+
+		update_dict = {'guide_id' : guide.id,
+					   'job_id' : self.id,
+					   'update_or_remove' : update_or_remove}
+
+		response = self.client.session.post(self.client.host + endpoint,
+									 json = update_dict)
+		
+		self.client.handle_errors(response)
+
+		data = response.json()
+
+		if data.log.success == True:
+			print("File update success")
+			return True
+
+		return False
