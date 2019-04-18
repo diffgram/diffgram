@@ -12,4 +12,10 @@ class File():
 	def something():
 		pass
 
+	def serialize(self):
+
+		return {
+			'id' : self.id
+			}
+
 

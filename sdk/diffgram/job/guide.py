@@ -49,7 +49,7 @@ class Guide():
 
 		data = response.json()
 
-		if data.log.success == True:
+		if data["log"]["success"] == True:
 			print("New guide success")
 
 
