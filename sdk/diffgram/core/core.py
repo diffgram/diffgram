@@ -1,11 +1,14 @@
 import requests
+
+from diffgram import __version__
+
 from diffgram.file.view import get_label_file_dict
 from diffgram.file.directory import get_directory_list
 from diffgram.convert.convert import convert_label
 from diffgram.label.label_new import label_new
-from diffgram import __version__
 
-
+from diffgram.job.job import Job
+from diffgram.job.guide import Guide
 from diffgram.brain.brain import Brain
 from diffgram.file.file_constructor import FileConstructor
 from diffgram.brain.train import Train
@@ -44,6 +47,8 @@ class Diffgram():
 
 		self.file = FileConstructor(self)
 		self.train = Train(self)
+		self.job = Job(self)
+		self.guide = Guide(self)
 
 
 	def get_model(
