@@ -22,16 +22,21 @@ class Diffgram():
 		project_string_id,
 		client_id = None, 
 		client_secret = None,
-		debug = False):
+		debug = False,
+		staging = False
+		):
 
 		self.session = requests.Session()
 		self.project_string_id = None
 
 		self.debug = debug
+		self.staging = staging
 
 		if self.debug is True:
 			self.host = "http://127.0.0.1:8080"
 			print("Debug", __version__)
+		elif self.staging is True:
+			self.host = "https://20190504t230248-dot-diffgram-001.appspot.com"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -53,12 +58,14 @@ class Diffgram():
 
 	def get_model(
 			self,
-			name = None):
+			name = None,
+			local = False):
 
-		#print(self)
 		brain = Brain(
-					self,
-					name)
+					client = self,
+					name = name,
+					local = local
+					)
 
 		return brain
 
