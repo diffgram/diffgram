@@ -142,3 +142,5 @@ sdk/setup.py
 sdk/samples/settings_debug.py
 *.bat
 sdk/samples/settings.py
+sdk/test
+sdk/samples/WIP_Samples
