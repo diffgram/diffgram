@@ -11,7 +11,7 @@ import requests
 import scipy.misc
 import base64
 
-#import diffgram.utils.visualization_utils as vis_util
+import diffgram.utils.visualization_utils as vis_util
 
 
 class Brain():
@@ -21,7 +21,9 @@ class Brain():
 			client,
 			name=None,
 			id=None,
-			local=False):
+			local=False,
+			use_temp_storage=True
+			):
 		"""
 		client, project client object
 		name, string, exact match for Diffgram AI name
@@ -47,7 +49,8 @@ class Brain():
 		self.model_path = None
 		self.image_to_run = None
 
-		print(self.local)
+		self.use_temp_storage = use_temp_storage
+		self.local_model_storage_path = None
 
 		if self.local is True:
 
@@ -159,14 +162,20 @@ class Brain():
 			data = response.json()
 
 			inference = self.inference_from_response(data['inference'])
+			
 			return inference
 
 			# TODO handle creation of Inference and Instance objects	
 
-	def run(self):
+	def run(
+		 self, 
+		 image = None):
 
 		if self.build_complete is False:
 			return False
+
+		if image:
+			self.image_to_run = image
 
 		with self.graph.as_default():
 		
@@ -185,6 +194,97 @@ class Brain():
 				self.run_object_detection()
 
 
+		inference = self.inference_from_local()
+
+		return inference
+
+	
+	def run_object_detection(self):
+
+		(boxes, scores, classes, num) = self.sess.run(
+			[self.detection_boxes, 
+			 self.detection_scores, 
+			 self.detection_classes, 
+			 self.num_detections],
+			 feed_dict = { 
+				 self.image_tensor: self.image_to_run_expanded } )
+
+		self.boxes = np.squeeze(boxes)
+		self.scores = np.squeeze(scores)
+		self.classes = np.squeeze(classes).astype(np.int32)
+
+		#print(self.boxes, self.scores, self.classes)
+
+
+
+	def nearest_iou(self, alpha, bravo):
+	 
+		_best_iou_hyper = .2
+
+		for i in range(len(alpha.box_list)):
+			
+			best_iou = 0
+			best_index = None
+
+			# Find best IoU
+			for j in range(len(bravo.box_list)):
+				
+				iou = Brain.calc_iou(alpha.box_list[i], bravo.box_list[j])
+
+				if iou >= best_iou:
+					best_iou = iou
+					best_index = j
+			
+			if best_index is None:
+				continue
+
+			# handle large boxes, is the threat entirely inside the box?
+			alpha_box = alpha.box_list[i]
+
+			bravo_box = bravo.box_list[best_index]
+
+			if best_iou > _best_iou_hyper or best_iou > .01 and \
+				alpha_box[1] < bravo_box[1] and \
+				alpha_box[3] > bravo_box[3] and \
+				alpha_box[0] < bravo_box[0] and \
+				alpha_box[2] > bravo_box[2]:
+
+				# Assumes boxes have been thresholded already, 
+				# This way threshold applies to nearest search too
+
+				class_id = bravo.label_list[best_index]
+
+				nearest_alpha_box = bravo.box_list[best_index]
+			
+				# for stats
+				#self.average_iou = ( (best_iou + self.average_iou  ) / 2)
+
+				# Where best_index is which bravo one
+				# is "in" which i index
+
+				print("alpha is in bravo", i, "in", best_index)
+
+
+
+	@staticmethod
+	def calc_iou(box_a, box_b):
+		# Calculate intersection, i.e. area of overlap between the 2 boxes (could be 0)
+		# http://math.stackexchange.com/a/99576
+		x_overlap = max(0, min(box_a[2], box_b[2]) - max(box_a[0], box_b[0]))
+		y_overlap = max(0, min(box_a[3], box_b[3]) - max(box_a[1], box_b[1]))
+		intersection = x_overlap * y_overlap
+
+		# Calculate union
+		area_box_a = (box_a[2] - box_a[0]) * (box_a[3] - box_a[1])
+		area_box_b = (box_b[2] - box_b[0]) * (box_b[3] - box_b[1])
+		union = area_box_a + area_box_b - intersection
+
+		if union == 0:
+			return 0
+
+		iou = intersection / union
+		return iou
+
 	def resize(self, image):
 
 		if image.shape[0] > 600 or image.shape[1] > 600:
@@ -197,7 +297,7 @@ class Brain():
 			image = scipy.misc.imresize(image, 
 										(shape_x, shape_y))
 
-			print(image.shape)
+			#print(image.shape)
 
 		return image
 
@@ -267,22 +367,56 @@ class Brain():
 		ai = data['ai']
 		self.id = ai['id']
 
-		self.label_map = ai['label_dict']
-		print(self.label_map)
 
-		self.inverted_label_dict = {v: k for k, v in self.label_map.items()}
+		# TODO continue to try and clarify label map crazinesss
 
-		self.category_index = self.inverted_label_dict
+		self.file_id_to_model_id = ai['label_dict']
+		#print("Label map", self.file_id_to_model_id)
+
+		self.model_id_to_file_id = {v: k for k, v in self.file_id_to_model_id.items()}
+		self.file_id_to_name = {v: k for k, v in self.client.name_to_file_id.items()}
+
+
+		self.build_model_id_to_name()
 		
 		# Data has url for models and label map
-
 		# TODO clarify difference between local path and url to download model
-		self.model_path = self.temp + "/" + str(self.id) + ".pb"
+
+		if self.use_temp_storage is True:
+			self.model_path = self.temp + "/" + str(self.id) + ".pb"
+
+		if self.use_temp_storage is False:
+			self.model_path = self.local_model_storage_path
+
 		self.url_model = ai['url_model']
 
 		self.download_file(
-			url = url_model,
+			url = self.url_model,
 			path = self.model_path)
+
+
+	def build_model_id_to_name(self):
+		"""Creates dictionary of COCO compatible categories keyed by category  id.
+		Args:
+		categories: a list of dicts, each of which has the following keys:
+		'id': (required) an integer id uniquely identifying this category.
+		'name': (required) string representing category name
+		e.g., 'cat', 'dog', 'pizza'.
+		Returns:
+		category_index: a dict containing the same entries as categories, but  keyed
+		by the 'id' field of each category.
+		"""
+
+		self.model_id_to_name = {}
+
+		for file_id, label_name in self.file_id_to_name.items():
+
+			model_id = self.file_id_to_model_id.get(str(file_id), None)
+
+			if model_id:
+				self.model_id_to_name[model_id] = {'name' : label_name}
+
+		#print(self.model_id_to_name)
 
 
 
@@ -303,8 +437,6 @@ class Brain():
 			if response.status_code != 200:
 				retry += 1
 
-			#print(response)
-
 			content_type = response.headers.get('content-type', None)
 
 			with open(path, 'wb') as file:
@@ -314,8 +446,6 @@ class Brain():
 			return True
 
 		return False
-
-
 
 
 	def check_status(
@@ -388,22 +518,6 @@ class Brain():
 
 
 
-	def run_object_detection(self):
-
-		(boxes, scores, classes, num) = self.sess.run(
-			[self.detection_boxes, 
-			 self.detection_scores, 
-			 self.detection_classes, 
-			 self.num_detections],
-			 feed_dict = { 
-				 self.image_tensor: self.image_to_run_expanded } )
-
-		self.boxes = np.squeeze(boxes)
-		self.scores = np.squeeze(scores)
-		self.classes = np.squeeze(classes).astype(np.int32)
-
-		#print(self.boxes, self.scores, self.classes)
-
 
 	def inference_from_local(
 			self,):
@@ -417,7 +531,7 @@ class Brain():
 				pass            
 			if self.scores[i] > self.min_score_thresh:
 
-				print("Detection")
+				#print("Detection")
 
 				box_list.append(self.boxes[i].tolist())
 				label_list.append(self.classes[i].tolist())
@@ -436,39 +550,12 @@ class Brain():
 
 
 
-	def capture_video():
-		pass
+	def visual(self,
+			image = None
+			):
 
-
-	# WORK IN PROGRESS
-
-	def grab_frame(self, cap):
-
-		ret, frame = cap.read()
-
-		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-		self.image_backup = np.copy(frame)
-
-		path = self.temp + "/image.jpg"
-
-		# Really stupid work around 
-		# Till figure out
-		cv2.imwrite(path, frame)
-
-		self.image_to_run = open(path, "rb")
-		self.image_to_run = self.image_to_run.read()
-
-		self.run()
-
-		inference = self.inference_from_local()
-
-		#self.visual()
-
-		return self.image_backup
-
-
-	def visual(self):
+		if image is None:
+			image = self.image_backup
 
 		# WIP
 
@@ -477,12 +564,14 @@ class Brain():
 		#print("ran visual")
 
 		vis_util.visualize_boxes_and_labels_on_image_array(
-			self.image_backup, 
+			image, 
 			self.boxes, 
 			self.classes, 
 			self.scores,
-			self.category_index,
+			self.model_id_to_name,
 			use_normalized_coordinates=True,
 			line_thickness=3,
 			min_score_thresh=self.min_score_thresh) 
 			
+
+		return image
