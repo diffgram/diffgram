@@ -1,7 +1,7 @@
 import settings
-from diffgram.core.core import Diffgram
+from diffgram.core.core import Project
 
-diffgram = Diffgram()
+diffgram = Project()
 
 diffgram.auth(client_id = settings.CLIENT_ID,
 			  client_secret = settings.CLIENT_SECRET,
@@ -9,10 +9,11 @@ diffgram.auth(client_id = settings.CLIENT_ID,
 
 
 # Single
-apple = {'name' : 'apple'}
+cat = {'name' : 'cat'}
 
-diffgram.label_new(apple)
+diffgram.label_new(cat)
 
+"""
 # Multiple
 oranges = {'name' : 'bears'}  
 pears = {'name' : 'pears'}
@@ -22,4 +23,4 @@ label_list = [oranges, pears]
 for label in label_list:
 	diffgram.label_new(label)
 
-
+"""

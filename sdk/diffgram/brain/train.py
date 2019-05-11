@@ -19,7 +19,9 @@ class Train():
 	def start(
 			self,
 			name,
-			method = "object_detection"):
+			method = "object_detection",
+			directory_id = None
+			):
 
 		"""
 		name, string, name of new Brain
@@ -31,6 +33,7 @@ class Train():
 		request = {}
 		request['ai_name'] = name
 		request['training_options'] = {}
+		request['directory_id'] = directory_id
 
 		endpoint = "/api/project/" + self.client.project_string_id + \
 			"/machine_learning/training/run"

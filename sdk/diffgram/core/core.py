@@ -14,7 +14,7 @@ from diffgram.file.file_constructor import FileConstructor
 from diffgram.brain.train import Train
 
 
-class Diffgram():
+class Project():
 
 
 	def __init__(
@@ -22,16 +22,21 @@ class Diffgram():
 		project_string_id,
 		client_id = None, 
 		client_secret = None,
-		debug = False):
+		debug = False,
+		staging = False
+		):
 
 		self.session = requests.Session()
 		self.project_string_id = None
 
 		self.debug = debug
+		self.staging = staging
 
 		if self.debug is True:
 			self.host = "http://127.0.0.1:8080"
 			print("Debug", __version__)
+		elif self.staging is True:
+			self.host = "https://20190510t180920-dot-diffgram-001.appspot.com"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -53,12 +58,15 @@ class Diffgram():
 
 	def get_model(
 			self,
-			name = None):
+			name = None,
+			local = False):
 
-		#print(self)
+
 		brain = Brain(
-					self,
-					name)
+					client = self,
+					name = name,
+					local = local
+					)
 
 		return brain
 
@@ -76,7 +84,7 @@ class Diffgram():
 			raise Exception("Invalid permission")
 
 		if response.status_code == 500:
-			raise Exception("Diffgram internal error, please try again later.")
+			raise Exception("Internal error, please try again later.")
 
 
 
@@ -145,7 +153,13 @@ class Diffgram():
 
 			data = self.get_directory_list()
 
-			self.directory_id = data["directory_list"][0]["id"]
+			self.default_directory = data['default_directory']
+			
+			# Hold over till refactoring (would prefer to
+			# just call self.directory_default.id
+			self.directory_id = self.default_directory['id']
+
+			self.directory_list = data["directory_list"]
 
 		self.session.headers.update(
 			{'directory_id': str(self.directory_id)})
@@ -153,7 +167,7 @@ class Diffgram():
 
 # TODO review not using this pattern anymore
 
-setattr(Diffgram, "get_label_file_dict", get_label_file_dict)
-setattr(Diffgram, "get_directory_list", get_directory_list)
-setattr(Diffgram, "convert_label", convert_label)
-setattr(Diffgram, "label_new", label_new)
+setattr(Project, "get_label_file_dict", get_label_file_dict)
+setattr(Project, "get_directory_list", get_directory_list)
+setattr(Project, "convert_label", convert_label)
+setattr(Project, "label_new", label_new)
