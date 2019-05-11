@@ -52,7 +52,7 @@ in your system. [More on this here.](https://intercom.help/diffgram/getting-star
 
 # Code samples
 
-[See samples folder](/samples)
+[See samples folder](https://github.com/diffgram/diffgram/blob/master/sdk/samples)
 
 
 ## The project object
@@ -187,7 +187,7 @@ graphs_brain = project.get_model(
 			local = True)
 ```
 
-Open image from path and run both networks on same image.
+This ppens an image from a local path and runs both brains on same image.
 We are only reading the image once, so you can stack as many networks
 as you need here.
 
@@ -208,7 +208,8 @@ output_image = page_brain.visual(image_backup)
 output_image = graphs_brain.visual(output_image)
 ```
 
-Imagine the "page" brain may only need a few thousands pages, most pages look the same.
-Then you can have a seperate network that gets retrained often to detect items of interest on the page.
+Imagine the "page" brain, most pages look the same, so it will need less data
+and less retraining to reach an acceptable level of performance.
+Then you can have a seperate network that gets retrained often to detect items of interest on the page (ie graphs).
 
 ![](https://storage.googleapis.com/diffgram-002/public/github/graph_example.png)
