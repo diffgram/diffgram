@@ -1,6 +1,6 @@
-from diffgram import Diffgram
+from diffgram import Project
 
-project = Diffgram(
+project = Project(
 			project_string_id = "replace_with_project_string",
 			client_id = "replace_with_client_id",
 			client_secret = "replace_with_client_secret"	)
@@ -17,6 +17,6 @@ inference = brain.predict_from_local(path)
 url = ""
 inference = brain.predict_from_url(url)
 
-# Diffgram file
+# Project file
 inference = brain.predict_from_file(file_id = 111546)
 

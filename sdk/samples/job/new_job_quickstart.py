@@ -1,11 +1,11 @@
-from diffgram import Diffgram
+from diffgram import Project
 import settings
 
 """
 Most minimal example of creating and launching a new job.
 
 """
-project = Diffgram(
+project = Project(
 			project_string_id = "replace_with_project_string",
 			client_id = "replace_with_client_id",
 			client_secret = "replace_with_client_secret"	)

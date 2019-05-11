@@ -2,7 +2,7 @@
 
 def get_file_id():
 	"""
-	Get Diffgram file id
+	Get Project file id
 
 	Arguments
 		project string id
@@ -20,7 +20,7 @@ def get_file_id():
 
 def get_label_file_dict(self):
 	"""
-	Get Diffgram label file id dict for project
+	Get Project label file id dict for project
 
 	Arguments
 		self
