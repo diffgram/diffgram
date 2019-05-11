@@ -36,7 +36,7 @@ class Diffgram():
 			self.host = "http://127.0.0.1:8080"
 			print("Debug", __version__)
 		elif self.staging is True:
-			self.host = "https://20190504t230248-dot-diffgram-001.appspot.com"
+			self.host = "https://20190510t180920-dot-diffgram-001.appspot.com"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -60,6 +60,7 @@ class Diffgram():
 			self,
 			name = None,
 			local = False):
+
 
 		brain = Brain(
 					client = self,
@@ -152,7 +153,13 @@ class Diffgram():
 
 			data = self.get_directory_list()
 
-			self.directory_id = data["directory_list"][0]["id"]
+			self.default_directory = data['default_directory']
+			
+			# Hold over till refactoring (would prefer to
+			# just call self.directory_default.id
+			self.directory_id = self.default_directory['id']
+
+			self.directory_list = data["directory_list"]
 
 		self.session.headers.update(
 			{'directory_id': str(self.directory_id)})
