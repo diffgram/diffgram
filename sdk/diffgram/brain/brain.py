@@ -26,7 +26,7 @@ class Brain():
 			):
 		"""
 		client, project client object
-		name, string, exact match for Diffgram AI name
+		name, string, exact match for Project AI name
 		local, bool, run model locally
 
 		if local is true will perform additional setup work local_setup()
@@ -119,7 +119,7 @@ class Brain():
 		Creates a Diffgram file object and runs prediction.
 
 		This is roughly equal to running file.from_local() and predict()
-		but in one request to Diffgram (instead of two).
+		but in one request (instead of two).
 
 		path, string, file path
 		"""
