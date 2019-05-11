@@ -23,7 +23,7 @@ class FileConstructor():
 			self, 
 			file_dict):
 			"""
-			file_dict, dict, file information from Diffgram
+			file_dict, dict, file information from Project
 
 			returns file, class File object
 			"""
@@ -40,7 +40,7 @@ class FileConstructor():
 		self,
 		path):
 		"""
-		Create a Diffgram file from local path
+		Create a Project file from local path
 
 		path, string, file path
 
@@ -131,7 +131,7 @@ class FileConstructor():
 		instance_example
 		{  'type': 'box', # options ['tag', 'box', 'polygon']
 			label_file: { 
-				id: Integer   # Diffgram label_file id. 
+				id: Integer   # Project label_file id. 
 								accessible through diffgram.get_label_file_dict() See sample
 			}
 			'x_max': 128, Integer
@@ -171,7 +171,7 @@ class FileConstructor():
 
 			if instance:
 				if convert_names_to_label_files is True:
-					# Convert "name" label (ie == "cat") to Diffgram label_file id
+					# Convert "name" label (ie == "cat") to Project label_file id
 					for index, instance in enumerate(packet["instance_list"]):
 	
 						# TODO do we really want to be passing self here?

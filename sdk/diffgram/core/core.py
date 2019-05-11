@@ -14,7 +14,7 @@ from diffgram.file.file_constructor import FileConstructor
 from diffgram.brain.train import Train
 
 
-class Diffgram():
+class Project():
 
 
 	def __init__(
@@ -84,7 +84,7 @@ class Diffgram():
 			raise Exception("Invalid permission")
 
 		if response.status_code == 500:
-			raise Exception("Diffgram internal error, please try again later.")
+			raise Exception("Internal error, please try again later.")
 
 
 
@@ -167,7 +167,7 @@ class Diffgram():
 
 # TODO review not using this pattern anymore
 
-setattr(Diffgram, "get_label_file_dict", get_label_file_dict)
-setattr(Diffgram, "get_directory_list", get_directory_list)
-setattr(Diffgram, "convert_label", convert_label)
-setattr(Diffgram, "label_new", label_new)
+setattr(Project, "get_label_file_dict", get_label_file_dict)
+setattr(Project, "get_directory_list", get_directory_list)
+setattr(Project, "convert_label", convert_label)
+setattr(Project, "label_new", label_new)
