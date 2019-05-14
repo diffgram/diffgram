@@ -187,7 +187,7 @@ graphs_brain = project.get_model(
 			local = True)
 ```
 
-This ppens an image from a local path and runs both brains on same image.
+This opens an image from a local path and runs both brains on same image.
 We are only reading the image once, so you can stack as many networks
 as you need here.
 
