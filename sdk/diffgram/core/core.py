@@ -3,7 +3,8 @@ import requests
 from diffgram import __version__
 
 from diffgram.file.view import get_label_file_dict
-from diffgram.file.directory import get_directory_list
+from diffgram.core.directory import get_directory_list
+from diffgram.core.directory import set_directory_by_name
 from diffgram.convert.convert import convert_label
 from diffgram.label.label_new import label_new
 
@@ -36,7 +37,7 @@ class Project():
 			self.host = "http://127.0.0.1:8080"
 			print("Debug", __version__)
 		elif self.staging is True:
-			self.host = "https://20190510t180920-dot-diffgram-001.appspot.com"
+			self.host = "https://20190617t182244-dot-diffgram-001.appspot.com"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -171,3 +172,4 @@ setattr(Project, "get_label_file_dict", get_label_file_dict)
 setattr(Project, "get_directory_list", get_directory_list)
 setattr(Project, "convert_label", convert_label)
 setattr(Project, "label_new", label_new)
+setattr(Project, "set_directory_by_name", set_directory_by_name)
