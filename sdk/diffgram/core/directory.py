@@ -34,3 +34,36 @@ def get_directory_list(self):
 	return directory_list
 
 
+def set_directory_by_name(self, name):
+	"""
+
+	Arguments
+		self
+		name, string		
+		
+	"""
+
+	if name is None:
+		raise Exception("No name provided.")
+
+	# Don't refresh by default, just set from existing
+
+	names_attempted = []
+	did_set = False
+
+	for directory in self.directory_list:
+
+		nickname = directory.get("nickname")
+		if nickname == name:
+			self.set_default_directory(directory.get("id"))
+			did_set = True
+			break
+		else:
+			names_attempted.append(nickname)
+		
+	if did_set is False:
+		raise Exception("Name does not exist, valid names are: " + 
+				  str(names_attempted))
+
+
+
