@@ -25,7 +25,13 @@ file = project.file.from_local(path)
 [Help articles for Diffgram.com](https://intercom.help/diffgram)  See below for some docs.
 
 Requires Python >=3.5
-See requirements.txt, majority are for local prediction.
+
+The default install through pip will install dependencies
+for local prediction (tensorflow opencv) as listed in `requirements.txt`.
+The only requirement needed for majority of functions is `requests`. 
+If you are looking for a minimal size install and already have requests use
+the `--no-dependencies` flag ie `pip install diffgram --no-dependencies`
+
 
 
 ## Overall flow
