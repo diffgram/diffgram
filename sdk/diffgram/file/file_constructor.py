@@ -52,7 +52,7 @@ class FileConstructor():
 		# TODO define options and clarify in docs
 		options = {'immediate_mode' : 'True'}
 		
-		endpoint = "/api/v1/project/" +  self.client.project_string_id \
+		endpoint = "/api/walrus/v1/project/" +  self.client.project_string_id \
 			+ "/input/from_local"
 
 		response = self.client.session.post(
@@ -221,7 +221,8 @@ class FileConstructor():
 			packet["job_id"] = job.id
 			packet["mode"] = "attach_to_job"
 
-		endpoint = "/api/v1/project/" + self.client.project_string_id + "/input/packet"
+
+		endpoint = "/api/walrus/v1/project/" + self.client.project_string_id + "/input/packet"
 
 		response = self.client.session.post(
 			self.client.host + endpoint, 
