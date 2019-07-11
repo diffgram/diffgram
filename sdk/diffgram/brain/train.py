@@ -35,7 +35,7 @@ class Train():
 		request['training_options'] = {}
 		request['directory_id'] = directory_id
 
-		endpoint = "/api/project/" + self.client.project_string_id + \
+		endpoint = "/api/walrus/project/" + self.client.project_string_id + \
 			"/machine_learning/training/run"
 
 		response = self.client.session.post(

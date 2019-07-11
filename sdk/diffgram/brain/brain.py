@@ -93,7 +93,7 @@ class Brain():
 		request['url'] = url
 		request['ai_name'] = self.name
 
-		endpoint = "/api/v1/project/" + self.client.project_string_id + \
+		endpoint = "/api/walrus/v1/project/" + self.client.project_string_id + \
 			"/inference/from_url"
 
 		response = self.client.session.post(
@@ -148,7 +148,7 @@ class Brain():
 			options = { 'immediate_mode' : 'True',
 						'ai_name' : self.name}
 				
-			endpoint = "/api/v1/project/" +  self.client.project_string_id \
+			endpoint = "/api/walrus/v1/project/" +  self.client.project_string_id \
 				+ "/inference/from_local"
 
 			response = self.client.session.post(
@@ -319,7 +319,7 @@ class Brain():
 		request['wait_for_inference'] = True
 
 
-		endpoint = "/api/project/" + self.client.project_string_id + \
+		endpoint = "/api/walrus/project/" + self.client.project_string_id + \
 			"/inference/add"
 
 		response = self.client.session.post(
@@ -353,7 +353,7 @@ class Brain():
 		request = {}
 		request['ai_name'] = self.name
 
-		endpoint = "/api/project/" + self.client.project_string_id + \
+		endpoint = "/api/walrus/project/" + self.client.project_string_id + \
 			"/brain/local_info"
 
 		response = self.client.session.post(
@@ -457,7 +457,7 @@ class Brain():
 		request = {}
 		request['ai_name'] = self.name
 
-		endpoint = "/api/v1/project/" + self.client.project_string_id + \
+		endpoint = "/api/walrus/v1/project/" + self.client.project_string_id + \
 			"/brain/status"
 
 		response = self.client.session.post(
