@@ -180,20 +180,19 @@ class FileConstructor():
 
 
 		if media_type == "video":
-			if "frame_packet_map" not in packet:
-				raise Exception(" 'frame_packet_map' key is not defined in packet")
+			if "frame_packet_map" in packet:
 
-			if type(packet["frame_packet_map"]) != dict:
-				raise Exception("instance_list is not a dict")
+				if type(packet["frame_packet_map"]) != dict:
+					raise Exception("instance_list is not a dict")
 
-			# CAREFUL frame_packet not packet
-			for frame, frame_packet in packet["frame_packet_map"].items():
-				if type(frame) != int:
-					raise Exception("frame is not a integer")
+				# CAREFUL frame_packet not packet
+				for frame, frame_packet in packet["frame_packet_map"].items():
+					if type(frame) != int:
+						raise Exception("frame is not a integer")
 		
-				instance = self.check_instance_list(frame_packet)
+					instance = self.check_instance_list(frame_packet)
 
-				break
+					break
 
 		# Test one of the instances
 		# QUESTION Should we be testing all? User option maybe?
