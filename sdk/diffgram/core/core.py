@@ -34,10 +34,11 @@ class Project():
 		self.staging = staging
 
 		if self.debug is True:
-			self.host = "http://127.0.0.1:8080"
+			self.host = "http://127.0.0.1:8085"
 			print("Debug", __version__)
 		elif self.staging is True:
 			self.host = "https://20190617t182244-dot-diffgram-001.appspot.com"
+			self.host = "https://20190802t122855-dot-walrus-dot-diffgram-001.appspot.com"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -75,6 +76,9 @@ class Project():
 	def handle_errors(self, 
 				      response):
 
+		if response.status_code == 404:
+			raise(Exception("404 Not Found" + response.text))
+
 		if response.status_code == 400:
 			try:
 				raise Exception(response.json()["log"]["error"])
@@ -82,10 +86,16 @@ class Project():
 				raise Exception(response.text)
 
 		if response.status_code == 403:
-			raise Exception("Invalid permission")
+			raise Exception("Invalid Permission")
+
+		if response.status_code == 429:
+			raise Exception("Rate Limited. Please try again later or contact us if persists.")
 
 		if response.status_code == 500:
 			raise Exception("Internal error, please try again later.")
+
+		# Not caught by other error codes
+		Exception(response.text)
 
 
 
