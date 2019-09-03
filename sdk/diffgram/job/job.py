@@ -1,4 +1,3 @@
-from copy import deepcopy
 
 
 class Job():
@@ -8,8 +7,7 @@ class Job():
 			     client,
 				 job = None):
 
-		# TODO review use of deep copy
-		self.client = deepcopy(client)
+		self.client = client
 
 		if self.client.project_string_id is None:
 			raise Exception("\n No project string id in client.")
@@ -106,13 +104,14 @@ class Job():
 			job.file_update(file_list = file_list)
 
 
-		if launch is True:
-
-			job.launch()
-
 		if guide:
 
 			job.guide_update(guide = guide)
+
+
+		if launch is True:
+
+			job.launch()
 
 
 		return job
@@ -220,7 +219,8 @@ class Job():
 
 		update_dict = {'guide_id' : guide.id,
 					   'job_id' : self.id,
-					   'update_or_remove' : update_or_remove}
+					   'kind' : kind,
+					   'update_or_remove' : action}
 
 		response = self.client.session.post(self.client.host + endpoint,
 									 json = update_dict)
@@ -230,7 +230,56 @@ class Job():
 		data = response.json()
 
 		if data["log"]["success"] == True:
-			print("File update success")
+			print("Guide update success")
 			return True
 
 		return False
+
+
+	def export_results(
+			self, 
+			kind = 'Annotations',
+			return_type = "data"
+			):
+		"""
+
+		Arguments
+			self,
+			kind, string, in ["Annotations", "TF Records"]
+			return_type, string, in ["url", "data"]
+
+		# Note that the "data" return type is for kind "Annotations"
+		# The data is expected to be returned in JSON format
+		
+		Expects
+
+		Returns
+
+		"""
+	
+		endpoint = "/api/walrus/project/" + self.client.project_string_id + \
+				   "/export/to_file"
+
+		# TODO not a fan of "return_type" variable name
+		# Also, can we map this into a more "automatic" 
+		# Default? ie tf records being a url etc..
+
+		spec_dict = {
+			'job_id': self.id,
+			'kind' : kind,
+			'source' : "job",
+			'file_comparison_mode' : "latest",
+			'directory_id' : None,
+			'masks' : False,
+			'return_type' : return_type,
+			'wait_for_export_generation' : True
+			}
+
+		response = self.client.session.post(self.client.host + endpoint,
+									 json = spec_dict)
+		
+		self.client.handle_errors(response)
+
+		data = response.json()
+
+		return data
