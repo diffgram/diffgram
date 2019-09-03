@@ -1,4 +1,3 @@
-from copy import deepcopy
 
 
 class Guide():
@@ -8,15 +7,16 @@ class Guide():
 			     client,
 				 guide = None):
 
-		self.client = deepcopy(client)
+		self.client = client
 
 		if self.client.project_string_id is None:
 			raise Exception("\n No project string id in client.")
 
+		# Assumes dictionary (ie from response.data.guide)
 		if guide:
-			self.id = guide.id
-			self.name = guide.name
-			self.time_created = guide.time_created
+			self.id = guide.get('id')
+			self.name = guide.get('name')
+			self.time_created = guide.get('time_created')
 
 
 	def new(
@@ -49,8 +49,12 @@ class Guide():
 
 		data = response.json()
 
-		if data["log"]["success"] == True:
-			print("New guide success")
+		print("New guide success")
+
+		guide = Guide(guide = data.get('guide'),
+					  client = self.client)
+
+		return guide
 
 
 	def update():
