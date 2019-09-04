@@ -76,9 +76,26 @@ class Project():
 	def handle_errors(self, 
 				      response):
 
-		if response.status_code == 404:
-			raise(Exception("404 Not Found" + response.text))
+		"""
+		Upon a bad request (400), our error log contains 
+	    good information to raise.
 
+		We also catch a few more common codes to
+		try and print simpler messages.
+
+		Otherwise expects this to be caught by raise_for_status()
+		if applicable
+		https://2.python-requests.org/en/master/_modules/requests/models/#Response.raise_for_status
+		
+		This is under the assumption that we generaly call response.json()
+		after this, and that fails in poor way if there is no json available.
+		"""
+
+		# Default
+		if response.status_code == 200:
+			return
+
+		# Errors
 		if response.status_code == 400:
 			try:
 				raise Exception(response.json()["log"]["error"])
@@ -88,14 +105,18 @@ class Project():
 		if response.status_code == 403:
 			raise Exception("Invalid Permission")
 
+		if response.status_code == 404:
+			raise(Exception("404 Not Found" + response.text))
+
 		if response.status_code == 429:
 			raise Exception("Rate Limited. Please try again later or contact us if persists.")
 
 		if response.status_code == 500:
 			raise Exception("Internal error, please try again later.")
 
-		# Not caught by other error codes
-		Exception(response.text)
+		raise_for_status = response.raise_for_status()
+		if raise_for_status:
+			Exception(raise_for_status)
 
 
 
