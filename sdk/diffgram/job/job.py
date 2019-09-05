@@ -5,7 +5,7 @@ class Job():
 
 	def __init__(self,
 			     client,
-				 job = None):
+				 job_dict = None):
 
 		self.client = client
 
@@ -14,15 +14,49 @@ class Job():
 
 		# TODO review way to set all properties 
 		# from existing job update
-		#self.name = job.name
-		#self.status = job.status
-		#self.created_time = job.created_time
+
+		self.id = None
+		self.name = None
+		self.status = None
+		self.stat_count_tasks = None
+		self.stat_count_complete = None
+		self.percent_completed = None
+		self.tasks_remaining = None
+		self.instance_type = None
+		self.share = None
+		self.type = None
+		self.permission = None
+		self.field = None
+		self.category = None
+		self.review_by_human_freqeuncy = None
+		self.label_mode = None
+		self.passes_per_file = None
+
+		self.refresh_from_dict(
+			job_dict = job_dict)
+
+
+	def refresh_from_dict(
+			self,
+			job_dict = None):
+
+		if not job_dict:
+			return
+
+		for key, value in job_dict.items():
+			setattr(self, key, value)
+
+
+	def __repr__(self):
+		return str(self.serialize())
 
 
 	def serialize(self):
 
 		return {
+			'id': self.id,
 			'name': self.name,
+			'status': self.status,
 			'instance_type': self.instance_type,
 			'share': self.share,
 			'type': self.type,
@@ -283,3 +317,41 @@ class Job():
 		data = response.json()
 
 		return data
+
+
+
+	
+	def refresh_info(
+			self,
+			mode_data = None
+			):
+		"""
+		Assumptions
+
+		Arguments
+		
+		Returns
+
+		"""
+	
+		endpoint = "/api/v1/job/" + str(self.id) + \
+				   "/builder/info"
+
+		spec_dict = {
+			'mode_data': mode_data
+			}
+
+		response = self.client.session.post(
+			self.client.host + endpoint,
+			json = spec_dict)
+		
+		self.client.handle_errors(response)
+
+		data = response.json()
+
+		print(data)
+
+		self.refresh_from_dict(
+			job_dict = data['job'])
+
+
