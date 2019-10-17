@@ -75,7 +75,9 @@ class FileConstructor():
 	def from_url(
 			self,
 			url, 
-			media_type="image"):
+			media_type="image",
+			job=None,
+			job_id=None):
 		"""
 
 		"""
@@ -83,6 +85,11 @@ class FileConstructor():
 		packet = {'media' : {}}
 		packet['media']['url'] = url
 		packet['media']['type'] = media_type
+
+		if job:
+			packet["job_id"] = job.id
+		else:
+			packet["job_id"] = job_id
 
 		self.from_packet(packet = packet)
 		
