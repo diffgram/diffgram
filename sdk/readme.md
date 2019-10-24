@@ -8,10 +8,13 @@
 On linux
 `pip3 install diffgram`
 
-1) [Get credentials from Diffgram.com](https://intercom.help/diffgram/api-software-development-kit-sdk/getting-started-with-sdk)
+1) [Get credentials from Diffgram.com](https://diffgram.readme.io/reference)
 2) Download sample files from github
 3) Config credentials
 
+### [DOCS](https://diffgram.readme.io/reference)
+
+Example
 ```
 from diffgram import Project
 
@@ -116,8 +119,9 @@ image_packet = {'instance_list' : [instance_alpha, instance_bravo],
 result = project.file.from_packet(image_packet)
 
 ```
+# Actions and Brains (Beta)
 
-# [Brain](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain)
+## [Brain](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain)
 
 Benefits of using prediction through Diffgram brain
 
