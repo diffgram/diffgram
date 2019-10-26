@@ -69,16 +69,16 @@ class Job():
 		}
 
 	def new(self,
-			name,
-			instance_type = "box",
-			share = "Project",
-			job_type = "Normal",	
-			permission = "all_secure_users",
-			field = "Other",
-			category = "visual",
-			review_by_human_freqeuncy = "every_3rd_pass",
-			label_mode = "closed_all_available",
-			passes_per_file = 1,
+			name = None,
+			instance_type = None,
+			share = None,
+			job_type = None,	
+			permission = None,
+			field = None,
+			category = None,
+			review_by_human_freqeuncy = None,
+			label_mode = None,
+			passes_per_file = None,
 			file_list = None,
 			guide = None,
 			launch = False
@@ -102,7 +102,7 @@ class Job():
 
 		job.name = name
 		job.instance_type = instance_type
-		job.share = {'type': share}
+		job.share = share
 		job.type = job_type   # careful rename to type from job_type
 		job.permission = permission
 		job.field = field
