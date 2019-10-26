@@ -25,7 +25,12 @@ project = Project(project_string_id = "replace_with_project_string",
 file = project.file.from_local(path)
 ```
 
-[Help articles for Diffgram.com](https://intercom.help/diffgram)  See below for some docs.
+#### Beta
+Note the API/SDK is in beta and is undergoing rapid improvment. There may be breaking changes.
+Please see the [API docs](https://diffgram.readme.io/reference) for the latest canonical reference 
+and be sure to upgrade to latest ie: `pip install diffgram --upgrade`. We will attempt to keep the SDK up to date with the API.
+
+[Help articles for Diffgram.com](https://intercom.help/diffgram)  See below for some examples.
 
 Requires Python >=3.5
 
