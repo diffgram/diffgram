@@ -53,6 +53,9 @@ class Job():
 
 	def serialize(self):
 
+		if hasattr(self.launch_datetime, 'isoformat'):
+			self.launch_datetime = self.launch_datetime.isoformat()
+
 		return {
 			'id': self.id,
 			'name': self.name,
@@ -65,7 +68,9 @@ class Job():
 			'category': self.category,
 			'review_by_human_freqeuncy': self.review_by_human_freqeuncy,
 			'label_mode': self.label_mode,
-			'passes_per_file': self.passes_per_file
+			'passes_per_file': self.passes_per_file,
+			'file_count': self.file_count,
+			'launch_datetime': self.launch_datetime
 		}
 
 	def new(self,
@@ -81,7 +86,8 @@ class Job():
 			passes_per_file = None,
 			file_list = None,
 			guide = None,
-			launch = False
+			launch_datetime = None,
+			file_count = None
 			):
 		"""
 
@@ -110,6 +116,13 @@ class Job():
 		job.review_by_human_freqeuncy = review_by_human_freqeuncy
 		job.label_mode = label_mode
 		job.passes_per_file = passes_per_file
+		job.launch_datetime = launch_datetime
+
+		if not file_count:
+			if file_list:
+				file_count = len(file_list)
+
+		job.file_count = file_count
 
 
 		endpoint = "/api/v1/project/" + self.client.project_string_id + \
@@ -141,11 +154,6 @@ class Job():
 		if guide:
 
 			job.guide_update(guide = guide)
-
-
-		if launch is True:
-
-			job.launch()
 
 
 		return job
