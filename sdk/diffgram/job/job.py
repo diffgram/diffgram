@@ -56,6 +56,10 @@ class Job():
 		if hasattr(self.launch_datetime, 'isoformat'):
 			self.launch_datetime = self.launch_datetime.isoformat()
 
+		label_file_list = None
+		if self.label_file_list:
+			label_file_list = [file.serialize() for file in self.label_file_list]
+
 		return {
 			'id': self.id,
 			'name': self.name,
@@ -70,7 +74,8 @@ class Job():
 			'label_mode': self.label_mode,
 			'passes_per_file': self.passes_per_file,
 			'file_count': self.file_count,
-			'launch_datetime': self.launch_datetime
+			'launch_datetime': self.launch_datetime,
+			'label_file_list': label_file_list
 		}
 
 	def new(self,
@@ -87,7 +92,8 @@ class Job():
 			file_list = None,
 			guide = None,
 			launch_datetime = None,
-			file_count = None
+			file_count = None,
+			label_file_list = None
 			):
 		"""
 
@@ -117,6 +123,7 @@ class Job():
 		job.label_mode = label_mode
 		job.passes_per_file = passes_per_file
 		job.launch_datetime = launch_datetime
+		job.label_file_list = label_file_list
 
 		if not file_count:
 			if file_list:
