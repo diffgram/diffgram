@@ -12,6 +12,7 @@ from diffgram.job.job import Job
 from diffgram.job.guide import Guide
 from diffgram.brain.brain import Brain
 from diffgram.file.file_constructor import FileConstructor
+from diffgram.file.file import File
 from diffgram.brain.train import Train
 
 
@@ -56,6 +57,42 @@ class Project():
 		self.train = Train(self)
 		self.job = Job(self)
 		self.guide = Guide(self)
+
+
+	def get_label(
+			self,
+			name=None,
+			name_list=None):
+		"""
+		name, str
+		name_list, list, optional
+
+		Name must be an exact match to label name.
+
+		If a name_list is provided it will construct a list of
+		objects that match that name.
+
+		Returns 
+			None if not found.
+			File object of type Label if found.
+			List of File objects if a name_list is provided.
+		"""
+		if self.name_to_file_id is None:
+			self.get_label_file_dict()
+
+		if name_list:
+			out = []
+			for name in name_list:
+				out.append(self.get_label(name))
+			return out
+
+		id = self.name_to_file_id.get(name)
+
+		if id is None:
+			return None
+
+		file = File(id = id)
+		return file
 
 
 	def get_model(
