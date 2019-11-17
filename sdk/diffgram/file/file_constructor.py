@@ -137,10 +137,8 @@ class FileConstructor():
 
 		instance_example
 		{  'type': 'box', # options ['tag', 'box', 'polygon']
-			label_file: { 
-				id: Integer   # Project label_file id. 
+			label_file_id:, Integer   # Project label_file id. 
 								accessible through diffgram.get_label_file_dict() See sample
-			}
 			'x_max': 128, Integer
 			'x_min': 1,
 			'y_min': 1,
@@ -214,12 +212,8 @@ class FileConstructor():
 			if instance_type not in ['tag', 'box', 'polygon']:
 				raise Exception(" invalid instance type. Options are 'tag', 'box', 'polygon'.")
 
-			if "label_file" not in instance:
-				raise Exception(" label_file is not defined in the first instance \
-									of instance_list. ")
-
-			if "id" not in instance["label_file"]:
-				raise Exception(" label_file is not defined in the first instance \
+			if "label_file_id" not in instance:
+				raise Exception(" label_file_id is not defined in the first instance \
 									of instance_list. ")
 
 
@@ -228,7 +222,8 @@ class FileConstructor():
 			packet["mode"] = "attach_to_job"
 
 
-		endpoint = "/api/walrus/v1/project/" + self.client.project_string_id + "/input/packet"
+		endpoint = "/api/walrus/v1/project/" + \
+			self.client.project_string_id + "/input/packet"
 
 		response = self.client.session.post(
 			self.client.host + endpoint, 
