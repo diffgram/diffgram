@@ -74,10 +74,11 @@ class FileConstructor():
 
 	def from_url(
 			self,
-			url, 
-			media_type="image",
-			job=None,
-			job_id=None):
+			url: str, 
+			media_type: str = "image",
+			job: Job = None,
+			job_id: int = None,
+			video_split_duration: int = None):
 		"""
 
 		"""
@@ -90,6 +91,9 @@ class FileConstructor():
 			packet["job_id"] = job.id
 		else:
 			packet["job_id"] = job_id
+
+		if video_split_duration:
+			packet["video_split_duration"] = video_split_duration
 
 		self.from_packet(packet = packet)
 		
