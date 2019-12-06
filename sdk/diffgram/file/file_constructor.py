@@ -1,6 +1,7 @@
 
 from diffgram.file.file import File
 from diffgram.convert.convert import convert_label
+from diffgram.job.job import Job
 
 
 class FileConstructor():
