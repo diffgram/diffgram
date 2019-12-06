@@ -1,4 +1,5 @@
 
+![Logo](https://storage.cloud.google.com/diffgram_public/marketing/logo/Diffgram%20Logo%20PNG_.png)
 
 ## What is Diffgram?:
 
