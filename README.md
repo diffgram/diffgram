@@ -1,5 +1,5 @@
 
-![Logo](https://storage.cloud.google.com/diffgram_public/marketing/logo/Diffgram%20Logo%20PNG_.png)
+![](https://storage.googleapis.com/diffgram_public/marketing/logo/DiffgramLogoPNGrectangle.png "Logo")
 
 ## What is Diffgram?:
 
