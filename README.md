@@ -74,7 +74,7 @@ for signed_url in signed_url_list:
 
 `result = project.file.from_url(url)`
 
-(See our help article for signed URLS](https://intercom.help/diffgram/getting-started/uploading-media)
+[See our help article for signed URLS](https://intercom.help/diffgram/getting-started/uploading-media)
 
 
 ### [Importing existing instances](https://github.com/diffgram/diffgram/blob/master/samples/existing_instances/sample_image_with_existing_instances.py)
