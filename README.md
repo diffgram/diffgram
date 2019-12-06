@@ -70,7 +70,7 @@ for signed_url in signed_url_list:
 (See our help article for signed URLS](https://intercom.help/diffgram/getting-started/uploading-media)
 
 
-### [Importing existing instances](https://github.com/diffgram/diffgram/blob/master/sdk/samples/existing_instances/sample_image_with_existing_instances.py)
+### [Importing existing instances](https://github.com/diffgram/diffgram/blob/master/samples/existing_instances/sample_image_with_existing_instances.py)
 
 ```
 
@@ -101,7 +101,7 @@ result = project.file.from_packet(image_packet)
 
 `file = project.file.from_local(path)`
 
-[Multiple file example](https://github.com/diffgram/diffgram/blob/master/sdk/samples/import/from_local_directory.py)
+[Multiple file example](https://github.com/diffgram/diffgram/blob/master/samples/import/from_local_directory.py)
 
 
 #### Beta
@@ -145,7 +145,7 @@ in your system. [More on this here.](https://intercom.help/diffgram/getting-star
 
 ### Code samples
 
-[See samples folder](https://github.com/diffgram/diffgram/blob/master/sdk/samples)
+[See samples folder](https://github.com/diffgram/diffgram/blob/master/samples)
 
 
 ## The project object
@@ -163,7 +163,7 @@ The following examples assumes you have a project defined like this.
 
 ## Actions and Brains (Beta)
 
-## [Brain](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain)
+## [Brain](https://github.com/diffgram/diffgram/blob/master/samples/brain)
 
 Benefits of using prediction through Diffgram brain
 
@@ -177,7 +177,7 @@ Note: We plan to support many deep learning methods in the future,
 so while this is fairly heavily focused on object detection, the vast majority of
 concepts carry over to semantic segmentation and other methods.
 
-## [Train](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain/train.py)
+## [Train](https://github.com/diffgram/diffgram/blob/master/samples/brain/train.py)
 
 ```
 brain = project.train.start(method="object_detection",
@@ -188,7 +188,7 @@ brain.check_status()
 
 ---
 
-## [Predict Online](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain/predict.py)
+## [Predict Online](https://github.com/diffgram/diffgram/blob/master/samples/brain/predict.py)
 
 Predicting online requires no advanced setup and uses less local compute resources.
 
@@ -205,14 +205,14 @@ For predicting online there are 3 ways to send files
 
 ---
 
-## [Predict Local](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain/local_predict.py)
+## [Predict Local](https://github.com/diffgram/diffgram/blob/master/samples/brain/local_predict.py)
 
 Predicting locally downloads the model weights, graph defintion, and relevant labels.
 It will setup the model - warning this may use a significant amount of your local compute resources.
 By default the model downloads to a temp directory, although you are welcome to download
 and save the model to disk.
 
-### [Local prediction, with local file](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain/local_predict.py)
+### [Local prediction, with local file](https://github.com/diffgram/diffgram/blob/master/samples/brain/local_predict.py)
 
 Same as before, except we set the `local` flag to `True`
 ```
@@ -225,7 +225,7 @@ Then we can call
 `inference = brain.predict_from_local(path)`
 
 
-### [Local prediction, two models with visual](https://github.com/diffgram/diffgram/blob/master/sdk/samples/brain/local_predict_cam.py)
+### [Local prediction, two models with visual](https://github.com/diffgram/diffgram/blob/master/samples/brain/local_predict_cam.py)
 
 Get two models:
 
