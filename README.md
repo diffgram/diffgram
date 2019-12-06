@@ -8,17 +8,23 @@ Data that's ready to be used by AI systems.
 
 It's created by combining raw data with human centered meaning. For example, combining an image with a box identifying an object. The encoded meaning can be relatively simple, for example a single bounding box, or complex, such as a time series video with a graph of attributes.
 
+[Tell me moar](https://diffgram.readme.io/docs/what-is-diffgram)
+
 ## Motivation
 
 * Subject matter experts are the annotators and they need an easy way to do it.
 * An increase in complexity in annotations and frequency of data change.
 * Organization between data, people and teams on larger scale projects.
 
+[I need motivation](https://diffgram.readme.io/docs/why-choose-diffgram)
+
 ## What can I do with Diffgram SDK?
 
 * Create batches of work (*Jobs*), including sending files
 * Export annotations programmatically
 * Create training data and work with files in a deep learning native format.
+
+[And a lot more (features list)](https://diffgram.readme.io/docs/features)
 
 ## Install
 
