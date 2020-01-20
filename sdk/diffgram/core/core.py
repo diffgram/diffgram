@@ -8,6 +8,7 @@ from diffgram.core.directory import set_directory_by_name
 from diffgram.convert.convert import convert_label
 from diffgram.label.label_new import label_new
 
+from diffgram.core.directory import Directory
 from diffgram.job.job import Job
 from diffgram.job.guide import Guide
 from diffgram.brain.brain import Brain
@@ -38,8 +39,7 @@ class Project():
 			self.host = "http://127.0.0.1:8085"
 			print("Debug", __version__)
 		elif self.staging is True:
-			self.host = "https://20190617t182244-dot-diffgram-001.appspot.com"
-			self.host = "https://20190802t122855-dot-walrus-dot-diffgram-001.appspot.com"
+			self.host = "https://20200110t142358-dot-walrus-dot-diffgram-001.appspot.com/"
 		else:
 			self.host = "https://diffgram.com"
 
@@ -57,6 +57,7 @@ class Project():
 		self.train = Train(self)
 		self.job = Job(self)
 		self.guide = Guide(self)
+		self.directory = Directory(self)
 
 
 	def get_label(

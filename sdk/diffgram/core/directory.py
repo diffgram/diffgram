@@ -62,8 +62,57 @@ def set_directory_by_name(self, name):
 			names_attempted.append(nickname)
 		
 	if did_set is False:
-		raise Exception("Name does not exist, valid names are: " + 
+		raise Exception(name, " does not exist. Valid names are: " + 
 				  str(names_attempted))
+
+
+class Directory():
+
+	def __init__(self,
+			     client):
+
+		self.client = client
+
+
+	def new(self, name: str):
+		"""
+		Create a new directory and update directory list.
+
+		We include name in exception message since this may
+		be included in larger functions in which
+		the name may be unclear
+
+		"""
+		if name is None:
+			raise Exception("No name provided.")
+
+		# Confirm not in existing
+		# generator expression returns True if the directory
+		# is not found. this is a bit awkward.
+		if next((dir for dir in self.client.directory_list
+				  if dir['nickname'] == name), True) is not True:
+			raise Exception(name, "Already exists")
+
+		packet = {'nickname' : name}
+
+		endpoint = "/api/v1/project/" + \
+			self.client.project_string_id + "/directory/new"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			json = packet)
+
+		self.client.handle_errors(response)
+		
+		data = response.json()
+
+		project = data.get('project')
+		if project:
+			directory_list = project.get('directory_list')
+			if directory_list:
+				self.client.directory_list = directory_list
+
+
 
 
 
