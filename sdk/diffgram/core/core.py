@@ -15,6 +15,7 @@ from diffgram.brain.brain import Brain
 from diffgram.file.file_constructor import FileConstructor
 from diffgram.file.file import File
 from diffgram.brain.train import Train
+from diffgram.export.export import Export
 
 
 class Project():
@@ -58,6 +59,7 @@ class Project():
 		self.job = Job(self)
 		self.guide = Guide(self)
 		self.directory = Directory(self)
+		self.export = Export(self)
 
 
 	def get_label(
