@@ -4,13 +4,19 @@ class Guide():
 
 
 	def __init__(self,
-			     client,
+			     client = None,
 				 guide = None):
+		"""
+		Jan 20, 2020
+		Constructor and object...
+			different pattern from File...
+		"""
 
 		self.client = client
 
-		if self.client.project_string_id is None:
-			raise Exception("\n No project string id in client.")
+		if self.client:
+			if self.client.project_string_id is None:
+				raise Exception("\n No project string id in client.")
 
 		# Assumes dictionary (ie from response.data.guide)
 		if guide:
