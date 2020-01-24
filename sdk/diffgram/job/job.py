@@ -285,10 +285,25 @@ class Job():
 		return False
 
 
-	def export_results(
+	def get_by_id(
+			self, 
+			id: int):
+			"""
+			"""
+
+			job = Job(client = self.client)
+			job.id = id
+
+			job.refresh_info()
+
+			return job
+
+
+	def generate_export(
 			self, 
 			kind = 'Annotations',
-			return_type = "data"
+			return_type = "data",
+			wait_for_export_generation = True
 			):
 		"""
 
@@ -321,7 +336,7 @@ class Job():
 			'directory_id' : None,
 			'masks' : False,
 			'return_type' : return_type,
-			'wait_for_export_generation' : True
+			'wait_for_export_generation' : wait_for_export_generation
 			}
 
 		response = self.client.session.post(self.client.host + endpoint,
@@ -330,6 +345,10 @@ class Job():
 		self.client.handle_errors(response)
 
 		data = response.json()
+
+		if wait_for_export_generation is False:
+			export = self.client.export.new(data.get('export'))
+			return export
 
 		return data
 
@@ -364,7 +383,7 @@ class Job():
 
 		data = response.json()
 
-		print(data)
+		#print(data)
 
 		self.refresh_from_dict(
 			job_dict = data['job'])
