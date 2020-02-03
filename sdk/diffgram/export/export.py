@@ -1,3 +1,5 @@
+from ..regular.regular import refresh_from_dict
+
 
 class Export():
 	"""
@@ -27,24 +29,6 @@ class Export():
 		self.client = client
 
 
-	def refresh_from_dict(
-			self,
-			export_dict = None) -> None:
-		"""
-		Update object attributes in context of getting a serialized
-		version of Export from the server.
-
-		"""
-
-		if not export_dict:
-			return
-
-		if not isinstance(export_dict, dict):
-			return
-
-		for key, value in export_dict.items():
-			setattr(self, key, value)
-
 	
 	def get_by_id(self, id: int):
 		"""
@@ -65,7 +49,7 @@ class Export():
 
 		"""
 		export = Export(client = self.client)
-		export.refresh_from_dict(export_dict)
+		refresh_from_dict(export, export_dict)
 		return export
 
 
