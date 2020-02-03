@@ -1,3 +1,5 @@
+from diffgram.file.file import File
+
 
 
 def get_directory_list(self):
@@ -112,6 +114,70 @@ class Directory():
 			if directory_list:
 				self.client.directory_list = directory_list
 
+
+	def list_files(
+			self, 
+			limit=None):
+		"""
+		Get a list of files in directory (from Diffgram service). 
+	
+		Assumes we are using the default directory.
+		this can be changed ie by: 	project.set_directory_by_name(dir_name)
+		
+		We don't have a strong Directory concept in the SDK yet 
+		So for now assume that we need to 
+		call 	project.set_directory_by_name(dir_name)   first
+		if we want to change the directory
+
+
+		WIP Feb 3, 2020
+			A lot of "hard coded" options here.
+			Want to think a bit more about what we want to
+			expose options here and what good contexts are.
+
+		"""
+
+		directory_id = self.client.directory_id
+		#print("directory_id", directory_id)
+
+		metadata = {'metadata' :
+			{
+				'directory_id': directory_id,
+				'annotations_are_machine_made_setting': "All",
+				'annotation_status': "All",
+				'limit': limit,
+				'media_type': "All",
+				'request_next_page': False,
+				'request_previous_page': False,
+				'file_view_mode': "annotation"
+			}
+		}
+
+		# User concept, in this context, is deprecated
+		# 'sdk' is a placeholder value
+
+		endpoint = "/api/project/" + \
+			self.client.project_string_id + \
+			"/user/sdk" + "/file/list"
+
+		response = self.client.session.post(
+			self.client.host + endpoint, 
+			json = metadata)
+
+		self.client.handle_errors(response)
+		
+		# Success
+		data = response.json()
+		file_list_json = data.get('file_list')
+
+		# TODO would like this to perhaps be a seperate function
+		# ie part of File_Constructor perhaps
+		file_list = []
+		for file_json in file_list_json:
+			file = File.new(file_json = file_json)
+			file_list.append(file)
+
+		return file_list
 
 
 
