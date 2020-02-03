@@ -183,6 +183,15 @@ class Job():
 
 		Returns
 
+		Assumptions
+
+			The API will use the project default if None is supplied
+			but if we are not in the default we must supply valid
+			directory_id
+
+			Otherwise when it checks permissions it will error 
+			ie {"file_link":"File link not in incoming directory"}
+
 		"""
 	
 		endpoint = "/api/v1/project/" + self.client.project_string_id + \
@@ -190,9 +199,11 @@ class Job():
 
 		file_list = [file.serialize() for file in file_list]
 
-		update_dict = {'file_list_selected' : file_list,
-					   'job_id' : self.id,
-					   'add_or_remove' : add_or_remove}
+		update_dict = {
+			'directory_id' : self.client.directory_id,
+			'file_list_selected' : file_list,
+			'job_id' : self.id,
+			'add_or_remove' : add_or_remove}
 
 		response = self.client.session.post(self.client.host + endpoint,
 									 json = update_dict)
