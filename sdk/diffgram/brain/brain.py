@@ -5,7 +5,12 @@ import tempfile
 
 # TODO import these only if local prediction is needed
 import cv2
-import tensorflow as tf
+
+try:
+	import tensorflow as tf
+except:
+	print("Could not import tensorflow")
+
 import numpy as np
 import requests
 import scipy.misc
