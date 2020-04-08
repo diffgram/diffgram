@@ -79,14 +79,40 @@ class FileConstructor():
 			media_type: str = "image",
 			job: Job = None,
 			job_id: int = None,
-			video_split_duration: int = None):
+			video_split_duration: int = None,
+			instance_list: list = None,		# for Images
+			frame_packet_map: dict = None	# for Video
+			):
 		"""
+
+		{'frame_packet_map' : {
+			0 : instance_list,    # Where the key is the integer of the frame of the video, 0 indexed.
+			6 : instance_list,
+			9 : instance_list
+		},
+
+		instance_example
+		{  'type': 'box', # options ['tag', 'box', 'polygon']
+			label_file_id:, Integer   # Project label_file id. 
+								accessible through diffgram.get_label_file_dict() See sample
+			'x_max': 128, Integer
+			'x_min': 1,
+			'y_min': 1,
+			'y_max': 128,
+			'points': [] # Required for polygon more on this coming soon
+			'number': 0  # A number is optional, and only relates to video instances
+		}
+
 
 		"""
 
 		packet = {'media' : {}}
 		packet['media']['url'] = url
 		packet['media']['type'] = media_type
+
+		# Existing Instances
+		packet['frame_packet_map'] = frame_packet_map
+		packet['instance_list'] = instance_list
 
 		if job:
 			packet["job_id"] = job.id
@@ -108,10 +134,10 @@ class FileConstructor():
 	
 
 	def from_packet(
-		self, 
-		packet,
-		job=None,
-		convert_names_to_label_files=True
+			self, 
+			packet,
+			job=None,
+			convert_names_to_label_files=True
 		):
 		"""
 		Import single packet of data of the form:
@@ -129,10 +155,10 @@ class FileConstructor():
 
 		video_packet_example 
 		{'frame_packet_map' : {
-			0 : frame_packet,    # Where the key is the integer of the 
+			0 : instance_list,    # Where the key is the integer of the 
 								  frame of the video, 0 indexed.
-			6 : frame_packet,
-			9 : frame_packet
+			6 : instance_list,
+			9 : instance_list
 		},
 		'media' : {
 			'url' : "https://something",
@@ -176,33 +202,40 @@ class FileConstructor():
 
 		instance = None
 
-		if media_type == "image":	
-			instance = self.check_instance_list(packet)
+		if media_type == "image":
+			
+			if "instance_list" in packet:	
+				
+				instance_list = packet.get('instance_list')
+				
+				self.check_instance_list(instance_list)
 
-			if instance:
 				if convert_names_to_label_files is True:
-					# Convert "name" label (ie == "cat") to Project label_file id
-					for index, instance in enumerate(packet["instance_list"]):
-	
-						# TODO do we really want to be passing self here?
-						instance = convert_label(self, instance, instance["name"])
-						packet["instance_list"][index] = instance
+					packet["instance_list"] = self.instance_list_label_strings_to_ids(
+						instance_list = instance_list
+						)
 
 
 		if media_type == "video":
 			if "frame_packet_map" in packet:
 
 				if type(packet["frame_packet_map"]) != dict:
-					raise Exception("instance_list is not a dict")
+					raise Exception("frame_packet_map is not a dict")
 
-				# CAREFUL frame_packet not packet
-				for frame, frame_packet in packet["frame_packet_map"].items():
+				for frame, instance_list in packet["frame_packet_map"].items():
+					
 					if type(frame) != int:
-						raise Exception("frame is not a integer")
-		
-					instance = self.check_instance_list(frame_packet)
+						raise Exception("frame is not a integer. The key should be the integer frame number.")
 
-					break
+					if type(instance_list) != list:
+						raise Exception("instance_list is not a list. The value of the frame shuold be a list of instance dicts.")
+
+					self.check_instance_list(instance_list)
+
+					if convert_names_to_label_files is True:
+						packet["instance_list"] = self.instance_list_label_strings_to_ids(
+							instance_list = instance_list
+							)
 
 		# Test one of the instances
 		# QUESTION Should we be testing all? User option maybe?
@@ -250,21 +283,27 @@ class FileConstructor():
 			#return file
 
 
-	def check_instance_list(self, packet):
+	def instance_list_label_strings_to_ids(self, instance_list: list):
 
-		# instance list is optional
-
-		if "instance_list" in packet:
-
-			if type(packet["instance_list"]) != list:
-				raise Exception("instance_list is not array like")
-
-			if len(packet["instance_list"]) == 0:
-				raise Exception("'instance_list' is empty")
+		# Convert "name" label (ie == "cat") to Project label_file id
+		for index, instance in enumerate(instance_list):
 	
-			return packet["instance_list"][0]
+			instance = convert_label(self, instance)
+			instance_list[index] = instance
 
-		return None
+		return instance_list
+
+
+	def check_instance_list(self, instance_list: list):
+
+		if type(instance_list) != list:
+			raise Exception("instance_list is not array like")
+
+		if len(instance_list) == 0:
+			raise Warning("'instance_list' is empty")
+	
+		return
+
 
 
 	def import_bulk():
