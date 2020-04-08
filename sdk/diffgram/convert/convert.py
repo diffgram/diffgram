@@ -1,6 +1,11 @@
 
 
-def convert_label(self, instance, name):
+def convert_label(self, instance):
+
+	name = instance.get('name')
+
+	if not name:
+		raise Exception("Key Error: Instance must have a key 'name'.")
 
 	instance["label_file_id"] = self.client.name_to_file_id.get(name, None)
 
