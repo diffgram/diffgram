@@ -1,6 +1,13 @@
 
 
 def convert_label(self, instance):
+	"""
+	We assume if a label_file_id exists it supersedes a conversion from string name.
+	"""
+
+	label_file_id = instance.get('label_file_id')
+	if label_file_id:
+		return
 
 	name = instance.get('name')
 
