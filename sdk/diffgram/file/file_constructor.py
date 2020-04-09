@@ -205,7 +205,7 @@ class FileConstructor():
 
 		if media_type == "image":
 			
-			if "instance_list" in packet:	
+			if packet.get("instance_list"):	
 				
 				instance_list = packet.get('instance_list')
 				
