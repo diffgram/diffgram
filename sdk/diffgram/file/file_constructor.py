@@ -137,7 +137,8 @@ class FileConstructor():
 			self, 
 			packet,
 			job=None,
-			convert_names_to_label_files=True
+			convert_names_to_label_files=True,
+			assume_new_instances_machine_made=True
 		):
 		"""
 		Import single packet of data of the form:
@@ -210,6 +211,10 @@ class FileConstructor():
 				
 				self.check_instance_list(instance_list)
 
+				self.format_assumptions(
+					instance_list = instance_list,
+					assume_new_instances_machine_made = assume_new_instances_machine_made)
+
 				if convert_names_to_label_files is True:
 					packet["instance_list"] = self.instance_list_label_strings_to_ids(
 						instance_list = instance_list
@@ -231,6 +236,10 @@ class FileConstructor():
 						raise Exception("instance_list is not a list. The value of the frame shuold be a list of instance dicts.")
 
 					self.check_instance_list(instance_list)
+
+					self.format_assumptions(
+						instance_list = instance_list,
+						assume_new_instances_machine_made = assume_new_instances_machine_made)
 
 					if convert_names_to_label_files is True:
 						packet["instance_list"] = self.instance_list_label_strings_to_ids(
@@ -303,6 +312,18 @@ class FileConstructor():
 			raise Warning("'instance_list' is empty")
 	
 		return
+
+
+	def format_assumptions(
+			self,
+			instance_list: list,
+			assume_new_instances_machine_made: bool):
+
+		if assume_new_instances_machine_made is True:
+			for i in range(len(instance_list)):
+				instance_list[i]['machine_made'] = True
+
+		return instance_list
 
 
 
