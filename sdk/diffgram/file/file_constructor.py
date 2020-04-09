@@ -156,8 +156,8 @@ class FileConstructor():
 
 		video_packet_example 
 		{'frame_packet_map' : {
-			0 : instance_list,    # Where the key is the integer of the 
-								  frame of the video, 0 indexed.
+			0 : instance_list,    
+		# Where the key is the integer of the frame of the video, 0 indexed.
 			6 : instance_list,
 			9 : instance_list
 		},
@@ -222,7 +222,7 @@ class FileConstructor():
 
 
 		if media_type == "video":
-			if "frame_packet_map" in packet:
+			if packet.get("frame_packet_map"):
 
 				if type(packet["frame_packet_map"]) != dict:
 					raise Exception("frame_packet_map is not a dict")
