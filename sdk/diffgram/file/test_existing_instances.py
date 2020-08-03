@@ -4,10 +4,12 @@ from diffgram import Project
 from diffgram.file.file_constructor import FileConstructor
 
 
-def mock_box_from_external_format(sequence_number: int = None):
+def mock_box_from_external_format(
+		sequence_number: int = None,
+		name : str = None):
 
 	return {
-		"name" : "cat",
+		"name" : name,
 		"number": sequence_number,
 		"type": "box",
 		"x_max": random.randint(500, 800),
@@ -35,15 +37,21 @@ def mock_frame_packet_map(
 		
 	frame_packet_map = { }
 
+	name_list = ["cat", "another"]
+
+
 	for i in range(number_of_frames):
 
 		frame_packet_map[i] = []
 
 		for j in range(1, number_of_sequences + 1):
 
-			frame_packet_map[i].append(mock_box_from_external_format(
-				sequence_number = j)
-			)
+			for name in name_list:
+
+				frame_packet_map[i].append(mock_box_from_external_format(
+					sequence_number = j,
+					name = name)
+				)
 
 	return frame_packet_map
 
@@ -78,8 +86,8 @@ def test_existing_video_instances(project):
 	signed_url = "https://storage.googleapis.com/diffgram_public/example_data/challenge_videoTrim.mp4"
 
 	frame_packet_map = mock_frame_packet_map(
-			number_of_frames = 40,
-			number_of_sequences = 1)
+			number_of_frames = 20,
+			number_of_sequences = 2)
 
 	result = project.file.from_url(
 		signed_url,
@@ -90,9 +98,27 @@ def test_existing_video_instances(project):
 	# TODO get file and then assert it exists
 
 
-project = Project() 
+
+def test_existing_instances_image(project):
+
+	signed_url = "https://storage.googleapis.com/diffgram_public/example_data/000000001323.jpg"
+
+	instance_list = []
+
+	for i in range(3):
+		instance_list.append(
+		   mock_box_from_external_format(name = "cat"))
+
+	result = project.file.from_url(
+		signed_url,
+		media_type="image",
+		instance_list=instance_list
+	)
 
 
-#test_video_packet_conversion(project)
+
+test_video_packet_conversion(project)
 
 test_existing_video_instances(project)
+
+test_existing_instances_image(project)
