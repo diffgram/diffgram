@@ -203,48 +203,24 @@ class FileConstructor():
 
 		instance = None
 
-		if media_type == "image":
-			
-			if packet.get("instance_list"):	
+		if media_type == "image":		
+			if packet.get("instance_list"):		
 				
-				instance_list = packet.get('instance_list')
+				instance_list = self.__validate_and_format_instance_list(
+					instance_list = packet.get('instance_list'),
+					assume_new_instances_machine_made = assume_new_instances_machine_made,
+					convert_names_to_label_files = convert_names_to_label_files
+					)
 				
-				self.check_instance_list(instance_list)
-
-				self.format_assumptions(
-					instance_list = instance_list,
-					assume_new_instances_machine_made = assume_new_instances_machine_made)
-
-				if convert_names_to_label_files is True:
-					packet["instance_list"] = self.instance_list_label_strings_to_ids(
-						instance_list = instance_list
-						)
-
 
 		if media_type == "video":
 			if packet.get("frame_packet_map"):
 
-				if type(packet["frame_packet_map"]) != dict:
-					raise Exception("frame_packet_map is not a dict")
-
-				for frame, instance_list in packet["frame_packet_map"].items():
-					
-					if type(frame) != int:
-						raise Exception("frame is not a integer. The key should be the integer frame number.")
-
-					if type(instance_list) != list:
-						raise Exception("instance_list is not a list. The value of the frame shuold be a list of instance dicts.")
-
-					self.check_instance_list(instance_list)
-
-					self.format_assumptions(
-						instance_list = instance_list,
-						assume_new_instances_machine_made = assume_new_instances_machine_made)
-
-					if convert_names_to_label_files is True:
-						packet["instance_list"] = self.instance_list_label_strings_to_ids(
-							instance_list = instance_list
-							)
+				packet['frame_packet_map'] = self.__validate_and_format_frame_packet_map(
+					frame_packet_map = packet['frame_packet_map'],
+					assume_new_instances_machine_made = assume_new_instances_machine_made,
+					convert_names_to_label_files = convert_names_to_label_files
+					)
 
 		# Test one of the instances
 		# QUESTION Should we be testing all? User option maybe?
@@ -292,6 +268,56 @@ class FileConstructor():
 			#return file
 
 
+	def __validate_and_format_frame_packet_map(
+			self, 
+			frame_packet_map: dict,
+			assume_new_instances_machine_made: bool = True,
+			convert_names_to_label_files: bool = True):
+		"""
+		Warning: Mutates packet map
+		"""
+
+		if type(frame_packet_map) != dict:
+			raise Exception("frame_packet_map is not a dict")
+
+		for frame, instance_list in frame_packet_map.items():
+					
+			if type(frame) != int:
+				raise Exception("frame is not a integer. The key should be the integer frame number.")
+
+			if type(instance_list) != list:
+				raise Exception("instance_list is not a list. The value of the frame should be a list of instance dicts.")
+
+			frame_packet_map[frame] = self.__validate_and_format_instance_list(
+				instance_list = instance_list,
+				assume_new_instances_machine_made = assume_new_instances_machine_made,
+				convert_names_to_label_files = convert_names_to_label_files
+				)
+
+		return frame_packet_map
+
+
+	def __validate_and_format_instance_list(
+			self,
+			instance_list: list,
+			assume_new_instances_machine_made: bool,
+			convert_names_to_label_files: bool):
+
+
+		FileConstructor.sanity_check_instance_list(instance_list)
+
+		instance_list = FileConstructor.format_assumptions(
+			instance_list = instance_list,
+			assume_new_instances_machine_made = assume_new_instances_machine_made)
+
+		if convert_names_to_label_files is True:
+			instance_list = self.instance_list_label_strings_to_ids(
+				instance_list = instance_list
+				)
+
+		return instance_list
+
+
 	def instance_list_label_strings_to_ids(self, instance_list: list):
 
 		# Convert "name" label (ie == "cat") to Project label_file id
@@ -303,7 +329,8 @@ class FileConstructor():
 		return instance_list
 
 
-	def check_instance_list(self, instance_list: list):
+	@staticmethod
+	def sanity_check_instance_list(instance_list: list):
 
 		if type(instance_list) != list:
 			raise Exception("instance_list is not array like")
@@ -314,8 +341,8 @@ class FileConstructor():
 		return
 
 
+	@staticmethod
 	def format_assumptions(
-			self,
 			instance_list: list,
 			assume_new_instances_machine_made: bool):
 
