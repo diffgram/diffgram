@@ -131,6 +131,31 @@ class FileConstructor():
 
 		pass
 
+
+	def format_packet():
+		raise NotImplementedError
+
+
+	@staticmethod
+	def __media_packet_sanity_checks(packet) -> None:
+		"""
+		Relevant to new media, ie not existing media
+		"""
+
+		if type(packet) != dict:
+			raise Exception("packet is not a dict")
+
+		if "media" not in packet:
+			raise Exception(" 'media' key is not defined in packet.")  
+
+		if "url" not in packet["media"]:
+			raise Exception(" 'url' key is not defined in packet['media'] .")
+
+		media_type = packet["media"].get("type", None)
+		if not media_type:
+			raise Exception(" 'type' key is not defined in packet['media'] use one of ['image', 'video']")
+
+
 	
 
 	def from_packet(
@@ -185,23 +210,10 @@ class FileConstructor():
 
 		"""
 
-		if type(packet) != dict:
-			raise Exception("packet is not a dict")
-
-		if "media" not in packet:
-			raise Exception(" 'media' key is not defined in packet.")  
-
-		if "url" not in packet["media"]:
-			raise Exception(" 'url' key is not defined in packet['media'] .")
-
-		# TODO determine if local path or url, for now assume it's a URL?
-
-		media_type = packet["media"].get("type", None)
-		if not media_type:
-			raise Exception(" 'type' key is not defined in packet['media'] use one of ['image', 'video']")
-		# QUESTION should we default this to "image"
+		FileConstructor.__media_packet_sanity_checks(packet = packet)
 
 		instance = None
+		media_type = packet["media"].get("type", None)
 
 		if media_type == "image":		
 			if packet.get("instance_list"):		
@@ -225,6 +237,9 @@ class FileConstructor():
 		# Test one of the instances
 		# QUESTION Should we be testing all? User option maybe?
 		# (Otherwise invalid ones get discarded when it hits API)
+
+		# TODO due to changes, this no longer tests anything , choose new way to sample
+		# instance list / packets here.
 
 		if instance:
 			instance_type = instance.get("type", None)
