@@ -365,3 +365,28 @@ class FileConstructor():
 		"""
 		pass
 
+
+	def get_by_id(self, id: int):
+		"""
+		returns Diffgram File object
+		"""
+	
+		endpoint = "/api/v1/file/view"
+
+		spec_dict = {
+			'file_id': id,
+			'project_string_id': self.client.project_string_id
+			}
+
+		response = self.client.session.post(
+			self.client.host + endpoint,
+			json = spec_dict)
+		
+		self.client.handle_errors(response)
+
+		response_json = response.json()
+
+		return File.new(response_json.get('file'))
+
+
+
