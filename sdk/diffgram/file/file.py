@@ -47,4 +47,29 @@ class File():
 			}
 
 
+	# WIP
+	def update(
+			instance_list: list = None,		# for Images
+			frame_packet_map: dict = None,	# for Video
+			overwrite: bool = False
+			):
+		"""
+		"""
+
+		packet = {}
+		packet['file_id'] = self.id
+		packet['frame_packet_map'] = frame_packet_map
+		packet['instance_list'] = instance_list
+		packet['overwrite'] = overwrite
+
+		self.client.file.from_packet(packet = packet)
+
+
+	def copy(
+		
+		):
+
+		raise NotImplementedError
+
+
 
