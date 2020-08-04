@@ -16,6 +16,7 @@ from diffgram.file.file_constructor import FileConstructor
 from diffgram.file.file import File
 from diffgram.brain.train import Train
 from diffgram.export.export import Export
+from diffgram.task.task import Task
 
 
 class Project():
@@ -60,6 +61,7 @@ class Project():
 		self.guide = Guide(self)
 		self.directory = Directory(self)
 		self.export = Export(self)
+		self.task = Task(client = self)
 
 
 	def get_label(
@@ -143,7 +145,7 @@ class Project():
 				raise Exception(response.text)
 
 		if response.status_code == 403:
-			raise Exception("Invalid Permission")
+			raise Exception("Invalid Permission", response.text)
 
 		if response.status_code == 404:
 			raise(Exception("404 Not Found" + response.text))
