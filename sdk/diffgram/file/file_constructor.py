@@ -127,10 +127,6 @@ class FileConstructor():
 		return True
 		
 
-	def from_diffgram_id():
-
-		pass
-
 
 	def format_packet():
 		raise NotImplementedError
@@ -156,7 +152,8 @@ class FileConstructor():
 			raise Exception(" 'type' key is not defined in packet['media'] use one of ['image', 'video']")
 
 
-	
+	def __validate_existing_instances():
+		pass
 
 	def from_packet(
 			self, 
@@ -209,30 +206,25 @@ class FileConstructor():
 		and makes request to /input/packet endpoint.
 
 		"""
-
-		FileConstructor.__media_packet_sanity_checks(packet = packet)
+		file_id = packet.get('file_id')
+		if not file_id:
+			FileConstructor.__media_packet_sanity_checks(packet = packet)
 
 		instance = None
-		media_type = packet["media"].get("type", None)
-
-		if media_type == "image":		
-			if packet.get("instance_list"):		
+	
+		if packet.get("instance_list"):					
+			packet['instance_list'] = self.__validate_and_format_instance_list(
+				instance_list = packet.get('instance_list'),
+				assume_new_instances_machine_made = assume_new_instances_machine_made,
+				convert_names_to_label_files = convert_names_to_label_files
+				)
 				
-				instance_list = self.__validate_and_format_instance_list(
-					instance_list = packet.get('instance_list'),
-					assume_new_instances_machine_made = assume_new_instances_machine_made,
-					convert_names_to_label_files = convert_names_to_label_files
-					)
-				
-
-		if media_type == "video":
-			if packet.get("frame_packet_map"):
-
-				packet['frame_packet_map'] = self.__validate_and_format_frame_packet_map(
-					frame_packet_map = packet['frame_packet_map'],
-					assume_new_instances_machine_made = assume_new_instances_machine_made,
-					convert_names_to_label_files = convert_names_to_label_files
-					)
+		if packet.get("frame_packet_map"):
+			packet['frame_packet_map'] = self.__validate_and_format_frame_packet_map(
+				frame_packet_map = packet['frame_packet_map'],
+				assume_new_instances_machine_made = assume_new_instances_machine_made,
+				convert_names_to_label_files = convert_names_to_label_files
+				)
 
 		# Test one of the instances
 		# QUESTION Should we be testing all? User option maybe?
