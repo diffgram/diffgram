@@ -47,11 +47,4 @@ class File():
 			}
 
 
-	def get_by_id(self, id: int):
-		"""
-		WIP for refreshing from server side.
-		"""
-
-		raise NotImplemented
-
 
