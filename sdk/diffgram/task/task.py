@@ -29,7 +29,9 @@ class Task():
 		refresh_from_dict(task, task_in_json)
 
 		if task.file:
-			task.file = File.new(file_json = task.file)
+			task.file = File.new(
+				client = self.client,
+				file_json = task.file)
 
 		return task
 
