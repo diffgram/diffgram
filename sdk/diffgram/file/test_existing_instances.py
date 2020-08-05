@@ -116,9 +116,38 @@ def test_existing_instances_image(project):
 	)
 
 
+def test_expect_failure_no_url(project):
+	"""
+	Actually more testing API since exists so won't throw
+	"""
+	result = project.file.from_url(
+		url = None,
+		media_type="video",
+		frame_packet_map={}
+	)
 
-test_video_packet_conversion(project)
 
-test_existing_video_instances(project)
+def test_file_update(project):
 
-test_existing_instances_image(project)
+	id = 787
+	file = project.file.get_by_id(id = id)
+
+	frame_packet_map = mock_frame_packet_map(
+			number_of_frames = 20,
+			number_of_sequences = 2)
+
+	file.update(
+		frame_packet_map = frame_packet_map
+		)
+
+
+
+test_file_update(project)
+
+#test_expect_failure_no_url(project)
+
+#test_video_packet_conversion(project)
+
+#test_existing_video_instances(project)
+
+#test_existing_instances_image(project)
