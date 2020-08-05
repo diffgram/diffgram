@@ -252,6 +252,7 @@ class FileConstructor():
 			packet["mode"] = "attach_to_job"
 
 
+
 		endpoint = "/api/walrus/v1/project/" + \
 			self.client.project_string_id + "/input/packet"
 
@@ -373,7 +374,8 @@ class FileConstructor():
 		pass
 
 
-	def get_by_id(self, id: int):
+	def get_by_id(self, 
+				  id: int):
 		"""
 		returns Diffgram File object
 		"""
@@ -393,7 +395,9 @@ class FileConstructor():
 
 		response_json = response.json()
 
-		return File.new(response_json.get('file'))
+		return File.new(
+			client = self.client,
+			file_json = response_json.get('file'))
 
 
 

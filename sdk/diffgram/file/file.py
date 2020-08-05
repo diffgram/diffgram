@@ -12,12 +12,16 @@ class File():
 
 	def __init__(
 		self,
-		id = None):
+		id = None,
+		client = None):
 
 		self.id = id
+		self.client = client
 
 
-	def new(file_json):
+	def new(
+			client, 
+			file_json):
 		"""
 		New is new object from *Dict*
 		get_xxx methods are for getting object 
@@ -35,7 +39,7 @@ class File():
 
 		"""
 		
-		file = File()
+		file = File(client=client)
 		refresh_from_dict(file, file_json)
 		return file
 
@@ -49,6 +53,7 @@ class File():
 
 	# WIP
 	def update(
+			self,
 			instance_list: list = None,		# for Images
 			frame_packet_map: dict = None,	# for Video
 			overwrite: bool = False
@@ -58,9 +63,12 @@ class File():
 
 		packet = {}
 		packet['file_id'] = self.id
+		packet['mode'] = "update"
 		packet['frame_packet_map'] = frame_packet_map
 		packet['instance_list'] = instance_list
-		packet['overwrite'] = overwrite
+
+		# Current default server side is to not overwrite
+		# packet['overwrite'] = overwrite
 
 		self.client.file.from_packet(packet = packet)
 
