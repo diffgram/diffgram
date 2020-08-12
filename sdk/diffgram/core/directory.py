@@ -180,5 +180,38 @@ class Directory():
 		return file_list
 
 
+	def get(self, 
+			name:str):
+
+		"""
+
+	
+
+		 "NEW" version of set_directory_by_name()
+		 TODO refactor set_directory_by_name() to use this
+
+		"""
+
+		if name is None:
+			raise Exception("No name provided.")
+
+		names_attempted = []
+		did_set = False
+
+		for directory in self.client.directory_list:
+
+			nickname = directory.get("nickname")
+			if nickname == name:
+				return directory
+			else:
+				names_attempted.append(nickname)
+		
+		if did_set is False:
+			raise Exception(name, " does not exist. Valid names are: " + 
+					  str(names_attempted))
+
+
+
+
 
 
