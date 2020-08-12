@@ -1,5 +1,5 @@
 from diffgram.file.file import File
-
+from ..regular.regular import refresh_from_dict
 
 
 def get_directory_list(self):
@@ -185,7 +185,8 @@ class Directory():
 
 		"""
 
-	
+		Returns Dataset Object for given name.
+		Uses existing dir list from project.	
 
 		 "NEW" version of set_directory_by_name()
 		 TODO refactor set_directory_by_name() to use this
@@ -198,17 +199,61 @@ class Directory():
 		names_attempted = []
 		did_set = False
 
-		for directory in self.client.directory_list:
+		for directory_json in self.client.directory_list:
 
-			nickname = directory.get("nickname")
+			nickname = directory_json.get("nickname")
 			if nickname == name:
-				return directory
+				# TODO change the general directory_list
+				# to use object approach (over dict)
+
+				new_directory = Directory(client = self.client)
+				refresh_from_dict(new_directory, directory_json)
+				
+				return new_directory
+
 			else:
 				names_attempted.append(nickname)
 		
 		if did_set is False:
 			raise Exception(name, " does not exist. Valid names are: " + 
 					  str(names_attempted))
+
+
+	def add(self,
+			file_id_list: list):
+		"""
+		Add links from file_ids to the dataset.
+		Does not modify existing links
+
+		file_id_list expects ints of file_ids
+		"""
+
+		file_list_formated_as_dicts = []
+
+		for file_id in file_id_list:
+			file_list_formated_as_dicts.append(
+				{'id' : file_id})
+
+		endpoint = "/api/v1/project/" + \
+			self.client.project_string_id + \
+			"/file/transfer"
+
+		spec_dict = {
+			'file_list': file_list_formated_as_dicts,
+			'destination_directory_id': self.id,
+			'mode': 'TRANSFER',
+			'transfer_action': 'mirror'
+			}
+
+		response = self.client.session.post(
+			self.client.host + endpoint,
+			json = spec_dict)
+		
+		self.client.handle_errors(response)
+
+		response_json = response.json()
+
+		return response_json
 
 
 
