@@ -151,7 +151,7 @@ class Project():
 			raise(Exception("404 Not Found" + response.text))
 
 		if response.status_code == 429:
-			raise Exception("Rate Limited. Please try again later or contact us if persists.")
+			raise Exception("Rate Limited. Please add buffer between calls eg time.sleep(1). Otherwise, please try again later. Else contact us if this persists.")
 
 		if response.status_code == 500:
 			raise Exception("Internal error, please try again later.")
