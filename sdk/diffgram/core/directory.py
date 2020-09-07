@@ -1,5 +1,6 @@
 from diffgram.file.file import File
 from ..regular.regular import refresh_from_dict
+import logging
 
 
 def get_directory_list(self):
@@ -74,6 +75,7 @@ class Directory():
 			     client):
 
 		self.client = client
+		self.id = None
 
 
 	def new(self, name: str):
@@ -136,8 +138,12 @@ class Directory():
 			expose options here and what good contexts are.
 
 		"""
-
-		directory_id = self.client.directory_id
+		if self.id:
+			logging.info("Using Dataset ID " + str(self.id))
+			directory_id = self.id
+		else:
+			logging.info("Using Default Dataset ID " + str(self.client.directory_id))
+			directory_id = self.client.directory_id
 		#print("directory_id", directory_id)
 
 		metadata = {'metadata' :
