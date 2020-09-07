@@ -113,8 +113,19 @@ class Directory():
 		project = data.get('project')
 		if project:
 			directory_list = project.get('directory_list')
+			# TODO upgrade directory_list here to be 1st class objects instead of JSON
 			if directory_list:
 				self.client.directory_list = directory_list
+
+		new_directory = None
+		# TODO the route about should return the newly created dataset directly
+		for directory_json in self.client.directory_list:
+			nickname = directory_json.get("nickname")
+			if nickname == name:
+				new_directory = Directory(client = self.client)		
+				refresh_from_dict(new_directory, directory_json)
+				
+		return new_directory
 
 
 	def list_files(
