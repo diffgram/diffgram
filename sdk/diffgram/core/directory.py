@@ -174,7 +174,9 @@ class Directory():
 		# ie part of File_Constructor perhaps
 		file_list = []
 		for file_json in file_list_json:
-			file = File.new(file_json = file_json)
+			file = File.new(
+				client = self.client,
+				file_json = file_json)
 			file_list.append(file)
 
 		return file_list
