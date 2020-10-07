@@ -145,3 +145,4 @@ sdk/samples/settings.py
 sdk/test
 sdk/samples/WIP_Samples
 sdk/dist_historical
+\.idea/
