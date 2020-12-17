@@ -1,4 +1,4 @@
-
+from diffgram.core.directory import Directory
 
 class Job():
 
@@ -31,6 +31,7 @@ class Job():
 		self.review_by_human_freqeuncy = None
 		self.label_mode = None
 		self.passes_per_file = None
+		self.attached_directories = []
 
 		self.refresh_from_dict(
 			job_dict = job_dict)
@@ -49,6 +50,61 @@ class Job():
 
 	def __repr__(self):
 		return str(self.serialize())
+
+	def __add_directory_to_job(self, directory, mode='sync'):
+		"""
+
+		:param directories: Array of directories Objects
+		:param mode: sync, copy_once or inactive.
+		:return:
+		"""
+		self.attached_directories.append(
+			{
+				'directory_id': directory['id'],
+				'selected': mode,
+
+			}
+		)
+		return self.attached_directories
+
+	def attach_directories(self, directories, mode='sync', override_existing=False):
+		"""
+			Attaches directories to a job.
+		:param directories: Array of directories Objects
+		:param mode: sync, copy_once or inactive.
+		:param override_existing: if True. detaches all existing directories.
+		:return: The updated job object with the new directories.
+		"""
+		if len(directories) == 0:
+			raise ValueError('Provide at least 1 directory')
+
+		if override_existing:
+			self.attached_directories = []
+
+		for dir in directories:
+			self.attached_directories.append(
+				{
+					'directory_id': dir.id,
+					'selected': mode
+
+				}
+			)
+
+		endpoint = "/api/v1/project/{}/job/update".format(self.client.project_string_id)
+
+		response = self.client.session.post(
+			self.client.host + endpoint,
+			json=self.serialize())
+
+		self.client.handle_errors(response)
+
+		data = response.json()
+
+		if data["log"]["success"] == True:
+			# TODO review better way to update fields
+			self.id = data["job"]["id"]
+
+		return self
 
 
 	def serialize(self):
@@ -81,8 +137,8 @@ class Job():
 	def new(self,
 			name = None,
 			instance_type = None,
-			share = None,
-			job_type = None,	
+			share = "project",
+			job_type = "Normal",
 			permission = None,
 			field = None,
 			category = None,
@@ -93,7 +149,9 @@ class Job():
 			guide = None,
 			launch_datetime = None,
 			file_count = None,
-			label_file_list = None
+			label_file_list = None,
+			sync_directories = [],
+			single_copy_directories = [],
 			):
 		"""
 
@@ -125,15 +183,23 @@ class Job():
 		job.launch_datetime = launch_datetime
 		job.label_file_list = label_file_list
 
+		if len(sync_directories) == 0 and len(single_copy_directories) == 0:
+			raise ValueError('Please provide at least one attached directory to the job in either sync_directories param or single_copy_directories')
+
+		for dir in sync_directories:
+			self.__add_directory_to_job(directory=dir, mode='sync')
+
+		for dir in single_copy_directories:
+			self.__add_directory_to_job(directory=dir, mode='sync')
+
+
 		if not file_count:
 			if file_list:
 				file_count = len(file_list)
 
 		job.file_count = file_count
 
-
-		endpoint = "/api/v1/project/" + self.client.project_string_id + \
-				   "/job/new"
+		endpoint = "/api/v1/project/{}/job/new".format(self.client.project_string_id)
 
 		response = self.client.session.post(
 						self.client.host + endpoint,
@@ -143,25 +209,21 @@ class Job():
 
 		data = response.json()
 
+		print('DATA JOB: ', data)
+
 		if data["log"]["success"] == True:	
 
 			# TODO review better way to update fields
 			job.id = data["job"]["id"]
 
-
 		if file_list:
-
 			# Careful we want to call job here not self
 			# Since job will have a different id
 			# self is constructor
-
-			job.file_update(file_list = file_list)
-
+			job.file_update(file_list=file_list)
 
 		if guide:
-
-			job.guide_update(guide = guide)
-
+			job.guide_update(guide=guide)
 
 		return job
 
