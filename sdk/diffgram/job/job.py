@@ -32,6 +32,7 @@ class Job():
         self.label_mode = None
         self.passes_per_file = None
         self.attached_directories = []
+        self.member_list_ids = []
         self.attached_directories_dict = None
 
         self.refresh_from_dict(
@@ -130,7 +131,8 @@ class Job():
             'file_count': self.file_count,
             'attached_directories_dict': self.attached_directories_dict,
             'launch_datetime': self.launch_datetime,
-            'label_file_list': label_file_list
+            'label_file_list': label_file_list,
+            'member_list_ids': self.member_list_ids
         }
 
     def new(self,
@@ -151,6 +153,7 @@ class Job():
             label_file_list=None,
             sync_directories=[],
             single_copy_directories=[],
+            members_list_ids = [],
             ):
         """
 
@@ -166,7 +169,8 @@ class Job():
         """
 
         # QUESTION create job object eariler instead of after response?
-
+        if len(members_list_ids) == 0:
+            raise ValueError('Please provide at least one member_id in members_list_ids.')
         job = Job(client=self.client)
 
         job.name = name
@@ -181,6 +185,8 @@ class Job():
         job.passes_per_file = passes_per_file
         job.launch_datetime = launch_datetime
         job.label_file_list = label_file_list
+        job.attached_directories = []
+        job.member_list_ids = members_list_ids
 
         if len(sync_directories) == 0 and len(single_copy_directories) == 0:
             raise ValueError(
