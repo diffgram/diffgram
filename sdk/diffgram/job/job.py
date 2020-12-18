@@ -192,7 +192,7 @@ class Job():
         for dir in single_copy_directories:
             self.__add_directory_to_job(directory=dir, mode='sync')
 
-        self.attached_directories_dict = {'attached_directories_dict': self.attached_directories}
+        job.attached_directories_dict = {'attached_directories_list': self.attached_directories}
 
         if not file_count:
             if file_list:
