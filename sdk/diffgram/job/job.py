@@ -77,24 +77,26 @@ class Job():
         """
         if len(directories) == 0:
             raise ValueError('Provide at least 1 directory')
-
+        if self.status != 'draft':
+            raise ValueError('Can only attach directories while on draft mode, not when job has been already launched.')
         if override_existing:
             self.attached_directories = []
 
         for dir in directories:
             self.attached_directories.append(
                 {
-                    'directory_id': dir.id,
+                    'directory_id': dir['id'],
                     'selected': mode
 
                 }
             )
-
+        self.attached_directories_dict = {'attached_directories_list': self.attached_directories}
         endpoint = "/api/v1/project/{}/job/update".format(self.client.project_string_id)
-
+        data = self.serialize()
+        data['job_id'] = self.id
         response = self.client.session.post(
             self.client.host + endpoint,
-            json=self.serialize())
+            json=data)
 
         self.client.handle_errors(response)
 
