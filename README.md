@@ -3,37 +3,35 @@
 
 [Diffgram.com](https://diffgram.com/)
 
-### 91% of teams take > 3 weeks to create their first dataset. And months to get to Beta.
+# Your AI Data Annotation Platform
 
-Here's why: The process of creating datasets gets blocked by default. As shown above, each clock represents a stage in which a user often must wait for other users, or other processes to finish before continuing.
-Further, Teams create many sets. So after weeks of work the process repeats:
+Quality Training Data for Enterprise - Data Labeling Software for Machine Learning
 
-![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/7d187f02-copy-of-process-ideal-to-create-one-set-stylized.svg "Process1")
+This Repo is the SDK. 
 
-This is because the needed abstractions (such as various Templates) only become known through an iterative process as shown above. 
-Often many iterations are needed before shipping, and ongoing usage of the system requires further iterations to be effective.
+You can install the Diffgram Platform on your Kubernetes cluster or use Diffgram Online.
 
-![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/c2a4971c-process-to-create-many-sets-styled-1.svg "Process2")
+* [Security and Privacy](https://diffgram.com/secure)
+* [Data Annotation Software](https://diffgram.com/software)
+* [Image and Video Segmentation Software](https://diffgram.com/segmentation)
+* [Video Annotation Software](https://diffgram.com/video)
+* [Pro AI Data by Humans](https://diffgram.com/data_platform)
 
-To manage all this, your team is likely doing a lot of "Extract Transform Load" operations. 
-And managing sets with: "set_with_labels_good_one" and "good_one_really_this_time___v2"
-Or writing a ton of one-off scripts.
+# On Your Kubernetes Cluster
+Free Up to 3 Users. Enterprise licenses available see [pricing](https://diffgram.com/pricing)
+![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/60f788a8-helm-kubernetes-logo_10fk09c000000000000028.png "Kubernetes")
 
-![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/cad17a4f-copy-of-the-most-expensive-copy-and-paster-in-the-world-just-tagline_1000000000000000000028.png "Diffgram Copy Paste")
+### [Try Online Demo](https://diffgram.com/user/data_platform/new)
+### [Kubernetes Full Install Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
+### [Contact Us](https://diffgram.com/contact)
 
-And that's just for creating MVPs and beta products. 
-When you get to production, most current setups look something like this.
-Meaning even the best teams end up only shipping handfuls of models. Or investing heavily in recreating the wheel with infrastructure.
-
-![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/df711527-rubegoldberg-fb_10ta0fa00000000000001o.jpg)
-
-## Introducing Diffgram
-
-![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/11119f7d-system-diagram-deploy-loop-example-development-cycle-benefits-new-vs-old-3.svg)
-
-## Where Diffgram Integrates Into Your System
+# Where Diffgram Integrates Into Your System
 
 ![](https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/2bfec8f4-overview-only-architecture-july-2020-1.svg)
+
+# Compare Diffgram
+### [Diffgram vs Labelbox](https://get.diffgram.com/labelbox-vs-diffgram/data-tooling-annotation-labeling-tools-training-data/)
+### [Diffgram vs Amazon Sagemaker Groundtruth (AWS)](https://get.diffgram.com/amazon-sagemaker-groundtruth-aws/sagemaker-vs-diffgram/compare-diffgram-sagemaker-ground-truth/)
 
 ## Diffgram as your Training Data Database
 
@@ -60,12 +58,12 @@ It's created by combining raw data with human centered meaning. For example, com
 
 [Use Cases Detail](https://diffgram.readme.io/docs/use-cases)
 
-## Install
+## SDK Install
 
 #### [Full Documentation](https://diffgram.readme.io/docs)
 
 
-### Quickstart
+### Quickstart Install SDK
 `pip install diffgram`
 
 On linux
