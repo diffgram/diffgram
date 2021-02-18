@@ -146,3 +146,7 @@ sdk/test
 sdk/samples/WIP_Samples
 sdk/dist_historical
 \.idea/
+samples/WIP_Samples/sample_from_packet.py
+samples/WIP_Samples/sample_inference.py
+samples/WIP_Samples/sample_job_new.py
+sdk/label_map_util.py
