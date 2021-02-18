@@ -63,6 +63,12 @@ class Project():
 		self.export = Export(self)
 		self.task = Task(client = self)
 
+	def get_member_list(self):
+		url = '/api/project/{}/view'.format(self.project_string_id)
+		response = self.session.get(url=self.host + url)
+		self.handle_errors(response)
+		data = response.json()
+		return data['project']['member_list']
 
 	def get_label(
 			self,
