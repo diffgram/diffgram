@@ -28,7 +28,8 @@ class Project():
 		client_id = None, 
 		client_secret = None,
 		debug = False,
-		staging = False
+		staging = False,
+		host = None
 		):
 
 		self.session = requests.Session()
@@ -36,17 +37,16 @@ class Project():
 
 		self.debug = debug
 		self.staging = staging
-
-		if self.debug is True:
-			self.host = "http://127.0.0.1:8085"
-			print("Debug", __version__)
-		elif self.staging is True:
-			self.host = "https://20200110t142358-dot-walrus-dot-diffgram-001.appspot.com/"
+		if host is None:
+			if self.debug is True:
+				self.host = "http://127.0.0.1:8085"
+				print("Debug", __version__)
+			elif self.staging is True:
+				self.host = "https://20200110t142358-dot-walrus-dot-diffgram-001.appspot.com/"
+			else:
+				self.host = "https://diffgram.com"
 		else:
-			self.host = "https://diffgram.com"
-
-			# TODO support for staging URLs...
-
+			self.host = host
 		self.directory_id = None
 		self.name_to_file_id = None
 
