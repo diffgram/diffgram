@@ -130,7 +130,8 @@ class Directory():
 
 	def list_files(
 			self, 
-			limit=None):
+			limit=None,
+			search_term: str =None):
 		"""
 		Get a list of files in directory (from Diffgram service). 
 	
@@ -166,7 +167,8 @@ class Directory():
 				'media_type': "All",
 				'request_next_page': False,
 				'request_previous_page': False,
-				'file_view_mode': "annotation"
+				'file_view_mode': "annotation",
+				'search_term': search_term
 			}
 		}
 
@@ -239,19 +241,29 @@ class Directory():
 
 
 	def add(self,
-			file_id_list: list):
+			file_list: list = None,			
+			file_id_list: list = None):
 		"""
 		Add links from file_ids to the dataset.
 		Does not modify existing links
 
 		file_id_list expects ints of file_ids
+		file_list is a list of Diffgram file objects
 		"""
+		if not file_id_list and not file_list:
+			raise "Must have either file_id_list or file_list (File class objects)"
 
 		file_list_formated_as_dicts = []
 
-		for file_id in file_id_list:
-			file_list_formated_as_dicts.append(
-				{'id' : file_id})
+		if file_id_list:
+			for file_id in file_id_list:
+				file_list_formated_as_dicts.append(
+					{'id' : file_id})
+
+		if file_list:
+			for file in file_list:
+				file_list_formated_as_dicts.append(
+					{'id' : file.id})
 
 		endpoint = "/api/v1/project/" + \
 			self.client.project_string_id + \
