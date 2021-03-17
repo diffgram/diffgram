@@ -1,5 +1,5 @@
 __name__ = "diffgram"
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 from diffgram.core.core import Project
 from diffgram.file.file import File
