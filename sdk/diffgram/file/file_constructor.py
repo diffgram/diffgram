@@ -1,4 +1,4 @@
-
+from ..regular.regular import refresh_from_dict
 from diffgram.file.file import File
 from diffgram.convert.convert import convert_label
 from diffgram.job.job import Job
@@ -29,9 +29,8 @@ class FileConstructor():
 			returns file, class File object
 			"""
 
-			file = File(
-				id = file_dict['id']
-				)
+			file = File(client=self.client)
+			refresh_from_dict(file, file_dict)
 
 			return file
 
