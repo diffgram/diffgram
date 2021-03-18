@@ -2,6 +2,8 @@ from ..regular.regular import refresh_from_dict
 from diffgram.file.file import File
 from diffgram.convert.convert import convert_label
 from diffgram.job.job import Job
+import json
+import os
 
 
 class FileConstructor():
@@ -37,8 +39,13 @@ class FileConstructor():
 
 
 	def from_local(
-		self,
-		path):
+			self,
+			path: str,
+			instance_list: list = None,
+			frame_packet_map: dict = None,
+			assume_new_instances_machine_made: bool = True,
+			convert_names_to_label_files: bool = True
+			):
 		"""
 		Create a Project file from local path
 
@@ -47,18 +54,37 @@ class FileConstructor():
 		returns file, class File object
 		"""
 		
-		files = {'file': open(path, 'rb')}
+		files = {'file': (os.path.basename(path), open(path, 'rb'), 'application/octet-stream')}
 
-		# TODO define options and clarify in docs
-		options = {'immediate_mode' : 'True'}
+		headers = {
+			'immediate_mode' : 'True',
+		}
+
+		payload = {}
+
+		if instance_list:					
+			payload['instance_list'] = self.__validate_and_format_instance_list(
+				instance_list = instance_list,
+				assume_new_instances_machine_made = assume_new_instances_machine_made,
+				convert_names_to_label_files = convert_names_to_label_files
+				)
+				
+		if frame_packet_map:
+			payload['frame_packet_map'] = self.__validate_and_format_frame_packet_map(
+				frame_packet_map = frame_packet_map,
+				assume_new_instances_machine_made = assume_new_instances_machine_made,
+				convert_names_to_label_files = convert_names_to_label_files
+				)
 		
+		files['json'] = (None, json.dumps(payload), 'application/json')
+
 		endpoint = "/api/walrus/v1/project/" +  self.client.project_string_id \
 			+ "/input/from_local"
 
 		response = self.client.session.post(
-			self.client.host + endpoint, 
+			self.client.host + endpoint,
 			files = files,
-			headers = options)
+			headers = headers)
 
 		self.client.handle_errors(response)
 		
@@ -210,7 +236,7 @@ class FileConstructor():
 			FileConstructor.__media_packet_sanity_checks(packet = packet)
 
 		instance = None
-	
+		
 		if packet.get("instance_list"):					
 			packet['instance_list'] = self.__validate_and_format_instance_list(
 				instance_list = packet.get('instance_list'),
