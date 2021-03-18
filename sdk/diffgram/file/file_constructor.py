@@ -361,6 +361,18 @@ class FileConstructor():
 
 		return instance_list
 
+	@staticmethod
+	def __check_for_duplicates_on_instance_list(instance_list):
+		id_list = []
+		duplicates = []
+		for elm in instance_list:
+			if elm.get('id'):
+				if elm.get('id') not in id_list:
+					id_list.append(elm.get('id'))
+				else:
+					duplicates.append(elm.get('id'))
+		if len(duplicates) > 0:
+			raise Exception('Instance list must not have duplicate IDs. \n Duplicate IDs are: {}'.format(str(duplicates)))
 
 	@staticmethod
 	def sanity_check_instance_list(instance_list: list):
@@ -370,7 +382,9 @@ class FileConstructor():
 
 		if len(instance_list) == 0:
 			raise Warning("'instance_list' is empty")
-	
+
+		FileConstructor.__check_for_duplicates_on_instance_list(instance_list)
+
 		return
 
 
