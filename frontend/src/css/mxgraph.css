@@ -1,0 +1,212 @@
+div.mxRubberband {
+  position: absolute;
+  overflow: hidden;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #0000FF;
+  background: #0cddff;
+}
+
+.mxCellEditor {
+  background: url(data:image/gif;base64,R0lGODlhMAAwAIAAAP///wAAACH5BAEAAAAALAAAAAAwADAAAAIxhI+py+0Po5y02ouz3rz7D4biSJbmiabqyrbuC8fyTNf2jef6zvf+DwwKh8Si8egpAAA7);
+  _background: url('../assets/mxgraph/public/mxgraph/transparent.gif');
+  border-color: transparent;
+  border-style: solid;
+  display: inline-block;
+  position: absolute;
+  overflow: visible;
+  word-wrap: normal;
+  border-width: 0;
+  min-width: 1px;
+  resize: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mxPlainTextEditor * {
+  padding: 0;
+  margin: 0;
+}
+
+div.mxWindow {
+  -webkit-box-shadow: 3px 3px 12px #C0C0C0;
+  -moz-box-shadow: 3px 3px 12px #C0C0C0;
+  box-shadow: 3px 3px 12px #C0C0C0;
+  background: url('../assets/mxgraph/public/mxgraph/window.gif');
+  border: 1px solid #c3c3c3;
+  position: absolute;
+  overflow: hidden;
+  z-index: 1;
+}
+
+table.mxWindow {
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-family: Arial;
+  font-size: 8pt;
+}
+
+td.mxWindowTitle {
+  background: url('../assets/mxgraph/public/mxgraph/window-title.gif') repeat-x;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: bold;
+  overflow: hidden;
+  height: 13px;
+  padding: 2px;
+  padding-top: 4px;
+  padding-bottom: 6px;
+  color: black;
+}
+
+td.mxWindowPane {
+  vertical-align: top;
+  padding: 0;
+}
+
+div.mxWindowPane {
+  overflow: hidden;
+  position: relative;
+}
+
+td.mxWindowPane td {
+  font-family: Arial;
+  font-size: 8pt;
+}
+
+td.mxWindowPane input, td.mxWindowPane select, td.mxWindowPane textarea, td.mxWindowPane radio {
+  border-color: #8C8C8C;
+  border-style: solid;
+  border-width: 1px;
+  font-family: Arial;
+  font-size: 8pt;
+  padding: 1px;
+}
+
+td.mxWindowPane button {
+  background: url('../assets/mxgraph/public/mxgraph/button.gif') repeat-x;
+  font-family: Arial;
+  font-size: 8pt;
+  padding: 2px;
+  float: left;
+}
+
+img.mxToolbarItem {
+  margin-right: 6px;
+  margin-bottom: 6px;
+  border-width: 1px;
+}
+
+select.mxToolbarCombo {
+  vertical-align: top;
+  border-style: inset;
+  border-width: 2px;
+}
+
+div.mxToolbarComboContainer {
+  padding: 2px;
+}
+
+img.mxToolbarMode {
+  margin: 2px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border-width: 0;
+}
+
+img.mxToolbarModeSelected {
+  margin: 0;
+  margin-right: 2px;
+  margin-bottom: 2px;
+  border-width: 2px;
+  border-style: inset;
+}
+
+div.mxTooltip {
+  -webkit-box-shadow: 3px 3px 12px #C0C0C0;
+  -moz-box-shadow: 3px 3px 12px #C0C0C0;
+  box-shadow: 3px 3px 12px #C0C0C0;
+  background: #FFFFCC;
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+  font-family: Arial;
+  font-size: 8pt;
+  position: absolute;
+  cursor: default;
+  padding: 4px;
+  color: black;
+}
+
+body div.mxPopupMenu {
+  -webkit-box-shadow: 3px 3px 6px #C0C0C0;
+  -moz-box-shadow: 3px 3px 6px #C0C0C0;
+  box-shadow: 3px 3px 6px #C0C0C0;
+  background: white;
+  position: absolute;
+  border: 3px solid #e7e7e7;
+  padding: 3px;
+}
+
+body table.mxPopupMenu {
+  border-collapse: collapse;
+  margin: 0;
+}
+
+body tr.mxPopupMenuItem {
+  color: black;
+  cursor: default;
+}
+
+body td.mxPopupMenuItem {
+  padding: 3px 30px 3px 10px;
+  font-family: Arial;
+  font-size: 10pt;
+}
+
+body td.mxPopupMenuIcon {
+  background-color: white;
+  padding: 0;
+}
+
+body tr.mxPopupMenuItemHover {
+  background-color: #eeeeee;
+  color: black;
+}
+
+table.mxPopupMenu hr {
+  border-top: solid 1px #cccccc;
+}
+
+table.mxPopupMenu tr {
+  font-size: 4pt;
+}
+
+.mxDisabled {
+  opacity: 0.2 !important;
+  cursor: default !important;
+}
+
+div.mxTooltip {
+  filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=4, OffY=4,
+  Color='#A2A2A2', Positive='true');
+}
+
+div.mxPopupMenu {
+  filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=4, OffY=4,
+  Color='#C0C0C0', Positive='true');
+}
+
+div.mxWindow {
+  _filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=4, OffY=4,
+  Color='#C0C0C0', Positive='true');
+}
+
+td.mxWindowTitle {
+  _height: 23px;
+}
+
+.mxDisabled {
+  filter: alpha(opacity=20) !important;
+}

@@ -1,0 +1,440 @@
+version: 2.1  # use CircleCI 2.0
+workflows:
+  diffgram-test:
+    jobs:
+      - build-and-push-images:
+          context: diffgram-default
+          filters:
+            tags:
+              ignore: no-build
+      - build-default-service:
+          context: diffgram-default
+      - build-walrus-service:
+          context: diffgram-walrus
+#      - build-diffgram-frontend:
+#          context: diffgram-default
+      - build-diffgram-e2e:
+          context: diffgram-default
+
+jobs: # A basic unit of work in a run
+  build-and-push-images:
+    # directory where steps are run
+    working_directory: ~/diffgram
+    docker: # run the steps with Docker
+    # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
+    - image: google/cloud-sdk
+    steps: # steps that comprise the `build` job
+    - checkout # check out source code to working directory
+    - setup_remote_docker:
+        version: 19.03.13
+#    - when:
+#        condition: << pipeline.git.branch >>
+#        steps:
+#        - run:
+#            name: Build and Push Default Service
+#            command: |
+#              mkdir ~/deploy
+#              cd ~/deploy
+#              mkdir default
+#              cp -rf ~/diffgram/default/methods ~/deploy/default
+#              cp -rf ~/diffgram/default/tests/ ~/deploy/default
+#              cp -rf ~/diffgram/default/Dockerfile ~/deploy/default
+#              cp -rf ~/diffgram/default/__init__.py ~/deploy/default
+#              cp -rf ~/diffgram/default/main.py ~/deploy/default
+#              cp -rf ~/diffgram/default/requirements.txt ~/deploy/default
+#              cp -rf ~/diffgram/default/routes_init.py ~/deploy/default
+#              cp -rf ~/diffgram/shared ~/deploy/default
+#              touch ~/diffgram/shared/settings/secrets.py
+#              cd ~/deploy/default
+#              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+#              gcloud config set project ${GCLOUD_PROJECT_NAME}
+#              gcloud auth configure-docker --quiet
+#              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/default:${CIRCLE_BRANCH} -f Dockerfile
+#              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/default:latest -f Dockerfile
+#              docker push gcr.io/${DOCKER_IMAGE_NAME}/default:${CIRCLE_BRANCH}
+#              docker push gcr.io/${DOCKER_IMAGE_NAME}/default:latest
+    - when:
+        condition: << pipeline.git.tag >>
+        steps:
+        - run:
+            name: Build Release Image (Default)
+            command: |
+              mkdir ~/deploy
+              cd ~/deploy
+              mkdir default
+              cp -rf ~/diffgram/default/ ~/deploy/
+              cp -rf ~/diffgram/shared ~/deploy/
+              cd ~/deploy/
+              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+              gcloud config set project ${GCLOUD_PROJECT_NAME}
+              gcloud auth configure-docker --quiet
+              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/default -f default/Dockerfile
+              docker tag gcr.io/${DOCKER_IMAGE_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${CIRCLE_TAG}
+              docker push gcr.io/${DOCKER_IMAGE_NAME}/default
+
+#    - when:
+#        condition: << pipeline.git.branch >>
+#        steps:
+#        - run:
+#            name: Build and Push Walrus Service
+#            command: |
+#              cd ~/deploy
+#              mkdir walrus
+#              cp -rf ~/diffgram/walrus/* ~/deploy/walrus
+#              cp -rf ~/diffgram/walrus/tests/ ~/deploy/walrus
+#              cp -rf ~/diffgram/walrus/Dockerfile ~/deploy/walrus
+#              cp -rf ~/diffgram/walrus/__init__.py ~/deploy/walrus
+#              cp -rf ~/diffgram/walrus/main.py ~/deploy/walrus
+#              cp -rf ~/diffgram/walrus/requirements.txt ~/deploy/walrus
+#              cp -rf ~/diffgram/shared ~/deploy/walrus
+#              touch ~/diffgram/shared/settings/secrets.py
+#              cd ~/deploy/walrus
+#              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+#              gcloud config set project ${GCLOUD_PROJECT_NAME}
+#              gcloud auth configure-docker --quiet
+#              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/walrus:${CIRCLE_BRANCH} -f Dockerfile
+#              docker push gcr.io/${DOCKER_IMAGE_NAME}/walrus:${CIRCLE_BRANCH}
+    - when:
+        condition: << pipeline.git.tag >>
+        steps:
+        - run:
+            name: Build Release Image (Walrus)
+            command: |
+              cd ~/deploy
+              mkdir walrus
+              cp -rf ~/diffgram/walrus/ ~/deploy/
+              cp -rf ~/diffgram/shared ~/deploy/
+              cd ~/deploy/
+              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+              gcloud config set project ${GCLOUD_PROJECT_NAME}
+              gcloud auth configure-docker --quiet
+              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/walrus -f walrus/Dockerfile
+              docker tag gcr.io/${DOCKER_IMAGE_NAME}/walrus gcr.io/${DOCKER_IMAGE_NAME}/walrus:${CIRCLE_TAG}
+              docker push gcr.io/${DOCKER_IMAGE_NAME}/walrus
+
+#    - when:
+#        condition: << pipeline.git.branch >>
+#        steps:
+#        - run:
+#            name: Build and Push Frontend Service
+#            command: |
+#              cd ~/diffgram/frontend
+#              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+#              gcloud config set project  ${GCLOUD_PROJECT_NAME}
+#              gcloud auth configure-docker --quiet
+#              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/frontend:${CIRCLE_BRANCH} -f Dockerfile
+#              docker push gcr.io/${DOCKER_IMAGE_NAME}/frontend:${CIRCLE_BRANCH}
+    - when:
+        condition: << pipeline.git.tag >>
+        steps:
+        - run:
+            name: Build Release Image (Frontend)
+            command: |
+              cd ~/diffgram/
+              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+              gcloud config set project ${GCLOUD_PROJECT_NAME}
+              gcloud auth configure-docker --quiet
+              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/frontend -f frontend/Dockerfile
+              docker tag gcr.io/${DOCKER_IMAGE_NAME}/frontend gcr.io/${DOCKER_IMAGE_NAME}/frontend:${CIRCLE_TAG}
+              docker push gcr.io/${DOCKER_IMAGE_NAME}/frontend
+
+    - when:
+        condition: << pipeline.git.tag >>
+        steps:
+        - run:
+            name: Build Release Image (Disptacher)
+            command: |
+              cd ~/diffgram/
+              echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+              gcloud config set project ${GCLOUD_PROJECT_NAME}
+              gcloud auth configure-docker --quiet
+              docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher -f local_dispatcher/Dockerfile
+              docker tag gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher:${CIRCLE_TAG}
+              docker push gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher
+
+  build-default-service: # runs not using Workflows must have a `build` job as entry point
+    # directory where steps are run
+    working_directory: ~/diffgram
+    docker: # run the steps with Docker
+    # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
+    - image: circleci/python:3.7
+      environment: # environment variables for primary container
+        DATABASE_URL: postgresql+psycopg2://root@localhost/circle_test?sslmode=disable
+    # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
+    - image: circleci/postgres:13.0
+      environment: # environment variables for the Postgres container.
+        POSTGRES_USER: root
+        POSTGRES_DB: postgres # We default to postgres because the test script will create the DB name: circle_test
+        POSTGRES_PASSWORD: circle_test
+    steps: # steps that comprise the `build` job
+    - checkout # check out source code to working directory
+    - setup_remote_docker:
+        version: 19.03.13
+    - run: sudo chown -R circleci:circleci /usr/local/bin
+    - run: sudo chmod -R 777 /root
+    - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+    - restore_cache:
+        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        key: deps1-{{ .Branch }}-{{ checksum "default/requirements.txt" }}
+    - run:
+        command: |
+          sudo pwd
+          sudo ls -a
+          echo $GOOGLE_SERVICE_ACCOUNT_ENCODED
+          echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /home/circleci/gcloud-service-key.json
+          cp /home/circleci/gcloud-service-key.json /home/circleci/diffgram/shared/helpers/
+          cat /home/circleci/gcloud-service-key.json
+          echo $PYTHONPATH
+          python3 -m venv venv
+          . venv/bin/activate
+          export PYTHONPATH=/home/circleci/diffgram/
+          pip install -r default/requirements.txt
+          pip install pytest
+          pip install sqlalchemy-utils==0.36.6
+    - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+        key: deps1-{{ .Branch }}-{{ checksum "default/requirements.txt" }}
+        paths:
+        - "venv"
+    - run:
+        command: |
+          . venv/bin/activate
+          export DIFFGRAM_SYSTEM_MODE=testing
+          mkdir test-results
+          export GOOGLE_APPLICATION_CREDENTIALS=/home/circleci/diffgram/shared/helpers/gcloud-service-key.json
+          export PYTHONPATH=/home/circleci/diffgram/default:/home/circleci/diffgram/
+          echo $DATABASE_URL
+          pytest default/tests --junitxml=test-results/junit.xml
+    - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+        path: test-results
+    - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+        path: test-results
+        destination: tr1
+
+  build-walrus-service: # runs not using Workflows must have a `build` job as entry point
+    # directory where steps are run
+    working_directory: ~/diffgram
+    docker: # run the steps with Docker
+    # CircleCI Python images available at: https://hub.docker.com/r/circleci/python/
+    - image: diffgrampjestrada/circleciffmpeg:latest
+      environment: # environment variables for primary container
+        DATABASE_URL: postgresql+psycopg2://root@localhost/circle_test?sslmode=disable
+    # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
+    - image: circleci/postgres:13.0
+      environment: # environment variables for the Postgres container.
+        POSTGRES_USER: root
+        POSTGRES_PASSWORD: circle_test
+        POSTGRES_DB: postgres # We default to postgres because the test script will create the DB name: circle_test
+    steps: # steps that comprise the `build` job
+    - checkout # check out source code to working directory
+    - setup_remote_docker:
+        version: 19.03.13
+    - run: sudo chown -R circleci:circleci /usr/local/bin
+    - run: sudo chmod -R  777 /root
+    - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+    - restore_cache:
+        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        key: deps1-{{ .Branch }}-{{ checksum "walrus/requirements.txt" }}
+    - run:
+        command: |
+          chmod -R 777 ~/diffgram
+          echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /home/circleci/gcloud-service-key.json
+          cp /home/circleci/gcloud-service-key.json /home/circleci/diffgram/shared/helpers/
+          cat /home/circleci/gcloud-service-key.json
+          echo $PYTHONPATH
+          python3 -m venv venv
+          . venv/bin/activate
+          export PYTHONPATH=/home/circleci/diffgram/
+          pip install -r walrus/requirements.txt
+          pip install pytest
+          pip install sqlalchemy-utils==0.36.6
+    - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+        key: deps1-{{ .Branch }}-{{ checksum "walrus/requirements.txt" }}
+        paths:
+        - "venv"
+    - run:
+        command: |
+          . venv/bin/activate
+          export DIFFGRAM_SYSTEM_MODE=testing
+          mkdir test-results
+          export GOOGLE_APPLICATION_CREDENTIALS=/home/circleci/diffgram/shared/helpers/gcloud-service-key.json
+          export PYTHONPATH=/home/circleci/diffgram/walrus:/home/circleci/diffgram
+          echo $DATABASE_URL
+          pytest walrus/tests --junitxml=test-results/junit.xml
+    - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+        path: test-results
+    - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+        path: test-results
+        destination: tr1
+
+#  build-diffgram-frontend: # runs not using Workflows must have a `build` job as entry point
+#    # directory where steps are run
+#    working_directory: ~/diffgram
+#    docker: # run the steps with Docker
+#    # CircleCI NOde images available at: https://hub.docker.com/r/circleci/node/
+#    - image: circleci/node:12.7
+#    steps: # steps that comprise the `build` job
+#    - checkout # check out source code to working directory
+#    - setup_remote_docker:
+#        version: 19.03.13
+#    - restore_cache:
+#        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+#        key: node-v1-{{ .Branch }}-{{ checksum "frontend/package-lock.json"  }}
+#    - run: sudo chmod -R 777 /root
+#    - run: sudo chmod -R 777 ~/diffgram
+#    - run:
+#        command: |
+#          cd /home/circleci/frontend
+#          npm install
+#    - run: mkdir ~/junit
+#    - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+#        key: node-v1-{{ .Branch }}-{{ checksum "frontend/package-lock.json"  }}
+#        paths:
+#          - "frontend/node_modules"
+#    - run:
+#        command: |
+#          cd /home/circleci/diffgram/frontend
+#          npm test --reporter mocha-junit-reporter
+#        enviroment:
+#          MOCHA_FILE: ~/junit/test-results.xml
+#        when: always
+#    - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+#        path: ~/junit
+#    - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+#        path: ~/junit
+
+  build-diffgram-e2e: # runs not using Workflows must have a `build` job as entry point
+    # directory where steps are run
+    working_directory: ~/diffgram
+    docker: # run the steps with Docker
+    # CircleCI NOde images available at: https://hub.docker.com/r/circleci/node/
+      - image: gcr.io/rare-citadel-279814/circleci-e2e:latest
+        auth:
+          username: _json_key
+          password: $GCLOUD_SERVICE_KEY_GCR
+        environment:
+          DATABASE_URL: postgresql+psycopg2://root@localhost/circle_test?sslmode=disable
+      - image: circleci/postgres:13
+        environment: # environment variables for the Postgres container.
+          POSTGRES_USER: root
+          POSTGRES_DB: circle_test_e2e
+          POSTGRES_PASSWORD: circle_test
+
+    steps: # steps that comprise the `build` job
+    - checkout # check out source code to working directory
+    - setup_remote_docker:
+        version: 19.03.13
+    - restore_cache:
+        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        key: node-v1-{{ .Branch }}-{{ checksum "frontend/yarn.lock"  }}
+    - run:
+        command: |
+          chmod -R 777 ~/diffgram
+          chmod -R 777 /root
+          cd ~/diffgram/frontend
+          yarn install
+    - run: mkdir ~/junit
+    - save_cache: # cache yarn dependencies using checksum of Pipfile as the cache-key
+        key: node-v1-{{ .Branch }}-{{ checksum "frontend/yarn.lock"  }}
+        paths:
+          - "frontend/node_modules"
+    - run:
+        name: Starting Frontend Server
+        command: |
+          pwd
+          ls -a
+          cd ~/diffgram/frontend
+          yarn build
+          yarn run dev
+        background: true
+    - run: sudo chown -R circleci:circleci /usr/local/bin
+    - run: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
+    - restore_cache:
+        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        key: deps1-{{ .Branch }}-{{ checksum "default/requirements.txt" }}
+    - run:
+        command: |
+          echo $GOOGLE_SERVICE_ACCOUNT_ENCODED
+          echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage
+          sudo touch ~/gcp-service-key.json
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcp-service-key.json
+          cp ~/gcp-service-key.json ~/diffgram/shared/helpers/gcp-service-key.json
+          echo $PYTHONPATH
+          python3 -m venv venv
+          . venv/bin/activate
+          export PYTHONPATH=~/diffgram
+          pip install -r default/requirements.txt
+          pip install pytest
+          pip install sqlalchemy-utils==0.36.6
+    - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+        key: deps1-{{ .Branch }}-{{ checksum "default/requirements.txt" }}
+        paths:
+        - "venv"
+
+    - restore_cache:
+        # Read about caching dependencies: https://circleci.com/docs/2.0/caching/
+        key: deps1-{{ .Branch }}-{{ checksum "walrus/requirements.txt" }}
+    - run:
+        command: |
+          echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /home/circleci/gcloud-service-key.json
+          python3 -m venv venvwalrus
+          . venvwalrus/bin/activate
+          export PYTHONPATH=~/diffgram
+          pip install -r walrus/requirements.txt
+          pip install pytest
+          pip install sqlalchemy-utils==0.36.6
+    - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+        key: deps1-{{ .Branch }}-{{ checksum "walrus/requirements.txt" }}
+        paths:
+        - "venvwalrus"
+    - run:
+        name: Prepare Database for E2E Tests
+        command: |
+          source venv/bin/activate
+          export DIFFGRAM_SYSTEM_MODE=testing_e2e
+          export PYTHONPATH=~/diffgram/walrus:~/diffgram
+          python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
+    - run:
+        name: Starting Default Service
+        command: |
+          source venv/bin/activate
+          export DIFFGRAM_SYSTEM_MODE=testing_e2e
+          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
+          export PYTHONPATH=~/diffgram/default:~/diffgram
+          python3 default/main.py
+        background: true
+    - run:
+        name: Starting Walrus Service
+        command: |
+          source venvwalrus/bin/activate
+          export DIFFGRAM_SYSTEM_MODE=testing_e2e
+          export GOOGLE_APPLICATION_CREDENTIALS=~/gcloud-service-key.json
+          export PYTHONPATH=~/diffgram/walrus:~/diffgram
+          python3 walrus/main.py
+        background: true
+    - run:
+        name: Starting Dispatcher
+        command: |
+          source venv/bin/activate
+          export GOOGLE_APPLICATION_CREDENTIALS=~/diffgram/shared/helpers/gcloud-service-key.json
+          export PYTHONPATH=~/diffgram/default:~/diffgram
+          export SAME_HOST=True
+          echo $DATABASE_URL
+          python3 local_dispatcher/local_dispatch.py
+        background: true
+    - run:
+        name: Check ports
+        command: |
+          sudo sleep 10
+          sudo netstat -nlp | grep 808
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8080
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8081
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8082
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8085
+          sudo netstat -nlp | grep 808
+    - run:
+        name: Run E2E Tests Cypres & Percy
+        command: |
+          cd frontend
+          yarn run cypress install
+          yarn run cypress run --record --headed

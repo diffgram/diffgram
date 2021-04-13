@@ -1,0 +1,9 @@
+/build/
+/config/
+/dist/
+/node_modules/
+/src/**/*.vue
+/src/**/*.js
+!/src/components/context_menu/context_menu.vue
+!/src/components/project/project_manager.vue
+!/src/components/user/user_icon.vue
