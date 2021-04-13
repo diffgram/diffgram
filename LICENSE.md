@@ -63,3 +63,5 @@ The Licensor is the entity offering these terms, and the Software is the softwar
 
 This rendition of the license is written in markdown format and contains characters like '##' to represent that. 
 Please contact us if you require a plain text version.
+
+This License applies to everything in this repository (https://github.com/diffgram/diffgram) including for example all sub folders, branches, and all related artifacts.
