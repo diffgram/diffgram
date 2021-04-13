@@ -150,3 +150,16 @@ samples/WIP_Samples/sample_from_packet.py
 samples/WIP_Samples/sample_inference.py
 samples/WIP_Samples/sample_job_new.py
 sdk/label_map_util.py
+
+old_sdk_pre_open_core/
+
+*.sqlite
+.vs/PythonSettings.json
+.vs/opencore-wip/v16/.suo
+postgres-data/
+*.pyc
+.vs/VSWorkspaceState.json
+shared/settings/secrets.py
+.env
+.idea/
+git_ignore/*
