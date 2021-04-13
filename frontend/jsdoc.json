@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    "node_modules/jsdoc-vuejs"
+  ],
+  "source": {
+    "include": [
+      "src"
+    ],
+    "includePattern": "\\.(vue)$",
+    "excludePattern": "node_modules"
+  }
+}
