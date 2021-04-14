@@ -233,7 +233,7 @@ describe('Annotate Files Tests', () => {
         cy.get('.v-btn__content > .green--text').click({force: true});
         for(let option of selectAttribute.options){
           cy.get('[data-cy=attribute_option_name]').click({force: true});
-          cy.wait(100)
+          cy.wait(200)
           cy.get('[data-cy=attribute_option_name]').type(option);
           cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
 
@@ -245,7 +245,7 @@ describe('Annotate Files Tests', () => {
 
       })
 
-      it('Sets the value for the multiple select attribute in the studio', () =>{
+      it('Sets the value for the radio button attribute in the studio', () =>{
         cy.wait(3000);
         const selectAttribute = labelsForAttributes[1].attributes.filter(attr => attr.type === 'radio')[0];
         cy.get('#open_main_menu > .v-btn__content').click({force: true});
