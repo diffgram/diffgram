@@ -166,7 +166,7 @@ describe('Annotate Files Tests', () => {
         cy.get('.v-btn__content > .green--text').click({force: true});
         for(let option of selectAttribute.options){
           cy.get('[data-cy=attribute_option_name]').click({force: true});
-          cy.wait(150)
+          cy.wait(200)
           cy.get('[data-cy=attribute_option_name]').type(option);
           cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
 
