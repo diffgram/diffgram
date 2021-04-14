@@ -9,6 +9,8 @@ services:
     - frontend
     - default
     - walrus
+    environment:
+      SAME_HOST: ${SAME_HOST}
   frontend:
     image: gcr.io/diffgram-open-core/frontend:latest
     ports:
