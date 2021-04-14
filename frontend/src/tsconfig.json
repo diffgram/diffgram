@@ -1,0 +1,42 @@
+
+// https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "strict": false,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": [
+    ],
+    "paths": {
+      "components/*": [
+        "src/components/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "include": [
+    // it seems like the "shim" is where all the files are being found
+
+    "./src/**/*", "shims-vue.d.ts"
+  ],
+
+  // exclude is not working 
+  // can put // @ts-nocheck  at top of file
+  "exclude": [
+    "node_modules"
+  ]
+}

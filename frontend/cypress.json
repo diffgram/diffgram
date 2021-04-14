@@ -1,0 +1,11 @@
+{
+  "viewportWidth": 1200,
+  "viewportHeight": 900,
+  "modifyObstructiveCode": false,
+  "retries": {
+    "runMode": 2,
+    "openMode": 0
+  }
+}
+
+

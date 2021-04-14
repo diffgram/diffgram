@@ -1,0 +1,65 @@
+[
+  {
+    "name": "car with Attributes",
+    "attributes": [
+      {
+        "type": "select",
+        "prompt": "Car Postition: ",
+        "tag": "carposition",
+        "options": [
+          "Option A",
+          "Option B",
+          "Option C",
+          "Option D"
+        ]
+      },
+      {
+        "type": "text",
+        "prompt": "what is the car color",
+        "tag": "carposition",
+        "options": [
+          "Option A",
+          "Option B",
+          "Option C",
+          "Option D"
+        ]
+      },
+      {
+        "type": "multiple_select",
+        "prompt": "Select all that apply: ",
+        "tag": "multipleselect",
+        "options": [
+          "Option G",
+          "Option F",
+          "Option H",
+          "Option J"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "apple with attributes",
+    "attributes": [
+      {
+        "type": "radio",
+        "prompt": "What is the car color ",
+        "tag": "carcolor",
+        "options": [
+          "Red",
+          "Black",
+          "Green",
+          "Blue"
+        ]
+      },
+      {
+        "type": "slider",
+        "prompt": "peopleincar",
+        "tag": "carposition"
+      }
+    ]
+  },
+  {
+    "name": "bird with attributes"
+  }
+
+]
