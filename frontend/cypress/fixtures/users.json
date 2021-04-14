@@ -1,0 +1,11 @@
+{
+  "email": "testuser@diffgram.com",
+  "password": "diffgram123",
+  "first_name": "Test",
+  "last_name": "E2E",
+  "how_hear_about_us": "diffgram",
+  "city": "test city",
+  "role": "other",
+  "project_name": "Diffgram Testing E2E",
+  "project_string_id": "diffgram-testing-e2e"
+}
