@@ -305,6 +305,7 @@ jobs: # A basic unit of work in a run
   build-diffgram-e2e: # runs not using Workflows must have a `build` job as entry point
     # directory where steps are run
     working_directory: ~/diffgram
+    parallelism: 7
     docker: # run the steps with Docker
     # CircleCI NOde images available at: https://hub.docker.com/r/circleci/node/
       - image: gcr.io/rare-citadel-279814/circleci-e2e:latest
@@ -437,4 +438,4 @@ jobs: # A basic unit of work in a run
         command: |
           cd frontend
           yarn run cypress install
-          yarn run cypress run --record --headed
+          yarn run cypress run --record --headed --parallel --group 7x-electron
