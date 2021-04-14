@@ -1,3 +1,7 @@
+"""
+    This script is useful for helm chart creation.
+    To read more about helm setup read: https://diffgram.readme.io/docs/helm-kubernetes-installation
+"""
 from shared.settings import settings
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import create_engine
