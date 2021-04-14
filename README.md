@@ -13,8 +13,8 @@ Diffgram is annotation and training data software.
 ### Diffgram Dev Installer Quickstart
 Requires Docker and Docker Compose
 ```
-git clone repo
-cd repo
+git clone https://github.com/diffgram/diffgram.git
+cd diffgram
 python install.py
 # Follow the installer instruction and 
 # After install:  View the Web UI at: http://localhost:8085
