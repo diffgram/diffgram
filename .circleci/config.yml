@@ -437,4 +437,4 @@ jobs: # A basic unit of work in a run
         command: |
           cd frontend
           yarn run cypress install
-          yarn run cypress run --record --headed
+          yarn run cypress run --record --headed --parallel --group 7x-electron
