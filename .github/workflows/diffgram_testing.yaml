@@ -61,7 +61,7 @@ jobs:
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
-        PYTHONPATH: /__w/diffgram/diffgram/default
+        PYTHONPATH: /__w/diffgram/diffgram/walrus
         DIFFGRAM_SYSTEM_MODE: testing
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
@@ -112,7 +112,7 @@ jobs:
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
-        PYTHONPATH: /__w/diffgram/diffgram/default
+        PYTHONPATH: /__w/diffgram/diffgram/
         DIFFGRAM_SYSTEM_MODE: testing
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
