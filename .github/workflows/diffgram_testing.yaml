@@ -157,7 +157,7 @@ jobs:
           python default/main.py &
           python walrus/main.py &
           python local_dispatcher.py &
-          yarn run dev &
+          cd frontend & yarn run dev &
           yarn run cypress run --record --headed
 
 
