@@ -107,7 +107,7 @@ jobs:
     # Service containers to run with `container-job`
 
     container:
-      image: gcr.io/rare-citadel-279814/circleci-e2e:latest
+      image: nikolaik/python-nodejs:python3.7-nodejs14
       options: --user root
       env:
         NODE_ENV: development
