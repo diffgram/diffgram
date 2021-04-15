@@ -148,7 +148,7 @@ jobs:
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       # Frontend Dependencies
-      - run: yarn install
+      - run: cd frontend && yarn install
       - run: yarn run cypress install
       - run: yarn build
       # Populate DB
