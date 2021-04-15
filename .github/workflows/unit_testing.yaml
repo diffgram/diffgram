@@ -7,11 +7,6 @@ jobs:
       image: circleci/python:3.7
       env:
         NODE_ENV: development
-      ports:
-      - 80
-      volumes:
-      - my_docker_volume:/volume_mount
-
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
