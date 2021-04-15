@@ -2,7 +2,6 @@ name: Diffgram Testing Workflow
 on: [push]
 jobs:
   Explore-GitHub-Actions:
-    runs-on: ubuntu-latest
     container:
       image: circleci/python:3.7
       env:
