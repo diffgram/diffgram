@@ -46,7 +46,7 @@ jobs:
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       - run: pytest default/tests --junitxml=test-results/junit.xml
-      - name: Publish Unit Test Results
+      - name: Publish Default Service Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
@@ -96,7 +96,7 @@ jobs:
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       - run: pytest walrus/tests --junitxml=test-results/junit.xml
-      - name: Publish Unit Test Results
+      - name: Publish Walrus Service Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
