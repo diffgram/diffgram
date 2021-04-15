@@ -152,6 +152,7 @@ jobs: # A basic unit of work in a run
               docker tag gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher:${CIRCLE_TAG}
               docker push gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher
 
+
   build-default-service: # runs not using Workflows must have a `build` job as entry point
     # directory where steps are run
     working_directory: ~/diffgram

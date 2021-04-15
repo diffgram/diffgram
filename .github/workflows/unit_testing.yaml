@@ -1,14 +1,30 @@
 name: Diffgram Testing Workflow
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
     container:
       image: circleci/python:3.7
       options: --user root
       env:
         NODE_ENV: development
+        DATABASE_URL: postgresql+psycopg2://root@localhost/diffgram_unit_tests?sslmode=disable
         RUNNER_ALLOW_RUNASROOT: 1
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -16,8 +32,4 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run:
