@@ -11,8 +11,9 @@ jobs:
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://root@localhost/diffgram_unit_tests?sslmode=disable
-        RUNNER_ALLOW_RUNASROOT: 1
         PYTHONPATH: /__w/diffgram/diffgram/default
+        DIFFGRAM_SYSTEM_MODE: testing
+        GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
     services:
       # Label used to access the service container
       postgres:
@@ -37,3 +38,12 @@ jobs:
       - run: cd default
       - run: pip install -r default/requirements.txt
       - run: pip install pytest sqlalchemy-utils
+      - run: mkdir /gcp
+      - run: echo ${secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
+      - run: pytest default/tests --junitxml=test-results/junit.xml
+#      - name: Upload Unit Test Results
+#        if: always()
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: Unit Test Results (Python ${{ matrix.python-version }})
+#          path: pytest.xml
