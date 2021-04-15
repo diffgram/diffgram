@@ -117,7 +117,7 @@ def group_update_core(
 
 	if mode == "UPDATE":
 
-		if label_file_list:
+		if label_file_list is not None:
 			# Create Attribute_Template_Group_to_File for ones
 			# That don't exist? 
 
