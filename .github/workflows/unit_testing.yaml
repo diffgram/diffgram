@@ -40,11 +40,11 @@ jobs:
       - run: pip install -r default/requirements.txt
       - run: pip install pytest sqlalchemy-utils
       - run: mkdir /gcp
+      - run: echo ${secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED}
       - run: echo ${secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       - run: pytest default/tests --junitxml=test-results/junit.xml
-#      - name: Upload Unit Test Results
+#      - name: Publish Unit Test Results
+#        uses: EnricoMi/publish-unit-test-result-action@v1
 #        if: always()
-#        uses: actions/upload-artifact@v2
 #        with:
-#          name: Unit Test Results (Python ${{ matrix.python-version }})
-#          path: pytest.xml
+#          files: test-results/**/*.x
