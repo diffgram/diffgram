@@ -154,10 +154,10 @@ jobs:
       # Populate DB
       - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
       - run: |
-          python default/main.py &&
-          python walrus/main.py &&
-          python local_dispatcher.py &&
-          yarn run dev &&
+          python default/main.py &
+          python walrus/main.py &
+          python local_dispatcher.py &
+          yarn run dev &
           yarn run cypress run --record --headed
 
 
