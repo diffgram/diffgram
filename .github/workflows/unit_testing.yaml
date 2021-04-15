@@ -12,6 +12,7 @@ jobs:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://root@localhost/diffgram_unit_tests?sslmode=disable
         RUNNER_ALLOW_RUNASROOT: 1
+        PYTHONPATH: /__w/diffgram/diffgram/default
     services:
       # Label used to access the service container
       postgres:
@@ -33,5 +34,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: pwd
-      - run: ls -a
+      - run: cd default
+      - run: pip install -r default/requirements.txt
+      - run: pip install pytest sqlalchemy-utils
