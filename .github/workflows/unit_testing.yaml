@@ -10,7 +10,7 @@ jobs:
       options: --user root
       env:
         NODE_ENV: development
-        DATABASE_URL: postgresql+psycopg2://postgres@postgres/diffgram_unit_tests?sslmode=disable
+        DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
         PYTHONPATH: /__w/diffgram/diffgram/default
         DIFFGRAM_SYSTEM_MODE: testing
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
