@@ -101,3 +101,64 @@ jobs:
         if: always()
         with:
           files: test-results/**/*.xml
+
+  E2E-Tests:
+    runs-on: ubuntu-latest
+    # Service containers to run with `container-job`
+
+    container:
+      image: gcr.io/rare-citadel-279814/circleci-e2e:latest
+      options: --user root
+      env:
+        NODE_ENV: development
+        DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
+        PYTHONPATH: /__w/diffgram/diffgram/default
+        DIFFGRAM_SYSTEM_MODE: testing
+        GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
+        DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
+        GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
+        CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
+        ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+        SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
+      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+      - run: cd walrus
+      - run: pip install -r walrus/requirements.txt
+      - run: pip install -r default/requirements.txt
+      - run: pip install pytest sqlalchemy-utils
+      - run: mkdir /gcp
+      - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
+      # Frontend Dependencies
+      - run: yarn install
+      - run: yarn run cypress install
+      - run: yarn build
+      # Populate DB
+      - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      - run:
+      - run: |
+        python default/main.py &&
+        python walrus/main.py &&
+        python local_dispatcher.py &&
+        yarn run dev &&
+        yarn run cypress run --record --headed
+
+

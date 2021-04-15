@@ -396,6 +396,7 @@ jobs: # A basic unit of work in a run
           export DIFFGRAM_SYSTEM_MODE=testing_e2e
           export PYTHONPATH=~/diffgram/walrus:~/diffgram
           python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
+
     - run:
         name: Starting Default Service
         command: |
