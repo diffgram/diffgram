@@ -15,6 +15,10 @@ jobs:
         DIFFGRAM_SYSTEM_MODE: testing
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
+        GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
+        CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
+        ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+        SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
     services:
       # Label used to access the service container
       postgres:
