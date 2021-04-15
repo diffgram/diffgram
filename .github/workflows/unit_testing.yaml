@@ -14,6 +14,7 @@ jobs:
         PYTHONPATH: /__w/diffgram/diffgram/default
         DIFFGRAM_SYSTEM_MODE: testing
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
+        DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
     services:
       # Label used to access the service container
       postgres:
