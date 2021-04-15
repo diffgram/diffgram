@@ -113,7 +113,7 @@ jobs:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
         PYTHONPATH: /__w/diffgram/diffgram/
-        DIFFGRAM_SYSTEM_MODE: testing
+        DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
         GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
