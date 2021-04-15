@@ -3,6 +3,8 @@ on: [push]
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
+    # Service containers to run with `container-job`
+
     container:
       image: python:3.7
       options: --user root
@@ -10,7 +12,6 @@ jobs:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://root@localhost/diffgram_unit_tests?sslmode=disable
         RUNNER_ALLOW_RUNASROOT: 1
-    # Service containers to run with `container-job`
     services:
       # Label used to access the service container
       postgres:
