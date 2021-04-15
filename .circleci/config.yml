@@ -7,14 +7,14 @@ workflows:
           filters:
             tags:
               ignore: no-build
-      - build-default-service:
-          context: diffgram-default
-      - build-walrus-service:
-          context: diffgram-walrus
+#      - build-default-service:
+#          context: diffgram-default
+#      - build-walrus-service:
+#          context: diffgram-walrus
 #      - build-diffgram-frontend:
 #          context: diffgram-default
-      - build-diffgram-e2e:
-          context: diffgram-default
+#      - build-diffgram-e2e:
+#          context: diffgram-default
 
 jobs: # A basic unit of work in a run
   build-and-push-images:
