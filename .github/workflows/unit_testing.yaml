@@ -4,7 +4,7 @@ jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
     container:
-      image: circleci/python:3.7
+      image: python:3.7
       options: --user root
       env:
         NODE_ENV: development
@@ -32,4 +32,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run:
+      - run: pwd
+      - run: ls -a
