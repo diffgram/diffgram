@@ -20,7 +20,7 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        set -x
+        docker version
         echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
         gcloud config set project ${GCLOUD_PROJECT_NAME}
         gcloud auth configure-docker --quiet
