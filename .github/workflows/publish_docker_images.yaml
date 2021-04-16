@@ -22,10 +22,11 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        echo $GCLOUD_SERVICE_KEY  > ~/gcloud-service-key.json
+        echo $GCLOUD_SERVICE_KEY
+        echo $GCLOUD_SERVICE_KEY  > /gcloud-service-key.json
         echo $GCLOUD_SERVICE_KEY
         cat ~/gcloud-service-key.json
-        gcloud auth activate-service-account --key-file=~/gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         docker version
         gcloud config set project ${GCLOUD_PROJECT_NAME}
         gcloud auth configure-docker --quiet
