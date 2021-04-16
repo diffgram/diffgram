@@ -157,12 +157,16 @@ jobs:
       - run: cd frontend && yarn build
       # Populate DB
       - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      # Start Servers
+      - run: yarn --cwd frontend/ run dev &
       - run: python default/main.py &
       - run: python walrus/main.py &
       - run: python local_dispatcher/local_dispatch.py &
-      - run: yarn --cwd frontend/ run dev &
+      # Test connections
+      - run: sleep 10
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8081
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
+      # Run tests.
       - run: yarn --cwd frontend/ run cypress run --record --headed
