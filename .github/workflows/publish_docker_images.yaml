@@ -9,8 +9,7 @@ jobs:
       image: google/cloud-sdk
       options: --user root
       env:
-        GCR_CREDENTIALS_JSON: ${{ secrets.GCR_JSON_KEY }}
-        GCLOUD_SERVICE_KEY: ${{ secrets.GCR_JSON_KEY }}
+        GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
     - name: Get Release Tag
@@ -22,9 +21,8 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        echo $GCLOUD_SERVICE_KEY
-        echo $GCLOUD_SERVICE_KEY  > /gcloud-service-key.json
-        echo $GCLOUD_SERVICE_KEY
+        echo $GOOGLE_SERVICE_ACCOUNT_ENCODED
+        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         cat /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         docker version
