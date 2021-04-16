@@ -157,11 +157,10 @@ jobs:
       - run: cd frontend && yarn build
       # Populate DB
       - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
-      - run: |
-          python default/main.py &
-          python walrus/main.py &
-          python local_dispatcher/local_dispatch.py &
-          yarn --cwd frontend/ run dev &
-          yarn --cwd frontend/ run cypress run --record --headed
+      - run: python default/main.py &
+      - run: python walrus/main.py &
+      - run: python local_dispatcher/local_dispatch.py &
+      - run: yarn --cwd frontend/ run dev &
+      - run: yarn --cwd frontend/ run cypress run --record --headed
 
 
