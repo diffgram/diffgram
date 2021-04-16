@@ -143,9 +143,9 @@ jobs:
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cd walrus
       - run: apt install python3-pip
-      - run: pip install -r walrus/requirements.txt
-      - run: pip install -r default/requirements.txt
-      - run: pip install pytest sqlalchemy-utils
+      - run: pip3 install -r walrus/requirements.txt
+      - run: pip3 install -r default/requirements.txt
+      - run: pip3 install pytest sqlalchemy-utils
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       # Frontend Dependencies
@@ -153,11 +153,11 @@ jobs:
       - run: cd frontend && yarn run cypress install
       - run: cd frontend && yarn build
       # Populate DB
-      - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
       - run: |
-          python default/main.py &
-          python walrus/main.py &
-          python local_dispatcher/local_dispatch.py &
+          python3 default/main.py &
+          python3 walrus/main.py &
+          python3 local_dispatcher/local_dispatch.py &
           yarn --cwd frontend/ run dev &
           yarn --cwd frontend/ run cypress run --record --headed
 
