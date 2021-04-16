@@ -28,6 +28,8 @@ jobs:
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
+        pwd
+        ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${GOOGLE_PROJECT_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${{ env.RELEASE_VERSION }}
         docker push gcr.io/${GOOGLE_PROJECT_NAME}/default
