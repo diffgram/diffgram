@@ -22,8 +22,8 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        echo ${GCR_CREDENTIALS_JSON}  > ~/gcloud-service-key.json
-        echo ${GCR_CREDENTIALS_JSON}
+        echo $GCLOUD_SERVICE_KEY  > ~/gcloud-service-key.json
+        echo $GCLOUD_SERVICE_KEY
         cat ~/gcloud-service-key.json
         gcloud auth activate-service-account --key-file=~/gcloud-service-key.json
         docker version
