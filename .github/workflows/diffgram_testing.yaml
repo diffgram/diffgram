@@ -158,7 +158,7 @@ jobs:
       # Populate DB
       - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
       # Start Servers
-      - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:3000
+      - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
       - run: python default/main.py &
       - run: python walrus/main.py &
       - run: python local_dispatcher/local_dispatch.py &
