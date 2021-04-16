@@ -3,7 +3,7 @@ on:
   release:
     types: [published]
 jobs:
-  Default-Service-Unit-Tests:
+  Publish-Default-Docker-Image:
     runs-on: ubuntu-latest
     container:
       image: google/cloud-sdk
@@ -11,13 +11,12 @@ jobs:
       env:
         GCR_CREDENTIALS_JSON: ${{ secrets.GCR_CREDENTIALS_JSON }}
     steps:
-    - name: Extract tag name
-      id: tag
-      uses: actions/github-script@0.2.0
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          return context.payload.ref.replace(/\/refs\/tags\//, '');
+    - name: Get Release Tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Test
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.RELEASE_VERSION }}
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - uses: docker-practice/actions-setup-docker@master
@@ -27,5 +26,5 @@ jobs:
         gcloud config set project ${GCLOUD_PROJECT_NAME}
         gcloud auth configure-docker --quiet
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
-        docker tag gcr.io/${DOCKER_IMAGE_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${{ steps.tag.outputs.result }}
-        docker push gcr.io/${DOCKER_IMAGE_NAME}/default
+        docker tag gcr.io/${GOOGLE_PROJECT_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${GOOGLE_PROJECT_NAME}/default
