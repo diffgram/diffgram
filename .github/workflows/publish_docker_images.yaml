@@ -21,9 +21,9 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        echo $GOOGLE_SERVICE_ACCOUNT_ENCODED
+      - name: Check out repository code
+        uses: actions/checkout@v2
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
-        cat /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
