@@ -120,6 +120,7 @@ jobs:
         CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
         ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
+        CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
     services:
       # Label used to access the service container
