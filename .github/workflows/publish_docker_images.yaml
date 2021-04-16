@@ -5,6 +5,11 @@ on:
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
+    container:
+      image: google/cloud-sdk
+      options: --user root
+      env:
+        GCR_CREDENTIALS_JSON: ${{ secrets.GCR_CREDENTIALS_JSON }}
     steps:
     - name: Extract tag name
       id: tag
@@ -15,12 +20,12 @@ jobs:
           return context.payload.ref.replace(/\/refs\/tags\//, '');
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
-      - name: Build and Push to GCR
-        uses: raccoondev/push-docker-gcr
-        with:
-          gcr_host: gcr.io
-          image_name: ${{ secrets.DOCKER_PROJECT_NAME }}/default
-          image_tag: ${{ steps.tag.outputs.result }}
-          env:
-            GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
-            GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+    - uses: docker-practice/actions-setup-docker@master
+    - run: |
+        set -x
+        echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+        gcloud config set project ${GCLOUD_PROJECT_NAME}
+        gcloud auth configure-docker --quiet
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
+        docker tag gcr.io/${DOCKER_IMAGE_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${{ steps.tag.outputs.result }}
+        docker push gcr.io/${DOCKER_IMAGE_NAME}/default
