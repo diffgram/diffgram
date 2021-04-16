@@ -169,4 +169,4 @@ jobs:
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
       # Run tests.
-      - run: yarn --cwd frontend/ run cypress run --record --headed
+      - run: yarn --cwd frontend/ run cypress run --record
