@@ -57,7 +57,7 @@ jobs:
 
     container:
       image: python:3.7
-      options: --user root
+      options: --user root --cpus 3
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
