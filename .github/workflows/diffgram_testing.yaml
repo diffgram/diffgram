@@ -161,6 +161,10 @@ jobs:
       - run: python walrus/main.py &
       - run: python local_dispatcher/local_dispatch.py &
       - run: yarn --cwd frontend/ run dev &
+      - name: Check ports
+        run: |
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8080
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8081
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8082
+          curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://localhost:8085
       - run: yarn --cwd frontend/ run cypress run --record --headed
-
-
