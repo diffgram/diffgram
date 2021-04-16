@@ -107,7 +107,7 @@ jobs:
     # Service containers to run with `container-job`
 
     container:
-      image: nikolaik/python-nodejs:python3.7-nodejs14
+      image: moneymeets/cypress-python
       options: --user root
       env:
         NODE_ENV: development
