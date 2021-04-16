@@ -25,9 +25,8 @@ jobs:
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         cat /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
-        docker version
-        gcloud config list  
-        gcloud config set project ${GCLOUD_PROJECT_NAME}
+        gcloud config list
+        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${GOOGLE_PROJECT_NAME}/default gcr.io/${DOCKER_IMAGE_NAME}/default:${{ env.RELEASE_VERSION }}
