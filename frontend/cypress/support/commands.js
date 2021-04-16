@@ -193,7 +193,7 @@ Cypress.Commands.add('mouseupcanvas', function (x, y) {
 })
 Cypress.Commands.add('registerDataPlatformTestUser', function () {
 
-  cy.visit('http://localhost:8085/user/new');
+  cy.visit('http://localhost:8085/user/new', {timeout: 18000});
   cy.wait(5000);
   cy.get('[data-cy=email-input]').click({force: true});
   cy.get('[data-cy=email-input]').type(testUser.email);
