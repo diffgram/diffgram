@@ -1,0 +1,26 @@
+name: Publish Docker Images
+on:
+  release:
+    types: [published]
+jobs:
+  Default-Service-Unit-Tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Extract tag name
+      id: tag
+      uses: actions/github-script@0.2.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          return context.payload.ref.replace(/\/refs\/tags\//, '');
+    - name: Echo
+      run: echo ${{ steps.tag.outputs.result }}
+      - name: Build and Push to GCR
+        uses: raccoondev/push-docker-gcr
+        with:
+          gcr_host: gcr.io
+          image_name: ${{ secrets.DOCKER_PROJECT_NAME }}/default
+          image_tag: ${{ steps.tag.outputs.result }}
+          env:
+            GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+            GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
