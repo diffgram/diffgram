@@ -22,11 +22,11 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        docker version
         echo ${GCR_CREDENTIALS_JSON}  > ~/gcloud-service-key.json
         echo ${GCR_CREDENTIALS_JSON}
         cat ~/gcloud-service-key.json
-        echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
+        gcloud auth activate-service-account --key-file=~/gcloud-service-key.json
+        docker version
         gcloud config set project ${GCLOUD_PROJECT_NAME}
         gcloud auth configure-docker --quiet
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
