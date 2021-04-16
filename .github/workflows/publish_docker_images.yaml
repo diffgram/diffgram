@@ -12,6 +12,8 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
+    - name: Check out repository code
+      uses: actions/checkout@v2
     - name: Get Release Tag
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
     - name: Test
@@ -21,8 +23,6 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-      - name: Check out repository code
-        uses: actions/checkout@v2
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         gcloud config list
