@@ -54,10 +54,10 @@ jobs:
   Walrus-Service-Unit-Tests:
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
-
+    options: --cpus 3
     container:
       image: python:3.7
-      options: --user root --cpus 3
+      options: --user root
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
