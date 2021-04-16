@@ -19,7 +19,6 @@ jobs:
         echo ${{ env.RELEASE_VERSION }}
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
-    - uses: docker-practice/actions-setup-docker@master
     - run: |
         set -x
         echo $GCR_CREDENTIALS_JSON | gcloud auth activate-service-account --key-file=-
