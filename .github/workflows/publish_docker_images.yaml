@@ -11,7 +11,7 @@ jobs:
       env:
         GCR_CREDENTIALS_JSON: ${{ secrets.GCR_JSON_KEY }}
         GCLOUD_SERVICE_KEY: ${{ secrets.GCR_JSON_KEY }}
-        GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
+        GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
     - name: Get Release Tag
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -25,7 +25,7 @@ jobs:
         echo $GCLOUD_SERVICE_KEY
         echo $GCLOUD_SERVICE_KEY  > /gcloud-service-key.json
         echo $GCLOUD_SERVICE_KEY
-        cat ~/gcloud-service-key.json
+        cat /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         docker version
         gcloud config set project ${GCLOUD_PROJECT_NAME}
