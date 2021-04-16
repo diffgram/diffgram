@@ -26,6 +26,7 @@ jobs:
         cat /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         docker version
+        gcloud config list  
         gcloud config set project ${GCLOUD_PROJECT_NAME}
         gcloud auth configure-docker --quiet
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
