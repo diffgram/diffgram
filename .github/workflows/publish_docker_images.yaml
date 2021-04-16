@@ -9,8 +9,8 @@ jobs:
       image: google/cloud-sdk
       options: --user root
       env:
-        GCR_CREDENTIALS_JSON: ${{ secrets.GCR_CREDENTIALS_JSON }}
-        GCLOUD_SERVICE_KEY: ${{ secrets.GCR_CREDENTIALS_JSON }}
+        GCR_CREDENTIALS_JSON: ${{ secrets.GCR_JSON_KEY }}
+        GCLOUD_SERVICE_KEY: ${{ secrets.GCR_JSON_KEY }}
         GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
     steps:
     - name: Get Release Tag
