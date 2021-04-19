@@ -39,7 +39,8 @@ def with_azure_exception_handler(f):
                                                   'check you private secret and id are correct, ' \
                                                   'and that you have the correct pemirssions over your buckets.'
             log['error']['exception_details'] = str(e)
-            return {'log': log}
+            # return {'log': log}
+            raise e
 
     return wrapper
 
@@ -179,7 +180,7 @@ class AzureConnector(Connector):
 
     @with_connection
     @with_azure_exception_handler
-    def __list_s3_directories(self, opts):
+    def __list_container_files(self, opts):
         kwargs = {'Bucket': opts['bucket_name'], 'Prefix': opts['path'], 'Delimiter': '/'}
         resp = self.connection_client.list_objects_v2(**kwargs)
         keys = []
@@ -189,13 +190,12 @@ class AzureConnector(Connector):
 
     @with_connection
     @with_azure_exception_handler
-    def __list_s3_files(self, opts):
-        kwargs = {'Bucket': opts['bucket_name'], 'Prefix': opts['path'], 'Delimiter': '/'}
-        resp = self.connection_client.list_objects_v2(**kwargs)
+    def __list_container_files(self, opts):
+        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
+        blobs = blob_client.list_blobs(starts_with=opts['path'])
         keys = []
-        for content in resp.get('Contents', []):
-            if not content.get('Key').endswith('/'):
-                keys.append(content.get('Key'))
+        for blob in blobs:
+            keys.append(blob.name)
         return keys
 
     @with_connection
@@ -212,8 +212,8 @@ class AzureConnector(Connector):
         just_folders = opts.get('just_folders', False)
         files = []
         if not just_folders:
-            files = sorted(self.__list_s3_files(opts))
-        folders = sorted(list(self.__list_s3_directories(opts)))
+            files = sorted(self.__list_container_files(opts))
+        folders = sorted(list(self.__list_container_directories(opts)))
         result = folders + files
         return {'result': result}
 
@@ -227,17 +227,11 @@ class AzureConnector(Connector):
                                                     log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
+        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
+        blobs = blob_client.list_blobs(starts_with=opts['path'])
         keys = []
-        kwargs = {'Bucket': opts['bucket_name'], 'Prefix': opts['path']}
-        while True:
-            resp = self.connection_client.list_objects_v2(**kwargs)
-            for obj in resp.get('Contents', []):
-                keys.append(obj['Key'])
-            try:
-                kwargs['ContinuationToken'] = resp['NextContinuationToken']
-            except KeyError:
-                break
-
+        for blob in blobs:
+            keys.append(blob.name)
         return {'result': keys}
 
     @with_connection
@@ -251,23 +245,19 @@ class AzureConnector(Connector):
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         count = 0
-        kwargs = {'Bucket': opts['bucket_name'], 'Prefix': opts['path']}
-        while True:
-            resp = self.connection_client.list_objects_v2(**kwargs)
-            all_objs = resp.get('Contents', [])
-            only_files = list(filter(lambda x: not x.get('Key', '/').endswith('/'), all_objs))
-            count += len(only_files)
-            if count >= 10000:
-                return {'result': '10,000+'}
-            try:
-                kwargs['ContinuationToken'] = resp['NextContinuationToken']
-            except KeyError:
-                break
+        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
+        blobs = blob_client.list_blobs(starts_with=opts['path'])
+        count = len(blobs)
         return {'result': count}
 
     @with_connection
     @with_azure_exception_handler
     def __list_buckets(self, opts):
+        """
+            List all the buckets/containers on the Azure blob storage account.
+        :param opts:
+        :return:
+        """
         result = []
         containers = self.connection_client.list_containers()
         for container in containers:

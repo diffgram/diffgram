@@ -11,6 +11,7 @@ from shared.connection.connection_operations import Connection_Operations
 class ConnectorManager:
     CONNECTIONS_MAPPING = {
         'google_gcp': 'GoogleCloudStorageConnector',
+        'microsoft_azure': 'AzureConnector',
         'amazon_aws': 'S3Connector',
         'labelbox': 'LabelboxConnector',
         'datasaur': 'DatasaurConnector',
