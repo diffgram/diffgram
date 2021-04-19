@@ -137,7 +137,6 @@ jobs:
           --health-retries 5
     steps:
       - run: apt-get update
-      - run: apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
@@ -145,9 +144,9 @@ jobs:
         uses: actions/checkout@v2
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cd walrus
-      - run: pip install -r walrus/requirements.txt
-      - run: pip install -r default/requirements.txt
-      - run: pip install pytest sqlalchemy-utils
+      - run: pip3 install -r walrus/requirements.txt
+      - run: pip3 install -r default/requirements.txt
+      - run: pip3 install pytest sqlalchemy-utils
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       # Frontend Dependencies
@@ -155,12 +154,12 @@ jobs:
       - run: cd frontend && yarn run cypress install
       - run: cd frontend && yarn build
       # Populate DB
-      - run: python default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
       # Start Servers
       - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
-      - run: python default/main.py &
-      - run: python walrus/main.py &
-      - run: python local_dispatcher/local_dispatch.py &
+      - run: python3 default/main.py &
+      - run: python3 walrus/main.py &
+      - run: python3 local_dispatcher/local_dispatch.py &
       # Test connections
       - run: sleep 10
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
