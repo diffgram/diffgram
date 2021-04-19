@@ -4,7 +4,7 @@ on:
     types: [published]
 jobs:
   Publish-Default-Docker-Image:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
       image: google/cloud-sdk
       options: --user root
@@ -33,3 +33,93 @@ jobs:
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
+  Publish-Walrus-Docker-Image:
+    runs-on: ubuntu-latest
+    container:
+      image: google/cloud-sdk
+      options: --user root
+      env:
+        GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+        GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v2
+    - name: Get Release Tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Test
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.RELEASE_VERSION }}
+    - name: Echo
+      run: echo ${{ steps.tag.outputs.result }}
+    - run: |
+        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
+        gcloud config list
+        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
+        gcloud auth configure-docker --quiet
+        pwd
+        ls -a
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
+  Publish-Frontend-Docker-Image:
+    runs-on: ubuntu-latest
+    container:
+      image: google/cloud-sdk
+      options: --user root
+      env:
+        GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+        GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v2
+    - name: Get Release Tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Test
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.RELEASE_VERSION }}
+    - name: Echo
+      run: echo ${{ steps.tag.outputs.result }}
+    - run: |
+        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
+        gcloud config list
+        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
+        gcloud auth configure-docker --quiet
+        pwd
+        ls -a
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
+  Publish-Dispatcher-Docker-Image:
+    runs-on: ubuntu-latest
+    container:
+      image: google/cloud-sdk
+      options: --user root
+      env:
+        GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+        GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v2
+    - name: Get Release Tag
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: Test
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.RELEASE_VERSION }}
+    - name: Echo
+      run: echo ${{ steps.tag.outputs.result }}
+    - run: |
+        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
+        gcloud config list
+        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
+        gcloud auth configure-docker --quiet
+        pwd
+        ls -a
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher
