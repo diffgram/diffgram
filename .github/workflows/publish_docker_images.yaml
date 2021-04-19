@@ -4,7 +4,7 @@ on:
     types: [published]
 jobs:
   Publish-Default-Docker-Image:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     container:
       image: google/cloud-sdk
       options: --user root
