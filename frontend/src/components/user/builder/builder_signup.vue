@@ -317,7 +317,7 @@
             // done any other actions to refresh user information
             this.$store.commit('set_current_user', response.data.user)
 
-            this.route_new_project()
+            this.route_set_password()
 
           } else {
             this.error = response.data.log.error
@@ -328,13 +328,17 @@
 
         })
           .catch(error => {
-            console.log(error);
+            console.error(error);
             this.loading = false
           });
       },
 
       route_new_project: function () {
         this.$router.push('/a/project/new?builder_api_enabled_success=true')
+      },
+
+      route_set_password: function () {
+        this.$router.push('/user/account/password/set?initial_setup=true')
       }
 
     }
