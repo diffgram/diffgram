@@ -201,7 +201,7 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.wait(500);
   // cy.get('[data-cy="error-email"]').should('not.be.visible');
   cy.wait(1500);
-  cy.url().should('eq', 'http://localhost:8085/user/builder/signup')
+  cy.url().should('eq', 'http://localhost:8085/user/new')
   cy.wait(2000)
   cy.get('[data-cy=first_name]').click();
   cy.get('[data-cy=first_name]').type('Diffgram');
