@@ -337,7 +337,8 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 
 Cypress.Commands.add('createLabels', function (labels_list) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
-  cy.get('[data-cy=new_label_template]').first().click();
+  cy.wait(2500)
+  cy.get('[data-cy=new_label_template]').first().click({force: true});
   for (let i = 0; i < labels_list.length; i++) {
 
     cy.get('[data-cy=label_name_text_field]').click({force: true});
