@@ -24,6 +24,7 @@ describe('Annotate Files Tests', () => {
           edges: [[0, 1], [0, 2], [0, 3]],
         });
         cy.get('[data-cy=save_instance_template_button]').click({force: true});
+        cy.get('@post').then(cy.log)
         cy.wait(5000);
       })
     })
