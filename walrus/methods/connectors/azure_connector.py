@@ -37,8 +37,8 @@ def with_azure_exception_handler(f):
             return f(*args)
         except Exception as e:
             log['error']['auth_azure_credentials'] = 'Error connecting to Azure Blob Storage. Please ' \
-                                                  'check you private secret and id are correct, ' \
-                                                  'and that you have the correct pemirssions over your buckets.'
+                                                     'check you private secret and id are correct, ' \
+                                                     'and that you have the correct pemirssions over your buckets.'
             log['error']['exception_details'] = str(e)
             # return {'log': log}
             raise e
@@ -71,6 +71,7 @@ class AzureConnector(Connector):
         :param opts: Dictionary with parameters for object fetching.
         :return: file obj if file was uploaded, else False
         """
+        print('OBJECTCT', opts)
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=opts,
@@ -79,25 +80,26 @@ class AzureConnector(Connector):
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         shared_access_signature = BlobSharedAccessSignature(
-            account_name = self.azure_service_client.account_name,
-            account_key = self.azure_service_client.credential.account_key
+            account_name=self.connection_client.account_name,
+            account_key=self.connection_client.credential.account_key
         )
 
         expiration_offset = 40368000
-
+        blob_name = opts['path']
+        container = opts['bucket_name']
         added_seconds = datetime.timedelta(0, expiration_offset)
         expiry_time = datetime.datetime.utcnow() + added_seconds
         filename = blob_name.split("/")[-1]
         sas = shared_access_signature.generate_blob(
-            container_name = container,
-            blob_name = blob_name,
-            start = datetime.datetime.utcnow(),
-            expiry = expiry_time,
-            permission = BlobSasPermissions(read = True),
-            content_disposition = 'attachment; filename=' + filename,
+            container_name=container,
+            blob_name=blob_name,
+            start=datetime.datetime.utcnow(),
+            expiry=expiry_time,
+            permission=BlobSasPermissions(read=True),
+            content_disposition='attachment; filename=' + filename,
         )
         sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
-            self.azure_service_client.account_name,
+            self.connection_client.account_name,
             container,
             blob_name,
             sas
@@ -135,9 +137,10 @@ class AzureConnector(Connector):
                 return None
             # print('AAAAA', opts, opts.get('job_id'))
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
+            print('media_type',media_type)
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                   session=session,
-                                                  media_url=signed_url,
+                                                  media_url=sas_url,
                                                   media_type=media_type,
                                                   job_id=opts.get('job_id'),
                                                   video_split_duration=opts.get('video_split_duration'),
@@ -163,19 +166,20 @@ class AzureConnector(Connector):
             paths = [paths]
         container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
         for current_path in paths:
-            files = container_client.walk_blobs(name_starts_with=current_path, delimiter='/')
+            files = container_client.list_blobs(name_starts_with=current_path)
             for file in files:
-                if file.name.endswith('/'):
+                if not file.name.endswith('/'):
                     opts_fetch_object = {}
                     opts_fetch_object.update(opts)
+
                     new_opts = {
                         'path': file.name,
                         'directory_id': opts.get('directory_id'),
                         'bucket_name': opts.get('bucket_name'),
                     }
+                    print('asdasd', new_opts)
                     opts_fetch_object.update(new_opts)
                     self.__fetch_object(opts_fetch_object)
-
 
     @with_connection
     @with_azure_exception_handler
