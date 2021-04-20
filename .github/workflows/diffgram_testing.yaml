@@ -157,14 +157,14 @@ jobs:
       - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
       # Start Servers
       - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
-      - run: python3 default/main.py &
-      - run: python3 walrus/main.py &
-      - run: python3 local_dispatcher/local_dispatch.py &
+#      - run: python3 default/main.py &
+#      - run: python3 walrus/main.py &
+#      - run: python3 local_dispatcher/local_dispatch.py &
       # Test connections
       - run: sleep 10
-      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
+#      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
       - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8081
-      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
-      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
+#      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
+#      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
       # Run tests.
-      - run: yarn --cwd frontend/ run cypress run --record --headed --browser chrome
+      - run:  python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py & yarn --cwd frontend/ run cypress run --record --headed --browser chrome
