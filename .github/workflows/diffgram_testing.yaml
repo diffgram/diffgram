@@ -52,7 +52,7 @@ jobs:
         with:
           files: test-results/**/*.xml
   Walrus-Service-Unit-Tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Service containers to run with `container-job`
     container:
       image: python:3.7
@@ -102,7 +102,7 @@ jobs:
           files: test-results/**/*.xml
 
   E2E-Tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # Service containers to run with `container-job`
 
     container:
