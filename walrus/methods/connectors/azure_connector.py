@@ -10,6 +10,7 @@ from shared.connection.connectors.connectors_base import Connector, with_connect
 from methods.input import packet
 import threading
 import io
+import datetime
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
@@ -77,11 +78,30 @@ class AzureConnector(Connector):
                                                     log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
-        # This might be an issue. Currently not supporting urls with no expiration. Biggest time is 1 week.
-        signed_url = self.connection_client.generate_presigned_url('get_object',
-                                                                   Params={'Bucket': opts['bucket_name'],
-                                                                           'Key': opts['path']},
-                                                                   ExpiresIn=3600 * 24 * 6)  # 5 Days.
+        shared_access_signature = BlobSharedAccessSignature(
+            account_name = self.azure_service_client.account_name,
+            account_key = self.azure_service_client.credential.account_key
+        )
+
+        expiration_offset = 40368000
+
+        added_seconds = datetime.timedelta(0, expiration_offset)
+        expiry_time = datetime.datetime.utcnow() + added_seconds
+        filename = blob_name.split("/")[-1]
+        sas = shared_access_signature.generate_blob(
+            container_name = container,
+            blob_name = blob_name,
+            start = datetime.datetime.utcnow(),
+            expiry = expiry_time,
+            permission = BlobSasPermissions(read = True),
+            content_disposition = 'attachment; filename=' + filename,
+        )
+        sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            self.azure_service_client.account_name,
+            container,
+            blob_name,
+            sas
+        )
 
         with sessionMaker.session_scope() as session:
 
@@ -141,25 +161,21 @@ class AzureConnector(Connector):
         paths = opts['path']
         if type(paths) != list:
             paths = [paths]
+        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
         for current_path in paths:
-            kwargs = {'Bucket': opts['bucket_name'], 'Prefix': current_path}
-            while True:
-                resp = self.connection_client.list_objects_v2(**kwargs)
-                for obj in resp['Contents']:
-                    if not obj['Key'].endswith('/'):
-                        opts_fetch_object = {}
-                        opts_fetch_object.update(opts)
-                        new_opts = {
-                            'path': obj['Key'],
-                            'directory_id': opts.get('directory_id'),
-                            'bucket_name': opts.get('bucket_name'),
-                        }
-                        opts_fetch_object.update(new_opts)
-                        self.__fetch_object(opts_fetch_object)
-                try:
-                    kwargs['ContinuationToken'] = resp['NextContinuationToken']
-                except KeyError:
-                    break
+            files = container_client.walk_blobs(name_starts_with=current_path, delimiter='/')
+            for file in files:
+                if file.name.endswith('/'):
+                    opts_fetch_object = {}
+                    opts_fetch_object.update(opts)
+                    new_opts = {
+                        'path': file.name,
+                        'directory_id': opts.get('directory_id'),
+                        'bucket_name': opts.get('bucket_name'),
+                    }
+                    opts_fetch_object.update(new_opts)
+                    self.__fetch_object(opts_fetch_object)
+
 
     @with_connection
     @with_azure_exception_handler
@@ -180,21 +196,25 @@ class AzureConnector(Connector):
 
     @with_connection
     @with_azure_exception_handler
-    def __list_container_files(self, opts):
-        kwargs = {'Bucket': opts['bucket_name'], 'Prefix': opts['path'], 'Delimiter': '/'}
-        resp = self.connection_client.list_objects_v2(**kwargs)
+    def __list_container_directories(self, opts):
         keys = []
-        for content in resp.get('CommonPrefixes', []):
-            keys.append(content.get('Prefix'))
+        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
+        for file in container_client.walk_blobs(name_starts_with=opts['path'], delimiter='/'):
+            if file.name.endswith('/'):
+                keys.append(file.name)
         return keys
 
     @with_connection
     @with_azure_exception_handler
     def __list_container_files(self, opts):
-        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
-        blobs = blob_client.list_blobs(starts_with=opts['path'])
+        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
+        blobs = container_client.walk_blobs(name_starts_with=opts['path'])
         keys = []
-        for blob in blobs:
+        for blob in list(blobs):
+            if blob.name.endswith('/'):
+                continue
+            if not blob.name.startswith(opts['path']) and '/' in blob.name:
+                continue
             keys.append(blob.name)
         return keys
 
@@ -214,6 +234,7 @@ class AzureConnector(Connector):
         if not just_folders:
             files = sorted(self.__list_container_files(opts))
         folders = sorted(list(self.__list_container_directories(opts)))
+
         result = folders + files
         return {'result': result}
 
@@ -231,6 +252,7 @@ class AzureConnector(Connector):
         blobs = blob_client.list_blobs(starts_with=opts['path'])
         keys = []
         for blob in blobs:
+            print('asdasdasd', blob)
             keys.append(blob.name)
         return {'result': keys}
 
