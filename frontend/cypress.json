@@ -4,7 +4,7 @@
   "pageLoadTimeout": 180000,
   "modifyObstructiveCode": false,
   "retries": {
-    "runMode": 2,
+    "runMode": 5,
     "openMode": 0
   }
 }
