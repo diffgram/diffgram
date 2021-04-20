@@ -23,8 +23,8 @@ describe('Annotate Files Tests', () => {
           nodes: [{x: 100, y: 100}, {x: 300, y: 300}, {x: 400, y: 400}, {x: 75, y: 150}],
           edges: [[0, 1], [0, 2], [0, 3]],
         });
-        cy.get('[data-cy=save_instance_template_button]').click();
-
+        cy.get('[data-cy=save_instance_template_button]').click({force: true});
+        cy.wait(5000);
       })
     })
 
@@ -47,7 +47,7 @@ describe('Annotate Files Tests', () => {
           nodes: nodes,
           edges: [[0, 1], [0, 2], [0, 3]],
         });
-
+        cy.wait(5000);
         cy.get('[data-cy=instance_template_name_text_field]').type('{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}');
 
       })

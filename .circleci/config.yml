@@ -7,14 +7,14 @@ workflows:
           filters:
             tags:
               ignore: no-build
-      - build-default-service:
-          context: diffgram-default
-      - build-walrus-service:
-          context: diffgram-walrus
+#      - build-default-service:
+#          context: diffgram-default
+#      - build-walrus-service:
+#          context: diffgram-walrus
 #      - build-diffgram-frontend:
 #          context: diffgram-default
-      - build-diffgram-e2e:
-          context: diffgram-default
+#      - build-diffgram-e2e:
+#          context: diffgram-default
 
 jobs: # A basic unit of work in a run
   build-and-push-images:
@@ -151,6 +151,7 @@ jobs: # A basic unit of work in a run
               docker build . -t gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher -f local_dispatcher/Dockerfile
               docker tag gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher:${CIRCLE_TAG}
               docker push gcr.io/${DOCKER_IMAGE_NAME}/local_dispatcher
+
 
   build-default-service: # runs not using Workflows must have a `build` job as entry point
     # directory where steps are run
@@ -395,6 +396,7 @@ jobs: # A basic unit of work in a run
           export DIFFGRAM_SYSTEM_MODE=testing_e2e
           export PYTHONPATH=~/diffgram/walrus:~/diffgram
           python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
+
     - run:
         name: Starting Default Service
         command: |
