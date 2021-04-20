@@ -15,6 +15,7 @@ describe('Annotate Files Tests', () => {
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleVideo(testUser.project_string_id);
+      cy.wait(3500);
 
     })
 

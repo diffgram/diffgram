@@ -193,14 +193,14 @@ Cypress.Commands.add('mouseupcanvas', function (x, y) {
 })
 Cypress.Commands.add('registerDataPlatformTestUser', function () {
 
-  cy.visit('http://localhost:8085/user/new');
+  cy.visit('http://localhost:8085/user/new', {timeout: 18000});
   cy.wait(5000);
   cy.get('[data-cy=email-input]').click({force: true});
   cy.get('[data-cy=email-input]').type(testUser.email);
   cy.get('[data-cy="create-user-button"] > .v-btn__content').click();
   cy.wait(500);
   // cy.get('[data-cy="error-email"]').should('not.be.visible');
-  cy.wait(1500);
+  cy.wait(3500);
   cy.url().should('eq', 'http://localhost:8085/user/builder/signup')
   cy.wait(2000)
   cy.get('[data-cy=first_name]').click();
@@ -330,13 +330,15 @@ Cypress.Commands.add('loginByForm', function (email, password) {
 
 Cypress.Commands.add('gotToProject', function (project_string_id) {
   cy.visit('http://localhost:8085/projects')
-  cy.get(`[data-cy="project-title-${project_string_id}"] > div`).click();
-  cy.wait(3000);
+  cy.wait(5000);
+  cy.get(`[data-cy="project-title-${project_string_id}"] > div`).click({force: true});
+  cy.wait(1500);
 });
 
 Cypress.Commands.add('createLabels', function (labels_list) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
-  cy.get('[data-cy=new_label_template]').first().click();
+  cy.wait(2500)
+  cy.get('[data-cy=new_label_template]').first().click({force: true});
   for (let i = 0; i < labels_list.length; i++) {
 
     cy.get('[data-cy=label_name_text_field]').click({force: true});

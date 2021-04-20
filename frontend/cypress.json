@@ -1,9 +1,10 @@
 {
   "viewportWidth": 1200,
   "viewportHeight": 900,
+  "pageLoadTimeout": 180000,
   "modifyObstructiveCode": false,
   "retries": {
-    "runMode": 2,
+    "runMode": 5,
     "openMode": 0
   }
 }
