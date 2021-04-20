@@ -15,6 +15,7 @@ describe('Annotate Files Tests', () => {
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
+      cy.wait(3000);
       // Minimize file explorer
       cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
       // Select Label
