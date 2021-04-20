@@ -151,7 +151,7 @@ jobs:
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       # Frontend Dependencies
       - run: yarn --cwd frontend/ install
-      - run: yarn cwd frontend/ run cypress install
+      - run: yarn --cwd frontend/ run cypress install
       - run: yarn --cwd frontend/ build
       # Populate DB
       - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
