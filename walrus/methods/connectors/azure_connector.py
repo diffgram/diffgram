@@ -15,6 +15,7 @@ from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
 from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+import mimetypes
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -74,14 +75,14 @@ class AzureConnector(Connector):
         print('OBJECTCT', opts)
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         shared_access_signature = BlobSharedAccessSignature(
-            account_name=self.connection_client.account_name,
-            account_key=self.connection_client.credential.account_key
+            account_name = self.connection_client.account_name,
+            account_key = self.connection_client.credential.account_key
         )
 
         expiration_offset = 40368000
@@ -91,12 +92,12 @@ class AzureConnector(Connector):
         expiry_time = datetime.datetime.utcnow() + added_seconds
         filename = blob_name.split("/")[-1]
         sas = shared_access_signature.generate_blob(
-            container_name=container,
-            blob_name=blob_name,
-            start=datetime.datetime.utcnow(),
-            expiry=expiry_time,
-            permission=BlobSasPermissions(read=True),
-            content_disposition='attachment; filename=' + filename,
+            container_name = container,
+            blob_name = blob_name,
+            start = datetime.datetime.utcnow(),
+            expiry = expiry_time,
+            permission = BlobSasPermissions(read = True),
+            content_disposition = 'attachment; filename=' + filename,
         )
         sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
             self.connection_client.account_name,
@@ -125,37 +126,36 @@ class AzureConnector(Connector):
                 log['error']['file_name'] = opts['path']
                 log['opts'] = opts
                 Event.new(
-                    session=session,
-                    member_id=opts['event_data']['request_user'],
-                    kind='aws_s3_new_import_warning',
-                    description='Skipped import for {}, invalid file type.'.format(opts['path']),
-                    error_log=log,
-                    project_id=project.id,
-                    member=member,
-                    success=False
+                    session = session,
+                    member_id = opts['event_data']['request_user'],
+                    kind = 'aws_s3_new_import_warning',
+                    description = 'Skipped import for {}, invalid file type.'.format(opts['path']),
+                    error_log = log,
+                    project_id = project.id,
+                    member = member,
+                    success = False
                 )
                 return None
-            # print('AAAAA', opts, opts.get('job_id'))
+
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
-            print('media_type',media_type)
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
-                                                  session=session,
-                                                  media_url=sas_url,
-                                                  media_type=media_type,
-                                                  job_id=opts.get('job_id'),
-                                                  video_split_duration=opts.get('video_split_duration'),
-                                                  directory_id=opts.get('directory_id'))
+                                                  session = session,
+                                                  media_url = sas_url,
+                                                  media_type = media_type,
+                                                  job_id = opts.get('job_id'),
+                                                  video_split_duration = opts.get('video_split_duration'),
+                                                  directory_id = opts.get('directory_id'))
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
-                session=session,
-                member_id=opts['event_data']['request_user'],
-                kind='aws_s3_new_import_success',
-                description='New cloud import for {}'.format(opts['path']),
-                error_log=opts,
-                project_id=project.id,
-                member=member,
-                success=True
+                session = session,
+                member_id = opts['event_data']['request_user'],
+                kind = 'aws_s3_new_import_success',
+                description = 'New cloud import for {}'.format(opts['path']),
+                error_log = opts,
+                project_id = project.id,
+                member = member,
+                success = True
             )
         return created_input
 
@@ -164,9 +164,9 @@ class AzureConnector(Connector):
         paths = opts['path']
         if type(paths) != list:
             paths = [paths]
-        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
+        container_client = self.connection_client.get_container_client(container = opts['bucket_name'])
         for current_path in paths:
-            files = container_client.list_blobs(name_starts_with=current_path)
+            files = container_client.list_blobs(name_starts_with = current_path)
             for file in files:
                 if not file.name.endswith('/'):
                     opts_fetch_object = {}
@@ -187,14 +187,14 @@ class AzureConnector(Connector):
 
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         t = threading.Thread(
-            target=self.__fetch_folder,
-            args=((opts,)))
+            target = self.__fetch_folder,
+            args = ((opts,)))
         t.start()
         return {'result': True}
 
@@ -202,8 +202,8 @@ class AzureConnector(Connector):
     @with_azure_exception_handler
     def __list_container_directories(self, opts):
         keys = []
-        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
-        for file in container_client.walk_blobs(name_starts_with=opts['path'], delimiter='/'):
+        container_client = self.connection_client.get_container_client(container = opts['bucket_name'])
+        for file in container_client.walk_blobs(name_starts_with = opts['path'], delimiter = '/'):
             if file.name.endswith('/'):
                 keys.append(file.name)
         return keys
@@ -211,8 +211,8 @@ class AzureConnector(Connector):
     @with_connection
     @with_azure_exception_handler
     def __list_container_files(self, opts):
-        container_client = self.connection_client.get_container_client(container=opts['bucket_name'])
-        blobs = container_client.walk_blobs(name_starts_with=opts['path'])
+        container_client = self.connection_client.get_container_client(container = opts['bucket_name'])
+        blobs = container_client.walk_blobs(name_starts_with = opts['path'])
         keys = []
         for blob in list(blobs):
             if blob.name.endswith('/'):
@@ -227,9 +227,9 @@ class AzureConnector(Connector):
     def __get_folder_contents(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         prefix = opts['path']
@@ -247,16 +247,15 @@ class AzureConnector(Connector):
     def __list_objects(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
-        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
-        blobs = blob_client.list_blobs(starts_with=opts['path'])
+        blob_client = self.connection_client.get_blob_client(container = input['bucket_name'])
+        blobs = blob_client.list_blobs(starts_with = opts['path'])
         keys = []
         for blob in blobs:
-            print('asdasdasd', blob)
             keys.append(blob.name)
         return {'result': keys}
 
@@ -265,14 +264,14 @@ class AzureConnector(Connector):
     def __count_objects(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         count = 0
-        blob_client = self.connection_client.get_blob_client(container=input['bucket_name'])
-        blobs = blob_client.list_blobs(starts_with=opts['path'])
+        blob_client = self.connection_client.get_blob_client(container = input['bucket_name'])
+        blobs = blob_client.list_blobs(starts_with = opts['path'])
         count = len(blobs)
         return {'result': count}
 
@@ -294,9 +293,9 @@ class AzureConnector(Connector):
     def __send_export(self, opts):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=self.config_data,
-                                                    spec_list=spec_list,
-                                                    log=log)
+        log, input = regular_input.input_check_many(untrusted_input = self.config_data,
+                                                    spec_list = spec_list,
+                                                    log = log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         spec_list = [
@@ -311,10 +310,10 @@ class AzureConnector(Connector):
 
         ]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input=opts,
-                                                    spec_list=spec_list,
-                                                    log=log,
-                                                    string_len_not_zero=False)
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log,
+                                                    string_len_not_zero = False)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         if not opts['path'].endswith('/') and opts['path'] != '':
@@ -333,9 +332,9 @@ class AzureConnector(Connector):
                 return export_check_result
 
             result = export_view_core(
-                export=export,
-                format=opts['format'],
-                return_type='bytes')
+                export = export,
+                format = opts['format'],
+                return_type = 'bytes')
             filename = generate_file_name_from_export(export, session)
 
             if opts['path'] != '':
@@ -344,18 +343,23 @@ class AzureConnector(Connector):
                 key = '{}.{}'.format(filename, opts['format'].lower())
 
             file = io.BytesIO(result)
-            self.connection_client.upload_fileobj(file, opts['bucket_name'], key)
+            blob_client = self.azure_service_client.get_blob_client(container = opts['bucket_name'], blob = key)
+            content_type = mimetypes.guess_type(input.original_filename)[0]
+            my_content_settings = ContentSettings(content_type = content_type)
+            blob_client.upload_blob(file, content_settings = my_content_settings)
+            blob_client.upload_fileobj(file, opts['bucket_name'], key)
+
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
-                session=session,
-                member_id=opts['event_data']['request_user'],
-                kind='aws_s3_new_export_success',
-                description='New cloud export for {}{}'.format(opts['path'], filename),
-                error_log=opts,
-                member=member,
-                project_id=project.id,
-                success=True
+                session = session,
+                member_id = opts['event_data']['request_user'],
+                kind = 'aws_s3_new_export_success',
+                description = 'New cloud export for {}{}'.format(opts['path'], filename),
+                error_log = opts,
+                member = member,
+                project_id = project.id,
+                success = True
             )
             return {'result': True}
 
