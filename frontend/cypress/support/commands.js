@@ -331,7 +331,7 @@ Cypress.Commands.add('loginByForm', function (email, password) {
 Cypress.Commands.add('gotToProject', function (project_string_id) {
   cy.visit('http://localhost:8085/projects')
   cy.wait(5000);
-  cy.get(`[data-cy="project-title-${project_string_id}"] > div`).click();
+  cy.get(`[data-cy="project-title-${project_string_id}"] > div`).click({force: true});
   cy.wait(3000);
 });
 
