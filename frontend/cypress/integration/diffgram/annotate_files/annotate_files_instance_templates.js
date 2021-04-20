@@ -23,8 +23,9 @@ describe('Annotate Files Tests', () => {
           nodes: [{x: 100, y: 100}, {x: 300, y: 300}, {x: 400, y: 400}, {x: 75, y: 150}],
           edges: [[0, 1], [0, 2], [0, 3]],
         });
+        cy.intercept('POST', '/api/v1/project/*/instance-template/new').as('new-template')
         cy.get('[data-cy=save_instance_template_button]').click({force: true});
-        cy.get('@post').then(cy.log)
+        cy.get('@new-template').then(console.log)
         cy.wait(5000);
       })
     })
