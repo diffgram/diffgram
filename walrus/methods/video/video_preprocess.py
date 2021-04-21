@@ -200,8 +200,8 @@ class Video_Preprocess():
 				targetname=output_temp_local_path)
 			logger.info(str(i) + " (Iteration) ffmpeg_extract_subclip Success")
 		except Exception as e:
-			print(e)
 			self.log['info'] = "Last iteration: " + str(i)
+			logger.error('Error splitting video {}'.format(str(e)))
 			return False
 
 		"""
@@ -325,7 +325,6 @@ class Video_Preprocess():
 		self.session.flush()
 
 		# Do we need .mp4 on end here?
-		print("project id", self.project.id)
 		self.input.raw_data_blob_path = settings.PROJECT_VIDEOS_BASE_DIR + \
 			str(self.project.id) + "/raw/" + str(self.input.id)
 
