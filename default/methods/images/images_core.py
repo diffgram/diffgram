@@ -19,8 +19,6 @@ from shared.image_tools import imresize
 
 data_tools = Data_tools().data_tools
 
-gcs = data_tools.gcs
-bucket = data_tools.bucket
 
 
 def get_and_set_width_and_height(
@@ -125,13 +123,9 @@ def process_image_generic(session,
         extension, ?? must include "."?
 
     """
-
-    # Consider moving this to paramter
-    blob_expiry = int(time.time() + 45920000)  # ~20 months
-
     new_image = Image(original_filename=file_name)
     session.add(new_image)
-
+    blobl_expiry_offset = 45920000
     try:
         session.commit()
     except:
@@ -140,8 +134,6 @@ def process_image_generic(session,
 
     image_blob = blob_base + str(new_image.id)
     image_blob_thumb = image_blob + "_thumb"
-
-    blob = bucket.blob(image_blob)
 
     image = imread(file)
     image = image[:, :, :3]  # remove alpha channel
@@ -166,11 +158,9 @@ def process_image_generic(session,
     temp = tempfile.mkdtemp()
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, image)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob, content_type = "image/jpg")
 
-    blob.upload_from_filename(new_temp_filename,
-                              content_type="image/jpg")
-
-    signed_url = blob.generate_signed_url(expiration=blob_expiry)
+    signed_url = data_tools.build_secure_url(blob_name = image_blob, expiration_offset = blobl_expiry_offset)
 
     # Save Thumb
     blob = bucket.blob(image_blob_thumb)
@@ -179,8 +169,8 @@ def process_image_generic(session,
     imwrite(new_temp_filename, thumbnail_image)
     blob.upload_from_filename(new_temp_filename,
                               content_type="image/jpg")
-
-    signed_url_thumb = blob.generate_signed_url(expiration=blob_expiry)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob_thumb, content_type = "image/jpg")
+    signed_url_thumb = data_tools.build_secure_url(blob_name = image_blob_thumb, expiration_offset = blobl_expiry_offset)
 
     session.add(new_image)
 
@@ -197,7 +187,7 @@ def process_image_generic(session,
     new_image.url_signed_thumb = signed_url_thumb
     new_image.url_signed_thumb_blob_path = image_blob_thumb
 
-    new_image.url_signed_expiry = blob_expiry
+    new_image.url_signed_expiry = blobl_expiry_offset
 
     return new_image
 
