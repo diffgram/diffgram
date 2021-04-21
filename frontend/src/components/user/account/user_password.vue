@@ -123,6 +123,10 @@ import Vue from "vue"; export default Vue.extend( {
         this.password = null
         this.password_check = null
         this.loading = false
+        let initial_setup = this.$route.query.initial_setup;
+        if(initial_setup === 'true'){
+          this.$router.push('/a/project/new?builder_api_enabled_success=true')
+        }
 
       })
       .catch(error => {
@@ -133,7 +137,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         this.loading = false
       });
-    }
+    },
   }
 }
 
