@@ -19,8 +19,6 @@ from shared.image_tools import imresize
 
 data_tools = Data_tools().data_tools
 
-gcs = data_tools.gcs
-bucket = data_tools.bucket
 
 
 def get_and_set_width_and_height(
@@ -52,7 +50,6 @@ def process_profile_image(session,
 
     user.profile_image_blob = settings.USER_IMAGES_BASE_DIR + \
                               str(user.id) + "/" + str(new_image.id)
-    blob = bucket.blob(user.profile_image_blob)
 
     image = imread(file)
     image = image[:, :, :3]  # remove alpha channel
@@ -73,29 +70,34 @@ def process_profile_image(session,
                                     (shape_x, shape_y))
         new_image = get_and_set_width_and_height(new_image, image)
 
-    user.profile_image_expiry = int(time.time() + 25920000)  # 10 months
+    blob_expiry_offset = 25920000
+    user.profile_image_expiry = int(time.time() + blob_expiry_offset)  # 10 months
 
     # Save File
     temp = tempfile.mkdtemp()
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, image)
 
-    blob.upload_from_filename(new_temp_filename,
-                              content_type="image/jpg")
-    user.profile_image_url = blob.generate_signed_url(expiration=user.profile_image_expiry)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename,
+                                       blob_path = user.profile_image_blob,
+                                       content_type = "image/jpg")
+
+    user.profile_image_url = data_tools.build_secure_url(blob_name = user.profile_image_blob,
+                                                         expiration_offset = blob_expiry_offset)
 
     # Save Thumb
     user.profile_image_thumb_blob = user.profile_image_blob + "_thumb"
-    blob = bucket.blob(user.profile_image_thumb_blob)
+
     thumbnail_image = imresize(image, (80, 80))
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, thumbnail_image)
-    blob.upload_from_filename(new_temp_filename,
-                              content_type="image/jpg")
 
-    # Build URLS
-    user.profile_image_thumb_url = blob.generate_signed_url(
-        expiration=user.profile_image_expiry)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename,
+                                       blob_path = user.profile_image_thumb_blob,
+                                       content_type = "image/jpg")
+
+    user.profile_image_thumb_url = data_tools.build_secure_url(blob_name = user.profile_image_thumb_blob,
+                                                               expiration_offset = blob_expiry_offset)
 
     session.add(new_image, user)
 
@@ -125,13 +127,9 @@ def process_image_generic(session,
         extension, ?? must include "."?
 
     """
-
-    # Consider moving this to paramter
-    blob_expiry = int(time.time() + 45920000)  # ~20 months
-
     new_image = Image(original_filename=file_name)
     session.add(new_image)
-
+    blob_expiry_offset = 45920000
     try:
         session.commit()
     except:
@@ -140,8 +138,6 @@ def process_image_generic(session,
 
     image_blob = blob_base + str(new_image.id)
     image_blob_thumb = image_blob + "_thumb"
-
-    blob = bucket.blob(image_blob)
 
     image = imread(file)
     image = image[:, :, :3]  # remove alpha channel
@@ -166,21 +162,16 @@ def process_image_generic(session,
     temp = tempfile.mkdtemp()
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, image)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob, content_type = "image/jpg")
 
-    blob.upload_from_filename(new_temp_filename,
-                              content_type="image/jpg")
-
-    signed_url = blob.generate_signed_url(expiration=blob_expiry)
+    signed_url = data_tools.build_secure_url(blob_name = image_blob, expiration_offset = blob_expiry_offset)
 
     # Save Thumb
-    blob = bucket.blob(image_blob_thumb)
     thumbnail_image = imresize(image, (thumb_size, thumb_size))
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, thumbnail_image)
-    blob.upload_from_filename(new_temp_filename,
-                              content_type="image/jpg")
-
-    signed_url_thumb = blob.generate_signed_url(expiration=blob_expiry)
+    data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob_thumb, content_type = "image/jpg")
+    signed_url_thumb = data_tools.build_secure_url(blob_name = image_blob_thumb, expiration_offset = blob_expiry_offset)
 
     session.add(new_image)
 
@@ -197,7 +188,7 @@ def process_image_generic(session,
     new_image.url_signed_thumb = signed_url_thumb
     new_image.url_signed_thumb_blob_path = image_blob_thumb
 
-    new_image.url_signed_expiry = blob_expiry
+    new_image.url_signed_expiry = blob_expiry_offset
 
     return new_image
 
