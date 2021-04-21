@@ -430,7 +430,6 @@ class Process_Media():
             # We are exiting main loop here
             return
 
-
         if self.input.type not in ["from_url", "from_video_split"]:
             # For those types we populate the filename from URL later in process
             # `from_resumable` (eg from UI), we already have the name, so do check here
@@ -498,7 +497,6 @@ class Process_Media():
              but we need an exit condition potentially here right... 
             Still something that could be improved...
             """
-
             self.input.video_was_split = self.split_video_into_clips()
 
             if self.input.video_was_split is True:
@@ -827,7 +825,6 @@ class Process_Media():
             )
         except Exception as exception:
 
-            print("Video preprocess didn't exist", exception)
             from methods.video.video_preprocess import Video_Preprocess
 
             video_preprocess = Video_Preprocess(
@@ -841,7 +838,6 @@ class Process_Media():
             return False
 
         video_preprocess.split_video()
-
         self.clean_up_temp_dir_on_thread()
 
         return True
@@ -1844,6 +1840,11 @@ class Process_Media():
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
                 self.input.url)
 
+        # Add extension to name: ffmpeg requires the filename with the extension.
+        # check the split() function in video_preprocess.py
+        if not self.input.original_filename.endswith(self.input.extension):
+            self.input.original_filename = self.input.original_filename + self.input.extension
+            
         if self.__file_does_not_exist_in_target_directory() is False:
             self.log['error']['status_text'] = self.input.status_text
             return
@@ -1940,6 +1941,7 @@ class Process_Media():
         # TODO Would prefer to just pass input here
         # Not redeclaring
         try:
+            print('PROCESSING VIDEO')
             file = new_video.load(
                 video_file_name=self.input.temp_dir_path_and_filename,
                 original_filename=self.input.original_filename,
@@ -2032,7 +2034,9 @@ def get_file_name_and_extension(url):
 
     """
     extension = None
-
+    # Remove query params from url
+    if '?' in url:
+        url = url.split('?')[0]
     after_last_slash = url.split('/')[-1]
     period_split = after_last_slash.split('.')
     file_name = period_split[0]
@@ -2053,7 +2057,6 @@ def get_file_name_and_extension(url):
             extension = "." + extension
 
     file_name = secure_filename(file_name)
-
     return file_name, extension
 
 
@@ -2066,11 +2069,11 @@ def clean_up_temp_dir(path):
     gc.collect()
 
     time.sleep(240)
-    print("Running clean up")
-    print(path)
+    logger.info("Running clean up")
+    logger.info(path)
     try:
         shutil.rmtree(path)  # delete directory
-        print("Cleaned successfully")
+        logger.info("Cleaned successfully")
     except OSError as exc:
-        print("shutil error")
+        logger.error("shutil error {}".format(str(exc)))
         pass
