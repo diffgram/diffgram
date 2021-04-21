@@ -654,7 +654,7 @@
           </span>
         </span>
 
-          <!-- 
+          <!--
         Pull latest doesn't make sense till
         we have other source control stuff more built out
         hide for now
@@ -4405,6 +4405,7 @@ export default Vue.extend( {
       this.open_view_edit_panel(issue);
     },
     select_something: function () {
+
       if (this.view_only_mode == true) { return }
       if (this.ellipse_hovered_corner_key) { return }
       if (this.selected_instance && this.selected_instance.midpoint_hover != undefined) { return }
@@ -4414,8 +4415,6 @@ export default Vue.extend( {
 
       this.request_change_current_instance = this.instance_hover_index
       this.trigger_refresh_current_instance = Date.now()    // decouple, for case of file changing but instance list being the same index
-
-
 
       if (this.label_settings.allow_multiple_instance_select == false) {
         this.clear_selected()
@@ -4786,7 +4785,6 @@ export default Vue.extend( {
     if (this.is_actively_resizing == false) {return}
     if(this.polygon_point_click_index){return}
     if(this.instance_hover_index == undefined){return}
-    if(this.instance_hover_type !== 'polygon'){return}
     if(this.instance_hover_type !== 'polygon'){return}
     const instance = this.instance_list[this.instance_hover_index]
     if(!instance.selected){return}
@@ -7115,7 +7113,6 @@ export default Vue.extend( {
     },
     initialize_instance: function(instance){
       // TODO: add other instance types as they are migrated to classes.
-      //console.log('aaaaa', instance.type, instance.initialized, instance)
       if(instance.type === 'keypoints' && !instance.initialized){
         let initialized_instance = new KeypointInstance(
           this.mouse_position,
