@@ -53,7 +53,7 @@ class AzureConnector(Connector):
         log = regular_log.default()
         try:
             if 'client_secret' not in self.auth_data:
-                log['error']['client_secret'] = 'auth_data must provide aws_access_key_id and aws_secret_access_key .'
+                log['error']['client_secret'] = 'auth_data must provide azure connection string ID .'
                 return {'log': log}
 
             self.connection_client = BlobServiceClient.from_connection_string(self.auth_data['client_secret'])
@@ -128,7 +128,7 @@ class AzureConnector(Connector):
                 Event.new(
                     session = session,
                     member_id = opts['event_data']['request_user'],
-                    kind = 'aws_s3_new_import_warning',
+                    kind = 'microsoft_azure_new_import_warning',
                     description = 'Skipped import for {}, invalid file type.'.format(opts['path']),
                     error_log = log,
                     project_id = project.id,
@@ -150,7 +150,7 @@ class AzureConnector(Connector):
             Event.new(
                 session = session,
                 member_id = opts['event_data']['request_user'],
-                kind = 'aws_s3_new_import_success',
+                kind = 'microsoft_azure_new_import_success',
                 description = 'New cloud import for {}'.format(opts['path']),
                 error_log = opts,
                 project_id = project.id,
@@ -352,7 +352,7 @@ class AzureConnector(Connector):
             Event.new(
                 session = session,
                 member_id = opts['event_data']['request_user'],
-                kind = 'aws_s3_new_export_success',
+                kind = 'microsoft_azure_new_export_success',
                 description = 'New cloud export for {}{}'.format(opts['path'], filename),
                 error_log = opts,
                 member = member,
