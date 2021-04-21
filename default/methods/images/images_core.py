@@ -129,7 +129,7 @@ def process_image_generic(session,
     """
     new_image = Image(original_filename=file_name)
     session.add(new_image)
-    blobl_expiry_offset = 45920000
+    blob_expiry_offset = 45920000
     try:
         session.commit()
     except:
@@ -164,14 +164,14 @@ def process_image_generic(session,
     imwrite(new_temp_filename, image)
     data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob, content_type = "image/jpg")
 
-    signed_url = data_tools.build_secure_url(blob_name = image_blob, expiration_offset = blobl_expiry_offset)
+    signed_url = data_tools.build_secure_url(blob_name = image_blob, expiration_offset = blob_expiry_offset)
 
     # Save Thumb
     thumbnail_image = imresize(image, (thumb_size, thumb_size))
     new_temp_filename = temp + "/resized" + str(extension)
     imwrite(new_temp_filename, thumbnail_image)
     data_tools.upload_to_cloud_storage(temp_local_path = new_temp_filename, blob_path = image_blob_thumb, content_type = "image/jpg")
-    signed_url_thumb = data_tools.build_secure_url(blob_name = image_blob_thumb, expiration_offset = blobl_expiry_offset)
+    signed_url_thumb = data_tools.build_secure_url(blob_name = image_blob_thumb, expiration_offset = blob_expiry_offset)
 
     session.add(new_image)
 
@@ -188,7 +188,7 @@ def process_image_generic(session,
     new_image.url_signed_thumb = signed_url_thumb
     new_image.url_signed_thumb_blob_path = image_blob_thumb
 
-    new_image.url_signed_expiry = blobl_expiry_offset
+    new_image.url_signed_expiry = blob_expiry_offset
 
     return new_image
 
