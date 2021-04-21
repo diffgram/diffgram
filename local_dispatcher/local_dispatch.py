@@ -36,7 +36,7 @@ def route_same_host(path):
         host = 'http://127.0.0.1:8082/'
 
     # JS local dev server
-    if path[: 3] != "api":
+    if path[: 3] != "api" or path[: 6] != "static":
         return requests.get('http://localhost:8081/{}'.format(path_with_params)).text
 
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask

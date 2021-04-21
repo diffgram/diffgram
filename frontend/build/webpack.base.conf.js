@@ -95,11 +95,10 @@ module.exports = {
           id: 'font-loader',
           name: '[name].[hash:7].[ext]',
           outputPath: utils.assetsPath('fonts'),
-          publicPath: './../fonts',
           limit: 10000
         }
       },
-      // 
+      //
       // for vueitfy version 2 migration
       // https://vuetifyjs.com/en/getting-started/quick-start#webpack-install
       {
