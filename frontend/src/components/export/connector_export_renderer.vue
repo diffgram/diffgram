@@ -19,6 +19,16 @@
     :connection="connection"
     :format="format"
   ></export_storage_searchbar>
+  <export_storage_searchbar
+    v-else-if="connection && connection.integration_name === 'microsoft_azure'"
+    :project_string_id="project_string_id"
+    :export_obj="export_obj"
+    label="Azure container path"
+    ref="microsoft_azure"
+    @folder-selected="on_folder_selected"
+    :connection="connection"
+    :format="format"
+  ></export_storage_searchbar>
 </template>
 
 <script>

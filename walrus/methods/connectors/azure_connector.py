@@ -343,12 +343,10 @@ class AzureConnector(Connector):
                 key = '{}.{}'.format(filename, opts['format'].lower())
 
             file = io.BytesIO(result)
-            blob_client = self.azure_service_client.get_blob_client(container = opts['bucket_name'], blob = key)
-            content_type = mimetypes.guess_type(input.original_filename)[0]
+            blob_client = self.connection_client.get_blob_client(container = opts['bucket_name'], blob = key)
+            content_type = mimetypes.guess_type(filename)[0]
             my_content_settings = ContentSettings(content_type = content_type)
             blob_client.upload_blob(file, content_settings = my_content_settings)
-            blob_client.upload_fileobj(file, opts['bucket_name'], key)
-
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
