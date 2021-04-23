@@ -30,7 +30,7 @@
 
 
           <button_with_menu
-            v-if="current_task_id"
+            v-if="$props.task_id_prop"
             tooltip_message="View Task Information"
             icon="mdi-information"
             color="primary">
@@ -49,7 +49,7 @@
 
           </button_with_menu>
           <button_with_menu
-            v-if="current_file && !current_task_id"
+            v-if="current_file && !$props.task_id_prop"
             datacy="show_file_information"
             tooltip_message="View File Information"
             icon="mdi-information"
@@ -57,7 +57,7 @@
 
             <template slot="content">
 
-              <file_meta_data_card v-if="current_file && !current_task_id"
+              <file_meta_data_card v-if="current_file && !$props.task_id_prop"
                                    :video="current_video"
                                    :elevation="0"
                                    :file="current_file"
@@ -69,7 +69,7 @@
 
           </button_with_menu>
           <button_with_menu
-            v-if="current_file && !current_task_id"
+            v-if="current_file && !$props.task_id_prop"
             datacy="show_linked_relations_file"
             tooltip_message="View Task Relations"
             icon="mdi-link-box-variant"
@@ -88,7 +88,7 @@
           </button_with_menu>
 
           <button_with_menu
-            v-if="current_task_id"
+            v-if="$props.task_id_prop"
             datacy="show_linked_relations_task"
             tooltip_message="View Task Relations"
             icon="mdi-link-box-variant"
@@ -254,7 +254,7 @@
 
 
           <!--
-              If we go to the task directly the current_task_id is defined,
+              If we go to the task directly the $props.task_id_prop is defined,
               but we if go through the job it's not.
               In the past we looked at using the 'render_mode',
               but as we are now allowing builders to see all this stuff
@@ -271,7 +271,7 @@
         <div>
           <tooltip_button
             tooltip_message="Previous File"
-            v-if="!current_task_id && current_file && current_file.id"
+            v-if="!$props.task_id_prop && current_file && current_file.id"
             @click="change_file('previous', 'none')"
             :disabled="loading || annotations_loading || full_file_loading || File_list.length == 0"
             color="primary"
@@ -285,7 +285,7 @@
                  so much of it here as it gets more complext -->
           <tooltip_button
             tooltip_message="Next File"
-            v-if="!current_task_id && current_file && current_file.id"
+            v-if="!$props.task_id_prop && current_file && current_file.id"
             @click="change_file('next', 'none')"
             :disabled="loading || annotations_loading ||  full_file_loading || File_list.length == 0"
             color="primary"
@@ -298,7 +298,7 @@
          <div>
            <tooltip_button
              tooltip_message="Previous Task"
-             v-if="current_task_id"
+             v-if="$props.task_id_prop"
              @click="change_task('previous', task)"
              :disabled="loading || annotations_loading ||  full_file_loading"
              color="primary"
@@ -309,7 +309,7 @@
            </tooltip_button>
            <tooltip_button
              tooltip_message="Next Task"
-             v-if="current_task_id"
+             v-if="$props.task_id_prop"
              @click="change_task('next', task)"
              :disabled="loading || annotations_loading || full_file_loading"
              color="primary"
@@ -683,7 +683,7 @@
           <!-- This check is very brittle -->
           <!-- MENU not info -->
           <v_annotation_trainer_menu
-              v-if="render_mode == 'trainer_default' || current_task_id"
+              v-if="render_mode == 'trainer_default' || $props.task_id_prop"
               :job_id="job_id"
               :task="task">
           </v_annotation_trainer_menu>
@@ -2014,7 +2014,7 @@ export default Vue.extend( {
       instance_focused_index: null,
 
       window_width_from_listener: 1280,
-      current_task_id: undefined,
+      $props.task_id_prop: undefined,
       window_height_from_listener: 650
     }
   },
@@ -3346,7 +3346,7 @@ export default Vue.extend( {
         this.project_string_id = this.$store.state.project.current.project_string_id
       }
       if(this.$props.task_id_prop){
-        this.current_task_id = this.$props.task_id_prop;
+        this.$props.task_id_prop = this.$props.task_id_prop;
       }
 
       this.task = {   // reset task dict
@@ -3512,7 +3512,7 @@ export default Vue.extend( {
         this.magic_nav_spacer = 200
       }
 
-      if (this.current_task_id || this.job_id) {
+      if (this.$props.task_id_prop || this.job_id) {
         this.task_mode_mounted()
       }
 
@@ -5155,9 +5155,9 @@ export default Vue.extend( {
         'task_request': null
       }
       try{
-        console.debug('current_task_id', this.current_task_id)
+        console.debug('$props.task_id_prop', this.$props.task_id_prop)
         const response = await axios.post('/api/v1/task', {
-          'task_id': parseInt(this.current_task_id, 10),
+          'task_id': parseInt(this.$props.task_id_prop, 10),
           'builder_or_trainer_mode': this.$store.state.builder_or_trainer.mode
         });
         if (response.data.log.success == true) {
@@ -5197,96 +5197,7 @@ export default Vue.extend( {
         // this.logout()
       }
     },
-    get_media: async function (resolve) {
-      //console.debug("Getting images")
 
-      this.loading = true
-      this.error = {}   // reset
-      this.media_loading = true  // gets set to false in shared file_update_core()
-
-      if (this.image_reload == true) {
-        this.File_list = []
-        this.current_file = {}
-        if (this.canvas_wrapper) {
-          this.canvas_wrapper.style.display = "none"
-        }
-      }
-
-      if (this.current_task_id && this.request_next_page == null) {
-        await this.fetch_single_task();
-        return
-      }
-
-      if (this.job_id && ["trainer_default", "full"].includes(this.render_mode) ){
-
-        this.task_error = {
-          'task_request': null
-        }
-        try{
-          const response = await axios.post('/api/v1/job/' + this.job_id +'/task/trainer/request', {})
-
-          if (response.data.log.success == true) {
-            this.$emit('set_file_list', [response.data.task.file])
-            // this.File_list = [response.data.task.file]
-
-            this.task = response.data.task
-
-            if (this.task.task_type == "review" && this.task.job_type == "Exam") {
-              this.label_settings.show_list = false
-            }
-
-            this.label_file_colour_map = this.task.label_dict.label_file_colour_map
-            this.label_list = this.task.label_dict.label_file_list_serialized
-
-            this.$emit('file_list_length', this.File_list.length)
-          }
-
-          this.file_update_core()
-        }
-        catch(error){
-          console.debug(error);
-          this.loading = false
-          this.task_error = error.response.data.log.error
-        }
-      }
-
-      if (this.file_view_mode == "history") {
-
-        if (this.current_version == undefined) {
-          this.media_loading = false
-          return
-        }
-        try{
-            const response = await axios.get('/api/project/' + this.project_string_id +
-              '/version/' + this.current_version.id + '/file/list');
-          if (response.data.success === true) {
-            this.$emit('set_file_list', response.data.file_list)
-            // this.File_list = response.data.file_list
-            this.file_update_core()
-
-          }
-          this.loading = false
-        }
-        catch(error){
-          console.error(error);
-        }
-        return
-
-      }
-
-      else if (this.file_id_prop) {
-        // Delegates to media_core
-        this.$emit('request_file_data', this.file_id_prop);
-        this.fetch_single_file();
-        // const file_list_data = await this.fetch_project_file_list();
-      }
-
-      else if (this.project_string_id)  {
-        // const file_list_data = await this.fetch_project_file_list();
-        await this.update_file_list_and_set_current_file(file_list_data1);
-      }
-
-    },
 
 
 
@@ -6209,7 +6120,7 @@ export default Vue.extend( {
       this.loading = true
       try{
         const response = await axios.post('/api/v1/task/diff', {
-            task_alpha_id: this.current_task_id,
+            task_alpha_id: this.$props.task_id_prop,
             mode_data: this.task_mode_prop,  // TODO clarify task_mode_prop vs mode_data
         })
         if (response.data.log.success === true) {
@@ -6305,7 +6216,7 @@ export default Vue.extend( {
 
       // Diffing Context
       // TODO: discuss if should remove or move to another place (separate component)
-      if (this.current_task_id) {
+      if (this.$props.task_id_prop) {
         if (this.task_mode_prop == 'compare_review_to_draw') {
           await this.get_instance_list_diff();
           this.get_instances_loading = false;
@@ -6497,7 +6408,7 @@ export default Vue.extend( {
             this.$router.push(`/task/${response.data.task.id}`);
             history.pushState({}, '', `/task/${response.data.task.id}`);
             // Refetch task Data.
-            this.current_task_id = response.data.task.id;
+            this.$props.task_id_prop = response.data.task.id;
             await this.get_media();
           }
 

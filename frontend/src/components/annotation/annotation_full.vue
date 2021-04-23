@@ -140,6 +140,16 @@
         }
       },
       methods: {
+        get_task_media: async function (resolve) {
+          this.loading = true
+          this.error = {}   // reset
+          this.media_loading = true  // gets set to false in shared file_update_core()
+
+          if (this.current_task_id && this.request_next_page == null) {
+            await this.fetch_single_task();
+            return
+          }
+        },
         get_project: function () {
 
           if (this.project_string_id == null) {
