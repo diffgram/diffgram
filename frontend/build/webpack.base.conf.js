@@ -95,7 +95,6 @@ module.exports = {
           id: 'font-loader',
           name: '[name].[hash:7].[ext]',
           outputPath: utils.assetsPath('fonts'),
-          publicPath: './../fonts',
           limit: 10000
         }
       },

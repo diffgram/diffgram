@@ -71,13 +71,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   ]
 })
 
-const fontRule = devWebpackConfig.module.rules.filter(rule => {
-  if(rule.options &&  rule.options.id === 'font-loader'){
-    return true
-  }
-  return false
-})[0];
-fontRule.options.publicPath = './../static/fonts';
+
 module.exports = new Promise((resolve, reject) => {
   portfinder.basePort = process.env.PORT || config.dev.port
   portfinder.getPort((err, port) => {
