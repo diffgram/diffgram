@@ -32,7 +32,7 @@
         <v-card>
           <v-card-title>
             Welcome!
-            Images can be annotated here. :)
+            Images/Text can be annotated here. :)
 
           </v-card-title>
           <v-btn @click="upload_link">
@@ -73,7 +73,6 @@
         },
 
       },
-
       data() {
         return {
 
@@ -83,14 +82,11 @@
           request_project_change: null,
           view_only: false,
           current_image: null,
-
-
           download_annotations_loading: false,
           annotation_example: false,
 
         }
       },
-
       watch: {
         '$route'(to, from) {
           this.images_found = true,
@@ -104,13 +100,11 @@
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
-        if(this.$props.task_id_prop){
+        if (this.$props.task_id_prop) {
           this.add_visit_history_event('task')
-        }
-        else if(this.$props.file_id_prop){
+        } else if (this.$props.file_id_prop) {
           this.add_visit_history_event('file')
-        }
-        else{
+        } else {
           this.add_visit_history_event('page')
         }
       },
@@ -118,13 +112,11 @@
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
-
-
       },
       computed: {
-        file_id: function(){
+        file_id: function () {
           let file_id = this.$props.file_id_prop;
-          if(this.$route.query.file){
+          if (this.$route.query.file) {
             file_id = this.$route.query.file;
           }
           return file_id;
@@ -137,21 +129,13 @@
           }
         }
       },
-      beforeRouteLeave(to, from, next) {
-        if (this.$refs.annotation_core && this.$refs.annotation_core.has_changed) {
-          if (!window.confirm("Leave without saving?")) {
-            return;
-          }
-        }
-        next();
-      },
       methods: {
-        add_visit_history_event: async function(object_type){
+        add_visit_history_event: async function (object_type) {
           let page_name = 'data_explorer'
-          if(this.$props.file_id_prop){
+          if (this.$props.file_id_prop) {
             page_name = 'file_detail'
           }
-          if(this.$props.task_id_prop){
+          if (this.$props.task_id_prop) {
             page_name = 'task_detail'
           }
           const event_data = await create_event(this.get_project_string_id(), {
@@ -162,8 +146,8 @@
             user_visit: 'user_visit',
           })
         },
-        get_project_string_id: function(){
-          if(this.$props.project_string_id){
+        get_project_string_id: function () {
+          if (this.$props.project_string_id) {
             return this.$props.project_string_id;
           }
           return this.$store.state.project.current.project_string_id;
@@ -201,6 +185,7 @@
             String(this.project_string_id) + '/annotation_project/versions')
         }
 
-      }
+      },
     }
-  ) </script>
+  )
+</script>
