@@ -1920,11 +1920,6 @@ export default Vue.extend( {
       canvas_element: null,
 
       request_label_file_refresh: false,
-      image_reload: false,
-
-      metadata_previous: {
-        file_count: null
-      },
 
       current_label_file: {
         id: null,
@@ -3752,17 +3747,6 @@ export default Vue.extend( {
         this.canvas_height = this.current_file.video.height
       }
     },
-
-    request_media: function (metadata) {
-      // careful, do NOT call request_media() directly
-      // as it expects metadata from media_core
-      // use this.request_next_page = Date.now() instead if needed?
-      this.metadata = metadata
-      this.image_reload = true   // why is this not automatic?
-      this.get_media()
-
-    },
-
     // todo why not make this part of rest of event stuff
     wheel: function (event) {
 
@@ -5167,48 +5151,6 @@ export default Vue.extend( {
     },
 
 
-    // TODO this should probably be in media core
-    // then annotation core can just receive a file list...
-    fetch_single_file: async function(){
-      this.error_no_permissions = {};
-      // why would we need metadata from request media here?
-
-      try{
-        const response = await axios.post('/api/v1/file/view', {
-          'file_id': parseInt(this.file_id_prop),
-          'project_string_id': this.$store.state.project.current.project_string_id
-        })
-        this.File_list = [response.data['file']]
-
-        this.$emit('file_list_length', this.File_list.length)
-        this.metadata_previous = this.metadata;
-        // should we reset or clear metadata previous?
-
-        // WIP for future feature, ie if we don't have project permissions.
-        if (response.data.label_dict && response.data.label_dict.label_file_colour_map) {
-          this.label_file_colour_map = response.data.label_dict.label_file_colour_map
-          this.label_list = response.data.label_dict.label_list
-        }
-        this.file_update_core()
-      }catch(error){
-        this.error = this.$route_api_errors(error)
-        this.loading = false
-        this.file_update_core()   // for other loading flag
-      }
-    },
-
-    append_project_file_list: async function (file_list_data) {
-      this.metadata_previous = file_list_data.metadata;
-      const file_ids = this.File_list.map(file => file.id);
-      for (let i = 0; i < file_list_data.file_list.length; i++) {
-        const current = file_list_data.file_list[i];
-        if(!file_ids.includes(current.id)){
-          this.File_list.push(current)
-        }
-
-      }
-      this.$emit('file_list_length', this.File_list.length);
-    },
 
     update_file_list_and_set_current_file: async function (file_list_data) {
       this.metadata_previous = file_list_data.metadata;
@@ -5216,34 +5158,7 @@ export default Vue.extend( {
       this.$emit('file_list_length', this.File_list.length);
       await this.file_update_core()
     },
-    fetch_project_file_list: async function(){
-      this.error_no_permissions = {};
-      try{
-        const response = await axios.post('/api/project/' + String(this.project_string_id) +
-          '/user/' + this.$store.state.user.current.username + '/file/list', {
 
-          'metadata': this.metadata,
-          'project_string_id': this.project_string_id
-
-        })
-        if (response.data['file_list'] != null) {
-            return response.data;
-        }
-      }
-      catch(error){
-        const { response } = error;
-        if(response.status === 403){
-          this.error_no_permissions = {
-            data: response.data,
-            status: response.status,
-            message: 'You are not allowed to view this resource, please contact the project admin to get permissions.'
-          };
-        }
-        console.error(error);
-        this.loading = false
-        // this.logout()
-      }
-    },
     fetch_single_task: async function(){
       this.media_sheet = false;
       this.task_error = {
@@ -5310,45 +5225,10 @@ export default Vue.extend( {
         }
       }
 
-      // TODO split these things into their own functions
-      // instead of fat if statements
-
-      /*
-       * Context stuff to be aware of
-       *
-       * If we have a task_id_prop it means it's been provided in the url
-       * so the assumption is that we want to go right to this
-       *
-       * If we don't have it, then the assumption is we are "working the job"
-       * Where it gets confusing is it says it's going to next but it calls this
-       * instead of function below it
-       *
-       * keep in mind this is DIFFERENT from hiding/showing display
-       * elements, in which case task.id being present is all that's needed
-       *
-          Here we want to load it intially, but if we click the "go to next"
-          thing we want to get next element (even if we started from
-          the task_id_prop)
-          We set request_next_page when we trigger a change that should get the
-          next() relement, so if that's defined then we shouldn't use this right?
-
-        We also need to be careful to set this.job_id, otherwise it won't have it for future requests
-
-      TODO I think if someone wants to "go to next" in the context of viewing a specific task
-      it should either
-      * Not go to next
-       * Push them to /job/{job_id}  page.  (we now get job_id from task so that would work...)
-
-        *
-       */
       if (this.current_task_id && this.request_next_page == null) {
         await this.fetch_single_task();
         return
       }
-
-      //  QUESTION, if a builder is doing the task
-      // (ie in internal share mode, then we need this too in "full" mode)
-      // new job creation is piggy backing on "home" mode
 
       if (this.job_id && ["trainer_default", "full"].includes(this.render_mode) ){
 
@@ -5359,8 +5239,8 @@ export default Vue.extend( {
           const response = await axios.post('/api/v1/job/' + this.job_id +'/task/trainer/request', {})
 
           if (response.data.log.success == true) {
-
-            this.File_list = [response.data.task.file]
+            this.$emit('set_file_list', [response.data.task.file])
+            // this.File_list = [response.data.task.file]
 
             this.task = response.data.task
 
@@ -5393,7 +5273,8 @@ export default Vue.extend( {
             const response = await axios.get('/api/project/' + this.project_string_id +
               '/version/' + this.current_version.id + '/file/list');
           if (response.data.success === true) {
-            this.File_list = response.data.file_list
+            this.$emit('set_file_list', response.data.file_list)
+            // this.File_list = response.data.file_list
             this.file_update_core()
 
           }
@@ -5405,15 +5286,17 @@ export default Vue.extend( {
         return
 
       }
+
       else if (this.file_id_prop) {
+        // Delegates to media_core
+        this.$emit('request_file_data', this.file_id_prop);
         this.fetch_single_file();
-        const file_list_data = await this.fetch_project_file_list();
-        this.append_project_file_list(file_list_data);
+        // const file_list_data = await this.fetch_project_file_list();
       }
 
       else if (this.project_string_id)  {
-        const file_list_data = await this.fetch_project_file_list();
-        await this.update_file_list_and_set_current_file(file_list_data);
+        // const file_list_data = await this.fetch_project_file_list();
+        await this.update_file_list_and_set_current_file(file_list_data1);
       }
 
     },
@@ -6705,7 +6588,6 @@ export default Vue.extend( {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
         console.debug("Loading")
-
         return
       }
       this.full_file_loading = true;
