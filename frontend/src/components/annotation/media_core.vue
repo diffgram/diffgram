@@ -245,7 +245,7 @@
           <div v-if="file_dirs_view_mode === 1">
 
             <dir_attach :project_string_id="project_string_id"
-                                :file_list="File_list"
+                                :file_list="file_list"
                                 :selected="selected_dirs"
                                 :job_id="job_id"
             >
@@ -255,7 +255,7 @@
         <div v-if="file_view_mode == 'task' && file_dirs_view_mode === 0">
 
           <v_task_file_attach :project_string_id="project_string_id"
-                              :file_list="File_list"
+                              :file_list="file_list"
                               :selected="selected"
                               :job_id="job_id"
                               :select_from_metadata="select_from_metadata"
@@ -422,7 +422,7 @@
       </v-flex>
 
 
-      <!-- 
+      <!--
          Would like a spacer here but it's being funny with the
         minimize thing so let's just move it over?-->
       <!-- <v-spacer> </v-spacer> -->
@@ -514,7 +514,7 @@
             <v-layout>
 
               <v-row align="end"
-                     v-if="File_list.length === 0"
+                     v-if="file_list.length === 0"
                      class="pa-4"
                      justify="center">
 
@@ -537,7 +537,7 @@
 
               <v-flex xs4
                       md1
-                      v-for="(item, index) in File_list"
+                      v-for="(item, index) in file_list"
                       :key="index"
               >
                 <a @click="change_file_request(item)">
@@ -609,12 +609,12 @@
             files in the job, where as the file_count doesn't AND
             that data table takes this value 'strictly' in a bad way,
             ie it won't show any files if the value is 0 even if it has items in
-            File_list.
+            file_list.
       -->
       <v-card style="overflow-y:auto; max-height: 600px">
         <v-data-table v-if="layout_view == 'list'"
                       :headers="headers_view"
-                      :items="File_list"
+                      :items="file_list"
                       class="elevation-1"
                       :options.sync="options"
                       :server-items-length="metadata_previous.length_current_page"
@@ -703,7 +703,7 @@
 
               <td v-if="show_column('complete')">
 
-                <!-- 
+                <!--
                      Not clear value of having this here.
                      How / why would someone want to complete / not complete a file in this preview mode?
                      And if they really did, would probably make more sense as a bulk operation?
@@ -759,7 +759,7 @@
 
         <v_source_control_commit
           :project_string_id="project_string_id"
-          :file_list="File_list"
+          :file_list="file_list"
           :selected="selected"
           :select_from_metadata="select_from_metadata"
           :metadata_previous="metadata_previous"
@@ -818,16 +818,13 @@ import Vue from "vue";
       'project_string_id': {
         default: null
       },
+      'file_id_prop': {
+        default: null
+      },
       'job_id': {
         default: null
       },
       'job': {
-        default: null
-      },
-      'File_list': {
-        default: []
-      },
-      'current_file': {
         default: null
       },
       'video_mode': {
@@ -835,10 +832,6 @@ import Vue from "vue";
       },
       'file_view_mode': {
         default: null  // home, task, changes, annotation
-      },
-      'metadata_previous': {
-        default: null,
-        file: {}
       },
       'request_next_page': {
         default: null
@@ -889,8 +882,13 @@ import Vue from "vue";
       ],
 
       menu_for_remove_files_bool: undefined,
+      metadata_previous: {
+        file_count: null
+      },
 
       current_dataset: {},
+      current_file: null,
+      file_list: [],
 
       height: 0,
       selected_dirs: [],
@@ -1191,6 +1189,105 @@ import Vue from "vue";
   },
 
   methods: {
+    get_media: async function (resolve) {
+
+      this.loading = true
+      this.error = {}   // reset
+      this.media_loading = true  // gets set to false in shared file_update_core()
+
+      // TODO: Figure out if canvas wrapper style is still useful.
+      // if (this.image_reload == true) {
+      //   this.file_list = []
+      //   this.current_file = {}
+      //   if (this.canvas_wrapper) {
+      //     this.canvas_wrapper.style.display = "none"
+      //   }
+      // }
+
+      if (this.$props.file_id_prop) {
+        this.$emit('request_file_data', this.$props.file_id_prop);
+        this.fetch_single_file();
+        const file_list_data = await this.fetch_project_file_list();
+      }
+
+      else if (this.project_string_id)  {
+        const file_list_data = await this.fetch_project_file_list();
+        await this.update_file_list_and_set_current_file(file_list_data);
+      }
+
+    },
+    set_file_list: function(new_file_list){
+      this.file_list = new_file_list;
+    },
+    append_project_file_list: async function (file_list_data) {
+      this.metadata_previous = file_list_data.metadata;
+      const file_ids = this.File_list.map(file => file.id);
+      for (let i = 0; i < file_list_data.file_list.length; i++) {
+        const current = file_list_data.file_list[i];
+        if(!file_ids.includes(current.id)){
+          this.file_list.push(current)
+        }
+
+      }
+      this.$emit('file_list_length', this.File_list.length);
+    },
+    fetch_project_file_list: async function(){
+      this.error_no_permissions = {};
+      try{
+        const response = await axios.post('/api/project/' + String(this.project_string_id) +
+          '/user/' + this.$store.state.user.current.username + '/file/list', {
+
+          'metadata': this.metadata,
+          'project_string_id': this.project_string_id
+
+        })
+        if (response.data['file_list'] != null) {
+          return response.data;
+        }
+      }
+      catch(error){
+        const { response } = error;
+        if(response.status === 403){
+          this.error_no_permissions = {
+            data: response.data,
+            status: response.status,
+            message: 'You are not allowed to view this resource, please contact the project admin to get permissions.'
+          };
+        }
+        console.error(error);
+        this.loading = false
+        // this.logout()
+      }
+    },
+    fetch_single_file: async function(file_id){
+      this.error_no_permissions = {};
+      // why would we need metadata from request media here?
+      if(!file_id){
+        throw Error('Provide file_id to fetch file [on fetch_single_file()]')
+      }
+      try{
+        const response = await axios.post('/api/v1/file/view', {
+          'file_id': parseInt(file_id),
+          'project_string_id': this.$store.state.project.current.project_string_id
+        })
+        this.file_list = [response.data['file']]
+
+        this.$emit('file_list_length', this.file_list.length)
+        this.metadata_previous = this.metadata;
+        // should we reset or clear metadata previous?
+
+        // WIP for future feature, ie if we don't have project permissions.
+        if (response.data.label_dict && response.data.label_dict.label_file_colour_map) {
+          this.label_file_colour_map = response.data.label_dict.label_file_colour_map
+          this.label_list = response.data.label_dict.label_list
+        }
+        this.file_update_core()
+      }catch(error){
+        this.error = this.$route_api_errors(error)
+        this.loading = false
+        this.file_update_core()   // for other loading flag
+      }
+    },
     determine_intial_dataset_strategy: function () {
       if (this.$route.query["dataset"]) {
         this.current_dataset.directory_id = parseInt(this.$route.query["dataset"])
@@ -1236,13 +1333,13 @@ import Vue from "vue";
       // way this gets "propogated"
       // when using the vuetify iamge thing...
 
-      this.File_list[index].frontend_src_load_failed = true
+      this.file_list[index].frontend_src_load_failed = true
 
     },
 
     select_all(){
       if (this.select_from_metadata == true) {
-        this.selected = this.File_list
+        this.selected = this.file_list
       }
       if (this.select_from_metadata == false) {
         this.selected = []
@@ -1355,12 +1452,12 @@ import Vue from "vue";
       this.select_from_metadata = false
       this.selected = []
 
-      this.$emit('request_media', this.metadata)
+      this.get_media();
     },
     next_page() {
       this.request_next_page_flag = true
       this.request_previous_page_flag = false
-      this.$emit('request_media', this.metadata)
+      this.get_media();
     },
     previous_page() {
       /* TODO  trying to follow prior design but this isn't great
@@ -1369,7 +1466,7 @@ import Vue from "vue";
        */
       this.request_next_page_flag = false
       this.request_previous_page_flag = true
-      this.$emit('request_media', this.metadata)
+      this.get_media();
 
     },
     remove_function: function (file) {

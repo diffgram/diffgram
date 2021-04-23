@@ -2,29 +2,25 @@
   <div style="overflow-x:auto;">
 
     <div id="annotation_full" tabindex="0">
-
       <div v-if="images_found == true">
-
-
         <v_annotation_core :render_mode=" 'full' "
                            :is_annotation_assignment_bool="false"
                            :project_string_id="project_string_id"
                            :file_id_prop="file_id"
-                           @images_found="images_found_function"
                            :request_save="request_save"
-                           @save_response_callback="save_response_callback_function"
                            :request_project_change="request_project_change"
-                           @current_image="current_image_function"
                            :accesskey="'full'"
                            :file_view_mode="'annotation'"
                            :job_id="job_id"
                            :view_only_mode_prop="view_only"
                            :task_id_prop="task_id_prop"
+                           @save_response_callback="save_response_callback_function"
+                           @current_image="current_image_function"
+                           @images_found="images_found_function"
+                           @set_file_list="set_file_list"
                            ref="annotation_core"
         >
         </v_annotation_core>
-
-
       </div>
       <div v-else>
 
@@ -45,14 +41,11 @@
 
 
       <v_media_core :project_string_id="project_string_id"
-                    :File_list="File_list"
-                    :current_file="current_file"
                     @change_file="change_file('none', $event)"
                     @remove_file_request="remove_file_request($event)"
                     @request_media="request_media($event)"
                     :video_mode="video_mode"
                     :file_view_mode="file_view_mode"
-                    :metadata_previous="metadata_previous"
                     @replace_file="replace_file($event[0], $event[1])"
                     :request_next_page="request_next_page"
                     :view_only_mode="view_only_mode"
@@ -62,6 +55,7 @@
                     :task="task"
                     :visible="media_sheet"
                     @height="media_core_height = $event"
+                    ref="media_core"
       >
       </v_media_core>
     </div>
@@ -70,11 +64,7 @@
 
 
 <script lang="ts">
-
   import axios from 'axios';
-  //import annotate from 'diffgram-annotate';
-  //console.log(annotate)
-
   import {create_event} from "../event/create_event";
   import Vue from "vue";
 
@@ -113,8 +103,6 @@
         '$route'(to, from) {
           this.images_found = true,
             this.request_project_change = Date.now()
-
-          // this is a bit awkward...
         }
       },
       created() {
@@ -152,6 +140,9 @@
         }
       },
       methods: {
+        set_file_list: function(new_file_list){
+          this.$refs.media_core.set_file_list(new_file_list)
+        },
         add_visit_history_event: async function (object_type) {
           let page_name = 'data_explorer'
           if (this.$props.file_id_prop) {
