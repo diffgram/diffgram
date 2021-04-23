@@ -42,6 +42,28 @@
         </v-card>
 
       </div>
+
+
+      <v_media_core :project_string_id="project_string_id"
+                    :File_list="File_list"
+                    :current_file="current_file"
+                    @change_file="change_file('none', $event)"
+                    @remove_file_request="remove_file_request($event)"
+                    @request_media="request_media($event)"
+                    :video_mode="video_mode"
+                    :file_view_mode="file_view_mode"
+                    :metadata_previous="metadata_previous"
+                    @replace_file="replace_file($event[0], $event[1])"
+                    :request_next_page="request_next_page"
+                    :view_only_mode="view_only_mode"
+                    :job_id="job_id"
+                    :job="job"
+                    :media_loading="media_loading"
+                    :task="task"
+                    :visible="media_sheet"
+                    @height="media_core_height = $event"
+      >
+      </v_media_core>
     </div>
   </div>
 </template>
