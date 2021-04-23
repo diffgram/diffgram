@@ -44,8 +44,7 @@
                     @change_file="change_file('none', $event)"
                     @remove_file_request="remove_file_request($event)"
                     @request_media="request_media($event)"
-                    :video_mode="video_mode"
-                    :file_view_mode="file_view_mode"
+                    file_view_mode="annotation"
                     @replace_file="replace_file($event[0], $event[1])"
                     :request_next_page="request_next_page"
                     :view_only_mode="view_only_mode"
@@ -106,6 +105,7 @@
         }
       },
       created() {
+        this.get_project();
         this.$store.commit('set_project_string_id', this.project_string_id);
         if (this.$route.query.view_only) {
           this.view_only = true;
@@ -140,6 +140,42 @@
         }
       },
       methods: {
+        get_project: function () {
+
+          if (this.project_string_id == null) {
+            return
+          }
+
+          if (this.project_string_id == this.$store.state.project.current.project_string_id) {
+            // context that if we already have the the project, there's not specific need to refresh
+            // project is bound / related to directory so if it refresh artifically we need
+            // to cache directory
+            // Not clear if downsides of not refreshing here by default
+            return
+          }
+
+          axios.get('/api/project/' + this.project_string_id + '/view')
+            .then(response => {
+              if (response.data['none_found'] == true) {
+                this.none_found = true
+              } else {
+                //console.debug(response)
+                this.$store.commit('set_project_name', response.data['project']['name'])
+                this.$store.commit('set_project', response.data['project'])
+
+                // TODO may not be right place to get this
+                if (response.data.user_permission_level) {
+                  this.$store.commit('set_current_project_permission_level',
+                    response.data.user_permission_level[0])
+
+                  if (response.data.user_permission_level[0] == "Viewer") {
+                    this.view_only_mode = true
+                  }
+                }
+              }
+            })
+            .catch(error => {console.debug(error); });
+        },
         set_file_list: function(new_file_list){
           this.$refs.media_core.set_file_list(new_file_list)
         },
