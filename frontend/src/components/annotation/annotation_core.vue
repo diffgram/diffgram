@@ -1594,7 +1594,12 @@ export default Vue.extend( {
       }
   },
   watch: {
-
+      current_file(newVal, oldVal){
+        if(newVal != oldVal){
+          this.on_change_current_file(newVal);
+          this.current_file_updates()
+        }
+      },
       mouse_computed(newval, oldval){
         // We don't want to create a new object here since the reference is used on all instance types.
         // If we create a new object we'll lose the reference on our class InstanceTypes
@@ -1618,9 +1623,6 @@ export default Vue.extend( {
       current_version_prop() {
         this.current_version = this.current_version_prop
         this.get_media()
-      },
-      current_file_prop: function () {
-        this.current_file_updates()
       },
       request_save: function (bool) {
         if (bool == true) {
@@ -3711,18 +3713,6 @@ export default Vue.extend( {
     },
 
     current_file_updates: function () {
-
-      // TODO clarify this is really only for when current_file_prop is set?
-
-      // TODO this feels awkward being seperate from annotaiton_changes_updates()
-      // this is in context of a file being update from outside this component
-      if (this.current_file_prop == undefined) {
-        return
-      }
-      this.current_file = this.current_file_prop
-
-      //console.debug(this.current_file)
-
       if (this.current_file.type == "image") {
         this.video_mode = false
 
@@ -5183,9 +5173,6 @@ export default Vue.extend( {
           if (this.task.task_type == "review" && this.task.job_type == "Exam") {
             this.label_settings.show_list = false
 
-            //  TODO, view only isn't quite right since we still want complete button for example
-            //  We do want to restrict editing the results though
-            //this.view_only_mode = true
           }
 
           this.label_file_colour_map = this.task.label_dict.label_file_colour_map
@@ -5301,42 +5288,7 @@ export default Vue.extend( {
 
     },
 
-    get_project: function () {
 
-      if (this.project_string_id == null) {
-        return
-      }
-
-      if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-        // context that if we already have the the project, there's not specific need to refresh
-        // project is bound / related to directory so if it refresh artifically we need
-        // to cache directory
-        // Not clear if downsides of not refreshing here by default
-        return
-      }
-
-      axios.get('/api/project/' + this.project_string_id + '/view')
-      .then(response => {
-        if (response.data['none_found'] == true) {
-          this.none_found = true
-        } else {
-          //console.debug(response)
-          this.$store.commit('set_project_name', response.data['project']['name'])
-          this.$store.commit('set_project', response.data['project'])
-
-          // TODO may not be right place to get this
-          if (response.data.user_permission_level) {
-            this.$store.commit('set_current_project_permission_level',
-              response.data.user_permission_level[0])
-
-            if (response.data.user_permission_level[0] == "Viewer") {
-              this.view_only_mode = true
-            }
-          }
-        }
-      })
-      .catch(error => {console.debug(error); });
-    },
 
     toInt: function (n) { return Math.round(Number(n)); },
 
@@ -6574,7 +6526,7 @@ export default Vue.extend( {
         this.$refs.video_controllers.reset_cache();
     },
 
-    change_file: async function (direction, file) {
+    on_change_current_file: async function (direction, file) {
 
       /* If we are in the context of trying to complete a video,
        * maybe it's ok to change while loading?
@@ -6619,50 +6571,11 @@ export default Vue.extend( {
       }
       this.reset_for_file_change_context()
 
-      var i = null;
+
 
       if (direction == "next" || direction == "previous") {
+        this.$emit('request_file_change', direction);
 
-        if (this.complete_on_change == true) {
-
-          // TODO need to capture current file, as otherwise file may change
-          // while changing
-          // this.complete_on_change_trigger = Date.now()
-        }
-
-        let file_id = null
-        file_id = this.current_file.id
-        i = this.File_list.findIndex(x => x.id == file_id)
-        var original_i = i
-        if (direction == "next") {
-          i += 1
-        } else { i -= 1 }
-
-        // limits
-        if (i < 0) {
-          i = 0
-        }
-
-        // CAUTION for context of tasks / job we need render mode check here
-        // otherwise it won't fire.
-        // The trainer part relies upon it "requesting next page"
-        // to refresh / get next task
-
-        // End of list, go to next page
-        if (i >= this.File_list.length || this.render_mode== 'trainer_default') {
-          //i = this.File_list.length - 1
-
-          // Auto Advance to next page
-          // Check is to help it not jump if at "end of list"?
-          // But this will only work for first page unless
-          // we also increase i for what page we are on.
-          //if (metadata_previous.file_count > i) {
-          this.request_next_page = Date.now()
-          //}
-          return
-        }
-
-        this.current_file = this.File_list[i]
       }
       else {
         this.current_file = file

@@ -827,9 +827,6 @@ import Vue from "vue";
       'job': {
         default: null
       },
-      'video_mode': {
-        default: null  // this was a bool, but we aren't using it here?
-      },
       'file_view_mode': {
         default: null  // home, task, changes, annotation
       },
@@ -1430,7 +1427,50 @@ import Vue from "vue";
           this.logout()
         });
     },
+    change_file(direction){
 
+      let i = null;
+      if (this.complete_on_change == true) {
+
+        // TODO need to capture current file, as otherwise file may change
+        // while changing
+        // this.complete_on_change_trigger = Date.now()
+      }
+
+      let file_id = null
+      file_id = this.current_file.id
+      i = this.File_list.findIndex(x => x.id == file_id)
+      var original_i = i
+      if (direction === "next") {
+        i += 1
+      } else { i -= 1 }
+
+      // limits
+      if (i < 0) {
+        i = 0
+      }
+
+      // CAUTION for context of tasks / job we need render mode check here
+      // otherwise it won't fire.
+      // The trainer part relies upon it "requesting next page"
+      // to refresh / get next task
+
+      // End of list, go to next page
+      if (i >= this.File_list.length || this.render_mode== 'trainer_default') {
+        //i = this.File_list.length - 1
+
+        // Auto Advance to next page
+        // Check is to help it not jump if at "end of list"?
+        // But this will only work for first page unless
+        // we also increase i for what page we are on.
+        //if (metadata_previous.file_count > i) {
+        this.request_next_page = Date.now()
+        //}
+        return
+      }
+
+      this.current_file = this.File_list[i]
+    },
     change_file_request(file) {
 
       if (this.control_key_down == true) {
