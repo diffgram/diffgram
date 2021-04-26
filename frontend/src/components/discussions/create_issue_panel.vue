@@ -1,4 +1,5 @@
 <template>
+  <div id="create_issue_panel">
   <v-container max-width="750px">
     <v-card>
       <v-card-title class="headline d-flex align-center">
@@ -7,7 +8,15 @@
       </v-card-title>
       <v-card-text>
         <v-container class="d-flex flex-column">
-          <v-text-field v-model="current_issue.title" label="Issue Name"></v-text-field>
+
+          <v-text-field
+                v-model="current_issue.title"
+                label="Issue Name"
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                        >
+          </v-text-field>
+
           <p class="ma-0"><strong>Attached Instances</strong></p>
           <v-container class="d-flex flex-wrap">
             <v-chip color="primary" small v-for="instance in selected_instances">
@@ -127,7 +136,8 @@
 
 
           </v-container>
-          <editor-content :editor="editor" class="discussion-create">
+          <editor-content :editor="editor"
+                          class="discussion-create">
 
           </editor-content>
         </v-container>
@@ -164,6 +174,7 @@
       </v-card-actions>
     </v-card>
   </v-container>
+  </div>
 </template>
 
 <script>
@@ -252,8 +263,14 @@
             }),
           ],
           content: '',
-          onFocus: this.focus_comment_box,
-          onBlur: this.focus_out_comment_box,
+          onFocus({ editor, event }) {
+            let context = document.querySelector('#create_issue_panel').__vue__
+            context.$store.commit('set_user_is_typing_or_menu_open', true)
+          },
+          onBlur({ editor, event }) {
+            let context = document.querySelector('#create_issue_panel').__vue__
+            context.$store.commit('set_user_is_typing_or_menu_open', false)
+          },
         }),
 
         loading_create_issue: false,

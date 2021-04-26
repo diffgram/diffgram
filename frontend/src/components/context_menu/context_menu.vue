@@ -188,7 +188,6 @@
         this.show_instance_template_menu = true
       },
       open_issue_panel(){
-        this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.$emit('open_issue_panel', this.locked_mouse_position);
 
       },
@@ -197,7 +196,6 @@
         this.$store.commit('set_user_is_typing_or_menu_open', false)
       },
       close_issue_dialog(){
-        this.$store.commit('set_user_is_typing_or_menu_open', false);
         this.show_issue_dialog = false;
       },
       get_mouse_position: function () {
@@ -637,7 +635,7 @@
     <share_instance_dialog :show_share_instance_menu="show_share_instance_menu"
                            :project_string_id="project_string_id"
                            @share_dialog_close="close_share_dialog"
-
+                           @click:outside="close_share_dialog()"
 
     ></share_instance_dialog>
 
