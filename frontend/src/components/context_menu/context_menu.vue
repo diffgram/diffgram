@@ -168,11 +168,9 @@
     },
     methods: {
       show_instance_history_panel: function(){
-        this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.$emit('open_instance_history_panel',  this.instance_hover_index_locked);
       },
       close_instance_history_panel: function(){
-        this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.$emit('close_instance_history_panel',  this.instance_hover_index_locked);
       },
       display_paste_menu: function(e){
