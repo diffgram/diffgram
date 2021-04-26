@@ -179,14 +179,12 @@
         this.y = e.clientY
         const hovered_instance_index = this.instance_hover_index_locked;
         this.instance_index_to_paste = hovered_instance_index;
-        this.$store.commit('set_user_is_typing_or_menu_open', true) // To prevent number entry conflicting with hotkeys
         this.show_paste_menu = true
       },
       on_click_create_instance_template: function(e){
         this.show_instance_template_menu = false
         const hovered_instance_index = this.instance_hover_index_locked;
         this.instance_index_to_create_instance_template = hovered_instance_index;
-        this.$store.commit('set_user_is_typing_or_menu_open', true) // To prevent number entry conflicting with hotkeys
         this.show_instance_template_menu = true
       },
       open_issue_panel(){
@@ -359,7 +357,11 @@
           <v-card-title>Paste Instances: </v-card-title>
           <v-card-text>
             Paste instance to the next
-            <v-text-field v-model="num_frames"></v-text-field>
+            <v-text-field
+                v-model="num_frames"
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                          ></v-text-field>
             Frames ahead.
 
           </v-card-text>
@@ -425,7 +427,11 @@
           <v-card-title>Create Instance Template: </v-card-title>
           <v-card-text>
             Name:
-            <v-text-field v-model="instance_template_name"></v-text-field>
+            <v-text-field
+                v-model="instance_template_name"
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                          ></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-btn @click="show_instance_template_menu = false,
