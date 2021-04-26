@@ -1586,10 +1586,15 @@ export default Vue.extend( {
       },
       'annotator_email': {},
       'request_project_change': {},
-      'current_file_prop': {},
+      'current_file': {
+        default: {
+          image: {
+          }
+        }
+      },
       'file_view_mode': {},
       'current_version_prop': {},
-      'view_only_mode_prop': {
+      'view_only_mode': {
         default: false
       }
   },
@@ -1597,7 +1602,7 @@ export default Vue.extend( {
       current_file(newVal, oldVal){
         if(newVal != oldVal){
           this.on_change_current_file(newVal);
-          this.current_file_updates()
+
         }
       },
       mouse_computed(newval, oldval){
@@ -1782,7 +1787,6 @@ export default Vue.extend( {
       },
 
       current_version: null,
-      view_only_mode: false,
 
       loading: true as Boolean,
 
@@ -1818,12 +1822,6 @@ export default Vue.extend( {
 
       snackbar_success: false,
       snackbar_success_text: null,
-
-      current_file: {
-        image: {
-        }
-      },
-
       gold_standard_file: {
         instance_list: [],     // careful, need this to not be null for vue canvas to work as expected
         id: null
@@ -1939,8 +1937,6 @@ export default Vue.extend( {
       save_on_change: true,
       complete_on_change: true,
       complete_on_change_trigger: null,
-      request_next_page: null,
-
       mouse_position: {
         raw: {
           x: 0,
@@ -2014,7 +2010,7 @@ export default Vue.extend( {
       instance_focused_index: null,
 
       window_width_from_listener: 1280,
-      $props.task_id_prop: undefined,
+      task_id_prop: undefined,
       window_height_from_listener: 650
     }
   },
@@ -2062,7 +2058,7 @@ export default Vue.extend( {
       }
     },
     show_target_reticle: function(){
-      if (this.view_only_mode == true || this.space_bar == true || this.any_loading == true) {
+      if (this.$props.view_only_mode == true || this.space_bar == true || this.any_loading == true) {
         return false
       }
 
@@ -2221,7 +2217,7 @@ export default Vue.extend( {
       this.canvas_scale_global_setting = new_size
 
 
-      if ( this.current_file.type == 'text') {
+      if ( this.$props.current_file.type == 'text') {
         // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
         return 100
       }
@@ -2554,10 +2550,10 @@ export default Vue.extend( {
 
     get_metadata: function() {
       let metadata
-      if (this.current_file.type == 'video'){
-        metadata = {...this.current_file.video}
+      if (this.$props.current_file.type == 'video'){
+        metadata = {...this.$props.current_file.video}
       } else {
-        metadata = {...this.current_file.image}
+        metadata = {...this.$props.current_file.image}
       }
       return metadata
     },
@@ -3007,9 +3003,9 @@ export default Vue.extend( {
       this.loading_sequences = loading_sequences
     },
     set_canvas_dimensions: function(){
-      if(!this.current_file.video){ return }
-      this.canvas_width = this.current_file.video.width;
-      this.canvas_height = this.current_file.video.height;
+      if(!this.$props.current_file.video){ return }
+      this.canvas_width = this.$props.current_file.video.width;
+      this.canvas_height = this.$props.current_file.video.height;
     },
     issues_fetched: function(issues_list){
       this.issues_list = issues_list;
@@ -3177,7 +3173,7 @@ export default Vue.extend( {
       // propagating to main
       // Once the list is updated here it filters back to instance_list component
 
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
 
       let index = update.index
       if (index == undefined) { return }  // careful 0 is ok.
@@ -3352,8 +3348,6 @@ export default Vue.extend( {
       this.task = {   // reset task dict
         id: null
       }
-
-      this.view_only_mode = this.view_only_mode_prop
 
       if (this.render_mode == 'assignment') {
         this.get_media_promise()
@@ -3716,8 +3710,8 @@ export default Vue.extend( {
       if (this.current_file.type == "image") {
         this.video_mode = false
 
-        this.canvas_width = this.current_file.image.width
-        this.canvas_height = this.current_file.image.height
+        this.canvas_width = this.$props.current_file.image.width
+        this.canvas_height = this.$props.current_file.image.height
 
         var self = this
         this.addImageProcess(this.current_file_prop.image.url_signed).then(new_image => {
@@ -3728,13 +3722,13 @@ export default Vue.extend( {
         })
       }
 
-      if (this.current_file.type == "video") {
+      if (this.$props.current_file.type == "video") {
         this.video_mode = true
-        this.current_video = this.current_file.video
-        this.current_video_file_id = this.current_file.id
+        this.current_video = this.$props.current_file.video
+        this.current_video_file_id = this.$props.current_file.id
 
-        this.canvas_width = this.current_file.video.width
-        this.canvas_height = this.current_file.video.height
+        this.canvas_width = this.$props.current_file.video.width
+        this.canvas_height = this.$props.current_file.video.height
       }
     },
     // todo why not make this part of rest of event stuff
@@ -3817,8 +3811,8 @@ export default Vue.extend( {
 
 
             if (this.File_list.length > 0) {
-              if (this.File_list[i].id == this.current_file.id) {
-                this.current_file = this.File_list[0]
+              if (this.File_list[i].id == this.$props.current_file.id) {
+                this.$props.current_file = this.File_list[0]
                 this.change_file("none", this.File_list[0])
               }
             }
@@ -3852,7 +3846,7 @@ export default Vue.extend( {
 
     delete_instance: function () {
 
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
 
       for (var i in this.instance_list) {
         if (this.instance_list[i].selected == true) {
@@ -4252,7 +4246,7 @@ export default Vue.extend( {
     // TODO clarify this does more than update styling
     update_mouse_style: function () {
 
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
 
 
       if (this.draw_mode == false) {
@@ -4351,7 +4345,7 @@ export default Vue.extend( {
         }
     },
     select_issue: function(){
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
       if (this.issue_hover_index == undefined || isNaN(this.issue_hover_index)) { return }    // careful 0 index is ok
       if (!this.issues_list[this.issue_hover_index]) { return }
       if( this.draw_mode ){ return }
@@ -4360,7 +4354,7 @@ export default Vue.extend( {
       this.open_view_edit_panel(issue);
     },
     select_something: function () {
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
       if (this.ellipse_hovered_corner_key) { return }
       if (this.selected_instance && this.selected_instance.midpoint_hover != undefined) { return }
       if (this.instance_hover_index === undefined && this.issue_hover_index === undefined) { return }    // careful 0 index is ok
@@ -4769,7 +4763,7 @@ export default Vue.extend( {
        */
 
     if (this.draw_mode == true ) { return }
-    if (this.view_only_mode == true) { return }
+    if (this.$props.view_only_mode == true) { return }
     if (this.instance_select_for_issue == true) { return }
     if (this.view_issue_mode) { return }
     let cuboid_did_move = false;
@@ -5002,7 +4996,7 @@ export default Vue.extend( {
       this.canvas_width = this.File_list[0].video.width
       this.canvas_height = this.File_list[0].video.height
       this.video_mode = true;
-      this.current_video = this.current_file.video;
+      this.current_video = this.$props.current_file.video;
       this.current_video_file_id = this.File_list[0].id
       await this.get_instances();
       // We need to trigger components and DOM updates before updating frames and sequences.
@@ -5017,9 +5011,9 @@ export default Vue.extend( {
       await this.$refs.sequence_list.get_sequence_list()
       // We need to update sequence lists synchronously to know when to remove the placeholder.
     },
-    file_update_core: async function () {
+    prepare_canvas_for_new_file: async function () {
       if (this.File_list[0] != undefined) {
-        this.current_file = this.File_list[0]
+        this.$props.current_file = this.File_list[0]
         if (this.File_list[0].type == "image") {
 
           await this.image_update_core()
@@ -5077,7 +5071,7 @@ export default Vue.extend( {
             this.images_found = false
             this.loading = false
         } else {
-            this.$emit('current_file', this.current_file)
+            this.$emit('current_file', this.$props.current_file)
             this.images_found = true
         }
       } else {
@@ -5100,8 +5094,8 @@ export default Vue.extend( {
 
         await this.get_instances()
 
-        this.canvas_width = this.current_file.image.width
-        this.canvas_height = this.current_file.image.height
+        this.canvas_width = this.$props.current_file.image.width
+        this.canvas_height = this.$props.current_file.image.height
 
         await this.addImageProcess_with_canvas_refresh()
 
@@ -5113,7 +5107,7 @@ export default Vue.extend( {
     addImageProcess_with_canvas_refresh: async function () {
       try{
         const new_image = await this.addImageProcess(
-          this.current_file.image.url_signed);
+          this.$props.current_file.image.url_signed);
         this.html_image = new_image;
         this.update_canvas();
         this.loading = false
@@ -5142,61 +5136,8 @@ export default Vue.extend( {
 
 
 
-    update_file_list_and_set_current_file: async function (file_list_data) {
-      this.metadata_previous = file_list_data.metadata;
-      this.File_list = file_list_data.file_list;
-      this.$emit('file_list_length', this.File_list.length);
-      await this.file_update_core()
-    },
 
-    fetch_single_task: async function(){
-      this.media_sheet = false;
-      this.task_error = {
-        'task_request': null
-      }
-      try{
-        console.debug('$props.task_id_prop', this.$props.task_id_prop)
-        const response = await axios.post('/api/v1/task', {
-          'task_id': parseInt(this.$props.task_id_prop, 10),
-          'builder_or_trainer_mode': this.$store.state.builder_or_trainer.mode
-        });
-        if (response.data.log.success == true) {
 
-          // TODO what parts of this can be merged with
-          // builder traner mode below
-
-          this.File_list = [response.data.task.file]
-
-          this.task = response.data.task
-          this.job_id = this.task.job_id
-
-          if (this.task.task_type == "review" && this.task.job_type == "Exam") {
-            this.label_settings.show_list = false
-
-          }
-
-          this.label_file_colour_map = this.task.label_dict.label_file_colour_map
-          this.label_list = this.task.label_dict.label_file_list_serialized
-
-          // careful, gold_standard_file default dict has some specific properties
-          // the server returns null if there is no file but
-          // the front end still needs the default properties
-          // especially as vue js renders errors messages in this context in a very cryptic way
-          if (response.data.task.gold_standard_file) {
-            this.gold_standard_file = response.data.task.gold_standard_file   // careful, under task dict
-          }
-
-          this.$emit('file_list_length', this.File_list.length)
-        }
-        this.task_error = response.data.log.error
-        await this.file_update_core()
-      }
-      catch(error){
-        console.debug(error);
-        this.loading = false
-        // this.logout()
-      }
-    },
 
 
 
@@ -5565,7 +5506,7 @@ export default Vue.extend( {
     mouse_up: function () {
 
       // start LIMITS, returns immediately
-      if (this.view_only_mode == true) { return }
+      if (this.$props.view_only_mode == true) { return }
       if (this.seeking == true) { return }
 
       if (this.mouse_down_limits_result == false) { return }
@@ -6013,7 +5954,7 @@ export default Vue.extend( {
       // TODO new method ie
       // this.is_actively_drawing = true
 
-      if (this.view_only_mode == true) {
+      if (this.$props.view_only_mode == true) {
         return
       }
 
@@ -6142,7 +6083,7 @@ export default Vue.extend( {
 
     get_instances_file_diff: async function () {
       try{
-        const response = await axios.get('/api/project/' + this.project_string_id + '/file/' + this.current_file.id + '/diff/previous')
+        const response = await axios.get('/api/project/' + this.project_string_id + '/file/' + this.$props.current_file.id + '/diff/previous')
         if (response.data.success === true) {
           this.instance_list = this.create_instance_list_with_class_types(response.data.instance_list)
           this.annotations_loading = false
@@ -6165,13 +6106,13 @@ export default Vue.extend( {
         } else {
 
           var url = '/api/project/' + this.$store.state.project.current.project_string_id +
-            '/file/' + String(this.current_file.id) + '/annotation/list'
+            '/file/' + String(this.$props.current_file.id) + '/annotation/list'
         }
         try{
           const response = await axios.post(url, {
             directory_id : this.$store.state.project.current_directory.directory_id,
             job_id : this.job_id,
-            attached_to_job: this.current_file.attached_to_job
+            attached_to_job: this.$props.current_file.attached_to_job
           })
           this.get_instances_core(response)
           this.annotations_loading = false
@@ -6436,16 +6377,12 @@ export default Vue.extend( {
         this.instance_list = []
         this.$refs.video_controllers.reset_cache();
     },
-
+    change_file(direction, file){
+      if (direction == "next" || direction == "previous") {
+        this.$emit('request_file_change', direction, file);
+      }
+    },
     on_change_current_file: async function (direction, file) {
-
-      /* If we are in the context of trying to complete a video,
-       * maybe it's ok to change while loading?
-       * question [ ] Pressing complete calls save, not change file right?
-       * Tested and this was not the issue, was actually the
-       * "next page" call below, but still TODO is review this!
-       */
-
 
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
@@ -6454,54 +6391,19 @@ export default Vue.extend( {
         return
       }
       this.full_file_loading = true;
-      /*
-       * Problem:
-       *  Save resets file information (for some historical / prior good reasons)
-       *
-       * Solution:
-       *  Sleep for 1 second.
-       *
-       * One alternative is a flag here so save doesn't "reload" the file response.
-       * But feel like there's a lot more to test in terms of that, especailly since we
-       * reset so much stuff below here.
-       *
-       * TODO would prefer if save() returns when the API call is
-       * returns. That would feel more robust.
-       * The current assumption is this is more of an edge case...
-       * Edit 20202:
-       *
-       * Added an await mechanism for save(), also refactored the function
-       * to await until API call succeeds. This ensures that the API call is
-       * finished before moving to the code after this.save();
-       *
-       *
-       */
 
       if (this.has_changed) {
         await this.save();
       }
       this.reset_for_file_change_context()
 
-
-
-      if (direction == "next" || direction == "previous") {
-        this.$emit('request_file_change', direction);
-
-      }
-      else {
-        this.current_file = file
-      }
-
       this.$addQueriesToLocation({'file': this.current_file.id})
 
-      // TODO clarify purpose of this check
-      if (original_i != file) {
-
-          this.$emit('current_file', this.current_file)
-          this.canvas_scale_local = 1;
-      }
-
       await this.refresh_attributes_from_current_file();
+
+      this.current_file_updates();
+      await this.prepare_canvas_for_new_file();
+
       this.full_file_loading = false;
     },
 
@@ -6724,14 +6626,14 @@ export default Vue.extend( {
       }
       if (event.keyCode === 67 && this.shift_key) { // c
 
-        if (this.current_file.ann_is_complete == true || this.view_only_mode == true) {
+        if (this.current_file.ann_is_complete == true || this.$props.view_only_mode == true) {
           return
         }
 
         this.save(true);  // and_complete == true
       }
       if (event.keyCode === 27) { // Esc
-        if (this.view_only_mode == true) { return }
+        if (this.$props.view_only_mode == true) { return }
         if(this.instance_select_for_issue || this.view_issue_mode){return}
 
         this.draw_mode = !this.draw_mode
@@ -6767,7 +6669,7 @@ export default Vue.extend( {
 
     },
     reset_drawing: function(){
-      if (this.view_only_mode == true) {
+      if (this.$props.view_only_mode == true) {
         return
       }
       this.lock_point_hover_change = false // reset
@@ -7017,7 +6919,7 @@ export default Vue.extend( {
     save: async function (and_complete=false) {
       this.save_error = {}
 
-      if (this.view_only_mode == true) {
+      if (this.$props.view_only_mode == true) {
         return
       }
 

@@ -1186,11 +1186,18 @@ import Vue from "vue";
   },
 
   methods: {
+    update_file_list_and_set_current_file: async function (file_list_data) {
+      this.metadata_previous = file_list_data.metadata;
+      this.file_list = file_list_data.file_list;
+      this.$emit('file_list_length', this.File_list.length);
+      await this.file_update_core()
+    },
+
     get_media: async function (resolve) {
 
       this.loading = true
       this.error = {}   // reset
-      this.media_loading = true  // gets set to false in shared file_update_core()
+      this.media_loading = true;
 
       // TODO: Figure out if canvas wrapper style is still useful.
       // if (this.image_reload == true) {
@@ -1278,11 +1285,9 @@ import Vue from "vue";
           this.label_file_colour_map = response.data.label_dict.label_file_colour_map
           this.label_list = response.data.label_dict.label_list
         }
-        this.file_update_core()
       }catch(error){
         this.error = this.$route_api_errors(error)
         this.loading = false
-        this.file_update_core()   // for other loading flag
       }
     },
     determine_intial_dataset_strategy: function () {

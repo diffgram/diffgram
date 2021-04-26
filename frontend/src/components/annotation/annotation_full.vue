@@ -7,13 +7,15 @@
                            :is_annotation_assignment_bool="false"
                            :project_string_id="project_string_id"
                            :file_id_prop="file_id"
+                           :task="task"
+                           :task_id_prop="task_id_prop"
                            :request_save="request_save"
                            :request_project_change="request_project_change"
                            :accesskey="'full'"
                            :file_view_mode="'annotation'"
                            :job_id="job_id"
-                           :view_only_mode_prop="view_only"
-                           :task_id_prop="task_id_prop"
+                           :view_only_mode="view_only_mode"
+
                            @save_response_callback="save_response_callback_function"
                            @current_image="current_image_function"
                            @images_found="images_found_function"
@@ -46,12 +48,11 @@
                     @request_media="request_media($event)"
                     file_view_mode="annotation"
                     @replace_file="replace_file($event[0], $event[1])"
-                    :request_next_page="request_next_page"
                     :view_only_mode="view_only_mode"
                     :job_id="job_id"
                     :job="job"
                     :media_loading="media_loading"
-                    :task="task"
+
                     :visible="media_sheet"
                     @height="media_core_height = $event"
                     ref="media_core"
@@ -88,6 +89,7 @@
         return {
 
           loading: false,
+          task: false,
           images_found: true,
           request_save: false,
           request_project_change: null,
@@ -111,9 +113,11 @@
           this.view_only = true;
         }
         if (this.$props.task_id_prop) {
-          this.add_visit_history_event('task')
+          this.add_visit_history_event('task');
+          this.fetch_single_task();
         } else if (this.$props.file_id_prop) {
-          this.add_visit_history_event('file')
+          this.add_visit_history_event('file');
+
         } else {
           this.add_visit_history_event('page')
         }
@@ -131,23 +135,59 @@
           }
           return file_id;
         },
-        download_annotations_computed: function () {
-          if (this.annotation_format == "YAML") {
-            return this.url_yaml
-          } else {
-            return this.url_json
-          }
-        }
       },
       methods: {
-        get_task_media: async function (resolve) {
+        fetch_single_task: async function(task_id){
+          this.media_sheet = false;
+          this.task_error = {
+            'task_request': null
+          }
           this.loading = true
           this.error = {}   // reset
           this.media_loading = true  // gets set to false in shared file_update_core()
+          if(!task_id){
+            throw Error('Provide task ID');
+          }
+          try{
+            const response = await axios.post('/api/v1/task', {
+              'task_id': parseInt(task_id, 10),
+              'builder_or_trainer_mode': this.$store.state.builder_or_trainer.mode
+            });
+            if (response.data.log.success == true) {
 
-          if (this.current_task_id && this.request_next_page == null) {
-            await this.fetch_single_task();
-            return
+              // TODO what parts of this can be merged with
+              // builder traner mode below
+
+              this.ile_list = [response.data.task.file]
+
+              this.task = response.data.task
+              this.job_id = this.task.job_id
+
+              if (this.task.task_type == "review" && this.task.job_type == "Exam") {
+                this.label_settings.show_list = false
+
+              }
+
+              this.label_file_colour_map = this.task.label_dict.label_file_colour_map
+              this.label_list = this.task.label_dict.label_file_list_serialized
+
+              // careful, gold_standard_file default dict has some specific properties
+              // the server returns null if there is no file but
+              // the front end still needs the default properties
+              // especially as vue js renders errors messages in this context in a very cryptic way
+              if (response.data.task.gold_standard_file) {
+                this.gold_standard_file = response.data.task.gold_standard_file   // careful, under task dict
+              }
+
+              this.$emit('file_list_length', this.File_list.length)
+            }
+            this.task_error = response.data.log.error
+            await this.file_update_core()
+          }
+          catch(error){
+            console.debug(error);
+            this.loading = false
+            // this.logout()
           }
         },
         get_project: function () {
@@ -179,7 +219,7 @@
                     response.data.user_permission_level[0])
 
                   if (response.data.user_permission_level[0] == "Viewer") {
-                    this.view_only_mode = true
+                    this.view_only = true
                   }
                 }
               }
