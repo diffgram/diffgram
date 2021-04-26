@@ -46,8 +46,8 @@
               :disabled="view_only_mode"
               :clearable="clearable"
               @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-              @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
-              @change="change_directory()"
+              @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+              @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
               :menu-props="{ auto: true }"
                   >
 
