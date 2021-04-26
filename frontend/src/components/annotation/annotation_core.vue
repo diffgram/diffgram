@@ -30,7 +30,7 @@
 
 
           <button_with_menu
-            v-if="$props.task_id_prop"
+            v-if="task && task.id"
             tooltip_message="View Task Information"
             icon="mdi-information"
             color="primary">
@@ -38,7 +38,7 @@
             <template slot="content">
 
               <task_meta_data_card vi-if="task"
-                                   :file="current_file"
+                                   :file="file"
                                    :video="current_video"
                                    :task="task"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
@@ -49,7 +49,7 @@
 
           </button_with_menu>
           <button_with_menu
-            v-if="current_file && !$props.task_id_prop"
+            v-if="file && !task"
             datacy="show_file_information"
             tooltip_message="View File Information"
             icon="mdi-information"
@@ -57,10 +57,10 @@
 
             <template slot="content">
 
-              <file_meta_data_card v-if="current_file && !$props.task_id_prop"
+              <file_meta_data_card v-if="file && !task"
                                    :video="current_video"
                                    :elevation="0"
-                                   :file="current_file"
+                                   :file="file"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
               >
 
@@ -69,7 +69,7 @@
 
           </button_with_menu>
           <button_with_menu
-            v-if="current_file && !$props.task_id_prop"
+            v-if="file && !task"
             datacy="show_linked_relations_file"
             tooltip_message="View Task Relations"
             icon="mdi-link-box-variant"
@@ -78,7 +78,7 @@
             <template slot="content">
 
               <file_relations_card v-if="task"
-                                   :file="current_file"
+                                   :file="file"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                                    :elevation="0">
 
@@ -88,7 +88,7 @@
           </button_with_menu>
 
           <button_with_menu
-            v-if="$props.task_id_prop"
+            v-if="task"
             datacy="show_linked_relations_task"
             tooltip_message="View Task Relations"
             icon="mdi-link-box-variant"
@@ -97,7 +97,7 @@
             <template slot="content">
 
               <task_relations_card v-if="task"
-                                   :file="current_file"
+                                   :file="file"
                                    :task="task"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                                    :elevation="0">
@@ -254,7 +254,7 @@
 
 
           <!--
-              If we go to the task directly the $props.task_id_prop is defined,
+              If we go to the task directly the $props.task is defined,
               but we if go through the job it's not.
               In the past we looked at using the 'render_mode',
               but as we are now allowing builders to see all this stuff
@@ -271,7 +271,7 @@
         <div>
           <tooltip_button
             tooltip_message="Previous File"
-            v-if="!$props.task_id_prop && current_file && current_file.id"
+            v-if="!task && file && file.id"
             @click="change_file('previous', 'none')"
             :disabled="loading || annotations_loading || full_file_loading || File_list.length == 0"
             color="primary"
@@ -285,7 +285,7 @@
                  so much of it here as it gets more complext -->
           <tooltip_button
             tooltip_message="Next File"
-            v-if="!$props.task_id_prop && current_file && current_file.id"
+            v-if="!task && file && file.id"
             @click="change_file('next', 'none')"
             :disabled="loading || annotations_loading ||  full_file_loading || File_list.length == 0"
             color="primary"
@@ -298,8 +298,8 @@
          <div>
            <tooltip_button
              tooltip_message="Previous Task"
-             v-if="$props.task_id_prop"
-             @click="change_task('previous', task)"
+             v-if="task"
+             @click="trigger_task_change('previous', task)"
              :disabled="loading || annotations_loading ||  full_file_loading"
              color="primary"
              icon="mdi-chevron-left-circle"
@@ -309,8 +309,8 @@
            </tooltip_button>
            <tooltip_button
              tooltip_message="Next Task"
-             v-if="$props.task_id_prop"
-             @click="change_task('next', task)"
+             v-if="task"
+             @click="trigger_task_change('next', task)"
              :disabled="loading || annotations_loading || full_file_loading"
              color="primary"
              icon="mdi-chevron-right-circle"
@@ -320,7 +320,7 @@
            </tooltip_button>
            <tooltip_button
              tooltip_message="Jump to Next Task With Issues."
-             v-if="task.id"
+             v-if="task && task.id"
              @click="next_issue_task(task)"
              :disabled="loading || annotations_loading"
              color="primary"
@@ -347,7 +347,7 @@
 
         <v_is_complete v-if="File_list.length != 0"
                         :project_string_id="project_string_id"
-                        :current_file="current_file"
+                        :current_file="file"
                         :task="task"
                         @replace_file="replace_file($event[0], $event[1])"
                         @complete_task="complete_task"
@@ -364,7 +364,7 @@
           <!-- Defer -->
         <div>
           <tooltip_button
-            v-if="task.id"
+            v-if="task && task.id"
             @click="task_update('toggle_deferred')"
             :loading="save_loading"
             :disabled="save_loading || view_only_mode || File_list.length == 0"
@@ -683,7 +683,7 @@
           <!-- This check is very brittle -->
           <!-- MENU not info -->
           <v_annotation_trainer_menu
-              v-if="render_mode == 'trainer_default' || $props.task_id_prop"
+              v-if="render_mode == 'trainer_default' || (task && task.id)"
               :job_id="job_id"
               :task="task">
           </v_annotation_trainer_menu>
@@ -816,7 +816,6 @@
              && !annotations_loading
              && File_list.length == 0
              && !job_id
-             && !file_id_prop
              "
              type="info">
 
@@ -898,7 +897,7 @@
                                   :video_playing="video_playing"
                                   :external_requested_index="request_change_current_instance"
                                   :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                  :current_file="current_file"
+                                  :current_file="file"
                                  >
       </instance_detail_list_view>
 
@@ -994,7 +993,7 @@
 
 
             <v_bg :image="html_image"
-                  :current_file="current_file"
+                  :current_file="file"
                   :current_video="current_video"
                   :canvas_width="canvas_width"
                   :canvas_height="canvas_height"
@@ -1240,8 +1239,8 @@
       <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                           v-show="show_issue_panel && !current_issue"
                           :instance_list="instance_list"
-                          :task="this.task"
-                          :file="this.current_file"
+                          :task="task"
+                          :file="file"
                           :frame_number="this.video_mode ? this.current_frame : undefined"
                           :mouse_position="issue_mouse_position"
                           @new_issue_created="refresh_issues_sidepanel"
@@ -1252,10 +1251,10 @@
           v-if="!loading"
           v-show="show_issue_panel && current_issue"
           :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-          :task="this.task"
+          :task="task"
           :instance_list="instance_list"
           :current_issue_id="current_issue ? current_issue.id : undefined"
-          :file="this.current_file"
+          :file="file"
           @close_view_edit_panel="close_view_edit_issue_panel"
           @start_attach_instance_edition="start_attach_instance_edition"
           @update_issues_list="update_issues_list"
@@ -1302,8 +1301,8 @@
         <issues_sidepanel
           :minimized="minimize_issues_sidepanel"
           :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-          :task="this.task"
-          :file="this.current_file"
+          :task="task"
+          :file="file"
           @view_issue_detail="open_view_edit_panel"
           @issues_fetched="issues_fetched"
           @minimize_issues_panel="minimize_issues_sidepanel = true"
@@ -1415,27 +1414,10 @@
     </v-snackbar>
 
     <v-alert type='info'
-             v-if="current_file.type =='text'">
+             v-if="file.type =='text'">
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
-    <!-- Open Bottom Sheet -->
-    <v-tooltip v-if="media_sheet == false && !task.id"
-               bottom>
-      Open File Explorer
-      <template v-slot:activator="{ on }">
-        <v-btn
-          style="position: absolute; bottom: 25px; right: 25px"
-          color="primary"
-          @click="media_sheet = !media_sheet"
-          fab
-          right
-          absolute
-          v-on="on"
-        >
-          <v-icon> mdi-folder-open </v-icon>
-        </v-btn>
-      </template>
-    </v-tooltip>
+
   </div>
   </template>
 
@@ -1519,7 +1501,7 @@ export default Vue.extend( {
       userscript
     },
     props: {
-      'project_string_id': {
+      'project_string_id_prop': {
         default: null,
         type: String
       },
@@ -1530,10 +1512,7 @@ export default Vue.extend( {
       'job': {
         default: null
       },
-      'file_id_prop': {
-        default: null
-      },
-      'task_id_prop': {
+      'task': {
         default: null
       },
       'task_mode_prop': {
@@ -1547,7 +1526,7 @@ export default Vue.extend( {
       },
       'annotator_email': {},
       'request_project_change': {},
-      'current_file': {
+      'file': {
         default: {
           image: {
           }
@@ -1560,6 +1539,14 @@ export default Vue.extend( {
       }
   },
   watch: {
+      task(newVal, oldVal){
+        if(newVal && oldVal && newVal.id && newVal.id !== oldVal.id){
+
+          this.loading = false;
+          this.full_file_loading = false;
+
+        }
+      },
       current_file(newVal, oldVal){
         if(newVal != oldVal){
           this.on_change_current_file(newVal);
@@ -1616,6 +1603,7 @@ export default Vue.extend( {
 
 
       userscript_minimized: false,
+      project_string_id: undefined,
 
       event_create_instance: undefined,
 
@@ -1735,10 +1723,6 @@ export default Vue.extend( {
 
       task_error: {
         'task_request': null
-      },
-
-      task: {
-        id: null
       },
 
       current_version: null,
@@ -1965,7 +1949,6 @@ export default Vue.extend( {
       instance_focused_index: null,
 
       window_width_from_listener: 1280,
-      task_id_prop: undefined,
       window_height_from_listener: 650
     }
   },
@@ -2172,7 +2155,7 @@ export default Vue.extend( {
       this.canvas_scale_global_setting = new_size
 
 
-      if ( this.$props.current_file.type == 'text') {
+      if (this.$props.file && this.$props.file.type == 'text') {
         // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
         return 100
       }
@@ -2505,10 +2488,10 @@ export default Vue.extend( {
 
     get_metadata: function() {
       let metadata
-      if (this.$props.current_file.type == 'video'){
-        metadata = {...this.$props.current_file.video}
+      if (this.$props.file.type == 'video'){
+        metadata = {...this.$props.file.video}
       } else {
-        metadata = {...this.$props.current_file.image}
+        metadata = {...this.$props.file.image}
       }
       return metadata
     },
@@ -2571,7 +2554,7 @@ export default Vue.extend( {
         return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`
       }
       else{
-        return `/api/v1/task/${this.$props.task_id_prop}/instance-template/new`
+        return `/api/v1/task/${this.$props.task.id}/instance-template/new`
       }
     },
 
@@ -2958,9 +2941,9 @@ export default Vue.extend( {
       this.loading_sequences = loading_sequences
     },
     set_canvas_dimensions: function(){
-      if(!this.$props.current_file.video){ return }
-      this.canvas_width = this.$props.current_file.video.width;
-      this.canvas_height = this.$props.current_file.video.height;
+      if(!this.$props.file.video){ return }
+      this.canvas_width = this.$props.file.video.width;
+      this.canvas_height = this.$props.file.video.height;
     },
     issues_fetched: function(issues_list){
       this.issues_list = issues_list;
@@ -3204,8 +3187,7 @@ export default Vue.extend( {
          *    For the event to propogate this we must set a key
          *    ie :key="attribute_template.id"
          */
-        if (!instance.attribute_groups) {
-          instance.attribute_groups = {}
+        if (!instance.attribute_groups) {instance.attribute_groups = {}
         }
 
         /* key on group id to avoid having to iterate through stuff
@@ -3282,37 +3264,17 @@ export default Vue.extend( {
     },
     created: function () {
 
-      if (this.file_id_prop && !this.project_string_id) {
-        // there are many assumptions about project_string_id being available
-        // in context of file/:file_id_prop this isn't quite there
-        /*
-         *  CAUTION at time of writing this was only needed for file_id_prop feature
-         *  And it can cause unwanted side effects, since other compoments (such as labels)
-         *  make assumptions about project id be available!
-         *
-         *  This can make it look like a task is pulling up the wrong labels if an admin
-         *  with project scope permissions is logged in.
-         *  Those other components should be more "explicit" about if using admin permissions or not
-         */
+      if (!this.project_string_id_prop) {
         this.project_string_id = this.$store.state.project.current.project_string_id
       }
-      if(this.$props.task_id_prop){
-        this.$props.task_id_prop = this.$props.task_id_prop;
-      }
-
-      this.task = {   // reset task dict
-        id: null
-      }
-
-      if (this.render_mode == 'assignment') {
-        this.get_media_promise()
+      else{
+        this.project_string_id = project_string_id_prop;
       }
 
       if (this.is_annotation_assignment_bool == true) {
 
       }
       if (this.render_mode == 'full' || this.render_mode == 'home') {
-        this.get_project() // TODO get project should be somewhere else
         this.request_label_file_refresh = true
       }
 
@@ -3461,7 +3423,7 @@ export default Vue.extend( {
         this.magic_nav_spacer = 200
       }
 
-      if (this.$props.task_id_prop || this.job_id) {
+      if (this.$props.task || this.job_id) {
         this.task_mode_mounted()
       }
 
@@ -3662,14 +3624,14 @@ export default Vue.extend( {
     },
 
     current_file_updates: function () {
-      if (this.$props.current_file.type == "image") {
+      if (this.$props.file.type == "image") {
         this.video_mode = false
 
-        this.canvas_width = this.$props.current_file.image.width
-        this.canvas_height = this.$props.current_file.image.height
+        this.canvas_width = this.$props.file.image.width
+        this.canvas_height = this.$props.file.image.height
 
         var self = this
-        this.addImageProcess(this.$props.current_file.image.url_signed).then(new_image => {
+        this.addImageProcess(this.$props.file.image.url_signed).then(new_image => {
           self.html_image = new_image
           self.loading = false
           self.refresh = Date.now()
@@ -3677,13 +3639,13 @@ export default Vue.extend( {
         })
       }
 
-      if (this.$props.current_file.type == "video") {
+      if (this.$props.file.type == "video") {
         this.video_mode = true
-        this.current_video = this.$props.current_file.video
-        this.current_video_file_id = this.$props.current_file.id
+        this.current_video = this.$props.file.video
+        this.current_video_file_id = this.$props.file.id
 
-        this.canvas_width = this.$props.current_file.video.width
-        this.canvas_height = this.$props.current_file.video.height
+        this.canvas_width = this.$props.file.video.width
+        this.canvas_height = this.$props.file.video.height
       }
     },
     // todo why not make this part of rest of event stuff
@@ -3766,8 +3728,8 @@ export default Vue.extend( {
 
 
             if (this.File_list.length > 0) {
-              if (this.File_list[i].id == this.$props.current_file.id) {
-                this.$props.current_file = this.File_list[0]
+              if (this.File_list[i].id == this.$props.file.id) {
+                this.$props.file = this.File_list[0]
                 this.change_file("none", this.File_list[0])
               }
             }
@@ -4951,7 +4913,7 @@ export default Vue.extend( {
       this.canvas_width = this.File_list[0].video.width
       this.canvas_height = this.File_list[0].video.height
       this.video_mode = true;
-      this.current_video = this.$props.current_file.video;
+      this.current_video = this.$props.file.video;
       this.current_video_file_id = this.File_list[0].id
       await this.get_instances();
       // We need to trigger components and DOM updates before updating frames and sequences.
@@ -4967,9 +4929,8 @@ export default Vue.extend( {
       // We need to update sequence lists synchronously to know when to remove the placeholder.
     },
     prepare_canvas_for_new_file: async function () {
-      if (this.File_list[0] != undefined) {
-        this.$props.current_file = this.File_list[0]
-        if (this.File_list[0].type == "image") {
+      if (this.$props.file!= undefined) {
+        if (this.$props.file.type == "image") {
 
           await this.image_update_core()
 
@@ -4980,10 +4941,10 @@ export default Vue.extend( {
           //this.canvas_height = this.File_list[0].image.height
 
         }
-        if (this.File_list[0].type == "video") {
+        if (this.$props.file.type == "video") {
           await this.video_update_core();
         }
-        if (this.File_list[0].type == "text") {
+        if (this.$props.file.type == "text") {
           this.video_mode = false;
           this.show_text_file_place_holder = true;
           this.loading = false;
@@ -5025,7 +4986,7 @@ export default Vue.extend( {
             this.images_found = false
             this.loading = false
         } else {
-            this.$emit('current_file', this.$props.current_file)
+            this.$emit('current_file', this.$props.file)
             this.images_found = true
         }
       } else {
@@ -5048,8 +5009,8 @@ export default Vue.extend( {
 
         await this.get_instances()
 
-        this.canvas_width = this.$props.current_file.image.width
-        this.canvas_height = this.$props.current_file.image.height
+        this.canvas_width = this.$props.file.image.width
+        this.canvas_height = this.$props.file.image.height
 
         await this.addImageProcess_with_canvas_refresh()
 
@@ -5061,7 +5022,7 @@ export default Vue.extend( {
     addImageProcess_with_canvas_refresh: async function () {
       try{
         const new_image = await this.addImageProcess(
-          this.$props.current_file.image.url_signed);
+          this.$props.file.image.url_signed);
         this.html_image = new_image;
         this.update_canvas();
         this.loading = false
@@ -6015,7 +5976,7 @@ export default Vue.extend( {
       this.loading = true
       try{
         const response = await axios.post('/api/v1/task/diff', {
-            task_alpha_id: this.$props.task_id_prop,
+            task_alpha_id: this.$props.task.id,
             mode_data: this.task_mode_prop,  // TODO clarify task_mode_prop vs mode_data
         })
         if (response.data.log.success === true) {
@@ -6037,7 +5998,7 @@ export default Vue.extend( {
 
     get_instances_file_diff: async function () {
       try{
-        const response = await axios.get('/api/project/' + this.project_string_id + '/file/' + this.$props.current_file.id + '/diff/previous')
+        const response = await axios.get('/api/project/' + this.project_string_id + '/file/' + this.$props.file.id + '/diff/previous')
         if (response.data.success === true) {
           this.instance_list = this.create_instance_list_with_class_types(response.data.instance_list)
           this.annotations_loading = false
@@ -6060,13 +6021,13 @@ export default Vue.extend( {
         } else {
 
           var url = '/api/project/' + this.$store.state.project.current.project_string_id +
-            '/file/' + String(this.$props.current_file.id) + '/annotation/list'
+            '/file/' + String(this.$props.file.id) + '/annotation/list'
         }
         try{
           const response = await axios.post(url, {
             directory_id : this.$store.state.project.current_directory.directory_id,
             job_id : this.job_id,
-            attached_to_job: this.$props.current_file.attached_to_job
+            attached_to_job: this.$props.file.attached_to_job
           })
           this.get_instances_core(response)
           this.annotations_loading = false
@@ -6095,14 +6056,6 @@ export default Vue.extend( {
       }
     },
     get_instances: async function (play_after_success=false) {
-      /*
-       * Re file_id_prop
-       *    In context of video mode, including all instances
-       *    in single go no longer makes sense
-       *
-       */
-
-      // To avoid multiple calls and then potential race conditions.
       if(this.get_instances_loading){ return }
       this.get_instances_loading = true;
       this.annotations_loading = true
@@ -6111,7 +6064,7 @@ export default Vue.extend( {
 
       // Diffing Context
       // TODO: discuss if should remove or move to another place (separate component)
-      if (this.$props.task_id_prop) {
+      if (this.$props.task) {
         if (this.task_mode_prop == 'compare_review_to_draw') {
           await this.get_instance_list_diff();
           this.get_instances_loading = false;
@@ -6277,47 +6230,22 @@ export default Vue.extend( {
         this.loading = false;
       }
     },
-    change_task: async function(direction, task){
-
-
+    trigger_task_change: async function(direction, task){
        // Keyboard shortcuts case
       if (this.loading == true || this.annotations_loading == true) { return }
-      this.full_file_loading = true;
+
       if (this.has_changed) {
         await this.save();
       }
 
+      // Set the UI to loading state until a new task is provided in the props.
+      // The watcher of 'task' will make sure to set loading = false and full_file_loading = false
+      this.loading = true;
+      this.full_file_loading = true;
       this.reset_for_file_change_context()
 
-      this.loading = true;
-
-
-      try{
-        const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
-          project_string_id: this.$store.state.project.current.project_string_id,
-          task_id: task.id,
-          direction: direction
-        });
-        if(response.data){
-          if(response.data.task.id !== task.id){
-            this.$router.push(`/task/${response.data.task.id}`);
-            history.pushState({}, '', `/task/${response.data.task.id}`);
-            // Refetch task Data.
-            this.$props.task_id_prop = response.data.task.id;
-            await this.get_media();
-          }
-
-        }
-      }
-      catch (error) {
-        console.debug(error);
-      }
-      finally{
-        this.loading = false;
-        this.full_file_loading = false;
-
-
-      }
+      // Ask parent for a new task
+      this.$emit('request_new_task', direction, task)
     },
 
     reset_for_file_change_context: function (){
@@ -6351,7 +6279,7 @@ export default Vue.extend( {
       }
       this.reset_for_file_change_context()
 
-      this.$addQueriesToLocation({'file': this.$props.current_file.id})
+      this.$addQueriesToLocation({'file': this.$props.file.id})
 
       await this.refresh_attributes_from_current_file();
 
@@ -6363,7 +6291,7 @@ export default Vue.extend( {
 
     refresh_attributes_from_current_file: async function () {
       // Change mode  ?
-      if (this.$props.current_file.type == "image") {
+      if (this.$props.file.type == "image") {
         // TODO a better way... this is so the watch on current video changes
         this.current_video_file_id = null
         this.video_mode = false
@@ -6373,24 +6301,24 @@ export default Vue.extend( {
         }
         // maybe this.current_file should store width/height? ...
         try{
-          const new_image = await this.addImageProcess(this.$props.current_file.image.url_signed);
+          const new_image = await this.addImageProcess(this.$props.file.image.url_signed);
           this.html_image = new_image;
           this.refresh = Date.now();
           await this.get_instances()
-          this.canvas_width = this.$props.current_file.image.width
-          this.canvas_height = this.$props.current_file.image.height
+          this.canvas_width = this.$props.file.image.width
+          this.canvas_height = this.$props.file.image.height
           this.update_canvas();
         }
         catch(error){
           console.error(error)
         }
       }
-      if (this.$props.current_file.type === "video") {
+      if (this.$props.file.type === "video") {
         this.video_mode = true;   // order matters here, downstream things need this to pull right stuff
         // may be a good opportunity to think about a computed property here
 
-        this.current_video_file_id = this.$props.current_file.id;
-        this.current_video = this.$props.current_file.video;
+        this.current_video_file_id = this.$props.file.id;
+        this.current_video = this.$props.file.video;
         // Trigger update of child props before fetching frames an sequences.
         await this.$nextTick();
 
@@ -6580,7 +6508,7 @@ export default Vue.extend( {
       }
       if (event.keyCode === 67 && this.shift_key) { // c
 
-        if (this.$props.current_file.ann_is_complete == true || this.$props.view_only_mode == true) {
+        if (this.$props.file.ann_is_complete == true || this.$props.view_only_mode == true) {
           return
         }
 
@@ -6896,7 +6824,7 @@ export default Vue.extend( {
 
       // a video file can now be
       // saved from file id + frame, so the current file
-      let cache_current_file_id = this.$props.current_file.id
+      let cache_current_file_id = this.$props.file.id
 
       var url = null
 
@@ -7005,10 +6933,10 @@ export default Vue.extend( {
           this.snackbar_success_text = "Saved and completed. Moved to next."
 
           if(this.task.id){   // props
-            this.change_task('next', this.task)
+            this.trigger_task_change('next', this.task)
           }
           else{
-            this.change_file('next', 'none')    // important
+            this.trigger_task_change('next', 'none')    // important
           }
 
 

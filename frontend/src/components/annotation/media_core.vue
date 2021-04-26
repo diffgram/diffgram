@@ -11,7 +11,7 @@
 
   <!-- TODO do show if job id and in attach to job mode-->
 
-<div v-cloak v-if="!task.id">
+<div v-cloak v-if="!task">
   <v-card >
 
     <!-- TODO make this a bit smarter,
@@ -1209,7 +1209,7 @@ import Vue from "vue";
 
       if (this.$props.file_id_prop) {
         this.$emit('request_file_data', this.$props.file_id_prop);
-        this.fetch_single_file();
+        await this.fetch_single_file();
         const file_list_data = await this.fetch_project_file_list();
       }
 

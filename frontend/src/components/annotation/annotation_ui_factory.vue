@@ -3,24 +3,26 @@
 
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="images_found == true">
-        <v_annotation_core :render_mode=" 'full' "
-                           :is_annotation_assignment_bool="false"
-                           :project_string_id="project_string_id"
-                           :file_id_prop="file_id"
-                           :task="task"
-                           :task_id_prop="task_id_prop"
-                           :request_save="request_save"
-                           :request_project_change="request_project_change"
-                           :accesskey="'full'"
-                           :file_view_mode="'annotation'"
-                           :job_id="job_id"
-                           :view_only_mode="view_only"
-
-                           @save_response_callback="save_response_callback_function"
-                           @current_image="current_image_function"
-                           @images_found="images_found_function"
-                           @set_file_list="set_file_list"
-                           ref="annotation_core"
+        <v_annotation_core
+          v-if="render_ready"
+          :render_mode=" 'full' "
+          :is_annotation_assignment_bool="false"
+          :project_string_id="project_string_id"
+          :task="task"
+          :file="file"
+          :task_id_prop="task_id_prop"
+          :request_save="request_save"
+          :request_project_change="request_project_change"
+          :accesskey="'full'"
+          :file_view_mode="'annotation'"
+          :job_id="job_id"
+          :view_only_mode="view_only"
+          @save_response_callback="save_response_callback_function"
+          @current_image="current_image_function"
+          @images_found="images_found_function"
+          @set_file_list="set_file_list"
+          @request_new_task="change_task"
+          ref="annotation_core"
         >
         </v_annotation_core>
       </div>
@@ -71,7 +73,9 @@
           </v-tooltip>
           <v_media_core :project_string_id="project_string_id"
                         file_view_mode="annotation"
+                        :task="task"
                         :view_only_mode="view_only"
+                        :file_id_prop="file_id_prop"
                         :job_id="job_id"
                         :visible="media_sheet"
                         @height="media_core_height = $event"
@@ -81,6 +85,24 @@
           </v_media_core>
         </v-sheet>
       </v-bottom-sheet>
+      <!-- Open Bottom Sheet -->
+      <v-tooltip v-if="media_sheet == false && !task"
+                 bottom>
+        Open File Explorer
+        <template v-slot:activator="{ on }">
+          <v-btn
+            style="position: absolute; bottom: 25px; right: 25px"
+            color="primary"
+            @click="media_sheet = !media_sheet"
+            fab
+            right
+            absolute
+            v-on="on"
+          >
+            <v-icon> mdi-folder-open </v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
     </div>
   </div>
 </template>
@@ -110,9 +132,12 @@
       },
       data() {
         return {
+          render_ready: false,
           media_sheet: true,
           loading: false,
-          task: false,
+          task: null,
+          file: null,
+          current_file: null,
           images_found: true,
           persistent_bottom_sheet: true,
           request_save: false,
@@ -139,17 +164,23 @@
         }
         if (this.$props.task_id_prop) {
           this.add_visit_history_event('task');
-          this.fetch_single_task();
         } else if (this.$props.file_id_prop) {
           this.add_visit_history_event('file');
-
         } else {
           this.add_visit_history_event('page')
         }
+
       },
       mounted() {
         if (this.$route.query.view_only) {
           this.view_only = true;
+        }
+
+        if (this.$props.task_id_prop) {
+          this.fetch_single_task();
+        }
+        else if (this.$props.file_id_prop) {
+          this.$refs.media_core.get_media();
         }
       },
       computed: {
@@ -215,6 +246,38 @@
             console.debug(error);
             this.loading = false
             // this.logout()
+          }
+        },
+        change_task: async function(direction, task){
+          if(!task){
+            throw new Error('Provide task ')
+          }
+
+          try{
+            const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
+              project_string_id: this.$store.state.project.current.project_string_id,
+              task_id: task.id,
+              direction: direction
+            });
+            if(response.data){
+              if(response.data.task.id !== task.id){
+                this.$router.push(`/task/${response.data.task.id}`);
+                history.pushState({}, '', `/task/${response.data.task.id}`);
+
+                // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
+                this.task = task;
+                // In the task context we reset the file list on media core to keep only the current task's file.
+                this.$refs.media_core.set_file_list([this.task.file]);
+                this.file = this.task.file;
+              }
+
+            }
+          }
+          catch (error) {
+            console.debug(error);
+          }
+          finally{
+
           }
         },
         get_project: function () {
