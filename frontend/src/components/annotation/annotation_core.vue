@@ -1387,46 +1387,7 @@
 
     -->
 
-    <v-bottom-sheet scrollable
-                    :retain-focus="false"
-                    hide-overlay
-                    class="media-core-container"
-                    no-click-animation
-                    v-if="!error_no_permissions.data"
-                    :persistent="persistant_bottom_sheet"
-                    v-model="media_sheet">
 
-      <!-- We assume this will be open by default
-        and that it can be reopened by the button that sets
-        media_sheet = !media_sheet, ie in label panel -->
-
-      <v-sheet class="text-right" >
-        <v-tooltip bottom>
-          Minimize
-          <template v-slot:activator="{ on }">
-            <!--
-              FAB Floating Action button
-              Designates the button as a floating-action-button - round. -->
-             <v-btn
-                data-cy="minimize-file-explorer-button"
-                color="primary"
-                small
-                @click="media_sheet = !media_sheet"
-                fab
-                right
-                fixed
-                v-on="on"
-              >
-              <v-icon> mdi-window-minimize </v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
-
-
-
-
-      </v-sheet>
-    </v-bottom-sheet>
 
 
     <instance_template_creation_dialog
@@ -1724,10 +1685,6 @@ export default Vue.extend( {
       force_new_sequence_request: null,
       issue_mouse_position: undefined,
 
-
-      media_sheet: true,   // set to true to come up on page load
-      // note media sheet needs to load for media to come up...
-      persistant_bottom_sheet: true,
 
       lock_point_hover_change: false,
 
