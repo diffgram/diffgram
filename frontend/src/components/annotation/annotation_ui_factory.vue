@@ -42,21 +42,45 @@
       </div>
 
 
-      <v_media_core :project_string_id="project_string_id"
-                    @change_file="change_file('none', $event)"
-                    @remove_file_request="remove_file_request($event)"
-                    @request_media="request_media($event)"
-                    file_view_mode="annotation"
-                    @replace_file="replace_file($event[0], $event[1])"
-                    :view_only_mode="view_only"
-                    :job_id="job_id"
-                    :job="job"
 
-                    :visible="media_sheet"
-                    @height="media_core_height = $event"
-                    ref="media_core"
-      >
-      </v_media_core>
+      <v-bottom-sheet scrollable
+                      :retain-focus="false"
+                      hide-overlay
+                      class="media-core-container"
+                      no-click-animation
+                      v-if="!error_permissions.data"
+                      :persistent="persistent_bottom_sheet"
+                      v-model="media_sheet">
+        <v-sheet class="text-right" >
+          <v-tooltip bottom>
+            Minimize
+            <template v-slot:activator="{ on }">
+              <v-btn
+                data-cy="minimize-file-explorer-button"
+                color="primary"
+                small
+                @click="media_sheet = !media_sheet"
+                fab
+                right
+                fixed
+                v-on="on"
+              >
+                <v-icon> mdi-window-minimize </v-icon>
+              </v-btn>
+            </template>
+          </v-tooltip>
+          <v_media_core :project_string_id="project_string_id"
+                        file_view_mode="annotation"
+                        :view_only_mode="view_only"
+                        :job_id="job_id"
+                        :visible="media_sheet"
+                        @height="media_core_height = $event"
+                        @permissions_error="set_permissions_error"
+                        ref="media_core"
+          >
+          </v_media_core>
+        </v-sheet>
+      </v-bottom-sheet>
     </div>
   </div>
 </template>
@@ -86,14 +110,16 @@
       },
       data() {
         return {
-
+          media_sheet: true,
           loading: false,
           task: false,
           images_found: true,
+          persistent_bottom_sheet: true,
           request_save: false,
           request_project_change: null,
           view_only: false,
           current_image: null,
+          error_permissions: {},
           download_annotations_loading: false,
           annotation_example: false,
 
@@ -136,6 +162,9 @@
         },
       },
       methods: {
+        set_permissions_error: function(new_error){
+          this.error_permissions = new_error;
+        },
         fetch_single_task: async function(task_id){
           this.media_sheet = false;
           this.task_error = {
@@ -160,7 +189,6 @@
               this.ile_list = [response.data.task.file]
 
               this.task = response.data.task
-              this.job_id = this.task.job_id
 
               if (this.task.task_type == "review" && this.task.job_type == "Exam") {
                 this.label_settings.show_list = false

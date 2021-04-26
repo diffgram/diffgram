@@ -1256,6 +1256,7 @@ import Vue from "vue";
             status: response.status,
             message: 'You are not allowed to view this resource, please contact the project admin to get permissions.'
           };
+          this.$emit('permissions_error', this.error_no_permissions)
         }
         console.error(error);
         this.loading = false
@@ -1263,7 +1264,6 @@ import Vue from "vue";
       }
     },
     fetch_single_file: async function(file_id){
-      this.error_no_permissions = {};
       // why would we need metadata from request media here?
       if(!file_id){
         throw Error('Provide file_id to fetch file [on fetch_single_file()]')
