@@ -543,7 +543,7 @@
                 <a @click="change_file_request(item)">
 
 
-                  <div v-if="item.id == current_file.id">
+                  <div v-if="current_file && item.id == current_file.id">
 
                     <!-- Badge thing actually seems to make it worse here -->
                     <!--
@@ -654,7 +654,7 @@
 
               <td v-if="show_column('preview_image')"
                   @click="change_file_request(props.item)">
-                <div v-if="props.item.id == current_file.id">
+                <div v-if="current_file && props.item.id == current_file.id">
 
                   <v-badge overlap color="primary">
                     <v-icon dark slot="badge">check</v-icon>
@@ -1189,7 +1189,7 @@ import Vue from "vue";
       this.metadata_previous = file_list_data.metadata;
       this.file_list = file_list_data.file_list;
       this.$emit('file_list_length', this.File_list.length);
-      await this.file_update_core()
+      this.current_file = this.file_list[0]
     },
 
     get_media: async function (resolve) {
@@ -1209,22 +1209,25 @@ import Vue from "vue";
 
       if (this.$props.file_id_prop) {
         this.$emit('request_file_data', this.$props.file_id_prop);
-        await this.fetch_single_file();
+        await this.fetch_single_file(this.$props.file_id_prop);
         const file_list_data = await this.fetch_project_file_list();
+        this.append_project_file_list({file_list: this.file_list});
       }
 
-      else if (this.project_string_id)  {
+      else if (this.$props.project_string_id)  {
         const file_list_data = await this.fetch_project_file_list();
         await this.update_file_list_and_set_current_file(file_list_data);
       }
+
+      this.media_loading = false;
+      this.loading = false;
 
     },
     set_file_list: function(new_file_list){
       this.file_list = new_file_list;
     },
     append_project_file_list: async function (file_list_data) {
-      this.metadata_previous = file_list_data.metadata;
-      const file_ids = this.File_list.map(file => file.id);
+      const file_ids = this.file_list.map(file => file.id);
       for (let i = 0; i < file_list_data.file_list.length; i++) {
         const current = file_list_data.file_list[i];
         if(!file_ids.includes(current.id)){
@@ -1232,16 +1235,16 @@ import Vue from "vue";
         }
 
       }
-      this.$emit('file_list_length', this.File_list.length);
+      this.$emit('file_list_length', this.file_list.length);
     },
     fetch_project_file_list: async function(){
       this.error_no_permissions = {};
       try{
-        const response = await axios.post('/api/project/' + String(this.project_string_id) +
+        const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
           '/user/' + this.$store.state.user.current.username + '/file/list', {
 
           'metadata': this.metadata,
-          'project_string_id': this.project_string_id
+          'project_string_id': this.$props.project_string_id
 
         })
         if (response.data['file_list'] != null) {
@@ -1271,7 +1274,7 @@ import Vue from "vue";
       try{
         const response = await axios.post('/api/v1/file/view', {
           'file_id': parseInt(file_id),
-          'project_string_id': this.$store.state.project.current.project_string_id
+          'project_string_id': this.$props.project_string_id
         })
         this.file_list = [response.data['file']]
 
@@ -1412,7 +1415,7 @@ import Vue from "vue";
           'my_jobs_only': true,
           'builder_or_trainer': this.$store.state.builder_or_trainer,
           'data_mode': 'name_and_id_only',
-          'project_string_id': this.project_string_id
+          'project_string_id': this.$props.project_string_id
         }
 
       }).then(response => {
@@ -1526,7 +1529,7 @@ import Vue from "vue";
     },
     annotation_example_toggle_function(image, index) {
 
-      axios.post('/api/project/' + this.project_string_id
+      axios.post('/api/project/' + this.$props.project_string_id
         + '/images/annotation_example_toggle',
         { image: image })
         .then(response => {
@@ -1539,7 +1542,7 @@ import Vue from "vue";
     },
 
     get_video_single_detail(video_id) {
-      axios.get('/api/project/' + this.project_string_id
+      axios.get('/api/project/' + this.$props.project_string_id
         + '/video/single/' + video_id + '/view')
         .then(response => {
           if (response.data.success = true) {
@@ -1558,7 +1561,7 @@ import Vue from "vue";
       this.inference_selected_loading = true
       this.error_inference = {}
 
-      axios.post('/api/walrus/project/' + this.project_string_id
+      axios.post('/api/walrus/project/' + this.$props.project_string_id
             + '/inference/add',
         {
           'file_list' : this.selected
@@ -1586,7 +1589,7 @@ import Vue from "vue";
       this.api_file_update_loading = true
       this.info = {}  // reset
 
-      axios.post('/api/v1/project/' + this.project_string_id
+      axios.post('/api/v1/project/' + this.$props.project_string_id
               + '/file/update',
         {
           directory_id: this.$store.state.project.current_directory.directory_id,
@@ -1618,7 +1621,7 @@ import Vue from "vue";
 
       //  TODO I think this method is deprecated??
 
-      axios.post('/api/project/' + this.project_string_id
+      axios.post('/api/project/' + this.$props.project_string_id
         + '/file/' + file.id
         + '/inference/add',
         {})

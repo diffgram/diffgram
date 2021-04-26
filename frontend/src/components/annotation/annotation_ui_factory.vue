@@ -7,7 +7,7 @@
           v-if="render_ready"
           :render_mode=" 'full' "
           :is_annotation_assignment_bool="false"
-          :project_string_id="project_string_id"
+          :project_string_id="get_project_string_id()"
           :task="task"
           :file="file"
           :task_id_prop="task_id_prop"
@@ -71,7 +71,7 @@
               </v-btn>
             </template>
           </v-tooltip>
-          <v_media_core :project_string_id="project_string_id"
+          <v_media_core :project_string_id="get_project_string_id()"
                         file_view_mode="annotation"
                         :task="task"
                         :view_only_mode="view_only"
@@ -180,7 +180,7 @@
           this.fetch_single_task();
         }
         else if (this.$props.file_id_prop) {
-          this.$refs.media_core.get_media();
+          this.fetch_single_file();
         }
       },
       computed: {
@@ -193,6 +193,10 @@
         },
       },
       methods: {
+        fetch_single_file: async function(){
+          await this.$refs.media_core.get_media();
+          this.file = this.$refs.media_core.current_file;
+        },
         set_permissions_error: function(new_error){
           this.error_permissions = new_error;
         },
@@ -255,7 +259,7 @@
 
           try{
             const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
-              project_string_id: this.$store.state.project.current.project_string_id,
+              project_string_id: this.get_project_string_id(),
               task_id: task.id,
               direction: direction
             });
