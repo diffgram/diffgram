@@ -836,8 +836,6 @@ import Vue from "vue";
       'view_only_mode': {
         default: false
       },
-      'media_loading': {
-       },
       'task': {
        },
       'visible': {
@@ -891,6 +889,7 @@ import Vue from "vue";
       selected_dirs: [],
       job_attached_dirs: [],
       select_from_metadata: false,
+      media_loading: false,
       cascade_archive_tasks: false,
 
       prevent_refresh_on_layout_change: false,

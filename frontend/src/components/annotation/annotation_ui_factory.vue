@@ -1,7 +1,7 @@
 <template>
   <div style="overflow-x:auto;">
 
-    <div id="annotation_full" tabindex="0">
+    <div id="annotation_ui_factory" tabindex="0">
       <div v-if="images_found == true">
         <v_annotation_core :render_mode=" 'full' "
                            :is_annotation_assignment_bool="false"
@@ -14,7 +14,7 @@
                            :accesskey="'full'"
                            :file_view_mode="'annotation'"
                            :job_id="job_id"
-                           :view_only_mode="view_only_mode"
+                           :view_only_mode="view_only"
 
                            @save_response_callback="save_response_callback_function"
                            @current_image="current_image_function"
@@ -48,10 +48,9 @@
                     @request_media="request_media($event)"
                     file_view_mode="annotation"
                     @replace_file="replace_file($event[0], $event[1])"
-                    :view_only_mode="view_only_mode"
+                    :view_only_mode="view_only"
                     :job_id="job_id"
                     :job="job"
-                    :media_loading="media_loading"
 
                     :visible="media_sheet"
                     @height="media_core_height = $event"
@@ -69,7 +68,7 @@
   import Vue from "vue";
 
   export default Vue.extend({
-      name: 'annotation_full',
+      name: 'annotation_ui_factory',
       props: {
         'project_string_id': {
           default: null

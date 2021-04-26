@@ -1763,8 +1763,6 @@ export default Vue.extend( {
         'top_right': 'bot_left'
       },
 
-      media_loading: true,
-
       cuboid_force_move_face: false,
       cuboid_current_drawing_face: undefined,
       ellipse_current_drawing_face: undefined,
@@ -2128,7 +2126,7 @@ export default Vue.extend( {
        * pass this to v_bg which flashes screen when showing loading
        * Something to review.
        */
-      return this.media_loading || this.annotations_loading || this.loading || this.loading_sequences || this.get_instances_loading
+      return this.full_file_loading || this.annotations_loading || this.loading || this.loading_sequences || this.get_instances_loading
     },
 
     canvas_scale_global() {
@@ -3707,14 +3705,14 @@ export default Vue.extend( {
     },
 
     current_file_updates: function () {
-      if (this.current_file.type == "image") {
+      if (this.$props.current_file.type == "image") {
         this.video_mode = false
 
         this.canvas_width = this.$props.current_file.image.width
         this.canvas_height = this.$props.current_file.image.height
 
         var self = this
-        this.addImageProcess(this.current_file_prop.image.url_signed).then(new_image => {
+        this.addImageProcess(this.$props.current_file.image.url_signed).then(new_image => {
           self.html_image = new_image
           self.loading = false
           self.refresh = Date.now()
@@ -5041,7 +5039,6 @@ export default Vue.extend( {
         // and loading annotations which need to be different in current design
       }
 
-      this.media_loading = false;
       // Even though we call update_canvas on multiple places, it doesnt always update as expected because we have to
       // wait for the next tick to happen
       await this.$nextTick();
@@ -6382,7 +6379,7 @@ export default Vue.extend( {
         this.$emit('request_file_change', direction, file);
       }
     },
-    on_change_current_file: async function (direction, file) {
+    on_change_current_file: async function () {
 
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
@@ -6397,7 +6394,7 @@ export default Vue.extend( {
       }
       this.reset_for_file_change_context()
 
-      this.$addQueriesToLocation({'file': this.current_file.id})
+      this.$addQueriesToLocation({'file': this.$props.current_file.id})
 
       await this.refresh_attributes_from_current_file();
 
@@ -6409,7 +6406,7 @@ export default Vue.extend( {
 
     refresh_attributes_from_current_file: async function () {
       // Change mode  ?
-      if (this.current_file.type == "image") {
+      if (this.$props.current_file.type == "image") {
         // TODO a better way... this is so the watch on current video changes
         this.current_video_file_id = null
         this.video_mode = false
@@ -6419,24 +6416,24 @@ export default Vue.extend( {
         }
         // maybe this.current_file should store width/height? ...
         try{
-          const new_image = await this.addImageProcess(this.current_file.image.url_signed);
+          const new_image = await this.addImageProcess(this.$props.current_file.image.url_signed);
           this.html_image = new_image;
           this.refresh = Date.now();
           await this.get_instances()
-          this.canvas_width = this.current_file.image.width
-          this.canvas_height = this.current_file.image.height
+          this.canvas_width = this.$props.current_file.image.width
+          this.canvas_height = this.$props.current_file.image.height
           this.update_canvas();
         }
         catch(error){
           console.error(error)
         }
       }
-      if (this.current_file.type === "video") {
+      if (this.$props.current_file.type === "video") {
         this.video_mode = true;   // order matters here, downstream things need this to pull right stuff
         // may be a good opportunity to think about a computed property here
 
-        this.current_video_file_id = this.current_file.id;
-        this.current_video = this.current_file.video;
+        this.current_video_file_id = this.$props.current_file.id;
+        this.current_video = this.$props.current_file.video;
         // Trigger update of child props before fetching frames an sequences.
         await this.$nextTick();
 
@@ -6626,7 +6623,7 @@ export default Vue.extend( {
       }
       if (event.keyCode === 67 && this.shift_key) { // c
 
-        if (this.current_file.ann_is_complete == true || this.$props.view_only_mode == true) {
+        if (this.$props.current_file.ann_is_complete == true || this.$props.view_only_mode == true) {
           return
         }
 
@@ -6942,7 +6939,7 @@ export default Vue.extend( {
 
       // a video file can now be
       // saved from file id + frame, so the current file
-      let cache_current_file_id = this.current_file.id
+      let cache_current_file_id = this.$props.current_file.id
 
       var url = null
 
