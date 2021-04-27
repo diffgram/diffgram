@@ -21,13 +21,13 @@ from PIL import Image, ImageDraw
 from shared.data_tools_core import Data_tools
 
 
-data_tools = Data_tools().data_tools
+# data_tools = Data_tools().data_tools
 
 # Newly created file upload
-ML_bucket = data_tools.ML_bucket
+# ML_bucket = data_tools.ML_bucket
 
 # Images are in bucket
-bucket = data_tools.bucket
+# bucket = data_tools.bucket
 # Support walrus, not clear exactly why we want this seperetly here???
 
 @routes.route('/api/walrus/project/<string:project_string_id>/data/masks/generate',

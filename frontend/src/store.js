@@ -260,12 +260,12 @@ const integration_spec_list_template = [
     'display_name': 'Diffgram (Default)',
     'name': 'diffgram',
     'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_170,w_170,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
-  }
-  // {'display_name': 'Microsoft Azure',
-  //  'name': 'microsoft_azure',
-  //  'icon': 'mdi-microsoft-azure',
-  //  'color': 'blue'
-  // },
+  },
+  {'display_name': 'Microsoft Azure',
+   'name': 'microsoft_azure',
+   'icon': 'mdi-microsoft-azure',
+   'color': 'blue'
+  },
   // {'display_name': 'ScaleAI',
   //  'name': 'sacle_ai',
   //  'icon': 'mdi-domain',

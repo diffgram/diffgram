@@ -501,6 +501,12 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
+    path: '/',
+    component: 'user/home/dashboard',
+    props: false,
+    meta: {requiresAuth: true}
+  },
+  {
     path: '*',
     component: 'other/NotFound'
   }

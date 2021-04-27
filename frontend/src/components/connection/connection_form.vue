@@ -166,7 +166,7 @@
                  no-gutters>
             <v-col>
               <v-text-field
-                label="Private Secret"
+                :label="connection_form_specs[connection.integration_name].private_secret_label ? connection_form_specs[connection.integration_name].private_secret_label : 'Private Secret'"
                 v-model="connection.private_secret"
                 @input="has_changes = true"
                 flat
@@ -322,6 +322,10 @@
               account_email: true,
               project_id_external: true,
 
+            },
+            'microsoft_azure': {
+              private_secret: true,
+              private_secret_label: 'Connection String',
             },
             'amazon_aws': {
               name: true,

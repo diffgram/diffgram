@@ -366,7 +366,7 @@
               'image': 'https://cloud.google.com/images/social-icon-google-cloud-1200-630.png'
             },
             'microsoft_azure': {
-              'image': '',
+              'image': 'https://dz2cdn1.dzone.com/storage/temp/12165862-azurelogo-1.png',
             }
           },
         }
