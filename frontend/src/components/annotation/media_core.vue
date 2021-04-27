@@ -1188,7 +1188,7 @@ import Vue from "vue";
     update_file_list_and_set_current_file: async function (file_list_data) {
       this.metadata_previous = file_list_data.metadata;
       this.file_list = file_list_data.file_list;
-      this.$emit('file_list_length', this.File_list.length);
+      this.$emit('file_list_length', this.file_list.length);
       this.current_file = this.file_list[0]
     },
 
@@ -1211,7 +1211,9 @@ import Vue from "vue";
         this.$emit('request_file_data', this.$props.file_id_prop);
         await this.fetch_single_file(this.$props.file_id_prop);
         const file_list_data = await this.fetch_project_file_list();
+        file_list_data.file_list.unshift(this.file_list[0]);
         this.append_project_file_list({file_list: this.file_list});
+        this.update_file_list_and_set_current_file({file_list: this.file_list});
       }
 
       else if (this.$props.project_string_id)  {
