@@ -505,6 +505,7 @@ class Report_Runner():
 		return self.results
 
 	def serialize_stats(self, stats):
+		if stats is None: return None
 		result = {}
 		result = stats.copy()
 		if len(stats['labels']) > 0 and type(stats['labels'][0]) == datetime.datetime:
