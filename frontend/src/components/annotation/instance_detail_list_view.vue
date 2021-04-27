@@ -730,7 +730,7 @@ import Vue from "vue";
 
 
         // Case of changing frame number
-        console.log('frame updates', this.prior_current_frame, this.current_frame)
+  
         if( this.prior_current_frame != undefined && this.current_frame != undefined
           && this.prior_current_frame != this.current_frame ){
           if(this.current_instance.number != undefined){
@@ -741,7 +741,7 @@ import Vue from "vue";
             if(instance_index != undefined){
               // We want the instance to be selected too.
               // Not 100% sure if we should do this, so pending review.
-              console.log('CHANGE INSTANCE HEREEEE')
+
               this.instance_list[instance_index].selected = true;
               this.current_instance.selected = false;
 
