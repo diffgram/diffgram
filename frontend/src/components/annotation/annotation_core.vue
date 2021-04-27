@@ -3900,9 +3900,7 @@ export default Vue.extend( {
       if (this.view_only_mode == true) { return }
 
       for (var i in this.instance_list) {
-        console.log(i, this.instance_list[i].selected)
         if (this.instance_list[i].selected == true) {
-          console.log('delete')
           this.delete_single_instance(i);
         }
       }
@@ -6913,7 +6911,6 @@ export default Vue.extend( {
 
     keyboard_events_local_up: function (event) {
       // TODO would it be better to have a dictionary or somthing to map this?
-      console.log('LOCAL UPPP')
       if (event.keyCode === 46) {  // delete
         this.delete_instance();
       }
