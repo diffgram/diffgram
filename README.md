@@ -19,11 +19,11 @@ python install.py
 # Follow the installer instruction and 
 # After install:  View the Web UI at: http://localhost:8085
 ```
-[Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
-<br/>
-[Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
-<br/>
-[Helm Chart](https://github.com/diffgram/diffgram-helm)
+### Other Useful Links For Starting Out
+- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
+- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
+- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
+- [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
 
 # Benefits
 1. Flexible deploy and many integrations - run Diffgram anywhere in the way you want.

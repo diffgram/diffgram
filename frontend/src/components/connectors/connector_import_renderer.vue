@@ -19,6 +19,16 @@
     :video_split_duration="video_split_duration"
     :job_id="job_id"
   ></cloud_storage_searchbar>
+  <cloud_storage_searchbar
+    v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'microsoft_azure'"
+    :project_string_id="project_string_id"
+    ref="microsoft_azure"
+    label="Azure Blob Storage path"
+    :connection="connection"
+    @update_bucket_name="update_bucket_name"
+    :video_split_duration="video_split_duration"
+    :job_id="job_id"
+  ></cloud_storage_searchbar>
 </template>
 
 <script>

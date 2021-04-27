@@ -11,6 +11,10 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
         'files_import': True,
         'files_export': True
     },
+    'microsoft_azure': {
+        'files_import': True,
+        'files_export': True
+    },
     'labelbox': {
         'labeling_interface': True,
         'allowed_instance_types': ['box', 'polygon']
