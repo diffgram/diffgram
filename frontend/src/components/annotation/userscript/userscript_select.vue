@@ -13,6 +13,7 @@
       :clearable="clearable"
       @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
       @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
+      @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
       @change="$emit('change', $event)"
       :menu-props="{ auto: true }"
           >
