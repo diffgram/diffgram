@@ -1,6 +1,9 @@
 <template>
 
-  <v-dialog v-model="show_share_instance_menu" max-width="450px">
+  <v-dialog v-model="show_share_instance_menu"
+            max-width="450px"
+            @click:outside="$emit('click:outside', $event)"
+            >
     <v-card>
       <v-card-title class="headline">Share Instance</v-card-title>
       <v-card-text>

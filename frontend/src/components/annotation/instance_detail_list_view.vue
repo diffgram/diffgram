@@ -83,7 +83,7 @@
                     </div>
                   </td>
 
-                  <!-- 
+                  <!--
   Hide until fully implemented -->
                   <!--
   <td v-if="render_mode != 'file_diff'">
@@ -696,7 +696,7 @@ import Vue from "vue";
          * Also what if the instance id changes? hmmm
          *
          *
-         * 
+         *
          *   Instance delete case, instance list does not change
          *
          *   We could fix this downsteam in terms of the "selected" instance
@@ -730,6 +730,7 @@ import Vue from "vue";
 
 
         // Case of changing frame number
+  
         if( this.prior_current_frame != undefined && this.current_frame != undefined
           && this.prior_current_frame != this.current_frame ){
           if(this.current_instance.number != undefined){
@@ -740,6 +741,7 @@ import Vue from "vue";
             if(instance_index != undefined){
               // We want the instance to be selected too.
               // Not 100% sure if we should do this, so pending review.
+
               this.instance_list[instance_index].selected = true;
               this.current_instance.selected = false;
 
@@ -754,6 +756,10 @@ import Vue from "vue";
             // Default case if no sequence available
             this.change_instance({}, null)
           }
+          // update to monitor if anything changes.
+          this.prior_instance_list_length = this.instance_list.length
+          this.prior_current_frame = this.current_frame
+          this.prior_current_video_file_id = this.current_video_file_id
 
         }
         // Default case, ie creating new instances
