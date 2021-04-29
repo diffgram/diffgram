@@ -1290,10 +1290,10 @@
             :create_instance="event_create_instance"
             :current_userscript_prop="get_userscript()"
             :userscript_select_disabled="userscript_select_disabled()"
-            :show_code_editor="!task.id"
-            :show_external_scripts="!task.id"
-            :show_save="!task.id"
-            :show_other_controls="!task.id"
+            :show_code_editor="!task || !task.id"
+            :show_external_scripts="!task || !task.id"
+            :show_save="!task || !task.id"
+            :show_other_controls="!task || !task.id"
             ref="userscript"
                     >
         </userscript>
@@ -2510,7 +2510,7 @@ export default Vue.extend( {
       return undefined
     },
     userscript_select_disabled: function () {
-      if (this.task.id) { return true}
+      if (this.task && this.task.id) { return true}
     },
     go_to_key_frame_handler: function(){
       this.close_instance_history_panel();

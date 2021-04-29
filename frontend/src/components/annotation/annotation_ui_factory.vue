@@ -2,14 +2,13 @@
   <div style="overflow-x:auto;">
 
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="images_found == true">
+      <div v-if="current_file &&  (current_file.type === 'image' || current_file.type === 'video')">
         <v_annotation_core
-          v-if="render_ready"
           :render_mode=" 'full' "
           :is_annotation_assignment_bool="false"
           :project_string_id="get_project_string_id()"
           :task="task"
-          :file="file"
+          :file="current_file"
           :task_id_prop="task_id_prop"
           :request_save="request_save"
           :request_project_change="request_project_change"
@@ -25,6 +24,9 @@
           ref="annotation_core"
         >
         </v_annotation_core>
+      </div>
+      <div v-else-if="loading">
+        <v-progress-circular indeterminate></v-progress-circular>
       </div>
       <div v-else>
 
@@ -132,11 +134,9 @@
       },
       data() {
         return {
-          render_ready: false,
           media_sheet: true,
           loading: false,
           task: null,
-          file: null,
           current_file: null,
           images_found: true,
           persistent_bottom_sheet: true,
@@ -182,6 +182,9 @@
         else if (this.$props.file_id_prop) {
           this.fetch_single_file();
         }
+        else{
+
+        }
       },
       computed: {
         file_id: function () {
@@ -194,8 +197,9 @@
       },
       methods: {
         fetch_single_file: async function(){
-          await this.$refs.media_core.get_media();
-          this.file = this.$refs.media_core.current_file;
+          this.loading = true;
+          this.current_file = await this.$refs.media_core.get_media();
+          this.loading = false;
         },
         set_permissions_error: function(new_error){
           this.error_permissions = new_error;
