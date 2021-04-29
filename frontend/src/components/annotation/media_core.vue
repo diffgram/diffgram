@@ -1208,21 +1208,45 @@ import Vue from "vue";
       // }
 
       if (this.$props.file_id_prop) {
-        this.$emit('request_file_data', this.$props.file_id_prop);
         await this.fetch_single_file(this.$props.file_id_prop);
         const file_list_data = await this.fetch_project_file_list();
-        file_list_data.file_list.unshift(this.file_list[0]);
-        this.append_project_file_list({file_list: this.file_list});
-        this.update_file_list_and_set_current_file({file_list: this.file_list});
+        const current_file = this.file_list[0];
+        const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length != 0;
+        if(!is_current_file_in_list){
+          file_list_data.file_list.unshift(this.file_list[0]);
+        }
+        else{
+          let index = -1;
+          for(let i = 0; i < file_list_data.file_list.length; i++){
+            let file = file_list_data.file_list[i]
+            if(file.id === current_file.id){
+              index = i;
+              break;
+            }
+          }
+          if(index != -1){
+            file_list_data.file_list.splice(index,1);
+            file_list_data.file_list.unshift(this.file_list[0]);
+          }
+
+        }
+
+        this.append_project_file_list(file_list_data);
+        this.update_file_list_and_set_current_file(file_list_data);
+
+        this.media_loading = false;
+        this.loading = false;
+        return current_file;
       }
 
       else if (this.$props.project_string_id)  {
         const file_list_data = await this.fetch_project_file_list();
         await this.update_file_list_and_set_current_file(file_list_data);
+        this.media_loading = false;
+        this.loading = false;
+        return file_list_data.file_list[0];
       }
 
-      this.media_loading = false;
-      this.loading = false;
 
     },
     set_file_list: function(new_file_list){

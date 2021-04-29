@@ -83,7 +83,7 @@
                     </div>
                   </td>
 
-                  <!-- 
+                  <!--
   Hide until fully implemented -->
                   <!--
   <td v-if="render_mode != 'file_diff'">
@@ -339,7 +339,7 @@
                     <!-- Prob need to set this as a flag and move to application logic at this point -->
 
                     <v-btn v-if="render_mode != 'gold_standard'
-                            && task.task_type != 'review'
+                            && task && task.task_type != 'review'
                             && !view_only_mode
                             && props.item.soft_delete != true"
                             @click="instance_update('delete', props.index, props.item.id)"
@@ -351,7 +351,7 @@
 
                 <!-- Review and gold standard stuff -->
 
-                    <rating_review  v-if="task.task_type == 'review' && render_mode != 'gold_standard' "
+                    <rating_review  v-if="task && task.task_type == 'review' && render_mode != 'gold_standard' "
                                     :rating_prop="props.item.rating"
                                     @rating_update="instance_update(
                                                       'rating_update',
@@ -642,7 +642,7 @@ import Vue from "vue";
 
         else {
 
-          if (this.task.task_type == 'review' && this.render_mode != "gold_standard") {
+          if (this.task && this.task.task_type == 'review' && this.render_mode != "gold_standard") {
             // This is really brittle but works for now
             this.base_header[3].width = "600px"
           }
@@ -696,7 +696,7 @@ import Vue from "vue";
          * Also what if the instance id changes? hmmm
          *
          *
-         * 
+         *
          *   Instance delete case, instance list does not change
          *
          *   We could fix this downsteam in terms of the "selected" instance
