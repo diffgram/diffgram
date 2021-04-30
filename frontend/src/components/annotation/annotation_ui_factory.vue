@@ -6,7 +6,7 @@
         <v_annotation_core
           :render_mode=" 'full' "
           :is_annotation_assignment_bool="false"
-          :project_string_id="get_project_string_id()"
+          :project_string_id="computed_project_string_id"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
@@ -73,7 +73,7 @@
               </v-btn>
             </template>
           </v-tooltip>
-          <v_media_core :project_string_id="get_project_string_id()"
+          <v_media_core :project_string_id="computed_project_string_id"
                         file_view_mode="annotation"
                         :task="task"
                         :view_only_mode="view_only"
@@ -194,6 +194,12 @@
           }
           return file_id;
         },
+        computed_project_string_id: function () {
+          if (this.$props.project_string_id) {
+            return this.$props.project_string_id;
+          }
+          return this.$store.state.project.current.project_string_id;
+        },
       },
       methods: {
         fetch_single_file: async function(){
@@ -263,7 +269,7 @@
 
           try{
             const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
-              project_string_id: this.get_project_string_id(),
+              project_string_id: this.computed_project_string_id,
               task_id: task.id,
               direction: direction
             });
@@ -335,7 +341,7 @@
           if (this.$props.task_id_prop) {
             page_name = 'task_detail'
           }
-          const event_data = await create_event(this.get_project_string_id(), {
+          const event_data = await create_event(this.computed_project_string_id, {
             file_id: this.$props.file_id_prop,
             task_id: this.$props.task_id_prop,
             page_name: page_name,
@@ -343,12 +349,7 @@
             user_visit: 'user_visit',
           })
         },
-        get_project_string_id: function () {
-          if (this.$props.project_string_id) {
-            return this.$props.project_string_id;
-          }
-          return this.$store.state.project.current.project_string_id;
-        },
+
         current_image_function: function (result) {
           this.current_image = result
         },
