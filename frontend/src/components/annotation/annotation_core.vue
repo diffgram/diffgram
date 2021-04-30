@@ -12,8 +12,9 @@
           <v-toolbar dense
                  elevation="1"
                  fixed
+
                  :height="`${!error_no_permissions.data ? '50px' : '0'}`"
-                 style="overflow: hidden"
+                 style="overflow: hidden; padding:0"
                  >
         <v-toolbar-items   v-if="!error_no_permissions.data">
 
@@ -900,25 +901,6 @@
                                   :current_file="file"
                                  >
       </instance_detail_list_view>
-
-        <!-- Gold standard -->
-      <!-- Don't allow focus for now since it would be confusing to have both-->
-      <!-- TODO prop condition ie via mode since length could be 0 for gold -->
-
-      <!-- TODO extend concept of focus instance to multiple lists, ie for gold
-          standard -->
-
-<!--      <instance_detail_list_view class="pa-4"-->
-<!--                                  v-if="gold_standard_file.instance_list.length != 0"-->
-<!--                                  :instance_list="gold_standard_file.instance_list"-->
-<!--                                  :label_file_colour_map="label_file_colour_map"-->
-<!--                                  @instance_update="instance_update($event)"-->
-<!--                                  :render_mode="'gold_standard'"-->
-<!--                                  :task="task"-->
-<!--                                  :label_settings = "label_settings"-->
-<!--                                  :label_list = "label_list"-->
-<!--                                  >-->
-<!--      </instance_detail_list_view>-->
 
     </v-navigation-drawer>
 
