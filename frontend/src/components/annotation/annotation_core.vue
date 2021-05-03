@@ -3629,7 +3629,7 @@ export default Vue.extend( {
 
         this.canvas_width = this.$props.file.video.width
         this.canvas_height = this.$props.file.video.height
-
+        
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_single_image();
       }
