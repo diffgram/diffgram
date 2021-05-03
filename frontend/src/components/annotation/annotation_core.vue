@@ -6800,7 +6800,7 @@ export default Vue.extend( {
 
       var url = null
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url = '/api/v1/task/' + this.task.id +
           '/annotation/update'
       } else {
@@ -6899,7 +6899,7 @@ export default Vue.extend( {
           this.snackbar_success = true
           this.snackbar_success_text = "Saved and completed. Moved to next."
 
-          if(this.task.id){   // props
+          if(this.task && this.task.id){   // props
             this.trigger_task_change('next', this.task)
           }
           else{

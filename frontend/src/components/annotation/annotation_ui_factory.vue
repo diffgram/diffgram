@@ -44,67 +44,16 @@
         </v-card>
 
       </div>
+      <file_manager_sheet
+        ref="file_manager_sheet"
+        :project_string_id="computed_project_string_id"
+        :task="task"
+        :view_only="view_only"
+        :file_id_prop="file_id_prop"
+        :job_id="job_id"
+      >
+      </file_manager_sheet>
 
-
-
-      <v-bottom-sheet scrollable
-                      :retain-focus="false"
-                      hide-overlay
-                      class="media-core-container"
-                      no-click-animation
-                      v-if="!error_permissions.data"
-                      :persistent="persistent_bottom_sheet"
-                      v-model="media_sheet">
-        <v-sheet class="text-right" >
-          <v-tooltip bottom>
-            Minimize
-            <template v-slot:activator="{ on }">
-              <v-btn
-                data-cy="minimize-file-explorer-button"
-                color="primary"
-                small
-                @click="media_sheet = !media_sheet"
-                fab
-                right
-                fixed
-                v-on="on"
-              >
-                <v-icon> mdi-window-minimize </v-icon>
-              </v-btn>
-            </template>
-          </v-tooltip>
-          <v_media_core :project_string_id="computed_project_string_id"
-                        file_view_mode="annotation"
-                        :task="task"
-                        :view_only_mode="view_only"
-                        :file_id_prop="file_id_prop"
-                        :job_id="job_id"
-                        :visible="media_sheet"
-                        @height="media_core_height = $event"
-                        @permissions_error="set_permissions_error"
-                        ref="media_core"
-          >
-          </v_media_core>
-        </v-sheet>
-      </v-bottom-sheet>
-      <!-- Open Bottom Sheet -->
-      <v-tooltip v-if="media_sheet == false && !task"
-                 bottom>
-        Open File Explorer
-        <template v-slot:activator="{ on }">
-          <v-btn
-            style="position: absolute; bottom: 25px; right: 25px"
-            color="primary"
-            @click="media_sheet = !media_sheet"
-            fab
-            right
-            absolute
-            v-on="on"
-          >
-            <v-icon> mdi-folder-open </v-icon>
-          </v-btn>
-        </template>
-      </v-tooltip>
     </div>
   </div>
 </template>
@@ -113,10 +62,14 @@
 <script lang="ts">
   import axios from 'axios';
   import {create_event} from "../event/create_event";
+  import file_manager_sheet from "../source_control/file_manager_sheet";
   import Vue from "vue";
 
   export default Vue.extend({
       name: 'annotation_ui_factory',
+      components:{
+        file_manager_sheet
+      },
       props: {
         'project_string_id': {
           default: null
@@ -134,17 +87,15 @@
       },
       data() {
         return {
-          media_sheet: true,
           loading: false,
           task: null,
           current_file: null,
           images_found: true,
-          persistent_bottom_sheet: true,
           request_save: false,
           request_project_change: null,
           view_only: false,
           current_image: null,
-          error_permissions: {},
+
           download_annotations_loading: false,
           annotation_example: false,
 
@@ -204,12 +155,10 @@
       methods: {
         fetch_single_file: async function(){
           this.loading = true;
-          this.current_file = await this.$refs.media_core.get_media();
+          this.current_file = await this.$refs.file_manager_sheet.get_media();
           this.loading = false;
         },
-        set_permissions_error: function(new_error){
-          this.error_permissions = new_error;
-        },
+
         fetch_single_task: async function(task_id){
           this.media_sheet = false;
           this.task_error = {
@@ -281,7 +230,7 @@
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
                 this.task = task;
                 // In the task context we reset the file list on media core to keep only the current task's file.
-                this.$refs.media_core.set_file_list([this.task.file]);
+                this.$refs.file_manager_sheet.set_file_list([this.task.file]);
                 this.file = this.task.file;
               }
 
@@ -331,7 +280,7 @@
             .catch(error => {console.debug(error); });
         },
         set_file_list: function(new_file_list){
-          this.$refs.media_core.set_file_list(new_file_list)
+          this.$refs.file_manager_sheet.set_file_list(new_file_list)
         },
         add_visit_history_event: async function (object_type) {
           let page_name = 'data_explorer'
