@@ -6,7 +6,7 @@
         <v_annotation_core
           :render_mode=" 'full' "
           :is_annotation_assignment_bool="false"
-          :project_string_id="computed_project_string_id"
+          :project_string_id_prop="computed_project_string_id"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
