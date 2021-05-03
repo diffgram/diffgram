@@ -499,7 +499,7 @@ class Report_Runner():
             if len(stats['labels']) > 0 and type(stats['labels'][0]) == datetime.datetime:
                 result['labels'] = [x.strftime('%Y-%m-%d') for x in stats['labels']]
         else:
-            result = stats
+            result['stats'] = stats
         return result
 
     def save(self):
