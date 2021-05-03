@@ -103,6 +103,9 @@
       get_media: function(){
         return this.$refs.media_core.get_media();
       },
+      request_change_file: function(direction, file){
+        return this.$refs.media_core.change_file(direction, file);
+      },
       set_file_list: function(){
         return this.$refs.media_core.set_file_list();
       },

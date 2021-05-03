@@ -273,7 +273,7 @@
           <tooltip_button
             tooltip_message="Previous File"
             v-if="!task && file && file.id"
-            @click="change_file('previous', 'none')"
+            @click="change_file('previous')"
             :disabled="loading || annotations_loading || full_file_loading || !file"
             color="primary"
             icon="mdi-chevron-left-circle"
@@ -287,7 +287,7 @@
           <tooltip_button
             tooltip_message="Next File"
             v-if="!task && file && file.id"
-            @click="change_file('next', 'none')"
+            @click="change_file('next')"
             :disabled="loading || annotations_loading ||  full_file_loading || !file"
             color="primary"
             icon="mdi-chevron-right-circle"
@@ -6116,7 +6116,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += '/api/v1/task/' + this.task.id +
                 '/video/file_from_task'
       } else {
@@ -6339,7 +6339,7 @@ export default Vue.extend( {
             // do we want that?
             // maybe a good idea since a deferred task could still have work done
 
-            this.change_file('next', 'none')    // important
+            this.change_file('next')    // important
 
           }
 
@@ -6458,14 +6458,14 @@ export default Vue.extend( {
 
       if (event.keyCode === 37 || event.key === "a") { // left arrow or A
         if (this.shift_key) {
-          this.change_file("previous", "none");
+          this.change_file("previous");
         } else {
           this.shift_frame_via_store(-1)
         }
       }
       if (event.keyCode === 39 || event.key === "d") { // right arrow
         if (this.shift_key) {
-          this.change_file("next", "none");
+          this.change_file("next");
         } else {
           this.shift_frame_via_store(1)
         }
