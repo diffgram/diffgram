@@ -1192,22 +1192,13 @@ import Vue from "vue";
       this.current_file = this.file_list[0]
     },
 
-    get_media: async function (resolve) {
+    get_media: async function (fetch_single_file = true) {
 
       this.loading = true
       this.error = {}   // reset
       this.media_loading = true;
 
-      // TODO: Figure out if canvas wrapper style is still useful.
-      // if (this.image_reload == true) {
-      //   this.file_list = []
-      //   this.current_file = {}
-      //   if (this.canvas_wrapper) {
-      //     this.canvas_wrapper.style.display = "none"
-      //   }
-      // }
-
-      if (this.$props.file_id_prop) {
+      if (this.$props.file_id_prop && fetch_single_file) {
         await this.fetch_single_file(this.$props.file_id_prop);
         const file_list_data = await this.fetch_project_file_list();
         const current_file = this.file_list[0];
@@ -1417,7 +1408,8 @@ import Vue from "vue";
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
 
-      this.$emit('request_media', this.metadata)
+      this.get_media(false);
+
 
     },
 
@@ -1497,7 +1489,7 @@ import Vue from "vue";
         this.current_file = file;
       }
 
-      this.$emit('change_file', this.current_file)
+      this.$emit('file_changed', this.current_file)
     },
     change_file_request(file) {
       if (this.control_key_down == true) {

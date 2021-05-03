@@ -19,7 +19,6 @@
           fab
           right
           fixed
-          v-on="on"
         >
           <v-icon> mdi-arrow-up </v-icon>
         </v-btn>
@@ -49,7 +48,7 @@
                       :visible="media_sheet"
                       @height="media_core_height = $event"
                       @permissions_error="set_permissions_error"
-                      @change_file="change_file"
+                      @file_changed="change_file"
                       ref="media_core"
         >
         </v_media_core>
