@@ -3606,7 +3606,7 @@ export default Vue.extend( {
       })
     },
 
-    current_file_updates: function () {
+     current_file_updates: async function () {
       if (this.$props.file.type == "image") {
         this.video_mode = false
 
@@ -3629,6 +3629,9 @@ export default Vue.extend( {
 
         this.canvas_width = this.$props.file.video.width
         this.canvas_height = this.$props.file.video.height
+
+        this.$refs.video_controllers.reset_cache();
+        await this.$refs.video_controllers.get_single_image();
       }
     },
     // todo why not make this part of rest of event stuff

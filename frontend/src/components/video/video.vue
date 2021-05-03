@@ -1189,7 +1189,7 @@ export default Vue.extend( {
       // because a builder may still be reviewing a task.)
 
       let url = ""
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += '/api/v1/task/' + this.task.id
         }
       else {
