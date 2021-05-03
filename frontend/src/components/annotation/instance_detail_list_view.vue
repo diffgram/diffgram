@@ -828,7 +828,10 @@ import Vue from "vue";
         if (instance && instance.id) {
           instance_id = instance.id
         }
-        this.$addQueriesToLocation({'instance': instance_id})
+        if(instance_id != null){
+          this.$addQueriesToLocation({'instance': instance_id})
+          this.$route.query.instance = instance_id
+        }
       },
 
       show_all: function () {

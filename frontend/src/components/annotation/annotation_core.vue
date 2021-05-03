@@ -1532,7 +1532,6 @@ export default Vue.extend( {
       },
       file: {
         handler(newVal, oldVal){
-          console.log('CHANGE FILEEE', newVal, oldVal);
           if(newVal != oldVal){
             this.on_change_current_file();
           }
@@ -6238,7 +6237,6 @@ export default Vue.extend( {
       }
     },
     on_change_current_file: async function () {
-      console.log('on_change_current_file', this.loading, this.annotations_loading, this.full_file_loading);
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
@@ -6253,6 +6251,7 @@ export default Vue.extend( {
       this.reset_for_file_change_context()
 
       this.$addQueriesToLocation({'file': this.$props.file.id})
+
 
       await this.refresh_attributes_from_current_file();
 
