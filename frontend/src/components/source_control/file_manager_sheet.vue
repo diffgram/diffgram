@@ -49,6 +49,7 @@
                       :visible="media_sheet"
                       @height="media_core_height = $event"
                       @permissions_error="set_permissions_error"
+                      @change_file="change_file"
                       ref="media_core"
         >
         </v_media_core>
@@ -84,7 +85,6 @@
     name: "file_manager_sheet",
     props: [
       'project_string_id',
-      'persistent_bottom_sheet',
       'task',
       'view_only',
       'file_id_prop',
@@ -112,6 +112,9 @@
       set_permissions_error: function(new_error){
         this.error_permissions = new_error;
       },
+      change_file: function(file){
+        this.$emit('change_file', file)
+      }
     }
 
   })
