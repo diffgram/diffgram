@@ -139,7 +139,7 @@
           this.fetch_single_file();
         }
         else{
-
+          this.fetch_project_file_list();
         }
       },
       computed: {
@@ -165,7 +165,8 @@
 
           this.current_file = file;
         },
-        fetch_single_file: async function(){
+
+        fetch_project_file_list: async function(){
           this.loading = true;
           this.current_file = await this.$refs.file_manager_sheet.get_media();
           this.loading = false;
