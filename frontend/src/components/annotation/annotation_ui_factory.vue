@@ -18,6 +18,7 @@
           :view_only_mode="view_only"
           @save_response_callback="save_response_callback_function"
           @current_image="current_image_function"
+          @request_file_change="request_file_change"
           @images_found="images_found_function"
           @set_file_list="set_file_list"
           @request_new_task="change_task"
@@ -154,8 +155,11 @@
         },
       },
       methods: {
+        request_file_change: function(direction, file){
+          this.$refs.file_manager_sheet.request_change_file(direction, file);
+        },
         change_file: function(file){
-          console.log('NEW FILE', file)
+
           this.current_file = file;
         },
         fetch_single_file: async function(){

@@ -742,7 +742,7 @@ export default Vue.extend( {
       this.sequence_list = []
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
          url += "/api/v1/task/" + this.task.id + '/video/file_from_task'
       }
       else {
