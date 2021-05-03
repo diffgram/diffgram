@@ -19,7 +19,6 @@
           fab
           right
           fixed
-          v-on="on"
         >
           <v-icon> mdi-arrow-up </v-icon>
         </v-btn>
