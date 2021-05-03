@@ -45,19 +45,22 @@
         </v-card>
 
       </div>
-      <file_manager_sheet
-        ref="file_manager_sheet"
-        :project_string_id="computed_project_string_id"
-        :task="task"
-        :view_only="view_only"
-        :file_id_prop="file_id_prop"
-        :job_id="job_id"
-        @change_file="change_file"
-      >
-      </file_manager_sheet>
+
+        <file_manager_sheet
+          ref="file_manager_sheet"
+          :project_string_id="computed_project_string_id"
+          :task="task"
+          :view_only="view_only"
+          :file_id_prop="file_id_prop"
+          :job_id="job_id"
+          @change_file="change_file"
+        >
+        </file_manager_sheet>
+
 
     </div>
   </div>
+  </keep-alive>
 </template>
 
 

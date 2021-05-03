@@ -1461,8 +1461,6 @@ import Vue from "vue";
         });
     },
     change_file(direction, file){
-
-      console.log('aaa', direction, file)
       if(direction != 'next' && direction != 'previous' && !file){
         throw new Error('direction must be either "next" or "previous", else provide a specific file to set as second param.')
       }
