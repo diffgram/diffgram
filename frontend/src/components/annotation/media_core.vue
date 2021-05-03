@@ -830,9 +830,6 @@ import Vue from "vue";
       'file_view_mode': {
         default: null  // home, task, changes, annotation
       },
-      'request_next_page': {
-        default: null
-      },
       'view_only_mode': {
         default: false
       },
@@ -883,6 +880,7 @@ import Vue from "vue";
 
       current_dataset: {},
       current_file: null,
+      request_next_page: null,
       file_list: [],
 
       height: 0,
@@ -1235,7 +1233,7 @@ import Vue from "vue";
         await this.update_file_list_and_set_current_file(file_list_data);
         this.media_loading = false;
         this.loading = false;
-        return file_list_data.file_list[0];
+        return this.current_file;
       }
 
 
@@ -1452,7 +1450,7 @@ import Vue from "vue";
           this.logout()
         });
     },
-    change_file(direction, file){
+    async change_file(direction, file){
       if(direction != 'next' && direction != 'previous' && !file){
         throw new Error('direction must be either "next" or "previous", else provide a specific file to set as second param.')
       }
@@ -1470,17 +1468,15 @@ import Vue from "vue";
         if (i < 0) {
           i = 0
         }
-
         // End of list, go to next page
-        if (i >= this.file_list.length || this.render_mode== 'trainer_default') {
-          //i = this.File_list.length - 1
+        if (i >= this.file_list.length) {
           // Auto Advance to next page
           // Check is to help it not jump if at "end of list"?
           // But this will only work for first page unless
           // we also increase i for what page we are on.
-          //if (metadata_previous.file_count > i) {
-          this.request_next_page = Date.now()
-          //}
+          await this.next_page();
+          this.current_file = this.file_list[0]
+          this.$emit('file_changed', this.current_file)
           return
         }
         this.current_file = this.file_list[i]
@@ -1513,10 +1509,10 @@ import Vue from "vue";
 
       this.get_media();
     },
-    next_page() {
+    async next_page() {
       this.request_next_page_flag = true
       this.request_previous_page_flag = false
-      this.get_media();
+      await this.get_media();
     },
     previous_page() {
       /* TODO  trying to follow prior design but this isn't great
