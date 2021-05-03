@@ -1534,6 +1534,7 @@ export default Vue.extend( {
         handler(newVal, oldVal){
           console.log('CHANGE FILEEE', newVal, oldVal);
           if(newVal != oldVal){
+            this.on_change_current_file();
           }
         },
       },

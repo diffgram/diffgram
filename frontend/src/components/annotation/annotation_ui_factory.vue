@@ -51,6 +51,7 @@
         :view_only="view_only"
         :file_id_prop="file_id_prop"
         :job_id="job_id"
+        @change_file="change_file"
       >
       </file_manager_sheet>
 
@@ -153,6 +154,10 @@
         },
       },
       methods: {
+        change_file: function(file){
+          console.log('NEW FILE', file)
+          this.current_file = file;
+        },
         fetch_single_file: async function(){
           this.loading = true;
           this.current_file = await this.$refs.file_manager_sheet.get_media();

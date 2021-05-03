@@ -1460,49 +1460,44 @@ import Vue from "vue";
           this.logout()
         });
     },
-    change_file(direction){
+    change_file(direction, file){
+      if(direction != 'next' && direction != 'previous' && !file){
+        throw new Error('direction must be either "next" or "previous", else provide a specific file to set as second param.')
+      }
+      if(!file){
+        let i = null;
+        let file_id = null
+        file_id = this.current_file.id
+        i = this.file_list.findIndex(x => x.id == file_id)
+        var original_i = i
+        if (direction === "next") {
+          i += 1
+        } else { i -= 1 }
 
-      let i = null;
-      if (this.complete_on_change == true) {
+        // limits
+        if (i < 0) {
+          i = 0
+        }
 
-        // TODO need to capture current file, as otherwise file may change
-        // while changing
-        // this.complete_on_change_trigger = Date.now()
+        // End of list, go to next page
+        if (i >= this.file_list.length || this.render_mode== 'trainer_default') {
+          //i = this.File_list.length - 1
+          // Auto Advance to next page
+          // Check is to help it not jump if at "end of list"?
+          // But this will only work for first page unless
+          // we also increase i for what page we are on.
+          //if (metadata_previous.file_count > i) {
+          this.request_next_page = Date.now()
+          //}
+          return
+        }
+        this.current_file = this.file_list[i]
+      }
+      else{
+        this.current_file = file;
       }
 
-      let file_id = null
-      file_id = this.current_file.id
-      i = this.File_list.findIndex(x => x.id == file_id)
-      var original_i = i
-      if (direction === "next") {
-        i += 1
-      } else { i -= 1 }
-
-      // limits
-      if (i < 0) {
-        i = 0
-      }
-
-      // CAUTION for context of tasks / job we need render mode check here
-      // otherwise it won't fire.
-      // The trainer part relies upon it "requesting next page"
-      // to refresh / get next task
-
-      // End of list, go to next page
-      if (i >= this.File_list.length || this.render_mode== 'trainer_default') {
-        //i = this.File_list.length - 1
-
-        // Auto Advance to next page
-        // Check is to help it not jump if at "end of list"?
-        // But this will only work for first page unless
-        // we also increase i for what page we are on.
-        //if (metadata_previous.file_count > i) {
-        this.request_next_page = Date.now()
-        //}
-        return
-      }
-
-      this.current_file = this.File_list[i]
+      this.$emit('change_file', this.current_file)
     },
     change_file_request(file) {
       if (this.control_key_down == true) {
@@ -1510,7 +1505,7 @@ import Vue from "vue";
         return
       }
 
-      this.$emit('change_file', file)
+      this.change_file('change_file', file)
     },
 
     item_changed() {
