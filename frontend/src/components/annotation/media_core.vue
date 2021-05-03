@@ -1505,7 +1505,6 @@ import Vue from "vue";
       this.current_file = this.File_list[i]
     },
     change_file_request(file) {
-
       if (this.control_key_down == true) {
         this.select_from_something(file)
         return
