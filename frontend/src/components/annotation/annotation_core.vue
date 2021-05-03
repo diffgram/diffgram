@@ -274,7 +274,7 @@
             tooltip_message="Previous File"
             v-if="!task && file && file.id"
             @click="change_file('previous', 'none')"
-            :disabled="loading || annotations_loading || full_file_loading || File_list.length == 0"
+            :disabled="loading || annotations_loading || full_file_loading || !file"
             color="primary"
             icon="mdi-chevron-left-circle"
             :icon_style="true"
@@ -288,7 +288,7 @@
             tooltip_message="Next File"
             v-if="!task && file && file.id"
             @click="change_file('next', 'none')"
-            :disabled="loading || annotations_loading ||  full_file_loading || File_list.length == 0"
+            :disabled="loading || annotations_loading ||  full_file_loading || !file"
             color="primary"
             icon="mdi-chevron-right-circle"
             :icon_style="true"
@@ -346,7 +346,7 @@
                           >
           </tooltip_button>
 
-        <v_is_complete v-if="File_list.length != 0"
+        <v_is_complete v-if="file"
                         :project_string_id="project_string_id"
                         :current_file="file"
                         :task="task"
@@ -355,9 +355,9 @@
                         :complete_on_change_trigger="complete_on_change_trigger"
                         :save_and_complete="true"
                         :loading="save_loading"
-                        :disabled="save_loading || view_only_mode || File_list.length == 0"
+                        :disabled="save_loading || view_only_mode || !file"
                         :view_only_mode="view_only_mode"
-                        :task_id="task.id"
+                        :task_id="task ? task.id : undefined"
                        >
         </v_is_complete>
 
@@ -368,7 +368,7 @@
             v-if="task && task.id"
             @click="task_update('toggle_deferred')"
             :loading="save_loading"
-            :disabled="save_loading || view_only_mode || File_list.length == 0"
+            :disabled="save_loading || view_only_mode || file == undefined"
             color="primary"
             :icon_style="true"
             icon="mdi-debug-step-over"
@@ -383,7 +383,7 @@
             @click="save"
             datacy="save_button"
             :loading="save_loading"
-            :disabled="!has_changed || save_loading || view_only_mode || File_list.length == 0"
+            :disabled="!has_changed || save_loading || view_only_mode || file == undefined"
             color="primary"
             icon="save"
             tooltip_message="Save Image / Frame"
@@ -815,8 +815,8 @@
     <v-alert :value="
              !loading
              && !annotations_loading
-             && File_list.length == 0
              && !job_id
+             && !file
              "
              type="info">
 
@@ -859,7 +859,7 @@
 
       <v-alert v-if="$store.state.user.settings.studio_box_info == true &&
                     ['full', 'trainer_default'].includes(render_mode) &&
-                    File_list.length != 0"
+                    file != undefined"
              dismissible
              @input="$store.commit('set_user_setting', ['studio_box_info', false])"
              type="info"
@@ -1131,7 +1131,8 @@
                         @hide_context_menu="hide_context_menu" />
         </div>
 
-        <v_video  :style="style_max_width"
+        <v_video  v-if="video_mode"
+                  :style="style_max_width"
                   v-show="!show_place_holder"
                   class="pb-0"
                   :current_video="current_video"
@@ -1529,12 +1530,14 @@ export default Vue.extend( {
 
         }
       },
-      current_file(newVal, oldVal){
-        if(newVal != oldVal){
-          this.on_change_current_file(newVal);
-
-        }
+      file: {
+        handler(newVal, oldVal){
+          console.log('CHANGE FILEEE', newVal, oldVal);
+          if(newVal != oldVal){
+          }
+        },
       },
+
       mouse_computed(newval, oldval){
         // We don't want to create a new object here since the reference is used on all instance types.
         // If we create a new object we'll lose the reference on our class InstanceTypes
@@ -1709,7 +1712,7 @@ export default Vue.extend( {
 
       current_version: null,
 
-      loading: true as Boolean,
+      loading: false,
 
       label_file_colour_map: {},
       label_list: null,
@@ -1727,7 +1730,7 @@ export default Vue.extend( {
         target_reticle_size: 20
       },
 
-      annotations_loading: true,
+      annotations_loading: false,
       save_loading: false,
       minimize_issues_sidepanel: false,
 
@@ -1851,7 +1854,6 @@ export default Vue.extend( {
       images_found: true,
 
       Annotation_assignments : [],
-      File_list : [],
 
       html_image: new Image(),  // our canvas expects an image at init
 
@@ -2532,8 +2534,8 @@ export default Vue.extend( {
       return instance_template.instance_list.filter(instance => instance.type === 'keypoints').length > 0;
     },
     get_create_instance_template_url: function(){
-      if(this.$props.project_string_id){
-        return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`
+      if(this.$props.project_string_id_prop){
+        return `/api/v1/project/${this.$props.project_string_id_prop}/instance-template/new`
       }
       else{
         return `/api/v1/task/${this.$props.task.id}/instance-template/new`
@@ -2873,7 +2875,7 @@ export default Vue.extend( {
         this.loading_instance_templates = true;
         this.canvas_element = document.getElementById("my_canvas")
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
-        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {});
+        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id_prop}/instance-template/list`, {});
         if (response.data.instance_template_list) {
           this.instance_template_list = response.data.instance_template_list.map(instance_template => {
 
@@ -3250,15 +3252,14 @@ export default Vue.extend( {
         this.project_string_id = this.$store.state.project.current.project_string_id
       }
       else{
-        this.project_string_id = project_string_id_prop;
+        this.project_string_id = this.$props.project_string_id_prop;
       }
 
-      if (this.is_annotation_assignment_bool == true) {
-
-      }
       if (this.render_mode == 'full' || this.render_mode == 'home') {
         this.request_label_file_refresh = true
       }
+      // Initial File Set
+      this.on_change_current_file()
 
       if (this.render_mode == 'file_diff') {
         this.get_colour_map()
@@ -3335,7 +3336,7 @@ export default Vue.extend( {
 
     },
 
-    mounted() {
+    async mounted() {
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
@@ -3349,7 +3350,7 @@ export default Vue.extend( {
 
       this.update_canvas()
       //if (this.render_mode == 'file_diff') {
-
+      ;
       // assumes canvas wrapper available
       this.canvas_wrapper.style.display = ""
       //}
@@ -4892,11 +4893,11 @@ export default Vue.extend( {
     video_update_core: async function(){
       // TODO change this to update video component?
 
-      this.canvas_width = this.File_list[0].video.width
-      this.canvas_height = this.File_list[0].video.height
+      this.canvas_width = this.$props.file.video.width
+      this.canvas_height = this.$props.file.video.height
       this.video_mode = true;
       this.current_video = this.$props.file.video;
-      this.current_video_file_id = this.File_list[0].id
+      this.current_video_file_id = this.$props.file.id
       await this.get_instances();
       // We need to trigger components and DOM updates before updating frames and sequences.
       // To read more: https://medium.com/javascript-in-plain-english/what-is-vue-nexttick-89d6878c1162
@@ -4913,15 +4914,7 @@ export default Vue.extend( {
     prepare_canvas_for_new_file: async function () {
       if (this.$props.file!= undefined) {
         if (this.$props.file.type == "image") {
-
           await this.image_update_core()
-
-          // still need this here for now, other function in
-          // other context
-          // Bug!!!! if image at []
-          //this.canvas_width = this.File_list[0].image.width
-          //this.canvas_height = this.File_list[0].image.height
-
         }
         if (this.$props.file.type == "video") {
           await this.video_update_core();
@@ -4961,21 +4954,15 @@ export default Vue.extend( {
         Shared between project images method and annotation assignment methods.
 
       */
-      if (this.File_list != null) {
-        if (this.File_list.length == 0) {
-
-          // TODO review using
-            this.images_found = false
-            this.loading = false
-        } else {
-            this.$emit('current_file', this.$props.file)
-            this.images_found = true
-        }
-      } else {
+      if (!this.$props.file) {
+        // TODO review using
         this.images_found = false
         this.loading = false
       }
-
+      else{
+          this.$emit('current_file', this.$props.file)
+          this.images_found = true
+      }
       if (this.images_found == true) {
 
         /*
@@ -5996,7 +5983,7 @@ export default Vue.extend( {
     get_instance_list_for_image: async function(){
       if (this.$store.state.builder_or_trainer.mode == "builder") {
 
-        if (this.task.id) {
+        if (this.task && this.task.id) {
           // If a task is present, prefer this route to handle permissions
           var url = '/api/v1/task/' + this.task.id + '/annotation/list'
 
@@ -6040,8 +6027,8 @@ export default Vue.extend( {
     get_instances: async function (play_after_success=false) {
       if(this.get_instances_loading){ return }
       this.get_instances_loading = true;
-      this.annotations_loading = true
-      this.show_annotations = false
+      this.annotations_loading = true;
+      this.show_annotations = false;
 
 
       // Diffing Context
@@ -6239,7 +6226,10 @@ export default Vue.extend( {
         this.instance_buffer_dict = {}
         this.instance_buffer_metadata = {}
         this.instance_list = []
-        this.$refs.video_controllers.reset_cache();
+        if(this.video_mode){
+          this.$refs.video_controllers.reset_cache();
+        }
+
     },
     change_file(direction, file){
       if (direction == "next" || direction == "previous") {
@@ -6247,7 +6237,7 @@ export default Vue.extend( {
       }
     },
     on_change_current_file: async function () {
-
+      console.log('on_change_current_file', this.loading, this.annotations_loading, this.full_file_loading);
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
@@ -6860,11 +6850,6 @@ export default Vue.extend( {
         this.save_count += 1;
         this.add_ids_to_new_instances_and_delete_old(response);
 
-
-        // TODO not super clear replace_file() is actualy needed anymore
-        // I feel like maybe it is confusing stuff
-        this.replace_file(response.data.new_file, cache_current_file_id)
-
         this.has_changed = false
         this.check_if_pending_created_instance();
         this.$emit('save_response_callback', true)
@@ -6981,42 +6966,9 @@ export default Vue.extend( {
       }
 
     },
-
-    // TODO testing
-    auto_commit: function () {
-
-      // TODO check user settings so don't fire
-      // if not needed...
-
-      if (this.save_count < 10) {
-        return
-      }
-
-      this.save_count = 0
-
-      axios.post(
-        '/api/project/' + this.project_string_id +
-        '/user/' + 'to_do' +
-        '/branch/' + 'master' +
-        '/autocommit', {
-
-        })
-        .then(response => {
-
-
-        }).catch(error => {
-          console.debug(error);
-
-        });
-    },
     request_next_instance: function(label_file_id){
       this.$refs.video_controllers.next_instance(label_file_id);
     },
-    do_review: function () {
-      this.loading = true;
-      this.review_dialog = false;
-      this.get_ai();
-      }
     }
   }
   ) </script>
