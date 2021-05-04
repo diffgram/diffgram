@@ -54,8 +54,6 @@
         </v_media_core>
       </v-sheet>
     </v-bottom-sheet>
-
-
     <!-- Open Bottom Sheet -->
     <v-tooltip v-if="media_sheet == false && !task"
                bottom>
@@ -99,14 +97,20 @@
       }
     },
     methods:{
+      display_file_manager_sheet: function(){
+        this.media_sheet = true;
+      },
+      hide_file_manager_sheet: function(){
+        this.media_sheet = false;
+      },
       get_media: function(fetch_single_file = true, file_id){
         return this.$refs.media_core.get_media(fetch_single_file, file_id);
       },
       request_change_file: function(direction, file){
         return this.$refs.media_core.change_file(direction, file);
       },
-      set_file_list: function(){
-        return this.$refs.media_core.set_file_list();
+      set_file_list: function(file_list){
+        return this.$refs.media_core.set_file_list(file_list);
       },
       full_screen_sheet: function(){
         this.media_core_height = '800px';

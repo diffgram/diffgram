@@ -368,7 +368,7 @@
             v-if="task && task.id"
             @click="task_update('toggle_deferred')"
             :loading="save_loading"
-            :disabled="save_loading || view_only_mode || file == undefined"
+            :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
             color="primary"
             :icon_style="true"
             icon="mdi-debug-step-over"
@@ -383,7 +383,7 @@
             @click="save"
             datacy="save_button"
             :loading="save_loading"
-            :disabled="!has_changed || save_loading || view_only_mode || file == undefined"
+            :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
             color="primary"
             icon="save"
             tooltip_message="Save Image / Frame"
@@ -817,6 +817,7 @@
              && !annotations_loading
              && !job_id
              && !file
+             && !task
              "
              type="info">
 
@@ -1397,7 +1398,7 @@
     </v-snackbar>
 
     <v-alert type='info'
-             v-if="file.type =='text'">
+             v-if="file && file.type =='text'">
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
@@ -1536,6 +1537,13 @@ export default Vue.extend( {
             this.on_change_current_file();
           }
         },
+      },
+      task: {
+          handler(newVal, oldVal){
+            if(newVal != oldVal){
+              this.on_change_current_task();
+            }
+          }
       },
 
       mouse_computed(newval, oldval){
@@ -3259,7 +3267,12 @@ export default Vue.extend( {
         this.request_label_file_refresh = true
       }
       // Initial File Set
-      this.on_change_current_file()
+      if(this.$props.file){
+        this.on_change_current_file();
+      }
+      else if(this.$props.task){
+        this.on_change_current_task();
+      }
 
       if (this.render_mode == 'file_diff') {
         this.get_colour_map()
@@ -3607,15 +3620,18 @@ export default Vue.extend( {
       })
     },
 
-     current_file_updates: async function () {
-      if (this.$props.file.type == "image") {
+     current_file_updates: async function (file) {
+      if(!file){
+        throw new Error('Provide file.')
+      }
+      if (file.type == "image") {
         this.video_mode = false
 
-        this.canvas_width = this.$props.file.image.width
-        this.canvas_height = this.$props.file.image.height
+        this.canvas_width = file.image.width
+        this.canvas_height = file.image.height
 
         var self = this
-        this.addImageProcess(this.$props.file.image.url_signed).then(new_image => {
+        this.addImageProcess(file.image.url_signed).then(new_image => {
           self.html_image = new_image
           self.loading = false
           self.refresh = Date.now()
@@ -3623,13 +3639,13 @@ export default Vue.extend( {
         })
       }
 
-      if (this.$props.file.type == "video") {
+      if (file.type == "video") {
         this.video_mode = true
-        this.current_video = this.$props.file.video
-        this.current_video_file_id = this.$props.file.id
+        this.current_video = file.video
+        this.current_video_file_id = file.id
 
-        this.canvas_width = this.$props.file.video.width
-        this.canvas_height = this.$props.file.video.height
+        this.canvas_width = file.video.width
+        this.canvas_height = file.video.height
 
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_video_single_image();
@@ -5986,10 +6002,11 @@ export default Vue.extend( {
     },
     get_instance_list_for_image: async function(){
       if (this.$store.state.builder_or_trainer.mode == "builder") {
-
+        let file = this.$props.file;
         if (this.task && this.task.id) {
           // If a task is present, prefer this route to handle permissions
-          var url = '/api/v1/task/' + this.task.id + '/annotation/list'
+          var url = '/api/v1/task/' + this.task.id + '/annotation/list';
+          file = this.$props.task.file;
 
         } else {
 
@@ -6000,7 +6017,7 @@ export default Vue.extend( {
           const response = await axios.post(url, {
             directory_id : this.$store.state.project.current_directory.directory_id,
             job_id : this.job_id,
-            attached_to_job: this.$props.file.attached_to_job
+            attached_to_job: file.attached_to_job
           })
           this.get_instances_core(response)
           this.annotations_loading = false
@@ -6240,6 +6257,23 @@ export default Vue.extend( {
         this.$emit('request_file_change', direction, file);
       }
     },
+    on_change_current_task: async function(){
+      if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
+        return
+      }
+      this.full_file_loading = true;
+      if (this.has_changed) {
+        await this.save();
+      }
+      this.reset_for_file_change_context()
+      await this.refresh_attributes_from_current_file(this.$props.task.file);
+
+      this.current_file_updates(this.$props.task.file);
+      await this.prepare_canvas_for_new_file();
+
+      this.full_file_loading = false;
+
+    },
     on_change_current_file: async function () {
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
@@ -6257,17 +6291,20 @@ export default Vue.extend( {
       this.$addQueriesToLocation({'file': this.$props.file.id})
 
 
-      await this.refresh_attributes_from_current_file();
+      await this.refresh_attributes_from_current_file(this.$props.file);
 
-      this.current_file_updates();
+      this.current_file_updates(this.$props.file);
       await this.prepare_canvas_for_new_file();
 
       this.full_file_loading = false;
     },
 
-    refresh_attributes_from_current_file: async function () {
+    refresh_attributes_from_current_file: async function (file) {
+      if(!file){
+        throw new Error('Provide file.')
+      }
       // Change mode  ?
-      if (this.$props.file.type == "image") {
+      if (file.type == "image") {
         // TODO a better way... this is so the watch on current video changes
         this.current_video_file_id = null
         this.video_mode = false
@@ -6277,23 +6314,23 @@ export default Vue.extend( {
         }
         // maybe this.current_file should store width/height? ...
         try{
-          const new_image = await this.addImageProcess(this.$props.file.image.url_signed);
+          const new_image = await this.addImageProcess(file.image.url_signed);
           this.html_image = new_image;
           this.refresh = Date.now();
           await this.get_instances()
-          this.canvas_width = this.$props.file.image.width
-          this.canvas_height = this.$props.file.image.height
+          this.canvas_width = file.image.width
+          this.canvas_height = file.image.height
           this.update_canvas();
         }
         catch(error){
           console.error(error)
         }
       }
-      if (this.$props.file.type === "video") {
+      if (file.type === "video") {
         this.video_mode = true;   // order matters here, downstream things need this to pull right stuff
         // may be a good opportunity to think about a computed property here
 
-        this.current_video_file_id = this.$props.file.id;
+        this.current_video_file_id = file.id;
         this.current_video = this.$props.file.video;
         // Trigger update of child props before fetching frames an sequences.
         await this.$nextTick();
@@ -6800,7 +6837,17 @@ export default Vue.extend( {
 
       // a video file can now be
       // saved from file id + frame, so the current file
-      let cache_current_file_id = this.$props.file.id
+      let current_file_id = null;
+      if(this.$props.file){
+        current_file_id = this.$props.file.id;
+      }
+      else if(this.$props.task){
+        current_file_id = this.$props.task.file.id
+      }
+      else{
+        throw new Error('You must provide either a file or a task in props in order to save.')
+      }
+
 
       var url = null
 
@@ -6811,7 +6858,7 @@ export default Vue.extend( {
 
         if (this.$store.state.builder_or_trainer.mode == "builder") {
           url = '/api/project/' + this.project_string_id +
-            '/file/' + cache_current_file_id + '/annotation/update'
+            '/file/' + current_file_id + '/annotation/update'
         }
       }
 
