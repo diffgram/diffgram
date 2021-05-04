@@ -775,7 +775,7 @@ export default Vue.extend( {
         await this.get_video_single_image(this.video_current_frame_guess)
 
       }
-
+      this.updateFrameUrl(frame);
     },
 
     detect_end_from_keyframe: function () {
@@ -1113,7 +1113,7 @@ export default Vue.extend( {
 		*/
     updateFrameUrl(frame) {
       // update the url w/ current frame if we are viewing a task
-      if (this.task && this.task.id) {
+      if ((this.task && this.task.id) || this.$props.current_video_file_id) {
          this.$addQueriesToLocation({frame});
       }
     },
