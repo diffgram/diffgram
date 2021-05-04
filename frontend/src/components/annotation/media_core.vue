@@ -1207,10 +1207,9 @@ import Vue from "vue";
         }
         const current_file = {...this.file_list[0]};
         const file_list_data = await this.fetch_project_file_list();
-
-        const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length != 0;
+        const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length > 0;
         if(!is_current_file_in_list){
-          file_list_data.file_list.unshift(this.file_list[0]);
+          file_list_data.file_list.unshift(current_file);
         }
         else{
           let index = -1;
@@ -1233,6 +1232,7 @@ import Vue from "vue";
 
         this.media_loading = false;
         this.loading = false;
+        this.current_file = current_file;
         return current_file;
       }
       else if (this.$props.project_string_id)  {
