@@ -884,6 +884,7 @@ import Vue from "vue";
       file_list: [],
 
       height: 0,
+      page_number: 0,
       selected_dirs: [],
       job_attached_dirs: [],
       select_from_metadata: false,
@@ -1125,6 +1126,7 @@ import Vue from "vue";
         'issues_filter': this.issues_filter,
         'limit': this.metadata_limit,
         'media_type': this.filter_media_type_setting,
+        'page_number': this.page_number,
         'request_next_page': this.request_next_page_flag,
         'request_previous_page' : this.request_previous_page_flag,
         'file_view_mode': this.file_view_mode,
@@ -1465,27 +1467,32 @@ import Vue from "vue";
         } else { i -= 1 }
 
         // limits
-        if (i < 0) {
+        if (i < 0 && this.page_number > 0) {
+          await this.previous_page();
+          i = this.file_list.length - 1
+        }
+        else if(i < 0 && this.page_number == 0){
           i = 0
         }
         // End of list, go to next page
-        if (i >= this.file_list.length) {
+        else if (i >= this.file_list.length) {
           // Auto Advance to next page
           // Check is to help it not jump if at "end of list"?
           // But this will only work for first page unless
           // we also increase i for what page we are on.
           await this.next_page();
-          this.current_file = this.file_list[0]
-          this.$emit('file_changed', this.current_file)
-          return
+          i = 0
+
         }
         this.current_file = this.file_list[i]
+        this.$emit('file_changed', this.current_file)
       }
       else{
         this.current_file = file;
+        this.$emit('file_changed', this.current_file)
       }
 
-      this.$emit('file_changed', this.current_file)
+
     },
     change_file_request(file) {
       if (this.control_key_down == true) {
@@ -1512,16 +1519,18 @@ import Vue from "vue";
     async next_page() {
       this.request_next_page_flag = true
       this.request_previous_page_flag = false
+      this.page_number += 1
       await this.get_media();
     },
-    previous_page() {
+    async previous_page() {
       /* TODO  trying to follow prior design but this isn't great
        * prefer to share this function...
        *
        */
       this.request_next_page_flag = false
       this.request_previous_page_flag = true
-      this.get_media();
+      this.page_number -= 1
+      await this.get_media();
 
     },
     remove_function: function (file) {
