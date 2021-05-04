@@ -346,16 +346,16 @@
                           >
           </tooltip_button>
 
-        <v_is_complete v-if="file"
+        <v_is_complete v-if="file || task"
                         :project_string_id="project_string_id"
-                        :current_file="file"
+                        :current_file="file ? file : task.file"
                         :task="task"
                         @replace_file="replace_file($event[0], $event[1])"
                         @complete_task="complete_task"
                         :complete_on_change_trigger="complete_on_change_trigger"
                         :save_and_complete="true"
                         :loading="save_loading"
-                        :disabled="save_loading || view_only_mode || !file"
+                        :disabled="save_loading || view_only_mode || (!file && !task)"
                         :view_only_mode="view_only_mode"
                         :task_id="task ? task.id : undefined"
                        >
