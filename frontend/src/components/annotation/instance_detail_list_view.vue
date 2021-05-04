@@ -829,8 +829,8 @@ import Vue from "vue";
           instance_id = instance.id
         }
         if(instance_id != null){
-          this.$addQueriesToLocation({'instance': instance_id})
-          this.$route.query.instance = instance_id
+          // this.$addQueriesToLocation({'instance': instance_id})
+          // this.$route.query.instance = instance_id
         }
       },
 

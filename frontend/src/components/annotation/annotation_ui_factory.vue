@@ -168,7 +168,12 @@
 
         fetch_project_file_list: async function(){
           this.loading = true;
-          this.current_file = await this.$refs.file_manager_sheet.get_media();
+          if(this.$route.query.file){
+            this.current_file = await this.$refs.file_manager_sheet.get_media(true, this.$route.query.file);
+          }
+          else{
+            this.current_file = await this.$refs.file_manager_sheet.get_media();
+          }
           this.loading = false;
         },
 

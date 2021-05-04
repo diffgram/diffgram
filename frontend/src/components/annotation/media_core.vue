@@ -1192,16 +1192,22 @@ import Vue from "vue";
       this.current_file = this.file_list[0]
     },
 
-    get_media: async function (fetch_single_file = true) {
+    get_media: async function (fetch_single_file = true, file_id) {
 
       this.loading = true
       this.error = {}   // reset
       this.media_loading = true;
 
-      if (this.$props.file_id_prop && fetch_single_file) {
-        await this.fetch_single_file(this.$props.file_id_prop);
+      if ((this.$props.file_id_prop && fetch_single_file) || file_id) {
+        if(file_id != undefined){
+          await this.fetch_single_file(file_id);
+        }
+        else{
+          await this.fetch_single_file(this.$props.file_id_prop);
+        }
+        const current_file = {...this.file_list[0]};
         const file_list_data = await this.fetch_project_file_list();
-        const current_file = this.file_list[0];
+
         const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length != 0;
         if(!is_current_file_in_list){
           file_list_data.file_list.unshift(this.file_list[0]);
@@ -1229,7 +1235,6 @@ import Vue from "vue";
         this.loading = false;
         return current_file;
       }
-
       else if (this.$props.project_string_id)  {
         const file_list_data = await this.fetch_project_file_list();
         await this.update_file_list_and_set_current_file(file_list_data);
@@ -1304,6 +1309,7 @@ import Vue from "vue";
           this.label_file_colour_map = response.data.label_dict.label_file_colour_map
           this.label_list = response.data.label_dict.label_list
         }
+        return response.data['file']
       }catch(error){
         this.error = this.$route_api_errors(error)
         this.loading = false
@@ -1447,7 +1453,7 @@ import Vue from "vue";
 
       })
         .catch(error => {
-          console.log(error);
+          console.error(error);
           this.loading = false
           this.logout()
         });
@@ -1555,7 +1561,7 @@ import Vue from "vue";
             this.$emit('annotation_example_image_toggle_ui', index)
 
           }
-        }).catch(e => { console.log(e) })
+        }).catch(e => { console.error(e) })
     },
 
     get_video_single_detail(video_id) {
@@ -1569,7 +1575,7 @@ import Vue from "vue";
             this.$emit('current_video_update', this.current_video)
 
           }
-        }).catch(e => { console.log(e) })
+        }).catch(e => { console.error(e) })
 
     },
 
@@ -1591,7 +1597,7 @@ import Vue from "vue";
           this.inference_selected_loading = false
 
         }).catch(error => {
-          console.log(error)
+          console.error(error)
           this.inference_selected_loading = false
           if (error.response.status == 400) {
               this.error_inference = error.response.data.log.error
@@ -1628,7 +1634,7 @@ import Vue from "vue";
           this.cascade_archive_tasks = false
 
         }).catch(e => {
-          console.log(e)
+          console.error(e)
           this.api_file_update_loading = false
 
         })
@@ -1650,7 +1656,7 @@ import Vue from "vue";
           // Until we have better system
           //this.run_FAN_disabled = false
         }).catch(e => {
-          console.log(e)
+          console.error(e)
           this.run_FAN_disabled = false
         })
 

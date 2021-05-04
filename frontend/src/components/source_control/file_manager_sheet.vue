@@ -99,8 +99,8 @@
       }
     },
     methods:{
-      get_media: function(){
-        return this.$refs.media_core.get_media();
+      get_media: function(fetch_single_file = true, file_id){
+        return this.$refs.media_core.get_media(fetch_single_file, file_id);
       },
       request_change_file: function(direction, file){
         return this.$refs.media_core.change_file(direction, file);
