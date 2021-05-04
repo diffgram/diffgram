@@ -2,7 +2,7 @@
   <div style="overflow-x:auto;">
 
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="current_file &&  (current_file.type === 'image' || current_file.type === 'video')">
+      <div v-if="show_video_ui">
         <v_annotation_core
           :render_mode=" 'full' "
           :is_annotation_assignment_bool="false"
@@ -60,7 +60,7 @@
 
     </div>
   </div>
-  </keep-alive>
+
 </template>
 
 
@@ -133,7 +133,7 @@
         }
 
         if (this.$props.task_id_prop) {
-          this.fetch_single_task();
+          this.fetch_single_task(this.$props.task_id_prop);
         }
         else if (this.$props.file_id_prop) {
           this.fetch_single_file();
@@ -156,6 +156,15 @@
           }
           return this.$store.state.project.current.project_string_id;
         },
+        show_video_ui: function(){
+          if(this.current_file &&  (this.current_file.type === 'image' || this.current_file.type === 'video')){
+            return true
+          }
+          if(this.task && (this.task.file.type === 'image' || this.task.file.type === 'video')){
+            return true
+          }
+          return false
+        },
       },
       methods: {
         request_file_change: function(direction, file){
@@ -175,8 +184,15 @@
             this.current_file = await this.$refs.file_manager_sheet.get_media();
           }
           this.loading = false;
-        },
 
+          this.$refs.file_manager_sheet.display_file_manager_sheet()
+        },
+        fetch_single_file: async function(){
+          this.loading = true;
+          this.current_file = await this.$refs.file_manager_sheet.get_media();
+          this.loading = false;
+          this.$refs.file_manager_sheet.display_file_manager_sheet()
+        },
         fetch_single_task: async function(task_id){
           this.media_sheet = false;
           this.task_error = {
@@ -198,33 +214,17 @@
               // TODO what parts of this can be merged with
               // builder traner mode below
 
-              this.ile_list = [response.data.task.file]
-
+              this.$refs.file_manager_sheet.set_file_list([response.data.task.file])
+              this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
-
-              if (this.task.task_type == "review" && this.task.job_type == "Exam") {
-                this.label_settings.show_list = false
-
-              }
 
               this.label_file_colour_map = this.task.label_dict.label_file_colour_map
               this.label_list = this.task.label_dict.label_file_list_serialized
-
-              // careful, gold_standard_file default dict has some specific properties
-              // the server returns null if there is no file but
-              // the front end still needs the default properties
-              // especially as vue js renders errors messages in this context in a very cryptic way
-              if (response.data.task.gold_standard_file) {
-                this.gold_standard_file = response.data.task.gold_standard_file   // careful, under task dict
-              }
-
-              this.$emit('file_list_length', this.File_list.length)
             }
             this.task_error = response.data.log.error
-            await this.file_update_core()
           }
           catch(error){
-            console.debug(error);
+            console.error(error);
             this.loading = false
             // this.logout()
           }
