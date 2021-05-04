@@ -924,7 +924,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += "/api/v1/task/" + this.task.id + '/video/file_from_task'
       }
       else {
@@ -975,7 +975,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += "/api/v1/task/" + this.task.id
       }
       else {

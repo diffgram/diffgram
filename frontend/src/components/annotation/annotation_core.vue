@@ -3447,8 +3447,9 @@ export default Vue.extend( {
 
     },
 
-    refresh_all(){
-      this.get_instances();
+    async refresh_all(){
+      await this.get_instances();
+      this.update_canvas();
       this.$forceUpdate();
 
     },
@@ -3629,9 +3630,9 @@ export default Vue.extend( {
 
         this.canvas_width = this.$props.file.video.width
         this.canvas_height = this.$props.file.video.height
-        
+
         this.$refs.video_controllers.reset_cache();
-        await this.$refs.video_controllers.get_single_image();
+        await this.$refs.video_controllers.get_video_single_image();
       }
     },
     // todo why not make this part of rest of event stuff
