@@ -160,7 +160,7 @@ class DiffgramInstallTool:
         if version == "":
             self.diffgram_version = 'latest'
         else:
-            self.diffgram_version = 'version'
+            self.diffgram_version = version
 
     def database_config(self):
         local_database = input('Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
