@@ -509,9 +509,9 @@
         >
           <v-container container--fluid
                        grid-list-md
-                       style="overflow-x:auto;"
+                       style="overflow-x:auto"
           >
-            <v-layout>
+            <v-layout :style="full_screen ? {display: 'flex', flexWrap: 'wrap'}: undefined">
 
               <v-row align="end"
                      v-if="file_list.length === 0"
@@ -535,14 +535,15 @@
                 </tooltip_button>
               </v-row>
 
-              <v-flex xs4
+              <v-card xs4
                       md1
+                      elevation="1"
+                      class="pa-2 ma-2"
                       v-for="(item, index) in file_list"
                       :key="index"
+                      style="display: flex; flex-wrap: wrap"
               >
                 <a @click="change_file_request(item)">
-
-
                   <div v-if="current_file && item.id == current_file.id">
 
                     <!-- Badge thing actually seems to make it worse here -->
@@ -592,7 +593,7 @@
                 <v-icon color="primary" small> delete </v-icon>
               </v-btn>
                   -->
-              </v-flex>
+              </v-card>
             </v-layout>
           </v-container>
 
@@ -817,6 +818,9 @@ import Vue from "vue";
     props: {
       'project_string_id': {
         default: null
+      },
+      'full_screen': {
+        default: false
       },
       'file_id_prop': {
         default: null
