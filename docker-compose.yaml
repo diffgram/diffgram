@@ -12,14 +12,14 @@ services:
     environment:
       SAME_HOST: ${SAME_HOST}
   frontend:
-    image: gcr.io/diffgram-open-core/frontend:latest
+    image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8081:80"
     expose: [80]
     depends_on:
     - default
   walrus:
-    image: gcr.io/diffgram-open-core/walrus:latest
+    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8082:8082"
     expose: [8080]
@@ -29,7 +29,7 @@ services:
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
-      DATABASE_URL: "postgresql+psycopg2://postgres:postgres@db/diffgram"
+      DATABASE_URL: ${DATABASE_URL}
       DIFFGRAM_SYSTEM_MODE: "sandbox"
       DIFFGRAM_STATIC_STORAGE_PROVIDER:  ${DIFFGRAM_STATIC_STORAGE_PROVIDER}
       USER_PASSWORDS_SECRET:  ${USER_PASSWORDS_SECRET}
@@ -53,7 +53,7 @@ services:
 
 
   default:
-    image: gcr.io/diffgram-open-core/default:latest
+    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8080:8080"
     expose: [8080]
@@ -62,7 +62,7 @@ services:
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
-      DATABASE_URL: "postgresql+psycopg2://postgres:postgres@db/diffgram"
+      DATABASE_URL: ${DATABASE_URL}
       DIFFGRAM_SYSTEM_MODE: "sandbox"
       DIFFGRAM_STATIC_STORAGE_PROVIDER:  ${DIFFGRAM_STATIC_STORAGE_PROVIDER}
       USER_PASSWORDS_SECRET: ${USER_PASSWORDS_SECRET}
@@ -83,9 +83,8 @@ services:
       INTER_SERVICE_SECRET: ${INTER_SERVICE_SECRET}
       PYTHONPATH: "/app/"
     command: ['/app/db-init.sh', 'db', 'python3', '-u', '/app/main.py']
-
   db:
-    image: postgres:12.5
+    image: ${POSTGRES_IMAGE}
     hostname: db
     restart: always
     environment:
