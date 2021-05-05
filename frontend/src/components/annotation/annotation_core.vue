@@ -301,39 +301,42 @@
              tooltip_message="Previous Task"
              v-if="task"
              @click="trigger_task_change('previous', task)"
-             :disabled="loading || annotations_loading ||  full_file_loading"
+             :disabled="loading || annotations_loading ||  full_file_loading || !task"
              color="primary"
              icon="mdi-chevron-left-circle"
              :icon_style="true"
              :bottom="true"
            >
            </tooltip_button>
-           <tooltip_button
-             tooltip_message="Next Task"
-             v-if="task"
-             @click="trigger_task_change('next', task)"
-             :disabled="loading || annotations_loading || full_file_loading"
-             color="primary"
-             icon="mdi-chevron-right-circle"
-             :icon_style="true"
-             :bottom="true"
-           >
-           </tooltip_button>
-           <tooltip_button
-             tooltip_message="Jump to Next Task With Issues."
-             v-if="task && task.id"
-             @click="next_issue_task(task)"
-             :disabled="loading || annotations_loading"
-             color="primary"
-             icon="mdi-reload-alert"
-             :icon_style="true"
-             :bottom="true"
-           >
-           </tooltip_button>
-
          </div>
+          <div>
+            <tooltip_button
+              tooltip_message="Next Task"
+              v-if="task"
+              @click="trigger_task_change('next', task)"
+              :disabled="loading || annotations_loading || full_file_loading || !task"
+              color="primary"
+              icon="mdi-chevron-right-circle"
+              :icon_style="true"
+              :bottom="true"
+            >
+            </tooltip_button>
 
+          </div>
 
+          <div>
+            <tooltip_button
+              tooltip_message="Jump to Next Task With Issues."
+              v-if="task && task.id"
+              @click="next_issue_task(task)"
+              :disabled="loading || annotations_loading"
+              color="primary"
+              icon="mdi-reload-alert"
+              :icon_style="true"
+              :bottom="true"
+            >
+            </tooltip_button>
+          </div>
           <tooltip_button
             tooltip_message="Refresh Instances"
             v-if="$store.state.user.current.is_super_admin == true"
@@ -1523,14 +1526,6 @@ export default Vue.extend( {
       }
   },
   watch: {
-      task(newVal, oldVal){
-        if(newVal && oldVal && newVal.id && newVal.id !== oldVal.id){
-
-          this.loading = false;
-          this.full_file_loading = false;
-
-        }
-      },
       file: {
         handler(newVal, oldVal){
           if(newVal != oldVal){
@@ -1540,6 +1535,7 @@ export default Vue.extend( {
       },
       task: {
           handler(newVal, oldVal){
+            console.log('CHANGEEE', newVal, oldVal)
             if(newVal != oldVal){
               this.on_change_current_task();
             }
@@ -2933,9 +2929,18 @@ export default Vue.extend( {
       this.loading_sequences = loading_sequences
     },
     set_canvas_dimensions: function(){
-      if(!this.$props.file.video){ return }
-      this.canvas_width = this.$props.file.video.width;
-      this.canvas_height = this.$props.file.video.height;
+      let file = null;
+      if(this.$props.file){
+        file = this.$props.file;
+      }
+      else if(this.$props.task){
+        file = this.$props.task.file;
+      }
+      else{
+        throw new Error('Must provide task or file in props.')
+      }
+      this.canvas_width = file.video.width;
+      this.canvas_height = file.video.height;
     },
     issues_fetched: function(issues_list){
       this.issues_list = issues_list;
@@ -6230,8 +6235,6 @@ export default Vue.extend( {
 
       // Set the UI to loading state until a new task is provided in the props.
       // The watcher of 'task' will make sure to set loading = false and full_file_loading = false
-      this.loading = true;
-      this.full_file_loading = true;
       this.reset_for_file_change_context()
 
       // Ask parent for a new task
@@ -6258,6 +6261,7 @@ export default Vue.extend( {
       }
     },
     on_change_current_task: async function(){
+      console.log('on_change_current_task', this.loading, this.annotations_loading, this.full_file_loading)
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
@@ -6266,6 +6270,7 @@ export default Vue.extend( {
         await this.save();
       }
       this.reset_for_file_change_context()
+      console.log('aaaa', this.$props.task)
       await this.refresh_attributes_from_current_file(this.$props.task.file);
 
       this.current_file_updates(this.$props.task.file);
@@ -6331,7 +6336,7 @@ export default Vue.extend( {
         // may be a good opportunity to think about a computed property here
 
         this.current_video_file_id = file.id;
-        this.current_video = this.$props.file.video;
+        this.current_video = file.video;
         // Trigger update of child props before fetching frames an sequences.
         await this.$nextTick();
 

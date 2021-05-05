@@ -244,12 +244,10 @@
               if(response.data.task.id !== task.id){
                 this.$router.push(`/task/${response.data.task.id}`);
                 history.pushState({}, '', `/task/${response.data.task.id}`);
-
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
-                this.task = task;
                 // In the task context we reset the file list on media core to keep only the current task's file.
                 this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-                this.file = this.task.file;
+                this.task= response.data.task;
               }
 
             }
