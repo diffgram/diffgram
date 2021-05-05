@@ -902,7 +902,7 @@
                                   :video_playing="video_playing"
                                   :external_requested_index="request_change_current_instance"
                                   :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                  :current_file="file"
+                                  :current_file="file ? file : task"
                                  >
       </instance_detail_list_view>
 
@@ -1535,7 +1535,6 @@ export default Vue.extend( {
       },
       task: {
           handler(newVal, oldVal){
-            console.log('CHANGEEE', newVal, oldVal)
             if(newVal != oldVal){
               this.on_change_current_task();
             }
@@ -6261,7 +6260,6 @@ export default Vue.extend( {
       }
     },
     on_change_current_task: async function(){
-      console.log('on_change_current_task', this.loading, this.annotations_loading, this.full_file_loading)
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
@@ -6270,7 +6268,6 @@ export default Vue.extend( {
         await this.save();
       }
       this.reset_for_file_change_context()
-      console.log('aaaa', this.$props.task)
       await this.refresh_attributes_from_current_file(this.$props.task.file);
 
       this.current_file_updates(this.$props.task.file);
@@ -6604,7 +6601,6 @@ export default Vue.extend( {
     },
     initialize_instance: function(instance){
       // TODO: add other instance types as they are migrated to classes.
-      //console.log('aaaaa', instance.type, instance.initialized, instance)
       if(instance.type === 'keypoints' && !instance.initialized){
         let initialized_instance = new KeypointInstance(
           this.mouse_position,
