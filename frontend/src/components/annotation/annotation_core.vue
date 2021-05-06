@@ -38,8 +38,8 @@
 
             <template slot="content">
 
-              <task_meta_data_card vi-if="task"
-                                   :file="file"
+              <task_meta_data_card v-if="task"
+                                   :file="task.file"
                                    :video="current_video"
                                    :task="task"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
