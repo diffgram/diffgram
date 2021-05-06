@@ -23,13 +23,13 @@ describe('Annotate Files Tests', () => {
 
       // Draw box
       cy.mousedowncanvas(75, 75);
-      cy.wait(500)
+      cy.wait(1500)
 
       cy.mouseupcanvas();
-      cy.wait(1000)
+      cy.wait(1500)
 
       cy.mousedowncanvas(120, 120);
-      cy.wait(500)
+      cy.wait(1500)
       cy.mouseupcanvas();
 
       // Set Edit Mode False
