@@ -44,6 +44,6 @@ def task_next_core(session,
     if not task:
         return False
 
-    task_serialized = task.serialize_trainer_annotate(session)
+    task_serialized = task.serialize_builder_view_by_id(session)
 
     return task_serialized

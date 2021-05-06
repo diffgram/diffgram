@@ -307,7 +307,7 @@
 
           </v-card>
 
-          <!-- 
+          <!--
           Only show on label main page
           as known bug about it refreshing-->
 
@@ -496,10 +496,6 @@
 
           b) calling  this.$store.commit('init_label_refresh')
 
-          this works better for components that are at least 2 levels
-          removed, ie
-          labels_new -> annotation_full -> annotation_core -> labels_view
-          would be awkward
           better in that case to simple call `this.$store.commit('init_label_refresh')`
           `this.$store.commit('finish_label_refresh')` is automatically called at end
           of refresh, and also works to "reset" state to false

@@ -1,5 +1,5 @@
 <template>
-  <v-card v-if="file.id" :elevation="elevation" class="pa-0">
+  <v-card v-if="file && file.id" :elevation="elevation" class="pa-0">
     <v-card-title class="pa-0"><h5 class="pa-0 ma-0">Related Tasks: </h5></v-card-title>
     <v-container class="pa-0" v-if="!loading">
       <div v-for="task in related_tasks"

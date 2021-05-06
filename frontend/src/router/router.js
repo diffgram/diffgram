@@ -17,7 +17,7 @@ const routerOptions = [
   },
   {
     path: '/file/:file_id_prop',
-    component: 'annotation/annotation_full',
+    component: 'annotation/annotation_ui_factory',
     props: true,
     meta: {
       requiresAuth: true,
@@ -53,7 +53,7 @@ const routerOptions = [
   },
   {
     path: '/task/:task_id_prop',
-    component: 'annotation/annotation_full',
+    component: 'annotation/annotation_ui_factory',
     props: true,
     meta: {
       requiresAuth: true,
@@ -156,7 +156,7 @@ const routerOptions = [
   {
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
-    component: 'annotation/annotation_full',
+    component: 'annotation/annotation_ui_factory',
     props: true, meta: {
       requiresAuth: true,
       hide_default_menu: true

@@ -1,7 +1,7 @@
 <template>
   <div v-cloak v-if="issues_list.length > 0">
 
- 
+
 
         <v-card-title class="d-flex justify-start align-center">
 
@@ -181,7 +181,7 @@
           this.issues_list.push(new_issue)
         },
         async get_issues_list() {
-          if(!this.$props.task.id && !this.$props.file.id && !this.$props.file.id){
+          if(!this.$props.task && !this.$props.file){
             return;
           }
           this.loading = true;

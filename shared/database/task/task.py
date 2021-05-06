@@ -314,6 +314,7 @@ class Task(Base):
             'job_id': self.job_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
+            'status': self.job_type,
             'file': self.file.serialize_with_type(session=session),
             'guide': guide,
             'label_dict': self.label_dict
