@@ -704,7 +704,7 @@ class LabelBoxSyncManager:
             'query': query,
             'data': data
         })
-        print('AAAAAAAA', result)
+
         created_datarows = result['result']['datasets'][0]['dataRows']
 
         for datarow in created_datarows:
