@@ -41,40 +41,40 @@
        Select and attach files to be included in the job.
     </v-alert>
 
-    <v-layout>
+    <v-layout class="d-flex">
 
-        <v-card-title>
-          <div v-if="!media_loading && !loading &&
-               metadata_previous.start_index == metadata_previous.file_count
-               ">
+          <div v-if="!media_loading && !loading && metadata_previous.start_index == metadata_previous.file_count">
              <v-chip color="primary"
                   text-color="white"
                   >No more pages.</v-chip>
           </div>
-          <div v-else>
+          <div v-else class="d-flex align-center">
              <v-chip color="primary"
+                     small
                   text-color="white"
                   >{{start_index_oneth_index}} to
-            {{metadata_previous.end_index}} </v-chip>
+            {{metadata_previous.end_index }} </v-chip>
               of
               <v-chip color="primary"
-                  text-color="white"
+                      small
+                      text-color="white"
                   >{{metadata_previous.file_count}}</v-chip>
           </div>
+          <div class="d-flex align-center">
 
-          <!-- TODO proper counts for job file stuff
-              Note "task" is wrong here, in that's referring to creating a job
-              not how it looks to person actually running with a job
-              -->
-          <div v-if="file_view_mode == 'task'">
-            (not already in Job)
-          </div>
+            <!-- TODO proper counts for job file stuff
+                Note "task" is wrong here, in that's referring to creating a job
+                not how it looks to person actually running with a job
+                -->
+            <div v-if="file_view_mode == 'task'">
+              (not already in Job)
+            </div>
 
-        <button_with_menu
+            <button_with_menu
               tooltip_message="Quick Help"
               icon="mdi-lifebuoy"
               :close_by_button="true"
-                  >
+            >
               <template slot="content">
                 <v-layout column>
 
@@ -89,262 +89,262 @@
                 </v-layout>
               </template>
 
-        </button_with_menu>
+            </button_with_menu>
 
 
-         <tooltip_button
-            tooltip_message="Refresh"
-            @click="request_media"
-            :loading="loading"
-            :icon_style="true"
-            icon="mdi-refresh"
-            color="primary"
-            :large="true"
-                        >
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Refresh"
+              @click="request_media"
+              :loading="loading"
+              :icon_style="true"
+              icon="mdi-refresh"
+              color="primary"
+              :large="true"
+            >
+            </tooltip_button>
 
-        <!-- Note disable conditions are different for next / previous -->
-        <tooltip_button
-            tooltip_message="Previous Page"
-            @click="previous_page"
-            :loading="loading"
-            :icon_style="true"
-            icon="mdi-chevron-left-box"
-            color="primary"
-            :large="true"
-            :disabled="metadata_previous.start_index == 0
+            <!-- Note disable conditions are different for next / previous -->
+            <tooltip_button
+              tooltip_message="Previous Page"
+              @click="previous_page"
+              :loading="loading"
+              :icon_style="true"
+              icon="mdi-chevron-left-box"
+              color="primary"
+              :large="true"
+              :disabled="metadata_previous.start_index == 0
                   || !request_next_page_available  "
-                        >
-        </tooltip_button>
+            >
+            </tooltip_button>
 
-        <tooltip_button
-            tooltip_message="Next Page"
-            @click="next_page"
-            :loading="loading"
-            :icon_style="true"
-            icon="mdi-chevron-right-box"
-            color="primary"
-            :large="true"
-            :disabled="metadata_previous.end_index == metadata_previous.file_count
+            <tooltip_button
+              tooltip_message="Next Page"
+              @click="next_page"
+              :loading="loading"
+              :icon_style="true"
+              icon="mdi-chevron-right-box"
+              color="primary"
+              :large="true"
+              :disabled="metadata_previous.end_index == metadata_previous.file_count
                   || !request_next_page_available"
-                        >
-        </tooltip_button>
+            >
+            </tooltip_button>
 
 
-        <div v-if="$store.state.user.current.api
+            <div v-if="$store.state.user.current.api
              && $store.state.user.current.api.api_actions">
 
-          <tooltip_button
-            @click="inference_selected()"
-            icon="mdi-rocket"
-            tooltip_message="Inference"
-            color="red"
-            v-if="['annotation'].includes(file_view_mode)"
-            :disabled="inference_selected_loading
+              <tooltip_button
+                @click="inference_selected()"
+                icon="mdi-rocket"
+                tooltip_message="Inference"
+                color="red"
+                v-if="['annotation'].includes(file_view_mode)"
+                :disabled="inference_selected_loading
                  || selected.length == 0
                  || select_from_metadata"
-            :icon_style="true"
-            :bottom="true"
-                        >
-          </tooltip_button>
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
 
-          <v_error_multiple :error="error_inference">
-          </v_error_multiple>
+              <v_error_multiple :error="error_inference">
+              </v_error_multiple>
 
-        </div>
+            </div>
 
-        <button_with_menu
-            :value="menu_for_remove_files_bool"
-            icon="delete"
-            tooltip_message="Remove Selected Files"
-            color="red"
-            :loading="api_file_update_loading"
-            :disabled="api_file_update_loading || selected.length == 0"
-            v-if="['annotation'].includes(file_view_mode)"
-            :icon_style="true"
-            :bottom="true"
-            :attach="true"
-                        >
-          <template slot="content">
-
-              <v-layout column>
-                <v-row>
-                  <v-col cols="12">
-                    <v-card-title>Are you sure you want to delete the files?</v-card-title>
-                    <v-card-text>
-                    You will not be able to view, copy, or edit any instances of the
-                    files after deleting them.
-                    </v-card-text>
-
-                    <v-checkbox v-model="cascade_archive_tasks"
-                                label="Delete all related tasks from the selected files too.">
-                    </v-checkbox>
-
-                    <v-btn small color="error"
-                           @click="api_file_update('REMOVE'),
-                                   menu_for_remove_files_bool = false">
-                      <v-icon>mdi-delete</v-icon>Confirm Delete
-                    </v-btn>
-                  </v-col>
-                </v-row>
-              </v-layout>
-
-          </template>
-        </button_with_menu>
-        <div class="pa-0 d-flex flex-column" v-if="file_view_mode === 'task'">
-          <v-btn-toggle
-            color="primary"
-            v-model="file_dirs_view_mode"
-            mandatory
-          >
-            <v-btn class="text-body-2" small>
-              Select Files
-            </v-btn>
-            <v-btn small>
-              Select Datasets
-            </v-btn>
-          </v-btn-toggle>
-        </div>
-
-
-      <button_with_menu
-            tooltip_message="Transfer Selected Files"
-            v-if="!view_only_mode"
-            icon="mdi-file-move"
-            color="primary"
-            :loading="api_file_update_loading"
-            :disabled="selected.length == 0"
-            offset="x"
-            :bottom="true"
-                >
-
-            <template slot="content">
-
-              <v_file_transfer
-                :project_string_id="project_string_id"
-                :source_directory="current_dataset"
-                :file_list="selected"
-                :select_from_metadata="select_from_metadata"
-                :metadata_previous="metadata_previous"
-                    >
-              </v_file_transfer>
-
-            </template>
-
-        </button_with_menu>
-
-
-        <v-alert :value="run_FAN_success" type="info" dismissible>
-          Running. Please wait.
-          Warm up takes about 1 minute. Then about 1 second per image or frame.
-          If you have selected at least 6 images you will receive an email when inference is complete.
-          Click the image to refresh the file and see results.
-
-        </v-alert>
-
-          <div v-if="file_dirs_view_mode === 1">
-
-            <dir_attach :project_string_id="project_string_id"
-                                :file_list="file_list"
-                                :selected="selected_dirs"
-                                :job_id="job_id"
+            <button_with_menu
+              :value="menu_for_remove_files_bool"
+              icon="delete"
+              tooltip_message="Remove Selected Files"
+              color="red"
+              :loading="api_file_update_loading"
+              :disabled="api_file_update_loading || selected.length == 0"
+              v-if="['annotation'].includes(file_view_mode)"
+              :icon_style="true"
+              :bottom="true"
+              :attach="true"
             >
-            </dir_attach>
+              <template slot="content">
 
-          </div>
-        <div v-if="file_view_mode == 'task' && file_dirs_view_mode === 0">
+                <v-layout column>
+                  <v-row>
+                    <v-col cols="12">
+                      <v-card-title>Are you sure you want to delete the files?</v-card-title>
+                      <v-card-text>
+                        You will not be able to view, copy, or edit any instances of the
+                        files after deleting them.
+                      </v-card-text>
 
-          <v_task_file_attach :project_string_id="project_string_id"
-                              :file_list="file_list"
-                              :selected="selected"
-                              :job_id="job_id"
-                              :select_from_metadata="select_from_metadata"
-                              :metadata_previous="metadata_previous"
-                              >
-          </v_task_file_attach>
+                      <v-checkbox v-model="cascade_archive_tasks"
+                                  label="Delete all related tasks from the selected files too.">
+                      </v-checkbox>
 
-        </div>
+                      <v-btn small color="error"
+                             @click="api_file_update('REMOVE'),
+                                   menu_for_remove_files_bool = false">
+                        <v-icon>mdi-delete</v-icon>Confirm Delete
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-layout>
 
-        <!-- Filters -->
-        <button_with_menu
-                v-if="file_dirs_view_mode === 0"
-                tooltip_message="Filters"
-                icon="mdi-filter"
-                :close_by_button="true"
-                offset="x"
+              </template>
+            </button_with_menu>
+            <div class="pa-0 d-flex flex-column" v-if="file_view_mode === 'task'">
+              <v-btn-toggle
                 color="primary"
-                :commit_menu_status="true"
-                          >
-
-          <template slot="content">
-            <v-layout>
-              <v-select
-
-                v-model="issues_filter"
-                :items="issue_filter_options"
-                :clearable="true"
-                label="Filer by Issues"
-                item-text="name"
-                item-value="value"
-              ></v-select>
-              <v-select v-if="file_view_mode != 'task' && job_list.length != 0"
-                        :items="job_list"
-                        v-model="job"
-                        label="Job"
-                        return-object
-                        item-text="name"
-                        :disabled="loading || job_list_loading"
-                        @focus="job_list_api()"
-                        @change="item_changed"></v-select>
+                v-model="file_dirs_view_mode"
+                mandatory
+              >
+                <v-btn class="text-body-2" small>
+                  Select Files
+                </v-btn>
+                <v-btn small>
+                  Select Datasets
+                </v-btn>
+              </v-btn-toggle>
+            </div>
 
 
-              <v-select :items="annotation_status_options"
-                        v-model="annotation_status"
-                        label="Status"
-                        item-value="text"
-                        :disabled="loading"
-                        @change="item_changed"></v-select>
+            <button_with_menu
+              tooltip_message="Transfer Selected Files"
+              v-if="!view_only_mode"
+              icon="mdi-file-move"
+              color="primary"
+              :loading="api_file_update_loading"
+              :disabled="selected.length == 0"
+              offset="x"
+              :bottom="true"
+            >
 
-              <!-- Actions API only -->
-              <div v-if="$store.state.user.current.api
+              <template slot="content">
+
+                <v_file_transfer
+                  :project_string_id="project_string_id"
+                  :source_directory="current_dataset"
+                  :file_list="selected"
+                  :select_from_metadata="select_from_metadata"
+                  :metadata_previous="metadata_previous"
+                >
+                </v_file_transfer>
+
+              </template>
+
+            </button_with_menu>
+
+
+            <v-alert :value="run_FAN_success" type="info" dismissible>
+              Running. Please wait.
+              Warm up takes about 1 minute. Then about 1 second per image or frame.
+              If you have selected at least 6 images you will receive an email when inference is complete.
+              Click the image to refresh the file and see results.
+
+            </v-alert>
+
+            <div v-if="file_dirs_view_mode === 1">
+
+              <dir_attach :project_string_id="project_string_id"
+                          :file_list="file_list"
+                          :selected="selected_dirs"
+                          :job_id="job_id"
+              >
+              </dir_attach>
+
+            </div>
+            <div v-if="file_view_mode == 'task' && file_dirs_view_mode === 0">
+
+              <v_task_file_attach :project_string_id="project_string_id"
+                                  :file_list="file_list"
+                                  :selected="selected"
+                                  :job_id="job_id"
+                                  :select_from_metadata="select_from_metadata"
+                                  :metadata_previous="metadata_previous"
+              >
+              </v_task_file_attach>
+
+            </div>
+
+            <!-- Filters -->
+            <button_with_menu
+              v-if="file_dirs_view_mode === 0"
+              tooltip_message="Filters"
+              icon="mdi-filter"
+              :close_by_button="true"
+              offset="x"
+              color="primary"
+              :commit_menu_status="true"
+            >
+
+              <template slot="content">
+                <v-layout>
+                  <v-select
+
+                    v-model="issues_filter"
+                    :items="issue_filter_options"
+                    :clearable="true"
+                    label="Filer by Issues"
+                    item-text="name"
+                    item-value="value"
+                  ></v-select>
+                  <v-select v-if="file_view_mode != 'task' && job_list.length != 0"
+                            :items="job_list"
+                            v-model="job"
+                            label="Job"
+                            return-object
+                            item-text="name"
+                            :disabled="loading || job_list_loading"
+                            @focus="job_list_api()"
+                            @change="item_changed"></v-select>
+
+
+                  <v-select :items="annotation_status_options"
+                            v-model="annotation_status"
+                            label="Status"
+                            item-value="text"
+                            :disabled="loading"
+                            @change="item_changed"></v-select>
+
+                  <!-- Actions API only -->
+                  <div v-if="$store.state.user.current.api
                    && $store.state.user.current.api.api_actions">
-                <v-select :items="annotations_are_machine_made_items"
-                          v-model="annotations_are_machine_made_setting"
-                          label="Instance Type"
-                          item-value="text"
-                          :disabled="loading"
-                          @change="item_changed"></v-select>
-              </div>
+                    <v-select :items="annotations_are_machine_made_items"
+                              v-model="annotations_are_machine_made_setting"
+                              label="Instance Type"
+                              item-value="text"
+                              :disabled="loading"
+                              @change="item_changed"></v-select>
+                  </div>
 
-              <v-select :items="filter_media_type_option_list"
-                        v-model="filter_media_type_setting"
-                        label="File Type"
-                        item-value="text"
-                        :disabled="loading"
-                        @change="item_changed"></v-select>
-
-
-              </v-layout>
-
-            </template>
-
-          </button_with_menu>
+                  <v-select :items="filter_media_type_option_list"
+                            v-model="filter_media_type_setting"
+                            label="File Type"
+                            item-value="text"
+                            :disabled="loading"
+                            @change="item_changed"></v-select>
 
 
-          <!-- LAYOUT SELECT -->
-          <button_with_menu
-            tooltip_message="Layout"
-            icon="mdi-format-list-bulleted"
-            color="primary"
-            v-if="file_dirs_view_mode === 0"
-            :close_by_button="true"
+                </v-layout>
 
-                            >
+              </template>
 
-            <template slot="content">
-              <v-layout column>
+            </button_with_menu>
 
-                <v-select
+
+            <!-- LAYOUT SELECT -->
+            <button_with_menu
+              tooltip_message="Layout"
+              icon="mdi-format-list-bulleted"
+              color="primary"
+              v-if="file_dirs_view_mode === 0"
+              :close_by_button="true"
+
+            >
+
+              <template slot="content">
+                <v-layout column>
+
+                  <v-select
                     :items="layout_list"
                     v-model="layout_view"
                     label="Layout"
@@ -353,33 +353,31 @@
 
                     <template v-slot:item="{ item, title }">
 
-                          <v-icon left>
-                            {{item.icon}}
-                          </v-icon>
+                      <v-icon left>
+                        {{item.icon}}
+                      </v-icon>
 
-                          {{ item.text}}
+                      {{ item.text}}
 
-                      </template>
+                    </template>
 
-                      <template v-slot:selection="{ item, title }">
+                    <template v-slot:selection="{ item, title }">
 
-                          <v-icon left>
-                            {{item.icon}}
-                          </v-icon>
+                      <v-icon left>
+                        {{item.icon}}
+                      </v-icon>
 
-                          {{ item.text}}
+                      {{ item.text}}
 
-                      </template>
+                    </template>
 
-                </v-select>
-              </v-layout>
+                  </v-select>
+                </v-layout>
 
-            </template>
-          </button_with_menu>
+              </template>
+            </button_with_menu>
 
-
-          <!-- Column Visibility -->
-          <button_with_menu
+            <button_with_menu
               tooltip_message="Column Visibility"
               icon="mdi-format-columns"
               :close_by_button="true"
@@ -387,86 +385,61 @@
               offset="x"
               color="primary">
 
-          <template slot="content">
+              <template slot="content">
 
-            <v-select :items="headers"
-                      v-model="headers_selected"
-                      multiple
-                      label="Column Visibility"
-                      :disabled="loading">
-            </v-select>
+                <v-select :items="headers"
+                          v-model="headers_selected"
+                          multiple
+                          label="Column Visibility"
+                          :disabled="loading">
+                </v-select>
 
-            <tooltip_button
-                tooltip_message="Reset"
-                @click="headers_selected = headers_selected_backup"
-                v-if="headers_selected != headers_selected_backup"
-                icon="autorenew"
-                color="primary">
-            </tooltip_button>
+                <tooltip_button
+                  tooltip_message="Reset"
+                  @click="headers_selected = headers_selected_backup"
+                  v-if="headers_selected != headers_selected_backup"
+                  icon="autorenew"
+                  color="primary">
+                </tooltip_button>
 
-          </template>
+              </template>
 
-        </button_with_menu>
-      </v-card-title>
+            </button_with_menu>
 
+            <v-select
+              :items="metadata_limit_options"
+              v-model="metadata_limit"
+              label="Results per page"
+              item-value="text"
+              :disabled="loading"
+              @change="item_changed"></v-select>
 
-      <!-- It's too annoying to have to click filters first .-->
-      <v-flex xs1 class="pl-2 pr-2 pt-2" v-if="file_dirs_view_mode === 0">
-        <v-select
-            :items="metadata_limit_options"
-            v-model="metadata_limit"
-            label="Results per page"
-            item-value="text"
-            :disabled="loading"
-            @change="item_changed"></v-select>
-      </v-flex>
+            <v_directory_list class="pt-2"
+                              :project_string_id="project_string_id"
+                              :show_new="true"
+                              :show_update="true"
+                              :change_on_mount="false"
+                              :set_from_id="current_dataset.directory_id"
+                              v-if="file_dirs_view_mode === 0"
+                              @change_directory="change_directory($event)">
+            </v_directory_list>
+            <v-text-field label="Search"
+                          v-model="search_term"
+                          @change="request_media()"
+                          clearable
+                          class="pa-4"
+                          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+            >
 
+            </v-text-field>
 
-      <!--
-         Would like a spacer here but it's being funny with the
-        minimize thing so let's just move it over?-->
-      <!-- <v-spacer> </v-spacer> -->
+            <date_picker class="pt-2 pr-4" @date="date = $event"
+                         :with_spacer="false"
+                         :initialize_empty="true">
 
-      <!-- Careful with view only mode here
-        ie for job new selection
-           we want the REST of the interface to be view only
-          but we NEED to be able to select files still
-        Context of a user facing bug trying to create new tasks and having it not work.
-
-        -->
-
-      <v_directory_list class="pt-2"
-                        :project_string_id="project_string_id"
-                        :show_new="true"
-                        :show_update="true"
-                        :change_on_mount="false"
-                        :set_from_id="current_dataset.directory_id"
-                        v-if="file_dirs_view_mode === 0"
-                        @change_directory="change_directory($event)">
-      </v_directory_list>
-
-      <div class="pt-1">
-        <v-text-field label="Search"
-                      v-model="search_term"
-                      @change="request_media()"
-                      clearable
-                      class="pa-4"
-                      @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                      @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-        >
-
-        </v-text-field>
-      </div>
-
-      <date_picker class="pt-2 pr-4" @date="date = $event"
-                   :with_spacer="false"
-                   :initialize_empty="true">
-
-      </date_picker>
-
-      <!-- Little spacer for minimize button-->
-      <div class="pr-4"> </div>
-
+            </date_picker>
+          </div>
 
     </v-layout>
 
