@@ -78,7 +78,7 @@
 
             <template slot="content">
 
-              <file_relations_card v-if="task"
+              <file_relations_card v-if="file"
                                    :file="file"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                                    :elevation="0">
@@ -98,7 +98,7 @@
             <template slot="content">
 
               <task_relations_card v-if="task"
-                                   :file="file"
+                                   :file="task.file"
                                    :task="task"
                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                                    :elevation="0">

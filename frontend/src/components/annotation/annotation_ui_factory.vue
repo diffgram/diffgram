@@ -108,6 +108,19 @@
       },
       watch: {
         '$route'(to, from) {
+          console.log('MOUNTEDDDDDDD', to, from)
+          if(from.name === 'task_annotation' && to.name === 'studio'){
+            this.fetch_project_file_list();
+            this.task = null;
+            this.$refs.file_manager_sheet.display_file_manager_sheet();
+
+          }
+          if(from.name === 'studio' && to.name === 'task_annotation'){
+            console.log('hide manager sheet')
+            this.current_file = null;
+            this.fetch_single_task(this.$props.task_id_prop);
+            this.$refs.file_manager_sheet.hide_file_manager_sheet()
+          }
           this.images_found = true,
             this.request_project_change = Date.now()
         }
@@ -128,6 +141,7 @@
 
       },
       mounted() {
+
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -318,9 +332,6 @@
         current_image_function: function (result) {
           this.current_image = result
         },
-        request_save_function: function () {
-          this.request_save = true
-        },
         save_response_callback_function: function (result) {
 
           if (result == true) {
@@ -337,17 +348,6 @@
         images_found_function: function (bool) {
           this.images_found = bool
         },
-
-        route_annotation_project() {
-          this.$router.push('/project/' + String(this.project_string_id) + '/annotation_project/new')
-
-        },
-
-        route_annotation_project_versions() {
-          this.$router.push('/project/' +
-            String(this.project_string_id) + '/annotation_project/versions')
-        }
-
       },
     }
   )
