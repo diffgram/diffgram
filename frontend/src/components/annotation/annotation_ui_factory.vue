@@ -108,7 +108,6 @@
       },
       watch: {
         '$route'(to, from) {
-          console.log('MOUNTEDDDDDDD', to, from)
           if(from.name === 'task_annotation' && to.name === 'studio'){
             this.fetch_project_file_list();
             this.task = null;
@@ -116,7 +115,6 @@
 
           }
           if(from.name === 'studio' && to.name === 'task_annotation'){
-            console.log('hide manager sheet')
             this.current_file = null;
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
