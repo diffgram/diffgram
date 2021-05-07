@@ -183,7 +183,7 @@
                                 style="min-height: 120px"
                                 :useCustomSlot=true
                                 :options="dropzoneOptions"
-
+                                @addedfile="on_add_file"
                                 @vdropzone-sending="drop_zone_sending_event"
                                 @vdropzone-complete="drop_zone_complete">
                     <div class="dropzone-custom-content">
@@ -192,6 +192,17 @@
                     </div>
                   </vue-dropzone>
 
+                </v-col>
+              </v-row>
+              <v-row  v-if="!bucket_name || bucket_name == ''">
+                <v-col cols="12" class="d-flex justify-center">
+                  <v-btn
+                    :disabled="file_list_to_upload.length === 0"
+                    @click="open_upload_wizard_dialog"
+                    color="success"
+                    x-large>
+                    Start Uploading {{file_list_to_upload.length}} files.
+                  </v-btn>
                 </v-col>
               </v-row>
               <v-alert class="pa-4 ma-8" v-else type="warning"> Please select a dataset/directory to upload files.
@@ -336,6 +347,7 @@
         </v-btn>
       </template>
     </v-snackbar>
+    <upload_wizard_dialog :file_list="file_list_to_upload" ref="upload_wizard_dialog"></upload_wizard_dialog>
   </div>
 
 
@@ -347,12 +359,16 @@
 
   import Vue from "vue";
   import Connector_import_renderer from "./connectors/connector_import_renderer.vue";
+  import upload_wizard_dialog from "./input/upload_wizard_dialog.vue";
   import axios from "axios";
   import {create_event} from "./event/create_event";
 
   export default Vue.extend({
       name: 'upload_large',
-      components: {Connector_import_renderer},
+      components: {
+        Connector_import_renderer,
+        upload_wizard_dialog
+      },
       props: {
         'project_string_id': {
           default: null
@@ -375,6 +391,7 @@
         return {
           v_collaborate_new: false,
           bucket_name: undefined,
+          file_list_to_upload: [],
           dialog_confirm_sample_data: false,
           loading_create_sample_data: false,
 
@@ -463,11 +480,18 @@
           // The drop zone options things doesn't update well from vuex, depsite being a computed prop
           // I think the actual vue js dropzone thing may be updating properly though
           // (Context of moving to using drop_zone_sending_event() for thing from vuex)
-
+          const $vm = this;
           return {
+            init: function(){
+              this.on("addedfile", function(file) {
+                $vm.file_list_to_upload.push(file);
+                console.log($vm.file_list_to_upload)
+              });
+            },
             url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
             chunking: true,
             forceChunking: true,
+            autoProcessQueue: false,
             chunkSize: 1024 * 1024 * 5,
             height: 120,
             // number of concurrent uploads at a time, each upload still goes at same speed
@@ -501,6 +525,13 @@
         clearInterval(this.refresh_interval)
       },
       methods: {
+        open_upload_wizard_dialog: function(){
+          this.$refs.upload_wizard_dialog.open();
+        },
+        on_add_file: function(file){
+          console.log('added fileeee', file);
+          this.file_list_to_upload.push(file)
+        },
         add_visit_history_event: async function(){
           const event_data = await create_event(this.$props.project_string_id, {
             page_name: 'import_dashboard',
