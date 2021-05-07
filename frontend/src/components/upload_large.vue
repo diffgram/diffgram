@@ -183,7 +183,6 @@
                                 style="min-height: 120px"
                                 :useCustomSlot=true
                                 :options="dropzoneOptions"
-                                @addedfile="on_add_file"
                                 @vdropzone-sending="drop_zone_sending_event"
                                 @vdropzone-complete="drop_zone_complete">
                     <div class="dropzone-custom-content">
@@ -347,7 +346,10 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <upload_wizard_dialog :file_list="file_list_to_upload" ref="upload_wizard_dialog"></upload_wizard_dialog>
+    <upload_wizard_dialog
+                          @start_upload="upload_to_diffgram"
+                          :file_list="file_list_to_upload"
+                          ref="upload_wizard_dialog"></upload_wizard_dialog>
   </div>
 
 
@@ -528,8 +530,7 @@
         open_upload_wizard_dialog: function(){
           this.$refs.upload_wizard_dialog.open();
         },
-        on_add_file: function(file){
-          console.log('added fileeee', file);
+        upload_to_diffgram: function(file, pre_labeled_data){
           this.file_list_to_upload.push(file)
         },
         add_visit_history_event: async function(){
