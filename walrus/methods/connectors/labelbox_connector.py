@@ -665,7 +665,7 @@ class LabelBoxSyncManager:
                     }
                     # Cache in memory the file for updating labelbox ID's later
                     diffgram_files_by_id[diffgram_file.id] = diffgram_file
-                    external_ids.append(diffgram_file.id)
+                    external_ids.append(str(diffgram_file.id))
                     file_urls.append(data_row)
             if diffgram_file.type == "video":
                 if diffgram_file.video:
@@ -676,7 +676,7 @@ class LabelBoxSyncManager:
                         'external_id': diffgram_file.id
                     }
                     # Cache in memory the file for updating labelbox ID's later
-                    external_ids.append(diffgram_file.id)
+                    external_ids.append(str(diffgram_file.id))
                     diffgram_files_by_id[diffgram_file.id] = diffgram_file
                     file_urls.append(data_row)
         task = labelbox_dataset.create_data_rows(file_urls)
@@ -706,6 +706,7 @@ class LabelBoxSyncManager:
         })
 
         created_datarows = result['result']['datasets'][0]['dataRows']
+
         for datarow in created_datarows:
             file = diffgram_files_by_id[int(datarow['externalId'])]
             file.default_external_map = ExternalMap.new(
