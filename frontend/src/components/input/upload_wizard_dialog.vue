@@ -1,9 +1,10 @@
 <template>
 
   <v-dialog v-model="is_open" width="1500px" id="task-input-list-dialog" style="min-height: 800px" persistent>
-    <v-stepper v-model="el" class="pa-8" non-linear>
+    <v-stepper v-model="el" class="pa-8" :non-linear="true">
       <v-stepper-header>
         <v-stepper-step
+          editable
           :complete="el > 1"
           step="1"
         >
@@ -13,6 +14,7 @@
         <v-divider></v-divider>
 
         <v-stepper-step
+          editable
           :complete="el > 2"
           step="2"
         >
@@ -21,17 +23,19 @@
 
         <v-divider></v-divider>
         <v-stepper-step
+          editable
           :complete="el > 3"
           step="3">
           Prepare Prelabeled Data
         </v-stepper-step>
         <v-stepper-step
+          editable
           :complete="el > 4"
           step="4">
           Match data to Diffgram Schema
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="el > 5" step="5">
+        <v-stepper-step :complete="el > 5" step="5" editable>
           Confirm Upload
         </v-stepper-step>
       </v-stepper-header>
@@ -86,55 +90,64 @@
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <h1 class="pa-10 black--text">What Types of Instances Are you Uploading?</h1>
-          <v-layout class="d-flex flex-wrap justify-center align-center pa-10">
-            <v-checkbox
-              v-model="included_instance_types.box"
-              label="Box"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="included_instance_types.polygon"
-              label="Polygon"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="included_instance_types.line"
-              label="Line"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="included_instance_types.point"
-              label="Point"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="included_instance_types.cuboid"
-              label="Cuboid"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
-            <v-checkbox
-              v-model="included_instance_types.ellipse"
-              label="Ellipse"
-              color="secondary"
-              :value="true"
-              hide-details
-            ></v-checkbox>
+          <v-layout class="d-flex flex-column justify-center align-center pa-10">
+            <v-container class="d-flex flex-column pa-0">
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the instance type</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Note: Allowed values here are: {{allowed_instance_types}}</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.instance_type">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">Select the Field Corresponding to the Model ID (Optional)</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>If model already exists, instances will be binded to existing model.</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.model_id">
+
+                  </v-select>
+                </div>
+              </div>
+
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">Select the Field Corresponding to the Model Run ID (Optional)</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>If the run already exists, instances will be binded to existing run.</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.point.model_run_id">
+
+                  </v-select>
+                </div>
+              </div>
+
+            </v-container>
           </v-layout>
           <v-layout class="d-flex justify-end">
             <v-btn x-large
                    class="secondary lighten-1 ma-8"
-                   :disabled="!at_least_one_instance_type_selected"
+                   :disabled="!instance_type_schema_is_set"
                    @click="el = 4">
               Continue
             </v-btn>
@@ -144,65 +157,588 @@
         <v-stepper-content step="4">
           <h1 class="pa-10 black--text">Match Fields to Diffgram Schema</h1>
           <v-expansion-panels accordion>
-            <v-expansion-panel key="box" v-if="included_instance_types.box">
-              <v-expansion-panel-header>Box Type</v-expansion-panel-header>
+            <v-expansion-panel key="box" class="ma-4" v-if="included_instance_types.box">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Box Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
               <v-expansion-panel-content>
                 <v-layout class="d-flex column">
-                  <v-row>
-                    <v-col cols="12" class="d-flex">
-                      <h4>X MAX:</h4>
-                      <v-select :items="pre_label_key_list"></v-select>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="12" class="d-flex">
-                      <h4>Y MAX:</h4>
-                      <v-select :items="pre_label_key_list"></v-select>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="12" class="d-flex">
-                      <h4>X MIN:</h4>
-                      <v-select :items="pre_label_key_list"></v-select>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="12" class="d-flex">
-                      <h4>Y MIN:</h4>
-                      <v-select :items="pre_label_key_list"></v-select>
-                    </v-col>
-                  </v-row>
+                  <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                    <template v-slot:body="{ items }">
+                      <tbody>
+                      <tr>
+                        <td><strong>x_max:</strong></td>
+                        <td>
+                          Preview Data Here
+                        </td>
+                        <td class="d-flex align-center">
+                          <v-select class="pt-4"
+                                    style="max-width: 200px"
+                                    dense
+                                    :items="pre_label_key_list"
+                                    v-model="diffgram_schema_mapping.box.x_max">
+
+                          </v-select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>x_min:</strong></td>
+                        <td>
+                          Preview Data Here
+                        </td>
+                        <td class="d-flex align-center">
+                          <v-select class="pt-4"
+                                    style="max-width: 200px"
+                                    dense
+                                    :items="pre_label_key_list"
+                                    v-model="diffgram_schema_mapping.box.x_min">
+
+                          </v-select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>y_max:</strong></td>
+                        <td>
+                          Preview Data Here
+                        </td>
+                        <td class="d-flex align-center">
+                          <v-select class="pt-4"
+                                    style="max-width: 200px"
+                                    dense
+                                    :items="pre_label_key_list"
+                                    v-model="diffgram_schema_mapping.box.y_max">
+
+                          </v-select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><strong>y_min:</strong></td>
+                        <td>
+                          Preview Data Here
+                        </td>
+                        <td class="d-flex align-center">
+                          <v-select class="pt-4"
+                                    style="max-width: 200px"
+                                    dense
+                                    :items="pre_label_key_list"
+                                    v-model="diffgram_schema_mapping.box.y_min">
+
+                          </v-select>
+                        </td>
+                      </tr>
+                      </tbody>
+                    </template>
+                  </v-data-table>
                 </v-layout>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel key="polygon" v-if="included_instance_types.polygon">
-              <v-expansion-panel-header>Polygon Type</v-expansion-panel-header>
-              <v-expansion-panel-content>
 
+            <v-expansion-panel key="polygon" class="ma-4" v-if="included_instance_types.polygon">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Polygon Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                    <tr>
+                      <td><strong>points:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.polygon.points">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>point x value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.polygon.point_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>point y value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.polygon.point_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel key="point" v-if="included_instance_types.point">
-              <v-expansion-panel-header>Point Type</v-expansion-panel-header>
-              <v-expansion-panel-content>
 
+            <v-expansion-panel key="point" class="ma-4" v-if="included_instance_types.point">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Point Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                    <tr>
+                      <td><strong>point x value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.point.x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>point y value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.point.y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel key="line" v-if="included_instance_types.line">
-              <v-expansion-panel-header>Line Type</v-expansion-panel-header>
-              <v-expansion-panel-content>
 
+            <v-expansion-panel key="line" class="ma-4" v-if="included_instance_types.line">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Line Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                    <tr>
+                      <td><strong>line x1 value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.line.x1">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>line y1 value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.line.y1">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>line x2 value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.line.x2">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>line y2 value:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.line.y2">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel key="cuboid" v-if="included_instance_types.cuboid">
-              <v-expansion-panel-header>Cuboid Type</v-expansion-panel-header>
-              <v-expansion-panel-content>
 
+
+            <v-expansion-panel key="cuboid" class="ma-4" v-if="included_instance_types.cuboid">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Cuboid Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                    <tr>
+                      <td><strong>front_face_bottom_left_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_bottom_left_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_bottom_right_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_bottom_right_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_bottom_left_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_bottom_left_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_bottom_right_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_bottom_right_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr><td colspan="4"></td></tr>
+                    <tr>
+                      <td><strong>front_face_top_left_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_top_left_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_top_right_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_top_right_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_top_left_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_top_left_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>front_face_top_right_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.front_face_top_right_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr><td colspan="4"></td></tr>
+                    <tr>
+                      <td><strong>rear_face_bottom_left_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_bottom_left_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_bottom_right_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_bottom_right_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_bottom_left_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_bottom_left_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_bottom_right_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_bottom_right_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr><td colspan="4"></td></tr>
+                    <tr>
+                      <td><strong>rear_face_top_left_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_top_left_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_top_right_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_top_right_x">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_top_left_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_top_left_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>rear_face_top_right_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.cuboid.rear_face_top_right_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+
+                    </tbody>
+                  </template>
+                </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel key="ellipse" v-if="included_instance_types.ellipse">
-              <v-expansion-panel-header>Ellipse Type</v-expansion-panel-header>
+            <v-expansion-panel key="ellipse"  class="ma-4"  v-if="included_instance_types.ellipse">
+              <v-expansion-panel-header color="primary lighten-2" class="text--white">
+                <span class="white--text"><strong>Ellipse Type (Click to match schema)</strong></span>
+              </v-expansion-panel-header>
               <v-expansion-panel-content>
+                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                    <tr>
+                      <td><strong>center_x:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.ellipse.center_x">
 
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>center_y:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.ellipse.center_y">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>width:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.ellipse.width">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td><strong>height:</strong></td>
+                      <td>
+                        Preview Data Here
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  v-model="diffgram_schema_mapping.ellipse.height">
+
+                        </v-select>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </template>
+                </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -259,31 +795,84 @@
       data() {
 
         return {
+          schema_match_headers: [
+            {
+              text: 'Diffgram Value',
+              align: 'start',
+              sortable: false,
+              value: 'diffgram_value',
+            },
+            { text: 'Preview Data',
+              value: 'preview',
+              align: 'start',
+              sortable: false,
+            },
+            { text: 'File Value',
+              value: 'file_value',
+              align: 'start',
+              sortable: false,
+            },
+
+          ],
+          allowed_instance_types: [
+            'box',
+            'polygon',
+            'line',
+            'point',
+            'cuboid',
+            'ellipse',
+          ],
           diffgram_schema_mapping: {
+            instance_type: null,
+            model_id: null,
+            model_rune_id: null,
             box: {
               x_min: null,
               x_max: null,
               y_min: null,
               y_max: null,
             },
-            points: {
+            point: {
+              x: null,
+              y: null,
+            },
+            polygon:{
               points: null,
+              point_x: null,
+              point_y: null,
             },
             cuboid: {
-              front_face_x_min: null,
-              front_face_x_max: null,
-              front_face_y_min: null,
-              front_face_y_max: null,
-              rear_face_x_min: null,
-              rear_face_x_max: null,
-              rear_face_y_min: null,
-              rear_face_y_max: null,
+              front_face_top_left_x: null,
+              front_face_top_left_y: null,
+              front_face_top_right_x: null,
+              front_face_top_right_y: null,
+              front_face_bottom_left_x: null,
+              front_face_bottom_left_y: null,
+              front_face_bottom_right_x: null,
+              front_face_bottom_right_y: null,
+
+              rear_face_top_left_x: null,
+              rear_face_top_left_y: null,
+              rear_face_top_right_x: null,
+              rear_face_top_right_y: null,
+              rear_face_bottom_left_x: null,
+              rear_face_bottom_left_y: null,
+              rear_face_bottom_right_x: null,
+              rear_face_bottom_right_y: null,
+
             },
             ellipse: {
-              points: null,
+              center_x: null,
+              center_y: null,
+              width: null,
+              height: null,
+              angle: null,
             },
             line: {
-              points: null,
+              x1: null,
+              y1: null,
+              x2: null,
+              y2: null,
             },
           },
           included_instance_types:{
@@ -304,13 +893,23 @@
 
       },
       computed: {
-        at_least_one_instance_type_selected: function(){
-          for(const key in this.included_instance_types){
-            if (this.included_instance_types[key]){
+        selected_polygon_key_has_nested_valued: function(){
+          if(!this.diffgram_schema_mapping.polygon.points){
+            return false
+          }
+          for(const elm in this.preLabels){
+            const pointsValue = elm[this.diffgram_schema_mapping.polygon.points];
+            if(typeof pointsValue === 'object' && pointsValue !== null){
               return true
+            }
+            else{
+              return false;
             }
           }
           return false
+        },
+        instance_type_schema_is_set: function(){
+          return this.diffgram_schema_mapping.instance_type != null;
         },
         dropzoneOptions: function () {
 
