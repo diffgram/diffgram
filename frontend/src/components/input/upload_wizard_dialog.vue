@@ -91,6 +91,9 @@
 
         <v-stepper-content step="3">
           <v-layout class="d-flex flex-column justify-center align-center pa-10">
+
+            <v_error_multiple :error="error_instance_type">
+            </v_error_multiple>
             <v-container class="d-flex flex-column pa-0">
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
@@ -148,7 +151,7 @@
             <v-btn x-large
                    class="secondary lighten-1 ma-8"
                    :disabled="!instance_type_schema_is_set"
-                   @click="el = 4">
+                   @click="check_errors_and_go_to_step(4)">
               Continue
             </v-btn>
           </v-layout>
@@ -762,7 +765,7 @@
                 <v-list-item-title v-text="item.name"></v-list-item-title>
               </v-list-item-title>
             </v-list-item>
-            <v-btn x-large class="success ma-8" @click="el = 4">Upload to Diffgram</v-btn>
+            <v-btn x-large class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
           </v-layout>
         </v-stepper-content>
 
@@ -888,6 +891,7 @@
           preLabels: null,
           pre_labels_file_list: [],
           pre_label_key_list: [],
+          error_instance_type: {},
         }
 
 
@@ -924,8 +928,8 @@
               this.on("addedfile", async function (file) {
                 const textData = await file.text();
                 if(file.type === 'application/json'){
-                  this.preLabels = JSON.parse(textData);
-                  const pre_label_keys = $vm.extract_pre_label_key_list(this.preLabels);
+                  $vm.preLabels = JSON.parse(textData);
+                  const pre_label_keys = $vm.extract_pre_label_key_list($vm.preLabels);
                   $vm.pre_label_key_list = [...pre_label_keys];
                   this.emit('complete', file);
                   this.emit('success', file);
@@ -959,6 +963,42 @@
       },
 
       methods: {
+        close: function(){
+          this.is_open = false;
+        },
+        start_upload: function(){
+          alert('start upload');
+          this.close();
+        },
+        check_errors_and_go_to_step(step){
+          console.log('stepppp', step, this.preLabels)
+          if(step === 4){
+
+            this.get_included_instance_types();
+            if(!this.error_instance_type){
+              this.el = step;
+            }
+          }
+
+        },
+        get_included_instance_types: function(){
+          this.error_instance_type = {};
+          for(const elm of this.preLabels){
+            console.log('elm[this.diffgram_schema_mapping.instance_type]', elm[this.diffgram_schema_mapping.instance_type])
+            if(elm[this.diffgram_schema_mapping.instance_type]){
+
+              const instance_type = elm[this.diffgram_schema_mapping.instance_type];
+              console.log('instance_type', instance_type)
+              if(this.allowed_instance_types.includes(instance_type)){
+                this.included_instance_types[instance_type] = true;
+              }
+              else{
+                this.error_instance_type[instance_type] = `Invalid instance type "${instance_type}"`;
+              }
+
+            }
+          }
+        },
         extract_pre_label_key_list: function(preLabelsObject){
           const result = []
           for(const elm of preLabelsObject){

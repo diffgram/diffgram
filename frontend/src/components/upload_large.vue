@@ -487,7 +487,6 @@
             init: function(){
               this.on("addedfile", function(file) {
                 $vm.file_list_to_upload.push(file);
-                console.log($vm.file_list_to_upload)
               });
             },
             url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
