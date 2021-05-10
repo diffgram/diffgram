@@ -775,6 +775,7 @@ class Job(Base, Caching):
         )
 
         self.stat_count_tasks = task_count_complete + task_count_available
+        self.stat_count_complete = task_count_complete
         session.add(self)
         return
 
