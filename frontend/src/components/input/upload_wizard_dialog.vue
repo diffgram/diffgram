@@ -1,9 +1,10 @@
 <template>
 
-  <v-dialog v-model="is_open" width="1500px" id="task-input-list-dialog" style="min-height: 800px;" persistent>
+  <v-dialog v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;" persistent >
     <v-layout style="position: relative; z-index: 999999">
       <v-btn @click="close"  icon x-large style="position: absolute; top: 0; right: 0"><v-icon>mdi-close</v-icon></v-btn>
     </v-layout>
+
     <v-stepper v-model="el" class="pa-8" :non-linear="true" >
 
       <v-stepper-header>
@@ -46,14 +47,11 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
-          <h1 class="pa-10 black--text">Welcome to the file Upload wizard!</h1>
-          <v-layout class="d-flex column justify-center">
-            <h2 class="ma-8 black--text">Do you want to add prelabeled data to the files you uploaded?</h2>
-            <div class="d-flex justify-center align-center">
-              <v-btn x-large class="primary lighten-1 ma-8" @click="el = 2"><v-icon>mdi-file</v-icon> Add Prelabeled Data</v-btn>
-              <v-btn x-large class="primary lighten-1 ma-8" @click="el = 5"><v-icon>mdi-upload</v-icon> Upload Without Data</v-btn>
-            </div>
-          </v-layout>
+          <new_or_update_upload_screen
+            @file_list_updated="file_list_updated"
+            :project_string_id="project_string_id">
+
+          </new_or_update_upload_screen>
         </v-stepper-content>
 
 
@@ -82,7 +80,6 @@
             <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="prelabelDropzone"
                           id="dropzonePreLabels"
                           data-cy="vue-dropzone"
-                          style="min-height: 120px"
                           :useCustomSlot=true
                           :options="dropzoneOptions">
 
@@ -280,11 +277,8 @@
                 <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
                   <template v-slot:body="{ items }">
                     <tbody>
-<<<<<<< Updated upstream
-                    <tr>
-=======
+
                     <tr v-if="pre_labels_file_type === 'json'">
->>>>>>> Stashed changes
                       <td><strong>points:</strong></td>
                       <td>
                         Preview Data Here
@@ -294,61 +288,31 @@
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
-<<<<<<< Updated upstream
-=======
                                   @change="check_polygon_points_key_structure"
->>>>>>> Stashed changes
                                   v-model="diffgram_schema_mapping.polygon.points">
 
                         </v-select>
                       </td>
-<<<<<<< Updated upstream
-                    </tr>
-                    <tr>
-                      <td><strong>point x value:</strong></td>
-                      <td>
-                        Preview Data Here
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  v-model="diffgram_schema_mapping.polygon.point_x">
-
-                        </v-select>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td><strong>point y value:</strong></td>
-                      <td>
-                        Preview Data Here
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  v-model="diffgram_schema_mapping.polygon.point_y">
-
-                        </v-select>
-=======
+                      <td>Preview Data</td>
                       <td v-if="pre_labels_file_type === 'json'">
                         <p style="font-size: 12px" class="primary--text text--lighten-3">
                           <strong>
-                          ** Points Must be an array of objects with the structure:
-                          "{x: Number, y: Number}"
-                        </strong>
+                            ** Points Must be an array of objects with the structure:
+                            "{x: Number, y: Number}"
+                          </strong>
+                          <v_error_multiple :error="error_polygon_instance">
+                          </v_error_multiple>
+                          <v-alert v-if="valid_points_values_polygon" dense dismissible type="success">Valid points value!</v-alert>
                         </p>
                       </td>
                       <td v-if="pre_labels_file_type === 'csv'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
                           ** Points must be in 2 columns, one for the X values and one for the Y
                           values. Each column should be comma separated numbers of the corresponding
                           point coordinates.
-
-                        </strong></p>
->>>>>>> Stashed changes
+                        </strong>
+                        </p>
                       </td>
                     </tr>
                     </tbody>
@@ -375,9 +339,20 @@
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
+                                  @change="check_points_key_structure('x')"
                                   v-model="diffgram_schema_mapping.point.x">
 
                         </v-select>
+                      </td>
+                      <td class="d-flex align-center">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** X coordinate must be a number
+                          </strong>
+                          <v_error_multiple :error="error_point_instance">
+                          </v_error_multiple>
+                          <v-alert v-if="error_point_instance && valid_points_values_polygon" dense dismissible type="success">Valid values!</v-alert>
+                        </p>
                       </td>
                     </tr>
                     <tr>
@@ -389,10 +364,21 @@
                         <v-select class="pt-4"
                                   style="max-width: 200px"
                                   dense
+                                  @change="check_points_key_structure('y')"
                                   :items="pre_label_key_list"
                                   v-model="diffgram_schema_mapping.point.y">
 
                         </v-select>
+                      </td>
+                      <td class="d-flex align-center">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** Y coordinate must be a number
+                          </strong>
+                          <v_error_multiple :error="error_point_instance">
+                          </v_error_multiple>
+                          <v-alert v-if="error_point_instance && valid_points_values_point_instance_type" dense dismissible type="success">Valid values!</v-alert>
+                        </p>
                       </td>
                     </tr>
                     </tbody>
@@ -839,20 +825,22 @@
 
 <script lang="ts">
   import input_view from './input_view'
+  import new_or_update_upload_screen from './new_or_update_upload_screen'
   import axios from 'axios';
   import Vue from "vue";
 
   export default Vue.extend({
       name: 'upload_wizard_dialog',
       components: {
-        input_view
+        input_view,
+        new_or_update_upload_screen
       },
       props: {
         'project_string_id': {
           default: null
         },
         'file_list': {
-          default: []
+          default: () => []
         }
 
       },
@@ -957,12 +945,16 @@
           is_open: false,
           el: 1,
           preLabels: null,
+          file_list_to_upload: [],
+          valid_points_values_polygon: false,
           pre_labels_file_list: [],
           pre_label_key_list: [],
           errors_file_schema: {},
           pre_labels_file_type: null,
           errors_instance_schema: {},
           error_polygon_instance: {},
+          error_point_instance: {},
+          valid_points_values_point_instance_type: {},
         }
 
 
@@ -1043,6 +1035,9 @@
       },
 
       methods: {
+        file_list_updated: function(new_file_list){
+          this.file_list_to_upload = new_file_list;
+        },
         close: function(){
           this.is_open = false;
         },
@@ -1050,9 +1045,28 @@
           alert('start upload');
           this.close();
         },
+        check_points_key_structure: function(key_name){
+          this.error_point_instance = {};
+          this.valid_points_values_point_instance_type = false;
+          if(!this.diffgram_schema_mapping.polygon[key_name]){
+            return
+          }
+          else{
+            const key_name = this.diffgram_schema_mapping.polygon.points;
+            const point_labels = this.preLabels.filter(inst => inst.type === 'point');
+            for(const point_instance of point_labels){
+              if(isNaN(point_instance[key_name])){
+                this.error_point_instance[key_name] = 'Value should be a number';
+                this.error_point_instance['wrong_data'] = JSON.stringify(point_instance);
+                return
+              }
+            }
+            this.valid_points_values_point_instance_type = true;
+          }
+        },
         check_polygon_points_key_structure(){
           this.error_polygon_instance = {}
-          console.log('aaaaachnageee', this.check_polygon_points_key_structure.polygon);
+          this.valid_points_values_polygon = false
           if(!this.diffgram_schema_mapping.polygon.points){
             return
           }
@@ -1066,14 +1080,18 @@
                 this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})';
                 return
               }
-              if((!value.x || isNan(value.x)) || (!value.y || isNan(value.y))){
-                this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
-                this.error_polygon_instance['row_number'] = i
-                this.error_polygon_instance['data'] = polygon_instance.toString();
-                return
+              for (const point of value){
+                if((!point.x || isNaN(point.x)) || (!point.y || isNaN(point.y))){
+                  this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
+                  this.error_polygon_instance['row_number'] = i
+                  this.error_polygon_instance['data'] = JSON.stringify(polygon_instance);
+                  return
+                }
               }
+
               i += 1;
             }
+            this.valid_points_values_polygon = true;
           }
         },
         check_errors_and_go_to_step(step){

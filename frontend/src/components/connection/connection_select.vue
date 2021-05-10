@@ -159,7 +159,6 @@
             icon="add"
             :close_by_button="true"
             v-if="!view_only_mode && show_new == true"
-            offset="x"
             color="primary"
             :commit_menu_status="true"
             font_size="small"
