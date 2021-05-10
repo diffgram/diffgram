@@ -473,8 +473,9 @@ class File_Browser():
         request_previous_page = self.metadata_proposed.get('request_previous_page', None)
         if request_previous_page is True:
             # this seems kinda hacky to use the limit...
-            self.metadata["start_index"] = int(
-                self.metadata_proposed['previous'].get('start_index')) - int(self.metadata["limit"])
+            if self.metadata_proposed['previous'].get('start_index'):
+                self.metadata["start_index"] = int(
+                    self.metadata_proposed['previous'].get('start_index')) - int(self.metadata["limit"])
             if self.metadata["start_index"] < 0:
                 self.metadata["start_index"] = 0
 

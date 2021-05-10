@@ -1390,7 +1390,9 @@ import Vue from "vue";
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
-
+      this.page_number = 0;
+      this.request_previous_page_flag = false;
+      this.request_next_page_flag = false;
       this.get_media(false);
 
 
