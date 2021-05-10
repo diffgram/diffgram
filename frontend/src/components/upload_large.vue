@@ -56,40 +56,19 @@
                       </tooltip_button>
 
 
-                      <div class="pa-4">
-                        <button_with_menu
-                          tooltip_message="Import Settings"
-                          icon="settings"
-                          color="primary"
-                          :close_by_button="true"
-                        >
-                          <template slot="content">
-                            <v-layout column class="pa-6">
 
-                              <v-alert type="info">
-                                Select desired setting before uploading. <br>
-                                Lower duration results in faster import.
-                              </v-alert>
-
-                              <v-slider
-                                label="Video Split Duration"
-                                min=0
-                                max=240
-                                step=10
-                                thumb-label="always"
-                                ticks
-                                hint="In Seconds. Set to 0 to disable."
-                                persistent-hint
-                                v-model="video_split_duration">
-                              </v-slider>
-
-                              <!-- TODO put FPS settings here too? -->
-
-                            </v-layout>
-                          </template>
-
-                        </button_with_menu>
-                      </div>
+                      <v-row  v-if="!bucket_name || bucket_name == ''">
+                        <v-col cols="12" class="d-flex justify-center">
+                          <v-btn
+                            @click="open_upload_wizard_dialog"
+                            :disabled="!current_directory"
+                            color="success"
+                            x-large>
+                            <v-icon>mdi-upload</v-icon>
+                            Start New Data Upload
+                          </v-btn>
+                        </v-col>
+                      </v-row>
                     </v-row>
 
                     <v-row >
@@ -133,95 +112,6 @@
                 </v-col>
               </v-row>
             </v-layout>
-          </v-card-text>
-        </v-card>
-        <v-card elevation="0" class="mb-5">
-          <v-card-text class="pa-0">
-
-
-            <v-layout class="pa-8" column>
-              <v-row class="pa-0">
-                <v-col class="pa-0">
-                  <h2>From: </h2>
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="$store.state.project.current_directory && Object.keys($store.state.project.current_directory).length > 0">
-                <v-col :cols="cloud_col_count" class="pa-4">
-                  <v-layout column>
-                    <v-row>
-                      <v-col cols="12" class="pa-0">
-                        <connection_select
-                          :project_string_id="project_string_id"
-                          v-model="incoming_connection"
-                          :show_new="true"
-                          :features_filters="{files_import: true, files_export:true}"
-                          data-cy="connection-select"
-                        >
-                        </connection_select>
-                      </v-col>
-                    </v-row>
-                    <v-row>
-                      <v-col cols="12" class="pa-0">
-
-                        <connector_import_renderer
-                          :project_string_id="project_string_id"
-                          :connection="incoming_connection"
-                          :video_split_duration="video_split_duration"
-                          :job_id="job.id"
-                          @update_bucket_name="update_bucket_name"
-                          ref="connection_import_renderer"
-                        >
-                        </connector_import_renderer>
-                      </v-col>
-                    </v-row>
-                  </v-layout>
-                </v-col>
-                <v-col v-if="!bucket_name || bucket_name == ''" cols="6" class="pa-4">
-                  <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
-                                data-cy="vue-dropzone"
-                                style="min-height: 120px"
-                                :useCustomSlot=true
-                                :options="dropzoneOptions"
-                                @vdropzone-sending="drop_zone_sending_event"
-                                @vdropzone-complete="drop_zone_complete">
-                    <div class="dropzone-custom-content">
-                      <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
-                      <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
-                    </div>
-                  </vue-dropzone>
-
-                </v-col>
-              </v-row>
-              <v-row  v-if="!bucket_name || bucket_name == ''">
-                <v-col cols="12" class="d-flex justify-center">
-                  <v-btn
-                    :disabled="file_list_to_upload.length === 0"
-                    @click="open_upload_wizard_dialog"
-                    color="success"
-                    x-large>
-                    Start Uploading {{file_list_to_upload.length}} files.
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-alert class="pa-4 ma-8" v-else type="warning"> Please select a dataset/directory to upload files.
-
-              </v-alert>
-              <v-row class="d-flex justify-end">
-                <v-col cols="2">
-                  <v-btn v-if="!mode && show_labels_button"
-                         color="blue"
-                         outlined
-                         @click="$router.push('/project/' +
-                        $store.state.project.current.project_string_id
-                        + '/labels')">
-                    Continue to Labels
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-layout>
-
-
           </v-card-text>
         </v-card>
 
@@ -347,9 +237,10 @@
       </template>
     </v-snackbar>
     <upload_wizard_dialog
-                          @start_upload="upload_to_diffgram"
-                          :file_list="file_list_to_upload"
-                          ref="upload_wizard_dialog"></upload_wizard_dialog>
+      :project_string_id="project_string_id"
+      ref="upload_wizard_dialog">
+
+    </upload_wizard_dialog>
   </div>
 
 
@@ -360,7 +251,7 @@
   // because of beforeRouteLeave
 
   import Vue from "vue";
-  import Connector_import_renderer from "./connectors/connector_import_renderer.vue";
+
   import upload_wizard_dialog from "./input/upload_wizard_dialog.vue";
   import axios from "axios";
   import {create_event} from "./event/create_event";
@@ -368,7 +259,6 @@
   export default Vue.extend({
       name: 'upload_large',
       components: {
-        Connector_import_renderer,
         upload_wizard_dialog
       },
       props: {
@@ -393,18 +283,17 @@
         return {
           v_collaborate_new: false,
           bucket_name: undefined,
-          file_list_to_upload: [],
           dialog_confirm_sample_data: false,
           loading_create_sample_data: false,
 
-          incoming_connection: null,
+
           snackbar_success: false,
 
           showSuccess: "Success",
 
           request_refresh: null,
 
-          accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt",
+
 
           upload_header_message: "Upload images or videos",
 
@@ -414,8 +303,6 @@
           sync_job_list: [],
 
           loading_sync_jobs: false,
-
-          video_split_duration: 60,
 
           is_actively_sending: false,
 
@@ -457,63 +344,13 @@
 
       },
       watch: {
-        incoming_connection: function(newval, oldval){
-          if(!this.newval){
-            this.bucket_name = undefined;
-          }
-        }
+
       },
       computed: {
-        cloud_col_count: function(){
-          if(!this.incoming_connection){
-            return 6
-          }
-          if(this.bucket_name !== ''){
-            return 12
-          }
-        },
         current_directory: function(){
           return this.$store.state.project.current_directory;
         },
-        dropzoneOptions: function () {
 
-          // CAUTION despite being a computed property any values that CHANGE
-          // after component is created don't seem to get actually reflected sometimes...
-          // The drop zone options things doesn't update well from vuex, depsite being a computed prop
-          // I think the actual vue js dropzone thing may be updating properly though
-          // (Context of moving to using drop_zone_sending_event() for thing from vuex)
-          const $vm = this;
-          return {
-            init: function(){
-              this.on("addedfile", function(file) {
-                $vm.file_list_to_upload.push(file);
-              });
-              this.on('removedfile', function(file){
-                $vm.file_list_to_upload.splice($vm.file_list_to_upload.indexOf(file), 1);
-              });
-            },
-            url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
-            chunking: true,
-            addRemoveLinks: true,
-            forceChunking: true,
-            autoProcessQueue: false,
-            chunkSize: 1024 * 1024 * 5,
-            height: 120,
-            // number of concurrent uploads at a time, each upload still goes at same speed
-            parallelUploads: 1,
-
-            thumbnailWidth: 150,
-            thumbnailHeight: 150,
-            maxFilesize: 5000,
-            headers: {
-              "project_string_id": this.project_string_id,
-              "mode": this.mode,
-              "flow_id": this.flow_id
-            },
-            acceptedFiles: this.accepted_files
-          }
-
-        }
       },
 
       created() {
@@ -543,9 +380,7 @@
             user_visit: 'user_visit',
           })
         },
-        update_bucket_name: function(name){
-          this.bucket_name = name
-        },
+
         create_sample_dataset: async function(){
           this.loading_create_sample_data = true;
           try{
@@ -570,23 +405,7 @@
         open_confirm_dialog_sample_data: function(){
           this.dialog_confirm_sample_data = true;
         },
-        drop_zone_sending_event(file, xhr, formData) {
 
-          // Doing this here since options doesn't update properly
-
-          formData.append('directory_id',
-            this.$store.state.project.current_directory.directory_id);
-
-          formData.append('video_split_duration',
-            this.video_split_duration);
-          if (this.job && this.job.id) {
-            formData.append('job_id',
-              this.job.id);
-          }
-
-
-          this.is_actively_sending = true
-        },
 
         // drop zone complete
         async on_change_directory(directory) {
