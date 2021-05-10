@@ -877,15 +877,11 @@
               align: 'start',
               sortable: false,
             },
-<<<<<<< Updated upstream
-=======
             { text: 'Notes',
               value: 'file_value',
               align: 'start',
               sortable: false,
             },
->>>>>>> Stashed changes
-
           ],
           allowed_instance_types: [
             'box',
@@ -962,17 +958,11 @@
           el: 1,
           preLabels: null,
           pre_labels_file_list: [],
-<<<<<<< Updated upstream
           pre_label_key_list: [],
           errors_file_schema: {},
-          errors_instance_schema: {},
-=======
           pre_labels_file_type: null,
-          pre_label_key_list: [],
-          errors_file_schema: {},
           errors_instance_schema: {},
           error_polygon_instance: {},
->>>>>>> Stashed changes
         }
 
 
@@ -1060,8 +1050,6 @@
           alert('start upload');
           this.close();
         },
-<<<<<<< Updated upstream
-=======
         check_polygon_points_key_structure(){
           this.error_polygon_instance = {}
           console.log('aaaaachnageee', this.check_polygon_points_key_structure.polygon);
@@ -1088,7 +1076,6 @@
             }
           }
         },
->>>>>>> Stashed changes
         check_errors_and_go_to_step(step){
           if(step === 4){
             this.errors_file_schema = {}
