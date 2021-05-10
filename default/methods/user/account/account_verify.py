@@ -115,7 +115,7 @@ def start_verify_via_email( session,
 		if not url_base.endswith('/'):
 			url_base += '/'
 
-		link_verify = settings.URL_BASE + "user/account/verify_email/"+ \
+		link_verify = url_base + "user/account/verify_email/"+ \
 						 auth.email_sent_to + \
 						 "/" + \
 						 auth.code
