@@ -1,7 +1,11 @@
 <template>
 
-  <v-dialog v-model="is_open" width="1500px" id="task-input-list-dialog" style="min-height: 800px" persistent>
-    <v-stepper v-model="el" class="pa-8" :non-linear="true">
+  <v-dialog v-model="is_open" width="1500px" id="task-input-list-dialog" style="min-height: 800px;" persistent>
+    <v-layout style="position: relative; z-index: 999999">
+      <v-btn @click="close"  icon x-large style="position: absolute; top: 0; right: 0"><v-icon>mdi-close</v-icon></v-btn>
+    </v-layout>
+    <v-stepper v-model="el" class="pa-8" :non-linear="true" >
+
       <v-stepper-header>
         <v-stepper-step
           editable
@@ -63,7 +67,7 @@
             </li>
             <li>
               <p>
-               Must include a field defining the instance type.
+                Must include a field defining the instance type.
                 Possible types are: "box", "polygon", "cuboid", "ellipse", "point", "line".
               </p>
             </li>
@@ -92,13 +96,13 @@
         <v-stepper-content step="3">
           <v-layout class="d-flex flex-column justify-center align-center pa-10">
 
-            <v_error_multiple :error="error_instance_type">
+            <v_error_multiple :error="errors_file_schema">
             </v_error_multiple>
             <v-container class="d-flex flex-column pa-0">
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">* Select the Field Corresponding to the instance type</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Note: Allowed values here are: {{allowed_instance_types}}</strong></p>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Allowed values here are: {{allowed_instance_types}}</strong></p>
 
                 </div>
                 <div class="d-flex justify-end flex-grow-1">
@@ -113,8 +117,40 @@
               </div>
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the File Name</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** The value of this key must match with the file name in order to identify the instances.</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.file_name">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the frame number (Video Only)</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** For Video Only</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.frame_number">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">Select the Field Corresponding to the Model ID (Optional)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>If model already exists, instances will be binded to existing model.</strong></p>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** If model already exists, instances will be binded to existing model.</strong></p>
 
                 </div>
                 <div class="d-flex justify-end flex-grow-1">
@@ -131,7 +167,7 @@
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">Select the Field Corresponding to the Model Run ID (Optional)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>If the run already exists, instances will be binded to existing run.</strong></p>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** If the run already exists, instances will be binded to existing run.</strong></p>
 
                 </div>
                 <div class="d-flex justify-end flex-grow-1">
@@ -150,7 +186,7 @@
           <v-layout class="d-flex justify-end">
             <v-btn x-large
                    class="secondary lighten-1 ma-8"
-                   :disabled="!instance_type_schema_is_set"
+                   :disabled="!instance_type_schema_is_set || !file_name_schema_is_set"
                    @click="check_errors_and_go_to_step(4)">
               Continue
             </v-btn>
@@ -827,6 +863,8 @@
           ],
           diffgram_schema_mapping: {
             instance_type: null,
+            file_name: null,
+            frame_number: null,
             model_id: null,
             model_rune_id: null,
             box: {
@@ -891,7 +929,8 @@
           preLabels: null,
           pre_labels_file_list: [],
           pre_label_key_list: [],
-          error_instance_type: {},
+          errors_file_schema: {},
+          errors_instance_schema: {},
         }
 
 
@@ -914,6 +953,9 @@
         },
         instance_type_schema_is_set: function(){
           return this.diffgram_schema_mapping.instance_type != null;
+        },
+        file_name_schema_is_set: function(){
+          return this.diffgram_schema_mapping.file_name != null;
         },
         dropzoneOptions: function () {
 
@@ -939,10 +981,15 @@
 
                 }
               });
-
+              this.on('removedfile', function(file){
+                $vm.pre_labels_file_list.splice($vm.pre_labels_file_list.indexOf(file), 1);
+                $vm.preLabels = null;
+                $vm.pre_label_key_list = [];
+              });
             },
             url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
             chunking: true,
+            addRemoveLinks: true,
             maxFiles: 1,
             autoProcessQueue: false,
             height: 120,
@@ -971,18 +1018,26 @@
           this.close();
         },
         check_errors_and_go_to_step(step){
-          console.log('stepppp', step, this.preLabels)
           if(step === 4){
-
+            this.errors_file_schema = {}
             this.get_included_instance_types();
-            if(!this.error_instance_type){
+            if(!this.diffgram_schema_mapping.file_name){
+              this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
+              return
+            }
+            if(Object.keys(this.errors_file_schema).length === 0){
               this.el = step;
             }
+          }
+          else if(step === 5){
+            this.errors_instance_schema = {};
+
+
           }
 
         },
         get_included_instance_types: function(){
-          this.error_instance_type = {};
+          this.errors_file_schema = {};
           for(const elm of this.preLabels){
             console.log('elm[this.diffgram_schema_mapping.instance_type]', elm[this.diffgram_schema_mapping.instance_type])
             if(elm[this.diffgram_schema_mapping.instance_type]){
@@ -993,7 +1048,7 @@
                 this.included_instance_types[instance_type] = true;
               }
               else{
-                this.error_instance_type[instance_type] = `Invalid instance type "${instance_type}"`;
+                this.errors_file_schema[instance_type] = `Invalid instance type "${instance_type}"`;
               }
 
             }

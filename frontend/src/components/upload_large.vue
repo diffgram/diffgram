@@ -488,9 +488,13 @@
               this.on("addedfile", function(file) {
                 $vm.file_list_to_upload.push(file);
               });
+              this.on('removedfile', function(file){
+                $vm.file_list_to_upload.splice($vm.file_list_to_upload.indexOf(file), 1);
+              });
             },
             url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
             chunking: true,
+            addRemoveLinks: true,
             forceChunking: true,
             autoProcessQueue: false,
             chunkSize: 1024 * 1024 * 5,
@@ -498,8 +502,8 @@
             // number of concurrent uploads at a time, each upload still goes at same speed
             parallelUploads: 1,
 
-            thumbnailWidth: 80,
-            thumbnailHeight: 80,
+            thumbnailWidth: 150,
+            thumbnailHeight: 150,
             maxFilesize: 5000,
             headers: {
               "project_string_id": this.project_string_id,
