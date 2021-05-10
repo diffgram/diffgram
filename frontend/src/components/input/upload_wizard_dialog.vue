@@ -280,7 +280,11 @@
                 <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
                   <template v-slot:body="{ items }">
                     <tbody>
+<<<<<<< Updated upstream
                     <tr>
+=======
+                    <tr v-if="pre_labels_file_type === 'json'">
+>>>>>>> Stashed changes
                       <td><strong>points:</strong></td>
                       <td>
                         Preview Data Here
@@ -290,10 +294,15 @@
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
+<<<<<<< Updated upstream
+=======
+                                  @change="check_polygon_points_key_structure"
+>>>>>>> Stashed changes
                                   v-model="diffgram_schema_mapping.polygon.points">
 
                         </v-select>
                       </td>
+<<<<<<< Updated upstream
                     </tr>
                     <tr>
                       <td><strong>point x value:</strong></td>
@@ -323,6 +332,23 @@
                                   v-model="diffgram_schema_mapping.polygon.point_y">
 
                         </v-select>
+=======
+                      <td v-if="pre_labels_file_type === 'json'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                          ** Points Must be an array of objects with the structure:
+                          "{x: Number, y: Number}"
+                        </strong>
+                        </p>
+                      </td>
+                      <td v-if="pre_labels_file_type === 'csv'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>
+                          ** Points must be in 2 columns, one for the X values and one for the Y
+                          values. Each column should be comma separated numbers of the corresponding
+                          point coordinates.
+
+                        </strong></p>
+>>>>>>> Stashed changes
                       </td>
                     </tr>
                     </tbody>
@@ -851,6 +877,14 @@
               align: 'start',
               sortable: false,
             },
+<<<<<<< Updated upstream
+=======
+            { text: 'Notes',
+              value: 'file_value',
+              align: 'start',
+              sortable: false,
+            },
+>>>>>>> Stashed changes
 
           ],
           allowed_instance_types: [
@@ -928,9 +962,17 @@
           el: 1,
           preLabels: null,
           pre_labels_file_list: [],
+<<<<<<< Updated upstream
           pre_label_key_list: [],
           errors_file_schema: {},
           errors_instance_schema: {},
+=======
+          pre_labels_file_type: null,
+          pre_label_key_list: [],
+          errors_file_schema: {},
+          errors_instance_schema: {},
+          error_polygon_instance: {},
+>>>>>>> Stashed changes
         }
 
 
@@ -970,6 +1012,7 @@
               this.on("addedfile", async function (file) {
                 const textData = await file.text();
                 if(file.type === 'application/json'){
+                  $vm.pre_labels_file_type = 'json';
                   $vm.preLabels = JSON.parse(textData);
                   const pre_label_keys = $vm.extract_pre_label_key_list($vm.preLabels);
                   $vm.pre_label_key_list = [...pre_label_keys];
@@ -978,7 +1021,7 @@
                   $vm.pre_labels_file_list.push(file);
                 }
                 else if(file.type === 'text/csv'){
-
+                  $vm.pre_labels_file_type = 'csv';
                 }
               });
               this.on('removedfile', function(file){
@@ -1017,6 +1060,35 @@
           alert('start upload');
           this.close();
         },
+<<<<<<< Updated upstream
+=======
+        check_polygon_points_key_structure(){
+          this.error_polygon_instance = {}
+          console.log('aaaaachnageee', this.check_polygon_points_key_structure.polygon);
+          if(!this.diffgram_schema_mapping.polygon.points){
+            return
+          }
+          else{
+            const key_name = this.diffgram_schema_mapping.polygon.points;
+            const polygon_labels = this.preLabels.filter(inst => inst.type === 'polygon');
+            let i = 0;
+            for(const polygon_instance of polygon_labels){
+              const value = polygon_instance[key_name];
+              if(!Array.isArray(value)){
+                this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})';
+                return
+              }
+              if((!value.x || isNan(value.x)) || (!value.y || isNan(value.y))){
+                this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
+                this.error_polygon_instance['row_number'] = i
+                this.error_polygon_instance['data'] = polygon_instance.toString();
+                return
+              }
+              i += 1;
+            }
+          }
+        },
+>>>>>>> Stashed changes
         check_errors_and_go_to_step(step){
           if(step === 4){
             this.errors_file_schema = {}
