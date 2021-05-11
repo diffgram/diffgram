@@ -240,18 +240,21 @@
             </div>
           </v-flex>
 
-          <label_select_annotation
-              :project_string_id="project_string_id"
-              :label_file_list="label_list"
-              :label_file_colour_map="label_file_colour_map"
-              :video_mode="video_mode"
-              @change="change_current_label_file_template($event)"
-              :loading="loading"
-              :request_refresh_from_project="true"
-              :show_visibility_toggle="true"
-          >
-          </label_select_annotation>
-
+          <div class="pl-3 pr-3 pt-4">
+            <label_select_annotation
+                :project_string_id="project_string_id"
+                :label_file_list="label_list"
+                :label_file_colour_map="label_file_colour_map"
+                :video_mode="video_mode"
+                @change="change_current_label_file_template($event)"
+                :loading="loading"
+                :request_refresh_from_project="true"
+                :show_visibility_toggle="true"
+                @update_label_file_visible="update_label_file_visible($event)"
+                @get_next_instance="request_next_instance"
+            >
+            </label_select_annotation>
+          </div>
 
           <!--
               If we go to the task directly the $props.task is defined,
@@ -1115,8 +1118,6 @@
                                   >
             </canvas_instance_list>
 
-            <!-- Gold standard -->
-            <!-- TODO events that make sense in gold standard context -->
 
             <!-- Careful, must have this object exist
                   prior to loading instance list otherwise it won't update
@@ -1240,14 +1241,6 @@
                   >
         </v_video>
 
-        <!--
-                  :style="style_max_width  + ';overflow-x:auto;'"
-          this doesn't quite work
-          as it shows overflow even when it shouldn't
-
-          maybe "current sequence" could use v-model
-
-          -->
 
         <v_sequence_list
           v-show="!show_place_holder"

@@ -2,17 +2,12 @@
   <div v-cloak >
     <v-layout >
 
-      <!--
-        Goal: User selectable, assumes only one selected at a time.
-      -->
-
 
       <v-select :items="label_list_with_limit"
                 v-model="selected"
                 :label="label_prompt"
                 return-object
                 :data-cy="datacy"
-                :multiple="multiple"
                 :disabled="label_refresh_loading || view_only_mode"
                 @change="emit_selected()"
                 item-value="id"
@@ -60,7 +55,7 @@
             </div>
 
 
-            <!--
+          <!--
           <div v-if="$store.state.user.current.is_super_admin === true">
             {{ data.item.id }}
           </div>
@@ -69,7 +64,6 @@
         </template>
 
         <template v-slot:selection="data">
-
 
           <v-chip color="white">
             <v-icon
@@ -96,27 +90,6 @@
 </template>
 
 <!--
-
-  Example usage
-
-              <label_select_only
-             :project_string_id="project_string_id"
-              @label_file="recieve_label_file($event)"
-                               >
-            </label_select_only>
-
-  NOT GLOBALLY available as of Jan 29 2020
-  so import ie:
-  import label_select_only from '../label/label_select_only.vue'
-    components: {
-    label_select_only
-  },
-
-  TODO look at using v-model so don't have to use @label_file
-
-
-  CAUTION be aware when editing
-    this can be used in a "view_only_mode" so check not equal for that context
 
 -->
 
@@ -153,6 +126,7 @@
         'show_visibility_toggle': {
           default: false
         },
+        'select_this_id_at_load': {},
       },
 
       watch: {
@@ -161,24 +135,14 @@
           this.refresh_label_list_from_project()
         },
 
-        load_selected_id_list: function () {
-          this.refresh_internal_selected()
-        }
-
       },
       mounted() {
 
         if (this.label_file_list_prop) {
-          // Note we are setting selected here
-          this.selected = this.label_file_list_prop
           this.label_list = this.label_file_list_prop
-          this.check_select_all_state()
+          this.selected = this.label_file_list_prop[0]
         } else {
           this.refresh_label_list_from_project()
-        }
-
-        if (this.mode == "multiple") {
-          this.multiple = true
         }
 
         if (this.select_this_id_at_load) {
@@ -205,37 +169,15 @@
           return this.label_list.slice(0, this.$props.limit)
         },
 
-        selected_ids_only: function () {
-          if (!this.selected || this.selected.length == 0) {
-            return null
-          }
-          //single object
-          if (this.selected.id) {
-            return this.selected.id
-          }
-          // multiple
-          // js errors if this.selected is not actually a list
-          let ids_only = []
-          for (let label_file of this.selected) {
-            ids_only.push(label_file.id)
-          }
-          return ids_only
-        }
-
       },
       data() {
         return {
 
-          // we assume this to be false
-          // unless updated by refreshing labels ie
-          select_all_state: false,
-
           label_refresh_loading: false,
-          selected: [],
-          label_list: [],
-          multiple: false,
 
-          over_limit: false
+          selected: {},
+
+          label_list: [],
 
         }
       },
@@ -265,64 +207,13 @@
             .then(response => {
 
               this.label_list = response.data.labels_out
-
-              if (this.mode == "multiple") {
-
-                this.refresh_internal_selected()
-
-              }
-
               this.emit_selected()
-
               this.label_refresh_loading = false
 
             })
             .catch(error => {
               console.log(error);
             });
-
-        },
-
-        refresh_internal_selected: function () {
-
-          // any label that comes up here is selected right?
-          // because it's per group
-          // not a fan that thsi component needs to know about groups but...
-
-          // is there a better way we could be declaring this???... not great
-          this.selected = []
-          for (var label of this.label_list) {
-
-            if (label.attribute_group_list) {
-              for (var attribute of label.attribute_group_list) {
-
-                if (attribute.id == this.attribute_group_id) {
-                  this.selected.push(label)
-                }
-              }
-            }
-
-            if (this.load_selected_id_list) {
-              // Added support to both objects and ID's
-              for (let element of this.load_selected_id_list) {
-                let id = element;
-                // We assume we can be receiving a list of label objects, each ot them having an ID.
-                if (!Number.isInteger(element)) {
-                  id = element.id
-                }
-                if (label.id === id) {
-                  this.selected.push(label)
-                }
-              }
-            } else if (this.select_all_at_load == true) {
-              this.selected = this.label_list
-            }
-
-          }
-
-
-          this.check_select_all_state()
-
 
         },
 
