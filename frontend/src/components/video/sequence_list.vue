@@ -39,20 +39,6 @@
 
       Sequences
 
-      <div v-if="current_label_file && current_label_file.label"
-            class="pl-4"
-            >
-
-        <!-- TODO maybe get color from flag / label file color
-            color is available on labelfile but not sure when in task mode
-          -->
-        <v-chip color="primary"
-                text-color="white"
-                  >
-            <h2> {{current_label_file.label.name}} </h2>
-          </v-chip>
-      </div>
-
       <div class="pl-4">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
