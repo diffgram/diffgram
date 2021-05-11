@@ -1,12 +1,14 @@
 <template>
   <div v-cloak >
     <v-card v-if="video_mode == true"
-            max-height="90"
+            max-height="80"
             elevation="1"
             >
       <v-container class="pa-2">
 
-      <v-row style="height: 50px; overflow: hidden">
+      <v-row
+            style="height: 40px; overflow: hidden"
+            class="pt-2">
 
         <!-- Previous Frame -->
 
@@ -94,49 +96,7 @@
         </tooltip_button>
 
 
-        <tooltip_button
-            :loading="loading"
-            :disabled="go_to_keyframe_loading || playing"
-            @click="next_instance(undefined)"
-            icon="mdi-debug-step-over"
-            tooltip_message="Jump to Next Instance"
-            color="primary"
-            :icon_style="true"
-            :large="false"
-            :bottom="true"
-          >
-        </tooltip_button>
-
-
-        <button_with_menu
-          tooltip_message="Go To KeyFrame"
-          icon="mdi-arrow-up"
-          color="primary"
-          :commit_menu_status="true"
-          :disabled="loading || go_to_keyframe_loading || playing"
-          :close_by_button="true"
-              >
-
-          <template slot="content">
-
-            <v-text-field label="Go to frame"
-                          type="number"
-                          v-model.number="user_requested_keyframe">
-            </v-text-field>
-
-            <v-btn :disabled="loading"
-                    color="primary"
-                    @click="go_to_keyframe(user_requested_keyframe)">
-              Go
-            </v-btn>
-
-            <v-layout column>
-              Frames: {{video_settings.slider_end}}
-            </v-layout>
-
-            </template>
-        </button_with_menu>  
-
+        <v-spacer> </v-spacer>
 
         <div class="pl-2">
           <v-tooltip bottom>
@@ -180,65 +140,100 @@
           </v-tooltip>
         </div>
 
-        <!--
-
-          I think this was for say hiding interpolate button in view
-          only mode? But would need to review more closely
-          in meantime the div seemed to be messing up formatting
-          <div v-if="['full', 'trainer_default'].includes(render_mode)">
-
-        -->
-
-          <v-spacer> </v-spacer>
 
 
-          <tooltip_button
-              tooltip_message="Interpolate All Sequences"
-              @click="run_interpolation"
-              icon="filter_none"
-              :bottom="true"
-              :icon_style="true"
-              :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
-              color="primary">
-          </tooltip_button>
+      <button_with_menu
+        tooltip_message="Go To KeyFrame"
+        icon="mdi-arrow-up"
+        color="primary"
+        :commit_menu_status="true"
+        :disabled="loading || go_to_keyframe_loading || playing"
+        :close_by_button="true"
+            >
 
+        <template slot="content">
 
-          <!-- Careful we expect this to be an integer
-              Use vue js built in "number" function
-              https://github.com/vuetifyjs/vuetify/issues/3421
-              TODO validate frame number is within range...
-              Do we want to default this to the current frame?
-              -->
+          <v-layout>
+            <v-text-field label="Go to frame"
+                          type="number"
+                          v-model.number="user_requested_keyframe">
+            </v-text-field>
 
-          <!-- Tracking not fully supported yet-->
-          <!--
-          <v-btn @click="run_tracking"
-                  :disabled="run_tracking_disabled">
-            Track
-            <v-icon right> track_changes </v-icon>
+            <div class="pa-4">
+            / {{video_settings.slider_end}}
+            </div>
+          </v-layout>
+
+          <v-btn :disabled="loading"
+                  color="primary"
+                  @click="go_to_keyframe(user_requested_keyframe)">
+            Go
           </v-btn>
-            -->
 
+          </template>
+      </button_with_menu>  
 
-          <v-flex xs2 class="pa-2">
-            <v-select dense
-                      class="pb-0"
-                      label="Speed"
-                      :items="playback_rate_options"
-                      v-model="playback_rate"
-                      :disabled="loading || go_to_keyframe_loading || playing">
-            </v-select>
-          </v-flex>
+      <button_with_menu
+          tooltip_message="More"
+          icon="mdi-dots-vertical"
+          color="primary"
+          :commit_menu_status="true"
+          :disabled="loading || go_to_keyframe_loading || playing"
+          :close_by_button="true"
+              >
 
-        <div class="pa-2">
-          <v-btn color="blue darken-1" text
-              href="https://diffgram.readme.io/docs/video-interpolation"
-              target="_blank"
-              icon>
-            <v-icon>help</v-icon>
-          </v-btn>
-        </div>
-              <!-- add video forward 5 etc.-->
+          <template slot="content">
+
+            <v-layout column>
+
+              <v-flex xs2 class="pa-2">
+                <v-select dense
+                          class="pb-0"
+                          label="Speed"
+                          :items="playback_rate_options"
+                          v-model="playback_rate"
+                          :disabled="loading || go_to_keyframe_loading || playing">
+                </v-select>
+              </v-flex>
+          
+              <tooltip_button
+                  :loading="loading"
+                  :disabled="go_to_keyframe_loading || playing"
+                  @click="next_instance(undefined)"
+                  icon="mdi-debug-step-over"
+                  tooltip_message="Jump to Next Instance"
+                  color="primary"
+                  :icon_style="true"
+                  :large="false"
+                  :bottom="true"
+                >
+              </tooltip_button>
+
+              <tooltip_button
+                  tooltip_message="Interpolate All Sequences"
+                  @click="run_interpolation"
+                  icon="filter_none"
+                  :bottom="true"
+                  :icon_style="true"
+                  :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
+                  color="primary">
+              </tooltip_button>
+
+              <div class="pa-2">
+                <v-btn color="blue darken-1" text
+                    href="https://diffgram.readme.io/docs/video-interpolation"
+                    target="_blank"
+                    icon>
+                  <v-icon>help</v-icon>
+                </v-btn>
+              </div>
+
+            </v-layout>
+
+            </template>
+        </button_with_menu>
+
+  
         </v-row>
 
         <v-row @mousemove="mousemove_slider"
@@ -258,7 +253,7 @@
 
           --->
           <v-slider
-            class="pl-4 pr-4"
+            class="pl-4 pr-4 pt-0"
             @input="update_from_slider(parseInt($event))"
             @end="slider_end(parseInt($event))"
             @change="slide_change(parseInt($event))"
