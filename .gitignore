@@ -163,3 +163,4 @@ shared/settings/secrets.py
 .env
 .idea/
 git_ignore/*
+run_dev/*

@@ -503,7 +503,7 @@
         this.discussion_editor.setOptions({
           editable: true
         })
-        this.$store.commit('set_user_is_typing_or_menu_open', true);
+        this.$store.commit('set_user_is_typing_or_menu_open', false);
         Vue.set(discussion, 'is_editing', false);
       },
       stop_edit_comment(comment) {

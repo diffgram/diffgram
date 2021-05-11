@@ -98,7 +98,7 @@ module.exports = {
           limit: 10000
         }
       },
-      // 
+      //
       // for vueitfy version 2 migration
       // https://vuetifyjs.com/en/getting-started/quick-start#webpack-install
       {

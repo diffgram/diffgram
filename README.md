@@ -6,9 +6,38 @@
 
 Diffgram is annotation and training data software.
 
+# What is Diffgram Exactly?
+The domain is "Training Data".
+It's one integrated system that handles everything in the new Training Data abstractions world.
+It integrates with adjacent tools.
+
+### Give me a Compass - What's the Stack look like?
+Let's think of it like a loose analogy to LAMP, or MEAN stacks.
+One example - use a pre-processing tool like Lightly, then do annotation in Diffgram, and model training with Determined AI. 
+This is like a "LDD" stack: [lightly](https://github.com/lightly-ai/lightly) [diffgram](https://github.com/diffgram/diffgram) [determined-ai ](https://github.com/determined-ai).
+
+You can use Diffgram with your choice of surrounding tools - the ones shown are examples and optional.
+![](./github_assets/stack_example.PNG)
+
+### Who are the end users?
+* The largest group of end users is data annotators and subject matter experts.
+* Data Scientists or similar sets up the Schema (labels and attributes), the dataset structure, etc.
+* An admin or project manager sets up the human annotation pipelines.
+* A software engineer sets up the overall system, data permissions, and maintaining a large deployment.
+
+Note, to just get started a single user may play all roles.
+
+### What is this a drop in replacement for?
+Diffgram is a drop in replacement for *most* of the functions of the following systems: 
+Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex), V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, HastyAI, Dataloop, Keymakr.
+
+If you see any missing features, bugs etc please report them ASAP to [diffgram/issues](https://github.com/diffgram/diffgram/issues).  See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-guide) for more.
+
+[More on Understanding Diffgram High Level](https://diffgram.readme.io/docs/help-im-new-what-is-diffgram-exactly)
+
 # Quickstart
 
-[Try Diffgram Online](https://diffgram.com/user/data_platform/new)
+[Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
 ### Diffgram Dev Installer Quickstart
 Requires Docker and Docker Compose
@@ -20,6 +49,7 @@ python install.py
 # After install:  View the Web UI at: http://localhost:8085
 ```
 ### Other Useful Links For Starting Out
+- [Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
 - [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
 - [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
 - [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)

@@ -3,6 +3,7 @@ import random
 import string
 import base64
 
+
 def create_random_string(length):
     return ''.join(random.choice(string.ascii_lowercase + \
                                  string.digits) for x in range(length))
@@ -15,6 +16,9 @@ class DiffgramInstallTool:
     s3_access_id = None
     s3_access_secret = None
     azure_connection_string = None
+    diffgram_version = None
+    database_url = None
+    local_database = None
 
     def set_static_storage_option(self, option_number):
         if option_number == 1:
@@ -52,9 +56,10 @@ class DiffgramInstallTool:
     def set_s3_credentials(self):
         # Ask For Access Key ID
         is_valid = False
-        s3_access_id = input('Please provide the AWS Access Key ID: ')
         while not is_valid:
+            s3_access_id = input('Please provide the AWS Access Key ID: ')
             if s3_access_id == '':
+                print('Please a enter a valid value.')
                 continue
             else:
                 self.s3_access_id = s3_access_id
@@ -62,9 +67,11 @@ class DiffgramInstallTool:
 
         # Ask For Access Key Secret
         is_valid = False
-        s3_access_secret = input('Please provide the AWS Access Key Secret: ')
+
         while not is_valid:
+            s3_access_secret = input('Please provide the AWS Access Key Secret: ')
             if s3_access_secret == '':
+                print('Please a enter a valid value.')
                 continue
             else:
                 self.s3_access_secret = s3_access_secret
@@ -80,9 +87,11 @@ class DiffgramInstallTool:
     def set_azure_credentials(self):
         # Ask For Access Key ID
         is_valid = False
-        azure_connection_string = input('Please provide the Azure Connection String: ')
+
         while not is_valid:
+            azure_connection_string = input('Please provide the Azure Connection String: ')
             if azure_connection_string == '':
+                print('Please a enter a valid value.')
                 continue
             else:
                 self.azure_connection_string = azure_connection_string
@@ -126,6 +135,14 @@ class DiffgramInstallTool:
         env_file += 'INTER_SERVICE_SECRET={}\n'.format(create_random_string(10))
         env_file += 'SECRET_KEY={}\n'.format(create_random_string(18))
         env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8080/')
+        env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
+
+        if self.local_database:
+            env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
+            env_file += 'DATABASE_URL={}\n'.format("postgresql+psycopg2://postgres:postgres@db/diffgram")
+        else:
+            env_file += 'POSTGRES_IMAGE={}\n'.format('scratch')
+            env_file += 'DATABASE_URL={}\n'.format(self.database_url)
 
         text_file = open(".env", "w")
         text_file.write(env_file)
@@ -138,6 +155,23 @@ class DiffgramInstallTool:
         print('Diffgram Successfully Launched!')
         print('View the Web UI at: http://localhost:8085')
 
+    def set_diffgram_version(self):
+        version = input('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
+        if version == "":
+            self.diffgram_version = 'latest'
+        else:
+            self.diffgram_version = version
+
+    def database_config(self):
+        local_database = input('Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
+        local_database = local_database.lower()
+        if local_database == 'y' or local_database == '':
+            self.local_database = True
+        else:
+            self.local_database = False
+            database_url = input(
+                '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ')
+            self.database_url = database_url
 
     def install(self):
         self.print_logo()
@@ -172,9 +206,10 @@ class DiffgramInstallTool:
         elif self.static_storage_provider == 'azure':
             self.set_azure_credentials()
 
+        self.set_diffgram_version()
+        self.database_config()
         self.populate_env()
         self.launch_dockers()
-
 
     def print_logo(self):
         print("""\
@@ -219,7 +254,6 @@ class DiffgramInstallTool:
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@##//////*%##@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@        
         """)
-
 
 
 install_tool = DiffgramInstallTool()
