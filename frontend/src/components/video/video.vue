@@ -19,7 +19,6 @@
               tooltip_message="Back 3 Frames"
               color="primary"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -34,7 +33,6 @@
             tooltip_message="Back 1 Frame (A)"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
@@ -51,7 +49,6 @@
               tooltip_message="Play (Spacebar)"
               color="blue"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -65,7 +62,6 @@
               tooltip_message="Pause (Spacebar)"
               color="primary"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -81,7 +77,6 @@
             tooltip_message="Forward 1 Frame (D)"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
@@ -94,7 +89,6 @@
             tooltip_message="Forward 3 Frames"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
@@ -113,64 +107,76 @@
           >
         </tooltip_button>
 
-        <div class="pa-1">
-          <button_with_menu
-            tooltip_message="Go To KeyFrame"
-            icon="mdi-arrow-up"
-            color="primary"
-            :commit_menu_status="true"
-            :disabled="loading || go_to_keyframe_loading || playing"
-            :close_by_button="true"
-                >
 
-            <template slot="content">
+        <button_with_menu
+          tooltip_message="Go To KeyFrame"
+          icon="mdi-arrow-up"
+          color="primary"
+          :commit_menu_status="true"
+          :disabled="loading || go_to_keyframe_loading || playing"
+          :close_by_button="true"
+              >
 
-              <v-text-field label="Go to frame"
-                            type="number"
-                            v-model.number="user_requested_keyframe">
-              </v-text-field>
+          <template slot="content">
 
-              <v-btn :disabled="loading"
-                      color="primary"
-                      @click="go_to_keyframe(user_requested_keyframe)">
-                Go
-              </v-btn>
+            <v-text-field label="Go to frame"
+                          type="number"
+                          v-model.number="user_requested_keyframe">
+            </v-text-field>
 
-              <v-layout column>
-                Frames: {{video_settings.slider_end}}
-              </v-layout>
+            <v-btn :disabled="loading"
+                    color="primary"
+                    @click="go_to_keyframe(user_requested_keyframe)">
+              Go
+            </v-btn>
 
-              </template>
-          </button_with_menu>
-        </div>
+            <v-layout column>
+              Frames: {{video_settings.slider_end}}
+            </v-layout>
+
+            </template>
+        </button_with_menu>  
 
 
-        <div class="pa-2">
+        <div class="pl-2">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on"
-                      color="primary"
-                      text-color="white">
-                <h2> {{video_current_frame_guess}}</h2>
+                      color="white"
+                      text-color="primary">
+                {{video_current_frame_guess}}
+                / {{video_settings.slider_end}}
               </v-chip>
             </template>
             Frame
           </v-tooltip>
         </div>
 
-        <div class="pa-2">
+        <div class="pl-2">
           <!-- Fixed width so it doesn't bounce around as it goes up-->
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on"
-                      color="primary lighten-1"
-                      text-color="white"
-                      style="width: 78px"
+                      color="white"
+                      text-color="primary"
+                      style="width: 40px"
                       >
-                <h2> {{current_time}} </h2>
+                {{current_time}}
               </v-chip>
             </template>
             Time
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-chip v-on="on"
+                      color="white"
+                      text-color="primary"
+                      style="width: 60px"
+                      >
+                / {{duration}}
+              </v-chip>
+            </template>
+            Duration
           </v-tooltip>
         </div>
 
@@ -191,7 +197,7 @@
               @click="run_interpolation"
               icon="filter_none"
               :bottom="true"
-              :text_style="true"
+              :icon_style="true"
               :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
               color="primary">
           </tooltip_button>
@@ -511,6 +517,10 @@ export default Vue.extend( {
           'slider_end': 1
         }
       }
+    },
+    duration: function () {
+       // Not sure why duration isn't available as a prop on video from backend?
+       return this.current_video.frame_rate * this.current_video.frame_count
     }
   },
   mounted() {
