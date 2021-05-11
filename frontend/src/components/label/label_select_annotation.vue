@@ -8,7 +8,7 @@
                 :label="label_prompt"
                 return-object
                 :data-cy="datacy"
-                :disabled="label_refresh_loading || view_only_mode"
+                :disabled="label_refresh_loading"
                 @change="emit_selected()"
                 item-value="id"
                 >
@@ -207,6 +207,7 @@
             .then(response => {
 
               this.label_list = response.data.labels_out
+              this.selected = this.label_list[0]
               this.emit_selected()
               this.label_refresh_loading = false
 

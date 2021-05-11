@@ -1646,7 +1646,7 @@ export default Vue.extend( {
 
       lock_point_hover_change: false,
 
-      magic_nav_spacer: 0,
+      magic_nav_spacer: 5,
 
 
       hidden_label_id_list: [],
