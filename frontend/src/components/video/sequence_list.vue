@@ -106,13 +106,16 @@
 
       <v-spacer></v-spacer>
 
+
       <tooltip_button
           tooltip_message="Sequence & Video Help"
           href="https://diffgram.readme.io/docs/video-introduction"
           icon="mdi-lifebuoy"
           :text_style="true"
-          color="red">
+          target="_blank"
+                      >
       </tooltip_button>
+
 
       <!--
       <v-text-field v-model="search"
