@@ -248,10 +248,19 @@
               </diffgram_select>
 
             </div>
-
-
           </v-flex>
 
+          <label_select_annotation
+              :project_string_id="project_string_id"
+              :label_file_list="label_list"
+              :label_file_colour_map="label_file_colour_map"
+              :video_mode="video_mode"
+              @change="change_current_label_file_template($event)"
+              :loading="loading"
+              :request_refresh_from_project="true"
+              :show_visibility_toggle="true"
+          >
+          </label_select_annotation>
 
 
           <!--
@@ -1297,13 +1306,20 @@
           ref="issues_sidepanel"
         ></issues_sidepanel>
 
+
+
+        <!--
+          TBD
+            @update_label_file_visible="update_label_file_visible($event)"
+            @get_next_instance="request_next_instance"
+        -->
+
+
         <v_labels_view
                          v-if="label_settings.show_list == true &&
                                 !task_error.task_request && !error_no_permissions.data"
                          :project_string_id="project_string_id"
-                         :current_video_file_id="current_video_file_id"
                          :render_mode="render_mode"
-                         :annotation_assignment_on="is_annotation_assignment_bool"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
                          :request_label_file_refresh="request_label_file_refresh"
@@ -1443,7 +1459,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { cloneDeep } from 'lodash';
 import { KeypointInstance } from '../vue_canvas/instances/KeypointInstance';
 import userscript from './userscript/userscript.vue';
-
+import label_select_annotation from '../label/label_select_annotation.vue';
 
 import PropType from 'vue'
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
@@ -1485,7 +1501,8 @@ export default Vue.extend( {
       target_reticle,
       task_status_icons,
       context_menu,
-      userscript
+      userscript,
+      label_select_annotation
     },
     props: {
       'project_string_id_prop': {
