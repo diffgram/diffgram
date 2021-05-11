@@ -1,6 +1,6 @@
 <template>
 
-  <v-dialog v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;" persistent>
+  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;" persistent>
     <v-layout style="position: relative; z-index: 999999">
       <v-btn @click="close" icon x-large style="position: absolute; top: 0; right: 0">
         <v-icon>mdi-close</v-icon>
@@ -17,9 +17,6 @@
         >
           Start
         </v-stepper-step>
-
-        <v-divider></v-divider>
-
         <v-divider></v-divider>
         <v-stepper-step
           editable
@@ -27,6 +24,7 @@
           step="2">
           Prepare Prelabeled Data
         </v-stepper-step>
+        <v-divider></v-divider>
         <v-stepper-step
           editable
           :complete="el > 3"
@@ -191,9 +189,10 @@
                               <v-icon color="success">mdi-check</v-icon>
                               Valid Values
                             </strong>
+                            <v_error_multiple dense :error="error_box_instance[key]">
+                            </v_error_multiple>
                           </p>
-                          <v_error_multiple dense :error="error_box_instance[key]">
-                          </v_error_multiple>
+
                         </td>
                       </tr>
                       </tbody>
@@ -234,7 +233,7 @@
                             ** Points Must be an array of objects with the structure:
                             "{x: Number, y: Number}"
                           </strong>
-                          <strong v-if="valid_points_values_box_instance_type[key]">
+                          <strong v-if="valid_points_values_polygon">
                             <v-icon color="success">mdi-check</v-icon>
                             Valid Values
                           </strong>
@@ -266,7 +265,7 @@
                 <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
                   <template v-slot:body="{ items }">
                     <tbody>
-                    <tr v-for="key in Objects.keys(diffgram_schema_mapping.point)">
+                    <tr v-for="key in Object.keys(diffgram_schema_mapping.point)">
                       <td><strong>point {{key}} value:</strong></td>
                       <td>
                         Preview Data Here
@@ -286,14 +285,14 @@
                           <strong>
                             ** {{key}} coordinate must be a number
                           </strong>
-                          <strong v-if="valid_points_values_box_instance_type[key]">
+                          <strong v-if="valid_points_values_point_instance_type[key]">
                             <v-icon color="success">mdi-check</v-icon>
                             Valid Values
                           </strong>
+                          <v_error_multiple dense :error="error_point_instance[key]">
+                          </v_error_multiple>
                         </p>
 
-                        <v_error_multiple dense :error="error_point_instance[key]">
-                        </v_error_multiple>
                       </td>
                     </tr>
                     </tbody>
@@ -330,14 +329,14 @@
                           <strong>
                             ** coordinate must be a number
                           </strong>
-                          <strong v-if="valid_points_values_box_instance_type[key]">
+                          <strong v-if="valid_points_values_line_instance_type[key]">
                             <v-icon color="success">mdi-check</v-icon>
                             Valid Values
                           </strong>
+                          <v_error_multiple dense :error="error_line_instance[key]">
+                          </v_error_multiple>
                         </p>
 
-                        <v_error_multiple dense :error="error_line_instance[key]">
-                        </v_error_multiple>
 
                       </td>
                     </tr>
@@ -375,15 +374,13 @@
                           <strong>
                             ** coordinate must be a number
                           </strong>
-                          <strong v-if="valid_points_values_box_instance_type[key]">
+                          <strong v-if="valid_points_values_cuboid_instance_type[key]">
                             <v-icon color="success">mdi-check</v-icon>
                             Valid Values
                           </strong>
+                          <v_error_multiple dense :error="error_cuboid_instance[key]">
+                          </v_error_multiple>
                         </p>
-
-                        <v_error_multiple dense :error="error_cuboid_instance[key]">
-                        </v_error_multiple>
-
                       </td>
                     </tr>
 
@@ -421,13 +418,13 @@
                           <strong>
                             ** value must be a number
                           </strong>
-                          <strong v-if="valid_points_values_box_instance_type[key]">
+                          <strong v-if="valid_points_values_ellipse_instance_type[key]">
                             <v-icon color="success">mdi-check</v-icon>
                             Valid Values
                           </strong>
+                          <v_error_multiple dense :error="error_ellipse_instance[key]">
+                          </v_error_multiple>
                         </p>
-                        <v_error_multiple dense :error="error_ellipse_instance[key]">
-                        </v_error_multiple>
                       </td>
                     </tr>
                     </tbody>
@@ -444,25 +441,13 @@
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <h1 class="pa-10 black--text">Confirm the Upload</h1>
-          <v-layout class="d-flex column justify-center">
-            <h2 class="ma-8 black--text">You are about to upload the {{file_list_to_upload.length}} file(s):</h2>
-
-            <v-list-item
-              v-for="(item, i) in file_list_to_upload"
-              :key="i"
-              dense
-              two-line
-            >
-              <v-list-item-icon>
-                <v-icon v-text="'mdi-file'"></v-icon>
-              </v-list-item-icon>
-              <v-list-item-title>
-                <v-list-item-title v-text="item.name"></v-list-item-title>
-              </v-list-item-title>
-            </v-list-item>
-            <v-btn x-large class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
-          </v-layout>
+          <upload_summary
+            v-if="file_list_to_upload && pre_labeled_data && diffgram_schema_mapping"
+            :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
+            :project_string_id="project_string_id"
+            :pre_labeled_data="pre_labeled_data"
+            :diffgram_schema_mapping="diffgram_schema_mapping"
+          ></upload_summary>
         </v-stepper-content>
 
       </v-stepper-items>
@@ -474,6 +459,7 @@
 <script lang="ts">
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
+  import upload_summary from './upload_summary'
   import axios from 'axios';
   import Vue from "vue";
 
@@ -481,6 +467,7 @@
       name: 'upload_wizard_dialog',
       components: {
         input_view,
+        upload_summary,
         new_or_update_upload_screen
       },
       props: {
@@ -590,7 +577,7 @@
           },
           is_open: false,
           el: 1,
-          preLabels: null,
+          pre_labeled_data: null,
           file_list_to_upload: [],
           valid_points_values_polygon: false,
           valid_points_values_point_instance_type: {x: false, y: false},
@@ -668,7 +655,7 @@
           if (!this.diffgram_schema_mapping.polygon.points) {
             return false
           }
-          for (const elm in this.preLabels) {
+          for (const elm in this.pre_labeled_data) {
             const pointsValue = elm[this.diffgram_schema_mapping.polygon.points];
             if (typeof pointsValue === 'object' && pointsValue !== null) {
               return true
@@ -695,11 +682,13 @@
           return {
             init: function () {
               this.on("addedfile", async function (file) {
+                this.emit('complete', file);
+                this.emit('success', file);
 
               });
               this.on('removedfile', function (file) {
                 $vm.pre_labels_file_list.splice($vm.pre_labels_file_list.indexOf(file), 1);
-                $vm.preLabels = null;
+                $vm.pre_labeled_data = null;
                 $vm.pre_label_key_list = [];
               });
             },
@@ -732,8 +721,8 @@
           const textData = await file.text();
           if (file.type === 'application/json') {
             this.pre_labels_file_type = 'json';
-            this.preLabels = JSON.parse(textData);
-            const pre_label_keys = this.extract_pre_label_key_list(this.preLabels);
+            this.pre_labeled_data = JSON.parse(textData);
+            const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
             this.pre_label_key_list = [...pre_label_keys];
             this.pre_labels_file_list.push(file);
           } else if (file.type === 'text/csv') {
@@ -747,10 +736,7 @@
         close: function () {
           this.is_open = false;
         },
-        start_upload: function () {
-          alert('start upload');
-          this.close();
-        },
+
         check_box_key_structure: function (key_name) {
           this.error_box_instance = {
             x_max: {},
@@ -769,11 +755,11 @@
             return
           } else {
             const key_name_local = this.diffgram_schema_mapping.box[key_name];
-            const box_labels = this.preLabels.filter(inst => inst.type === 'box');
+            const box_labels = this.pre_labeled_data.filter(inst => inst.type === 'box');
             for (const box_instance of box_labels) {
               if (isNaN(box_instance[key_name_local])) {
                 this.error_box_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_box_instance[key_name]['wrong_data'] = JSON.stringify(box_instance);
+                this.error_box_instance[key_name]['wrong_data'] = JSON.stringify(box_instance[key_name_local]);
                 return
               }
             }
@@ -800,11 +786,11 @@
             return
           } else {
             const key_name_local = this.diffgram_schema_mapping.ellipse[key_name];
-            const ellipse_labels = this.preLabels.filter(inst => inst.type === 'ellipse');
+            const ellipse_labels = this.pre_labeled_data.filter(inst => inst.type === 'ellipse');
             for (const ellipse_instance of ellipse_labels) {
               if (isNaN(ellipse_instance[key_name_local])) {
                 this.error_ellipse_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_ellipse_instance[key_name]['wrong_data'] = JSON.stringify(ellipse_instance);
+                this.error_ellipse_instance[key_name]['wrong_data'] = JSON.stringify(ellipse_instance[key_name_local]);
                 return
               }
             }
@@ -857,11 +843,11 @@
             return
           } else {
             const key_name_local = this.diffgram_schema_mapping.cuboid[key_name];
-            const cuboid_labels = this.preLabels.filter(inst => inst.type === 'cuboid');
+            const cuboid_labels = this.pre_labeled_data.filter(inst => inst.type === 'cuboid');
             for (const cuboid_instance of cuboid_labels) {
               if (isNaN(cuboid_instance[key_name_local])) {
                 this.error_cuboid_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_cuboid_instance[key_name]['wrong_data'] = JSON.stringify(cuboid_instance);
+                this.error_cuboid_instance[key_name]['wrong_data'] = JSON.stringify(cuboid_instance[key_name_local]);
                 return
               }
             }
@@ -876,11 +862,11 @@
             return
           } else {
             const key_name_local = this.diffgram_schema_mapping.line[key_name];
-            const line_labels = this.preLabels.filter(inst => inst.type === 'line');
+            const line_labels = this.pre_labeled_data.filter(inst => inst.type === 'line');
             for (const line_instance of line_labels) {
               if (isNaN(line_instance[key_name_local])) {
                 this.error_line_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_line_instance[key_name]['wrong_data'] = JSON.stringify(line_instance);
+                this.error_line_instance[key_name]['wrong_data'] = JSON.stringify(line_instance[key_name_local]);
                 return
               }
             }
@@ -895,11 +881,11 @@
             return
           } else {
             const key_name_local = this.diffgram_schema_mapping.point[key_name];
-            const point_labels = this.preLabels.filter(inst => inst.type === 'point');
+            const point_labels = this.pre_labeled_data.filter(inst => inst.type === 'point');
             for (const point_instance of point_labels) {
               if (isNaN(point_instance[key_name_local])) {
                 this.error_point_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_point_instance[key_name]['wrong_data'] = JSON.stringify(point_instance);
+                this.error_point_instance[key_name]['wrong_data'] = JSON.stringify(point_instance[key_name_local]);
                 return
               }
             }
@@ -913,7 +899,7 @@
             return
           } else {
             const key_name = this.diffgram_schema_mapping.polygon.points;
-            const polygon_labels = this.preLabels.filter(inst => inst.type === 'polygon');
+            const polygon_labels = this.pre_labeled_data.filter(inst => inst.type === 'polygon');
             let i = 0;
             for (const polygon_instance of polygon_labels) {
               const value = polygon_instance[key_name];
@@ -925,7 +911,7 @@
                 if ((!point.x || isNaN(point.x)) || (!point.y || isNaN(point.y))) {
                   this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
                   this.error_polygon_instance['row_number'] = i
-                  this.error_polygon_instance['data'] = JSON.stringify(polygon_instance);
+                  this.error_polygon_instance['data'] = JSON.stringify(polygon_instance[key_name_local]);
                   return
                 }
               }
@@ -968,7 +954,7 @@
         },
         get_included_instance_types: function () {
           this.errors_file_schema = {};
-          for (const elm of this.preLabels) {
+          for (const elm of this.pre_labeled_data) {
             if (elm[this.diffgram_schema_mapping.instance_type]) {
 
               const instance_type = elm[this.diffgram_schema_mapping.instance_type];
@@ -981,9 +967,9 @@
             }
           }
         },
-        extract_pre_label_key_list: function (preLabelsObject) {
+        extract_pre_label_key_list: function (pre_labels_object) {
           const result = []
-          for (const elm of preLabelsObject) {
+          for (const elm of pre_labels_object) {
             for (const key in elm) {
               if (!result.includes(key)) {
                 result.push(key)
