@@ -6,6 +6,8 @@
         <v-btn @click="upload_mode = 'update'">Update Existing</v-btn>
       </v-btn-toggle>
       <div class="pa-4">
+        <v_error_multiple :error="error">
+        </v_error_multiple>
         <button_with_menu
           tooltip_message="Import Settings"
           icon="settings"
@@ -104,21 +106,37 @@
       <v-data-table hide-default-footer :headers="file_table_headers" :items="file_list_to_upload">
         <template v-slot:body="{ items }">
           <tbody>
-          <tr v-for="file in file_list_to_upload">
+          <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
+            <td>
+              <p class="secondary--text"><strong>{{ file.name }}</strong></p>
+            </td>
+            <td>
+              <p class="secondary--text"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
+            </td>
+            <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+
+          </tr>
+          <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
             <td>
               <p><strong>{{ file.name }}</strong></p>
             </td>
             <td>
-              <p>{{file.data_type}}</p>
+              <p><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
             </td>
-            <td><v-btn color="error" icon @click="remove_file(item)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+            <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
 
           </tr>
           </tbody>
         </template>
-
-
       </v-data-table>
+      <div class="d-flex justify-end pa-4">
+        <v-btn @click="move_to_next_step"
+               x-large
+               color="primary"
+               :disabled="file_list_to_upload.length === 0 || file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0">
+          Continue
+        </v-btn>
+      </div>
     </v-card-text>
   </v-card>
 </template>
@@ -143,6 +161,7 @@
 
         return {
           file_list_to_upload: [],
+          error: {},
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
             {
@@ -209,7 +228,7 @@
             },
             url: '/api/walrus/project/' + this.project_string_id + '/upload/large',
             chunking: true,
-            addRemoveLinks: true,
+            // addRemoveLinks: true,
             forceChunking: true,
             autoProcessQueue: false,
             chunkSize: 1024 * 1024 * 5,
@@ -245,8 +264,25 @@
       },
 
       methods: {
+        move_to_next_step: function(){
+          const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
+          const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
+          if(raw_media.length === 0){
+            this.error.media_files = 'Please upload at least one media file to continue.'
+            return
+          }
+          if (annotationFile.length === 0){
+            // No Annotations Case, jump to last step
+            this.$emit('change_step_no_annotations')
+          }
+          else{
+            // No Annotations Case, jump to last step
+            this.$emit('change_step_annotations')
+          }
+        },
         remove_file: function(file){
-          this.$refs.myVueDropzone.removeFile(file)
+          console.log('this.$refs.myVueDropzone.', this.$refs.myVueDropzone)
+          this.$refs.myVueDropzone.dropzone.removeFile(file)
         },
         update_bucket_name: function (name) {
           this.bucket_name = name
