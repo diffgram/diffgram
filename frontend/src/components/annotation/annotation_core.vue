@@ -176,16 +176,6 @@
                         v-model="canvas_scale_global_setting">
                 </v-slider>
 
-                <v-slider label="Right"
-                          min=200
-                          max=750
-                          step=50
-                          thumb-label="always"
-                          ticks
-                          @change="$store.commit('set_user_setting', ['studio_right_nav_width', right_nav_width])"
-                          v-model="right_nav_width">
-                </v-slider>
-
                 <v-slider label="Left"
                           min=200
                           step=50
@@ -865,7 +855,6 @@
                            :width="left_nav_width"
                           >
 
-      <!-- TODO make this look much prettier-->
 
 
 
@@ -914,6 +903,82 @@
                                   :current_file="file ? file : task"
                                  >
       </instance_detail_list_view>
+
+
+      <instance_history_sidepanel v-show="show_instance_history"
+                                  :project_string_id="project_string_id"
+                                  @close_instance_history_panel="close_instance_history_panel"
+                                  :instance="selected_instance_for_history">
+
+      </instance_history_sidepanel>
+      <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                          v-show="show_issue_panel && !current_issue"
+                          :instance_list="instance_list"
+                          :task="task"
+                          :file="file"
+                          :frame_number="this.video_mode ? this.current_frame : undefined"
+                          :mouse_position="issue_mouse_position"
+                          @new_issue_created="refresh_issues_sidepanel"
+                          @open_side_panel="open_issue_panel"
+                          @close_issue_panel="close_issue_panel"
+      ></create_issue_panel>
+      <view_edit_issue_panel
+          v-if="!loading"
+          v-show="show_issue_panel && current_issue"
+          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :task="task"
+          :instance_list="instance_list"
+          :current_issue_id="current_issue ? current_issue.id : undefined"
+          :file="file"
+          @close_view_edit_panel="close_view_edit_issue_panel"
+          @start_attach_instance_edition="start_attach_instance_edition"
+          @update_issues_list="update_issues_list"
+          @stop_attach_instance_edition="stop_attach_instance_edition"
+          @update_canvas="update_canvas"
+          ref="view_edit_issue_panel"
+        ></view_edit_issue_panel>
+
+
+        <v-card-title >
+          <v-icon left
+                  color="primary"
+                  size="28">mdi-language-javascript</v-icon>
+          UserScripts
+          <v-spacer></v-spacer>
+          <v-btn @click="userscript_minimized=!userscript_minimized"
+                 v-if="userscript_minimized" icon>
+            <v-icon>mdi-chevron-down</v-icon>
+          </v-btn>
+          <v-btn @click="userscript_minimized=!userscript_minimized"
+                 v-if="!userscript_minimized" icon>
+            <v-icon>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-card-title>
+
+        <userscript
+            v-show="!userscript_minimized"
+            :create_instance="event_create_instance"
+            :current_userscript_prop="get_userscript()"
+            :userscript_select_disabled="userscript_select_disabled()"
+            :show_code_editor="!task || !task.id"
+            :show_external_scripts="!task || !task.id"
+            :show_save="!task || !task.id"
+            :show_other_controls="!task || !task.id"
+            ref="userscript"
+                    >
+        </userscript>
+
+        <issues_sidepanel
+          :minimized="minimize_issues_sidepanel"
+          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :task="task"
+          :file="file"
+          @view_issue_detail="open_view_edit_panel"
+          @issues_fetched="issues_fetched"
+          @minimize_issues_panel="minimize_issues_sidepanel = true"
+          @maximize_issues_panel="minimize_issues_sidepanel = false"
+          ref="issues_sidepanel"
+        ></issues_sidepanel>
 
     </v-navigation-drawer>
 
@@ -1214,6 +1279,7 @@
   </v-sheet>
 
     <!-- Right Side navigation -->
+    <!--
     <v-navigation-drawer right
                           absolute
                           permanent
@@ -1221,99 +1287,11 @@
                           :width="right_nav_width"
                           >
 
-        <!-- TODO prefer this to be a slot-->
-        <!-- Context that for video sequence navigator
-          requires clicking the instance to see it...
-          so if we want people to be able to preview existing instances
-          then need to show labels -->
-      <instance_history_sidepanel v-show="show_instance_history"
-                                  :project_string_id="project_string_id"
-                                  @close_instance_history_panel="close_instance_history_panel"
-                                  :instance="selected_instance_for_history">
-
-      </instance_history_sidepanel>
-      <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                          v-show="show_issue_panel && !current_issue"
-                          :instance_list="instance_list"
-                          :task="task"
-                          :file="file"
-                          :frame_number="this.video_mode ? this.current_frame : undefined"
-                          :mouse_position="issue_mouse_position"
-                          @new_issue_created="refresh_issues_sidepanel"
-                          @open_side_panel="open_issue_panel"
-                          @close_issue_panel="close_issue_panel"
-      ></create_issue_panel>
-      <view_edit_issue_panel
-          v-if="!loading"
-          v-show="show_issue_panel && current_issue"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-          :task="task"
-          :instance_list="instance_list"
-          :current_issue_id="current_issue ? current_issue.id : undefined"
-          :file="file"
-          @close_view_edit_panel="close_view_edit_issue_panel"
-          @start_attach_instance_edition="start_attach_instance_edition"
-          @update_issues_list="update_issues_list"
-          @stop_attach_instance_edition="stop_attach_instance_edition"
-          @update_canvas="update_canvas"
-          ref="view_edit_issue_panel"
-        ></view_edit_issue_panel>
-      <v-container  v-show="!show_issue_panel">
         <v-alert type="info" v-if="render_mode == 'home'" dismissible>
           All Labels are shown here for viewing existing instances
           on files. Only the labels chosen at the Start will
           be available to annotators.
-        </v-alert>
-
-        <v-card-title >
-          <v-icon left
-                  color="primary"
-                  size="28">mdi-language-javascript</v-icon>
-          UserScripts
-          <v-spacer></v-spacer>
-          <v-btn @click="userscript_minimized=!userscript_minimized"
-                 v-if="userscript_minimized" icon>
-            <v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
-          <v-btn @click="userscript_minimized=!userscript_minimized"
-                 v-if="!userscript_minimized" icon>
-            <v-icon>mdi-chevron-up</v-icon>
-          </v-btn>
-        </v-card-title>
-
-        <userscript
-            v-show="!userscript_minimized"
-            :create_instance="event_create_instance"
-            :current_userscript_prop="get_userscript()"
-            :userscript_select_disabled="userscript_select_disabled()"
-            :show_code_editor="!task || !task.id"
-            :show_external_scripts="!task || !task.id"
-            :show_save="!task || !task.id"
-            :show_other_controls="!task || !task.id"
-            ref="userscript"
-                    >
-        </userscript>
-
-        <issues_sidepanel
-          :minimized="minimize_issues_sidepanel"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-          :task="task"
-          :file="file"
-          @view_issue_detail="open_view_edit_panel"
-          @issues_fetched="issues_fetched"
-          @minimize_issues_panel="minimize_issues_sidepanel = true"
-          @maximize_issues_panel="minimize_issues_sidepanel = false"
-          ref="issues_sidepanel"
-        ></issues_sidepanel>
-
-
-
-        <!--
-          TBD
-            @update_label_file_visible="update_label_file_visible($event)"
-            @get_next_instance="request_next_instance"
-        -->
-
+        </v-alert>      
 
         <v_labels_view
                          v-if="label_settings.show_list == true &&
@@ -1340,16 +1318,10 @@
                          @get_next_instance="request_next_instance"
         >
         </v_labels_view>
-
-
-        <v-spacer> </v-spacer>
-
-
-      </v-container>
-
+  
 
   </v-navigation-drawer>
-
+  -->
 
    <!-- I would like to have a second sheet here for video stuff
      but wondering if we should just attach the video thing to the image
@@ -1681,7 +1653,7 @@ export default Vue.extend( {
 
       lock_point_hover_change: false,
 
-      magic_nav_spacer: 50,
+      magic_nav_spacer: 0,
 
 
       hidden_label_id_list: [],
@@ -1691,8 +1663,7 @@ export default Vue.extend( {
 
       highest_sequence_number: 0,
 
-      right_nav_width: 350 as Number,
-      left_nav_width: 350 as Number,
+      left_nav_width: 450 as Number,
 
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
@@ -2104,8 +2075,8 @@ export default Vue.extend( {
         return this.canvas_scale_global_setting
       }
 
-      let image_size_width = 1280 // default
-      let image_size_height = 960
+      let image_size_width = 1920 // default
+      let image_size_height = 1280
 
       if (this.canvas_width) {
 
@@ -2114,9 +2085,6 @@ export default Vue.extend( {
          image_size_width = this.canvas_width
          image_size_height = this.canvas_height
       }
-      // careful, if fails to detect / update image size
-      // then this can look artifically confused / harder to debug
-      // check image_size is rendering correctly
       // basically the math above does work but it needs right image size
 
       /*
@@ -2127,8 +2095,7 @@ export default Vue.extend( {
        *
        * the goal of calculation is to make it relative to left and right panel
        */
-      let middle_pane_width = this.window_width_from_listener - this.left_nav_width -
-        this.right_nav_width - this.magic_nav_spacer
+      let middle_pane_width = this.window_width_from_listener - this.left_nav_width - this.magic_nav_spacer
 
       let toolbar_height = 80
       let middle_pane_height = this.window_height_from_listener - toolbar_height
@@ -2141,7 +2108,7 @@ export default Vue.extend( {
         if (this.media_core_height) {
           video_offset = 200
         } else {
-          video_offset = 350
+          video_offset = 0
         }
         middle_pane_height = middle_pane_height - video_offset
       }
@@ -3305,9 +3272,6 @@ export default Vue.extend( {
     },
 
     update_user_settings_from_store() {
-      if (this.$store.state.user.settings.studio_right_nav_width) {
-        this.right_nav_width = this.$store.state.user.settings.studio_right_nav_width
-      }
       if (this.$store.state.user.settings.studio_left_nav_width) {
         this.left_nav_width = this.$store.state.user.settings.studio_left_nav_width
       }
@@ -3422,30 +3386,15 @@ export default Vue.extend( {
         },
       )
 
-      // we assume home == job for now
-      /*
-       * Not 100% sure goal of spacing here, but just trying to put more focus on
-       * media thing...
-       *
-       * At the very least the magic_nav_spacer is because even with the "container" removed,
-       * in the expand panel context we lost some space on left hand side.
-       *
-       * I think the issue before was actually more that it was in the "container".
-       *
-       * TODO rename home to job creation or something? that's confusing
-       */
       if (this.render_mode == "home"){
-        this.right_nav_width = parseInt(this.right_nav_width / 1.5)
         this.left_nav_width = parseInt(this.left_nav_width / 1.5)
-        this.magic_nav_spacer = 200
       }
 
       if (this.$props.task || this.job_id) {
         this.task_mode_mounted()
       }
 
-      // IMPORTANT temporary disable while working on cuboid
-      //this.start_autosave();    // created() gets called again when the task ID changes eg "go to next"
+      this.start_autosave();    // created() gets called again when the task ID changes eg "go to next"
 
 
     },
