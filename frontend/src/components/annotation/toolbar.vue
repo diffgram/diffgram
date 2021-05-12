@@ -31,7 +31,7 @@
         :icon_style="true"
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
-        @click="redo"
+        @click="$emit('redo')"
         :bottom="true">
       </tooltip_button>
     </div>
@@ -41,7 +41,7 @@
                     :current_file="file ? file : task.file"
                     :task="task"
                     @replace_file="replace_file($event[0], $event[1])"
-                    @complete_task="complete_task"
+                    @complete_task="$emit('complete_task')"
                     :complete_on_change_trigger="complete_on_change_trigger"
                     :save_and_complete="true"
                     :loading="save_loading"
@@ -90,16 +90,17 @@
             :label_file_list="label_list"
             :label_file_colour_map="label_file_colour_map"
             :video_mode="video_mode"
-            @change="change_current_label_file_template($event)"
+            @change="$emit('change_label_file', $event)"
             :loading="loading"
             :request_refresh_from_project="true"
             :show_visibility_toggle="true"
-            @update_label_file_visible="update_label_file_visible($event)"
-            @get_next_instance="request_next_instance"
+            @update_label_file_visible="$emit('update_label_file_visibility', $event)"
         >
         </label_select_annotation>
       </div>
     </v-flex>
+
+    <!-- TODO @get_next_instance="request_next_instance" -->
 
     <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
@@ -497,27 +498,27 @@
 
         <v-checkbox label="Show Any Text"
                     data-cy="show_any_text_checkbox"
-                    v-model="label_settings.show_text">
+                    v-model="label_settings_local.show_text">
         </v-checkbox>
 
         <v-checkbox label="Show Label Text"
                     data-cy="show_label_text_checkbox"
-                    v-model="label_settings.show_label_text">
+                    v-model="label_settings_local.show_label_text">
         </v-checkbox>
 
         <v-checkbox label="Show Attribute Text"
                     data-cy="show_attribute_text_checkbox"
-                    v-model="label_settings.show_attribute_text">
+                    v-model="label_settings_local.show_attribute_text">
         </v-checkbox>
 
         <v-checkbox label="Show Removed"
                     data-cy="show_removed_text_checkbox"
-                    v-model="label_settings.show_removed_instances">
+                    v-model="label_settings_local.show_removed_instances">
         </v-checkbox>
 
         <v-checkbox label="Allow Multiple Instance Select"
                     data-cy="show_allow_multiple_select_checkbox"
-                    v-model="label_settings.allow_multiple_instance_select">
+                    v-model="label_settings_local.allow_multiple_instance_select">
         </v-checkbox>
 
         <v-slider label="Text Font Size"
@@ -525,7 +526,7 @@
                   max=30
                   thumb-label
                   ticks
-                  v-model="label_settings.font_size">
+                  v-model="label_settings_local.font_size">
         </v-slider>
 
         <v-slider label="Target Reticle Size"
@@ -533,7 +534,7 @@
                   max=40
                   thumb-label
                   ticks
-                  v-model="label_settings.target_reticle_size">
+                  v-model="label_settings_local.target_reticle_size">
         </v-slider>
 
         <v-slider label="Vertex Size"
@@ -541,7 +542,7 @@
                   max=40
                   thumb-label
                   ticks
-                  v-model="label_settings.vertex_size">
+                  v-model="label_settings_local.vertex_size">
         </v-slider>
 
         <v-slider label="Spatial Line Size"
@@ -549,7 +550,7 @@
                   max=4
                   thumb-label
                   ticks
-                  v-model="label_settings.spatial_line_size">
+                  v-model="label_settings_local.spatial_line_size">
         </v-slider>
 
 
@@ -720,6 +721,18 @@ export default Vue.extend( {
   name: 'toolbar',
 
   props: {
+    'project_string_id': {
+
+     },
+    'task': {
+
+     },
+    'file': {
+
+     },
+    'canvas_scale_local':{
+
+    },
     'show_toolbar': {
       default: true,
       type: Boolean
@@ -737,13 +750,28 @@ export default Vue.extend( {
       default: true,
       type: Boolean
     },
+    'label_settings': {
+      default: {}
+    }
 
     
 
   },
   data() {
     return {
+      label_settings_local: {}
     }
+  },
+  watch: {
+    label_settings_local(event) {
+      this.$emit('label_settings_change', event)
+    },
+    label_settings(event){
+      this.label_settings_local = event
+    }
+  },
+  mounted() {
+    this.label_settings_local = this.$props.label_settings
   },
   computed: {
 
