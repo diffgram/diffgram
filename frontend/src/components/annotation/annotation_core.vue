@@ -738,10 +738,6 @@ import v_bg from '../vue_canvas/v_bg'
 import v_text from '../vue_canvas/v_text'
 import target_reticle from '../vue_canvas/target_reticle'
 import task_status_icons from '../regular_concrete/task_status_icons'
-import file_meta_data_card from './file_meta_data_card'
-import task_relations_card from './task_relations_card'
-import file_relations_card from './file_relations_card'
-import task_meta_data_card from './task_meta_data_card'
 import context_menu from '../context_menu/context_menu.vue';
 import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
 import issues_sidepanel from '../discussions/issues_sidepanel.vue';
@@ -792,10 +788,6 @@ export default Vue.extend( {
       canvas_current_instance,
       current_instance_template,
       canvas_instance_list,
-      file_meta_data_card,
-      file_relations_card,
-      task_meta_data_card,
-      task_relations_card,
       v_bg,
       v_text,
       target_reticle,
