@@ -205,7 +205,7 @@
     <tooltip_button
       tooltip_message="Previous File"
       v-if="!task && file && file.id"
-      @click="change_file('previous')"
+      @click="$emit('change_file', 'previous')"
       :disabled="loading || annotations_loading || full_file_loading || !file"
       color="primary"
       icon="mdi-chevron-left-circle"
@@ -219,7 +219,7 @@
     <tooltip_button
       tooltip_message="Next File"
       v-if="!task && file && file.id"
-      @click="change_file('next')"
+      @click="$emit('change_file', 'next')"
       :disabled="loading || annotations_loading ||  full_file_loading || !file"
       color="primary"
       icon="mdi-chevron-right-circle"

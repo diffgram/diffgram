@@ -31,6 +31,7 @@
                    @undo="undo()"
                    @redo="redo()"
                    @save="save()"
+                   @change_file="change_file($event)"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
