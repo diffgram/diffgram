@@ -694,12 +694,13 @@
         </v-layout>
 
 
-        <v-card-title> Task Specific </v-card-title>
+        <v-card-title v-if="task && task.id">
+            Task Specific
+        </v-card-title>
 
-        <v-layout>
+        <v-layout v-if="task && task.id">
           <tooltip_button
             tooltip_message="Jump to Next Task With Issues."
-            v-if="task && task.id"
             @click="$emit('next_issue_task')"
             :disabled="loading || annotations_loading"
             color="primary"
@@ -710,8 +711,7 @@
           </tooltip_button>
 
           <tooltip_button
-            v-if="$store.state.builder_or_trainer.mode == 'builder'
-                    && task && task.id"
+            v-if="$store.state.builder_or_trainer.mode == 'builder'"
               tooltip_message="Export This Task"
               @click="$router.push('/project/' + $store.state.project.current.project_string_id
                           + '/export?task_id=' + task.id)"
