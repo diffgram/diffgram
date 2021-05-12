@@ -37,6 +37,13 @@
                    :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
                    :canvas_scale_global_setting="canvas_scale_global_setting"
                    :full_file_loading="full_file_loading"
+                   :instance_template_selected="instance_template_selected"
+                   :instance_type="instance_type"
+                   :loading_instance_templates="loading_instance_templates"
+                   :instance_type_list="instance_type_list"
+                   :left_nav_width="left_nav_width"
+                   @change_left_nav_width="left_nav_width = $event"
+                   :view_issue_mode="view_issue_mode"
                    >
           </toolbar>
 
@@ -752,7 +759,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { cloneDeep } from 'lodash';
 import { KeypointInstance } from '../vue_canvas/instances/KeypointInstance';
 import userscript from './userscript/userscript.vue';
-import label_select_annotation from '../label/label_select_annotation.vue';
 import toolbar from './toolbar.vue'
 
 import PropType from 'vue'
@@ -796,7 +802,6 @@ export default Vue.extend( {
       task_status_icons,
       context_menu,
       userscript,
-      label_select_annotation,
       toolbar
     },
     props: {
