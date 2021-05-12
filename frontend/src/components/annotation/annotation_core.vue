@@ -604,6 +604,7 @@
           :force_new_sequence_request="force_new_sequence_request"
           :label_file_list="label_list"
           :request_clear_sequence_list_cache="request_clear_sequence_list_cache"
+          :label_settings="label_settings"
           ref="sequence_list"
           >
         </v_sequence_list>
@@ -1050,6 +1051,7 @@ export default Vue.extend( {
         filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
         filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
         instance_buffer_size: 60,
+        on_instance_creation_advance_sequence: true
       },
 
       annotations_loading: false,

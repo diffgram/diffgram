@@ -704,6 +704,11 @@
               </v-slider>
 
 
+              <v-checkbox label="On Instance Creation: Advance Sequence Number"
+                          data-cy="on_instance_creation_advance_sequence"
+                          v-model="label_settings_local.on_instance_creation_advance_sequence">
+              </v-checkbox>
+
               <!-- Note backend enforces hard
                 limit on this (ie max 1000) , so need to update
                 there too if required-->
