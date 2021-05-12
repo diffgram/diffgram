@@ -52,6 +52,22 @@
         >
     </v_is_complete>
 
+
+    <!-- Defer, In Task Context Only -->
+    <div>
+      <tooltip_button
+        v-if="task && task.id"
+        @click="$emit('task_update_toggle_deferred')"
+        :loading="save_loading"
+        :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
+        color="primary"
+        :icon_style="true"
+        icon="mdi-debug-step-over"
+        tooltip_message="Defer"
+        :bottom="true">
+      </tooltip_button>
+    </div>
+
     <v-divider
       vertical
     ></v-divider>
@@ -262,23 +278,10 @@
     ></v-divider>
 
 
-    <div>
-      <tooltip_button
-        tooltip_message="Jump to Next Task With Issues."
-        v-if="task && task.id"
-        @click="next_issue_task(task)"
-        :disabled="loading || annotations_loading"
-        color="primary"
-        icon="mdi-reload-alert"
-        :icon_style="true"
-        :bottom="true"
-      >
-      </tooltip_button>
-    </div>
     <tooltip_button
       tooltip_message="Refresh Instances"
       v-if="$store.state.user.current.is_super_admin == true"
-      @click="refresh_all"
+      @click="$emit('refresh_all_instances')"
       :loading="loading || annotations_loading"
       color="primary"
       icon="mdi-refresh"
@@ -286,23 +289,6 @@
       :bottom="true"
                     >
     </tooltip_button>
-
-
-
-    <!-- Defer -->
-  <div>
-    <tooltip_button
-      v-if="task && task.id"
-      @click="$emit('task_update_toggle_deferred')"
-      :loading="save_loading"
-      :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
-      color="primary"
-      :icon_style="true"
-      icon="mdi-debug-step-over"
-      tooltip_message="Defer"
-      :bottom="true">
-    </tooltip_button>
-  </div>
 
 
 
@@ -445,7 +431,7 @@
 
     <v_annotation_trainer_menu
         v-if="task && task.id"
-        :job_id="job_id"
+        :job_id="task.job_id"
         :task="task">
     </v_annotation_trainer_menu>
 
@@ -703,6 +689,24 @@
 
 
 
+        </v-layout>
+
+
+        <v-card-title> Task Specific </v-card-title>
+
+        <v-layout>
+          <tooltip_button
+            tooltip_message="Jump to Next Task With Issues."
+            v-if="task && task.id"
+            @click="$emit('next_issue_task')"
+            :disabled="loading || annotations_loading"
+            color="primary"
+            icon="mdi-reload-alert"
+            :icon_style="true"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </v-layout>
 
         <tooltip_button
           v-if="$store.state.builder_or_trainer.mode == 'builder'
@@ -715,10 +719,6 @@
             :bottom="true"
             color="primary">
         </tooltip_button>
-
-
-
-        </v-layout>
 
       </template>
      </button_with_menu>

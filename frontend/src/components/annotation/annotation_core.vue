@@ -33,6 +33,8 @@
                    @save="save()"
                    @change_file="change_file($event)"
                    @change_task="trigger_task_change($event, task)"
+                   @next_issue_task="next_issue_task(task)"
+                   @refresh_all_instances="refresh_all_instances"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
@@ -2743,7 +2745,7 @@ export default Vue.extend( {
 
     },
 
-    async refresh_all(){
+    async refresh_all_instances(){
       await this.get_instances();
       this.update_canvas();
       this.$forceUpdate();

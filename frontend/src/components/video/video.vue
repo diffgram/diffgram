@@ -515,7 +515,7 @@ export default Vue.extend( {
     },
     duration: function () {
        // Not sure why duration isn't available as a prop on video from backend?
-       return this.current_video.frame_rate * this.current_video.frame_count
+       return this.current_video.frame_count / this.current_video.frame_rate
     }
   },
   mounted() {
