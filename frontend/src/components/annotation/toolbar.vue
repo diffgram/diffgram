@@ -11,6 +11,33 @@
       >
   <v-toolbar-items>
 
+
+    <div v-if="task && task.id">
+
+      <ahref_seo_optimal :href="'/home/dashboard'">
+        <div class="ml-0 pt-2 pr-3 clickable">
+
+          <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+                height="30px" />
+
+        </div>
+      </ahref_seo_optimal>
+
+      <tooltip_button
+        color="primary"
+        :icon_style="true"
+        icon="mdi-home"
+        tooltip_message="Home"
+        @click="$router.push('/job/list/')"
+        :bottom="true">
+      </tooltip_button>
+
+      <v-divider
+        vertical
+      ></v-divider>
+
+    </div>
+
     <!-- Undo Redo -->
 
     <div v-if="show_undo_redo == true && command_manager">
@@ -35,6 +62,10 @@
         :bottom="true">
       </tooltip_button>
     </div>
+
+    <v-divider
+      vertical
+    ></v-divider>
 
     <!-- TODO review @replace_file="replace_file($event[0], $event[1])" -->
 
