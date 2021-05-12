@@ -13,7 +13,7 @@
 
     <!-- Undo Redo -->
 
-    <div>
+    <div v-if="show_undo_redo == true && command_manager">
       <tooltip_button
         :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0 || command_manager.command_index == undefined"
         color="primary"
@@ -26,7 +26,7 @@
 
       <tooltip_button
         :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0
-        || command_manager.command_index == command_manager.command_history.length - 1"
+          || command_manager.command_index == command_manager.command_history.length - 1"
         color="primary"
         :icon_style="true"
         icon="mdi-redo"
@@ -36,11 +36,12 @@
       </tooltip_button>
     </div>
 
+    <!-- TODO review @replace_file="replace_file($event[0], $event[1])" -->
+
     <v_is_complete v-if="file || task"
                     :project_string_id="project_string_id"
                     :current_file="file ? file : task.file"
                     :task="task"
-                    @replace_file="replace_file($event[0], $event[1])"
                     @complete_task="$emit('complete_task')"
                     :complete_on_change_trigger="complete_on_change_trigger"
                     :save_and_complete="true"
@@ -54,7 +55,6 @@
     <v-divider
       vertical
     ></v-divider>
-
 
     <div class="pt-3 pl-1 pr-2">
   
@@ -116,7 +116,7 @@
             v-model="instance_type"
             label="New Instance Type"
             :disabled="loading || loading_instance_templates"
-            @change="change_instance_type"
+            @change="$emit('change_instance_type', instance_type)"
             >
         </diffgram_select>
 
@@ -134,7 +134,7 @@
                 data-cy="edit_toggle"
                 :disabled="this.instance_select_for_issue || this.view_issue_mode"
                 v-model="draw_mode"
-                @change="edit_mode_toggle"
+                @change="$emit('edit_mode_toggle', draw_mode)"
                 :label="mode_text">
       </v-switch>
     </div>
@@ -254,7 +254,7 @@
                   step=.05
                   thumb-label="always"
                   ticks
-                  @start="canvas_scale_global_is_automatic=false"
+                  @start="$emit('canvas_scale_global_is_automatic', false)"
                   v-model="canvas_scale_global_setting">
           </v-slider>
 
@@ -652,25 +652,28 @@
 
 
 
-
-    <!-- This check is very brittle -->
-    <!-- MENU not info -->
     <v_annotation_trainer_menu
-        v-if="render_mode == 'trainer_default' || (task && task.id)"
+        v-if="task && task.id"
         :job_id="job_id"
         :task="task">
     </v_annotation_trainer_menu>
 
 
-        <!-- Export
+    <button_with_menu
+        tooltip_message="More"
+        icon="mdi-dots-vertical"
+        color="primary"
+        :commit_menu_status="true"
+        :disabled="loading"
+        :close_by_button="true"
+            >
+      <template slot="content">
 
-          For now this is limited to task
+        <v-layout column>
 
-          Could be more generic ie for files etc.
 
-          -->
         <tooltip_button
-            v-if="$store.state.builder_or_trainer.mode == 'builder'
+          v-if="$store.state.builder_or_trainer.mode == 'builder'
                   && task && task.id"
             tooltip_message="Export This Task"
             @click="$router.push('/project/' + $store.state.project.current.project_string_id
@@ -681,27 +684,12 @@
             color="primary">
         </tooltip_button>
 
-    <button_with_menu
-        tooltip_message="More"
-        icon="mdi-dots-vertical"
-        color="primary"
-        :commit_menu_status="true"
-        :disabled="loading || go_to_keyframe_loading || playing"
-        :close_by_button="true"
-            >
-        <template slot="content">
-
-          <v-layout column>
 
 
+        </v-layout>
 
-
-
-
-          </v-layout>
-
-          </template>
-      </button_with_menu>
+      </template>
+     </button_with_menu>
 
 
 
@@ -733,6 +721,12 @@ export default Vue.extend( {
     'canvas_scale_local':{
 
     },
+    'label_list': {
+
+    },
+    'label_file_colour_map': {
+
+    },
     'show_toolbar': {
       default: true,
       type: Boolean
@@ -741,9 +735,15 @@ export default Vue.extend( {
       default: null
     },
     'command_manager': {
-      default: {}
+      default: null
     },
     'save_loading': {
+      default: false
+    },
+    'loading': {
+      default: false
+    },
+    'view_only_mode': {
       default: false
     },
     'show_undo_redo': {
@@ -751,10 +751,17 @@ export default Vue.extend( {
       type: Boolean
     },
     'label_settings': {
-      default: {}
-    }
-
-    
+      default: null
+    },
+    'has_changed': {
+      default: false
+    },
+    'draw_mode': {
+      default: true
+    },
+    'canvas_scale_global_is_automatic': {},
+    'canvas_scale_global_setting': {},
+       
 
   },
   data() {
@@ -774,7 +781,13 @@ export default Vue.extend( {
     this.label_settings_local = this.$props.label_settings
   },
   computed: {
-
+    mode_text: function () {
+      if (this.draw_mode == true) {
+        return "Drawing"
+      } else {
+        return "Editing"
+      }
+    },
   },
   methods: {
 
