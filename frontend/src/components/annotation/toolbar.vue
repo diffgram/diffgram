@@ -232,7 +232,7 @@
       <tooltip_button
         tooltip_message="Previous Task"
         v-if="task"
-        @click="trigger_task_change('previous', task)"
+        @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
         icon="mdi-chevron-left-circle"
@@ -245,7 +245,7 @@
       <tooltip_button
         tooltip_message="Next Task"
         v-if="task"
-        @click="trigger_task_change('next', task)"
+        @click="$emit('change_task', 'next')"
         :disabled="loading || annotations_loading || full_file_loading || !task"
         color="primary"
         icon="mdi-chevron-right-circle"
