@@ -13,17 +13,19 @@ class InputBatch(Base):
     id = Column(Integer, primary_key = True)
 
     status = Column(String, default = 'pending')
-    percent_complete = Column(Float, default=0.0)
+    percent_complete = Column(Float, default = 0.0)
 
     # Assumes all inputs in batch have same directory information
-    directory_id = Column(Integer, ForeignKey('working_dir.id'))    # target directory
-    directory = relationship("WorkingDir", foreign_keys=[directory_id])
+    directory_id = Column(Integer, ForeignKey('working_dir.id'))  # target directory
+    directory = relationship("WorkingDir", foreign_keys = [directory_id])
 
-    source_directory_id = Column(Integer, ForeignKey('working_dir.id'))     # For internal only
-    source_directory = relationship("WorkingDir", foreign_keys=[source_directory_id])
+    source_directory_id = Column(Integer, ForeignKey('working_dir.id'))  # For internal only
+    source_directory = relationship("WorkingDir", foreign_keys = [source_directory_id])
 
     project_id = Column(Integer, ForeignKey('project.id'), nullable = False)
     project = relationship("Project", foreign_keys = [project_id])
+
+    pre_labeled_data = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -58,6 +60,20 @@ class InputBatch(Base):
             session.flush()
 
         return batch
+
+    def serialize(self):
+
+        return {
+            'id': self.id,
+            'status': self.status,
+            'directory_id': self.directory_id,
+            'source_directory_id': self.source_directory_id,
+            'member_created_id': self.member_created_id,
+            'member_updated_id': self.member_updated_id,
+            'time_completed': self.time_completed,
+            'time_created': self.time_created,
+            'time_updated': self.time_updated,
+        }
 
     def check_for_completion_and_complete(self, session):
         pending_inputs = session.query(Input).filter(
