@@ -26,7 +26,7 @@
 
       <tooltip_button
         :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0
-          || command_manager.command_index == command_manager.command_history.length - 1"
+         || command_manager.command_index == command_manager.command_history.length - 1"
         color="primary"
         :icon_style="true"
         icon="mdi-redo"
@@ -127,7 +127,7 @@
     ></v-divider>
 
           
-    <div class="pl-3 pt-3">
+    <div class="pl-3 pt-3 pr-2">
       <v-switch v-if="view_only_mode != true"
                 :label_file="mode_text"
                 data-cy="edit_toggle"
@@ -139,84 +139,9 @@
     </div>
 
 
-    <button_with_menu
-      v-if="task && task.id"
-      tooltip_message="View Task Information"
-      icon="mdi-information"
-      color="primary">
-
-      <template slot="content">
-
-        <task_meta_data_card v-if="task"
-                              :file="task.file"
-                              :video="task.file"
-                              :task="task"
-                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                              :elevation="0">
-
-        </task_meta_data_card>
-      </template>
-
-    </button_with_menu>
-    <button_with_menu
-      v-if="file && !task"
-      datacy="show_file_information"
-      tooltip_message="View File Information"
-      icon="mdi-information"
-      color="primary">
-
-      <template slot="content">
-
-        <file_meta_data_card v-if="file && !task"
-                              :video="file"
-                              :elevation="0"
-                              :file="file"
-                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-        >
-        </file_meta_data_card>
-      </template>
-
-    </button_with_menu>
-
-    <button_with_menu
-      v-if="file && !task"
-      datacy="show_linked_relations_file"
-      tooltip_message="View Task Relations"
-      icon="mdi-link-box-variant"
-      color="primary">
-
-      <template slot="content">
-
-        <file_relations_card v-if="file"
-                              :file="file"
-                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                              :elevation="0">
-
-        </file_relations_card>
-      </template>
-
-    </button_with_menu>
-
-    <button_with_menu
-      v-if="task"
-      datacy="show_linked_relations_task"
-      tooltip_message="View Task Relations"
-      icon="mdi-link-box-variant"
-      color="primary">
-
-      <template slot="content">
-
-        <task_relations_card v-if="task"
-                              :file="task.file"
-                              :task="task"
-                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                              :elevation="0">
-
-        </task_relations_card>
-      </template>
-
-    </button_with_menu>
-
+    <v-divider
+      vertical
+    ></v-divider>
 
 
 
@@ -672,6 +597,87 @@
 
         <v-layout column>
 
+          <button_with_menu
+            v-if="task && task.id"
+            tooltip_message="View Task Information"
+            icon="mdi-information"
+            color="primary">
+
+            <template slot="content">
+
+              <task_meta_data_card v-if="task"
+                                    :file="task.file"
+                                    :video="task.file"
+                                    :task="task"
+                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                    :elevation="0">
+
+              </task_meta_data_card>
+            </template>
+
+          </button_with_menu>
+          <button_with_menu
+            v-if="file && !task"
+            datacy="show_file_information"
+            tooltip_message="View File Information"
+            icon="mdi-information"
+            color="primary">
+
+            <template slot="content">
+
+              <file_meta_data_card v-if="file && !task"
+                                    :video="file"
+                                    :elevation="0"
+                                    :file="file"
+                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+              >
+              </file_meta_data_card>
+            </template>
+
+          </button_with_menu>
+
+          <button_with_menu
+            v-if="file && !task"
+            datacy="show_linked_relations_file"
+            tooltip_message="View Task Relations"
+            icon="mdi-link-box-variant"
+            color="primary">
+
+            <template slot="content">
+
+              <file_relations_card v-if="file"
+                                    :file="file"
+                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                    :elevation="0">
+
+              </file_relations_card>
+            </template>
+
+          </button_with_menu>
+
+          <button_with_menu
+            v-if="task"
+            datacy="show_linked_relations_task"
+            tooltip_message="View Task Relations"
+            icon="mdi-link-box-variant"
+            color="primary">
+
+            <template slot="content">
+
+              <task_relations_card v-if="task"
+                                    :file="task.file"
+                                    :task="task"
+                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                    :elevation="0">
+
+              </task_relations_card>
+            </template>
+
+          </button_with_menu>
+
+
+
+
 
         <tooltip_button
           v-if="$store.state.builder_or_trainer.mode == 'builder'
@@ -705,12 +711,20 @@
 
 import Vue from "vue";
 import label_select_annotation from '../label/label_select_annotation.vue';
+import file_meta_data_card from './file_meta_data_card'
+import task_relations_card from './task_relations_card'
+import file_relations_card from './file_relations_card'
+import task_meta_data_card from './task_meta_data_card'
 
 export default Vue.extend( {
 
   name: 'toolbar',
   components: {
-    label_select_annotation
+    label_select_annotation,
+    file_meta_data_card,
+    file_relations_card,
+    task_meta_data_card,
+    task_relations_card,
   },
   props: {
     'project_string_id': {
