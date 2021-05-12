@@ -184,9 +184,9 @@
 
           <template slot="content">
 
-            <v-layout column>
+            <v-layout>
 
-              <v-flex xs2 class="pa-2">
+              <v-flex class="pa-2">
                 <v-select dense
                           class="pb-0"
                           label="Speed"
@@ -195,19 +195,26 @@
                           :disabled="loading || go_to_keyframe_loading || playing">
                 </v-select>
               </v-flex>
+
+            </v-layout>
+
+
+            <v-layout class="pb-2">
           
               <tooltip_button
                   :loading="loading"
                   :disabled="go_to_keyframe_loading || playing"
                   @click="next_instance(undefined)"
                   icon="mdi-debug-step-over"
-                  tooltip_message="Jump to Next Instance"
+                  tooltip_message="Jump to Next Existing Instance"
                   color="primary"
                   :icon_style="true"
                   :large="false"
                   :bottom="true"
                 >
               </tooltip_button>
+
+              <v-spacer> </v-spacer>
 
               <tooltip_button
                   tooltip_message="Interpolate All Sequences"
@@ -219,7 +226,7 @@
                   color="primary">
               </tooltip_button>
 
-              <div class="pa-2">
+              <div>
                 <v-btn color="blue darken-1" text
                     href="https://diffgram.readme.io/docs/video-interpolation"
                     target="_blank"
