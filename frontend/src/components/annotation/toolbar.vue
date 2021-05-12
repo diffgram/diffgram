@@ -439,6 +439,8 @@
       vertical
     ></v-divider>
 
+
+    <!-- MORE -->
     <button_with_menu
         tooltip_message="More"
         icon="mdi-dots-vertical"
@@ -706,19 +708,20 @@
             :bottom="true"
           >
           </tooltip_button>
+
+          <tooltip_button
+            v-if="$store.state.builder_or_trainer.mode == 'builder'
+                    && task && task.id"
+              tooltip_message="Export This Task"
+              @click="$router.push('/project/' + $store.state.project.current.project_string_id
+                          + '/export?task_id=' + task.id)"
+              icon="mdi-export"
+              :icon_style="true"
+              :bottom="true"
+              color="primary">
+          </tooltip_button>
         </v-layout>
 
-        <tooltip_button
-          v-if="$store.state.builder_or_trainer.mode == 'builder'
-                  && task && task.id"
-            tooltip_message="Export This Task"
-            @click="$router.push('/project/' + $store.state.project.current.project_string_id
-                        + '/export?task_id=' + task.id)"
-            icon="mdi-export"
-            :icon_style="true"
-            :bottom="true"
-            color="primary">
-        </tooltip_button>
 
       </template>
      </button_with_menu>
