@@ -89,6 +89,7 @@ def new_input_batch(session,
         status = 'pending',
         project_id = project.id,
         member_created_id = member.id,
-        memeber_updated_id = member.id
+        memeber_updated_id = member.id,
+        pre_labeled_data = pre_labeled_data
     )
-    return input_batch.serialize()
+    return input_batch.serialize(), log

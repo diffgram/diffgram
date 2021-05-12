@@ -264,6 +264,15 @@
       },
 
       methods: {
+        upload_raw_media: async function(file_list){
+          this.$refs.myVueDropzone.dropzone.removeAllFiles()
+          for(const file of file_list){
+            this.$refs.myVueDropzone.manuallyAddFile(file, file.dataURL)
+            this.file_list_to_upload.push(file);
+          }
+          this.$refs.myVueDropzone.processQueue();
+          alert('upload started!')
+        },
         move_to_next_step: function(){
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
@@ -282,7 +291,7 @@
         },
         remove_file: function(file){
           console.log('this.$refs.myVueDropzone.', this.$refs.myVueDropzone)
-          this.$refs.myVueDropzone.dropzone.removeFile(file)
+          this.$refs.myVueDropzone.removeFile(file)
         },
         update_bucket_name: function (name) {
           this.bucket_name = name
@@ -290,12 +299,14 @@
         drop_zone_sending_event(file, xhr, formData) {
 
           // Doing this here since options doesn't update properly
-
+          console.log('AAAADDD PARAPMS', file);
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
 
           formData.append('video_split_duration',
             this.video_split_duration);
+          formData.append('uuid', file.uuid);
+          formData.append('input_batch_id', file.input_batch_id);
           if (this.job && this.job.id) {
             formData.append('job_id',
               this.job.id);

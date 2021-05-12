@@ -113,7 +113,6 @@ class S3Connector(Connector):
                     success=False
                 )
                 return None
-            # print('AAAAA', opts, opts.get('job_id'))
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                   session=session,

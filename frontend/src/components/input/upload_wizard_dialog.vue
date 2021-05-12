@@ -43,6 +43,7 @@
             @file_list_updated="file_list_updated"
             @change_step_no_annotations="el = 4"
             @change_step_annotations="load_annotations_file"
+            ref="new_or_update_upload_screen"
             :project_string_id="project_string_id">
 
           </new_or_update_upload_screen>
@@ -447,6 +448,7 @@
             :project_string_id="project_string_id"
             :pre_labeled_data="pre_labeled_data"
             :diffgram_schema_mapping="diffgram_schema_mapping"
+            @upload_raw_media="upload_raw_media"
           ></upload_summary>
         </v-stepper-content>
 
@@ -715,7 +717,10 @@
       },
 
       methods: {
-
+        upload_raw_media: async function(file_list){
+          console.log('UPLOAD RAW MEDIA', file_list)
+          this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
+        },
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           const textData = await file.text();
