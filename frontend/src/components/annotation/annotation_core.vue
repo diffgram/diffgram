@@ -12,17 +12,27 @@
           <toolbar :height="50"
                    :command_manager="command_manager"
                    :save_loading="save_loading"
+                   :loading="loading"
                    :view_only_mode="view_only_mode"
                    :label_settings="label_settings"
                    :project_string_id="project_string_id"
                    :task="task"
                    :file="file"
                    :canvas_scale_local="canvas_scale_local"
+                   :has_changed="has_changed"
+                   :label_list="label_list"
+                   :label_file_colour_map="label_file_colour_map"
                    @label_settings_change="label_settings = $event"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
+                   @change_instance_type="change_instance_type($event)"
+                   @edit_mode_toggle="edit_mode_toggle($event)"
                    @undo="undo()"
                    @redo="redo()"
+                   @complete_task="complete_task()"
+                   @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
+                   :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
+                   :canvas_scale_global_setting="canvas_scale_global_setting"
                    >
           </toolbar>
 
@@ -1668,14 +1678,6 @@ export default Vue.extend( {
       }
     },
 
-    mode_text: function () {
-      if (this.draw_mode == true) {
-        return "Drawing"
-      } else {
-        return "Editing"
-      }
-    },
-
     save_text() {
       if (this.save_on_change == true) {
         return "Saving automatically"
@@ -2753,7 +2755,8 @@ export default Vue.extend( {
       this.$forceUpdate();
     },
 
-    change_instance_type: function () {
+    change_instance_type: function ($event) {
+      this.instance_type = $event
       this.current_polygon_point_list = []
       this.cuboid_face_hover = undefined;
       this.$store.commit('finish_draw')
