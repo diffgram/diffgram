@@ -24,11 +24,16 @@
               v-if="item.box_instances.length > 0"
               v-text="`Boxes: ${item.box_instances.length}`">
             </v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.point_instances.length > 0" v-text="`Points: ${item.point_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4"  v-if="item.polygon_instances.length > 0" v-text="`Polygons: ${item.polygon_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4"  v-if="item.line_instances.length > 0" v-text="`Lines: ${item.line_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4"  v-if="item.cuboid_instances.length > 0" v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4"  v-if="item.ellipse_instances.length > 0" v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
+            <v-list-item-subtitle class="ml-4" v-if="item.point_instances.length > 0"
+                                  v-text="`Points: ${item.point_instances.length}`"></v-list-item-subtitle>
+            <v-list-item-subtitle class="ml-4" v-if="item.polygon_instances.length > 0"
+                                  v-text="`Polygons: ${item.polygon_instances.length}`"></v-list-item-subtitle>
+            <v-list-item-subtitle class="ml-4" v-if="item.line_instances.length > 0"
+                                  v-text="`Lines: ${item.line_instances.length}`"></v-list-item-subtitle>
+            <v-list-item-subtitle class="ml-4" v-if="item.cuboid_instances.length > 0"
+                                  v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
+            <v-list-item-subtitle class="ml-4" v-if="item.ellipse_instances.length > 0"
+                                  v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
           </v-list-item>
         </v-list-item-title>
       </v-list-item>
@@ -41,6 +46,7 @@
 <script lang="ts">
   import axios from 'axios';
   import Vue from "vue";
+  import {v4 as uuidv4} from 'uuid'
 
   export default Vue.extend({
       name: 'upload_wizard_dialog',
@@ -79,9 +85,101 @@
 
       },
       methods: {
+        create_batch: async function () {
+          try {
+            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {});
+            if (response.status === 200) {
+              this.input_batch = response.data.input_batch;
+            }
+          } catch (e) {
+
+          }
+        },
+        prepare_pre_labeled_data_payload: function (pre_labeled_data, diffgram_schema, file_list) {
+          // This function Creates the final payload accepted by the API based on the schema mapping.
+          const result = {};
+          for (const file of file_list) {
+            const uuid = uuidv4();
+            const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+            result[file.name] = [];
+            file.uuid = uuid;
+            for (const instance of file_instances) {
+              const type = instance[diffgram_schema.instance_type]
+              const diffgram_formatted_instance = {
+                file_uuid: uuid,
+                type: type,
+                file_name: instance[diffgram_schema.file_name],
+                model_id: instance[diffgram_schema.model_id],
+                run_id: instance[diffgram_schema.run_id],
+                frame_number: instance[diffgram_schema.frame_number],
+              }
+              if (type === 'box') {
+                diffgram_formatted_instance.x_max = instance[diffgram_schema.box.x_max];
+                diffgram_formatted_instance.x_min = instance[diffgram_schema.box.x_max];
+                diffgram_formatted_instance.y_max = instance[diffgram_schema.box.y_max];
+                diffgram_formatted_instance.y_min = instance[diffgram_schema.box.y_min];
+              } else if (type === 'point') {
+                diffgram_formatted_instance.points = [
+                  {x: instance[diffgram_schema.point.x], y: instance[diffgram_schema.point.y]}
+                ]
+              } else if (type === 'line') {
+                diffgram_formatted_instance.points = [
+                  {x: instance[diffgram_schema.line.x1], y: instance[diffgram_schema.line.y1]},
+                  {x: instance[diffgram_schema.line.x2], y: instance[diffgram_schema.line.y2]}
+                ]
+              } else if (type === 'polygon') {
+                diffgram_formatted_instance.points = instance[diffgram_schema.polygon.points]
+              } else if (type === 'cuboid') {
+                diffgram_formatted_instance.front_face = {
+                  top_left: {
+                    x: instance[diffgram_schema.cuboid.front_face_top_left_x],
+                    y: instance[diffgram_schema.cuboid.front_face_top_left_y]
+                  },
+                  top_right: {
+                    x: instance[diffgram_schema.cuboid.front_face_top_right_x],
+                    y: instance[diffgram_schema.cuboid.front_face_top_right_y]
+                  },
+                  bot_left: {
+                    x: instance[diffgram_schema.cuboid.front_face_bot_left_x],
+                    y: instance[diffgram_schema.cuboid.front_face_bot_left_y]
+                  },
+                  bot_right: {
+                    x: instance[diffgram_schema.cuboid.front_face_bot_right_x],
+                    y: instance[diffgram_schema.cuboid.front_face_bot_right_y]
+                  },
+                }
+                diffgram_formatted_instance.rear_face = {
+                  top_left: {
+                    x: instance[diffgram_schema.cuboid.rear_face_top_left_x],
+                    y: instance[diffgram_schema.cuboid.rear_face_top_left_y]
+                  },
+                  top_right: {
+                    x: instance[diffgram_schema.cuboid.rear_face_top_right_x],
+                    y: instance[diffgram_schema.cuboid.rear_face_top_right_y]
+                  },
+                  bot_left: {
+                    x: instance[diffgram_schema.cuboid.rear_face_bot_left_x],
+                    y: instance[diffgram_schema.cuboid.rear_face_bot_left_y]
+                  },
+                  bot_right: {
+                    x: instance[diffgram_schema.cuboid.rear_face_bot_right_x],
+                    y: instance[diffgram_schema.cuboid.rear_face_bot_right_y]
+                  },
+                }
+              } else if(type === 'ellipse'){
+                diffgram_formatted_instance.center_x = instance[diffgram_schema.ellipse.center_x];
+                diffgram_formatted_instance.center_y = instance[diffgram_schema.ellipse.center_x];
+                diffgram_formatted_instance.angle = instance[diffgram_schema.ellipse.angle];
+                diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
+                diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
+              }
+
+            }
+          }
+        },
         start_upload: function () {
           alert('start upload');
-          this.close();
+
         },
         compute_attached_instance_per_file: function () {
           for (let i = 0; i < this.$props.file_list.length; i++) {

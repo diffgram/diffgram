@@ -519,7 +519,7 @@
             file_name: null,
             frame_number: null,
             model_id: null,
-            model_rune_id: null,
+            model_run_id: null,
             box: {
               x_min: null,
               x_max: null,
