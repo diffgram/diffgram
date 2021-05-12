@@ -144,6 +144,30 @@
     ></v-divider>
 
 
+    <tooltip_button
+      @click="$emit('save')"
+      datacy="save_button"
+      :loading="save_loading"
+      :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
+      color="primary"
+      icon="save"
+      tooltip_message="Save Image / Frame"
+      :icon_style="true"
+      :bottom="true">
+    </tooltip_button>
+
+    <div class="has-changed">
+      <span v-if="save_loading"> Saving. </span>
+      <span v-else>
+        <span v-if="has_changed">Changes Detected...</span>
+        <span v-else>Changes Saved.</span>
+      </span>
+    </div>
+  
+    <v-divider
+      vertical
+    ></v-divider>
+
 
     <!-- Curious about displaying the "current size" somewhere but
           haven't found a great position to do it
@@ -154,52 +178,6 @@
       Because the right panel overflows on top of menu bar
       this is far left so at least a a person can get back / undo it...
         -->
-    <button_with_menu
-      tooltip_message="Resize Panels"
-      icon="mdi-resize"
-      color="primary">
-
-      <template slot="content">
-        <v-layout column>
-
-          <v-card-title>
-            Panel Sizes
-          </v-card-title>
-
-          <v-checkbox
-                  label="Auto Size Canvas"
-                  v-model="canvas_scale_global_is_automatic">
-          </v-checkbox>
-
-          <v-slider
-                  label="Canvas"
-                  min=.2
-                  max=2
-                  step=.05
-                  thumb-label="always"
-                  ticks
-                  @start="$emit('canvas_scale_global_is_automatic', false)"
-                  v-model="canvas_scale_global_setting">
-          </v-slider>
-
-          <v-slider label="Left"
-                    min=200
-                    step=50
-                    max=750
-                    thumb-label="always"
-                    ticks
-                    @change="
-                      $store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width]),
-                      $emit('change_left_nav_width', $event)"
-                    v-model="left_nav_width">
-          </v-slider>
-
-
-        </v-layout>
-      </template>
-
-    </button_with_menu>
-
 
 
     <!-- QA in progress
@@ -278,6 +256,12 @@
 
     </div>
 
+
+    <v-divider
+      vertical
+    ></v-divider>
+
+
     <div>
       <tooltip_button
         tooltip_message="Jump to Next Task With Issues."
@@ -321,20 +305,6 @@
   </div>
 
 
-  <div>
-    <tooltip_button
-      @click="$emit('save')"
-      datacy="save_button"
-      :loading="save_loading"
-      :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
-      color="primary"
-      icon="save"
-      tooltip_message="Save Image / Frame"
-      :icon_style="true"
-      :bottom="true">
-    </tooltip_button>
-
-  </div>
 
   <!--  Moving away from default of multi select here, so hide for now -->
   <!--
@@ -349,7 +319,41 @@
   </tooltip_button>
   -->
 
-  <button_with_menu
+
+
+ <button_with_menu
+    tooltip_message="Brightness, Contrast, Filters"
+    color="primary"
+    icon="exposure"
+        >
+    <template slot="content">
+
+      <v-layout column>
+
+        <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
+                  min="50"
+                  max="200">
+        </v-slider>
+
+        <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
+                  min="50"
+                  max="200"></v-slider>
+
+        <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
+                  min="0"
+                  max="100"></v-slider>
+
+        <v-btn icon @click="filter_reset()">
+          <v-icon color="primary"> autorenew </v-icon>
+        </v-btn>
+
+      </v-layout>
+
+    </template>
+
+  </button_with_menu>
+
+    <button_with_menu
     tooltip_message="Hotkeys"
     v-if="view_only_mode != true"
     color="primary"
@@ -407,128 +411,6 @@
 
   </button_with_menu>
 
-  <!-- Settings -->
-  <button_with_menu
-    tooltip_message="Annotation Settings"
-    color="primary"
-    datacy="advanced_setting"
-    icon="settings"
-    tooltip_direction="bottom"
-        >
-    <template slot="content">
-      <v-layout column data-cy="annotation_setting_menu">
-
-        <v-card-title>
-          Settings
-        </v-card-title>
-
-        <v-checkbox label="Show Any Text"
-                    data-cy="show_any_text_checkbox"
-                    v-model="label_settings_local.show_text">
-        </v-checkbox>
-
-        <v-checkbox label="Show Label Text"
-                    data-cy="show_label_text_checkbox"
-                    v-model="label_settings_local.show_label_text">
-        </v-checkbox>
-
-        <v-checkbox label="Show Attribute Text"
-                    data-cy="show_attribute_text_checkbox"
-                    v-model="label_settings_local.show_attribute_text">
-        </v-checkbox>
-
-        <v-checkbox label="Show Removed"
-                    data-cy="show_removed_text_checkbox"
-                    v-model="label_settings_local.show_removed_instances">
-        </v-checkbox>
-
-        <v-checkbox label="Allow Multiple Instance Select"
-                    data-cy="show_allow_multiple_select_checkbox"
-                    v-model="label_settings_local.allow_multiple_instance_select">
-        </v-checkbox>
-
-        <v-slider label="Text Font Size"
-                  min=10
-                  max=30
-                  thumb-label
-                  ticks
-                  v-model="label_settings_local.font_size">
-        </v-slider>
-
-        <v-slider label="Target Reticle Size"
-                  min=5
-                  max=40
-                  thumb-label
-                  ticks
-                  v-model="label_settings_local.target_reticle_size">
-        </v-slider>
-
-        <v-slider label="Vertex Size"
-                  min=0
-                  max=40
-                  thumb-label
-                  ticks
-                  v-model="label_settings_local.vertex_size">
-        </v-slider>
-
-        <v-slider label="Spatial Line Size"
-                  min=0
-                  max=4
-                  thumb-label
-                  ticks
-                  v-model="label_settings_local.spatial_line_size">
-        </v-slider>
-
-
-        <!-- Note backend enforces hard
-          limit on this (ie max 1000) , so need to update
-          there too if required-->
-        <v-slider label="Video Instance Buffer"
-                  min=15
-                  max=300
-                  thumb-label
-                  ticks
-                  v-model="label_settings_local.instance_buffer_size">
-        </v-slider>
-
-      </v-layout>
-    </template>
-
-  </button_with_menu>
-
-
-
-    <button_with_menu
-    tooltip_message="Brightness, Contrast, Filters"
-    color="primary"
-    icon="exposure"
-        >
-    <template slot="content">
-
-      <v-layout column>
-
-        <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
-                  min="50"
-                  max="200">
-        </v-slider>
-
-        <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
-                  min="50"
-                  max="200"></v-slider>
-
-        <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
-                  min="0"
-                  max="100"></v-slider>
-
-        <v-btn icon @click="filter_reset()">
-          <v-icon color="primary"> autorenew </v-icon>
-        </v-btn>
-
-      </v-layout>
-
-    </template>
-
-  </button_with_menu>
 
   <!-- WIP -->
   <!--
@@ -559,14 +441,6 @@
   -->
 
 
-  <span class="has-changed">
-    <span v-if="save_loading"> Saving. </span>
-    <span v-else>
-      <span v-if="has_changed">Changes detected...</span>
-      <span v-else>Changes saved.</span>
-    </span>
-  </span>
-
 
 
     <v_annotation_trainer_menu
@@ -575,6 +449,9 @@
         :task="task">
     </v_annotation_trainer_menu>
 
+    <v-divider
+      vertical
+    ></v-divider>
 
     <button_with_menu
         tooltip_message="More"
@@ -674,6 +551,56 @@
           </button_with_menu>
 
 
+          <button_with_menu
+            tooltip_message="Resize Panels"
+            icon="mdi-resize"
+            color="primary">
+
+            <template slot="content">
+              <v-layout column>
+
+                <v-card-title>
+                  Panel Sizes
+                </v-card-title>
+
+                <v-checkbox
+                        label="Auto Size Canvas"
+                        v-model="canvas_scale_global_is_automatic"
+                        @change="$emit('canvas_scale_global_is_automatic', canvas_scale_global_is_automatic)"
+                            >
+                </v-checkbox>
+
+                <v-slider
+                        label="Canvas"
+                        min=.2
+                        max=2
+                        step=.05
+                        thumb-label="always"
+                        ticks
+                        @input="$emit('canvas_scale_global_is_automatic', false),
+                                $emit('canvas_scale_global_setting', canvas_scale_global_setting)"
+                        v-model="canvas_scale_global_setting">
+                </v-slider>
+
+                <v-slider label="Left"
+                          min=200
+                          step=50
+                          max=750
+                          thumb-label="always"
+                          ticks
+                          @input="
+                            $store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width]),
+                            $emit('change_left_nav_width', left_nav_width)"
+                          v-model="left_nav_width">
+                </v-slider>
+
+
+              </v-layout>
+            </template>
+
+          </button_with_menu>
+
+
           <!-- Clear unsaved -->
           <tooltip_button
             @click="$emit('clear__new_and_no_ids')"
@@ -684,6 +611,96 @@
             tooltip_direction="bottom"
             :small="true">
         </tooltip_button>
+
+        <!-- Settings -->
+        <button_with_menu
+          tooltip_message="Annotation Settings"
+          color="primary"
+          datacy="advanced_setting"
+          icon="settings"
+          tooltip_direction="bottom"
+              >
+          <template slot="content">
+            <v-layout column data-cy="annotation_setting_menu">
+
+              <v-card-title>
+                Settings
+              </v-card-title>
+
+              <v-checkbox label="Show Any Text"
+                          data-cy="show_any_text_checkbox"
+                          v-model="label_settings_local.show_text">
+              </v-checkbox>
+
+              <v-checkbox label="Show Label Text"
+                          data-cy="show_label_text_checkbox"
+                          v-model="label_settings_local.show_label_text">
+              </v-checkbox>
+
+              <v-checkbox label="Show Attribute Text"
+                          data-cy="show_attribute_text_checkbox"
+                          v-model="label_settings_local.show_attribute_text">
+              </v-checkbox>
+
+              <v-checkbox label="Show Removed"
+                          data-cy="show_removed_text_checkbox"
+                          v-model="label_settings_local.show_removed_instances">
+              </v-checkbox>
+
+              <v-checkbox label="Allow Multiple Instance Select"
+                          data-cy="show_allow_multiple_select_checkbox"
+                          v-model="label_settings_local.allow_multiple_instance_select">
+              </v-checkbox>
+
+              <v-slider label="Text Font Size"
+                        min=10
+                        max=30
+                        thumb-label
+                        ticks
+                        v-model="label_settings_local.font_size">
+              </v-slider>
+
+              <v-slider label="Target Reticle Size"
+                        min=5
+                        max=40
+                        thumb-label
+                        ticks
+                        v-model="label_settings_local.target_reticle_size">
+              </v-slider>
+
+              <v-slider label="Vertex Size"
+                        min=0
+                        max=40
+                        thumb-label
+                        ticks
+                        v-model="label_settings_local.vertex_size">
+              </v-slider>
+
+              <v-slider label="Spatial Line Size"
+                        min=0
+                        max=4
+                        thumb-label
+                        ticks
+                        v-model="label_settings_local.spatial_line_size">
+              </v-slider>
+
+
+              <!-- Note backend enforces hard
+                limit on this (ie max 1000) , so need to update
+                there too if required-->
+              <v-slider label="Video Instance Buffer"
+                        min=15
+                        max=300
+                        thumb-label
+                        ticks
+                        v-model="label_settings_local.instance_buffer_size">
+              </v-slider>
+
+            </v-layout>
+          </template>
+
+        </button_with_menu>
+
 
 
 
