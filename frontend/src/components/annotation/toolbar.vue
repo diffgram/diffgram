@@ -1,0 +1,760 @@
+<template>
+<div v-cloak>
+
+<v-toolbar
+      v-if="show_toolbar"
+      dense
+      elevation="1"
+      fixed
+      :height="height"
+      style="overflow: hidden; padding:0"
+      >
+  <v-toolbar-items>
+
+    <!-- Undo Redo -->
+
+    <div>
+      <tooltip_button
+        :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0 || command_manager.command_index == undefined"
+        color="primary"
+        :icon_style="true"
+        icon="mdi-undo"
+        tooltip_message="Undo (ctrl+z)"
+        @click="$emit('undo')"
+        :bottom="true">
+      </tooltip_button>
+
+      <tooltip_button
+        :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0
+        || command_manager.command_index == command_manager.command_history.length - 1"
+        color="primary"
+        :icon_style="true"
+        icon="mdi-redo"
+        tooltip_message="Redo (ctrl+y)"
+        @click="redo"
+        :bottom="true">
+      </tooltip_button>
+    </div>
+
+    <v_is_complete v-if="file || task"
+                    :project_string_id="project_string_id"
+                    :current_file="file ? file : task.file"
+                    :task="task"
+                    @replace_file="replace_file($event[0], $event[1])"
+                    @complete_task="complete_task"
+                    :complete_on_change_trigger="complete_on_change_trigger"
+                    :save_and_complete="true"
+                    :loading="save_loading"
+                    :disabled="save_loading || view_only_mode || (!file && !task)"
+                    :view_only_mode="view_only_mode"
+                    :task_id="task ? task.id : undefined"
+                    >
+    </v_is_complete>
+
+    <v-divider
+      vertical
+    ></v-divider>
+
+
+    <div class="pt-3 pl-1 pr-2">
+  
+      <v-tooltip bottom
+                  color="info"
+                  >
+        <template v-slot:activator="{ on }">
+          <v-chip v-on="on"
+                  color="white"
+                  small
+                  text-color="primary">
+            <h3> {{Math.round((canvas_scale_local) * 100)}}% </h3>
+          </v-chip>
+        </template>
+
+        <v-alert type="info"
+                  >
+          While over image <kbd>Scroll</kbd> to Zoom.
+        </v-alert>
+
+      </v-tooltip>
+
+    </div>
+
+    <v-divider
+      vertical
+    ></v-divider>
+
+    <v-flex xs2>
+      <div class="pl-3 pr-3 pt-4">
+        <label_select_annotation
+            :project_string_id="project_string_id"
+            :label_file_list="label_list"
+            :label_file_colour_map="label_file_colour_map"
+            :video_mode="video_mode"
+            @change="change_current_label_file_template($event)"
+            :loading="loading"
+            :request_refresh_from_project="true"
+            :show_visibility_toggle="true"
+            @update_label_file_visible="update_label_file_visible($event)"
+            @get_next_instance="request_next_instance"
+        >
+        </label_select_annotation>
+      </div>
+    </v-flex>
+
+    <!-- TODO in task mode, this can be force set by Schema
+          and optionally hidden-->
+
+    <v-flex xs2>
+      <div class="pl-3 pr-3 pt-4">
+
+        <!-- instance_selector -->
+          <diffgram_select
+            v-if="view_only_mode != true"
+            :item_list="instance_type_list"
+            data_cy="instance-type-select"
+            v-model="instance_type"
+            label="New Instance Type"
+            :disabled="loading || loading_instance_templates"
+            @change="change_instance_type"
+            >
+        </diffgram_select>
+
+      </div>
+    </v-flex>
+          
+    <v-divider
+      vertical
+    ></v-divider>
+
+          
+    <div class="pl-3 pt-3">
+      <v-switch v-if="view_only_mode != true"
+                :label_file="mode_text"
+                data-cy="edit_toggle"
+                :disabled="this.instance_select_for_issue || this.view_issue_mode"
+                v-model="draw_mode"
+                @change="edit_mode_toggle"
+                :label="mode_text">
+      </v-switch>
+    </div>
+
+
+    <button_with_menu
+      v-if="task && task.id"
+      tooltip_message="View Task Information"
+      icon="mdi-information"
+      color="primary">
+
+      <template slot="content">
+
+        <task_meta_data_card v-if="task"
+                              :file="task.file"
+                              :video="current_video"
+                              :task="task"
+                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                              :elevation="0">
+
+        </task_meta_data_card>
+      </template>
+
+    </button_with_menu>
+    <button_with_menu
+      v-if="file && !task"
+      datacy="show_file_information"
+      tooltip_message="View File Information"
+      icon="mdi-information"
+      color="primary">
+
+      <template slot="content">
+
+        <file_meta_data_card v-if="file && !task"
+                              :video="current_video"
+                              :elevation="0"
+                              :file="file"
+                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+        >
+
+        </file_meta_data_card>
+      </template>
+
+    </button_with_menu>
+    <button_with_menu
+      v-if="file && !task"
+      datacy="show_linked_relations_file"
+      tooltip_message="View Task Relations"
+      icon="mdi-link-box-variant"
+      color="primary">
+
+      <template slot="content">
+
+        <file_relations_card v-if="file"
+                              :file="file"
+                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                              :elevation="0">
+
+        </file_relations_card>
+      </template>
+
+    </button_with_menu>
+
+    <button_with_menu
+      v-if="task"
+      datacy="show_linked_relations_task"
+      tooltip_message="View Task Relations"
+      icon="mdi-link-box-variant"
+      color="primary">
+
+      <template slot="content">
+
+        <task_relations_card v-if="task"
+                              :file="task.file"
+                              :task="task"
+                              :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                              :elevation="0">
+
+        </task_relations_card>
+      </template>
+
+    </button_with_menu>
+
+
+
+
+    <!-- Curious about displaying the "current size" somewhere but
+          haven't found a great position to do it
+
+      Would prefer this to be maybe a drag operation but this seems reasonable for now
+      If we include this on the actual panel then it moves funny
+
+      Because the right panel overflows on top of menu bar
+      this is far left so at least a a person can get back / undo it...
+        -->
+    <button_with_menu
+      tooltip_message="Resize Panels"
+      icon="mdi-resize"
+      color="primary">
+
+      <template slot="content">
+        <v-layout column>
+
+          <v-card-title>
+            Panel Sizes
+          </v-card-title>
+
+          <v-checkbox
+                  label="Auto Size Canvas"
+                  v-model="canvas_scale_global_is_automatic">
+          </v-checkbox>
+
+          <v-slider
+                  label="Canvas"
+                  min=.2
+                  max=2
+                  step=.05
+                  thumb-label="always"
+                  ticks
+                  @start="canvas_scale_global_is_automatic=false"
+                  v-model="canvas_scale_global_setting">
+          </v-slider>
+
+          <v-slider label="Left"
+                    min=200
+                    step=50
+                    max=750
+                    thumb-label="always"
+                    ticks
+                    @change="$store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width])"
+                    v-model="left_nav_width">
+          </v-slider>
+
+
+        </v-layout>
+      </template>
+
+    </button_with_menu>
+
+
+
+    <!-- QA in progress
+        https://stackoverflow.com/questions/58809023/vuetify-same-slot-content-for-multiple-template-slots-->
+
+    <!-- Caution, the item-text here seems to define the return type to
+            v-model, which we use for important things.-->
+    <div>
+      <tooltip_button
+        tooltip_message="Edit Instance Template"
+        v-if="instance_template_selected && is_keypoint_template"
+        @click="open_instance_template_dialog"
+        color="primary"
+        icon="mdi-vector-polyline-edit"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </div>
+
+
+  <!--  without this div the order of the two buttons randomly swaps
+    -->
+  <div>
+    <tooltip_button
+      tooltip_message="Previous File"
+      v-if="!task && file && file.id"
+      @click="change_file('previous')"
+      :disabled="loading || annotations_loading || full_file_loading || !file"
+      color="primary"
+      icon="mdi-chevron-left-circle"
+      :icon_style="true"
+      :bottom="true"
+                    >
+    </tooltip_button>
+
+      <!-- TODO Move some of disabled logic into functions don't like having
+            so much of it here as it gets more complext -->
+    <tooltip_button
+      tooltip_message="Next File"
+      v-if="!task && file && file.id"
+      @click="change_file('next')"
+      :disabled="loading || annotations_loading ||  full_file_loading || !file"
+      color="primary"
+      icon="mdi-chevron-right-circle"
+      :icon_style="true"
+      :bottom="true"
+                    >
+    </tooltip_button>
+  </div>
+    <div>
+      <tooltip_button
+        tooltip_message="Previous Task"
+        v-if="task"
+        @click="trigger_task_change('previous', task)"
+        :disabled="loading || annotations_loading ||  full_file_loading || !task"
+        color="primary"
+        icon="mdi-chevron-left-circle"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </div>
+    <div>
+      <tooltip_button
+        tooltip_message="Next Task"
+        v-if="task"
+        @click="trigger_task_change('next', task)"
+        :disabled="loading || annotations_loading || full_file_loading || !task"
+        color="primary"
+        icon="mdi-chevron-right-circle"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+
+    </div>
+
+    <div>
+      <tooltip_button
+        tooltip_message="Jump to Next Task With Issues."
+        v-if="task && task.id"
+        @click="next_issue_task(task)"
+        :disabled="loading || annotations_loading"
+        color="primary"
+        icon="mdi-reload-alert"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </div>
+    <tooltip_button
+      tooltip_message="Refresh Instances"
+      v-if="$store.state.user.current.is_super_admin == true"
+      @click="refresh_all"
+      :loading="loading || annotations_loading"
+      color="primary"
+      icon="mdi-refresh"
+      :icon_style="true"
+      :bottom="true"
+                    >
+    </tooltip_button>
+
+
+
+    <!-- Defer -->
+  <div>
+    <tooltip_button
+      v-if="task && task.id"
+      @click="task_update('toggle_deferred')"
+      :loading="save_loading"
+      :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
+      color="primary"
+      :icon_style="true"
+      icon="mdi-debug-step-over"
+      tooltip_message="Defer"
+      :bottom="true">
+    </tooltip_button>
+  </div>
+
+
+  <div>
+    <tooltip_button
+      @click="save"
+      datacy="save_button"
+      :loading="save_loading"
+      :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
+      color="primary"
+      icon="save"
+      tooltip_message="Save Image / Frame"
+      :icon_style="true"
+      :bottom="true">
+    </tooltip_button>
+
+  </div>
+
+  <!--  Moving away from default of multi select here, so hide for now -->
+  <!--
+  <tooltip_button
+      @click="delete_instance"
+      :disabled="draw_mode"
+      color="primary"
+      icon="delete"
+      :icon_style="true"
+      tooltip_message="Delete instances selected."
+      :bottom="true">
+  </tooltip_button>
+  -->
+
+  <button_with_menu
+    tooltip_message="Hotkeys"
+    v-if="view_only_mode != true"
+    color="primary"
+    icon="mdi-keyboard-settings"
+    :close_by_button="true"
+        >
+
+    <template slot="content">
+      <v-layout column>
+
+        <h2> General </h2>
+
+        Right click an instance to bring up context menu.
+
+        <p> <kbd>Esc</kbd> Toggle draw and edit mode </p>
+
+        <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
+
+        <p> <kbd>1 - 9</kbd> Change label </p>
+
+        <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
+        <p> <kbd>Ctrl</kbd> + <kbd>c</kbd> Copy Selected Instance </p>
+        <p> <kbd>Ctrl</kbd> + <kbd>v</kbd> Paste Selected Instance </p>
+
+        <p> <kbd>C</kbd> Complete. Save, Mark as Complete, Go to Next.</p>
+
+        <h2> Video </h2>
+
+        <p> <kbd>Spacebar</kbd> Play/Pause Video </p>
+
+        <p> <kbd>←</kbd>,<kbd>→</kbd> or <kbd>A</kbd>, <kbd>D</kbd> Previous or Next Frame</p>
+
+        <p> <kbd>F</kbd> New Sequence </p>
+        <p> <kbd>Shift</kbd> + <kbd>n</kbd> Jump to Next Instance </p>
+        <h2> Image / Frame </h2>
+        <p> <kbd>S</kbd> Save </p>
+
+        <p> <kbd>Delete</kbd> Deletes selected instances </p>
+
+        <p> <kbd>Mouse wheel</kbd> Zoom / pan </p>
+
+        <p> <kbd>Ctrl</kbd> Pan Only </p>
+
+        <h2> Polygons </h2>
+        <p> <kbd>Enter</kbd> Complete polygon (Or click first point again)  </p>
+
+        <p> <b>Hold </b> <kbd>Shift</kbd>
+          🔥 Turbo mode, auto places point as you move mouse.
+          <br />
+          Can switch between this mode and normal as needed by
+          releasing shift.</p>
+
+      </v-layout>
+    </template>
+
+  </button_with_menu>
+
+  <!-- Settings -->
+  <button_with_menu
+    tooltip_message="Annotation Settings"
+    color="primary"
+    datacy="advanced_setting"
+    icon="settings"
+    tooltip_direction="bottom"
+        >
+    <template slot="content">
+      <v-layout column data-cy="annotation_setting_menu">
+
+        <v-card-title>
+          Settings
+        </v-card-title>
+
+        <v-checkbox label="Show Any Text"
+                    data-cy="show_any_text_checkbox"
+                    v-model="label_settings.show_text">
+        </v-checkbox>
+
+        <v-checkbox label="Show Label Text"
+                    data-cy="show_label_text_checkbox"
+                    v-model="label_settings.show_label_text">
+        </v-checkbox>
+
+        <v-checkbox label="Show Attribute Text"
+                    data-cy="show_attribute_text_checkbox"
+                    v-model="label_settings.show_attribute_text">
+        </v-checkbox>
+
+        <v-checkbox label="Show Removed"
+                    data-cy="show_removed_text_checkbox"
+                    v-model="label_settings.show_removed_instances">
+        </v-checkbox>
+
+        <v-checkbox label="Allow Multiple Instance Select"
+                    data-cy="show_allow_multiple_select_checkbox"
+                    v-model="label_settings.allow_multiple_instance_select">
+        </v-checkbox>
+
+        <v-slider label="Text Font Size"
+                  min=10
+                  max=30
+                  thumb-label
+                  ticks
+                  v-model="label_settings.font_size">
+        </v-slider>
+
+        <v-slider label="Target Reticle Size"
+                  min=5
+                  max=40
+                  thumb-label
+                  ticks
+                  v-model="label_settings.target_reticle_size">
+        </v-slider>
+
+        <v-slider label="Vertex Size"
+                  min=0
+                  max=40
+                  thumb-label
+                  ticks
+                  v-model="label_settings.vertex_size">
+        </v-slider>
+
+        <v-slider label="Spatial Line Size"
+                  min=0
+                  max=4
+                  thumb-label
+                  ticks
+                  v-model="label_settings.spatial_line_size">
+        </v-slider>
+
+
+        <!-- Note backend enforces hard
+          limit on this (ie max 1000) , so need to update
+          there too if required-->
+        <v-slider label="Video Instance Buffer"
+                  min=15
+                  max=300
+                  thumb-label
+                  ticks
+                  v-model="instance_buffer_size">
+        </v-slider>
+
+      </v-layout>
+    </template>
+
+  </button_with_menu>
+
+
+
+    <button_with_menu
+    tooltip_message="Brightness, Contrast, Filters"
+    color="primary"
+    icon="exposure"
+        >
+    <template slot="content">
+
+      <v-layout column>
+
+        <v-slider v-model="filter_brightness" prepend-icon="brightness_4"
+                  min="50"
+                  max="200">
+        </v-slider>
+
+        <v-slider v-model="filter_contrast" prepend-icon="exposure"
+                  min="50"
+                  max="200"></v-slider>
+
+        <v-slider v-model="filter_grayscale" prepend-icon="gradient"
+                  min="0"
+                  max="100"></v-slider>
+
+        <v-btn icon @click="filter_reset">
+          <v-icon color="primary"> autorenew </v-icon>
+        </v-btn>
+
+      </v-layout>
+
+    </template>
+
+  </button_with_menu>
+
+  <!-- WIP -->
+  <!--
+  <button_with_menu
+    tooltip_message="Go To File"
+    icon="mdi-arrow-up"
+    color="primary"
+    :commit_menu_status="true"
+    :disabled="any_loading"
+    :close_by_button="true"
+        >
+
+    <template slot="content">
+
+        <v-text-field label="Go to File"
+                      type="number"
+                      v-model.number="user_requested_file_id">
+        </v-text-field>
+
+        <v-btn :disabled="loading"
+                color="primary"
+                @click="go_to_file">
+          Go
+        </v-btn>
+
+      </template>
+    </button_with_menu>
+  -->
+
+    <tooltip_button
+      @click="clear__new_and_no_ids()"
+      tooltip_message="Clear Unsaved"
+      icon="mdi-close-circle-multiple"
+      :icon_style="true"
+      color="primary"
+      tooltip_direction="bottom"
+      :small="true">
+  </tooltip_button>
+
+  <span class="has-changed">
+    <span v-if="save_loading"> Saving. </span>
+    <span v-else>
+      <span v-if="has_changed">Changes detected...</span>
+      <span v-else>Changes saved.</span>
+    </span>
+  </span>
+
+
+
+
+    <!-- This check is very brittle -->
+    <!-- MENU not info -->
+    <v_annotation_trainer_menu
+        v-if="render_mode == 'trainer_default' || (task && task.id)"
+        :job_id="job_id"
+        :task="task">
+    </v_annotation_trainer_menu>
+
+
+        <!-- Export
+
+          For now this is limited to task
+
+          Could be more generic ie for files etc.
+
+          -->
+        <tooltip_button
+            v-if="$store.state.builder_or_trainer.mode == 'builder'
+                  && task && task.id"
+            tooltip_message="Export This Task"
+            @click="$router.push('/project/' + $store.state.project.current.project_string_id
+                        + '/export?task_id=' + task.id)"
+            icon="mdi-export"
+            :icon_style="true"
+            :bottom="true"
+            color="primary">
+        </tooltip_button>
+
+    <button_with_menu
+        tooltip_message="More"
+        icon="mdi-dots-vertical"
+        color="primary"
+        :commit_menu_status="true"
+        :disabled="loading || go_to_keyframe_loading || playing"
+        :close_by_button="true"
+            >
+        <template slot="content">
+
+          <v-layout column>
+
+
+
+
+
+
+          </v-layout>
+
+          </template>
+      </button_with_menu>
+
+
+
+      </v-toolbar-items>
+    </v-toolbar>
+
+
+</div>
+</template>
+
+<script lang="ts">
+
+import Vue from "vue";
+
+export default Vue.extend( {
+
+  name: 'toolbar',
+
+  props: {
+    'show_toolbar': {
+      default: true,
+      type: Boolean
+    },
+    'height': {
+      default: null
+    },
+    'command_manager': {
+      default: {}
+    },
+    'save_loading': {
+      default: false
+    },
+    'show_undo_redo': {
+      default: true,
+      type: Boolean
+    },
+
+    
+
+  },
+  data() {
+    return {
+    }
+  },
+  computed: {
+
+  },
+  methods: {
+
+    on_image_error: function (event) {
+
+    }
+
+  }
+}
+
+) </script>
