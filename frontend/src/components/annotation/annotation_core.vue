@@ -12,7 +12,18 @@
           <toolbar :height="50"
                    :command_manager="command_manager"
                    :save_loading="save_loading"
-                   @undo="undo()">
+                   :view_only_mode="view_only_mode"
+                   :label_settings="label_settings"
+                   :project_string_id="project_string_id"
+                   :task="task"
+                   :file="file"
+                   :canvas_scale_local="canvas_scale_local"
+                   @label_settings_change="label_settings = $event"
+                   @change_label_file="change_current_label_file_template($event)"
+                   @update_label_file_visibility="update_label_file_visible($event)"
+                   @undo="undo()"
+                   @redo="redo()"
+                   >
           </toolbar>
 
         <v-alert v-if="view_only_mode == true"
