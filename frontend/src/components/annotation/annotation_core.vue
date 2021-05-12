@@ -44,6 +44,7 @@
                    :instance_type_list="instance_type_list"
                    :left_nav_width="left_nav_width"
                    @change_left_nav_width="left_nav_width = $event"
+                   @canvas_scale_global_setting="canvas_scale_global_setting = $event"
                    :view_issue_mode="view_issue_mode"
                    >
           </toolbar>
