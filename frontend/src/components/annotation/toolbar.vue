@@ -38,18 +38,18 @@
 
     <!-- TODO review @replace_file="replace_file($event[0], $event[1])" -->
 
-    <v_is_complete v-if="file || task"
-                    :project_string_id="project_string_id"
-                    :current_file="file ? file : task.file"
-                    :task="task"
-                    @complete_task="$emit('complete_task')"
-                    :complete_on_change_trigger="complete_on_change_trigger"
-                    :save_and_complete="true"
-                    :loading="save_loading"
-                    :disabled="save_loading || view_only_mode || (!file && !task)"
-                    :view_only_mode="view_only_mode"
-                    :task_id="task ? task.id : undefined"
-                    >
+    <v_is_complete
+        v-if="file || task"
+        :project_string_id="project_string_id"
+        :current_file="file ? file : task.file"
+        :task="task"
+        @complete_task="$emit('complete_task')"
+        :save_and_complete="true"
+        :loading="save_loading"
+        :disabled="save_loading || view_only_mode || (!file && !task)"
+        :view_only_mode="view_only_mode"
+        :task_id="task ? task.id : undefined"
+        >
     </v_is_complete>
 
     <v-divider
@@ -89,7 +89,6 @@
             :project_string_id="project_string_id"
             :label_file_list="label_list"
             :label_file_colour_map="label_file_colour_map"
-            :video_mode="video_mode"
             @change="$emit('change_label_file', $event)"
             :loading="loading"
             :request_refresh_from_project="true"
@@ -150,7 +149,7 @@
 
         <task_meta_data_card v-if="task"
                               :file="task.file"
-                              :video="current_video"
+                              :video="task.file"
                               :task="task"
                               :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                               :elevation="0">
@@ -169,7 +168,7 @@
       <template slot="content">
 
         <file_meta_data_card v-if="file && !task"
-                              :video="current_video"
+                              :video="file"
                               :elevation="0"
                               :file="file"
                               :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
@@ -383,7 +382,7 @@
   <div>
     <tooltip_button
       v-if="task && task.id"
-      @click="task_update('toggle_deferred')"
+      @click="$emit('task_update_toggle_deferred')"
       :loading="save_loading"
       :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
       color="primary"
@@ -397,7 +396,7 @@
 
   <div>
     <tooltip_button
-      @click="save"
+      @click="$emit('save')"
       datacy="save_button"
       :loading="save_loading"
       :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
@@ -562,7 +561,7 @@
                   max=300
                   thumb-label
                   ticks
-                  v-model="instance_buffer_size">
+                  v-model="label_settings_local.instance_buffer_size">
         </v-slider>
 
       </v-layout>
@@ -761,6 +760,7 @@ export default Vue.extend( {
     },
     'canvas_scale_global_is_automatic': {},
     'canvas_scale_global_setting': {},
+    'full_file_loading': {},
        
 
   },

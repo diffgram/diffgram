@@ -115,10 +115,6 @@
         'request_refresh_from_project': {
           default: null
         },
-        'video_mode': {
-            default: false,
-            type: Boolean
-        },
         'loading': {},
         'label_prompt': {
           default: 'Label'
