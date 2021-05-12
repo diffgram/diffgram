@@ -12,6 +12,7 @@
           <toolbar :height="50"
                    :command_manager="command_manager"
                    :save_loading="save_loading"
+                   :annotations_loading="annotations_loading"
                    :loading="loading"
                    :view_only_mode="view_only_mode"
                    :label_settings="label_settings"
@@ -29,10 +30,13 @@
                    @edit_mode_toggle="edit_mode_toggle($event)"
                    @undo="undo()"
                    @redo="redo()"
+                   @save="save()"
+                   @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
                    @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
                    :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
                    :canvas_scale_global_setting="canvas_scale_global_setting"
+                   :full_file_loading="full_file_loading"
                    >
           </toolbar>
 
@@ -1041,7 +1045,7 @@ export default Vue.extend( {
         filter_brightness: 100, // Percentage. Applies a linear multiplier to the drawing, making it appear more or less bright.
         filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
         filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
-
+        instance_buffer_size: 60,
       },
 
       annotations_loading: false,
@@ -1115,8 +1119,6 @@ export default Vue.extend( {
 
       seeking: false,
 
-      instance_buffer_size: 60,
-
       video_playing: false, // bool of if playing or paused
       video_play: null,  // work around for requests being sent to video.vue
       video_pause: null,
@@ -1173,7 +1175,6 @@ export default Vue.extend( {
 
       save_on_change: true,
       complete_on_change: true,
-      complete_on_change_trigger: null,
       mouse_position: {
         raw: {
           x: 0,
@@ -5421,7 +5422,7 @@ export default Vue.extend( {
 
       url += '/instance/buffer' +
               '/start/' + this.current_frame +
-              '/end/' + (this.current_frame + this.instance_buffer_size) +
+              '/end/' + (this.current_frame + this.label_settings.instance_buffer_size) +
               '/list'
       try{
         const response = await axios.post(url, {
