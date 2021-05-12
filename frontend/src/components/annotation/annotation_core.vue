@@ -33,6 +33,7 @@
                    @save="save()"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
+                   @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
                    :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
                    :canvas_scale_global_setting="canvas_scale_global_setting"
