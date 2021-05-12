@@ -167,4 +167,4 @@ jobs:
 #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
 #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
       # Run tests.
-      - run:  python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py & yarn --cwd frontend/ run cypress run --record --headed --browser chrome
+      - run:  python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py & DEBUG=cypress:server:util:process_profiler yarn --cwd frontend/ run cypress run --record --headed --browser chrome
