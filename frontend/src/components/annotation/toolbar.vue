@@ -131,7 +131,7 @@
       <v-switch v-if="view_only_mode != true"
                 :label_file="mode_text"
                 data-cy="edit_toggle"
-                :disabled="this.instance_select_for_issue || this.view_issue_mode"
+                :disabled="view_issue_mode"
                 v-model="draw_mode"
                 @change="$emit('edit_mode_toggle', draw_mode)"
                 :label="mode_text">
@@ -173,11 +173,11 @@
                               :file="file"
                               :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
         >
-
         </file_meta_data_card>
       </template>
 
     </button_with_menu>
+
     <button_with_menu
       v-if="file && !task"
       datacy="show_linked_relations_file"
@@ -263,7 +263,9 @@
                     max=750
                     thumb-label="always"
                     ticks
-                    @change="$store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width])"
+                    @change="
+                      $store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width]),
+                      $emit('change_left_nav_width', $event)"
                     v-model="left_nav_width">
           </v-slider>
 
@@ -702,11 +704,14 @@
 <script lang="ts">
 
 import Vue from "vue";
+import label_select_annotation from '../label/label_select_annotation.vue';
 
 export default Vue.extend( {
 
   name: 'toolbar',
-
+  components: {
+    label_select_annotation
+  },
   props: {
     'project_string_id': {
 
@@ -761,8 +766,13 @@ export default Vue.extend( {
     'canvas_scale_global_is_automatic': {},
     'canvas_scale_global_setting': {},
     'full_file_loading': {},
-       
-
+    'annotations_loading': {},
+    'instance_template_selected': {},
+    'instance_type': {},
+    'loading_instance_templates': {},
+    'instance_type_list': {},
+    'left_nav_width': {},
+    'view_issue_mode': {}
   },
   data() {
     return {
