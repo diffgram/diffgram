@@ -49,7 +49,7 @@
   import {v4 as uuidv4} from 'uuid'
 
   export default Vue.extend({
-      name: 'upload_wizard_dialog',
+      name: 'upload_summary',
       components: {},
       props: {
         'project_string_id': {
@@ -66,7 +66,9 @@
         }
       },
       data() {
-        return {}
+        return {
+          input_batch: null
+        }
       },
       computed: {},
       watch: {
@@ -85,9 +87,20 @@
 
       },
       methods: {
-        create_batch: async function () {
+        request_upload_raw_media: function(){
+          this.$emit('upload_raw_media', [...this.$props.file_list]);
+        },
+        attach_batch_to_files: function(batch){
+          console.log('this.$props.file_list aaaaa', this.$props.file_list)
+          for(const file of this.$props.file_list){
+            file.input_batch_id = batch.id
+          }
+        },
+        create_batch: async function (labels_payload) {
           try {
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {});
+            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
+              pre_labeled_data: labels_payload
+            });
             if (response.status === 200) {
               this.input_batch = response.data.input_batch;
             }
@@ -101,8 +114,9 @@
           for (const file of file_list) {
             const uuid = uuidv4();
             const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
-            result[file.name] = [];
             file.uuid = uuid;
+            result[file.uuid] = {instance_list: [], frame_packet_map: {}};
+
             for (const instance of file_instances) {
               const type = instance[diffgram_schema.instance_type]
               const diffgram_formatted_instance = {
@@ -173,12 +187,38 @@
                 diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
                 diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
               }
+              if(['image/jpg', 'image/jpeg', 'image/png'].includes(file.type)){
+                result[file.uuid].instance_list.push(diffgram_formatted_instance)
+
+              }
+              else if(['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v']){
+                if(!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]){
+                  result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
+                }
+                else{
+                  result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number].push(
+                    diffgram_formatted_instance
+                  )
+                }
+              }
+              else{
+                throw new Error(`${file.type} is not a supported file format.`)
+              }
 
             }
           }
+          return result;
         },
-        start_upload: function () {
+        start_upload: async function () {
           alert('start upload');
+          const labels_payload = this.prepare_pre_labeled_data_payload(
+            this.$props.pre_labeled_data,
+            this.$props.diffgram_schema_mapping,
+            this.$props.file_list
+          )
+          await this.create_batch(labels_payload)
+          this.attach_batch_to_files(this.input_batch);
+          this.request_upload_raw_media();
 
         },
         compute_attached_instance_per_file: function () {

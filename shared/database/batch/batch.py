@@ -44,6 +44,7 @@ class InputBatch(Base):
             project_id = None,
             member_created_id = None,
             memeber_updated_id = None,
+            pre_labeled_data = None,
             add_to_session = True,
             flush_session = True):
 
@@ -52,6 +53,7 @@ class InputBatch(Base):
             project_id = project_id,
             member_created_id = member_created_id,
             member_updated_id = memeber_updated_id,
+            pre_labeled_data = pre_labeled_data,
         )
 
         if add_to_session:
@@ -84,3 +86,8 @@ class InputBatch(Base):
             self.status = 'complete'
             self.time_completed = datetime.datetime.utcnow()
             session.add(self)
+
+    @staticmethod
+    def get_by_id(session, id):
+        result = session.query(InputBatch).filter(InputBatch.id == id).first()
+        return result

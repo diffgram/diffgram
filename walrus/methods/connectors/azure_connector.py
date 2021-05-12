@@ -177,7 +177,6 @@ class AzureConnector(Connector):
                         'directory_id': opts.get('directory_id'),
                         'bucket_name': opts.get('bucket_name'),
                     }
-                    print('asdasd', new_opts)
                     opts_fetch_object.update(new_opts)
                     self.__fetch_object(opts_fetch_object)
 

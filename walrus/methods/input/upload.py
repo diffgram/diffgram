@@ -10,6 +10,7 @@ from methods.input.process_media import PrioritizedItem
 from methods.input.process_media import add_item_to_queue
 
 from shared.database.input import Input
+from shared.database.batch.batch import InputBatch
 
 from shared.data_tools_core import Data_tools
 
@@ -51,7 +52,7 @@ def api_project_upload_large(project_string_id):
             return jsonify(log=upload.log), 400
 
         more_chunks_expected: bool = int(upload.dzchunkindex) + 1 != int(upload.dztotalchunkcount)
-        print('more_chunks_expected', more_chunks_expected)
+
         if more_chunks_expected is False:
             upload.start_media_processing(input=upload.input)
 
@@ -69,6 +70,17 @@ class Upload():
         self.project = project
         self.request = request
         self.log = regular_log.default()
+
+    def __extract_instance_list_from_batch(self, input, input_batch_id):
+        input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        pre_labels = input_batch.get('pre_labeled_data')
+        uuid = self.request.form.get('uuid')
+        file_data = pre_labels[uuid]
+        if file_data['instance_list']:
+            input.instance_list = file_data['instance_list']
+
+        if file_data['frame_packet_map']:
+            input.instance_list = file_data['frame_packet_map']
 
     def route_from_unique_id(self):
         """
@@ -226,8 +238,11 @@ class Upload():
             media_type=None,
             job_id=request.form.get('job_id'),
             directory_id=request.form.get('directory_id'),  # Not trusted
-            video_split_duration=request.form.get('video_split_duration')
+            video_split_duration=request.form.get('video_split_duration'),
+            batch_id=request.form.get('input_batch_id')
         )
+
+        self.__extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'))
 
         self.session.add(self.input)
 

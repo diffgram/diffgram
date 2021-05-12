@@ -106,3 +106,5 @@ def do_routes_importing():
     from methods.report.report_runner import report_save_api
     from methods.report.report_list import report_list_api
     from methods.userscript.userscript import userscript_new_api
+
+    from methods.batch.batch_new import new_input_batch
