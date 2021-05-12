@@ -1037,7 +1037,11 @@ export default Vue.extend( {
         spatial_line_size: 2,
         vertex_size: 3,
         show_removed_instances: false,
-        target_reticle_size: 20
+        target_reticle_size: 20,
+        filter_brightness: 100, // Percentage. Applies a linear multiplier to the drawing, making it appear more or less bright.
+        filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
+        filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
+
       },
 
       annotations_loading: false,
@@ -1220,10 +1224,6 @@ export default Vue.extend( {
       has_changed: false,
       interval_autosave: null,
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
-
-      filter_brightness: 100, // Percentage. Applies a linear multiplier to the drawing, making it appear more or less bright.
-      filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
-      filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
 
       canvas_scale_local: 1,  // for actually scaling dimensions within canvas
 
@@ -1480,9 +1480,9 @@ export default Vue.extend( {
     canvas_filters: function () {
 
       return {
-        'brightness': this.filter_brightness,
-        'contrast': this.filter_contrast,
-        'grayscale': this.filter_grayscale
+        'brightness': this.label_settings.filter_brightness,
+        'contrast': this.label_settings.filter_contrast,
+        'grayscale': this.label_settings.filter_grayscale
       }
 
     },
@@ -2956,12 +2956,6 @@ export default Vue.extend( {
 
       this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
         event, this.canvas_scale_local)
-    },
-
-    filter_reset: function () {
-      this.filter_brightness = 100
-      this.filter_contrast = 100
-      this.filter_grayscale = 0
     },
 
     update_label_file_visible: function (label_file) {

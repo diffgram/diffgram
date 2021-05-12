@@ -581,20 +581,20 @@
 
       <v-layout column>
 
-        <v-slider v-model="filter_brightness" prepend-icon="brightness_4"
+        <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
                   min="50"
                   max="200">
         </v-slider>
 
-        <v-slider v-model="filter_contrast" prepend-icon="exposure"
+        <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
                   min="50"
                   max="200"></v-slider>
 
-        <v-slider v-model="filter_grayscale" prepend-icon="gradient"
+        <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
                   min="0"
                   max="100"></v-slider>
 
-        <v-btn icon @click="filter_reset">
+        <v-btn icon @click="filter_reset()">
           <v-icon color="primary"> autorenew </v-icon>
         </v-btn>
 
@@ -791,9 +791,11 @@ export default Vue.extend( {
   },
   methods: {
 
-    on_image_error: function (event) {
-
-    }
+    filter_reset: function () {
+      this.label_settings_local.filter_brightness = 100
+      this.label_settings_local.filter_contrast = 100
+      this.label_settings_local.filter_grayscale = 0
+    },
 
   }
 }
