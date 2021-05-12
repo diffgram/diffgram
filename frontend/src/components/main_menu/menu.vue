@@ -124,7 +124,8 @@
         -->
 
       <v-toolbar height="50px"
-                  padding="0"
+                 padding="0"
+                 v-if="show_default_navigation == true"
                  >
       <ahref_seo_optimal :href="route_home">
         <v-toolbar-title class="ml-0 pt-2 pr-3 clickable"
@@ -408,7 +409,10 @@ import Vue from "vue";
   props: {
     'height': {
       default: 50
-     }
+     },
+    'show_default_navigation': {
+      default: true
+    }
   },
   data() {
     return {

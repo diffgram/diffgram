@@ -5,7 +5,8 @@
     <div v-if="['full', 'trainer_default'].includes(render_mode)">
 
 
-      <main_menu :height="`${!error_no_permissions.data ? '100px' : '50px'}`">
+      <main_menu :height="`${show_default_navigation ? '100px' : '50px'}`"
+                 :show_default_navigation="show_default_navigation">
 
         <template slot="second_row" >
 
@@ -903,7 +904,7 @@ export default Vue.extend( {
   data() {
     return {
 
-
+      show_default_navigation: true,
 
       userscript_minimized: true,
       project_string_id: undefined,
@@ -2721,6 +2722,8 @@ export default Vue.extend( {
       // from media_core
 
       this.media_core_height = 0
+      this.show_default_navigation = false
+            
 
     },
     go_to_login: function () {
