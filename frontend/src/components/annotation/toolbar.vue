@@ -558,15 +558,6 @@
     </button_with_menu>
   -->
 
-    <tooltip_button
-      @click="clear__new_and_no_ids()"
-      tooltip_message="Clear Unsaved"
-      icon="mdi-close-circle-multiple"
-      :icon_style="true"
-      color="primary"
-      tooltip_direction="bottom"
-      :small="true">
-  </tooltip_button>
 
   <span class="has-changed">
     <span v-if="save_loading"> Saving. </span>
@@ -595,8 +586,9 @@
             >
       <template slot="content">
 
-        <v-layout column>
+        <v-layout class="pb-4">
 
+          <!-- View Task Information -->
           <button_with_menu
             v-if="task && task.id"
             tooltip_message="View Task Information"
@@ -616,6 +608,8 @@
             </template>
 
           </button_with_menu>
+
+          <!-- show_file_information -->
           <button_with_menu
             v-if="file && !task"
             datacy="show_file_information"
@@ -636,6 +630,8 @@
 
           </button_with_menu>
 
+
+          <!-- show_linked_relations_file -->
           <button_with_menu
             v-if="file && !task"
             datacy="show_linked_relations_file"
@@ -655,6 +651,8 @@
 
           </button_with_menu>
 
+
+          <!-- show_linked_relations_task -->
           <button_with_menu
             v-if="task"
             datacy="show_linked_relations_task"
@@ -676,6 +674,16 @@
           </button_with_menu>
 
 
+          <!-- Clear unsaved -->
+          <tooltip_button
+            @click="$emit('clear__new_and_no_ids')"
+            tooltip_message="Clear Unsaved"
+            icon="mdi-close-circle-multiple"
+            :icon_style="true"
+            color="primary"
+            tooltip_direction="bottom"
+            :small="true">
+        </tooltip_button>
 
 
 
