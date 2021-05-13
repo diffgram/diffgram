@@ -13,7 +13,7 @@
           :accesskey="'full'"
           :job_id="job_id"
           :view_only_mode="view_only"
-          @save_response_callback="save_response_callback_function"
+          @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @images_found="images_found_function"
           @set_file_list="set_file_list"
@@ -320,12 +320,8 @@
         current_image_function: function (result) {
           this.current_image = result
         },
-        save_response_callback_function: function (result) {
+        save_response_callback: function (result) {
 
-          if (result == true) {
-            this.request_save = false
-            // better error handling here?
-          }
 
         },
         upload_link: function () {
