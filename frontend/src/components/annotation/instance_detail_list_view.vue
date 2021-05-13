@@ -510,7 +510,7 @@ import Vue from "vue";
       },
 
       current_file: function() {
-
+        if (!this.current_file ) { return }
         if (this.video_mode == true) {return}
 
         if (this.prior_file_id == this.current_file.id ) { return }

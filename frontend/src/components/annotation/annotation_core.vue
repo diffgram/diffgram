@@ -776,32 +776,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-alert :value="
-             !loading
-             && !annotations_loading
-             && !job_id
-             && !file
-             && !task
-             "
-             type="info">
-
-
-
-       No files match criteria. Change criteria and refresh. </br>
-
-
-
-      <v-btn :disabled="!$store.state.project.current.project_string_id"
-              color="primary"
-              @click="$router.push('/studio/upload/' +
-                        $store.state.project.current.project_string_id)">
-      <span>
-        <v-icon left>cloud_upload</v-icon>
-        Upload & info
-      </span>
-    </v-btn>
-
-    </v-alert>
 
   <v-sheet >
 
@@ -1204,11 +1178,6 @@
           ref="view_edit_issue_panel"
         ></view_edit_issue_panel>
       <v-container  v-show="!show_issue_panel">
-        <v-alert type="info" dismissible>
-          All Labels are shown here for viewing existing instances
-          on files. Only the labels chosen at the Start will
-          be available to annotators.
-        </v-alert>
 
         <v-card-title >
           <v-icon left
@@ -1258,12 +1227,8 @@
                          :current_video_file_id="current_video_file_id"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
-                         :request_label_file_refresh="request_label_file_refresh"
-                         @request_label_file_refresh_callback="request_label_file_refresh_callback"
                          @request_boxes_refresh="request_boxes_refresh"
                          @update_label_file_visible="update_label_file_visible($event)"
-                         @label_file_colour_map="label_file_colour_map = $event"
-                         @label_list="label_list = $event"
                          :video_mode="video_mode"
                          :view_only_mode="view_only_mode"
                          :instance_type="instance_type"
@@ -1454,12 +1419,13 @@ export default Vue.extend( {
       'task': {
         default: null
       },
+      'label_file_colour_map': {},
+      'label_list': {},
       'task_mode_prop': {
         default: null
       },
       'request_save': {},
       'annotator_email': {},
-      'request_project_change': {},
       'file': {
         default: {
           image: {
@@ -1524,9 +1490,6 @@ export default Vue.extend( {
 
         this.clear_selected()
 
-      },
-      request_project_change() {
-        this.request_label_file_refresh = true
       }
    },
 
@@ -1537,7 +1500,6 @@ export default Vue.extend( {
 
 
       userscript_minimized: false,
-      project_string_id: undefined,
 
       event_create_instance: undefined,
 
@@ -1662,9 +1624,6 @@ export default Vue.extend( {
       current_version: null,
 
       loading: false,
-
-      label_file_colour_map: {},
-      label_list: null,
 
       label_settings: {
         show_text: true,
@@ -1792,8 +1751,6 @@ export default Vue.extend( {
       refresh: null,
       canvas_element: null,
 
-      request_label_file_refresh: false,
-
       current_label_file: {
         id: null,
         label: {
@@ -1884,6 +1841,8 @@ export default Vue.extend( {
     }
   },
   computed: {
+
+    
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -3692,9 +3651,7 @@ export default Vue.extend( {
 
     },
 
-    request_label_file_refresh_callback: function (bool) {
-      this.request_label_file_refresh = false
-    },
+
     add_instance_to_frame_buffer: function(instance, frame_number){
       if(!this.video_mode){return}
       if (frame_number == undefined) {
@@ -6147,6 +6104,8 @@ export default Vue.extend( {
       }
     },
     on_change_current_task: async function(){
+      if (!this.$props.task) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
@@ -6164,6 +6123,8 @@ export default Vue.extend( {
 
     },
     on_change_current_file: async function () {
+      if (!this.$props.file) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
