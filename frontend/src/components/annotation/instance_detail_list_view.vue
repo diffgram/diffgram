@@ -467,7 +467,6 @@ import Vue from "vue";
       'draw_mode',
       'instance_list',
       'label_file_colour_map',
-      'render_mode',
       'refresh',
       'view_only_mode',
       'label_settings',
@@ -511,7 +510,7 @@ import Vue from "vue";
       },
 
       current_file: function() {
-
+        if (!this.current_file ) { return }
         if (this.video_mode == true) {return}
 
         if (this.prior_file_id == this.current_file.id ) { return }
@@ -533,6 +532,8 @@ import Vue from "vue";
     data() {
       return {
 
+        render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
+ 
         data_table_hover_index: -1,
         data_table_hover_click_index: -1,
         data_table_inner_menu_open: false,

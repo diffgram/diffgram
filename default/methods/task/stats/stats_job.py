@@ -38,5 +38,3 @@ def stats_job_core(session,
 
     return query.count()
 
-# query =query.filter(Job.time_created > )
-# query =query.filter(Job.time_created > )

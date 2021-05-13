@@ -43,7 +43,6 @@
         "canvas_transform" : {},
         "show_annotations": {},
         "annotations_loading": {},
-        "render_mode": {},
         "label_file_colour_map": {},
         "label_settings": {
           default: null
@@ -815,7 +814,7 @@
         draw_cuboid_corner_circles: function(instance, ctx, i){
           let result = false;
           if (this.draw_mode == false) {
-            if (this.render_mode != "file_diff" && this.mode == 'default') {
+            if (this.mode == 'default') {
               const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
               this.draw_single_path_circle(instance.front_face.top_left.x  , instance.front_face.top_left.y , radius, ctx)
               if(this.is_mouse_in_path(ctx, i, instance)){ result = true}
@@ -1057,7 +1056,7 @@
         draw_ellipse_corner_circles: function(instance, ctx, i){
           let result = false;
           if (this.draw_mode == false) {
-            if (this.render_mode != "file_diff" && this.mode == 'default') {
+            if (this.mode == 'default') {
               if(!instance.angle){
                 instance.angle = 0
               }
@@ -1232,7 +1231,7 @@
         draw_box_edit_corners: function (ctx, i, instance) {
 
           if (this.draw_mode == false && (this.previous_instance_hover_index == i || instance.selected)) {
-            if (this.render_mode != "file_diff" && this.mode == 'default') {
+            if (this.mode == 'default') {
 
               this.draw_circle(instance.x_min, instance.y_min, ctx)
               ctx.moveTo(instance.x_max, instance.y_min);

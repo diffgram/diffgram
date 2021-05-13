@@ -2,7 +2,7 @@
   <div id="annotation_core">
 
 
-    <div v-if="['full', 'trainer_default'].includes(render_mode)">
+    <div>
 
 
       <main_menu :height="`${show_default_navigation ? '100px' : '50px'}`"
@@ -67,8 +67,7 @@
       </main_menu>
 
       <!-- Errors / info -->
-      <v-alert v-if="render_mode == 'trainer_default'
-                    && task_error.task_request"
+      <v-alert v-if="task_error.task_request"
                type="info">
         {{task_error.task_request}}
       </v-alert>
@@ -159,32 +158,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-alert :value="
-             !loading
-             && !annotations_loading
-             && !job_id
-             && !file
-             && !task
-             "
-             type="info">
-
-
-
-       No files match criteria. Change criteria and refresh. </br>
-
-
-
-      <v-btn :disabled="!$store.state.project.current.project_string_id"
-              color="primary"
-              @click="$router.push('/studio/upload/' +
-                        $store.state.project.current.project_string_id)">
-      <span>
-        <v-icon left>cloud_upload</v-icon>
-        Upload & info
-      </span>
-    </v-btn>
-
-    </v-alert>
 
   <v-sheet >
 
@@ -205,7 +178,6 @@
 
 
       <v-alert v-if="$store.state.user.settings.studio_box_info == true &&
-                    ['full', 'trainer_default'].includes(render_mode) &&
                     file != undefined"
              dismissible
              @input="$store.commit('set_user_setting', ['studio_box_info', false])"
@@ -232,7 +204,6 @@
                                   @toggle_instance_focus="focus_instance($event)"
                                   @show_all="focus_instance_show_all()"
                                   @instance_update="instance_update($event)"
-                                  :render_mode="render_mode"
                                   :video_mode="video_mode"
                                   :task="task"
                                   :view_only_mode="view_only_mode"
@@ -442,7 +413,6 @@
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
                                   :is_actively_drawing="is_actively_drawing"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -478,7 +448,6 @@
                                   :issues_list="issues_list"
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -496,7 +465,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -510,7 +478,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -571,7 +538,6 @@
                   @set_canvas_dimensions="set_canvas_dimensions()"
                   @update_canvas="update_canvas"
                   :current_video_file_id="current_video_file_id"
-                  :render_mode="render_mode"
                   :video_pause_request="video_pause"
                   :video_play_request="video_play"
                   :task="task"
@@ -588,7 +554,7 @@
           v-show="!show_place_holder"
           :video_mode="video_mode"
           class="pl-4"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
           :view_only_mode="view_only_mode"
           :current_video_file_id="current_video_file_id"
           :current_frame="current_frame"
@@ -632,15 +598,10 @@
                          v-if="label_settings.show_list == true &&
                                 !task_error.task_request && !error_no_permissions.data"
                          :project_string_id="project_string_id"
-                         :render_mode="render_mode"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
-                         :request_label_file_refresh="request_label_file_refresh"
-                         @request_label_file_refresh_callback="request_label_file_refresh_callback"
                          @request_boxes_refresh="request_boxes_refresh"
                          @update_label_file_visible="update_label_file_visible($event)"
-                         @label_file_colour_map="label_file_colour_map = $event"
-                         @label_list="label_list = $event"
                          :video_mode="video_mode"
                          :view_only_mode="view_only_mode"
                          :instance_type="instance_type"
@@ -804,7 +765,7 @@ export default Vue.extend( {
       toolbar
     },
     props: {
-      'project_string_id_prop': {
+      'project_string_id': {
         default: null,
         type: String
       },
@@ -818,24 +779,19 @@ export default Vue.extend( {
       'task': {
         default: null
       },
+      'label_file_colour_map': {},
+      'label_list': {},
       'task_mode_prop': {
         default: null
       },
-      'is_annotation_assignment_bool': {},
       'request_save': {},
-      'request_new_assignment': {},
-      'render_mode': {
-        default: 'yes'
-      },
       'annotator_email': {},
-      'request_project_change': {},
       'file': {
         default: {
           image: {
           }
         }
       },
-      'file_view_mode': {},
       'current_version_prop': {},
       'view_only_mode': {
         default: false
@@ -894,9 +850,6 @@ export default Vue.extend( {
 
         this.clear_selected()
 
-      },
-      request_project_change() {
-        this.request_label_file_refresh = true
       }
    },
 
@@ -907,7 +860,6 @@ export default Vue.extend( {
       show_default_navigation: true,
 
       userscript_minimized: true,
-      project_string_id: undefined,
 
       event_create_instance: undefined,
 
@@ -1031,9 +983,6 @@ export default Vue.extend( {
       current_version: null,
 
       loading: false,
-
-      label_file_colour_map: {},
-      label_list: null,
 
       label_settings: {
         show_text: true,
@@ -1163,15 +1112,11 @@ export default Vue.extend( {
       refresh: null,
       canvas_element: null,
 
-      request_label_file_refresh: false,
-
       current_label_file: {
         id: null,
         label: {
         }
       },
-
-      images_found: true,
 
       Annotation_assignments : [],
 
@@ -1252,6 +1197,8 @@ export default Vue.extend( {
     }
   },
   computed: {
+
+    
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -1837,8 +1784,8 @@ export default Vue.extend( {
       return instance_template.instance_list.filter(instance => instance.type === 'keypoints').length > 0;
     },
     get_create_instance_template_url: function(){
-      if(this.$props.project_string_id_prop){
-        return `/api/v1/project/${this.$props.project_string_id_prop}/instance-template/new`
+      if(this.$props.project_string_id){
+        return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`
       }
       else{
         return `/api/v1/task/${this.$props.task.id}/instance-template/new`
@@ -2178,7 +2125,7 @@ export default Vue.extend( {
         this.loading_instance_templates = true;
         this.canvas_element = document.getElementById("my_canvas")
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
-        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id_prop}/instance-template/list`, {});
+        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {});
         if (response.data.instance_template_list) {
           this.instance_template_list = response.data.instance_template_list.map(instance_template => {
 
@@ -2560,28 +2507,6 @@ export default Vue.extend( {
     },
     created: function () {
 
-      if (!this.project_string_id_prop) {
-        this.project_string_id = this.$store.state.project.current.project_string_id
-      }
-      else{
-        this.project_string_id = this.$props.project_string_id_prop;
-      }
-
-      if (this.render_mode == 'full' || this.render_mode == 'home') {
-        this.request_label_file_refresh = true
-      }
-      // Initial File Set
-      if(this.$props.file){
-        this.on_change_current_file();
-      }
-      else if(this.$props.task){
-        this.on_change_current_task();
-      }
-
-      if (this.render_mode == 'file_diff') {
-        this.get_colour_map()
-      }
-
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
 
@@ -2663,11 +2588,9 @@ export default Vue.extend( {
       this.fetch_instance_template();
 
       this.update_canvas()
-      //if (this.render_mode == 'file_diff') {
-      ;
+
       // assumes canvas wrapper available
       this.canvas_wrapper.style.display = ""
-      //}
 
       var self = this
       this.get_instances_watcher = this.$store.watch((state) => {
@@ -2702,9 +2625,6 @@ export default Vue.extend( {
         },
       )
 
-      if (this.render_mode == "home"){
-        this.left_nav_width = parseInt(this.left_nav_width / 1.5)
-      }
 
       if (this.$props.task || this.job_id) {
         this.task_mode_mounted()
@@ -3019,11 +2939,6 @@ export default Vue.extend( {
                 this.change_file("none", this.File_list[0])
               }
             }
-            else {
-              // TODO handle replacing images better here
-              // and review in context that this is for a file in general not just image
-              this.images_found = false
-            }
 
           }
         }
@@ -3073,9 +2988,7 @@ export default Vue.extend( {
 
     },
 
-    request_label_file_refresh_callback: function (bool) {
-      this.request_label_file_refresh = false
-    },
+
     add_instance_to_frame_buffer: function(instance, frame_number){
       if(!this.video_mode){return}
       if (frame_number == undefined) {
@@ -4256,37 +4169,31 @@ export default Vue.extend( {
 
       */
       if (!this.$props.file) {
-        // TODO review using
-        this.images_found = false
         this.loading = false
       }
       else{
           this.$emit('current_file', this.$props.file)
-          this.images_found = true
-      }
-      if (this.images_found == true) {
-
-        /*
-        1.  creates new Image()
-        1.1 attaches src to html image
-        1.2 load() triggers resolve()
-
-        2.0 resolve() updates vue js html_image with html image
-
-        */
-        //console.debug("loaded image")
-        this.canvas_wrapper.style.display = ""
-
-        await this.get_instances()
-
-        this.canvas_width = this.$props.file.image.width
-        this.canvas_height = this.$props.file.image.height
-
-        await this.addImageProcess_with_canvas_refresh()
-
       }
 
-      this.$emit('images_found', this.images_found)
+      /*
+      1.  creates new Image()
+      1.1 attaches src to html image
+      1.2 load() triggers resolve()
+
+      2.0 resolve() updates vue js html_image with html image
+
+      */
+      //console.debug("loaded image")
+      this.canvas_wrapper.style.display = ""
+
+      await this.get_instances()
+
+      this.canvas_width = this.$props.file.image.width
+      this.canvas_height = this.$props.file.image.height
+
+      await this.addImageProcess_with_canvas_refresh()
+
+
     },
 
     addImageProcess_with_canvas_refresh: async function () {
@@ -5291,7 +5198,7 @@ export default Vue.extend( {
 
         } else {
 
-          var url = '/api/project/' + this.$store.state.project.current.project_string_id +
+          var url = '/api/project/' + this.$props.project_string_id +
             '/file/' + String(this.$props.file.id) + '/annotation/list'
         }
         try{
@@ -5343,11 +5250,6 @@ export default Vue.extend( {
         }
       }
 
-      if (this.render_mode == "file_diff") {
-        await this.get_instances_file_diff()
-        this.get_instances_loading = false;
-        return
-      }
 
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {
@@ -5421,7 +5323,7 @@ export default Vue.extend( {
         url += '/api/v1/task/' + this.task.id +
                 '/video/file_from_task'
       } else {
-        url += '/api/project/' + this.$store.state.project.current.project_string_id +
+        url += '/api/project/' + this.$props.project_string_id +
                 '/video/' + String(this.current_video_file_id)
         // careful it's the video file we want here
       }
@@ -5537,6 +5439,8 @@ export default Vue.extend( {
       }
     },
     on_change_current_task: async function(){
+      if (!this.$props.task) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
@@ -5554,6 +5458,8 @@ export default Vue.extend( {
 
     },
     on_change_current_file: async function () {
+      if (!this.$props.file) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
