@@ -75,10 +75,6 @@
           request_save: false,
           request_project_change: null,
           view_only: false,
-          current_image: null,
-
-          download_annotations_loading: false,
-          annotation_example: false,
 
           labels_list_from_project: null,
           label_file_colour_map_from_project: null
@@ -345,9 +341,6 @@
           })
         },
 
-        current_image_function: function (result) {
-          this.current_image = result
-        },
 
         save_response_callback: function (result) {
 
