@@ -1527,7 +1527,6 @@ export default Vue.extend( {
 
 
       userscript_minimized: false,
-      project_string_id: undefined,
 
       event_create_instance: undefined,
 
