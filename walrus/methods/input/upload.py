@@ -13,7 +13,7 @@ from shared.database.input import Input
 from shared.database.batch.batch import InputBatch
 
 from shared.data_tools_core import Data_tools
-
+from shared.database.source_control.file import File
 
 data_tools = Data_tools().data_tools
 
@@ -71,16 +71,40 @@ class Upload():
         self.request = request
         self.log = regular_log.default()
 
+    def get_project_labels(self):
+        result = []
+        directory = self.project.directory_default
+
+        working_dir_sub_query = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == directory.id,
+            WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
+
+        working_dir_file_list = self.session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id).all()
+
+        for file in working_dir_file_list:
+            if file.state != "removed":
+                result.append(file.serialize_with_label_and_colour(session = self.session))
+        return result
+
     def __extract_instance_list_from_batch(self, input, input_batch_id):
         input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
-        pre_labels = input_batch.get('pre_labeled_data')
+        pre_labels = input_batch.pre_labeled_data
         uuid = self.request.form.get('uuid')
         file_data = pre_labels[uuid]
+        project_labels = self.get_project_labels()
+        print(project_labels, 'aaaa')
         if file_data['instance_list']:
-            input.instance_list = file_data['instance_list']
+            instance_list = file_data['instance_list']
+            for instance in instance_list:
+                print('instanceeeee', instance)
+                instance['label_file_id'] = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                print('label file', instance['label_file_id'])
+
+            input.instance_list = {'list': file_data['instance_list']}
 
         if file_data['frame_packet_map']:
-            input.instance_list = file_data['frame_packet_map']
+            input.frame_packet_map = file_data['frame_packet_map']
 
     def route_from_unique_id(self):
         """

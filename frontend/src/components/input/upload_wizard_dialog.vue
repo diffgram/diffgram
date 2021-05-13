@@ -67,6 +67,22 @@
                             style="max-width: 200px"
                             dense
                             :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.name">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the Label Name</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Labels Must Already exist in project.</strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
                             v-model="diffgram_schema_mapping.instance_type">
 
                   </v-select>
