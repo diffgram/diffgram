@@ -156,6 +156,7 @@
       methods: {
 
         get_if_new_value(newval, oldval){
+          if(newval == null) {return}
           if(newval.id && oldval == null) {
             this.get_issues_list()
           }
