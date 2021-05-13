@@ -26,6 +26,17 @@
         <v-spacer> </v-spacer>
 
         <tooltip_button
+            tooltip_message="Minimize"
+            @click="media_sheet = !media_sheet"
+            icon="mdi-window-minimize"
+            :icon_style="true"
+            color="primary"
+            :bottom="true"
+            datacy="minimize-file-explorer-button"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
             v-if="full_screen"
             tooltip_message="Restore Down"
             @click="minimize_sheet"
