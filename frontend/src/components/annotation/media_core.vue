@@ -24,6 +24,26 @@
     This includes server side results which <b> may not be displayed.</b>
     </v-alert>
 
+    <v-alert v-if="!loading && !media_loading && file_list.length == 0"
+             type="info">
+      <v-layout> 
+
+        <p class="pr-4">
+          No files match criteria. Change criteria and refresh. Or import new data.
+        </p>
+
+        <v-btn :disabled="!$store.state.project.current.project_string_id"
+                color="primary"
+                @click="$router.push('/studio/upload/' +
+                          $store.state.project.current.project_string_id)">
+
+            <v-icon left>cloud_upload</v-icon>
+            Import
+        </v-btn>
+      </v-layout>
+
+    </v-alert>
+
     <v_info_multiple  class="text-left"
                      :info="info">
     </v_info_multiple>

@@ -9,10 +9,11 @@
           :file="current_file"
           :task_id_prop="task_id_prop"
           :request_save="request_save"
-          :request_project_change="request_project_change"
           :accesskey="'full'"
           :job_id="job_id"
           :view_only_mode="view_only"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -68,16 +69,16 @@
       },
       data() {
         return {
+
           loading: false,
           task: null,
           current_file: null,
           request_save: false,
-          request_project_change: null,
-          view_only: false,
-          current_image: null,
 
-          download_annotations_loading: false,
-          annotation_example: false,
+          view_only: false,
+
+          labels_list_from_project: null,
+          label_file_colour_map_from_project: null
 
         }
       },
@@ -94,12 +95,12 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
-          this.request_project_change = Date.now()
         }
       },
       created() {
         this.get_project();
-        this.$store.commit('set_project_string_id', this.project_string_id);
+        this.get_labels_from_project();
+
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -138,6 +139,7 @@
         },
         computed_project_string_id: function () {
           if (this.$props.project_string_id) {
+            this.$store.commit('set_project_string_id', this.$props.project_string_id);
             return this.$props.project_string_id;
           }
           return this.$store.state.project.current.project_string_id;
@@ -145,6 +147,29 @@
         show_annotation_core: function(){
           return true
         },
+
+        label_file_colour_map: function () {
+          if (this.task &&
+              this.task.label_file_colour_map) {
+            return this.task.label_dict.label_file_colour_map
+          }
+          if (this.label_file_colour_map_from_project) {
+            return this.label_file_colour_map_from_project
+          }
+          return {}
+            
+        },
+
+        label_list: function () {
+          if (this.task &&
+              this.task.label_list) {
+              return this.task.label_dict.label_file_list_serialized
+          }
+          if (this.labels_list_from_project) {
+            return this.labels_list_from_project
+          }
+          return []
+        }
       },
       methods: {
         request_file_change: function(direction, file){
@@ -153,6 +178,28 @@
 
         change_file: function(file){
           this.current_file = file;
+        },
+
+        get_labels_from_project: function () {
+
+          if (this.labels_list_from_project &&
+            this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+            return
+          }
+
+          var url = '/api/project/' + this.project_string_id + '/labels/refresh'
+          this.label_refresh_loading = true
+
+          axios.get(url, {})
+            .then(response => {
+
+              this.labels_list_from_project = response.data.labels_out
+              this.label_file_colour_map_from_project = response.data.label_file_colour_map
+            })
+            .catch(error => {
+            console.log(error);
+          });
+
         },
 
         fetch_project_file_list: async function(){
@@ -200,8 +247,6 @@
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
 
-              this.label_file_colour_map = this.task.label_dict.label_file_colour_map
-              this.label_list = this.task.label_dict.label_file_list_serialized
             }
             this.task_error = response.data.log.error
           }
@@ -245,19 +290,14 @@
 
         get_project: function () {
 
-          if (this.project_string_id == null) {
+          if (this.computed_project_string_id == null) {
+            return
+          }
+          if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
             return
           }
 
-          if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-            // context that if we already have the the project, there's not specific need to refresh
-            // project is bound / related to directory so if it refresh artifically we need
-            // to cache directory
-            // Not clear if downsides of not refreshing here by default
-            return
-          }
-
-          axios.get('/api/project/' + this.project_string_id + '/view')
+          axios.get('/api/project/' + this.computed_project_string_id + '/view')
             .then(response => {
               if (response.data['none_found'] == true) {
                 this.none_found = true
@@ -301,17 +341,10 @@
           })
         },
 
-        current_image_function: function (result) {
-          this.current_image = result
-        },
 
         save_response_callback: function (result) {
 
 
-        },
-        upload_link: function () {
-          this.$router.push('/studio/upload/' +
-            String(this.$store.state.project.current.project_string_id))
         },
 
       },
