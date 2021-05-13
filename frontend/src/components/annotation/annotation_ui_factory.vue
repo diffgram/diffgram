@@ -15,7 +15,6 @@
           :view_only_mode="view_only"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
-          @images_found="images_found_function"
           @set_file_list="set_file_list"
           @request_new_task="change_task"
           ref="annotation_core"
@@ -72,7 +71,6 @@
           loading: false,
           task: null,
           current_file: null,
-          images_found: true,
           request_save: false,
           request_project_change: null,
           view_only: false,
@@ -96,8 +94,7 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
-          this.images_found = true,
-            this.request_project_change = Date.now()
+          this.request_project_change = Date.now()
         }
       },
       created() {
@@ -310,9 +307,6 @@
             String(this.$store.state.project.current.project_string_id))
         },
 
-        images_found_function: function (bool) {
-          this.images_found = bool
-        },
       },
     }
   )
