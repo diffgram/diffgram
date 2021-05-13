@@ -86,7 +86,6 @@
       },
       watch: {
         '$route'(to, from) {
-          console.log('WATCHEEEER')
           if(from.name === 'task_annotation' && to.name === 'studio'){
             this.fetch_project_file_list();
             this.task = null;
@@ -161,7 +160,7 @@
             return this.label_file_colour_map_from_project
           }
           return {}
-            
+
         },
 
         label_list: function () {
@@ -208,7 +207,6 @@
 
         fetch_project_file_list: async function(){
           this.loading = true;
-          console.log('aaaaaqqqqq', this.loading_project)
           if(this.$route.query.file){
             this.current_file = await this.$refs.file_manager_sheet.get_media(true, this.$route.query.file);
           }
@@ -294,7 +292,7 @@
         },
 
         get_project: async function () {
-          try{
+          try {
             this.loading_project = true
             if (this.project_string_id == null) {
               return
@@ -309,39 +307,17 @@
             const response = await axios.get('/api/project/' + this.project_string_id + '/view');
             if (response.data['none_found'] == true) {
               this.none_found = true
-            }
-            else {
+            } else {
               this.$store.commit('set_project_name', response.data['project']['name'])
               this.$store.commit('set_project', response.data['project'])
 
-          if (this.computed_project_string_id == null) {
-            return
-          }
-          if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
-            return
-          }
-
-          axios.get('/api/project/' + this.computed_project_string_id + '/view')
-            .then(response => {
-              if (response.data['none_found'] == true) {
-                this.none_found = true
-              } else {
-                //console.debug(response)
-                this.$store.commit('set_project_name', response.data['project']['name'])
-                this.$store.commit('set_project', response.data['project'])
-
-                // TODO may not be right place to get this
-                if (response.data.user_permission_level) {
-                  this.$store.commit('set_current_project_permission_level',
-                    response.data.user_permission_level[0])
-
-                  if (response.data.user_permission_level[0] == "Viewer") {
-                    this.view_only = true
-                  }
-                }
+              if (this.computed_project_string_id == null) {
+                return
+              }
+              if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+                return
               }
             }
-
           }
           catch (error) {
             console.error(error)
