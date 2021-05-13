@@ -174,14 +174,7 @@
           </v-tooltip>
         </div>
 
-        <!--
 
-          I think this was for say hiding interpolate button in view
-          only mode? But would need to review more closely
-          in meantime the div seemed to be messing up formatting
-          <div v-if="['full', 'trainer_default'].includes(render_mode)">
-
-        -->
 
           <v-spacer> </v-spacer>
 
@@ -395,7 +388,6 @@ export default Vue.extend( {
     'current_video',
     'video_mode',
     'current_video_file_id',
-    'render_mode',
     'video_pause_request',
     'video_play_request',
     'task',
@@ -523,6 +515,7 @@ export default Vue.extend( {
     'video_play_request': 'video_play',
     video_current_frame_guess: function(frame) {
       if (this.playing) return;
+      if(!this.video_mode) return;
       this.updateFrameUrl(frame)
     },
   },
@@ -740,7 +733,7 @@ export default Vue.extend( {
        * Then if we keep watching has_changed, if it fails to change,
        * we could prevent the keyframe change from happening.
        *
-       * 
+       *
        *  1) checking if "safe" to advance to frame should come first
        *  2) would really prefer to get a callback notice when the save event happens
        *  but not 100% clear how to do this so using a loop here for now.
@@ -774,7 +767,7 @@ export default Vue.extend( {
         await this.get_video_single_image(this.video_current_frame_guess)
 
       }
-
+      this.updateFrameUrl(frame);
     },
 
     detect_end_from_keyframe: function () {
@@ -1112,7 +1105,7 @@ export default Vue.extend( {
 		*/
     updateFrameUrl(frame) {
       // update the url w/ current frame if we are viewing a task
-      if (this.task.id) {
+      if ((this.task && this.task.id) || this.$props.current_video_file_id) {
          this.$addQueriesToLocation({frame});
       }
     },
@@ -1188,7 +1181,7 @@ export default Vue.extend( {
       // because a builder may still be reviewing a task.)
 
       let url = ""
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += '/api/v1/task/' + this.task.id
         }
       else {

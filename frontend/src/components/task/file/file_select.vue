@@ -4,8 +4,6 @@
   <!-- See file add for file list (which gets passed from media core -->
 
   <v_annotation_core :view_only_mode_prop="true"
-                      :render_mode=" 'home' "
-                      :is_annotation_assignment_bool="false"
                       :project_string_id="project_string_id"
                       :file_view_mode=" 'task' "
                       :accesskey="'changes'"

@@ -144,8 +144,8 @@ export default Vue.extend( {
     is_complete_toggle_file: function (on_complete_only=false) {
       // TODO review in context of switching new file for source control
       // (See / combine with above save method for splicing in new file)
-      let cache_current_file_id = this.current_file.id
-      if (cache_current_file_id == undefined) {
+      let old_file_id = this.current_file.id
+      if (old_file_id == undefined) {
         return
       }
 
@@ -157,14 +157,14 @@ export default Vue.extend( {
       }
 
       let endpoint = '/api/project/' + this.project_string_id +
-        '/file/' + cache_current_file_id +
+        '/file/' + old_file_id +
         '/annotation/is_complete_toggle'
 
       axios.post(endpoint, {
         directory_id: this.$store.state.project.current_directory.directory_id
       }).then(response => {
         this.is_complete_toggle_loading = false
-        this.$emit('replace_file', [response.data.new_file, cache_current_file_id])
+        this.$emit('replace_file', [response.data.new_file, old_file_id])
       }).catch(error => {
 
       });

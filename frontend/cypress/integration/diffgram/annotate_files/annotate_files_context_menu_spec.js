@@ -15,7 +15,7 @@ describe('Annotate Files Tests', () => {
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
-      cy.wait(3000);
+      cy.wait(5000);
       // Minimize file explorer
       cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
       // Select Label
@@ -23,13 +23,13 @@ describe('Annotate Files Tests', () => {
 
       // Draw box
       cy.mousedowncanvas(75, 75);
-      cy.wait(500)
+      cy.wait(1500)
 
       cy.mouseupcanvas();
-      cy.wait(1000)
+      cy.wait(1500)
 
       cy.mousedowncanvas(120, 120);
-      cy.wait(500)
+      cy.wait(1500)
       cy.mouseupcanvas();
 
       // Set Edit Mode False
