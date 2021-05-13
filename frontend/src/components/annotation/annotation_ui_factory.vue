@@ -24,6 +24,7 @@
       </div>
 
         <file_manager_sheet
+          v-if="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
@@ -71,6 +72,7 @@
         return {
 
           loading: false,
+          loading_project: false,
           task: null,
           current_file: null,
           request_save: false,
@@ -113,8 +115,9 @@
         }
 
       },
-      mounted() {
-
+      async mounted() {
+        await this.get_project();
+        this.$store.commit('set_project_string_id', this.project_string_id);
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -160,7 +163,7 @@
             return this.label_file_colour_map_from_project
           }
           return {}
-            
+
         },
 
         label_list: function () {
@@ -295,36 +298,40 @@
           }
         },
 
-        get_project: function () {
+        get_project: async function () {
+          try {
+            this.loading_project = true
+            if (this.project_string_id == null) {
+              return
+            }
+            if (this.project_string_id == this.$store.state.project.current.project_string_id) {
+              // context that if we already have the the project, there's not specific need to refresh
+              // project is bound / related to directory so if it refresh artifically we need
+              // to cache directory
+              // Not clear if downsides of not refreshing here by default
+              return
+            }
+            const response = await axios.get('/api/project/' + this.project_string_id + '/view');
+            if (response.data['none_found'] == true) {
+              this.none_found = true
+            } else {
+              this.$store.commit('set_project_name', response.data['project']['name'])
+              this.$store.commit('set_project', response.data['project'])
 
-          if (this.computed_project_string_id == null) {
-            return
-          }
-          if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
-            return
-          }
-
-          axios.get('/api/project/' + this.computed_project_string_id + '/view')
-            .then(response => {
-              if (response.data['none_found'] == true) {
-                this.none_found = true
-              } else {
-                //console.debug(response)
-                this.$store.commit('set_project_name', response.data['project']['name'])
-                this.$store.commit('set_project', response.data['project'])
-
-                // TODO may not be right place to get this
-                if (response.data.user_permission_level) {
-                  this.$store.commit('set_current_project_permission_level',
-                    response.data.user_permission_level[0])
-
-                  if (response.data.user_permission_level[0] == "Viewer") {
-                    this.view_only = true
-                  }
-                }
+              if (this.computed_project_string_id == null) {
+                return
               }
-            })
-            .catch(error => {console.debug(error); });
+              if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+                return
+              }
+            }
+          }
+          catch (error) {
+            console.error(error)
+          }
+          finally {
+            this.loading_project = false
+          }
         },
 
         set_file_list: function(new_file_list){

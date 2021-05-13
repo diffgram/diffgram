@@ -4839,7 +4839,7 @@ export default Vue.extend( {
       else{
           this.$emit('current_file', this.$props.file)
       }
-     
+
       /*
       1.  creates new Image()
       1.1 attaches src to html image
@@ -4858,7 +4858,7 @@ export default Vue.extend( {
 
       await this.addImageProcess_with_canvas_refresh()
 
-  
+
     },
 
     addImageProcess_with_canvas_refresh: async function () {
