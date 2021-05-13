@@ -268,7 +268,6 @@
           this.$refs.myVueDropzone.dropzone.removeAllFiles()
           for(const file of file_list){
             this.$refs.myVueDropzone.manuallyAddFile(file, file.dataURL)
-            this.file_list_to_upload.push(file);
           }
           this.$refs.myVueDropzone.processQueue();
           alert('upload started!')
