@@ -123,6 +123,7 @@
                 file_uuid: uuid,
                 type: type,
                 file_name: instance[diffgram_schema.file_name],
+                name: instance[diffgram_schema.name],
                 model_id: instance[diffgram_schema.model_id],
                 run_id: instance[diffgram_schema.run_id],
                 frame_number: instance[diffgram_schema.frame_number],

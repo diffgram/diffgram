@@ -1,6 +1,7 @@
 <template>
 
-  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;" persistent>
+  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
+            persistent>
     <v-layout style="position: relative; z-index: 999999">
       <v-btn @click="close" icon x-large style="position: absolute; top: 0; right: 0">
         <v-icon>mdi-close</v-icon>
@@ -50,10 +51,9 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <v-layout class="d-flex flex-column justify-center align-center pa-10">
-
-            <v_error_multiple :error="errors_file_schema">
-            </v_error_multiple>
+          <v_error_multiple :error="errors_file_schema">
+          </v_error_multiple>
+          <v-layout v-if="!load_label_names" class="d-flex flex-column justify-center align-center pa-10">
             <v-container class="d-flex flex-column pa-0">
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
@@ -67,7 +67,7 @@
                             style="max-width: 200px"
                             dense
                             :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.name">
+                            v-model="diffgram_schema_mapping.instance_type">
                   </v-select>
                 </div>
               </div>
@@ -83,7 +83,7 @@
                             style="max-width: 200px"
                             dense
                             :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.instance_type">
+                            v-model="diffgram_schema_mapping.name">
 
                   </v-select>
                 </div>
@@ -158,6 +158,15 @@
                 </div>
               </div>
 
+            </v-container>
+          </v-layout>
+          <v-layout v-else>
+            <v-container fluid class="d-flex flex-column justify-center align-center">
+              <h2>Validating Label Schema...</h2>
+              <v-progress-circular indeterminate v-if="!valid_labels"></v-progress-circular>
+              <v-fade-transition v-if="valid_labels">
+                <h2>Valid Labels <v-icon x-large color="success">mdi-check</v-icon></h2>
+              </v-fade-transition>
             </v-container>
           </v-layout>
           <v-layout class="d-flex justify-end">
@@ -596,6 +605,8 @@
           },
           is_open: false,
           el: 1,
+          load_label_names: false,
+          valid_labels: false,
           pre_labeled_data: null,
           file_list_to_upload: [],
           valid_points_values_polygon: false,
@@ -631,7 +642,7 @@
           },
           pre_labels_file_list: [],
           pre_label_key_list: [],
-          errors_file_schema: {},
+          errors_file_schema: undefined,
           pre_labels_file_type: null,
           errors_instance_schema: {},
           error_polygon_instance: {},
@@ -734,7 +745,7 @@
       },
 
       methods: {
-        upload_raw_media: async function(file_list){
+        upload_raw_media: async function (file_list) {
           console.log('UPLOAD RAW MEDIA', file_list)
           this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
         },
@@ -943,26 +954,44 @@
             this.valid_points_values_polygon = true;
           }
         },
-        validate_label_names: async function(){
-          try{
+        validate_label_names: async function () {
+          try {
+            this.load_label_names = true
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
-            if(response.status === 200){
-              this.labe ls = response.data.labels_out
+            if (response.status === 200) {
+              const labels = response.data.labels_out;
+              const label_names = labels.map(elm => elm.label.name)
+              console.log('labels', labels);
+              for (const instance of this.pre_labeled_data) {
+                if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
+                  this.errors_file_schema = {}
+                  this.errors_file_schema['label_names'] = `The label name "${instance[this.diffgram_schema_mapping.name]}" does not exist in the project. Please create it.`
+                  return
+                }
+              }
+              this.valid_labels = true;
+              await this.$nextTick();
+              setTimeout(() => {
+                this.load_label_names = false;
+              }, 3000)
             }
 
-          }
-          catch (e) {
+          } catch (e) {
+            console.error(e);
+            this.load_label_names = false;
+          } finally {
 
           }
         },
-        check_errors_and_go_to_step(step) {
+        async check_errors_and_go_to_step(step) {
           if (step === 3) {
-            this.errors_file_schema = {}
+            this.errors_file_schema = undefined
             this.get_included_instance_types();
             if (!this.diffgram_schema_mapping.file_name) {
               this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
               return
             }
+            await this.validate_label_names();
             if (Object.keys(this.errors_file_schema).length === 0) {
               this.el = step;
             }
@@ -995,6 +1024,7 @@
               if (this.allowed_instance_types.includes(instance_type)) {
                 this.included_instance_types[instance_type] = true;
               } else {
+                this.errors_file_schema = {};
                 this.errors_file_schema[instance_type] = `Invalid instance type "${instance_type}"`;
               }
 
