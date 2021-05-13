@@ -1466,7 +1466,6 @@ export default Vue.extend( {
           }
         }
       },
-      'file_view_mode': {},
       'current_version_prop': {},
       'view_only_mode': {
         default: false
