@@ -69,16 +69,16 @@
       },
       data() {
         return {
+
           loading: false,
           task: null,
           current_file: null,
           request_save: false,
-          request_project_change: null,
+
           view_only: false,
 
           labels_list_from_project: null,
           label_file_colour_map_from_project: null
-
 
         }
       },
@@ -95,13 +95,12 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
-          this.request_project_change = Date.now()
         }
       },
       created() {
         this.get_project();
         this.get_labels_from_project();
-        this.$store.commit('set_project_string_id', this.computed_project_string_id);
+
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -140,6 +139,7 @@
         },
         computed_project_string_id: function () {
           if (this.$props.project_string_id) {
+            this.$store.commit('set_project_string_id', this.$props.project_string_id);
             return this.$props.project_string_id;
           }
           return this.$store.state.project.current.project_string_id;
