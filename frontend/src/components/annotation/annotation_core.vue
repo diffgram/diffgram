@@ -1204,11 +1204,6 @@
           ref="view_edit_issue_panel"
         ></view_edit_issue_panel>
       <v-container  v-show="!show_issue_panel">
-        <v-alert type="info" dismissible>
-          All Labels are shown here for viewing existing instances
-          on files. Only the labels chosen at the Start will
-          be available to annotators.
-        </v-alert>
 
         <v-card-title >
           <v-icon left
