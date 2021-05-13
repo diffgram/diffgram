@@ -776,32 +776,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-alert :value="
-             !loading
-             && !annotations_loading
-             && !job_id
-             && !file
-             && !task
-             "
-             type="info">
-
-
-
-       No files match criteria. Change criteria and refresh. </br>
-
-
-
-      <v-btn :disabled="!$store.state.project.current.project_string_id"
-              color="primary"
-              @click="$router.push('/studio/upload/' +
-                        $store.state.project.current.project_string_id)">
-      <span>
-        <v-icon left>cloud_upload</v-icon>
-        Upload & info
-      </span>
-    </v-btn>
-
-    </v-alert>
 
   <v-sheet >
 
