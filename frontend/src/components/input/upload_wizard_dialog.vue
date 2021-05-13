@@ -68,14 +68,14 @@
                             dense
                             :items="pre_label_key_list"
                             v-model="diffgram_schema_mapping.name">
-
                   </v-select>
                 </div>
               </div>
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">* Select the Field Corresponding to the Label Name</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Labels Must Already exist in project.</strong></p>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3">
+                    <strong>** Labels Must Already exist in project.</strong></p>
 
                 </div>
                 <div class="d-flex justify-end flex-grow-1">
@@ -534,6 +534,7 @@
           ],
           diffgram_schema_mapping: {
             instance_type: null,
+            name: null,
             file_name: null,
             frame_number: null,
             model_id: null,
@@ -940,6 +941,18 @@
               i += 1;
             }
             this.valid_points_values_polygon = true;
+          }
+        },
+        validate_label_names: async function(){
+          try{
+            const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
+            if(response.status === 200){
+              this.labe ls = response.data.labels_out
+            }
+
+          }
+          catch (e) {
+
           }
         },
         check_errors_and_go_to_step(step) {
