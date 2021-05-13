@@ -9,10 +9,11 @@
           :file="current_file"
           :task_id_prop="task_id_prop"
           :request_save="request_save"
-          :request_project_change="request_project_change"
           :accesskey="'full'"
           :job_id="job_id"
           :view_only_mode="view_only"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -79,6 +80,10 @@
           download_annotations_loading: false,
           annotation_example: false,
 
+          labels_list_from_project: null,
+          label_file_colour_map_from_project: null
+
+
         }
       },
       watch: {
@@ -99,6 +104,7 @@
       },
       created() {
         this.get_project();
+        this.get_labels_from_project();
         this.$store.commit('set_project_string_id', this.project_string_id);
         if (this.$route.query.view_only) {
           this.view_only = true;
@@ -145,6 +151,29 @@
         show_annotation_core: function(){
           return true
         },
+
+        label_file_colour_map: function () {
+          if (this.task &&
+              this.task.label_file_colour_map) {
+            return this.task.label_dict.label_file_colour_map
+          }
+          if (this.label_file_colour_map_from_project) {
+            return this.label_file_colour_map_from_project
+          }
+          return null
+            
+        },
+
+        label_list: function () {
+          if (this.task &&
+              this.task.label_list) {
+              return this.task.label_dict.label_file_list_serialized
+          }
+          if (this.labels_list_from_project) {
+            return this.labels_list_from_project
+          }
+          return null
+        }
       },
       methods: {
         request_file_change: function(direction, file){
@@ -153,6 +182,28 @@
 
         change_file: function(file){
           this.current_file = file;
+        },
+
+        get_labels_from_project: function () {
+
+          if (this.labels_list_from_project &&
+            this.project_string_id == this.$store.state.project.current.project_string_id) {
+            return
+          }
+
+          var url = '/api/project/' + this.project_string_id + '/labels/refresh'
+          this.label_refresh_loading = true
+
+          axios.get(url, {})
+            .then(response => {
+
+              this.labels_list_from_project = response.data.labels_out
+              this.label_file_colour_map_from_project = response.data.label_file_colour_map
+            })
+            .catch(error => {
+            console.log(error);
+          });
+
         },
 
         fetch_project_file_list: async function(){
@@ -200,8 +251,6 @@
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
 
-              this.label_file_colour_map = this.task.label_dict.label_file_colour_map
-              this.label_list = this.task.label_dict.label_file_list_serialized
             }
             this.task_error = response.data.log.error
           }
