@@ -39,6 +39,7 @@
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
+                   @new_tag_instance="insert_tag_type()"
                    @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
                    :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
                    :canvas_scale_global_setting="canvas_scale_global_setting"
@@ -1256,6 +1257,10 @@ export default Vue.extend( {
       if(this.show_context_menu){
         return false
       }
+      if (this.instance_type == "tag") {
+        return false
+      }
+
       return true;
 
     },
@@ -2981,13 +2986,15 @@ export default Vue.extend( {
     change_current_label_file_template: function (label_file) {
 
       this.current_label_file = label_file
-
       if (this.instance_type == "tag") {
-        this.push_instance_to_instance_list_and_buffer(this.current_instance, this.current_frame)
+        this.insert_tag_type()
       }
 
     },
 
+    insert_tag_type: function() {
+      this.push_instance_to_instance_list_and_buffer(this.current_instance, this.current_frame)
+    },
 
     add_instance_to_frame_buffer: function(instance, frame_number){
       if(!this.video_mode){return}
