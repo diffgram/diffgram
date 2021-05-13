@@ -155,7 +155,7 @@
       <div class="pl-3 pr-3 pt-4">
 
         <!-- instance_selector -->
-          <diffgram_select
+        <diffgram_select
             v-if="view_only_mode != true"
             :item_list="instance_type_list"
             data_cy="instance-type-select"
@@ -168,6 +168,16 @@
 
       </div>
     </v-flex>
+
+    <tooltip_button
+      v-if="instance_type == 'tag'"
+      @click="$emit('new_tag_instance')"
+      color="primary"
+      :icon_style="true"
+      icon="mdi-tag-plus-outline"
+      tooltip_message="Manual New Tag (Automatic on Label Change)"
+      :bottom="true">
+    </tooltip_button>
           
     <v-divider
       vertical
@@ -204,11 +214,13 @@
     </tooltip_button>
 
     <div class="has-changed">
-      <span v-if="save_loading"> Saving. </span>
-      <span v-else>
-        <span v-if="has_changed">Changes Detected...</span>
-        <span v-else>Changes Saved.</span>
-      </span>
+      <div style="width: 100px">
+        <span v-if="save_loading"> Saving. </span>
+        <span v-else>
+          <span v-if="has_changed">Changes Detected...</span>
+          <span v-else>Saved.</span>
+        </span>
+      </div>
     </div>
   
     <v-divider
