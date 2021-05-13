@@ -43,11 +43,6 @@ export default Vue.extend({
             return
           }
 
-          if (this.render_mode == "file_diff") {
-            done();
-            return
-          }
-
           if (this.is_actively_drawing == false) {
             done();
             return

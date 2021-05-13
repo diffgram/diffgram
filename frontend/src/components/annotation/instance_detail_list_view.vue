@@ -467,7 +467,6 @@ import Vue from "vue";
       'draw_mode',
       'instance_list',
       'label_file_colour_map',
-      'render_mode',
       'refresh',
       'view_only_mode',
       'label_settings',
@@ -533,6 +532,8 @@ import Vue from "vue";
     data() {
       return {
 
+        render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
+ 
         data_table_hover_index: -1,
         data_table_hover_click_index: -1,
         data_table_inner_menu_open: false,

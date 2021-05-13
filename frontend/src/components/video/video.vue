@@ -174,14 +174,7 @@
           </v-tooltip>
         </div>
 
-        <!--
 
-          I think this was for say hiding interpolate button in view
-          only mode? But would need to review more closely
-          in meantime the div seemed to be messing up formatting
-          <div v-if="['full', 'trainer_default'].includes(render_mode)">
-
-        -->
 
           <v-spacer> </v-spacer>
 
@@ -395,7 +388,6 @@ export default Vue.extend( {
     'current_video',
     'video_mode',
     'current_video_file_id',
-    'render_mode',
     'video_pause_request',
     'video_play_request',
     'task',

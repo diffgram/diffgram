@@ -2,7 +2,7 @@
   <div id="annotation_core">
 
 
-    <div v-if="['full', 'trainer_default'].includes(render_mode)">
+    <div>
 
 
       <main_menu :height="`${!error_no_permissions.data ? '100px' : '50px'}`">
@@ -252,19 +252,6 @@
 
           </v-flex>
 
-
-
-          <!--
-              If we go to the task directly the $props.task is defined,
-              but we if go through the job it's not.
-              In the past we looked at using the 'render_mode',
-              but as we are now allowing builders to see all this stuff
-              it seems clearer to use the task.id.
-                For more context, vue js sometimes doesn't like these type of dict
-                checks but we init task {} to have id attribute with null
-                so should be ok.
-
-            -->
 
 
         <!--  without this div the order of the two buttons randomly swaps
@@ -658,36 +645,11 @@
           </span>
         </span>
 
-          <!--
-        Pull latest doesn't make sense till
-        we have other source control stuff more built out
-        hide for now
-
-             note that this would need to use the new button format
-            -->
-          <!--
-        <v-menu v-model="source_control_menu"
-                v-if="['full'].includes(render_mode)"
-                :close-on-content-click="false"
-                :nudge-width="200"
-                offset-y
-                >
-
-          <v-btn color="primary">
-            <v-icon> mdi-source-branch </v-icon>
-          </v-btn>
-
-          <v_source_control_menu :project_string_id="project_string_id">
-          </v_source_control_menu>
-
-        </v-menu>
-          -->
-
 
           <!-- This check is very brittle -->
           <!-- MENU not info -->
           <v_annotation_trainer_menu
-              v-if="render_mode == 'trainer_default' || (task && task.id)"
+              v-if="task && task.id"
               :job_id="job_id"
               :task="task">
           </v_annotation_trainer_menu>
@@ -723,8 +685,7 @@
 
 
       <!-- Errors / info -->
-      <v-alert v-if="render_mode == 'trainer_default'
-                    && task_error.task_request"
+      <v-alert v-if="task_error.task_request"
                type="info">
         {{task_error.task_request}}
       </v-alert>
@@ -862,7 +823,6 @@
 
 
       <v-alert v-if="$store.state.user.settings.studio_box_info == true &&
-                    ['full', 'trainer_default'].includes(render_mode) &&
                     file != undefined"
              dismissible
              @input="$store.commit('set_user_setting', ['studio_box_info', false])"
@@ -889,7 +849,6 @@
                                   @toggle_instance_focus="focus_instance($event)"
                                   @show_all="focus_instance_show_all()"
                                   @instance_update="instance_update($event)"
-                                  :render_mode="render_mode"
                                   :video_mode="video_mode"
                                   :task="task"
                                   :view_only_mode="view_only_mode"
@@ -1023,7 +982,6 @@
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
                                   :is_actively_drawing="is_actively_drawing"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -1061,7 +1019,6 @@
                                   :issues_list="issues_list"
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -1079,7 +1036,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -1093,7 +1049,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -1154,7 +1109,6 @@
                   @set_canvas_dimensions="set_canvas_dimensions()"
                   @update_canvas="update_canvas"
                   :current_video_file_id="current_video_file_id"
-                  :render_mode="render_mode"
                   :video_pause_request="video_pause"
                   :video_play_request="video_play"
                   :task="task"
@@ -1250,7 +1204,7 @@
           ref="view_edit_issue_panel"
         ></view_edit_issue_panel>
       <v-container  v-show="!show_issue_panel">
-        <v-alert type="info" v-if="render_mode == 'home'" dismissible>
+        <v-alert type="info" dismissible>
           All Labels are shown here for viewing existing instances
           on files. Only the labels chosen at the Start will
           be available to annotators.
@@ -1302,8 +1256,6 @@
                                 !task_error.task_request && !error_no_permissions.data"
                          :project_string_id="project_string_id"
                          :current_video_file_id="current_video_file_id"
-                         :render_mode="render_mode"
-                         :annotation_assignment_on="is_annotation_assignment_bool"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
                          :request_label_file_refresh="request_label_file_refresh"
@@ -1505,12 +1457,7 @@ export default Vue.extend( {
       'task_mode_prop': {
         default: null
       },
-      'is_annotation_assignment_bool': {},
       'request_save': {},
-      'request_new_assignment': {},
-      'render_mode': {
-        default: 'yes'
-      },
       'annotator_email': {},
       'request_project_change': {},
       'file': {
@@ -3267,7 +3214,7 @@ export default Vue.extend( {
         this.project_string_id = this.$props.project_string_id_prop;
       }
 
-      if (this.render_mode == 'full' || this.render_mode == 'home') {
+      if (!this.task.id) {
         this.request_label_file_refresh = true
       }
       // Initial File Set
@@ -3276,10 +3223,6 @@ export default Vue.extend( {
       }
       else if(this.$props.task){
         this.on_change_current_task();
-      }
-
-      if (this.render_mode == 'file_diff') {
-        this.get_colour_map()
       }
 
       this.update_user_settings_from_store();
@@ -3366,11 +3309,9 @@ export default Vue.extend( {
       this.fetch_instance_template();
 
       this.update_canvas()
-      //if (this.render_mode == 'file_diff') {
-      ;
+
       // assumes canvas wrapper available
       this.canvas_wrapper.style.display = ""
-      //}
 
       var self = this
       this.get_instances_watcher = this.$store.watch((state) => {
@@ -3405,23 +3346,6 @@ export default Vue.extend( {
         },
       )
 
-      // we assume home == job for now
-      /*
-       * Not 100% sure goal of spacing here, but just trying to put more focus on
-       * media thing...
-       *
-       * At the very least the magic_nav_spacer is because even with the "container" removed,
-       * in the expand panel context we lost some space on left hand side.
-       *
-       * I think the issue before was actually more that it was in the "container".
-       *
-       * TODO rename home to job creation or something? that's confusing
-       */
-      if (this.render_mode == "home"){
-        this.right_nav_width = parseInt(this.right_nav_width / 1.5)
-        this.left_nav_width = parseInt(this.left_nav_width / 1.5)
-        this.magic_nav_spacer = 200
-      }
 
       if (this.$props.task || this.job_id) {
         this.task_mode_mounted()
@@ -6066,11 +5990,6 @@ export default Vue.extend( {
         }
       }
 
-      if (this.render_mode == "file_diff") {
-        await this.get_instances_file_diff()
-        this.get_instances_loading = false;
-        return
-      }
 
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {

@@ -4,8 +4,6 @@
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="show_video_ui">
         <v_annotation_core
-          :render_mode=" 'full' "
-          :is_annotation_assignment_bool="false"
           :project_string_id_prop="computed_project_string_id"
           :task="task"
           :file="current_file"

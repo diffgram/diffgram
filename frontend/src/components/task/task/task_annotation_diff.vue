@@ -1,9 +1,9 @@
 <template>
   <div v-cloak>
 
+      <!-- Full component render mode is deprecated pending removal or change  -->
       <v_annotation_core  :view_only_mode_prop="true"
                           :render_mode=" 'file_diff' "
-                          :is_annotation_assignment_bool="false"
                           :project_string_id="project_string_id"
                           :file_view_mode="'changes'"
                           :accesskey="'task_file_diff'"
