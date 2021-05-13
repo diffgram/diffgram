@@ -42,7 +42,7 @@
                                    :file="task.file"
                                    :video="current_video"
                                    :task="task"
-                                   :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                   :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
                                    :elevation="0">
 
               </task_meta_data_card>
@@ -62,7 +62,7 @@
                                    :video="current_video"
                                    :elevation="0"
                                    :file="file"
-                                   :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                   :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
               >
 
               </file_meta_data_card>
@@ -80,7 +80,7 @@
 
               <file_relations_card v-if="file"
                                    :file="file"
-                                   :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                   :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
                                    :elevation="0">
 
               </file_relations_card>
@@ -100,7 +100,7 @@
               <task_relations_card v-if="task"
                                    :file="task.file"
                                    :task="task"
-                                   :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                                   :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
                                    :elevation="0">
 
               </task_relations_card>
@@ -1133,7 +1133,7 @@
           v-show="!show_place_holder"
           :video_mode="video_mode"
           class="pl-4"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
           :view_only_mode="view_only_mode"
           :current_video_file_id="current_video_file_id"
           :current_frame="current_frame"
@@ -1177,7 +1177,7 @@
                                   :instance="selected_instance_for_history">
 
       </instance_history_sidepanel>
-      <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+      <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
                           v-show="show_issue_panel && !current_issue"
                           :instance_list="instance_list"
                           :task="task"
@@ -1191,7 +1191,7 @@
       <view_edit_issue_panel
           v-if="!loading"
           v-show="show_issue_panel && current_issue"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
           :task="task"
           :instance_list="instance_list"
           :current_issue_id="current_issue ? current_issue.id : undefined"
@@ -1241,7 +1241,7 @@
 
         <issues_sidepanel
           :minimized="minimize_issues_sidepanel"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
           :task="task"
           :file="file"
           @view_issue_detail="open_view_edit_panel"
@@ -1440,7 +1440,7 @@ export default Vue.extend( {
       userscript
     },
     props: {
-      'project_string_id_prop': {
+      'project_string_id': {
         default: null,
         type: String
       },
@@ -3203,13 +3203,6 @@ export default Vue.extend( {
 
     },
     created: function () {
-
-      if (!this.project_string_id_prop) {
-        this.project_string_id = this.$store.state.project.current.project_string_id
-      }
-      else{
-        this.project_string_id = this.$props.project_string_id_prop;
-      }
 
       if (!this.task.id) {
         this.request_label_file_refresh = true
@@ -5924,7 +5917,7 @@ export default Vue.extend( {
 
         } else {
 
-          var url = '/api/project/' + this.$store.state.project.current.project_string_id +
+          var url = '/api/project/' + this.$props.project_string_id +
             '/file/' + String(this.$props.file.id) + '/annotation/list'
         }
         try{
@@ -6049,7 +6042,7 @@ export default Vue.extend( {
         url += '/api/v1/task/' + this.task.id +
                 '/video/file_from_task'
       } else {
-        url += '/api/project/' + this.$store.state.project.current.project_string_id +
+        url += '/api/project/' + this.$props.project_string_id +
                 '/video/' + String(this.current_video_file_id)
         // careful it's the video file we want here
       }

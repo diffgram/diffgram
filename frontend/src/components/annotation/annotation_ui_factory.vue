@@ -4,7 +4,7 @@
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="show_annotation_core == true">
         <v_annotation_core
-          :project_string_id_prop="computed_project_string_id"
+          :project_string_id="computed_project_string_id"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
@@ -29,7 +29,7 @@
           :view_only="view_only"
           :file_id_prop="file_id_prop"
           :job_id="job_id"
-          @change_file="change_file"
+          @change_file="change_file($event)"
         >
         </file_manager_sheet>
 
@@ -150,8 +150,8 @@
         request_file_change: function(direction, file){
           this.$refs.file_manager_sheet.request_change_file(direction, file);
         },
-        change_file: function(file){
 
+        change_file: function(file){
           this.current_file = file;
         },
 
@@ -167,12 +167,14 @@
 
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
+
         fetch_single_file: async function(){
           this.loading = true;
           this.current_file = await this.$refs.file_manager_sheet.get_media();
           this.loading = false;
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
+
         fetch_single_task: async function(task_id){
           this.media_sheet = false;
           this.task_error = {
@@ -209,6 +211,7 @@
             // this.logout()
           }
         },
+
         change_task: async function(direction, task){
           if(!task){
             throw new Error('Provide task ')
@@ -239,6 +242,7 @@
 
           }
         },
+
         get_project: function () {
 
           if (this.project_string_id == null) {
@@ -275,9 +279,11 @@
             })
             .catch(error => {console.debug(error); });
         },
+
         set_file_list: function(new_file_list){
           this.$refs.file_manager_sheet.set_file_list(new_file_list)
         },
+
         add_visit_history_event: async function (object_type) {
           let page_name = 'data_explorer'
           if (this.$props.file_id_prop) {
@@ -298,6 +304,7 @@
         current_image_function: function (result) {
           this.current_image = result
         },
+
         save_response_callback: function (result) {
 
 
