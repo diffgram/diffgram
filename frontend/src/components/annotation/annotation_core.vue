@@ -3204,10 +3204,6 @@ export default Vue.extend( {
     },
     created: function () {
 
-      if (!this.task.id) {
-        this.request_label_file_refresh = true
-      }
-
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
 
