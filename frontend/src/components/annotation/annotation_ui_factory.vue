@@ -105,7 +105,7 @@
       created() {
         this.get_project();
         this.get_labels_from_project();
-        this.$store.commit('set_project_string_id', this.project_string_id);
+        this.$store.commit('set_project_string_id', this.computed_project_string_id);
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -187,7 +187,7 @@
         get_labels_from_project: function () {
 
           if (this.labels_list_from_project &&
-            this.project_string_id == this.$store.state.project.current.project_string_id) {
+            this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
             return
           }
 
@@ -294,19 +294,14 @@
 
         get_project: function () {
 
-          if (this.project_string_id == null) {
+          if (this.computed_project_string_id == null) {
+            return
+          }
+          if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
             return
           }
 
-          if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-            // context that if we already have the the project, there's not specific need to refresh
-            // project is bound / related to directory so if it refresh artifically we need
-            // to cache directory
-            // Not clear if downsides of not refreshing here by default
-            return
-          }
-
-          axios.get('/api/project/' + this.project_string_id + '/view')
+          axios.get('/api/project/' + this.computed_project_string_id + '/view')
             .then(response => {
               if (response.data['none_found'] == true) {
                 this.none_found = true
@@ -357,10 +352,6 @@
         save_response_callback: function (result) {
 
 
-        },
-        upload_link: function () {
-          this.$router.push('/studio/upload/' +
-            String(this.$store.state.project.current.project_string_id))
         },
 
       },
