@@ -158,6 +158,12 @@
           // TODO consider v-model for selected in this context.
         }
 
+        window.addEventListener('keyup', this.keyboard_events_window);
+
+      },
+
+      beforeDestroy() {
+        window.removeEventListener('keyup', this.keyboard_events_window)
       },
 
       computed: {
@@ -182,6 +188,19 @@
           selected: {},
 
           label_list: [],
+
+          hotkey_dict: {
+            49: 0,
+            50: 1,
+            51: 2,
+            52: 3,
+            53: 4,
+            54: 5,
+            55: 6,
+            56: 7,
+            57: 8,
+            58: 9
+          },
 
         }
       },
@@ -228,7 +247,21 @@
 
         emit_selected: function () {
           this.$emit('change', this.selected)
-        }
+        },
+
+        keyboard_events_window: function (event) {
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return
+          }
+          let hotkey = null
+          hotkey = this.hotkey_dict[event.keyCode]
+          if (hotkey != null) {
+            this.selected = this.label_list[hotkey]
+            this.emit_selected()
+          }
+
+        },
 
       }
     }
