@@ -160,7 +160,7 @@
           if (this.label_file_colour_map_from_project) {
             return this.label_file_colour_map_from_project
           }
-          return null
+          return {}
             
         },
 
@@ -172,7 +172,7 @@
           if (this.labels_list_from_project) {
             return this.labels_list_from_project
           }
-          return null
+          return []
         }
       },
       methods: {
