@@ -27,10 +27,8 @@
             color="black">
           </tooltip_icon>
 
-          <v-chip color="white"
-                  text-color="primary">
-            {{data.item.label.name}}
-          </v-chip>
+
+          {{data.item.label.name}}
 
 
           <div v-if="show_visibility_toggle
@@ -40,15 +38,25 @@
 
               <div v-if="data.item.is_visible == true
                     || data.item.is_visible == null">
-                <v-btn icon @click="toggle_label_visible(data.item)">
-                  <v-icon color="blue">remove_red_eye</v-icon>
-                </v-btn>
+                <tooltip_button
+                  @click="toggle_label_visible(data.item)"
+                  color="grey"
+                  :icon_style="true"
+                  icon="remove_red_eye"
+                  tooltip_message="Hide"
+                  :bottom="true">
+                </tooltip_button>
               </div>
 
               <div v-if="data.item.is_visible == false">
-                <v-btn icon @click="toggle_label_visible(data.item)">
-                  <v-icon color="grey">remove_red_eye</v-icon>
-                </v-btn>
+                <tooltip_button
+                  @click="toggle_label_visible(data.item)"
+                  color="grey"
+                  :icon_style="true"
+                  icon="mdi-eye-off"
+                  tooltip_message="Show"
+                  :bottom="true">
+                </tooltip_button>
               </div>
 
             </v-layout>
