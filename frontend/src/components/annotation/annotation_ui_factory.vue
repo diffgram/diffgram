@@ -24,6 +24,7 @@
       </div>
 
         <file_manager_sheet
+          v-if="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
@@ -71,6 +72,7 @@
         return {
 
           loading: false,
+          loading_project: false,
           task: null,
           current_file: null,
           request_save: false,
@@ -84,6 +86,7 @@
       },
       watch: {
         '$route'(to, from) {
+          console.log('WATCHEEEER')
           if(from.name === 'task_annotation' && to.name === 'studio'){
             this.fetch_project_file_list();
             this.task = null;
@@ -113,8 +116,9 @@
         }
 
       },
-      mounted() {
-
+      async mounted() {
+        await this.get_project();
+        this.$store.commit('set_project_string_id', this.project_string_id);
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -204,6 +208,7 @@
 
         fetch_project_file_list: async function(){
           this.loading = true;
+          console.log('aaaaaqqqqq', this.loading_project)
           if(this.$route.query.file){
             this.current_file = await this.$refs.file_manager_sheet.get_media(true, this.$route.query.file);
           }
@@ -288,7 +293,26 @@
           }
         },
 
-        get_project: function () {
+        get_project: async function () {
+          try{
+            this.loading_project = true
+            if (this.project_string_id == null) {
+              return
+            }
+            if (this.project_string_id == this.$store.state.project.current.project_string_id) {
+              // context that if we already have the the project, there's not specific need to refresh
+              // project is bound / related to directory so if it refresh artifically we need
+              // to cache directory
+              // Not clear if downsides of not refreshing here by default
+              return
+            }
+            const response = await axios.get('/api/project/' + this.project_string_id + '/view');
+            if (response.data['none_found'] == true) {
+              this.none_found = true
+            }
+            else {
+              this.$store.commit('set_project_name', response.data['project']['name'])
+              this.$store.commit('set_project', response.data['project'])
 
           if (this.computed_project_string_id == null) {
             return
@@ -316,8 +340,15 @@
                   }
                 }
               }
-            })
-            .catch(error => {console.debug(error); });
+            }
+
+          }
+          catch (error) {
+            console.error(error)
+          }
+          finally {
+            this.loading_project = false
+          }
         },
 
         set_file_list: function(new_file_list){
