@@ -130,6 +130,7 @@
         }
       },
       computed: {
+
         file_id: function () {
           let file_id = this.$props.file_id_prop;
           if (this.$route.query.file) {
@@ -137,6 +138,7 @@
           }
           return file_id;
         },
+
         computed_project_string_id: function () {
           if (this.$props.project_string_id) {
             this.$store.commit('set_project_string_id', this.$props.project_string_id);
@@ -144,6 +146,7 @@
           }
           return this.$store.state.project.current.project_string_id;
         },
+
         show_annotation_core: function(){
           return true
         },
@@ -187,7 +190,11 @@
             return
           }
 
-          var url = '/api/project/' + this.project_string_id + '/labels/refresh'
+          if (!this.computed_project_string_id) {
+            return
+          }
+
+          var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
           this.label_refresh_loading = true
 
           axios.get(url, {})
