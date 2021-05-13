@@ -31,8 +31,7 @@
     </div>
 
 
-    <v_annotation_core :render_mode=" 'assignment_review' "
-                       @images_found="images_found_function"
+    <v_annotation_core @images_found="images_found_function"
                        :request_save="request_save"
                        @save_response_callback="save_response_callback_function"
                        :request_new_assignment="request_new_assignment"

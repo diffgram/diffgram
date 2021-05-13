@@ -2,58 +2,36 @@
   <div style="overflow-x:auto;">
 
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="show_video_ui">
+      <div v-if="show_annotation_core == true">
         <v_annotation_core
-          :render_mode=" 'full' "
-          :is_annotation_assignment_bool="false"
-          :project_string_id_prop="computed_project_string_id"
+          :project_string_id="computed_project_string_id"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
           :request_save="request_save"
-          :request_project_change="request_project_change"
           :accesskey="'full'"
-          :file_view_mode="'annotation'"
           :job_id="job_id"
           :view_only_mode="view_only"
-          @save_response_callback="save_response_callback_function"
-          @current_image="current_image_function"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
-          @images_found="images_found_function"
           @set_file_list="set_file_list"
           @request_new_task="change_task"
           ref="annotation_core"
         >
         </v_annotation_core>
       </div>
-      <div v-else-if="loading">
-        <v-progress-circular indeterminate></v-progress-circular>
-      </div>
-      <div v-else>
-
-        <!-- Default if no images uploaded for project -->
-        <v-card>
-          <v-card-title>
-            Welcome!
-            Images/Text can be annotated here. :)
-
-          </v-card-title>
-          <v-btn @click="upload_link">
-            Upload images
-          </v-btn>
-
-        </v-card>
-
-      </div>
 
         <file_manager_sheet
+          v-if="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
           :view_only="view_only"
           :file_id_prop="file_id_prop"
           :job_id="job_id"
-          @change_file="change_file"
+          @change_file="change_file($event)"
         >
         </file_manager_sheet>
 
@@ -92,17 +70,17 @@
       },
       data() {
         return {
+
           loading: false,
+          loading_project: false,
           task: null,
           current_file: null,
-          images_found: true,
           request_save: false,
-          request_project_change: null,
-          view_only: false,
-          current_image: null,
 
-          download_annotations_loading: false,
-          annotation_example: false,
+          view_only: false,
+
+          labels_list_from_project: null,
+          label_file_colour_map_from_project: null
 
         }
       },
@@ -119,13 +97,11 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
-          this.images_found = true,
-            this.request_project_change = Date.now()
         }
       },
       created() {
-        this.get_project();
-        this.$store.commit('set_project_string_id', this.project_string_id);
+        this.get_labels_from_project();
+
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -138,7 +114,8 @@
         }
 
       },
-      mounted() {
+      async mounted() {
+        await this.get_project();
 
         if (this.$route.query.view_only) {
           this.view_only = true;
@@ -155,6 +132,7 @@
         }
       },
       computed: {
+
         file_id: function () {
           let file_id = this.$props.file_id_prop;
           if (this.$route.query.file) {
@@ -162,29 +140,75 @@
           }
           return file_id;
         },
+
         computed_project_string_id: function () {
           if (this.$props.project_string_id) {
+            this.$store.commit('set_project_string_id', this.$props.project_string_id);
             return this.$props.project_string_id;
           }
           return this.$store.state.project.current.project_string_id;
         },
-        show_video_ui: function(){
-          if(this.current_file &&  (this.current_file.type === 'image' || this.current_file.type === 'video')){
-            return true
-          }
-          if(this.task && (this.task.file.type === 'image' || this.task.file.type === 'video')){
-            return true
-          }
-          return false
+
+        show_annotation_core: function(){
+          return true
         },
+
+        label_file_colour_map: function () {
+          if (this.task &&
+              this.task.label_file_colour_map) {
+            return this.task.label_dict.label_file_colour_map
+          }
+          if (this.label_file_colour_map_from_project) {
+            return this.label_file_colour_map_from_project
+          }
+          return {}
+
+        },
+
+        label_list: function () {
+          if (this.task &&
+              this.task.label_list) {
+              return this.task.label_dict.label_file_list_serialized
+          }
+          if (this.labels_list_from_project) {
+            return this.labels_list_from_project
+          }
+          return []
+        }
       },
       methods: {
         request_file_change: function(direction, file){
           this.$refs.file_manager_sheet.request_change_file(direction, file);
         },
-        change_file: function(file){
 
+        change_file: function(file){
           this.current_file = file;
+        },
+
+        get_labels_from_project: function () {
+
+          if (this.labels_list_from_project &&
+            this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+            return
+          }
+
+          if (!this.computed_project_string_id) {
+            return
+          }
+
+          var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
+          this.label_refresh_loading = true
+
+          axios.get(url, {})
+            .then(response => {
+
+              this.labels_list_from_project = response.data.labels_out
+              this.label_file_colour_map_from_project = response.data.label_file_colour_map
+            })
+            .catch(error => {
+            console.log(error);
+          });
+
         },
 
         fetch_project_file_list: async function(){
@@ -199,12 +223,14 @@
 
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
+
         fetch_single_file: async function(){
           this.loading = true;
           this.current_file = await this.$refs.file_manager_sheet.get_media();
           this.loading = false;
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
+
         fetch_single_task: async function(task_id){
           this.media_sheet = false;
           this.task_error = {
@@ -230,8 +256,6 @@
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
 
-              this.label_file_colour_map = this.task.label_dict.label_file_colour_map
-              this.label_list = this.task.label_dict.label_file_list_serialized
             }
             this.task_error = response.data.log.error
           }
@@ -241,6 +265,7 @@
             // this.logout()
           }
         },
+
         change_task: async function(direction, task){
           if(!task){
             throw new Error('Provide task ')
@@ -271,45 +296,51 @@
 
           }
         },
-        get_project: function () {
 
-          if (this.project_string_id == null) {
-            return
-          }
+        get_project: async function () {
+          try {
+            this.loading_project = true
+            if (this.project_string_id == null) {
+              return
+            }
+            if (this.project_string_id == this.$store.state.project.current.project_string_id) {
+              return
+            }
+            const response = await axios.get('/api/project/' + this.project_string_id + '/view');
+            if (response.data['none_found'] == true) {
+              this.none_found = true
+            } else {
+              this.$store.commit('set_project_name', response.data['project']['name'])
+              this.$store.commit('set_project', response.data['project'])
 
-          if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-            // context that if we already have the the project, there's not specific need to refresh
-            // project is bound / related to directory so if it refresh artifically we need
-            // to cache directory
-            // Not clear if downsides of not refreshing here by default
-            return
-          }
+              if (response.data.user_permission_level) {
+                this.$store.commit('set_current_project_permission_level', response.data.user_permission_level[0])
 
-          axios.get('/api/project/' + this.project_string_id + '/view')
-            .then(response => {
-              if (response.data['none_found'] == true) {
-                this.none_found = true
-              } else {
-                //console.debug(response)
-                this.$store.commit('set_project_name', response.data['project']['name'])
-                this.$store.commit('set_project', response.data['project'])
-
-                // TODO may not be right place to get this
-                if (response.data.user_permission_level) {
-                  this.$store.commit('set_current_project_permission_level',
-                    response.data.user_permission_level[0])
-
-                  if (response.data.user_permission_level[0] == "Viewer") {
-                    this.view_only = true
-                  }
+                if (response.data.user_permission_level[0] == "Viewer") {
+                  this.view_only = true
                 }
               }
-            })
-            .catch(error => {console.debug(error); });
+
+              if (this.computed_project_string_id == null) {
+                return
+              }
+              if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+                return
+              }
+            }
+          }
+          catch (error) {
+            console.error(error)
+          }
+          finally {
+            this.loading_project = false
+          }
         },
+
         set_file_list: function(new_file_list){
           this.$refs.file_manager_sheet.set_file_list(new_file_list)
         },
+
         add_visit_history_event: async function (object_type) {
           let page_name = 'data_explorer'
           if (this.$props.file_id_prop) {
@@ -327,25 +358,12 @@
           })
         },
 
-        current_image_function: function (result) {
-          this.current_image = result
-        },
-        save_response_callback_function: function (result) {
 
-          if (result == true) {
-            this.request_save = false
-            // better error handling here?
-          }
+        save_response_callback: function (result) {
+
 
         },
-        upload_link: function () {
-          this.$router.push('/studio/upload/' +
-            String(this.$store.state.project.current.project_string_id))
-        },
 
-        images_found_function: function (bool) {
-          this.images_found = bool
-        },
       },
     }
   )
