@@ -11,6 +11,7 @@
                 :disabled="label_refresh_loading"
                 @change="emit_selected()"
                 item-value="id"
+                ref="label_select"
                 >
 
         <template v-slot:item="data">
@@ -20,15 +21,22 @@
             flag
           </v-icon>
 
+          <div class="pl-4 pr-4">
+          {{data.item.label.name}}
+           </div>
+
+          <!-- Would like to have this but it looks kind of messy -->
+          <!--
+          <div style="color: grey">
+            {{label_list.indexOf(data.item) + 1}}</div>
+          -->
+
           <tooltip_icon
             v-if="data.item.label.default_sequences_to_single_frame"
             tooltip_message="Video Defaults to Single Frame"
             icon="mdi-flag-checkered"
             color="black">
           </tooltip_icon>
-
-
-          {{data.item.label.name}}
 
 
           <div v-if="show_visibility_toggle
@@ -40,7 +48,7 @@
                     || data.item.is_visible == null">
                 <tooltip_button
                   @click="toggle_label_visible(data.item)"
-                  color="grey"
+                  color="grey lighten-1"
                   :icon_style="true"
                   icon="remove_red_eye"
                   tooltip_message="Hide"
@@ -241,6 +249,10 @@
 
         },
 
+        toggle_label_menu: function () {
+          this.$refs['label_select'].isMenuActive = !this.$refs['label_select'].isMenuActive;
+        },
+
         style_color: function (hex) {
           return "color:" + hex
         },
@@ -254,6 +266,11 @@
           if (this.$store.state.user.is_typing_or_menu_open == true) {
             return
           }
+          if (event.key === 'w') {
+            this.toggle_label_menu()
+            return
+          }
+
           let hotkey = null
           hotkey = this.hotkey_dict[event.keyCode]
           if (hotkey != null) {
