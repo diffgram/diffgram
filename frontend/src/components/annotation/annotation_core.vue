@@ -1258,11 +1258,8 @@
                          :current_video_file_id="current_video_file_id"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
-                         :request_label_file_refresh="request_label_file_refresh"
-                         @request_label_file_refresh_callback="request_label_file_refresh_callback"
                          @request_boxes_refresh="request_boxes_refresh"
                          @update_label_file_visible="update_label_file_visible($event)"
-                         @label_file_colour_map="label_file_colour_map = $event"
                          @label_list="label_list = $event"
                          :video_mode="video_mode"
                          :view_only_mode="view_only_mode"
@@ -1454,12 +1451,13 @@ export default Vue.extend( {
       'task': {
         default: null
       },
+      'label_file_colour_map': {},
+      'label_list': {},
       'task_mode_prop': {
         default: null
       },
       'request_save': {},
       'annotator_email': {},
-      'request_project_change': {},
       'file': {
         default: {
           image: {
@@ -1524,9 +1522,6 @@ export default Vue.extend( {
 
         this.clear_selected()
 
-      },
-      request_project_change() {
-        this.request_label_file_refresh = true
       }
    },
 
@@ -1663,9 +1658,6 @@ export default Vue.extend( {
 
       loading: false,
 
-      label_file_colour_map: {},
-      label_list: null,
-
       label_settings: {
         show_text: true,
         show_label_text: true,
@@ -1792,8 +1784,6 @@ export default Vue.extend( {
       refresh: null,
       canvas_element: null,
 
-      request_label_file_refresh: false,
-
       current_label_file: {
         id: null,
         label: {
@@ -1884,6 +1874,8 @@ export default Vue.extend( {
     }
   },
   computed: {
+
+    
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -3692,9 +3684,7 @@ export default Vue.extend( {
 
     },
 
-    request_label_file_refresh_callback: function (bool) {
-      this.request_label_file_refresh = false
-    },
+
     add_instance_to_frame_buffer: function(instance, frame_number){
       if(!this.video_mode){return}
       if (frame_number == undefined) {
