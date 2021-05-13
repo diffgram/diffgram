@@ -1800,8 +1800,6 @@ export default Vue.extend( {
         }
       },
 
-      images_found: true,
-
       Annotation_assignments : [],
 
       html_image: new Image(),  // our canvas expects an image at init
@@ -3663,11 +3661,6 @@ export default Vue.extend( {
                 this.change_file("none", this.File_list[0])
               }
             }
-            else {
-              // TODO handle replacing images better here
-              // and review in context that this is for a file in general not just image
-              this.images_found = false
-            }
 
           }
         }
@@ -4902,37 +4895,31 @@ export default Vue.extend( {
 
       */
       if (!this.$props.file) {
-        // TODO review using
-        this.images_found = false
         this.loading = false
       }
       else{
           this.$emit('current_file', this.$props.file)
-          this.images_found = true
       }
-      if (this.images_found == true) {
+     
+      /*
+      1.  creates new Image()
+      1.1 attaches src to html image
+      1.2 load() triggers resolve()
 
-        /*
-        1.  creates new Image()
-        1.1 attaches src to html image
-        1.2 load() triggers resolve()
+      2.0 resolve() updates vue js html_image with html image
 
-        2.0 resolve() updates vue js html_image with html image
+      */
+      //console.debug("loaded image")
+      this.canvas_wrapper.style.display = ""
 
-        */
-        //console.debug("loaded image")
-        this.canvas_wrapper.style.display = ""
+      await this.get_instances()
 
-        await this.get_instances()
+      this.canvas_width = this.$props.file.image.width
+      this.canvas_height = this.$props.file.image.height
 
-        this.canvas_width = this.$props.file.image.width
-        this.canvas_height = this.$props.file.image.height
+      await this.addImageProcess_with_canvas_refresh()
 
-        await this.addImageProcess_with_canvas_refresh()
-
-      }
-
-      this.$emit('images_found', this.images_found)
+  
     },
 
     addImageProcess_with_canvas_refresh: async function () {
