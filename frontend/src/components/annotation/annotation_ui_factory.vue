@@ -22,25 +22,6 @@
         >
         </v_annotation_core>
       </div>
-      <div v-else-if="loading">
-        <v-progress-circular indeterminate></v-progress-circular>
-      </div>
-      <div v-else>
-
-        <!-- Default if no images uploaded for project -->
-        <v-card>
-          <v-card-title>
-            Welcome!
-            Images/Text can be annotated here. :)
-
-          </v-card-title>
-          <v-btn @click="upload_link">
-            Upload images
-          </v-btn>
-
-        </v-card>
-
-      </div>
 
         <file_manager_sheet
           ref="file_manager_sheet"
