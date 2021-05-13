@@ -107,14 +107,10 @@
       },
       watch: {
         task: function(newval, oldval){
-          if(newval.id && newval.id != oldval.id){
-            this.get_issues_list()
-          }
+          this.get_if_new_value(newval, oldval)
         },
         file: function(newval, oldval){
-          if(newval && newval.id != oldval.id){
-            this.get_issues_list()
-          }
+          this.get_if_new_value(newval, oldval)
         }
       },
       beforeMount() {
@@ -158,6 +154,15 @@
 
       },
       methods: {
+
+        get_if_new_value(newval, oldval){
+          if(newval.id && oldval == null) {
+            this.get_issues_list()
+          }
+          else if(newval.id && newval.id != oldval.id){
+            this.get_issues_list()
+          }
+        },
         minimize_panel(){
           this.$emit('minimize_issues_panel', true)
         },
