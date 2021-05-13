@@ -48,44 +48,29 @@
                      :info="info">
     </v_info_multiple>
 
-    <!-- TODO this alert should be in a slot or something
-       makes no sense to have to go here
-       ie slot name = "alert"
-      and then the task thing could pass this as a template or something.
-      -->
-    <v-alert  v-if="file_view_mode == 'task'"
-              class="text-left"
-              type="info"
-              dismissible>
 
-       Select and attach files to be included in the job.
-    </v-alert>
-
-    <v-layout class="d-flex">
+    <v-layout >
 
           <div v-if="!media_loading && !loading && metadata_previous.start_index == metadata_previous.file_count">
-             <v-chip color="primary"
-                  text-color="white"
+             <v-chip color="white"
+                  text-color="primary"
                   >No more pages.</v-chip>
           </div>
-          <div v-else class="d-flex align-center">
-             <v-chip color="primary"
-                     small
-                  text-color="white"
-                  >{{start_index_oneth_index}} to
-            {{metadata_previous.end_index }} </v-chip>
-              of
-              <v-chip color="primary"
-                      small
-                      text-color="white"
-                  >{{metadata_previous.file_count}}</v-chip>
+          <div v-else
+               class="pl-2 pt-4">
+
+            <v-chip color="white"
+                    text-color="primary"
+                >{{start_index_oneth_index}} to
+          {{metadata_previous.end_index }} </v-chip>
+            of
+            <v-chip color="white"
+                    text-color="primary"
+                >{{metadata_previous.file_count}}</v-chip>
+
           </div>
           <div class="d-flex align-center">
 
-            <!-- TODO proper counts for job file stuff
-                Note "task" is wrong here, in that's referring to creating a job
-                not how it looks to person actually running with a job
-                -->
             <div v-if="file_view_mode == 'task'">
               (not already in Job)
             </div>
