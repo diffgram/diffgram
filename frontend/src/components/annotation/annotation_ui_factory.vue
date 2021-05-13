@@ -100,7 +100,6 @@
         }
       },
       created() {
-        this.get_project();
         this.get_labels_from_project();
 
         if (this.$route.query.view_only) {
@@ -117,7 +116,7 @@
       },
       async mounted() {
         await this.get_project();
-        this.$store.commit('set_project_string_id', this.project_string_id);
+
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -305,10 +304,6 @@
               return
             }
             if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-              // context that if we already have the the project, there's not specific need to refresh
-              // project is bound / related to directory so if it refresh artifically we need
-              // to cache directory
-              // Not clear if downsides of not refreshing here by default
               return
             }
             const response = await axios.get('/api/project/' + this.project_string_id + '/view');
@@ -317,6 +312,14 @@
             } else {
               this.$store.commit('set_project_name', response.data['project']['name'])
               this.$store.commit('set_project', response.data['project'])
+
+              if (response.data.user_permission_level) {
+                this.$store.commit('set_current_project_permission_level', response.data.user_permission_level[0])
+
+                if (response.data.user_permission_level[0] == "Viewer") {
+                  this.view_only = true
+                }
+              }
 
               if (this.computed_project_string_id == null) {
                 return
