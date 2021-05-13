@@ -2,7 +2,7 @@
   <div style="overflow-x:auto;">
 
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="show_video_ui">
+      <div v-if="show_annotation_core == true">
         <v_annotation_core
           :project_string_id_prop="computed_project_string_id"
           :task="task"
@@ -11,7 +11,6 @@
           :request_save="request_save"
           :request_project_change="request_project_change"
           :accesskey="'full'"
-          :file_view_mode="'annotation'"
           :job_id="job_id"
           :view_only_mode="view_only"
           @save_response_callback="save_response_callback_function"
@@ -166,14 +165,8 @@
           }
           return this.$store.state.project.current.project_string_id;
         },
-        show_video_ui: function(){
-          if(this.current_file &&  (this.current_file.type === 'image' || this.current_file.type === 'video')){
-            return true
-          }
-          if(this.task && (this.task.file.type === 'image' || this.task.file.type === 'video')){
-            return true
-          }
-          return false
+        show_annotation_core: function(){
+          return true
         },
       },
       methods: {
