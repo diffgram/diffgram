@@ -2481,8 +2481,8 @@ export default Vue.extend( {
       return instance_template.instance_list.filter(instance => instance.type === 'keypoints').length > 0;
     },
     get_create_instance_template_url: function(){
-      if(this.$props.project_string_id_prop){
-        return `/api/v1/project/${this.$props.project_string_id_prop}/instance-template/new`
+      if(this.$props.project_string_id){
+        return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`
       }
       else{
         return `/api/v1/task/${this.$props.task.id}/instance-template/new`
@@ -2822,7 +2822,7 @@ export default Vue.extend( {
         this.loading_instance_templates = true;
         this.canvas_element = document.getElementById("my_canvas")
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
-        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id_prop}/instance-template/list`, {});
+        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {});
         if (response.data.instance_template_list) {
           this.instance_template_list = response.data.instance_template_list.map(instance_template => {
 
@@ -4882,7 +4882,7 @@ export default Vue.extend( {
       else{
           this.$emit('current_file', this.$props.file)
       }
-     
+
       /*
       1.  creates new Image()
       1.1 attaches src to html image
@@ -4901,7 +4901,7 @@ export default Vue.extend( {
 
       await this.addImageProcess_with_canvas_refresh()
 
-  
+
     },
 
     addImageProcess_with_canvas_refresh: async function () {
