@@ -1255,7 +1255,6 @@
                          :loading="loading"
                          @request_boxes_refresh="request_boxes_refresh"
                          @update_label_file_visible="update_label_file_visible($event)"
-                         @label_list="label_list = $event"
                          :video_mode="video_mode"
                          :view_only_mode="view_only_mode"
                          :instance_type="instance_type"
