@@ -28,7 +28,7 @@
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
-          @click="$router.push('/job/list/')"
+          @click="$router.push('/job/' + task.job_id)"
           :bottom="true">
         </tooltip_button>
 
@@ -36,7 +36,6 @@
           vertical
         ></v-divider>
       </v-layout>
-
     </div>
 
     <!-- Undo Redo -->
