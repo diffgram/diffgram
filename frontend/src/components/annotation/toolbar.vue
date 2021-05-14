@@ -64,11 +64,12 @@
     </div>
 
     <v-divider
+      v-if="task"
       vertical
     ></v-divider>
 
     <v_is_complete
-        v-if="file || task"
+        v-if="task"
         :project_string_id="project_string_id"
         :current_file="file ? file : task.file"
         :task="task"
