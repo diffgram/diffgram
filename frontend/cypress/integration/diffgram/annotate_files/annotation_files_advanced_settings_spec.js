@@ -27,13 +27,13 @@ describe('Annotate Files Tests', () => {
 
       it('Toggles Show Any Text',() => {
         // Draw 2 Boxes
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
 
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.mousedowncanvas(160, 160);
         cy.mouseupcanvas();
         cy.mousedowncanvas(200, 200);
@@ -49,13 +49,13 @@ describe('Annotate Files Tests', () => {
 
       it('Toggles Show Label Text',() => {
         // Draw 2 Boxes
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
 
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.mousedowncanvas(160, 160);
         cy.mouseupcanvas();
         cy.mousedowncanvas(200, 200);
