@@ -21,6 +21,7 @@ describe('Annotate Files Tests', () => {
     context('Advanced Annotation Settings Menu', () => {
 
       it('Displays the Advanced Settings Option', () => {
+        cy.get('[data-cy=more_button]').click({force: true});
         cy.get('[data-cy=advanced_setting]').click({force: true})
         cy.get('[data-cy=annotation_setting_menu]').should('be.visible')
       })
@@ -62,6 +63,7 @@ describe('Annotate Files Tests', () => {
         cy.mouseupcanvas();
 
         cy.wait(500)
+        cy.get('[data-cy=more_button]').click({force: true});
         cy.get('[data-cy=advanced_setting]').click({force: true})
         cy.get('[data-cy=show_any_text_checkbox]').click({force: true})
 
