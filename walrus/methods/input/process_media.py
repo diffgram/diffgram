@@ -1453,7 +1453,7 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-
+        print('process_existing_instance_list', self.input.instance_list, self.input.media_type)
         if not self.input.instance_list:
             return
 
@@ -1465,7 +1465,7 @@ class Process_Media():
         instance_list = self.input.instance_list.get('list')
         task = None
         should_complete_task = False
-
+        print('PROCES MEDIA INSTANCE LIST', instance_list)
         if not instance_list:
             return
 
@@ -1490,30 +1490,35 @@ class Process_Media():
             }
 
         file = File.get_by_id(self.session, file_id)  # For video, expects it to be parent video file, not a frame
-        
-        annotation_update = Annotation_Update(
-            session=self.session,
-            file=file,
-            instance_list_new=instance_list,
-            project_id=self.input.project_id,
-            video_data=video_data,
-            task=task,
-            complete_task=should_complete_task,
-            do_init_existing_instances=init_existing_instances,
-            external_map=self.input.external_map,
-            external_map_action=self.input.external_map_action,
-            do_update_sequences=False
-        )
 
+        try:
+            annotation_update = Annotation_Update(
+                session=self.session,
+                file=file,
+                instance_list_new=instance_list,
+                project_id=self.input.project_id,
+                video_data=video_data,
+                task=task,
+                complete_task=should_complete_task,
+                do_init_existing_instances=init_existing_instances,
+                external_map=self.input.external_map,
+                external_map_action=self.input.external_map_action,
+                do_update_sequences=False
+            )
+            # This returns original file type which would be different
+            new_file = annotation_update.main()
+            # Because we don't have great way to handle old and new yet
+            # Maybe just do this for update mode
+            # Careful, for frames, "file" changes here.
+            # eg file doesn't exist, then annotation creates it.
+            annotation_update.file.set_cache_key_dirty('instance_list')
 
-        # This returns original file type which would be different
-        new_file = annotation_update.main()
+        except Exception as e:
+            trace = traceback.format_exc()
+            self.input.status = "failed"
+            self.input.status_text = "Instance List Creation error: {}".format(trace)
+            logger.error(trace)
 
-        # Because we don't have great way to handle old and new yet
-        # Maybe just do this for update mode
-        # Careful, for frames, "file" changes here.
-        # eg file doesn't exist, then annotation creates it. 
-        annotation_update.file.set_cache_key_dirty('instance_list')
         # Propgate errors if any back up to input
         if len(annotation_update.log["error"].keys()) >= 1:
             self.input.status = "failed"
