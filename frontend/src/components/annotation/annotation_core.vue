@@ -40,6 +40,7 @@
                    @complete_task="complete_task()"
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
+                   @replace_file="$emit('replace_file', $event)"
                    @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
                    :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
                    :canvas_scale_global_setting="canvas_scale_global_setting"
@@ -2083,6 +2084,7 @@ export default Vue.extend( {
 
     create_instance_list_with_class_types: function(instance_list){
       const result = []
+      if (!instance_list) { return result }
       for(let i = 0; i < instance_list.length; i++){
         let current_instance = instance_list[i];
 
@@ -6170,50 +6172,6 @@ export default Vue.extend( {
         return
       }
       this.task.status = 'complete';
-    },
-    replace_file(file, cache_current_file_id) {
-
-      // If the id is the same do we actually need to do the replace:
-      // YES becuase other attributes may change
-      // and file id only changes if it's a previously comitted file
-
-      //console.debug(file, cache_current_file_id)
-
-      if (file == undefined) {
-        return
-      }
-
-      /*
-       * TODO
-       * I think we need to decouple replacing the current file with "splicing"
-       * the prior file.
-       * For example, in context of completing a file,
-       * we default to advancing to the next file, meaning
-       * the "current_file" gets replaced here, then overritten later.
-       * But we still want to call this because we want to splice the file
-       * in the list (ie if the user goes back)
-       *
-       */
-
-      this.current_file = file
-
-      // not showing video frames in file list so
-      // it would be confusing to push file into list
-      if (cache_current_file_id == undefined) {
-        cache_current_file_id = file.id
-      }
-      // if a cache_current_file_id is supplied
-      // we check it to prevent duplicate inserts
-      // if it's not we assume it's safe to directly insert
-
-      for (let i in this.File_list) {
-        if (this.File_list[i].id == cache_current_file_id) {
-          // careful this should be index for splice...
-          this.File_list.splice(i, 1, file)
-          break
-        }
-      }
-
     },
     request_next_instance: function(label_file_id){
       this.$refs.video_controllers.next_instance(label_file_id);

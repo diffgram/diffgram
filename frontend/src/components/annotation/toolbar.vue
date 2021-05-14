@@ -67,14 +67,13 @@
       vertical
     ></v-divider>
 
-    <!-- TODO review @replace_file="replace_file($event[0], $event[1])" -->
-
     <v_is_complete
         v-if="file || task"
         :project_string_id="project_string_id"
         :current_file="file ? file : task.file"
         :task="task"
         @complete_task="$emit('complete_task')"
+        @replace_file="$emit('replace_file', $event)"
         :save_and_complete="true"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (!file && !task)"
