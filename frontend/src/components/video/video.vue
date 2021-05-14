@@ -1,12 +1,14 @@
 <template>
   <div v-cloak >
     <v-card v-if="video_mode == true"
-            max-height="90"
+            max-height="80"
             elevation="1"
             >
       <v-container class="pa-2">
 
-      <v-row style="height: 50px; overflow: hidden">
+      <v-row
+            style="height: 40px; overflow: hidden"
+            class="pt-2">
 
         <!-- Previous Frame -->
 
@@ -19,7 +21,6 @@
               tooltip_message="Back 3 Frames"
               color="primary"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -34,7 +35,6 @@
             tooltip_message="Back 1 Frame (A)"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
@@ -51,7 +51,6 @@
               tooltip_message="Play (Spacebar)"
               color="blue"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -65,7 +64,6 @@
               tooltip_message="Pause (Spacebar)"
               color="primary"
               :icon_style="true"
-              :large="true"
               :bottom="true"
                           >
           </tooltip_button>
@@ -81,7 +79,6 @@
             tooltip_message="Forward 1 Frame (D)"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
@@ -94,145 +91,156 @@
             tooltip_message="Forward 3 Frames"
             color="primary"
             :icon_style="true"
-            :large="true"
             :bottom="true"
                         >
         </tooltip_button>
 
 
-        <tooltip_button
-            :loading="loading"
-            :disabled="go_to_keyframe_loading || playing"
-            @click="next_instance(undefined)"
-            icon="mdi-debug-step-over"
-            tooltip_message="Jump to Next Instance"
-            color="primary"
-            :icon_style="true"
-            :large="false"
-            :bottom="true"
-          >
-        </tooltip_button>
+        <v-spacer> </v-spacer>
 
-        <div class="pa-1">
-          <button_with_menu
-            tooltip_message="Go To KeyFrame"
-            icon="mdi-arrow-up"
-            color="primary"
-            :commit_menu_status="true"
-            :disabled="loading || go_to_keyframe_loading || playing"
-            :close_by_button="true"
-                >
-
-            <template slot="content">
-
-              <v-text-field label="Go to frame"
-                            type="number"
-                            v-model.number="user_requested_keyframe">
-              </v-text-field>
-
-              <v-btn :disabled="loading"
-                      color="primary"
-                      @click="go_to_keyframe(user_requested_keyframe)">
-                Go
-              </v-btn>
-
-              <v-layout column>
-                Frames: {{video_settings.slider_end}}
-              </v-layout>
-
-              </template>
-          </button_with_menu>
-        </div>
-
-
-        <div class="pa-2">
+        <div class="pl-2">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on"
-                      color="primary"
-                      text-color="white">
-                <h2> {{video_current_frame_guess}}</h2>
+                      color="white"
+                      text-color="primary">
+                {{video_current_frame_guess}}
+                / {{video_settings.slider_end}}
               </v-chip>
             </template>
             Frame
           </v-tooltip>
         </div>
 
-        <div class="pa-2">
+        <div class="pl-2">
           <!-- Fixed width so it doesn't bounce around as it goes up-->
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-chip v-on="on"
-                      color="primary lighten-1"
-                      text-color="white"
-                      style="width: 78px"
+                      color="white"
+                      text-color="primary"
+                      style="width: 40px"
                       >
-                <h2> {{current_time}} </h2>
+                {{current_time}}
               </v-chip>
             </template>
             Time
           </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-chip v-on="on"
+                      color="white"
+                      text-color="primary"
+                      style="width: 60px"
+                      >
+                / {{duration}}
+              </v-chip>
+            </template>
+            Duration
+          </v-tooltip>
         </div>
 
-        <!--
-
-          I think this was for say hiding interpolate button in view
-          only mode? But would need to review more closely
-          in meantime the div seemed to be messing up formatting
-          <div v-if="['full', 'trainer_default'].includes(render_mode)">
-
-        -->
-
-          <v-spacer> </v-spacer>
 
 
-          <tooltip_button
-              tooltip_message="Interpolate All Sequences"
-              @click="run_interpolation"
-              icon="filter_none"
-              :bottom="true"
-              :text_style="true"
-              :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
-              color="primary">
-          </tooltip_button>
+      <button_with_menu
+        tooltip_message="Go To KeyFrame"
+        icon="mdi-arrow-up"
+        color="primary"
+        :commit_menu_status="true"
+        :disabled="loading || go_to_keyframe_loading || playing"
+        :close_by_button="true"
+            >
 
+        <template slot="content">
 
-          <!-- Careful we expect this to be an integer
-              Use vue js built in "number" function
-              https://github.com/vuetifyjs/vuetify/issues/3421
-              TODO validate frame number is within range...
-              Do we want to default this to the current frame?
-              -->
+          <v-layout>
+            <v-text-field label="Go to frame"
+                          type="number"
+                          v-model.number="user_requested_keyframe">
+            </v-text-field>
 
-          <!-- Tracking not fully supported yet-->
-          <!--
-          <v-btn @click="run_tracking"
-                  :disabled="run_tracking_disabled">
-            Track
-            <v-icon right> track_changes </v-icon>
+            <div class="pa-4">
+            / {{video_settings.slider_end}}
+            </div>
+          </v-layout>
+
+          <v-btn :disabled="loading"
+                  color="primary"
+                  @click="go_to_keyframe(user_requested_keyframe)">
+            Go
           </v-btn>
-            -->
+
+          </template>
+      </button_with_menu>  
+
+      <button_with_menu
+          tooltip_message="More"
+          icon="mdi-dots-vertical"
+          color="primary"
+          :commit_menu_status="true"
+          :disabled="loading || go_to_keyframe_loading || playing"
+          :close_by_button="true"
+              >
+
+          <template slot="content">
+
+            <v-layout>
+
+              <v-flex class="pa-2">
+                <v-select dense
+                          class="pb-0"
+                          label="Speed"
+                          :items="playback_rate_options"
+                          v-model="playback_rate"
+                          :disabled="loading || go_to_keyframe_loading || playing">
+                </v-select>
+              </v-flex>
+
+            </v-layout>
 
 
-          <v-flex xs2 class="pa-2">
-            <v-select dense
-                      class="pb-0"
-                      label="Speed"
-                      :items="playback_rate_options"
-                      v-model="playback_rate"
-                      :disabled="loading || go_to_keyframe_loading || playing">
-            </v-select>
-          </v-flex>
+            <v-layout class="pb-2">
+          
+              <tooltip_button
+                  :loading="loading"
+                  :disabled="go_to_keyframe_loading || playing"
+                  @click="next_instance(undefined)"
+                  icon="mdi-debug-step-over"
+                  tooltip_message="Jump to Next Existing Instance"
+                  color="primary"
+                  :icon_style="true"
+                  :large="false"
+                  :bottom="true"
+                >
+              </tooltip_button>
 
-        <div class="pa-2">
-          <v-btn color="blue darken-1" text
-              href="https://diffgram.readme.io/docs/video-interpolation"
-              target="_blank"
-              icon>
-            <v-icon>help</v-icon>
-          </v-btn>
-        </div>
-              <!-- add video forward 5 etc.-->
+              <v-spacer> </v-spacer>
+
+              <tooltip_button
+                  tooltip_message="Interpolate All Sequences"
+                  @click="run_interpolation"
+                  icon="filter_none"
+                  :bottom="true"
+                  :icon_style="true"
+                  :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
+                  color="primary">
+              </tooltip_button>
+
+              <div>
+                <v-btn color="blue darken-1" text
+                    href="https://diffgram.readme.io/docs/video-interpolation"
+                    target="_blank"
+                    icon>
+                  <v-icon>help</v-icon>
+                </v-btn>
+              </div>
+
+            </v-layout>
+
+            </template>
+        </button_with_menu>
+
+  
         </v-row>
 
         <v-row @mousemove="mousemove_slider"
@@ -252,7 +260,7 @@
 
           --->
           <v-slider
-            class="pl-4 pr-4"
+            class="pl-4 pr-4 pt-0"
             @input="update_from_slider(parseInt($event))"
             @end="slider_end(parseInt($event))"
             @change="slide_change(parseInt($event))"
@@ -395,7 +403,6 @@ export default Vue.extend( {
     'current_video',
     'video_mode',
     'current_video_file_id',
-    'render_mode',
     'video_pause_request',
     'video_play_request',
     'task',
@@ -511,6 +518,10 @@ export default Vue.extend( {
           'slider_end': 1
         }
       }
+    },
+    duration: function () {
+       // Not sure why duration isn't available as a prop on video from backend?
+       return this.current_video.frame_count / this.current_video.frame_rate
     }
   },
   mounted() {
@@ -523,6 +534,7 @@ export default Vue.extend( {
     'video_play_request': 'video_play',
     video_current_frame_guess: function(frame) {
       if (this.playing) return;
+      if(!this.video_mode) return;
       this.updateFrameUrl(frame)
     },
   },
@@ -740,7 +752,7 @@ export default Vue.extend( {
        * Then if we keep watching has_changed, if it fails to change,
        * we could prevent the keyframe change from happening.
        *
-       * 
+       *
        *  1) checking if "safe" to advance to frame should come first
        *  2) would really prefer to get a callback notice when the save event happens
        *  but not 100% clear how to do this so using a loop here for now.
@@ -774,7 +786,7 @@ export default Vue.extend( {
         await this.get_video_single_image(this.video_current_frame_guess)
 
       }
-
+      this.updateFrameUrl(frame);
     },
 
     detect_end_from_keyframe: function () {
@@ -1112,7 +1124,7 @@ export default Vue.extend( {
 		*/
     updateFrameUrl(frame) {
       // update the url w/ current frame if we are viewing a task
-      if (this.task.id) {
+      if ((this.task && this.task.id) || this.$props.current_video_file_id) {
          this.$addQueriesToLocation({frame});
       }
     },
@@ -1188,7 +1200,7 @@ export default Vue.extend( {
       // because a builder may still be reviewing a task.)
 
       let url = ""
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += '/api/v1/task/' + this.task.id
         }
       else {

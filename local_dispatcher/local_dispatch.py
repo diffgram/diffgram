@@ -68,7 +68,6 @@ def route_multi_host(path):
     if path[: 10] == "api/walrus":
         host = 'http://walrus:8082/'
 
-    print('PATHHH', path_with_params)
     # JS local dev server
     if path[:3] != "api":
         logging.warning('FRONTENDDD')

@@ -15,21 +15,21 @@ describe('Annotate Files Tests', () => {
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
-      cy.wait(3000);
+      cy.wait(5000);
       // Minimize file explorer
       cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
       // Select Label
-      cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+      cy.select_label()
 
       // Draw box
       cy.mousedowncanvas(75, 75);
-      cy.wait(500)
+      cy.wait(1500)
 
       cy.mouseupcanvas();
-      cy.wait(1000)
+      cy.wait(1500)
 
-      cy.mousedowncanvas(120, 120);
-      cy.wait(500)
+      cy.mousedowncanvas(350, 350);
+      cy.wait(1500)
       cy.mouseupcanvas();
 
       // Set Edit Mode False
@@ -38,11 +38,11 @@ describe('Annotate Files Tests', () => {
 
     context('It Has a Context Menu For Instance Specific Actions', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(90, 90);
+        cy.mousedowncanvas(150, 150);
         cy.wait(1000)
-        cy.mousedowncanvas(90, 90);
+        cy.mousedowncanvas(150, 150);
         cy.wait(1000)
-        cy.rightclickdowncanvas(90, 90);
+        cy.rightclickdowncanvas(150, 150);
         cy.wait(1000)
         cy.get('[data-cy=copy_instance]').should('exist');
         cy.get('[data-cy=delete_instance]').should('exist');
@@ -50,26 +50,26 @@ describe('Annotate Files Tests', () => {
     })
     context('It Can Copy an Instance', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(90, 90);
+        cy.mousedowncanvas(150, 150);
         cy.wait(1000)
-        cy.rightclickdowncanvas(90, 90);
+        cy.rightclickdowncanvas(150, 150);
         cy.wait(1000)
         cy.get('[data-cy=copy_instance]').click({force: true});
         cy.mousedowncanvas(10,10)
-        cy.rightclickdowncanvas(100, 100);
+        cy.rightclickdowncanvas(380, 380);
         cy.get('[data-cy=paste_instance]').should('exist');
       })
     })
 
     context('It Can Paste an Instance', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(90, 90);
+        cy.mousedowncanvas(150, 150);
         cy.wait(1000)
-        cy.rightclickdowncanvas(90, 90);
+        cy.rightclickdowncanvas(150, 150);
         cy.wait(1000)
         cy.get('[data-cy=copy_instance]').click({force: true});
         cy.mousedowncanvas(10,10)
-        cy.rightclickdowncanvas(100, 100);
+        cy.rightclickdowncanvas(380, 380);
         cy.get('[data-cy=paste_instance]').click({force: true});
 
       })
@@ -88,7 +88,7 @@ describe('Annotate Files Tests', () => {
             .wait(500)
             .type('{ctrl+v}', {force: true})
             .get('[data-cy=save_button]').click({force: true})
-            .wait(2000).then(()=>{
+            .wait(7500).then(()=>{
               let instance_list = window.AnnotationCore.instance_list;
               for(let i = 0; i < instance_list.length; i++){
                 // Validate that each instance id exists just once on the

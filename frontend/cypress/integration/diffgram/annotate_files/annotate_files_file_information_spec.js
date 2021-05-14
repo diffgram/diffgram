@@ -21,6 +21,7 @@ describe('Annotate Files Tests', () => {
     context('It Displays The Annotated File information', () => {
 
       it('Displays File Information on Toolbar Buttons', () => {
+        cy.get('[data-cy=more_button]').click({force: true});
         cy.get('[data-cy=show_file_information]').click({force: true})
 
       })
@@ -28,6 +29,7 @@ describe('Annotate Files Tests', () => {
 
       it('Displays Linked File & Tasks on Toolbar Buttons', () => {
         cy.intercept('api/v1/project/*/task/list').as('task_list')
+        cy.get('[data-cy=more_button]').click({force: true});
         cy.get('[data-cy=show_linked_relations_file]').click({force: true})
 
         cy.wait('@task_list').should(({request, response}) => {
