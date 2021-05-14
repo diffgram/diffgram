@@ -38,6 +38,19 @@
 
 
     </div>
+    <v-snackbar  color="secondary" dark v-model="show_snackbar">
+      {{snackbar_message}}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="show_snackbar = false"
+        >
+          Ok.
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 
 </template>
@@ -72,6 +85,8 @@
       data() {
         return {
 
+          show_snackbar: false,
+          snackbar_message: '',
           loading: false,
           loading_project: false,
           task: null,
@@ -285,7 +300,19 @@
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
                 // In the task context we reset the file list on media core to keep only the current task's file.
                 this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+
                 this.task= response.data.task;
+              }
+              else{
+                if(direction === 'next'){
+                  this.show_snackbar = true;
+                  this.snackbar_message = 'This is the last task of the list. Please go to previous tasks.';
+                }
+                else {
+                  this.show_snackbar = true;
+                  this.snackbar_message = 'This is the first task of the list. Please go to the next tasks.';
+                }
+
               }
 
             }

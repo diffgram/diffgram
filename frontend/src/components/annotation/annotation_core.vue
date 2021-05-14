@@ -5559,7 +5559,6 @@ export default Vue.extend( {
         .then(response => {
 
            this.save_loading = false
-
           if (mode == 'toggle_deferred') {
 
             this.snackbar_success = true
@@ -5569,8 +5568,7 @@ export default Vue.extend( {
             // Question, change_file() seems to save by default here
             // do we want that?
             // maybe a good idea since a deferred task could still have work done
-
-            this.change_file('next')    // important
+            this.trigger_task_change('next', this.$props.task)
 
           }
 
