@@ -933,7 +933,7 @@ export default Vue.extend( {
 
       lock_point_hover_change: false,
 
-      magic_nav_spacer: 5,
+      magic_nav_spacer: 40,
 
 
       hidden_label_id_list: [],
@@ -1351,6 +1351,11 @@ export default Vue.extend( {
         return this.canvas_scale_global_setting
       }
 
+      if (this.$props.file && this.$props.file.type == 'text') {
+        // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
+        return 100
+      }
+
       let image_size_width = 1920 // default
       let image_size_height = 1280
 
@@ -1374,17 +1379,23 @@ export default Vue.extend( {
       let middle_pane_width = this.window_width_from_listener - this.left_nav_width - this.magic_nav_spacer
 
       let toolbar_height = 80
+
+      // get media core height
+      if (document.getElementById("media_core")){
+        this.media_core_height = document.getElementById("media_core").__vue__.height
+      }
+
       let middle_pane_height = this.window_height_from_listener - toolbar_height
         - this.media_core_height - this.magic_nav_spacer
 
       if (this.video_mode == true) {
         // TEMP this is solving wrong problem
         // In preview mode it def makes more sense for sequences to be to the right of video
-        let video_offset = 0
+        let video_offset = 80
         if (this.media_core_height) {
           video_offset = 200
         } else {
-          video_offset = 0
+          video_offset = 80
         }
         middle_pane_height = middle_pane_height - video_offset
       }
@@ -1395,17 +1406,11 @@ export default Vue.extend( {
 
       // careful to do the scale first, so we do the min of scaled values
       let lowest_size = Math.min(height_scaled, width_scaled)
-      //console.debug(lowest_size)
 
       let new_size = Math.round(lowest_size * 100) / 100
 
       this.canvas_scale_global_setting = new_size
 
-
-      if (this.$props.file && this.$props.file.type == 'text') {
-        // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
-        return 100
-      }
 
       return new_size
 
