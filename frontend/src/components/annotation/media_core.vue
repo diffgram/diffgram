@@ -11,7 +11,7 @@
 
   <!-- TODO do show if job id and in attach to job mode-->
 
-<div v-cloak v-if="!task">
+<div v-cloak v-if="!task" id="media_core">
   <v-card >
 
     <!-- TODO make this a bit smarter,
