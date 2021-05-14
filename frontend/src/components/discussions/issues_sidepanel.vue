@@ -1,7 +1,7 @@
 <template>
   <div v-cloak v-if="issues_list.length > 0">
 
- 
+
 
         <v-card-title class="d-flex justify-start align-center">
 
@@ -107,14 +107,10 @@
       },
       watch: {
         task: function(newval, oldval){
-          if(newval.id && newval.id != oldval.id){
-            this.get_issues_list()
-          }
+          this.get_if_new_value(newval, oldval)
         },
         file: function(newval, oldval){
-          if(newval && newval.id != oldval.id){
-            this.get_issues_list()
-          }
+          this.get_if_new_value(newval, oldval)
         }
       },
       beforeMount() {
@@ -158,6 +154,16 @@
 
       },
       methods: {
+
+        get_if_new_value(newval, oldval){
+          if(newval == null) {return}
+          if(newval.id && oldval == null) {
+            this.get_issues_list()
+          }
+          else if(newval.id && newval.id != oldval.id){
+            this.get_issues_list()
+          }
+        },
         minimize_panel(){
           this.$emit('minimize_issues_panel', true)
         },
@@ -181,7 +187,7 @@
           this.issues_list.push(new_issue)
         },
         async get_issues_list() {
-          if(!this.$props.task.id && !this.$props.file.id && !this.$props.file.id){
+          if(!this.$props.task && !this.$props.file){
             return;
           }
           this.loading = true;

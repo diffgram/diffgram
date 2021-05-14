@@ -39,20 +39,6 @@
 
       Sequences
 
-      <div v-if="current_label_file && current_label_file.label"
-            class="pl-4"
-            >
-
-        <!-- TODO maybe get color from flag / label file color
-            color is available on labelfile but not sure when in task mode
-          -->
-        <v-chip color="primary"
-                text-color="white"
-                  >
-            <h2> {{current_label_file.label.name}} </h2>
-          </v-chip>
-      </div>
-
       <div class="pl-4">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -120,13 +106,16 @@
 
       <v-spacer></v-spacer>
 
+
       <tooltip_button
           tooltip_message="Sequence & Video Help"
           href="https://diffgram.readme.io/docs/video-introduction"
           icon="mdi-lifebuoy"
           :text_style="true"
-          color="red">
+          target="_blank"
+                      >
       </tooltip_button>
+
 
       <!--
       <v-text-field v-model="search"
@@ -742,7 +731,7 @@ export default Vue.extend( {
       this.sequence_list = []
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
          url += "/api/v1/task/" + this.task.id + '/video/file_from_task'
       }
       else {
@@ -924,7 +913,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += "/api/v1/task/" + this.task.id + '/video/file_from_task'
       }
       else {
@@ -975,7 +964,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
         url += "/api/v1/task/" + this.task.id
       }
       else {
