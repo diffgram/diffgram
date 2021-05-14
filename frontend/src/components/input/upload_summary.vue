@@ -2,15 +2,18 @@
   <v-container>
     <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v-layout class="d-flex column justify-center">
-      <h2 class="ma-8 black--text">You are about to upload {{file_list.length}} file(s):</h2>
+      <h2 class="ma-8 black--text">You are about to upload {{file_list.length}} file(s):
+      to Dataset: <v-icon>mdi-folder</v-icon>{{current_directory.nickname}}
+      </h2>
 
       <v-list-item
         v-for="(item, i) in file_list"
         :key="i"
         dense
         two-line
+        style="min-height: 30px"
       >
-        <v-list-item-icon>
+        <v-list-item-icon class="ma-0">
           <v-icon v-text="'mdi-file'"></v-icon>
         </v-list-item-icon>
         <v-list-item-title>
@@ -34,6 +37,15 @@
                                   v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
             <v-list-item-subtitle class="ml-4" v-if="item.ellipse_instances.length > 0"
                                   v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
+
+            <v-list-item-title v-if="item.labels" class="align-self-baseline" v-text="`Total Labels: ${Object.keys(item.labels).length} [${Object.keys(item.labels)}]`">
+
+            </v-list-item-title>
+            <v-list-item-subtitle class="ml-4"
+                                  v-for="key in Object.keys(item.labels)"
+                                  v-text="`- '${key}' => Num instances: ${item.labels[key]}`">
+
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list-item-title>
       </v-list-item>
@@ -62,6 +74,9 @@
           default: null
         },
         'diffgram_schema_mapping': {
+          default: null
+        },
+        'current_directory': {
           default: null
         }
       },
@@ -232,11 +247,8 @@
           if(!this.$props.pre_labeled_data){ return }
           for (let i = 0; i < this.$props.file_list.length; i++) {
             const file = this.$props.file_list[i];
+            file.labels = {}
             const all_instances = this.$props.pre_labeled_data.filter(inst => inst[this.$props.diffgram_schema_mapping.file_name] == file.name)
-            console.log('file file', file);
-            console.log('file all_instances', all_instances);
-            console.log('file this.$props.pre_labeled_data', this.$props.pre_labeled_data);
-            console.log('file this.$props.diffgram_schema_mapping', this.$props.diffgram_schema_mapping);
             file.instances = all_instances;
             const box_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'box')
             const point_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'point')
@@ -250,6 +262,13 @@
             file.line_instances = line_instances;
             file.cuboid_instances = cuboid_instances;
             file.ellipse_instances = ellipse_instances;
+
+            // Compute labels count
+            for(const instance of all_instances){
+              if(!file.instances[instance[this.$props.diffgram_schema_mapping.name]]){
+                file.labels[instance[this.$props.diffgram_schema_mapping.name]] = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.name] === instance[this.$props.diffgram_schema_mapping.name]).length;
+              }
+            }
           }
         }
 

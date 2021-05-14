@@ -45,16 +45,69 @@
     <v-card-text class="pa-0" v-if="upload_mode === 'new'">
 
       <v-layout class="pa-8" column>
-        <v-row class="pa-0">
-          <v-col class="pa-0">
-            <h2>From: </h2>
-          </v-col>
-        </v-row>
+
+
         <v-row
           v-if="$store.state.project.current_directory && Object.keys($store.state.project.current_directory).length > 0">
           <v-col :cols="cloud_col_count" class="pa-4">
             <v-layout column>
               <v-row>
+                <h2>Upload to the following dataset: </h2>
+              </v-row>
+              <v-row class="d-flex align-center">
+
+                <v_directory_list v-if="!mode"
+                                  :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
+                                  :show_text_buttons="true"
+                                  :project_string_id="project_string_id"
+                                  @change_directory="on_change_directory"
+                                  :show_new="true"
+                                  :show_update="true"
+                >
+                </v_directory_list>
+
+                <tooltip_button
+                  tooltip_message="Generate Sample Data"
+                  @click="open_confirm_dialog_sample_data"
+                  icon="mdi-apps-box"
+                  :bottom="true"
+                  :icon_style="true"
+                  color="primary">
+                </tooltip_button>
+
+
+
+
+              </v-row>
+
+              <v-row class="mb-6" >
+                <v-alert v-if="sync_job_list
+                            && sync_job_list.length != 0"
+                         dismissible type="info">
+
+                  <p class="ma-0" style="font-size: 12px"> When importing to directory
+                    "{{this.$store.state.project.current_directory.nickname}}",
+                    tasks will be created for the following jobs: </p>
+
+                  <ul v-if="!loading_sync_jobs">
+
+                    <li v-for="job in sync_job_list" class="ma-0"
+                        style="list-style-type: none; font-size: 12px">
+                      <v-icon style="font-size: 16px">mdi-sync</v-icon>
+                      {{job.name}}
+                    </li>
+                  </ul>
+                  <v-progress-circular v-else indeterminate></v-progress-circular>
+                </v-alert>
+              </v-row>
+              <v-row class="pa-0 mt-12">
+                <v-col class="pa-0">
+                  <h2 v-if="!bucket_name || bucket_name == ''">Select Connection or Drag & Drop Files: </h2>
+                  <h2 v-else>Select Files: [{{bucket_name}}]: </h2>
+                </v-col>
+              </v-row>
+              <v-row>
+
                 <v-col cols="12" class="pa-0">
                   <connection_select
                     :project_string_id="project_string_id"
@@ -84,7 +137,7 @@
           <v-col v-if="!bucket_name || bucket_name == ''" cols="6" class="pa-4">
             <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
                           data-cy="vue-dropzone"
-                          style="min-height: 120px"
+                          style="min-height: 350px"
                           :useCustomSlot=true
                           :options="dropzoneOptions"
                           @vdropzone-upload-progress="update_progress"
@@ -110,20 +163,20 @@
           <tbody>
           <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
             <td>
-              <p class="secondary--text"><strong>{{ file.name }}</strong></p>
+              <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
             </td>
             <td>
-              <p class="secondary--text"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
+              <p class="secondary--text  ma-0"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
             </td>
             <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
 
           </tr>
           <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
             <td>
-              <p><strong>{{ file.name }}</strong></p>
+              <p class="ma-0"><strong>{{ file.name }}</strong></p>
             </td>
             <td>
-              <p><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
+              <p class="ma-0"><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
             </td>
             <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
 
@@ -156,7 +209,10 @@
       props: {
         'project_string_id': {
           default: null
-        }
+        },
+        'initial_dataset': {
+          default: undefined
+        },
       },
 
       data() {
@@ -164,6 +220,7 @@
         return {
           file_list_to_upload: [],
           error: {},
+          current_directory: undefined,
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
             {
@@ -234,7 +291,7 @@
             forceChunking: true,
             autoProcessQueue: false,
             chunkSize: 1024 * 1024 * 5,
-            height: 200,
+            height: 450,
             // number of concurrent uploads at a time, each upload still goes at same speed
             parallelUploads: 1,
 
@@ -328,6 +385,39 @@
 
           this.is_actively_sending = true
         },
+        async on_change_directory(directory) {
+          this.loading_sync_jobs = true;
+          this.current_directory = directory;
+          this.sync_job_list = await this.update_sync_jobs_list(directory)
+          this.loading_sync_jobs = false;
+          this.$emit('current_directory', this.current_directory)
+        },
+        async update_sync_jobs_list(dir) {
+          try {
+            if (!dir || !dir.jobs_to_sync || !dir.jobs_to_sync.job_ids || !dir.jobs_to_sync.job_ids.length > 0) {
+              return []
+            }
+            const response = await axios.post('/api/v1/job/list', {
+              metadata: {
+                mode_data: 'job_detail',
+                builder_or_trainer: {
+                  mode: 'builder'
+                },
+                project_string_id: this.$store.state.project.current.project_string_id,
+                status: 'active',
+                job_ids: dir.jobs_to_sync.job_ids
+              }
+
+
+            })
+
+            if (response.data.Job_list) {
+              return response.data.Job_list
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        },
         drop_zone_complete() {
 
           this.is_actively_sending = false
@@ -382,9 +472,9 @@
 
 <style scoped>
   .vue-dropzone{
-    max-height: 200px;
+    max-height: 450px;
     display: flex;
     flex-wrap: wrap;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 </style>

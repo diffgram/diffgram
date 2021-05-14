@@ -1,16 +1,16 @@
 <template>
 
-  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
+  <v-dialog  v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
             persistent>
     <v-layout style="position: relative; z-index: 999999">
-      <v-btn @click="close" icon x-large style="position: absolute; top: 0; right: 0">
+      <v-btn class="" @click="close" icon x-large style="position: absolute; top: 0; right: 0">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-layout>
 
     <v-stepper v-model="el" class="pa-8" :non-linear="true">
 
-      <v-stepper-header>
+      <v-stepper-header class="ma-4">
         <v-stepper-step
           editable
           :complete="el > 1"
@@ -47,8 +47,10 @@
             @change_step_annotations="load_annotations_file"
             @progress_updated="update_progress_values"
             @reset_total_files_size="reset_total_files_size"
+            @current_directory="set_current_directory"
             @file_added="file_added"
             ref="new_or_update_upload_screen"
+            :initial_dataset="initial_dataset"
             :project_string_id="project_string_id">
 
           </new_or_update_upload_screen>
@@ -480,6 +482,7 @@
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :project_string_id="project_string_id"
             :pre_labeled_data="pre_labeled_data"
+            :current_directory="current_directory"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             @upload_raw_media="upload_raw_media"
           ></upload_summary>
@@ -513,6 +516,7 @@
       uploaded_bytes: null,
       total_bytes: null,
       percent_uploaded: null,
+      current_directory: null,
       schema_match_headers: [
         {
           text: 'Diffgram Value',
@@ -701,6 +705,9 @@
         'project_string_id': {
           default: null
         },
+        'initial_dataset': {
+          default: undefined
+        }
 
       },
 
@@ -765,6 +772,7 @@
       },
       watch: {},
       mounted() {
+        this.set_current_directory(this.$store.state.project.current_directory)
       },
 
       beforeDestroy() {
@@ -772,6 +780,9 @@
       },
 
       methods: {
+        set_current_directory: function(current_directory){
+          this.current_directory = current_directory;
+        },
         reset_total_files_size: function(){
           this.dropzone_total_file_size = 0;
         },
