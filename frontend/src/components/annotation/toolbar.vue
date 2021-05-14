@@ -608,7 +608,7 @@
                   step=.05
                   thumb-label="always"
                   ticks
-                  @input="label_settings_local.canvas_scale_global_is_automatic = false"
+                  @change="label_settings_local.canvas_scale_global_is_automatic = false"
                   v-model="label_settings_local.canvas_scale_global_setting">
                 </v-slider>
 
