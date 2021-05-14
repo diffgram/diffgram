@@ -110,6 +110,7 @@
         },
         prepare_pre_labeled_data_payload: function (pre_labeled_data, diffgram_schema, file_list) {
           // This function Creates the final payload accepted by the API based on the schema mapping.
+          if(!pre_labeled_data){return}
           const result = {};
           for (const file of file_list) {
             const uuid = uuidv4();
@@ -129,10 +130,16 @@
                 frame_number: instance[diffgram_schema.frame_number],
               }
               if (type === 'box') {
+
                 diffgram_formatted_instance.x_max = instance[diffgram_schema.box.x_max];
-                diffgram_formatted_instance.x_min = instance[diffgram_schema.box.x_max];
+                diffgram_formatted_instance.x_min = instance[diffgram_schema.box.x_min];
                 diffgram_formatted_instance.y_max = instance[diffgram_schema.box.y_max];
                 diffgram_formatted_instance.y_min = instance[diffgram_schema.box.y_min];
+
+                const width = diffgram_formatted_instance.x_max - diffgram_formatted_instance.x_min;
+                const height = diffgram_formatted_instance.y_max - diffgram_formatted_instance.y_min;
+                diffgram_formatted_instance.width = width;
+                diffgram_formatted_instance.height = height;
               } else if (type === 'point') {
                 diffgram_formatted_instance.points = [
                   {x: instance[diffgram_schema.point.x], y: instance[diffgram_schema.point.y]}
@@ -183,7 +190,7 @@
                 }
               } else if(type === 'ellipse'){
                 diffgram_formatted_instance.center_x = instance[diffgram_schema.ellipse.center_x];
-                diffgram_formatted_instance.center_y = instance[diffgram_schema.ellipse.center_x];
+                diffgram_formatted_instance.center_y = instance[diffgram_schema.ellipse.center_y];
                 diffgram_formatted_instance.angle = instance[diffgram_schema.ellipse.angle];
                 diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
                 diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
@@ -211,7 +218,6 @@
           return result;
         },
         start_upload: async function () {
-          alert('start upload');
           const labels_payload = this.prepare_pre_labeled_data_payload(
             this.$props.pre_labeled_data,
             this.$props.diffgram_schema_mapping,
@@ -223,6 +229,7 @@
 
         },
         compute_attached_instance_per_file: function () {
+          if(!this.$props.pre_labeled_data){ return }
           for (let i = 0; i < this.$props.file_list.length; i++) {
             const file = this.$props.file_list[i];
             const all_instances = this.$props.pre_labeled_data.filter(inst => inst[this.$props.diffgram_schema_mapping.file_name] == file.name)

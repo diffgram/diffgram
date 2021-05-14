@@ -87,6 +87,8 @@
                           style="min-height: 120px"
                           :useCustomSlot=true
                           :options="dropzoneOptions"
+                          @vdropzone-upload-progress="update_progress"
+                          @vdropzone-file-added="file_added"
                           @vdropzone-sending="drop_zone_sending_event"
                           @vdropzone-complete="drop_zone_complete">
               <div class="dropzone-custom-content">
@@ -264,13 +266,25 @@
       },
 
       methods: {
+        reset_total_files_size: function(file){
+          this.$emit('reset_total_files_size')
+        },
+        file_added: function(file){
+          this.$emit('file_added', file)
+        },
+        update_progress: function(file, totalBytes, totalBytesSent){
+          this.$emit('progress_updated', file, totalBytes, totalBytesSent)
+        },
         upload_raw_media: async function(file_list){
+          this.$emit('upload_in_progress')
+          // We want to remove them because we'll re-add them with the batch data and uuid data.
           this.$refs.myVueDropzone.dropzone.removeAllFiles()
+          // Since we are removing files from the dropzone queue we need to reset the file size counter.
+          this.reset_total_files_size()
           for(const file of file_list){
             this.$refs.myVueDropzone.manuallyAddFile(file, file.dataURL)
           }
           this.$refs.myVueDropzone.processQueue();
-          alert('upload started!')
         },
         move_to_next_step: function(){
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');

@@ -90,15 +90,17 @@ class Upload():
     def __extract_instance_list_from_batch(self, input, input_batch_id):
         input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
         pre_labels = input_batch.pre_labeled_data
+        if pre_labels is None:
+            return
         uuid = self.request.form.get('uuid')
         file_data = pre_labels[uuid]
         project_labels = self.get_project_labels()
-        print(project_labels, 'aaaa')
+
         if file_data['instance_list']:
             instance_list = file_data['instance_list']
             for instance in instance_list:
-                print('instanceeeee', instance)
-                instance['label_file_id'] = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                instance['label_file_id'] = label_file['id']
                 print('label file', instance['label_file_id'])
 
             input.instance_list = {'list': file_data['instance_list']}

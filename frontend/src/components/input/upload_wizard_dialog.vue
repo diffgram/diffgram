@@ -42,8 +42,12 @@
         <v-stepper-content step="1">
           <new_or_update_upload_screen
             @file_list_updated="file_list_updated"
+            @upload_in_progress="show_upload_progress_screen"
             @change_step_no_annotations="el = 4"
             @change_step_annotations="load_annotations_file"
+            @progress_updated="update_progress_values"
+            @reset_total_files_size="reset_total_files_size"
+            @file_added="file_added"
             ref="new_or_update_upload_screen"
             :project_string_id="project_string_id">
 
@@ -58,8 +62,12 @@
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">* Select the Field Corresponding to the instance type</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** Allowed values here are:
-                    {{allowed_instance_types}}</strong></p>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3">
+                    <strong>
+                      ** Allowed values here are:
+                    {{allowed_instance_types}}
+                    </strong>
+                  </p>
 
                 </div>
                 <div class="d-flex justify-end flex-grow-1">
@@ -171,7 +179,7 @@
           </v-layout>
           <v-layout class="d-flex justify-end">
             <v-btn x-large
-                   class="secondary lighten-1 ma-8"
+                   class="primary ma-8"
                    :disabled="!instance_type_schema_is_set || !file_name_schema_is_set"
                    @click="check_errors_and_go_to_step(3)">
               Continue
@@ -468,13 +476,23 @@
 
         <v-stepper-content step="4">
           <upload_summary
-            v-if="file_list_to_upload && pre_labeled_data && diffgram_schema_mapping"
+            v-if="!upload_in_progress && file_list_to_upload"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :project_string_id="project_string_id"
             :pre_labeled_data="pre_labeled_data"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             @upload_raw_media="upload_raw_media"
           ></upload_summary>
+          <upload_progress
+            v-if="upload_in_progress"
+            :total_bytes="dropzone_total_file_size"
+            :uploaded_bytes="dropzone_uploaded_file_size"
+            :currently_uploading="currently_uploading_bytes"
+            @close_wizard="close"
+          >
+
+          </upload_progress>
+
         </v-stepper-content>
 
       </v-stepper-items>
@@ -487,15 +505,197 @@
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
   import upload_summary from './upload_summary'
+  import upload_progress from './upload_progress'
   import axios from 'axios';
   import Vue from "vue";
+  function get_initial_state(){
+    const initial_state = {
+      uploaded_bytes: null,
+      total_bytes: null,
+      percent_uploaded: null,
+      schema_match_headers: [
+        {
+          text: 'Diffgram Value',
+          align: 'start',
+          sortable: false,
+          value: 'diffgram_value',
+        },
+        {
+          text: 'Preview Data',
+          value: 'preview',
+          align: 'start',
+          sortable: false,
+        },
+        {
+          text: 'File Value',
+          value: 'file_value',
+          align: 'start',
+          sortable: false,
+        },
+        {
+          text: 'Notes',
+          value: 'file_value',
+          align: 'start',
+          sortable: false,
+        },
+      ],
+      allowed_instance_types: [
+        'box',
+        'polygon',
+        'line',
+        'point',
+        'cuboid',
+        'ellipse',
+      ],
+      diffgram_schema_mapping: {
+        instance_type: null,
+        name: null,
+        file_name: null,
+        frame_number: null,
+        model_id: null,
+        model_run_id: null,
+        box: {
+          x_min: null,
+          x_max: null,
+          y_min: null,
+          y_max: null,
+        },
+        point: {
+          x: null,
+          y: null,
+        },
+        polygon: {
+          points: null,
+        },
+        cuboid: {
+          front_face_top_left_x: null,
+          front_face_top_left_y: null,
+          front_face_top_right_x: null,
+          front_face_top_right_y: null,
+          front_face_bottom_left_x: null,
+          front_face_bottom_left_y: null,
+          front_face_bottom_right_x: null,
+          front_face_bottom_right_y: null,
 
+          rear_face_top_left_x: null,
+          rear_face_top_left_y: null,
+          rear_face_top_right_x: null,
+          rear_face_top_right_y: null,
+          rear_face_bottom_left_x: null,
+          rear_face_bottom_left_y: null,
+          rear_face_bottom_right_x: null,
+          rear_face_bottom_right_y: null,
+
+        },
+        ellipse: {
+          center_x: null,
+          center_y: null,
+          width: null,
+          height: null,
+          angle: null,
+        },
+        line: {
+          x1: null,
+          y1: null,
+          x2: null,
+          y2: null,
+        },
+      },
+      included_instance_types: {
+        box: false,
+        polygon: false,
+        cuboid: false,
+        ellipse: false,
+        point: false,
+        line: false,
+      },
+      is_open: false,
+      el: 1,
+      load_label_names: false,
+      dropzone_total_file_size: 0,
+      dropzone_uploaded_file_size: 0,
+      currently_uploading_bytes: 0,
+      upload_in_progress: false,
+      valid_labels: false,
+      pre_labeled_data: null,
+      file_list_to_upload: [],
+      valid_points_values_polygon: false,
+      valid_points_values_point_instance_type: {x: false, y: false},
+      valid_points_values_box_instance_type: {x_min: false, x_max: false, y_min: false, y_max: false},
+      valid_points_values_line_instance_type: {x1: false, y1: false, x2: false, y2: false},
+      valid_points_values_ellipse_instance_type: {
+        center_x: false,
+        center_y: false,
+        width: false,
+        height: false,
+        angle: false,
+      },
+      valid_points_values_cuboid_instance_type: {
+        front_face_bottom_left_x: false,
+        front_face_bottom_left_y: false,
+        front_face_bottom_right_x: false,
+        front_face_bottom_right_y: false,
+        front_face_top_left_x: false,
+        front_face_top_left_y: false,
+        front_face_top_right_x: false,
+        front_face_top_right_y: false,
+
+        rear_face_bottom_left_x: false,
+        rear_face_bottom_left_y: false,
+        rear_face_bottom_right_x: false,
+        rear_face_bottom_right_y: false,
+        rear_face_top_left_x: false,
+        rear_face_top_left_y: false,
+        rear_face_top_right_x: false,
+        rear_face_top_right_y: false
+
+      },
+      pre_labels_file_list: [],
+      pre_label_key_list: [],
+      errors_file_schema: undefined,
+      pre_labels_file_type: null,
+      errors_instance_schema: {},
+      error_polygon_instance: {},
+      error_point_instance: {x: {}, y: {}},
+      error_line_instance: {x1: {}, y1: {}, x2: {}, y2: {}},
+      error_box_instance: {x_min: {}, x_max: {}, y_min: {}, y_max: {}},
+      error_cuboid_instance: {
+        front_face_bottom_left_x: {},
+        front_face_bottom_left_y: {},
+        front_face_bottom_right_x: {},
+        front_face_bottom_right_y: {},
+        front_face_top_left_x: {},
+        front_face_top_left_y: {},
+        front_face_top_right_x: {},
+        front_face_top_right_y: {},
+
+        rear_face_bottom_left_x: {},
+        rear_face_bottom_left_y: {},
+        rear_face_bottom_right_x: {},
+        rear_face_bottom_right_y: {},
+        rear_face_top_left_x: {},
+        rear_face_top_left_y: {},
+        rear_face_top_right_x: {},
+        rear_face_top_right_y: {}
+
+      },
+      error_ellipse_instance: {
+        center_x: {},
+        center_y: {},
+        width: {},
+        height: {},
+        angle: {},
+      },
+    };
+    return initial_state;
+  }
   export default Vue.extend({
       name: 'upload_wizard_dialog',
       components: {
         input_view,
         upload_summary,
-        new_or_update_upload_screen
+        new_or_update_upload_screen,
+        upload_progress
       },
       props: {
         'project_string_id': {
@@ -505,180 +705,7 @@
       },
 
       data() {
-
-        return {
-          schema_match_headers: [
-            {
-              text: 'Diffgram Value',
-              align: 'start',
-              sortable: false,
-              value: 'diffgram_value',
-            },
-            {
-              text: 'Preview Data',
-              value: 'preview',
-              align: 'start',
-              sortable: false,
-            },
-            {
-              text: 'File Value',
-              value: 'file_value',
-              align: 'start',
-              sortable: false,
-            },
-            {
-              text: 'Notes',
-              value: 'file_value',
-              align: 'start',
-              sortable: false,
-            },
-          ],
-          allowed_instance_types: [
-            'box',
-            'polygon',
-            'line',
-            'point',
-            'cuboid',
-            'ellipse',
-          ],
-          diffgram_schema_mapping: {
-            instance_type: null,
-            name: null,
-            file_name: null,
-            frame_number: null,
-            model_id: null,
-            model_run_id: null,
-            box: {
-              x_min: null,
-              x_max: null,
-              y_min: null,
-              y_max: null,
-            },
-            point: {
-              x: null,
-              y: null,
-            },
-            polygon: {
-              points: null,
-            },
-            cuboid: {
-              front_face_top_left_x: null,
-              front_face_top_left_y: null,
-              front_face_top_right_x: null,
-              front_face_top_right_y: null,
-              front_face_bottom_left_x: null,
-              front_face_bottom_left_y: null,
-              front_face_bottom_right_x: null,
-              front_face_bottom_right_y: null,
-
-              rear_face_top_left_x: null,
-              rear_face_top_left_y: null,
-              rear_face_top_right_x: null,
-              rear_face_top_right_y: null,
-              rear_face_bottom_left_x: null,
-              rear_face_bottom_left_y: null,
-              rear_face_bottom_right_x: null,
-              rear_face_bottom_right_y: null,
-
-            },
-            ellipse: {
-              center_x: null,
-              center_y: null,
-              width: null,
-              height: null,
-              angle: null,
-            },
-            line: {
-              x1: null,
-              y1: null,
-              x2: null,
-              y2: null,
-            },
-          },
-          included_instance_types: {
-            box: false,
-            polygon: false,
-            cuboid: false,
-            ellipse: false,
-            point: false,
-            line: false,
-          },
-          is_open: false,
-          el: 1,
-          load_label_names: false,
-          valid_labels: false,
-          pre_labeled_data: null,
-          file_list_to_upload: [],
-          valid_points_values_polygon: false,
-          valid_points_values_point_instance_type: {x: false, y: false},
-          valid_points_values_box_instance_type: {x_min: false, x_max: false, y_min: false, y_max: false},
-          valid_points_values_line_instance_type: {x1: false, y1: false, x2: false, y2: false},
-          valid_points_values_ellipse_instance_type: {
-            center_x: false,
-            center_y: false,
-            width: false,
-            height: false,
-            angle: false,
-          },
-          valid_points_values_cuboid_instance_type: {
-            front_face_bottom_left_x: false,
-            front_face_bottom_left_y: false,
-            front_face_bottom_right_x: false,
-            front_face_bottom_right_y: false,
-            front_face_top_left_x: false,
-            front_face_top_left_y: false,
-            front_face_top_right_x: false,
-            front_face_top_right_y: false,
-
-            rear_face_bottom_left_x: false,
-            rear_face_bottom_left_y: false,
-            rear_face_bottom_right_x: false,
-            rear_face_bottom_right_y: false,
-            rear_face_top_left_x: false,
-            rear_face_top_left_y: false,
-            rear_face_top_right_x: false,
-            rear_face_top_right_y: false
-
-          },
-          pre_labels_file_list: [],
-          pre_label_key_list: [],
-          errors_file_schema: undefined,
-          pre_labels_file_type: null,
-          errors_instance_schema: {},
-          error_polygon_instance: {},
-          error_point_instance: {x: {}, y: {}},
-          error_line_instance: {x1: {}, y1: {}, x2: {}, y2: {}},
-          error_box_instance: {x_min: {}, x_max: {}, y_min: {}, y_max: {}},
-          error_cuboid_instance: {
-            front_face_bottom_left_x: {},
-            front_face_bottom_left_y: {},
-            front_face_bottom_right_x: {},
-            front_face_bottom_right_y: {},
-            front_face_top_left_x: {},
-            front_face_top_left_y: {},
-            front_face_top_right_x: {},
-            front_face_top_right_y: {},
-
-            rear_face_bottom_left_x: {},
-            rear_face_bottom_left_y: {},
-            rear_face_bottom_right_x: {},
-            rear_face_bottom_right_y: {},
-            rear_face_top_left_x: {},
-            rear_face_top_left_y: {},
-            rear_face_top_right_x: {},
-            rear_face_top_right_y: {}
-
-          },
-          error_ellipse_instance: {
-            center_x: {},
-            center_y: {},
-            width: {},
-            height: {},
-            angle: {},
-          },
-        }
-
-
+        return get_initial_state();
       },
       computed: {
         selected_polygon_key_has_nested_valued: function () {
@@ -745,8 +772,23 @@
       },
 
       methods: {
+        reset_total_files_size: function(){
+          this.dropzone_total_file_size = 0;
+        },
+        file_added: function(file){
+          this.dropzone_total_file_size += file.size;
+        },
+        update_progress_values: function(file, total_bytes, uploaded_bytes){
+          this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
+          if(file.size <= uploaded_bytes){
+            this.currently_uploading_bytes = 0; // reset current upload bytes counter
+            this.dropzone_uploaded_file_size += uploaded_bytes; // add finished file to total upload
+          }
+        },
+        show_upload_progress_screen: function(){
+          this.upload_in_progress = true;
+        },
         upload_raw_media: async function (file_list) {
-          console.log('UPLOAD RAW MEDIA', file_list)
           this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
         },
         load_annotations_file: async function () {
@@ -768,6 +810,7 @@
         },
         close: function () {
           this.is_open = false;
+          Object.assign(this.$data, get_initial_state());
         },
 
         check_box_key_structure: function (key_name) {
