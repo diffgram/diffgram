@@ -21,8 +21,9 @@
             flag
           </v-icon>
 
-          <div class="pl-4 pr-4">
-          {{data.item.label.name}}
+          <div class="pl-4 pr-4"
+               :data-cy="data.item.label.name">
+            {{data.item.label.name}}
            </div>
 
           <!-- Would like to have this but it looks kind of messy -->
