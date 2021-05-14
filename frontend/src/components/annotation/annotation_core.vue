@@ -2513,7 +2513,13 @@ export default Vue.extend( {
 
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
-
+      // Initial File Set
+      if(this.$props.file){
+        this.on_change_current_file();
+      }
+      else if(this.$props.task){
+        this.on_change_current_task();
+      }
     },
 
     update_user_settings_from_store() {
