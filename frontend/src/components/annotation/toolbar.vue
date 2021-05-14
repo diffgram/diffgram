@@ -104,7 +104,7 @@
     ></v-divider>
 
     <div class="pt-3 pl-1 pr-2">
-  
+
       <v-tooltip bottom
                   color="info"
                   >
@@ -178,12 +178,12 @@
       tooltip_message="Manual New Tag (Automatic on Label Change)"
       :bottom="true">
     </tooltip_button>
-          
+
     <v-divider
       vertical
     ></v-divider>
 
-          
+
     <div class="pl-3 pt-3 pr-2">
       <v-switch v-if="view_only_mode != true"
                 :label_file="mode_text"
@@ -222,7 +222,7 @@
         </span>
       </div>
     </div>
-  
+
     <v-divider
       vertical
     ></v-divider>
@@ -487,6 +487,7 @@
     <!-- MORE -->
     <button_with_menu
         tooltip_message="More"
+        datacy="more_button"
         icon="mdi-dots-vertical"
         color="primary"
         :commit_menu_status="true"
