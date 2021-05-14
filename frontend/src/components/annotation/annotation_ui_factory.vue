@@ -18,6 +18,7 @@
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
           @request_new_task="change_task"
+          @replace_file="current_file = $event"
           ref="annotation_core"
         >
         </v_annotation_core>
