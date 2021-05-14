@@ -188,8 +188,8 @@
                 :label_file="mode_text"
                 data-cy="edit_toggle"
                 :disabled="view_issue_mode"
-                v-model="draw_mode"
-                @change="$emit('edit_mode_toggle', draw_mode)"
+                v-model="draw_mode_local"
+                @change="$emit('edit_mode_toggle', draw_mode_local)"
                 :label="mode_text">
       </v-switch>
     </div>
@@ -861,7 +861,9 @@ export default Vue.extend( {
   },
   data() {
     return {
-      label_settings_local: {}
+      label_settings_local: {},
+      draw_mode_local: true
+
     }
   },
   watch: {
@@ -870,14 +872,18 @@ export default Vue.extend( {
     },
     label_settings(event){
       this.label_settings_local = event
+    },
+    draw_mode(event){
+      this.draw_mode_local = event
     }
   },
   mounted() {
     this.label_settings_local = this.$props.label_settings
+    this.draw_mode_local = this.$props.draw_mode
   },
   computed: {
     mode_text: function () {
-      if (this.draw_mode == true) {
+      if (this.draw_mode_local == true) {
         return "Drawing"
       } else {
         return "Editing"
