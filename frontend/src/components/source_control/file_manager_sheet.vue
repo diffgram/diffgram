@@ -44,7 +44,7 @@
             :icon_style="true"
             color="primary"
             :bottom="true"
-            datacy="fullscreen-file-explorer-button"
+            datacy="restore-down-file-explorer-button"
                         >
         </tooltip_button>
  
@@ -67,7 +67,7 @@
             :icon_style="true"
             color="primary"
             :bottom="true"
-            datacy="minimize-file-explorer-button"
+            datacy="close-file-explorer-button"
                         >
         </tooltip_button>
  
