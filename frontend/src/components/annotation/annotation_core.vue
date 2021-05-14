@@ -23,14 +23,15 @@
                    :canvas_scale_local="canvas_scale_local"
                    :has_changed="has_changed"
                    :label_list="label_list"
+                   :draw_mode="draw_mode"
                    :label_file_colour_map="label_file_colour_map"
-                   @label_settings_change="label_settings = $event"
+                   @label_settings_change="label_settings = $event, refresh = Date.now()"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
                    @change_instance_type="change_instance_type($event)"
                    @edit_mode_toggle="edit_mode_toggle($event)"
                    @undo="undo()"
-                   @redo="redo()"
+                   @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
                    @change_task="trigger_task_change($event, task)"
@@ -41,17 +42,11 @@
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
                    @replace_file="$emit('replace_file', $event)"
-                   @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
-                   :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
-                   :canvas_scale_global_setting="canvas_scale_global_setting"
                    :full_file_loading="full_file_loading"
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
                    :instance_type_list="instance_type_list"
-                   :left_nav_width="left_nav_width"
-                   @change_left_nav_width="left_nav_width = $event"
-                   @canvas_scale_global_setting="canvas_scale_global_setting = $event"
                    :view_issue_mode="view_issue_mode"
                    >
           </toolbar>
@@ -172,12 +167,8 @@
       <v-navigation-drawer permanent
                            left
                            v-if="!error_no_permissions.data"
-                           :width="left_nav_width"
+                           :width="label_settings.left_nav_width"
                           >
-
-
-
-
 
       <v-alert v-if="$store.state.user.settings.studio_box_info == true &&
                     file != undefined"
@@ -944,8 +935,6 @@ export default Vue.extend( {
 
       highest_sequence_number: 0,
 
-      left_nav_width: 450 as Number,
-
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
 
@@ -1001,14 +990,15 @@ export default Vue.extend( {
         filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
         filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
         instance_buffer_size: 60,
+        canvas_scale_global_is_automatic: true,
+        canvas_scale_global_setting: 0.5,
+        left_nav_width: 450,
+
       },
 
       annotations_loading: false,
       save_loading: false,
       minimize_issues_sidepanel: false,
-
-      canvas_scale_global_setting: 0.5,
-      canvas_scale_global_is_automatic: true,
 
       source_control_menu: false,
 
@@ -1348,8 +1338,8 @@ export default Vue.extend( {
        * Context here is that it's not a "zoom".
        */
       // Manual override
-      if (this.canvas_scale_global_is_automatic == false) {
-        return this.canvas_scale_global_setting
+      if (this.label_settings.canvas_scale_global_is_automatic == false) {
+        return this.label_settings.canvas_scale_global_setting
       }
 
       if (this.$props.file && this.$props.file.type == 'text') {
@@ -1377,7 +1367,7 @@ export default Vue.extend( {
        *
        * the goal of calculation is to make it relative to left and right panel
        */
-      let middle_pane_width = this.window_width_from_listener - this.left_nav_width - this.magic_nav_spacer
+      let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
       let toolbar_height = 80
 
@@ -1410,7 +1400,7 @@ export default Vue.extend( {
 
       let new_size = Math.round(lowest_size * 100) / 100
 
-      this.canvas_scale_global_setting = new_size
+      this.label_settings.canvas_scale_global_setting = new_size
 
 
       return new_size
@@ -2526,7 +2516,7 @@ export default Vue.extend( {
 
     update_user_settings_from_store() {
       if (this.$store.state.user.settings.studio_left_nav_width) {
-        this.left_nav_width = this.$store.state.user.settings.studio_left_nav_width
+        this.label_settings.left_nav_width = this.$store.state.user.settings.studio_left_nav_width
       }
     },
 

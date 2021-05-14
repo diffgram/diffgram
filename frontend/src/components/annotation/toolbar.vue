@@ -570,11 +570,12 @@
 
             <template slot="content">
 
-              <task_relations_card v-if="task"
-                                    :file="task.file"
-                                    :task="task"
-                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                                    :elevation="0">
+              <task_relations_card
+                v-if="task"
+                :file="task.file"
+                :task="task"
+                :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                :elevation="0">
 
               </task_relations_card>
             </template>
@@ -595,34 +596,33 @@
                 </v-card-title>
 
                 <v-checkbox
-                        label="Auto Size Canvas"
-                        v-model="canvas_scale_global_is_automatic"
-                        @change="$emit('canvas_scale_global_is_automatic', canvas_scale_global_is_automatic)"
-                            >
+                  label="Auto Size Canvas"
+                  v-model="label_settings_local.canvas_scale_global_is_automatic"
+                      >
                 </v-checkbox>
 
                 <v-slider
-                        label="Canvas"
-                        min=.2
-                        max=2
-                        step=.05
-                        thumb-label="always"
-                        ticks
-                        @input="$emit('canvas_scale_global_is_automatic', false),
-                                $emit('canvas_scale_global_setting', canvas_scale_global_setting)"
-                        v-model="canvas_scale_global_setting">
+                  label="Canvas"
+                  min=.2
+                  max=2
+                  step=.05
+                  thumb-label="always"
+                  ticks
+                  @input="label_settings_local.canvas_scale_global_is_automatic = false"
+                  v-model="label_settings_local.canvas_scale_global_setting">
                 </v-slider>
 
-                <v-slider label="Left"
-                          min=200
-                          step=50
-                          max=750
-                          thumb-label="always"
-                          ticks
-                          @input="
-                            $store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width]),
-                            $emit('change_left_nav_width', left_nav_width)"
-                          v-model="left_nav_width">
+                <v-slider
+                  label="Left"
+                  min=200
+                  step=50
+                  max=750
+                  thumb-label="always"
+                  ticks
+                  @input="
+                    $store.commit('set_user_setting',
+                          ['studio_left_nav_width', label_settings_local.left_nav_width])"
+                  v-model="label_settings_local.left_nav_width">
                 </v-slider>
 
 
@@ -848,22 +848,20 @@ export default Vue.extend( {
     'draw_mode': {
       default: true
     },
-    'canvas_scale_global_is_automatic': {},
-    'canvas_scale_global_setting': {},
     'full_file_loading': {},
     'annotations_loading': {},
     'instance_template_selected': {},
     'instance_type': {},
     'loading_instance_templates': {},
     'instance_type_list': {},
-    'left_nav_width': {},
     'view_issue_mode': {}
   },
   data() {
     return {
-      label_settings_local: {},
-      draw_mode_local: true
-
+      label_settings_local: {
+        canvas_scale_global_is_automatic: true
+      },
+      draw_mode_local: true,
     }
   },
   watch: {
