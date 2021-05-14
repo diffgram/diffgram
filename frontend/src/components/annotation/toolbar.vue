@@ -12,29 +12,30 @@
   <v-toolbar-items>
 
 
-    <div v-if="task && task.id">
+    <div v-show="task && task.id">
+      <v-layout>
+        <ahref_seo_optimal :href="'/home/dashboard'">
+          <div class="pt-2 pr-3 clickable">
 
-      <ahref_seo_optimal :href="'/home/dashboard'">
-        <div class="ml-0 pt-2 pr-3 clickable">
+            <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+                  height="30px" />
 
-          <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                height="30px" />
+          </div>
+        </ahref_seo_optimal>
 
-        </div>
-      </ahref_seo_optimal>
+        <tooltip_button
+          color="primary"
+          :icon_style="true"
+          icon="mdi-home"
+          tooltip_message="Home"
+          @click="$router.push('/job/list/')"
+          :bottom="true">
+        </tooltip_button>
 
-      <tooltip_button
-        color="primary"
-        :icon_style="true"
-        icon="mdi-home"
-        tooltip_message="Home"
-        @click="$router.push('/job/list/')"
-        :bottom="true">
-      </tooltip_button>
-
-      <v-divider
-        vertical
-      ></v-divider>
+        <v-divider
+          vertical
+        ></v-divider>
+      </v-layout>
 
     </div>
 
@@ -802,6 +803,9 @@ export default Vue.extend( {
     'project_string_id': {
 
      },
+    'label_settings': {
+      default: null
+    },
     'task': {
 
      },
@@ -839,9 +843,6 @@ export default Vue.extend( {
     'show_undo_redo': {
       default: true,
       type: Boolean
-    },
-    'label_settings': {
-      default: null
     },
     'has_changed': {
       default: false
