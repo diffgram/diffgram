@@ -5964,6 +5964,7 @@ export default Vue.extend( {
     },
     edit_mode_toggle: function (draw_mode) {
       this.reset_drawing();
+      this.draw_mode = draw_mode    // context from external component like toolbar
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
     },
