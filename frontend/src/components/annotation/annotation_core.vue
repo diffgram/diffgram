@@ -5457,6 +5457,8 @@ export default Vue.extend( {
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
+      this.show_default_navigation = false
+
       this.full_file_loading = true;
       if (this.has_changed) {
         await this.save();
