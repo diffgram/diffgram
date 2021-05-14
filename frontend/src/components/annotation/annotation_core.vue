@@ -5452,6 +5452,7 @@ export default Vue.extend( {
     },
     on_change_current_task: async function(){
       if (!this.$props.task) { return }
+      if (!this.$props.task.id) { return }
 
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
@@ -5471,6 +5472,7 @@ export default Vue.extend( {
     },
     on_change_current_file: async function () {
       if (!this.$props.file) { return }
+      if (!this.$props.file.id) { return }
 
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
