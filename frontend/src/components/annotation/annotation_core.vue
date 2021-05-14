@@ -585,7 +585,7 @@
           All Labels are shown here for viewing existing instances
           on files. Only the labels chosen at the Start will
           be available to annotators.
-        </v-alert>      
+        </v-alert>
 
         <v_labels_view
                          v-if="label_settings.show_list == true &&
@@ -607,7 +607,7 @@
                          @get_next_instance="request_next_instance"
         >
         </v_labels_view>
-  
+
 
   </v-navigation-drawer>
   -->
@@ -1190,7 +1190,7 @@ export default Vue.extend( {
   },
   computed: {
 
-    
+
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -2168,11 +2168,13 @@ export default Vue.extend( {
     redo: function(){
       if(!this.command_manager ){return}
       this.command_manager.redo();
+      this.update_canvas();
     },
     undo: function(){
       if(!this.command_manager ){return}
       this.command_manager.undo();
-    },
+      this.update_canvas();
+      },
     set_loading_sequences: function(loading_sequences){
       this.loading_sequences = loading_sequences
     },
@@ -2645,7 +2647,7 @@ export default Vue.extend( {
 
       this.media_core_height = 0
       this.show_default_navigation = false
-            
+
 
     },
     go_to_login: function () {
