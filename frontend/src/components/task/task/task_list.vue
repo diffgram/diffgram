@@ -1,10 +1,20 @@
 <template>
   <div v-cloak>
-    <v-card class="pa-8">
+    <v-card>
 
       <v-card-title>
         Task List
       </v-card-title>
+
+      <!-- Temporary button -->
+      <v-btn  @click="$router.push('/task/' + task_list[0].id )"
+              :loading="loading"
+              color="primary"
+              large
+      >
+        Start Annotating
+      </v-btn>
+
       <v-layout v-if="external_interface === 'labelbox' && !pending_initial_dir_sync && task_list.length > 0">
         <v-row>
           <v-col cols="12" class="d-flex align-center justify-center">
