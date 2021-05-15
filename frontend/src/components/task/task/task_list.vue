@@ -1,6 +1,6 @@
 <template>
   <div v-cloak>
-    <v-card class="pa-8">
+    <v-card>
 
       <v-card-title>
         Task List
