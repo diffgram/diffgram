@@ -41,6 +41,8 @@
       <v-container>
         <v-row>
           <v-col cols="12" class="d-flex justify-center">
+
+            <!--
             <v-btn v-if="!job.user_to_job"
                    @click="job_apply()"
                    :loading="loading"
@@ -58,6 +60,7 @@
             >
               Continue Annotating
             </v-btn>
+            -->
 
             <v-btn v-if="job.type == 'Exam'"
                    @click="route_exam_result()"
