@@ -4,9 +4,7 @@
     <v-tabs
       v-model="tab"
       align-with-title
-      color="white"
-      dark
-
+      color="primary"
     >
 
       <v-tab
@@ -28,6 +26,7 @@
                                 :job_id="job_id">
           </v_job_detail_trainer>
         </v-tab-item>
+
         <v-tab-item>
           <task_template_discussions
             :project_string_id="$store.state.project.current.project_string_id"
@@ -35,6 +34,16 @@
           ></task_template_discussions>
 
         </v-tab-item>
+
+        <v-tab-item>
+
+          <job_pipeline_mxgraph :job_id="job_id"
+                                :show_output_jobs="true"
+                                class="mt-4 mb-4 pb-8 pt-8">
+          </job_pipeline_mxgraph>
+
+        </v-tab-item>
+
       </v-tabs-items>
     </v-tabs>
 
@@ -46,10 +55,10 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import v_job_detail_builder from './job_detail_builder'
 import v_job_detail_trainer from './job_detail_trainer'
 import task_template_discussions from '../../discussions/task_template_discussions'
+import job_pipeline_mxgraph from './job_pipeline_mxgraph'
 
 
 import Vue from "vue"; export default Vue.extend( {
@@ -58,7 +67,8 @@ import Vue from "vue"; export default Vue.extend( {
   components: {
     v_job_detail_builder,
     task_template_discussions,
-    v_job_detail_trainer
+    v_job_detail_trainer,
+    job_pipeline_mxgraph
   },
 
   data () {
@@ -68,7 +78,10 @@ import Vue from "vue"; export default Vue.extend( {
         {text: 'Oveview',
           icon: 'mdi-view-dashboard'},
         {text: 'Discussions',
-          icon: 'mdi-comment-multiple'}]
+          icon: 'mdi-comment-multiple'},
+        {text: 'Data Pipeline',
+          icon: 'mdi-folder-network'}
+        ]
     }
   },
   created() {
