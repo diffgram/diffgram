@@ -5794,6 +5794,10 @@ export default Vue.extend( {
         this.force_new_sequence_request = Date.now()
       }
 
+      if (event.key === "g") {
+        this.label_settings.show_ghost_instances = !this.label_settings.show_ghost_instances
+      }
+
       if (event.keyCode === 83) { // save
         this.save();
       }
