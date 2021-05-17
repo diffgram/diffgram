@@ -270,7 +270,7 @@
                     <tr v-if="pre_labels_file_type === 'json'">
                       <td><strong>points:</strong></td>
                       <td>
-                        Preview Data Here
+                        {{get_preview_data_for_key('polygon', 'points')}}
                       </td>
                       <td class="d-flex align-center">
                         <v-select class="pt-4"
@@ -307,6 +307,84 @@
                         </p>
                       </td>
                     </tr>
+                    <tr v-if="pre_labels_file_type === 'csv'">
+                      <td><strong>points X:</strong></td>
+                      <td>
+                        {{get_preview_data_for_key('polygon', 'points_x')}}
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  @change="check_polygon_points_key_structure"
+                                  v-model="diffgram_schema_mapping.polygon.points_x">
+
+                        </v-select>
+                      </td>
+                      <td>Preview Data</td>
+                      <td v-if="pre_labels_file_type === 'json'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** Points Must be an array of objects with the structure:
+                            "{x: Number, y: Number}"
+                          </strong>
+                          <strong v-if="valid_points_values_polygon">
+                            <v-icon color="success">mdi-check</v-icon>
+                            Valid Values
+                          </strong>
+                          <v_error_multiple dense :error="error_polygon_instance">
+                          </v_error_multiple>
+                        </p>
+                      </td>
+                      <td v-if="pre_labels_file_type === 'csv'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** Points must be in 2 columns, one for the X values and one for the Y
+                            values. The values inside each column should be separated by ';'.
+                          </strong>
+                        </p>
+                      </td>
+                    </tr>
+                    <tr v-if="pre_labels_file_type === 'csv'">
+                      <td><strong>points Y:</strong></td>
+                      <td>
+                        {{get_preview_data_for_key('polygon', 'points_y')}}
+                      </td>
+                      <td class="d-flex align-center">
+                        <v-select class="pt-4"
+                                  style="max-width: 200px"
+                                  dense
+                                  :items="pre_label_key_list"
+                                  @change="check_polygon_points_key_structure"
+                                  v-model="diffgram_schema_mapping.polygon.points_y">
+
+                        </v-select>
+                      </td>
+                      <td>Preview Data</td>
+                      <td v-if="pre_labels_file_type === 'json'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** Points Must be an array of objects with the structure:
+                            "{x: Number, y: Number}"
+                          </strong>
+                          <strong v-if="valid_points_values_polygon">
+                            <v-icon color="success">mdi-check</v-icon>
+                            Valid Values
+                          </strong>
+                          <v_error_multiple dense :error="error_polygon_instance">
+                          </v_error_multiple>
+                        </p>
+                      </td>
+                      <td v-if="pre_labels_file_type === 'csv'">
+                        <p style="font-size: 12px" class="primary--text text--lighten-3">
+                          <strong>
+                            ** Points must be in 2 columns, one for the X values and one for the Y
+                            values. The values inside each column should be separated by ';'.
+                          </strong>
+                        </p>
+                      </td>
+                    </tr>
                     </tbody>
                   </template>
                 </v-data-table>
@@ -324,7 +402,7 @@
                     <tr v-for="key in Object.keys(diffgram_schema_mapping.point)">
                       <td><strong>point {{key}} value:</strong></td>
                       <td>
-                        Preview Data Here
+                        {{get_preview_data_for_key('point', key)}}
                       </td>
                       <td>
                         <v-select class="pt-4"
@@ -368,7 +446,7 @@
                     <tr v-for="key in Object.keys(diffgram_schema_mapping.line)">
                       <td><strong>line {{key}} value:</strong></td>
                       <td>
-                        Preview Data Here
+                        {{get_preview_data_for_key('line', key)}}
                       </td>
                       <td class="d-flex align-center">
                         <v-select class="pt-4"
@@ -401,8 +479,7 @@
                 </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-
-
+            
             <v-expansion-panel key="cuboid" class="ma-4" v-if="included_instance_types.cuboid">
               <v-expansion-panel-header color="primary lighten-2" class="text--white">
                 <span class="white--text"><strong>Cuboid Type (Click to match schema)</strong></span>
@@ -414,7 +491,7 @@
                     <tr v-for="key in Object.keys(diffgram_schema_mapping.cuboid)">
                       <td><strong>{{key}}:</strong></td>
                       <td>
-                        Preview Data Here
+                        {{get_preview_data_for_key('cuboid', key)}}
                       </td>
                       <td class="d-flex align-center">
                         <v-select class="pt-4"
@@ -446,6 +523,7 @@
                 </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
+
             <v-expansion-panel key="ellipse" class="ma-4" v-if="included_instance_types.ellipse">
               <v-expansion-panel-header color="primary lighten-2" class="text--white">
                 <span class="white--text"><strong>Ellipse Type (Click to match schema)</strong></span>
@@ -457,7 +535,7 @@
                     <tr v-for="key in Object.keys(diffgram_schema_mapping.ellipse)">
                       <td><strong>{{key}}:</strong></td>
                       <td>
-                        Preview Data Here
+                        {{get_preview_data_for_key('ellipse', key)}}
                       </td>
                       <td class="d-flex align-center">
                         <v-select class="pt-4"
@@ -595,6 +673,8 @@
         },
         polygon: {
           points: null,
+          points_y: null,
+          points_x: null,
         },
         cuboid: {
           front_face_top_left_x: null,
@@ -848,20 +928,24 @@
               const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
               this.pre_label_key_list = [...pre_label_keys];
               this.pre_labels_file_list.push(file);
-            } else if (file.type === 'text/csv') {
-              this.pre_labels_file_type = 'csv';
             }
-            else if(file.tpye === 'text/csv'){
+            else if(file.type === 'text/csv'){
               this.pre_labels_file_type = 'csv';
               let lines = textData.split("\n");
-              const header = lines.shift().split(this.csv_separator)
-              lines.shift(); // get rid of definitions
+              const headers = lines.shift().split(this.csv_separator)
+              if(lines[lines.length - 1] == [""]){
+                lines.pop();
+              }
+              this.pre_label_key_list = headers;
+              this.pre_labels_file_list.push(file);
               this.pre_labeled_data = lines.map(line => {
-                const bits = line.split(this.csv_separator)
+                const row = line.split(this.csv_separator)
+
                 let obj = {};
-                header.forEach((h, i) => obj[h] = bits[i]); // or use reduce here
+                headers.forEach((h, i) => obj[h] = row[i]);
                 return obj;
               })
+
             }
 
             this.el = 2;
@@ -1073,7 +1157,6 @@
             if (response.status === 200) {
               const labels = response.data.labels_out;
               const label_names = labels.map(elm => elm.label.name)
-              console.log('labels', labels);
               for (const instance of this.pre_labeled_data) {
                 if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
                   this.errors_file_schema = {}
@@ -1083,7 +1166,6 @@
                   return
                 }
               }
-              console.log('VALID LABELS')
               this.valid_labels = true;
               await this.$nextTick();
               setTimeout(() => {
@@ -1101,8 +1183,6 @@
         },
         validate_frame_and_sequences(){
           for (const instance of this.pre_labeled_data) {
-            console.log('file_list_to_upload', this.file_list_to_upload)
-            console.log('instance[this.diffgram_schema_mapping.file_name]', instance[this.diffgram_schema_mapping.file_name])
             const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
             if(!related_file){
               this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
@@ -1126,11 +1206,44 @@
 
           }
         },
+        build_points_for_polygon(){
+          if(this.$props.pre_labels_file_type === 'json'){
+            return
+          }
+          for(const instance of this.pre_labeled_data){
+            let x_points = instance[this.diffgram_schema_mapping.polygon.points_x];
+            x_points = x_points.split(';').map(x => parseInt(x, 10))
+            let y_points = instance[this.diffgram_schema_mapping.polygon.points_y];
+            y_points = y_points.split(';').map(y => parseInt(y, 10))
+            if(!x_points || !y_points){
+              this.errors_instance_schema = {};
+              this.errors_instance_schema['points'] = 'Provide X, Y point values.';
+              this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
+              return
+            }
+            if(x_points.length !== y_points.length){
+              this.errors_instance_schema = {};
+              this.errors_instance_schema['x_points'] = 'X and Y values must be the same length';
+              this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
+              return
+            }
+            instance.points = []
+            for(let i = 0; i < x_points.length; i++){
+              instance.points.push({
+                x: x_points[i],
+                y: y_points[i],
+              })
+            }
+            // Automatically map to 'points' value of the instance.
+            this.diffgram_schema_mapping.polygon.points = 'points';
+          }
+        },
         async check_errors_and_go_to_step(step) {
           if (step === 3) {
             this.errors_file_schema = undefined
             this.get_included_instance_types();
             if (!this.diffgram_schema_mapping.file_name) {
+              this.errors_file_schema = {};
               this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
               return
             }
@@ -1142,10 +1255,20 @@
             }
           } else if (step === 4) {
             this.errors_instance_schema = undefined;
-            console.log('errors_instance_schema', this.errors_instance_schema)
+            this.build_points_for_polygon()
+            if(this.errors_instance_schema){
+              return
+            }
             for (const instance_key in this.included_instance_types) {
               if (this.included_instance_types[instance_key]) {
                 for (const schema_key in this.diffgram_schema_mapping[instance_key]) {
+                  if(!this.diffgram_schema_mapping[instance_key][schema_key]
+                    && instance_key === 'polygon'
+                    && ['points_x', 'points_y'].includes(schema_key)
+                    && this.$props.pre_labels_file_type === 'json'){
+                    // Skip polygon x,y points when pre_labels are in json format.
+                    continue
+                  }
                   if (!this.diffgram_schema_mapping[instance_key][schema_key]) {
                     this.errors_instance_schema = {}
                     this.errors_instance_schema[instance_key] = `${schema_key} key is missing. Please fill out the value.`
