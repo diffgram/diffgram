@@ -4007,7 +4007,7 @@ export default Vue.extend( {
     },
 
   ghost_may_promote_instance_to_actual: function () {
-    if (this.ghost_instance_hover_index) {
+    if (this.ghost_instance_hover_index != undefined) { // may be 0!
       this.instance_hover_index = this.ghost_instance_hover_index
       this.instance_hover_type = this.ghost_instance_hover_type
       this.ghost_promote_instance_to_actual(this.ghost_instance_hover_index)
