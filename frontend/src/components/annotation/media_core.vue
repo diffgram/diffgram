@@ -310,7 +310,30 @@
                 </template>
               </button_with_menu>
 
+              <!-- Pending removal -->
+              <!--
+              <div v-if="$store.state.user.current.api
+               && $store.state.user.current.api.api_actions">
 
+                <tooltip_button
+                  @click="inference_selected()"
+                  icon="mdi-rocket"
+                  tooltip_message="Inference"
+                  color="red"
+                  v-if="['annotation'].includes(file_view_mode)"
+                  :disabled="inference_selected_loading
+                   || selected.length == 0
+                   || select_from_metadata"
+                  :icon_style="true"
+                  :bottom="true"
+                >
+                </tooltip_button>
+
+                <v_error_multiple :error="error_inference">
+                </v_error_multiple>
+
+              </div>
+              -->
 
             <v-divider
               vertical
@@ -427,29 +450,6 @@
 
 
 
-
-
-            <div v-if="$store.state.user.current.api
-             && $store.state.user.current.api.api_actions">
-
-              <tooltip_button
-                @click="inference_selected()"
-                icon="mdi-rocket"
-                tooltip_message="Inference"
-                color="red"
-                v-if="['annotation'].includes(file_view_mode)"
-                :disabled="inference_selected_loading
-                 || selected.length == 0
-                 || select_from_metadata"
-                :icon_style="true"
-                :bottom="true"
-              >
-              </tooltip_button>
-
-              <v_error_multiple :error="error_inference">
-              </v_error_multiple>
-
-            </div>
 
             <!-- Deprecated ? -->
             <!--
