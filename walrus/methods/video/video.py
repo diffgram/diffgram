@@ -120,7 +120,7 @@ class New_video():
             input.status_text = "Could not load video. Try again, try a different format or contact us."
             # only for internal use
             # could look at storing in DB later or Using event logging.
-            print(input.status_text, input.id, exception)
+            logger.error('Could not load video. Try again, try a different format or contact us. Exception:  {}'.format(str(exception)))
             return None
 
         # https://stackoverflow.com/questions/43966523/getting-oserror-winerror-6-the-handle-is-invalid-in-videofileclip-function
@@ -150,8 +150,6 @@ class New_video():
         or if we should skip that
 
         """
-
-        print('fps', fps, 'original_fps', original_fps)
         if fps > original_fps:
             # print("Using original fps because proposed fps is higher."
             #	  "original_fps:", original_fps)
@@ -183,8 +181,6 @@ class New_video():
         # note these statements need to be after here in order to make sure
         # we update fps properly
         # otherwise have fps of say 0 and it's funny
-        print("new length", int(clip.duration * fps))
-
         length = int(clip.duration * fps)  # Frame count (ESTIMATED) otherwise requires iteration / loop to get exact
 
         # temp higher limit for testing stuff
@@ -204,8 +200,6 @@ class New_video():
             clip = resize_video(clip)
 
         video_file_name = os.path.splitext(video_file_name)[0] + "_re_saved.mp4"
-
-        print(clip.fps)
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
@@ -237,7 +231,7 @@ class New_video():
             except Exception as exception:
                 input.status = "failed"
                 input.status_text = "Could not write video file. Try a different format or contact us."
-                print(input.status_text, input.id, exception)
+                logger.error('Could not write video file. Try a different format or contact us.)')
                 return None
 
         else:
@@ -246,9 +240,6 @@ class New_video():
                                  threads = 4,
                                  logger = None
                                  )
-
-        # print(video_file_name)
-
         if not directory_id:
             directory_id = self.project.directory_default_id
 
@@ -274,7 +265,6 @@ class New_video():
                 parent_video_split_duration = parent_input.video_split_duration
         except:
             print("Could not get parent input")
-
         video, input.file = Video.new(
             session = self.session,
             project = self.project,
@@ -289,7 +279,9 @@ class New_video():
 
         if self.input.frame_packet_map:
             self.__prepare_sequences(parent_input = input)
-            if self.check_update_log_errors() is False: return
+            print('self.check_update_log_errors()', self.check_update_log_errors())
+            if self.check_update_log_errors() is False:
+                return
 
         input.file.input_id = input.id  # revsere link is sometimes handy to have.
 
@@ -312,12 +304,16 @@ class New_video():
         self.try_to_commit()
 
         self.session.add(video)
+        initial_global_frame = 0
+        if input.type == 'from_video_split':
+            initial_global_frame = video.fps * input.offset_in_seconds
         for index, frame in enumerate(clip.iter_frames()):
             global_frame_number = frame
+
             if input.type == 'from_video_split':
                 seconds_offset = input.offset_in_seconds
                 offset_in_frames = video.fps * seconds_offset
-                global_frame_number = frame + offset_in_frames
+                global_frame_number = index + offset_in_frames
 
             if index == 0:
                 input.status = "pushing_frames_into_processing_queue"
@@ -332,7 +328,8 @@ class New_video():
                 video,
                 length,
                 input.file,  # assumes this is video_parent_file
-                global_frame_number)
+                global_frame_number,
+                initial_global_frame)
 
             # TODO clarify if this is actually showing up the queue as expected
             video.frame_count += 1
@@ -371,6 +368,7 @@ class New_video():
 
         # Error Case
         if len(self.input.update_log["error"].keys()) >= 1:
+            logger.error('check_update_log_errors: {}'.format(str(self.input.update_log["error"])))
             return False
 
         # Success / Default Case
@@ -465,7 +463,8 @@ class New_video():
         video,
         length,
         video_parent_file: File,
-        global_frame_number = None):
+        global_frame_number = None,
+        initial_global_frame = None):
         """
         Where frame is:
             a HxWxN np.array, where N=1 for mask clips and N=3 for RGB clips.
@@ -513,6 +512,7 @@ class New_video():
         input.project = project
         input.directory_id = directory_id
         input.parent_file_id = video_parent_file.id
+        input.frame_packet_map = self.input.frame_packet_map
 
         # caution length is estimated. frame_count
         # is calculated as we roll through this so can't use it yet
@@ -532,7 +532,9 @@ class New_video():
         input = self.get_instance_list_from_packet_map(
             input = input,
             frame_number = index,
-            global_frame_number = global_frame_number)
+            global_frame_number = global_frame_number,
+            initial_global_frame = initial_global_frame,
+            from_video_split = self.input.type == 'from_video_split')
 
         """
         For frame priority, the original genesis was doing the last frame last
@@ -573,7 +575,9 @@ class New_video():
         self,
         input,
         frame_number: int,
-        global_frame_number = None):
+        global_frame_number = None,
+        initial_global_frame = None,
+        from_video_split = False):
         """
         Helper function to format nicely
 
@@ -592,24 +596,33 @@ class New_video():
         Caution some potential gotcahas with the key being a string
         or int here.
         """
-
         if self.input.frame_packet_map:
 
             input.instance_list = {}
-            if input.type == 'from_video_split':
-                instance_list = self.input.frame_packet_map.get(str(global_frame_number))
+            print('Processing instance_list', frame_number, global_frame_number, initial_global_frame, from_video_split)
+            if from_video_split:
+                if int(global_frame_number) > int(initial_global_frame):
+                    print('GLOBAL FRAME NUM', str(global_frame_number), self.input.frame_packet_map.get(str(int(global_frame_number))))
+                    instance_list = self.input.frame_packet_map.get(str(int(global_frame_number)))
+                else:
+                    return input
+                if instance_list is not None:
+                    input.instance_list['list'] = instance_list
+
+
             else:
                 instance_list = self.input.frame_packet_map.get(str(frame_number))
-                
-            if instance_list is None:
-                instance_list = self.input.frame_packet_map.get(int(frame_number))
 
-            if instance_list:
-                input.instance_list['list'] = instance_list
+                if instance_list is None:
+                    instance_list = self.input.frame_packet_map.get(int(frame_number))
+
+                if instance_list:
+                    input.instance_list['list'] = instance_list
 
         # print("frame_number", frame_number, input.instance_list['list'])
         # could create sequences here...
-        print('GETTING FROM FRAME PACKET MAPPPPP', input.instance_list)
+
+        print('GETTING FROM FRAME PACKET MAPPPPP', frame_number, global_frame_number, initial_global_frame, input.instance_list)
         return input
 
     def determine_unique_sequences_from_external(self):

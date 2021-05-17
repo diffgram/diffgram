@@ -150,6 +150,7 @@
             </vue-dropzone>
 
           </v-col>
+          <v-row> <v_error_multiple :error="error_file_uploads"></v_error_multiple></v-row>
         </v-row>
 
         <v-alert class="pa-4 ma-8" v-else type="warning"> Please select a dataset/directory to upload files.
@@ -212,6 +213,9 @@
         'initial_dataset': {
           default: undefined
         },
+        'error_file_uploads':{
+          default: null
+        }
       },
 
       data() {

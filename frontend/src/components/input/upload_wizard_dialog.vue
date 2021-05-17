@@ -40,6 +40,7 @@
 
       <v-stepper-items>
         <v-stepper-content step="1">
+
           <new_or_update_upload_screen
             @file_list_updated="file_list_updated"
             @upload_in_progress="show_upload_progress_screen"
@@ -51,9 +52,11 @@
             @file_added="file_added"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
+            :error_file_uploads="error_file_uploads"
             :project_string_id="project_string_id">
 
           </new_or_update_upload_screen>
+
         </v-stepper-content>
 
         <v-stepper-content step="2">
@@ -221,7 +224,7 @@
                       <tr v-for="key in Object.keys(diffgram_schema_mapping.box)">
                         <td><strong>{{key}}:</strong></td>
                         <td>
-                          Preview Data Here
+                          {{get_preview_data_for_key('box', key)}}
                         </td>
                         <td class="d-flex align-center">
                           <v-select class="pt-4"
@@ -530,7 +533,9 @@
   import Vue from "vue";
   function get_initial_state(){
     const initial_state = {
+      csv_separator: ',',
       uploaded_bytes: null,
+      error_file_uploads: null,
       total_bytes: null,
       percent_uploaded: null,
       current_directory: null,
@@ -800,6 +805,17 @@
       },
 
       methods: {
+        get_preview_data_for_key: function(instance_type, key){
+          if(!instance_type || !key){return ''}
+          let result = '';
+          for(const instance of this.pre_labeled_data){
+            const value = instance[this.diffgram_schema_mapping[instance_type][key]];
+            if(value){
+              result += `${value}, \n`
+            }
+          }
+          return result
+        },
         set_current_directory: function(current_directory){
           this.current_directory = current_directory;
         },
@@ -825,16 +841,37 @@
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           const textData = await file.text();
-          if (file.type === 'application/json') {
-            this.pre_labels_file_type = 'json';
-            this.pre_labeled_data = JSON.parse(textData);
-            const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
-            this.pre_label_key_list = [...pre_label_keys];
-            this.pre_labels_file_list.push(file);
-          } else if (file.type === 'text/csv') {
-            this.pre_labels_file_type = 'csv';
+          try{
+            if (file.type === 'application/json') {
+              this.pre_labels_file_type = 'json';
+              this.pre_labeled_data = JSON.parse(textData);
+              const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
+              this.pre_label_key_list = [...pre_label_keys];
+              this.pre_labels_file_list.push(file);
+            } else if (file.type === 'text/csv') {
+              this.pre_labels_file_type = 'csv';
+            }
+            else if(file.tpye === 'text/csv'){
+              this.pre_labels_file_type = 'csv';
+              let lines = textData.split("\n");
+              const header = lines.shift().split(this.csv_separator)
+              lines.shift(); // get rid of definitions
+              this.pre_labeled_data = lines.map(line => {
+                const bits = line.split(this.csv_separator)
+                let obj = {};
+                header.forEach((h, i) => obj[h] = bits[i]); // or use reduce here
+                return obj;
+              })
+            }
+
+            this.el = 2;
           }
-          this.el = 2;
+          catch(error){
+            this.error_file_uploads = {}
+            this.error_file_uploads['annotations_file'] = `Error on file ${file.name}: ${error.toString()}`;
+            console.error(error);
+          }
+
         },
         file_list_updated: function (new_file_list) {
           this.file_list_to_upload = new_file_list;
@@ -1076,12 +1113,14 @@
                 this.errors_file_schema = {}
                 this.errors_file_schema['frame_number'] = `Provide frame numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+                return
               }
 
               if (instance[this.diffgram_schema_mapping.number] == undefined) {
                 this.errors_file_schema = {}
-                this.errors_file_schema['frame_number'] = `Provide Sequence numbers.`
+                this.errors_file_schema['sequence_numbers'] = `Provide Sequence numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+                return
               }
             }
 
