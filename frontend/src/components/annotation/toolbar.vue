@@ -12,30 +12,30 @@
   <v-toolbar-items>
 
 
-    <div v-if="task && task.id">
+    <div v-show="task && task.id">
+      <v-layout>
+        <ahref_seo_optimal :href="'/home/dashboard'">
+          <div class="pt-2 pr-3 clickable">
 
-      <ahref_seo_optimal :href="'/home/dashboard'">
-        <div class="ml-0 pt-2 pr-3 clickable">
+            <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+                  height="30px" />
 
-          <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                height="30px" />
+          </div>
+        </ahref_seo_optimal>
 
-        </div>
-      </ahref_seo_optimal>
+        <tooltip_button
+          color="primary"
+          :icon_style="true"
+          icon="mdi-home"
+          tooltip_message="Home"
+          @click="$router.push('/job/' + task.job_id)"
+          :bottom="true">
+        </tooltip_button>
 
-      <tooltip_button
-        color="primary"
-        :icon_style="true"
-        icon="mdi-home"
-        tooltip_message="Home"
-        @click="$router.push('/job/list/')"
-        :bottom="true">
-      </tooltip_button>
-
-      <v-divider
-        vertical
-      ></v-divider>
-
+        <v-divider
+          vertical
+        ></v-divider>
+      </v-layout>
     </div>
 
     <!-- Undo Redo -->
@@ -64,17 +64,17 @@
     </div>
 
     <v-divider
+      v-if="task"
       vertical
     ></v-divider>
 
-    <!-- TODO review @replace_file="replace_file($event[0], $event[1])" -->
-
     <v_is_complete
-        v-if="file || task"
+        v-if="task"
         :project_string_id="project_string_id"
         :current_file="file ? file : task.file"
         :task="task"
         @complete_task="$emit('complete_task')"
+        @replace_file="$emit('replace_file', $event)"
         :save_and_complete="true"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (!file && !task)"
@@ -104,7 +104,7 @@
     ></v-divider>
 
     <div class="pt-3 pl-1 pr-2">
-  
+
       <v-tooltip bottom
                   color="info"
                   >
@@ -155,7 +155,7 @@
       <div class="pl-3 pr-3 pt-4">
 
         <!-- instance_selector -->
-          <diffgram_select
+        <diffgram_select
             v-if="view_only_mode != true"
             :item_list="instance_type_list"
             data_cy="instance-type-select"
@@ -168,19 +168,29 @@
 
       </div>
     </v-flex>
-          
+
+    <tooltip_button
+      v-if="instance_type == 'tag'"
+      @click="$emit('new_tag_instance')"
+      color="primary"
+      :icon_style="true"
+      icon="mdi-tag-plus-outline"
+      tooltip_message="Manual New Tag (Automatic on Label Change)"
+      :bottom="true">
+    </tooltip_button>
+
     <v-divider
       vertical
     ></v-divider>
 
-          
+
     <div class="pl-3 pt-3 pr-2">
       <v-switch v-if="view_only_mode != true"
                 :label_file="mode_text"
                 data-cy="edit_toggle"
                 :disabled="view_issue_mode"
-                v-model="draw_mode"
-                @change="$emit('edit_mode_toggle', draw_mode)"
+                v-model="draw_mode_local"
+                @change="$emit('edit_mode_toggle', draw_mode_local)"
                 :label="mode_text">
       </v-switch>
     </div>
@@ -204,13 +214,15 @@
     </tooltip_button>
 
     <div class="has-changed">
-      <span v-if="save_loading"> Saving. </span>
-      <span v-else>
-        <span v-if="has_changed">Changes Detected...</span>
-        <span v-else>Changes Saved.</span>
-      </span>
+      <div style="width: 100px">
+        <span v-if="save_loading"> Saving. </span>
+        <span v-else>
+          <span v-if="has_changed">Changes Detected...</span>
+          <span v-else>Saved.</span>
+        </span>
+      </div>
     </div>
-  
+
     <v-divider
       vertical
     ></v-divider>
@@ -389,6 +401,7 @@
 
         <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
 
+        <p> <kbd>W</kbd> Toggle Label Menu </p>
         <p> <kbd>1 - 9</kbd> Change label </p>
 
         <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
@@ -474,6 +487,7 @@
     <!-- MORE -->
     <button_with_menu
         tooltip_message="More"
+        datacy="more_button"
         icon="mdi-dots-vertical"
         color="primary"
         :commit_menu_status="true"
@@ -558,11 +572,12 @@
 
             <template slot="content">
 
-              <task_relations_card v-if="task"
-                                    :file="task.file"
-                                    :task="task"
-                                    :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                                    :elevation="0">
+              <task_relations_card
+                v-if="task"
+                :file="task.file"
+                :task="task"
+                :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+                :elevation="0">
 
               </task_relations_card>
             </template>
@@ -583,34 +598,33 @@
                 </v-card-title>
 
                 <v-checkbox
-                        label="Auto Size Canvas"
-                        v-model="canvas_scale_global_is_automatic"
-                        @change="$emit('canvas_scale_global_is_automatic', canvas_scale_global_is_automatic)"
-                            >
+                  label="Auto Size Canvas"
+                  v-model="label_settings_local.canvas_scale_global_is_automatic"
+                      >
                 </v-checkbox>
 
                 <v-slider
-                        label="Canvas"
-                        min=.2
-                        max=2
-                        step=.05
-                        thumb-label="always"
-                        ticks
-                        @input="$emit('canvas_scale_global_is_automatic', false),
-                                $emit('canvas_scale_global_setting', canvas_scale_global_setting)"
-                        v-model="canvas_scale_global_setting">
+                  label="Canvas"
+                  min=.2
+                  max=2
+                  step=.05
+                  thumb-label="always"
+                  ticks
+                  @change="label_settings_local.canvas_scale_global_is_automatic = false"
+                  v-model="label_settings_local.canvas_scale_global_setting">
                 </v-slider>
 
-                <v-slider label="Left"
-                          min=200
-                          step=50
-                          max=750
-                          thumb-label="always"
-                          ticks
-                          @input="
-                            $store.commit('set_user_setting', ['studio_left_nav_width', left_nav_width]),
-                            $emit('change_left_nav_width', left_nav_width)"
-                          v-model="left_nav_width">
+                <v-slider
+                  label="Left"
+                  min=200
+                  step=50
+                  max=750
+                  thumb-label="always"
+                  ticks
+                  @input="
+                    $store.commit('set_user_setting',
+                          ['studio_left_nav_width', label_settings_local.left_nav_width])"
+                  v-model="label_settings_local.left_nav_width">
                 </v-slider>
 
 
@@ -794,6 +808,9 @@ export default Vue.extend( {
     'project_string_id': {
 
      },
+    'label_settings': {
+      default: null
+    },
     'task': {
 
      },
@@ -832,29 +849,26 @@ export default Vue.extend( {
       default: true,
       type: Boolean
     },
-    'label_settings': {
-      default: null
-    },
     'has_changed': {
       default: false
     },
     'draw_mode': {
       default: true
     },
-    'canvas_scale_global_is_automatic': {},
-    'canvas_scale_global_setting': {},
     'full_file_loading': {},
     'annotations_loading': {},
     'instance_template_selected': {},
     'instance_type': {},
     'loading_instance_templates': {},
     'instance_type_list': {},
-    'left_nav_width': {},
     'view_issue_mode': {}
   },
   data() {
     return {
-      label_settings_local: {}
+      label_settings_local: {
+        canvas_scale_global_is_automatic: true
+      },
+      draw_mode_local: true,
     }
   },
   watch: {
@@ -863,14 +877,18 @@ export default Vue.extend( {
     },
     label_settings(event){
       this.label_settings_local = event
+    },
+    draw_mode(event){
+      this.draw_mode_local = event
     }
   },
   mounted() {
     this.label_settings_local = this.$props.label_settings
+    this.draw_mode_local = this.$props.draw_mode
   },
   computed: {
     mode_text: function () {
-      if (this.draw_mode == true) {
+      if (this.draw_mode_local == true) {
         return "Drawing"
       } else {
         return "Editing"

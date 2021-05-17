@@ -403,7 +403,6 @@ export default Vue.extend( {
     'current_video',
     'video_mode',
     'current_video_file_id',
-    'render_mode',
     'video_pause_request',
     'video_play_request',
     'task',

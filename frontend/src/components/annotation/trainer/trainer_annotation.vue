@@ -12,14 +12,13 @@
       </v_annotation_trainer_job_info>
 
 
-      <v_annotation_core :render_mode=" 'trainer_default' "
-                          :is_annotation_assignment_bool="false"
-                          :file_id_prop="file_id_prop"
-                          :request_project_change="request_project_change"
-                          :accesskey="'annotation_trainer'"
-                          :file_view_mode="'annotation'"
-                          :job_id="job_id"
-                          :job="job"
+      <v_annotation_core
+          :file_id_prop="file_id_prop"
+          :request_project_change="request_project_change"
+          :accesskey="'annotation_trainer'"
+          :file_view_mode="'annotation'"
+          :job_id="job_id"
+          :job="job"
                          >
       </v_annotation_core>
 

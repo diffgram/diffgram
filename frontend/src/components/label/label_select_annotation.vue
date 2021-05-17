@@ -11,6 +11,7 @@
                 :disabled="label_refresh_loading"
                 @change="emit_selected()"
                 item-value="id"
+                ref="label_select"
                 >
 
         <template v-slot:item="data">
@@ -20,17 +21,23 @@
             flag
           </v-icon>
 
+          <div class="pl-4 pr-4"
+               :data-cy="data.item.label.name">
+            {{data.item.label.name}}
+           </div>
+
+          <!-- Would like to have this but it looks kind of messy -->
+          <!--
+          <div style="color: grey">
+            {{label_list.indexOf(data.item) + 1}}</div>
+          -->
+
           <tooltip_icon
             v-if="data.item.label.default_sequences_to_single_frame"
             tooltip_message="Video Defaults to Single Frame"
             icon="mdi-flag-checkered"
             color="black">
           </tooltip_icon>
-
-          <v-chip color="white"
-                  text-color="primary">
-            {{data.item.label.name}}
-          </v-chip>
 
 
           <div v-if="show_visibility_toggle
@@ -40,15 +47,25 @@
 
               <div v-if="data.item.is_visible == true
                     || data.item.is_visible == null">
-                <v-btn icon @click="toggle_label_visible(data.item)">
-                  <v-icon color="blue">remove_red_eye</v-icon>
-                </v-btn>
+                <tooltip_button
+                  @click="toggle_label_visible(data.item)"
+                  color="grey lighten-1"
+                  :icon_style="true"
+                  icon="remove_red_eye"
+                  tooltip_message="Hide"
+                  :bottom="true">
+                </tooltip_button>
               </div>
 
               <div v-if="data.item.is_visible == false">
-                <v-btn icon @click="toggle_label_visible(data.item)">
-                  <v-icon color="grey">remove_red_eye</v-icon>
-                </v-btn>
+                <tooltip_button
+                  @click="toggle_label_visible(data.item)"
+                  color="grey"
+                  :icon_style="true"
+                  icon="mdi-eye-off"
+                  tooltip_message="Show"
+                  :bottom="true">
+                </tooltip_button>
               </div>
 
             </v-layout>
@@ -150,6 +167,12 @@
           // TODO consider v-model for selected in this context.
         }
 
+        window.addEventListener('keyup', this.keyboard_events_window);
+
+      },
+
+      beforeDestroy() {
+        window.removeEventListener('keyup', this.keyboard_events_window)
       },
 
       computed: {
@@ -174,6 +197,19 @@
           selected: {},
 
           label_list: [],
+
+          hotkey_dict: {
+            49: 0,
+            50: 1,
+            51: 2,
+            52: 3,
+            53: 4,
+            54: 5,
+            55: 6,
+            56: 7,
+            57: 8,
+            58: 9
+          },
 
         }
       },
@@ -214,13 +250,36 @@
 
         },
 
+        toggle_label_menu: function () {
+          this.$refs['label_select'].isMenuActive = !this.$refs['label_select'].isMenuActive;
+        },
+
         style_color: function (hex) {
           return "color:" + hex
         },
 
         emit_selected: function () {
           this.$emit('change', this.selected)
-        }
+        },
+
+        keyboard_events_window: function (event) {
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return
+          }
+          if (event.key === 'w') {
+            this.toggle_label_menu()
+            return
+          }
+
+          let hotkey = null
+          hotkey = this.hotkey_dict[event.keyCode]
+          if (hotkey != null) {
+            this.selected = this.label_list[hotkey]
+            this.emit_selected()
+          }
+
+        },
 
       }
     }

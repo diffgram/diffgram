@@ -12,7 +12,7 @@ from sqlalchemy import desc
 
 @routes.route('/api/v1/file/view',
               methods = ['POST'])
-def view_file_by_id():
+def view_file_by_id():  # Assumes permissions handled later with Project_permissions
     """
 
     Some key differences vs other routes

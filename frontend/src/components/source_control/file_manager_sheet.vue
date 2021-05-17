@@ -10,54 +10,11 @@
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
                     v-model="media_sheet">
-      <v-sheet class="text-right" style="position: relative">
-        <v-btn
-          v-if="full_screen"
-          style="position: absolute; top:0; right: 65px"
-          data-cy="fullscreen-file-explorer-button"
-          color="primary lighten-3"
-          small
-          @click="minimize_sheet"
-          fab
-          right
-          fixed
-        >
-          <v-icon> mdi-arrow-down</v-icon>
-        </v-btn>
-        <v-btn
-          v-if="!full_screen"
-          style="position: absolute; top:0; right: 65px"
-          data-cy="fullscreen-file-explorer-button"
-          color="primary lighten-3"
-          small
-          @click="full_screen_sheet"
-          fab
-          right
-          fixed
-        >
-          <v-icon> mdi-arrow-up</v-icon>
-        </v-btn>
-        <v-tooltip bottom>
-          Minimize
-          <template v-slot:activator="{ on }">
-            <v-btn
-              data-cy="minimize-file-explorer-button"
-              color="primary lighten-3"
-              small
-              @click="media_sheet = !media_sheet"
-              fab
-              right
-              fixed
-              v-on="on"
-            >
-              <v-icon> mdi-window-minimize</v-icon>
-            </v-btn>
-          </template>
-        </v-tooltip>
+      <v-sheet>
+
         <v-tabs v-model="tab"
                 align-with-title
-                color="white"
-                dark>
+                color="primary">
           <v-tab
             v-for="item in items"
             :key="item.text"
@@ -65,6 +22,57 @@
             <v-icon left>{{item.icon}}</v-icon>
             {{ item.text }}
           </v-tab>
+
+        <v-spacer> </v-spacer>
+
+        <tooltip_button
+            tooltip_message="Minimize"
+            @click="media_sheet = !media_sheet"
+            icon="mdi-window-minimize"
+            :icon_style="true"
+            color="primary"
+            :bottom="true"
+            datacy="minimize-file-explorer-button"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+            v-if="full_screen"
+            tooltip_message="Restore Down"
+            @click="minimize_sheet"
+            icon="mdi-window-restore"
+            :icon_style="true"
+            color="primary"
+            :bottom="true"
+            datacy="restore-down-file-explorer-button"
+                        >
+        </tooltip_button>
+ 
+        <tooltip_button
+            v-if="!full_screen"
+            tooltip_message="Maximize"
+            @click="full_screen_sheet"
+            icon="mdi-window-maximize"
+            :icon_style="true"
+            color="primary"
+            :bottom="true"
+            datacy="fullscreen-file-explorer-button"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+            tooltip_message="Close"
+            @click="media_sheet = !media_sheet"
+            icon="mdi-close"
+            :icon_style="true"
+            color="primary"
+            :bottom="true"
+            datacy="close-file-explorer-button"
+                        >
+        </tooltip_button>
+ 
+
+
           <v-tabs-items v-model="tab">
             <v-tab-item>
               <v_media_core :project_string_id="project_string_id"

@@ -2,7 +2,7 @@
   <div id="annotation_core">
 
 
-    <div v-if="['full', 'trainer_default'].includes(render_mode)">
+    <div>
 
 
       <main_menu :height="`${show_default_navigation ? '100px' : '50px'}`"
@@ -23,14 +23,15 @@
                    :canvas_scale_local="canvas_scale_local"
                    :has_changed="has_changed"
                    :label_list="label_list"
+                   :draw_mode="draw_mode"
                    :label_file_colour_map="label_file_colour_map"
-                   @label_settings_change="label_settings = $event"
+                   @label_settings_change="label_settings = $event, refresh = Date.now()"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
                    @change_instance_type="change_instance_type($event)"
                    @edit_mode_toggle="edit_mode_toggle($event)"
                    @undo="undo()"
-                   @redo="redo()"
+                   @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
                    @change_task="trigger_task_change($event, task)"
@@ -39,17 +40,13 @@
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
                    @complete_task="complete_task()"
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
-                   @canvas_scale_global_is_automatic="canvas_scale_global_is_automatic = $event"
-                   :canvas_scale_global_is_automatic="canvas_scale_global_is_automatic"
-                   :canvas_scale_global_setting="canvas_scale_global_setting"
+                   @new_tag_instance="insert_tag_type()"
+                   @replace_file="$emit('replace_file', $event)"
                    :full_file_loading="full_file_loading"
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
                    :instance_type_list="instance_type_list"
-                   :left_nav_width="left_nav_width"
-                   @change_left_nav_width="left_nav_width = $event"
-                   @canvas_scale_global_setting="canvas_scale_global_setting = $event"
                    :view_issue_mode="view_issue_mode"
                    >
           </toolbar>
@@ -67,8 +64,7 @@
       </main_menu>
 
       <!-- Errors / info -->
-      <v-alert v-if="render_mode == 'trainer_default'
-                    && task_error.task_request"
+      <v-alert v-if="task_error.task_request"
                type="info">
         {{task_error.task_request}}
       </v-alert>
@@ -159,32 +155,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <v-alert :value="
-             !loading
-             && !annotations_loading
-             && !job_id
-             && !file
-             && !task
-             "
-             type="info">
-
-
-
-       No files match criteria. Change criteria and refresh. </br>
-
-
-
-      <v-btn :disabled="!$store.state.project.current.project_string_id"
-              color="primary"
-              @click="$router.push('/studio/upload/' +
-                        $store.state.project.current.project_string_id)">
-      <span>
-        <v-icon left>cloud_upload</v-icon>
-        Upload & info
-      </span>
-    </v-btn>
-
-    </v-alert>
 
   <v-sheet >
 
@@ -197,15 +167,10 @@
       <v-navigation-drawer permanent
                            left
                            v-if="!error_no_permissions.data"
-                           :width="left_nav_width"
+                           :width="label_settings.left_nav_width"
                           >
 
-
-
-
-
       <v-alert v-if="$store.state.user.settings.studio_box_info == true &&
-                    ['full', 'trainer_default'].includes(render_mode) &&
                     file != undefined"
              dismissible
              @input="$store.commit('set_user_setting', ['studio_box_info', false])"
@@ -232,7 +197,6 @@
                                   @toggle_instance_focus="focus_instance($event)"
                                   @show_all="focus_instance_show_all()"
                                   @instance_update="instance_update($event)"
-                                  :render_mode="render_mode"
                                   :video_mode="video_mode"
                                   :task="task"
                                   :view_only_mode="view_only_mode"
@@ -442,7 +406,6 @@
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
                                   :is_actively_drawing="is_actively_drawing"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -478,7 +441,6 @@
                                   :issues_list="issues_list"
                                   :label_settings="label_settings"
                                   :current_instance="current_instance"
-                                  :render_mode="render_mode"
                                   :refresh="refresh"
                                   :draw_mode="draw_mode"
                                   :mouse_position="mouse_position"
@@ -496,7 +458,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -510,7 +471,6 @@
                                       :mouse_position="mouse_position"
                                       :canvas_transform="canvas_transform"
                                       :draw_mode="draw_mode"
-                                      :render_mode="render_mode"
                                       :is_actively_drawing="is_actively_drawing"
                                       :label_file_colour_map="label_file_colour_map">
 
@@ -571,7 +531,6 @@
                   @set_canvas_dimensions="set_canvas_dimensions()"
                   @update_canvas="update_canvas"
                   :current_video_file_id="current_video_file_id"
-                  :render_mode="render_mode"
                   :video_pause_request="video_pause"
                   :video_play_request="video_play"
                   :task="task"
@@ -588,7 +547,7 @@
           v-show="!show_place_holder"
           :video_mode="video_mode"
           class="pl-4"
-          :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
+          :project_string_id="project_string_id ? project_string_id : this.$props.project_string_id"
           :view_only_mode="view_only_mode"
           :current_video_file_id="current_video_file_id"
           :current_frame="current_frame"
@@ -627,21 +586,16 @@
           All Labels are shown here for viewing existing instances
           on files. Only the labels chosen at the Start will
           be available to annotators.
-        </v-alert>      
+        </v-alert>
 
         <v_labels_view
                          v-if="label_settings.show_list == true &&
                                 !task_error.task_request && !error_no_permissions.data"
                          :project_string_id="project_string_id"
-                         :render_mode="render_mode"
                          @change_label_file_function="change_current_label_file_template($event)"
                          :loading="loading"
-                         :request_label_file_refresh="request_label_file_refresh"
-                         @request_label_file_refresh_callback="request_label_file_refresh_callback"
                          @request_boxes_refresh="request_boxes_refresh"
                          @update_label_file_visible="update_label_file_visible($event)"
-                         @label_file_colour_map="label_file_colour_map = $event"
-                         @label_list="label_list = $event"
                          :video_mode="video_mode"
                          :view_only_mode="view_only_mode"
                          :instance_type="instance_type"
@@ -654,7 +608,7 @@
                          @get_next_instance="request_next_instance"
         >
         </v_labels_view>
-  
+
 
   </v-navigation-drawer>
   -->
@@ -805,7 +759,7 @@ export default Vue.extend( {
       toolbar
     },
     props: {
-      'project_string_id_prop': {
+      'project_string_id': {
         default: null,
         type: String
       },
@@ -819,24 +773,19 @@ export default Vue.extend( {
       'task': {
         default: null
       },
+      'label_file_colour_map': {},
+      'label_list': {},
       'task_mode_prop': {
         default: null
       },
-      'is_annotation_assignment_bool': {},
       'request_save': {},
-      'request_new_assignment': {},
-      'render_mode': {
-        default: 'yes'
-      },
       'annotator_email': {},
-      'request_project_change': {},
       'file': {
         default: {
           image: {
           }
         }
       },
-      'file_view_mode': {},
       'current_version_prop': {},
       'view_only_mode': {
         default: false
@@ -895,9 +844,6 @@ export default Vue.extend( {
 
         this.clear_selected()
 
-      },
-      request_project_change() {
-        this.request_label_file_refresh = true
       }
    },
 
@@ -908,7 +854,6 @@ export default Vue.extend( {
       show_default_navigation: true,
 
       userscript_minimized: true,
-      project_string_id: undefined,
 
       event_create_instance: undefined,
 
@@ -981,7 +926,7 @@ export default Vue.extend( {
 
       lock_point_hover_change: false,
 
-      magic_nav_spacer: 5,
+      magic_nav_spacer: 40,
 
 
       hidden_label_id_list: [],
@@ -990,8 +935,6 @@ export default Vue.extend( {
       mouse_down_limits_result: true,
 
       highest_sequence_number: 0,
-
-      left_nav_width: 450 as Number,
 
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
@@ -1033,9 +976,6 @@ export default Vue.extend( {
 
       loading: false,
 
-      label_file_colour_map: {},
-      label_list: null,
-
       label_settings: {
         show_text: true,
         show_label_text: true,
@@ -1057,9 +997,6 @@ export default Vue.extend( {
       annotations_loading: false,
       save_loading: false,
       minimize_issues_sidepanel: false,
-
-      canvas_scale_global_setting: 0.5,
-      canvas_scale_global_is_automatic: true,
 
       source_control_menu: false,
 
@@ -1165,15 +1102,11 @@ export default Vue.extend( {
       refresh: null,
       canvas_element: null,
 
-      request_label_file_refresh: false,
-
       current_label_file: {
         id: null,
         label: {
         }
       },
-
-      images_found: true,
 
       Annotation_assignments : [],
 
@@ -1254,6 +1187,8 @@ export default Vue.extend( {
     }
   },
   computed: {
+
+
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -1311,6 +1246,10 @@ export default Vue.extend( {
       if(this.show_context_menu){
         return false
       }
+      if (this.instance_type == "tag") {
+        return false
+      }
+
       return true;
 
     },
@@ -1397,8 +1336,13 @@ export default Vue.extend( {
        * Context here is that it's not a "zoom".
        */
       // Manual override
-      if (this.canvas_scale_global_is_automatic == false) {
-        return this.canvas_scale_global_setting
+      if (this.label_settings.canvas_scale_global_is_automatic == false) {
+        return this.label_settings.canvas_scale_global_setting
+      }
+
+      if (this.$props.file && this.$props.file.type == 'text') {
+        // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
+        return 100
       }
 
       let image_size_width = 1920 // default
@@ -1421,20 +1365,26 @@ export default Vue.extend( {
        *
        * the goal of calculation is to make it relative to left and right panel
        */
-      let middle_pane_width = this.window_width_from_listener - this.left_nav_width - this.magic_nav_spacer
+      let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
       let toolbar_height = 80
+
+      // get media core height
+      if (document.getElementById("media_core")){
+        this.media_core_height = document.getElementById("media_core").__vue__.height
+      }
+
       let middle_pane_height = this.window_height_from_listener - toolbar_height
         - this.media_core_height - this.magic_nav_spacer
 
       if (this.video_mode == true) {
         // TEMP this is solving wrong problem
         // In preview mode it def makes more sense for sequences to be to the right of video
-        let video_offset = 0
+        let video_offset = 80
         if (this.media_core_height) {
           video_offset = 200
         } else {
-          video_offset = 0
+          video_offset = 80
         }
         middle_pane_height = middle_pane_height - video_offset
       }
@@ -1445,17 +1395,11 @@ export default Vue.extend( {
 
       // careful to do the scale first, so we do the min of scaled values
       let lowest_size = Math.min(height_scaled, width_scaled)
-      //console.debug(lowest_size)
 
       let new_size = Math.round(lowest_size * 100) / 100
 
-      this.canvas_scale_global_setting = new_size
+      this.label_settings.canvas_scale_global_setting = new_size
 
-
-      if (this.$props.file && this.$props.file.type == 'text') {
-        // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
-        return 100
-      }
 
       return new_size
 
@@ -1839,8 +1783,8 @@ export default Vue.extend( {
       return instance_template.instance_list.filter(instance => instance.type === 'keypoints').length > 0;
     },
     get_create_instance_template_url: function(){
-      if(this.$props.project_string_id_prop){
-        return `/api/v1/project/${this.$props.project_string_id_prop}/instance-template/new`
+      if(this.$props.project_string_id){
+        return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`
       }
       else{
         return `/api/v1/task/${this.$props.task.id}/instance-template/new`
@@ -2128,6 +2072,7 @@ export default Vue.extend( {
 
     create_instance_list_with_class_types: function(instance_list){
       const result = []
+      if (!instance_list) { return result }
       for(let i = 0; i < instance_list.length; i++){
         let current_instance = instance_list[i];
 
@@ -2180,7 +2125,7 @@ export default Vue.extend( {
         this.loading_instance_templates = true;
         this.canvas_element = document.getElementById("my_canvas")
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
-        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id_prop}/instance-template/list`, {});
+        const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {});
         if (response.data.instance_template_list) {
           this.instance_template_list = response.data.instance_template_list.map(instance_template => {
 
@@ -2221,11 +2166,13 @@ export default Vue.extend( {
     redo: function(){
       if(!this.command_manager ){return}
       this.command_manager.redo();
+      this.update_canvas();
     },
     undo: function(){
       if(!this.command_manager ){return}
       this.command_manager.undo();
-    },
+      this.update_canvas();
+      },
     set_loading_sequences: function(loading_sequences){
       this.loading_sequences = loading_sequences
     },
@@ -2562,16 +2509,8 @@ export default Vue.extend( {
     },
     created: function () {
 
-      if (!this.project_string_id_prop) {
-        this.project_string_id = this.$store.state.project.current.project_string_id
-      }
-      else{
-        this.project_string_id = this.$props.project_string_id_prop;
-      }
-
-      if (this.render_mode == 'full' || this.render_mode == 'home') {
-        this.request_label_file_refresh = true
-      }
+      this.update_user_settings_from_store();
+      this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
       if(this.$props.file){
         this.on_change_current_file();
@@ -2579,19 +2518,11 @@ export default Vue.extend( {
       else if(this.$props.task){
         this.on_change_current_task();
       }
-
-      if (this.render_mode == 'file_diff') {
-        this.get_colour_map()
-      }
-
-      this.update_user_settings_from_store();
-      this.command_manager = new CommandManagerAnnotationCore();
-
     },
 
     update_user_settings_from_store() {
       if (this.$store.state.user.settings.studio_left_nav_width) {
-        this.left_nav_width = this.$store.state.user.settings.studio_left_nav_width
+        this.label_settings.left_nav_width = this.$store.state.user.settings.studio_left_nav_width
       }
     },
 
@@ -2665,11 +2596,9 @@ export default Vue.extend( {
       this.fetch_instance_template();
 
       this.update_canvas()
-      //if (this.render_mode == 'file_diff') {
-      ;
+
       // assumes canvas wrapper available
       this.canvas_wrapper.style.display = ""
-      //}
 
       var self = this
       this.get_instances_watcher = this.$store.watch((state) => {
@@ -2704,9 +2633,6 @@ export default Vue.extend( {
         },
       )
 
-      if (this.render_mode == "home"){
-        this.left_nav_width = parseInt(this.left_nav_width / 1.5)
-      }
 
       if (this.$props.task || this.job_id) {
         this.task_mode_mounted()
@@ -2725,7 +2651,7 @@ export default Vue.extend( {
 
       this.media_core_height = 0
       this.show_default_navigation = false
-            
+
 
     },
     go_to_login: function () {
@@ -3021,11 +2947,6 @@ export default Vue.extend( {
                 this.change_file("none", this.File_list[0])
               }
             }
-            else {
-              // TODO handle replacing images better here
-              // and review in context that this is for a file in general not just image
-              this.images_found = false
-            }
 
           }
         }
@@ -3068,16 +2989,16 @@ export default Vue.extend( {
     change_current_label_file_template: function (label_file) {
 
       this.current_label_file = label_file
-
       if (this.instance_type == "tag") {
-        this.push_instance_to_instance_list_and_buffer(this.current_instance, this.current_frame)
+        this.insert_tag_type()
       }
 
     },
 
-    request_label_file_refresh_callback: function (bool) {
-      this.request_label_file_refresh = false
+    insert_tag_type: function() {
+      this.push_instance_to_instance_list_and_buffer(this.current_instance, this.current_frame)
     },
+
     add_instance_to_frame_buffer: function(instance, frame_number){
       if(!this.video_mode){return}
       if (frame_number == undefined) {
@@ -4258,37 +4179,31 @@ export default Vue.extend( {
 
       */
       if (!this.$props.file) {
-        // TODO review using
-        this.images_found = false
         this.loading = false
       }
       else{
           this.$emit('current_file', this.$props.file)
-          this.images_found = true
-      }
-      if (this.images_found == true) {
-
-        /*
-        1.  creates new Image()
-        1.1 attaches src to html image
-        1.2 load() triggers resolve()
-
-        2.0 resolve() updates vue js html_image with html image
-
-        */
-        //console.debug("loaded image")
-        this.canvas_wrapper.style.display = ""
-
-        await this.get_instances()
-
-        this.canvas_width = this.$props.file.image.width
-        this.canvas_height = this.$props.file.image.height
-
-        await this.addImageProcess_with_canvas_refresh()
-
       }
 
-      this.$emit('images_found', this.images_found)
+      /*
+      1.  creates new Image()
+      1.1 attaches src to html image
+      1.2 load() triggers resolve()
+
+      2.0 resolve() updates vue js html_image with html image
+
+      */
+      //console.debug("loaded image")
+      this.canvas_wrapper.style.display = ""
+
+      await this.get_instances()
+
+      this.canvas_width = this.$props.file.image.width
+      this.canvas_height = this.$props.file.image.height
+
+      await this.addImageProcess_with_canvas_refresh()
+
+
     },
 
     addImageProcess_with_canvas_refresh: async function () {
@@ -5293,7 +5208,7 @@ export default Vue.extend( {
 
         } else {
 
-          var url = '/api/project/' + this.$store.state.project.current.project_string_id +
+          var url = '/api/project/' + this.$props.project_string_id +
             '/file/' + String(this.$props.file.id) + '/annotation/list'
         }
         try{
@@ -5345,11 +5260,6 @@ export default Vue.extend( {
         }
       }
 
-      if (this.render_mode == "file_diff") {
-        await this.get_instances_file_diff()
-        this.get_instances_loading = false;
-        return
-      }
 
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {
@@ -5423,7 +5333,7 @@ export default Vue.extend( {
         url += '/api/v1/task/' + this.task.id +
                 '/video/file_from_task'
       } else {
-        url += '/api/project/' + this.$store.state.project.current.project_string_id +
+        url += '/api/project/' + this.$props.project_string_id +
                 '/video/' + String(this.current_video_file_id)
         // careful it's the video file we want here
       }
@@ -5539,9 +5449,14 @@ export default Vue.extend( {
       }
     },
     on_change_current_task: async function(){
+      if (!this.$props.task) { return }
+      if (!this.$props.task.id) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         return
       }
+      this.show_default_navigation = false
+
       this.full_file_loading = true;
       if (this.has_changed) {
         await this.save();
@@ -5556,6 +5471,9 @@ export default Vue.extend( {
 
     },
     on_change_current_file: async function () {
+      if (!this.$props.file) { return }
+      if (!this.$props.file.id) { return }
+
       if (this.loading == true || this.annotations_loading == true || this.full_file_loading) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
@@ -5649,7 +5567,6 @@ export default Vue.extend( {
         .then(response => {
 
            this.save_loading = false
-
           if (mode == 'toggle_deferred') {
 
             this.snackbar_success = true
@@ -5659,8 +5576,7 @@ export default Vue.extend( {
             // Question, change_file() seems to save by default here
             // do we want that?
             // maybe a good idea since a deferred task could still have work done
-
-            this.change_file('next')    // important
+            this.trigger_task_change('next', this.$props.task)
 
           }
 
@@ -6046,6 +5962,7 @@ export default Vue.extend( {
     },
     edit_mode_toggle: function (draw_mode) {
       this.reset_drawing();
+      this.draw_mode = draw_mode    // context from external component like toolbar
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
     },
@@ -6254,50 +6171,6 @@ export default Vue.extend( {
         return
       }
       this.task.status = 'complete';
-    },
-    replace_file(file, cache_current_file_id) {
-
-      // If the id is the same do we actually need to do the replace:
-      // YES becuase other attributes may change
-      // and file id only changes if it's a previously comitted file
-
-      //console.debug(file, cache_current_file_id)
-
-      if (file == undefined) {
-        return
-      }
-
-      /*
-       * TODO
-       * I think we need to decouple replacing the current file with "splicing"
-       * the prior file.
-       * For example, in context of completing a file,
-       * we default to advancing to the next file, meaning
-       * the "current_file" gets replaced here, then overritten later.
-       * But we still want to call this because we want to splice the file
-       * in the list (ie if the user goes back)
-       *
-       */
-
-      this.current_file = file
-
-      // not showing video frames in file list so
-      // it would be confusing to push file into list
-      if (cache_current_file_id == undefined) {
-        cache_current_file_id = file.id
-      }
-      // if a cache_current_file_id is supplied
-      // we check it to prevent duplicate inserts
-      // if it's not we assume it's safe to directly insert
-
-      for (let i in this.File_list) {
-        if (this.File_list[i].id == cache_current_file_id) {
-          // careful this should be index for splice...
-          this.File_list.splice(i, 1, file)
-          break
-        }
-      }
-
     },
     request_next_instance: function(label_file_id){
       this.$refs.video_controllers.next_instance(label_file_id);
