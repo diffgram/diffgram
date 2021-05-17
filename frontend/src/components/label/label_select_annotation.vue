@@ -216,13 +216,13 @@
       methods: {
 
         label_name_truncated: function(name) {
-          let max_size = 11
-          let default_selector_size = 180
+          let max_size = 23
+          let default_selector_size = 290 // feels pretty brittle
           if (document.getElementById('label_select_annotation').offsetWidth
                 < default_selector_size) {
             max_size = 5
           }
-          if (name.length >= max_size) {
+          if (name.length > max_size) {
             return name.slice(0, max_size) + '...'
           } else {
             return name
