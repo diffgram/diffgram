@@ -717,6 +717,10 @@
                         v-model="label_settings_local.spatial_line_size">
               </v-slider>
 
+              <v-checkbox label="Show Ghost Instances"
+                          data-cy="show_ghost_instances"
+                          v-model="label_settings_local.show_ghost_instances">
+              </v-checkbox>
 
               <v-checkbox label="On Instance Creation: Advance Sequence Number"
                           data-cy="on_instance_creation_advance_sequence"

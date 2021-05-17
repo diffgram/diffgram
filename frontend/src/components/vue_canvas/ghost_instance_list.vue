@@ -15,6 +15,10 @@
 
  export default Vue.extend({
       props: {
+        "show": {
+          default: true,
+          type: Boolean
+        },
         "ord": {},
         "mode": {
           default: 'default'
@@ -230,7 +234,7 @@
 
         // MAIN function
         draw: function (ctx, done) {
-          if (this.show_annotations != true) {
+          if (this.show != true) {
             done()
             return
           }

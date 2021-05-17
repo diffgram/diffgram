@@ -426,6 +426,7 @@
 
             <ghost_instance_list_canvas
                 :ord="4"
+                :show="label_settings.show_ghost_instances"
                 :instance_list="ghost_instance_list"
                 :vertex_size="label_settings.vertex_size"
                 :video_mode="video_mode"
@@ -1008,6 +1009,7 @@ export default Vue.extend( {
       loading: false,
 
       label_settings: {
+        show_ghost_instances: true,
         show_text: true,
         show_label_text: true,
         show_attribute_text: true,
@@ -4007,6 +4009,8 @@ export default Vue.extend( {
     },
 
   ghost_may_promote_instance_to_actual: function () {
+    if (this.label_settings.show_ghost_instances == false) { return }
+
     if (this.ghost_instance_hover_index != undefined) { // may be 0!
       this.instance_hover_index = this.ghost_instance_hover_index
       this.instance_hover_type = this.ghost_instance_hover_type
