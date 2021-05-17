@@ -410,3 +410,11 @@ Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
 
 });
 
+
+Cypress.Commands.add('select_label', function (label_name) {
+  // hook for future
+  // old command context:
+  // cy.select_label()
+});
+
+

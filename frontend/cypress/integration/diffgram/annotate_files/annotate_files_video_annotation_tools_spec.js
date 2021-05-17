@@ -24,7 +24,7 @@ describe('Annotate Files Tests', () => {
 
         cy.window().then(window => {
           cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-          cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+          cy.select_label()
           cy.wait(3000)
           cy.mousedowncanvas(75, 75);
           cy.wait(500)
