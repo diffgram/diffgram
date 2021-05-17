@@ -245,12 +245,16 @@ class Video_Preprocess():
             return False
         else:
             self.previous_file_size = size
-        
+
         # this must be before we upload so we get the id
         self.new_input()
         logger.info(str(i) + " (Iteration) new_input finished")
 
+        # Copy the frame packet map if exists.
+        self.input.instance_list = self.parent_input.instance_list
+        self.input.frame_packet_map = self.parent_input.frame_packet_map
         self.input.original_filename = new_sub_clip_filename
+
         if self.do_upload is True:
             data_tools.upload_to_cloud_storage(
                 temp_local_path = output_temp_local_path,

@@ -313,6 +313,11 @@ class New_video():
 
         self.session.add(video)
         for index, frame in enumerate(clip.iter_frames()):
+            global_frame_number = frame
+            if input.type == 'from_video_split':
+                seconds_offset = input.offset_in_seconds
+                offset_in_frames = video.fps * seconds_offset
+                global_frame_number = frame + offset_in_frames
 
             if index == 0:
                 input.status = "pushing_frames_into_processing_queue"
@@ -326,7 +331,8 @@ class New_video():
                 directory_id,
                 video,
                 length,
-                input.file)  # assumes this is video_parent_file
+                input.file,  # assumes this is video_parent_file
+                global_frame_number)
 
             # TODO clarify if this is actually showing up the queue as expected
             video.frame_count += 1
@@ -458,7 +464,8 @@ class New_video():
         directory_id,
         video,
         length,
-        video_parent_file: File):
+        video_parent_file: File,
+        global_frame_number = None):
         """
         Where frame is:
             a HxWxN np.array, where N=1 for mask clips and N=3 for RGB clips.
@@ -524,7 +531,8 @@ class New_video():
 
         input = self.get_instance_list_from_packet_map(
             input = input,
-            frame_number = index)
+            frame_number = index,
+            global_frame_number = global_frame_number)
 
         """
         For frame priority, the original genesis was doing the last frame last
@@ -552,6 +560,7 @@ class New_video():
             file_is_numpy_array = True,
             video_id = video.id,
             frame_number = index,
+            global_frame_number = global_frame_number,
             media_type = input.media_type
         )
 
@@ -563,7 +572,8 @@ class New_video():
     def get_instance_list_from_packet_map(
         self,
         input,
-        frame_number: int):
+        frame_number: int,
+        global_frame_number = None):
         """
         Helper function to format nicely
 
@@ -586,7 +596,11 @@ class New_video():
         if self.input.frame_packet_map:
 
             input.instance_list = {}
-            instance_list = self.input.frame_packet_map.get(str(frame_number))
+            if input.type == 'from_video_split':
+                instance_list = self.input.frame_packet_map.get(str(global_frame_number))
+            else:
+                instance_list = self.input.frame_packet_map.get(str(frame_number))
+                
             if instance_list is None:
                 instance_list = self.input.frame_packet_map.get(int(frame_number))
 
