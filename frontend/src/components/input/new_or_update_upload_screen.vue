@@ -275,7 +275,6 @@
           return {
             init: function () {
               this.on("addedfile", function (file) {
-                console.log('added file', file)
                 if (file.type === 'application/json' || file.type === 'text/csv') {
                   file.data_type = 'Annotations';
                 } else {
@@ -334,16 +333,13 @@
           this.$emit('file_added', file)
         },
         update_progress: function(file, totalBytes, totalBytesSent){
-          console.log('update_progress', file, totalBytes, totalBytesSent)
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_raw_media: async function(file_list){
           this.$emit('upload_in_progress')
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for(const file of this.$refs.myVueDropzone.dropzone.files){
-            console.log('FILE', file, 'list', file_list);
             const new_file_data = file_list.find(elm => elm.upload.uuid === file.upload.uuid)
-            console.log('new_file_data', new_file_data)
             if(!new_file_data){
               // If there's no match its because we are handling the prelabeled data json or csv, so we discard it here.
               this.$refs.myVueDropzone.removeFile(file);
@@ -372,14 +368,12 @@
           }
         },
         remove_file: function(file){
-          console.log('this.$refs.myVueDropzone.', this.$refs.myVueDropzone)
           this.$refs.myVueDropzone.removeFile(file)
         },
         update_bucket_name: function (name) {
           this.bucket_name = name
         },
         drop_zone_sending_event(file, xhr, formData) {
-          console.log('SENDING FILE', file)
           // Doing this here since options doesn't update properly
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);

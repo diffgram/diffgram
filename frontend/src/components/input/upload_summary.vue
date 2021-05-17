@@ -108,7 +108,6 @@
           this.$emit('upload_raw_media', [...this.$props.file_list]);
         },
         attach_batch_to_files: function(batch){
-          console.log('this.$props.file_list aaaaa', this.$props.file_list)
           for(const file of this.$props.file_list){
             file.input_batch_id = batch.id
           }
@@ -213,14 +212,11 @@
                 diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
               }
 
-              console.log('instance is', diffgram_formatted_instance)
               if(this.supported_image_files.includes(file.type)){
                 result[file.uuid].instance_list.push(diffgram_formatted_instance)
 
               }
               else if(this.supported_video_files.includes(file.type)){
-
-                console.log('VIDEO CASE', diffgram_formatted_instance)
                 if(!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]){
                   result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
                 }
@@ -236,7 +232,6 @@
 
             }
           }
-          console.log('PREPARE PAYLOAD', result)
           return result;
         },
         start_upload: async function () {
