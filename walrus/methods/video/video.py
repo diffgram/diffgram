@@ -151,8 +151,6 @@ class New_video():
 
         """
         if fps > original_fps:
-            # print("Using original fps because proposed fps is higher."
-            #	  "original_fps:", original_fps)
             fps = original_fps
 
         # TODO log this instead of printing it
@@ -279,7 +277,6 @@ class New_video():
 
         if self.input.frame_packet_map:
             self.__prepare_sequences(parent_input = input)
-            print('self.check_update_log_errors()', self.check_update_log_errors())
             if self.check_update_log_errors() is False:
                 return
 
@@ -599,10 +596,8 @@ class New_video():
         if self.input.frame_packet_map:
 
             input.instance_list = {}
-            print('Processing instance_list', frame_number, global_frame_number, initial_global_frame, from_video_split)
             if from_video_split:
                 if int(global_frame_number) > int(initial_global_frame):
-                    print('GLOBAL FRAME NUM', str(global_frame_number), self.input.frame_packet_map.get(str(int(global_frame_number))))
                     instance_list = self.input.frame_packet_map.get(str(int(global_frame_number)))
                 else:
                     return input
@@ -619,10 +614,6 @@ class New_video():
                 if instance_list:
                     input.instance_list['list'] = instance_list
 
-        # print("frame_number", frame_number, input.instance_list['list'])
-        # could create sequences here...
-
-        print('GETTING FROM FRAME PACKET MAPPPPP', frame_number, global_frame_number, initial_global_frame, input.instance_list)
         return input
 
     def determine_unique_sequences_from_external(self):
@@ -654,7 +645,6 @@ class New_video():
 
         self.highest_frame_encountered = 0
 
-        # print(self.input.frame_packet_map)
         for frame_number, instance_list in self.input.frame_packet_map.items():
 
             self.determine_new_sequences_from_instance_list(
@@ -900,8 +890,6 @@ class New_video():
         self.session.flush()  # For ID
 
         self.sequence_number_to_id[(label_file_id, number)] = sequence.id
-
-        print("Created sequence")
 
 
 def resize_video(clip):

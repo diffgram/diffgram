@@ -1451,8 +1451,6 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-        if not self.frame_number:
-            print('FRAME NUMBER: ', self.frame_number)
 
         if not self.input.instance_list:
             return
@@ -1465,7 +1463,6 @@ class Process_Media():
         instance_list = self.input.instance_list.get('list')
         task = None
         should_complete_task = False
-        print('PROCES MEDIA INSTANCE LIST', instance_list)
         if not instance_list:
             return
 
