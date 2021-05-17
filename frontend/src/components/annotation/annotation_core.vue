@@ -2834,14 +2834,6 @@ export default Vue.extend( {
       this.seeking = seeking
     },
 
-    ghost_promote_instance_to_actual: function (instance) {
-
-      this.add_instance_to_frame_buffer(instance, this.current_frame_number)    // this handles the creation_ref_id stuff too
-
-      // TODO remove from ghost list
-      // this.ghost_instance_list
-    },
-
     ghost_refresh_instances: function () {
       this.ghost_instance_list = []
       if (!this.sequence_list_local_copy) { return }
@@ -3027,7 +3019,6 @@ export default Vue.extend( {
 
     ghost_instance_hover_update: function (index: Number, type : String) {
       //if (this.lock_point_hover_change == true) {return}
-      console.log(index, type)
       if (index != null) {
         this.ghost_instance_hover_index = parseInt(index)
         this.ghost_instance_hover_type = type   // ie polygon, box, etc.
@@ -4002,6 +3993,28 @@ export default Vue.extend( {
     this.instance_list.splice(this.instance_hover_index, 1, instance);
     return true
   },
+
+  ghost_clear_hover_index: function () {
+    this.ghost_instance_hover_index = null   
+    this.ghost_instance_hover_type = null
+  },
+
+  ghost_promote_instance_to_actual: function (ghost_index) {
+
+      let instance = this.ghost_instance_list[ghost_index]
+      this.add_instance_to_frame_buffer(instance, this.current_frame)    // this handles the creation_ref_id stuff too
+      this.ghost_instance_list.splice(ghost_index, 1)   // remove from ghost list
+    },
+
+  ghost_may_promote_instance_to_actual: function () {
+    if (this.ghost_instance_hover_index) {
+      this.instance_hover_index = this.ghost_instance_hover_index
+      this.instance_hover_type = this.ghost_instance_hover_type
+      this.ghost_promote_instance_to_actual(this.ghost_instance_hover_index)
+      this.ghost_clear_hover_index()
+    }
+  },
+
   move_something: function (event) {
 
       /*
@@ -5186,6 +5199,9 @@ export default Vue.extend( {
       if (this.mouse_down_limits(event) == false) {
         return
       }
+
+      this.ghost_may_promote_instance_to_actual()
+
       // For new refactored instance types (eventually all should be here)
       const mouse_down_interaction = this.generate_event_interactions(event);
       if(mouse_down_interaction){
