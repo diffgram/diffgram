@@ -424,6 +424,31 @@
             </canvas_instance_list>
 
 
+            <ghost_instance_list_canvas
+                :ord="4"
+                :instance_list="ghost_instance_list"
+                :vertex_size="label_settings.vertex_size"
+                :video_mode="video_mode"
+                :current_frame="current_frame"
+                :label_settings="label_settings"
+                :is_actively_drawing="is_actively_drawing"
+                :refresh="refresh"
+                :draw_mode="draw_mode"
+                :mouse_position="mouse_position"
+                :canvas_transform="canvas_transform"
+                :show_annotations="show_annotations"
+                :annotations_loading="annotations_loading"
+                :label_file_colour_map="label_file_colour_map"
+                :hidden_label_id_list="hidden_label_id_list"
+                :is_actively_resizing="is_actively_resizing"
+                :emit_instance_hover="true"
+                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1])"
+                                  >
+            </ghost_instance_list_canvas>
+
+
+
+
             <!-- Careful, must have this object exist
                   prior to loading instance list otherwise it won't update
                   If there are no instance sit doesn't render anything so that's ok...-->
@@ -695,6 +720,7 @@ import instance_detail_list_view from './instance_detail_list_view'
 import autoborder_avaiable_alert from './autoborder_avaiable_alert'
 import canvas_current_instance from '../vue_canvas/current_instance'
 import canvas_instance_list from '../vue_canvas/instance_list'
+import ghost_instance_list_canvas from '../vue_canvas/ghost_instance_list'
 import instance_history_sidepanel from '../annotation/instance_history_sidepanel'
 import v_bg from '../vue_canvas/v_bg'
 import v_text from '../vue_canvas/v_text'
@@ -750,6 +776,7 @@ export default Vue.extend( {
       canvas_current_instance,
       current_instance_template,
       canvas_instance_list,
+      ghost_instance_list_canvas,
       v_bg,
       v_text,
       target_reticle,
@@ -850,6 +877,10 @@ export default Vue.extend( {
   // data()   comment is here for searching
   data() {
     return {
+
+      ghost_instance_hover_index: null,
+      ghost_instance_hover_type: null,
+      ghost_instance_list: [],
 
       show_default_navigation: true,
 
@@ -2803,12 +2834,89 @@ export default Vue.extend( {
       this.seeking = seeking
     },
 
+    ghost_promote_instance_to_actual: function (instance) {
+
+      this.add_instance_to_frame_buffer(instance, this.current_frame_number)    // this handles the creation_ref_id stuff too
+
+      // TODO remove from ghost list
+      // this.ghost_instance_list
+    },
+
+    ghost_refresh_instances: function () {
+      this.ghost_instance_list = []
+      if (!this.sequence_list_local_copy) { return }
+
+      let keyframes_to_sequences = this.build_keyframes_to_sequences_dict()
+      console.log(keyframes_to_sequences)
+
+      this.populate_ghost_list_with_most_recent_instances_from_keyframes(keyframes_to_sequences)
+
+      console.log(this.ghost_instance_list)
+
+    },
+    build_keyframes_to_sequences_dict: function () {
+      /*
+       * build dict of keyframes with sequences
+       * context that searching each instance_list might as well do all at once.
+       * returns example like
+       * frame: [list of sequence ids]
+       * 351: [3619]
+         355: [3620, 3621]
+       * 
+       */
+      let keyframes_to_sequences = {}
+
+      for (let sequence of this.sequence_list_local_copy){
+        if (!sequence.keyframe_list) { return }
+        if (!sequence.keyframe_list.frame_number_list) { return }
+
+        let frame_number_list = sequence.keyframe_list.frame_number_list
+        let last_keyframe = frame_number_list[frame_number_list.length - 1]
+        if (last_keyframe == undefined) {continue}  // careful, 0th frame is ok
+
+        if(!keyframes_to_sequences[last_keyframe]) {
+          keyframes_to_sequences[last_keyframe] = [sequence.number];
+        } else {
+          keyframes_to_sequences[last_keyframe].push(sequence.number);
+        }
+      }
+      return keyframes_to_sequences
+    },
+
+    populate_ghost_list_with_most_recent_instances_from_keyframes: function(keyframes_to_sequences){
+
+      for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
+
+        let instance_list = this.instance_buffer_dict[keyframe];
+        console.log(keyframe, instance_list)
+        if (!instance_list) { continue }
+
+        for (let instance of instance_list) {
+          if (sequence_numbers.includes(instance.number)) {
+            console.log(instance.sequence_numbers)
+            this.duplicate_instance_into_ghost_list(instance)
+          }
+
+        }
+      }
+    },
+
+    duplicate_instance_into_ghost_list: function (instance){
+      let instance_clipboard = this.duplicate_instance(instance);
+      instance_clipboard.id = null
+      instance_clipboard.created_time = null  //
+      instance_clipboard.creation_ref_id = null // we expect this will be set once user accepts it
+      this.ghost_instance_list.push(instance_clipboard)
+    },
+
+
     change_frame_from_video_event: function (url) {
       /* Careful to call get_instances() since this handles
        * if we are on a keyframe and  don't need to call instance buffer
        * this method supercedes the old video_file_update()
        */
       this.get_instances()
+      this.ghost_refresh_instances()
 
       if (url) {
         this.add_image_process(url)
@@ -2916,6 +3024,21 @@ export default Vue.extend( {
     cuboid_face_hover_update: function(cuboid_face){
       this.cuboid_face_hover = cuboid_face;
     },
+
+    ghost_instance_hover_update: function (index: Number, type : String) {
+      //if (this.lock_point_hover_change == true) {return}
+      console.log(index, type)
+      if (index != null) {
+        this.ghost_instance_hover_index = parseInt(index)
+        this.ghost_instance_hover_type = type   // ie polygon, box, etc.
+      }
+      else{
+        this.ghost_instance_hover_index = null;
+        this.ghost_instance_hover_type = null;
+      }
+
+    },
+
     instance_hover_update: function (index: Number, type : String) {
 
       if (this.lock_point_hover_change == true) {return}
@@ -6010,6 +6133,7 @@ export default Vue.extend( {
       }
 
     },
+
     save: async function (and_complete=false) {
       this.save_error = {}
 
