@@ -103,7 +103,7 @@
       vertical
     ></v-divider>
 
-    <div class="pt-3 pl-1 pr-2">
+    <div class="pt-3 pl-2 pr-2">
 
       <v-tooltip bottom
                   color="info"
@@ -130,8 +130,8 @@
       vertical
     ></v-divider>
 
-    <v-flex xs2>
-      <div class="pl-3 pr-3 pt-4">
+    <div style="width: 310px">
+      <div class="pl-2 pr-3 pt-4">
         <label_select_annotation
             :project_string_id="project_string_id"
             :label_file_list="label_list"
@@ -144,7 +144,7 @@
         >
         </label_select_annotation>
       </div>
-    </v-flex>
+    </div>
 
     <!-- TODO @get_next_instance="request_next_instance" -->
 
