@@ -11,6 +11,7 @@
   <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
 
   <p> <kbd>W</kbd> Toggle Label Menu </p>
+  <p> <kbd>G</kbd> Toggle Ghost Instances </p>
   <p> <kbd>1 - 9</kbd> Change label </p>
 
   <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
