@@ -3,7 +3,7 @@
     <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v-layout class="d-flex column justify-center">
       <h2 class="ma-8 black--text">You are about to upload {{file_list.length}} file(s):
-      to Dataset: <v-icon>mdi-folder</v-icon>{{current_directory.nickname}}
+      to Dataset: <v-icon>mdi-folder</v-icon> <strong v-if="current_directory">{{current_directory.nickname}}</strong>
       </h2>
 
       <v-list-item
@@ -82,7 +82,9 @@
       },
       data() {
         return {
-          input_batch: null
+          input_batch: null,
+          supported_video_files: ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
+          supported_image_files: ['image/jpg', 'image/jpeg', 'image/png']
         }
       },
       computed: {},
@@ -132,7 +134,6 @@
             const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}};
-
             for (const instance of file_instances) {
               const type = instance[diffgram_schema.instance_type]
               const diffgram_formatted_instance = {
@@ -143,6 +144,7 @@
                 model_id: instance[diffgram_schema.model_id],
                 run_id: instance[diffgram_schema.run_id],
                 frame_number: instance[diffgram_schema.frame_number],
+                number: instance[diffgram_schema.number],
               }
               if (type === 'box') {
 
@@ -210,11 +212,15 @@
                 diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
                 diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
               }
-              if(['image/jpg', 'image/jpeg', 'image/png'].includes(file.type)){
+
+              console.log('instance is', diffgram_formatted_instance)
+              if(this.supported_image_files.includes(file.type)){
                 result[file.uuid].instance_list.push(diffgram_formatted_instance)
 
               }
-              else if(['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v']){
+              else if(this.supported_video_files.includes(file.type)){
+
+                console.log('VIDEO CASE', diffgram_formatted_instance)
                 if(!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]){
                   result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
                 }
@@ -230,6 +236,7 @@
 
             }
           }
+          console.log('PREPARE PAYLOAD', result)
           return result;
         },
         start_upload: async function () {

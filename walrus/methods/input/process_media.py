@@ -1946,7 +1946,6 @@ class Process_Media():
         # TODO Would prefer to just pass input here
         # Not redeclaring
         try:
-            print('PROCESSING VIDEO')
             file = new_video.load(
                 video_file_name=self.input.temp_dir_path_and_filename,
                 original_filename=self.input.original_filename,
