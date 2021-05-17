@@ -61,33 +61,12 @@
     </v-alert>
 
 
-    <v_input_view v-if="!mode"
-                  :project_string_id="project_string_id"
+    <v_input_view :project_string_id="project_string_id"
                   :request_refresh="request_refresh">
     </v_input_view>
 
 
-    <v-layout v-if="!mode">
-      <v-flex>
-        <!--
-        <v-card-title>
-          <h3>Need other input methods or support for different files?</h3>
-        </v-card-title>
-
-        <v-card-actions>
-
-          <v-btn href="https://docs.google.com/forms/d/e/1FAIpQLSdPYN2jtgZnoCa6QiViliGoKcEd9gVM-MREiqsu1sRqtLtaHA/viewform"
-                  target="_blank"
-                  color="primary">
-            Request
-            <v-icon right>mdi-message-alert</v-icon>
-          </v-btn>
-        </v-card-actions>
-        -->
-      </v-flex>
-    </v-layout>
-
-    <v-layout v-if="!mode">
+    <v-layout>
       <v-flex>
         <v-card>
           <v-divider></v-divider>
@@ -206,10 +185,6 @@
         },
         'show_labels_button': {
           default: false
-        },
-        'mode': {
-          // TODO declare a proper default mode not just assuming "null"
-          default: null
         }
       },
       data: function () {
@@ -233,7 +208,6 @@
           refresh_interval: null,
           error_sample_data: {},
 
-          sync_job_list: [],
 
           loading_sync_jobs: false,
 
@@ -287,10 +261,7 @@
       },
 
       created() {
-        if (this.mode == "flow") {
-          this.accepted_files = ".jpg, .jpeg, .png"
-          this.upload_header_message = "Images uploaded here will be run on this flow."
-        }
+
       },
       mounted(){
         this.add_visit_history_event();
@@ -335,61 +306,7 @@
             this.loading_create_sample_data = false;
           }
         },
-        open_confirm_dialog_sample_data: function(){
-          this.dialog_confirm_sample_data = true;
-        },
 
-
-        // drop zone complete
-
-        drop_zone_complete() {
-
-          this.is_actively_sending = false
-
-          // Not super happy with this but something to think on
-          // how deeply we want to integrate this with upload
-          // or if we even want to show this here at all
-
-          if (Date.now() < this.request_refresh + 5000) {
-            return
-          }
-
-          // current default mode
-          if (!this.mode) {
-            this.request_refresh = Date.now()
-
-            var self = this
-
-            // "fast" one
-            setTimeout(function () {
-              self.request_refresh = Date.now()
-            }, 2500)
-
-            // "ongoing" one, cleared at destroy
-            // context of long running video operations may be 10 min+
-            // and to user it could look like it's "frozen".
-            // so we use perpetual thing till component is destroyed
-            // long term I'm sure there's some more graceful way here
-
-            this.refresh_interval = setInterval(function () {
-              self.request_refresh = Date.now()
-            }, 20000)
-
-          }
-
-          if (this.mode == 'flow') {
-
-            var self = this
-            setTimeout(function () {
-              self.$store.commit('action_event_list_refresh')
-            }, 3500)
-            setTimeout(function () {
-              self.$store.commit('action_event_list_refresh')
-            }, 6000)
-
-          }
-
-        }
 
       }
     }

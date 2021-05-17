@@ -56,8 +56,7 @@
               </v-row>
               <v-row class="d-flex align-center">
 
-                <v_directory_list v-if="!mode"
-                                  :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
+                <v_directory_list :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
                                   :show_text_buttons="true"
                                   :project_string_id="project_string_id"
                                   @change_directory="on_change_directory"
@@ -220,6 +219,7 @@
         return {
           file_list_to_upload: [],
           error: {},
+          sync_job_list: [],
           current_directory: undefined,
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
@@ -330,16 +330,24 @@
           this.$emit('file_added', file)
         },
         update_progress: function(file, totalBytes, totalBytesSent){
+          console.log('update_progress', file, totalBytes, totalBytesSent)
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_raw_media: async function(file_list){
           this.$emit('upload_in_progress')
           // We want to remove them because we'll re-add them with the batch data and uuid data.
-          this.$refs.myVueDropzone.dropzone.removeAllFiles()
-          // Since we are removing files from the dropzone queue we need to reset the file size counter.
-          this.reset_total_files_size()
-          for(const file of file_list){
-            this.$refs.myVueDropzone.manuallyAddFile(file, file.dataURL)
+          for(const file of this.$refs.myVueDropzone.dropzone.files){
+            console.log('FILE', file, 'list', file_list);
+            const new_file_data = file_list.find(elm => elm.upload.uuid === file.upload.uuid)
+            console.log('new_file_data', new_file_data)
+            if(!new_file_data){
+              // If there's no match its because we are handling the prelabeled data json or csv, so we discard it here.
+              this.$refs.myVueDropzone.removeFile(file);
+              continue
+            }
+
+            file.uuid = new_file_data.uuid;
+            file.input_batch_id = new_file_data.input_batch_id;
           }
           this.$refs.myVueDropzone.processQueue();
         },
@@ -367,9 +375,8 @@
           this.bucket_name = name
         },
         drop_zone_sending_event(file, xhr, formData) {
-
+          console.log('SENDING FILE', file)
           // Doing this here since options doesn't update properly
-          console.log('AAAADDD PARAPMS', file);
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
 
@@ -429,43 +436,30 @@
           if (Date.now() < this.request_refresh + 5000) {
             return
           }
+          this.request_refresh = Date.now()
 
-          // current default mode
-          if (!this.mode) {
-            this.request_refresh = Date.now()
+          var self = this
 
-            var self = this
+          // "fast" one
+          setTimeout(function () {
+            self.request_refresh = Date.now()
+          }, 2500)
 
-            // "fast" one
-            setTimeout(function () {
-              self.request_refresh = Date.now()
-            }, 2500)
+          // "ongoing" one, cleared at destroy
+          // context of long running video operations may be 10 min+
+          // and to user it could look like it's "frozen".
+          // so we use perpetual thing till component is destroyed
+          // long term I'm sure there's some more graceful way here
 
-            // "ongoing" one, cleared at destroy
-            // context of long running video operations may be 10 min+
-            // and to user it could look like it's "frozen".
-            // so we use perpetual thing till component is destroyed
-            // long term I'm sure there's some more graceful way here
+          this.refresh_interval = setInterval(function () {
+            self.request_refresh = Date.now()
+          }, 20000)
 
-            this.refresh_interval = setInterval(function () {
-              self.request_refresh = Date.now()
-            }, 20000)
 
-          }
-
-          if (this.mode == 'flow') {
-
-            var self = this
-            setTimeout(function () {
-              self.$store.commit('action_event_list_refresh')
-            }, 3500)
-            setTimeout(function () {
-              self.$store.commit('action_event_list_refresh')
-            }, 6000)
-
-          }
-
-        }
+        },
+        open_confirm_dialog_sample_data: function(){
+          this.dialog_confirm_sample_data = true;
+        },
       }
     }
   ) </script>

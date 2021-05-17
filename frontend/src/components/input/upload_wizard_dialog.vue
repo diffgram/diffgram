@@ -134,6 +134,23 @@
               </div>
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the Sequence Number (Video Only)</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** For Video Only</strong>
+                  </p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.number">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center">
+                <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">Select the Field Corresponding to the Model ID (Optional)</h3>
                   <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** If model already exists,
                     instances will be binded to existing model.</strong></p>
@@ -517,6 +534,8 @@
       total_bytes: null,
       percent_uploaded: null,
       current_directory: null,
+      supported_video_files: ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
+      supported_image_files: ['image/jpg', 'image/jpeg', 'image/png'],
       schema_match_headers: [
         {
           text: 'Diffgram Value',
@@ -556,6 +575,7 @@
         name: null,
         file_name: null,
         frame_number: null,
+        number: null,
         model_id: null,
         model_run_id: null,
         box: {
@@ -1011,6 +1031,7 @@
         validate_label_names: async function () {
           try {
             this.load_label_names = true
+            this.valid_labels = false;
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
             if (response.status === 200) {
               const labels = response.data.labels_out;
@@ -1020,9 +1041,12 @@
                 if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
                   this.errors_file_schema = {}
                   this.errors_file_schema['label_names'] = `The label name "${instance[this.diffgram_schema_mapping.name]}" does not exist in the project. Please create it.`
+                  this.valid_labels = false;
+                  this.load_label_names = false;
                   return
                 }
               }
+              console.log('VALID LABELS')
               this.valid_labels = true;
               await this.$nextTick();
               setTimeout(() => {
@@ -1032,8 +1056,34 @@
 
           } catch (e) {
             console.error(e);
+            this.valid_labels = false;
             this.load_label_names = false;
           } finally {
+
+          }
+        },
+        validate_frame_and_sequences(){
+          for (const instance of this.pre_labeled_data) {
+            console.log('file_list_to_upload', this.file_list_to_upload)
+            console.log('instance[this.diffgram_schema_mapping.file_name]', instance[this.diffgram_schema_mapping.file_name])
+            const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
+            if(!related_file){
+              this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
+              this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
+            }
+            if(this.supported_video_files.includes(related_file.type)){
+              if (instance[this.diffgram_schema_mapping.frame_number] == undefined) {
+                this.errors_file_schema = {}
+                this.errors_file_schema['frame_number'] = `Provide frame numbers.`
+                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+              }
+
+              if (instance[this.diffgram_schema_mapping.number] == undefined) {
+                this.errors_file_schema = {}
+                this.errors_file_schema['frame_number'] = `Provide Sequence numbers.`
+                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+              }
+            }
 
           }
         },
@@ -1045,7 +1095,9 @@
               this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
               return
             }
+            this.validate_frame_and_sequences();
             await this.validate_label_names();
+
             if (Object.keys(this.errors_file_schema).length === 0) {
               this.el = step;
             }
