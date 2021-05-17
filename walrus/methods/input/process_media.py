@@ -167,9 +167,6 @@ def add_item_to_queue(item):
     else:
         VIDEO_QUEUE.put(item)
 
-    print('FRAME_QUEUE', FRAME_QUEUE.qsize())
-    print('VIDEO_QUEUE', VIDEO_QUEUE.qsize())
-
 
 def process_media_queue_worker(queue):
     while True:
@@ -945,7 +942,7 @@ class Process_Media():
             "video": self.process_video,
             "csv": self.process_csv_file
         }
-        print('ON route_based_on_media_type', strategy_operations)
+
         operation = None
 
         if not self.input:
@@ -1454,7 +1451,9 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-        print('process_existing_instance_list', self.input.instance_list, self.input.media_type)
+        if not self.frame_number:
+            print('FRAME NUMBER: ', self.frame_number)
+
         if not self.input.instance_list:
             return
 

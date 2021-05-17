@@ -49,12 +49,12 @@
           return Math.round((this.$props.uploaded_bytes + this.$props.currently_uploading) / this.$props.total_bytes * 100);
         },
         formatted_total: function(){
-          if(!this.$props.total_bytes){ return undefined}
+          if(this.$props.total_bytes == undefined){ return undefined}
           return filesize(this.total_bytes)
         },
         formatted_uploaded: function(){
-          if(!this.$props.uploaded_bytes){ return undefined}
-          return filesize(this.uploaded_bytes)
+          if(this.$props.uploaded_bytes == undefined){ return undefined}
+          return filesize((this.percentage/100) * this.total_bytes)
         }
       },
       watch: {

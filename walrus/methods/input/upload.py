@@ -101,12 +101,15 @@ class Upload():
             for instance in instance_list:
                 label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
                 instance['label_file_id'] = label_file['id']
-                print('label file', instance['label_file_id'])
-
             input.instance_list = {'list': file_data['instance_list']}
 
         if file_data['frame_packet_map']:
-            input.frame_packet_map = file_data['frame_packet_map']
+            frame_packet_map = file_data['frame_packet_map']
+            for frame, instance_list in frame_packet_map.items():
+                for instance in instance_list:
+                    label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                    instance['label_file_id'] = label_file['id']
+            input.frame_packet_map = frame_packet_map
 
     def route_from_unique_id(self):
         """
