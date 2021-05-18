@@ -45,6 +45,9 @@ export const user_module = {
       state.is_typing_or_menu_open = false
       state.settings = default_user_settings
     },
+    restore_default_user_settings(state) {
+      state.settings = default_user_settings
+    },
     set_user_name(state, user_name) {
       state.user_name = user_name
     },
