@@ -185,6 +185,19 @@
           })
 
         },
+        draw_pause: function(instance, ctx){
+          if(!ctx.material_icons_loaded){
+            return
+          }
+          const old_color = ctx.fillStyle;
+          const old_font = ctx.font
+          ctx.font = '30px material-icons';
+          ctx.fillStyle = 'rgb(0,0,0)';
+          const point = this.get_instance_corner(instance)
+          ctx.fillText('pause', point.x, point.y);
+          ctx.fillStyle = old_color;
+          ctx.font = old_font;
+        },
         draw_checkmark: function(instance, ctx){
           if(!ctx.material_icons_loaded){
             return
@@ -393,6 +406,7 @@
             if (instance.selected == true) {
               strokeColor = "blue"
             }
+
             if(this.instance_select_for_issue && !this.view_issue_mode){
               if(instance.selected){
                 strokeColor = "green"
@@ -434,7 +448,6 @@
           if (instance.selected == undefined){
             instance.selected = false
           }
-
           // TODO review this.colour isolation here
 
 
@@ -520,6 +533,14 @@
             }
             */
 
+           this.draw_icons(instance, ctx)
+
+        },
+
+        draw_icons: function (instance, ctx) {
+          if(instance.pause_object == true){
+            this.draw_pause(instance, ctx);
+          }
         },
 
         get_spatial_line_size: function (){
