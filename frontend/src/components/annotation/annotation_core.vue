@@ -2408,6 +2408,11 @@ export default Vue.extend( {
          return
       }
 
+      if (update.mode == 'pause_object'){
+        instance.pause_object = true
+        console.log(instance.pause_object)
+      }
+
       // instance update
       if (update.mode == "update_label") {
         // not 100% sure if we need both here
@@ -2877,6 +2882,19 @@ export default Vue.extend( {
       return keyframes_to_sequences
     },
 
+    ghost_determine_if_no_conflicts_with_existing: function (ghost_instance) {
+      for (let existing_instance of this.instance_list){
+        if (existing_instance.sequence_id == ghost_instance.sequence_id) {
+          return false
+        }
+        if (existing_instance.label_file_id == ghost_instance.label_file_id &&
+            existing_instance.number == ghost_instance.number) {
+          return false
+        }
+      }
+      return true
+    },
+
     populate_ghost_list_with_most_recent_instances_from_keyframes: function(keyframes_to_sequences){
 
       for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
@@ -2887,10 +2905,16 @@ export default Vue.extend( {
 
         for (let instance of instance_list) {
           if (sequence_numbers.includes(instance.number)) {
-            console.log(instance.sequence_numbers)
+
+            // if it's the last object then we don't show ghost
+            if (instance.pause_object == true) { continue }
+
+            if (this.ghost_determine_if_no_conflicts_with_existing(instance) == false) {
+              continue
+            }
+
             this.duplicate_instance_into_ghost_list(instance)
           }
-
         }
       }
     },
