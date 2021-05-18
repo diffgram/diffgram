@@ -111,6 +111,7 @@
           for(const file of this.$props.file_list){
             file.input_batch_id = batch.id
           }
+          this.$emit('created_batch', batch)
         },
         create_batch: async function (labels_payload) {
           try {

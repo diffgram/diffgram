@@ -87,13 +87,18 @@ class Upload():
                 result.append(file.serialize_with_label_and_colour(session = self.session))
         return result
 
-    def __extract_instance_list_from_batch(self, input, input_batch_id):
+    def extract_instance_list_from_batch(self, input, input_batch_id, file_name):
         input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
         pre_labels = input_batch.pre_labeled_data
         if pre_labels is None:
-            return
+            return input
         uuid = self.request.form.get('uuid')
-        file_data = pre_labels[uuid]
+        file_data = pre_labels.get(uuid)
+        if file_data is None:
+            # Try finding the pre_labels with the file_name as a backup
+            file_data = pre_labels.get(file_name)
+            if file_data is None:
+                logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
         project_labels = self.get_project_labels()
 
         if file_data['instance_list']:
@@ -110,6 +115,7 @@ class Upload():
                     label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
                     instance['label_file_id'] = label_file['id']
             input.frame_packet_map = frame_packet_map
+        return input
 
     def route_from_unique_id(self):
         """
@@ -271,7 +277,7 @@ class Upload():
             batch_id=request.form.get('input_batch_id')
         )
 
-        self.__extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'))
+        self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
 
         self.session.add(self.input)
 

@@ -126,6 +126,7 @@
                     :connection="incoming_connection"
                     :video_split_duration="video_split_duration"
                     @update_bucket_name="update_bucket_name"
+                    @update_file_list="update_file_list_from_connection"
                     ref="connection_import_renderer"
                   >
                   </connector_import_renderer>
@@ -215,6 +216,9 @@
         },
         'error_file_uploads':{
           default: null
+        },
+        'batch':{
+          default: null
         }
       },
 
@@ -225,6 +229,8 @@
           error: {},
           sync_job_list: [],
           current_directory: undefined,
+          connection_upload_error: undefined,
+          accepted_annotation_file_types: ['.json', '.csv'],
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
             {
@@ -256,6 +262,7 @@
 
       },
       computed: {
+
         cloud_col_count: function () {
           if (!this.incoming_connection) {
             return 6
@@ -280,7 +287,10 @@
                 } else {
                   file.data_type = 'Raw Media';
                 }
-                $vm.file_list_to_upload.push(file);
+                $vm.file_list_to_upload.push({
+                  ...file,
+                  source: 'local'
+                });
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
@@ -326,6 +336,25 @@
       },
 
       methods: {
+        update_file_list_from_connection: function(file_list){
+          const to_add = [];
+          for (const item of file_list){
+            let data_type = 'Raw Media';
+            const re = /(?:\.([^.]+))?$/;
+            const extension = re.exec(item.name);
+            if(extension && this.accepted_annotation_file_types.includes(extension)){
+              data_type = 'Annotations'
+            }
+            to_add.push({
+              ...item,
+              source: 'connection',
+              data_type: data_type
+            })
+          }
+          this.file_list_to_upload = this.file_list_to_upload.filter(item => item.source !== 'connection');
+          this.file_list_to_upload = [...this.file_list_to_upload, ...to_add]
+          this.$emit('file_list_updated', this.file_list_to_upload)
+        },
         reset_total_files_size: function(file){
           this.$emit('reset_total_files_size')
         },
@@ -335,11 +364,11 @@
         update_progress: function(file, totalBytes, totalBytesSent){
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
-        upload_raw_media: async function(file_list){
-          this.$emit('upload_in_progress')
+        upload_local_raw_media: async function(local_file_list){
+          if(!local_file_list){return}
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for(const file of this.$refs.myVueDropzone.dropzone.files){
-            const new_file_data = file_list.find(elm => elm.upload.uuid === file.upload.uuid)
+            const new_file_data = local_file_list.find(elm => elm.upload.uuid === file.upload.uuid)
             if(!new_file_data){
               // If there's no match its because we are handling the prelabeled data json or csv, so we discard it here.
               this.$refs.myVueDropzone.removeFile(file);
@@ -350,6 +379,53 @@
             file.input_batch_id = new_file_data.input_batch_id;
           }
           this.$refs.myVueDropzone.processQueue();
+        },
+        update_progress_percentage: function(percent){
+          this.$emit('update_progress_percentage', percent)
+        },
+        upload_connection_raw_media: async function(connection_file_list){
+          if(!connection_file_list){return}
+          const connector_id = this.incoming_connection.id;
+          const directory_id = this.$store.state.project.current_directory.directory_id;
+          try {
+            let processed_files = 0;
+            await Promise.all(connection_file_list.map(async (file) => {
+              const data = await axios.post(`/api/walrus/v1/connectors/${connector_id}/fetch-data`, {
+                opts: {
+                  action_type: 'fetch_folder',
+                  path: [file.id],
+                  directory_id: directory_id,
+                  bucket_name: this.bucket_name,
+                  video_split_duration: this.$props.video_split_duration,
+                  job_id: this.$props.job_id,
+                  batch_id: this.$props.batch_id,
+                  file_uuid: file.uuid,
+                },
+                project_string_id: this.$props.project_string_id
+              });
+
+              if (data.status === 200 && !data.data.error) {
+                this.$emit('error_upload_connections', undefined);
+                processed_files += 1;
+                this.update_progress_percentage((processed_files * 1.0 / connection_file_list.length) * 100);
+                return data;
+
+              }
+            }));
+
+          }catch (error) {
+            // Discuss if there already exists a good abstraction for error handling.
+            this.connection_upload_error = this.$route_api_errors(error);
+            this.$emit('error_upload_connections', this.connection_upload_error)
+            console.error(error);
+          }
+        },
+        upload_raw_media: async function(file_list){
+          this.$emit('upload_in_progress')
+          const local_file_list = file_list.filter(f => f.source === 'local');
+          await this.upload_local_raw_media();
+          const connection_file_list = file_list.filter(f => f.source === 'connection');
+          await this.upload_connection_raw_media(connection_file_list);
         },
         move_to_next_step: function(){
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');

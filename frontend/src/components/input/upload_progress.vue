@@ -1,12 +1,13 @@
 <template>
-  <v-container v-if="percentage < 100">
+  <v-container v-if="(!progress_percentage && percentage < 100) || (progress_percentage && progress_percentage < 100)">
     <h1>Uploading Files...</h1>
-    <h3 v-if="formatted_total && formatted_uploaded">
+    <h3 v-if="formatted_total && formatted_uploaded && !progress_percentage">
       {{formatted_uploaded}} of {{formatted_total}}
     </h3>
     <v-progress-linear
       color="secondary"
-      v-model="percentage"
+      striped
+      v-model="progress_percentage ? progress_percentage : percentage"
       height="85"
     >
     </v-progress-linear>
@@ -39,6 +40,9 @@
         'currently_uploading': {
           default: null
         },
+        'progress_percentage': {
+          default: null,
+        }
       },
       data() {
         return {}

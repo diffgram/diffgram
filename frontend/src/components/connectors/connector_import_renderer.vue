@@ -5,6 +5,7 @@
     label="Google Cloud Storage path"
     ref="google_gcp"
     @update_bucket_name="update_bucket_name"
+    @update_file_list="update_file_list"
     :connection="connection"
     :video_split_duration="video_split_duration"
     :job_id="job_id"
@@ -16,6 +17,7 @@
     label="Amazon AWS S3 path"
     :connection="connection"
     @update_bucket_name="update_bucket_name"
+    @update_file_list="update_file_list"
     :video_split_duration="video_split_duration"
     :job_id="job_id"
   ></cloud_storage_searchbar>
@@ -26,6 +28,7 @@
     label="Azure Blob Storage path"
     :connection="connection"
     @update_bucket_name="update_bucket_name"
+    @update_file_list="update_file_list"
     :video_split_duration="video_split_duration"
     :job_id="job_id"
   ></cloud_storage_searchbar>
@@ -65,6 +68,9 @@
       }
     },
     methods: {
+      update_file_list: function(file_list){
+        this.$emit('update_file_list', file_list)
+      },
       update_bucket_name: function(name){
         this.bucket = name;
         this.$emit('update_bucket_name', name)
