@@ -4046,9 +4046,18 @@ export default Vue.extend( {
     return true
   },
 
+  ghost_clear_for_file_change_context: function()  {
+    this.ghost_clear_hover_index()
+    this.ghost_clear_list()
+  },
+
   ghost_clear_hover_index: function () {
     this.ghost_instance_hover_index = null   
     this.ghost_instance_hover_type = null
+  },
+
+  ghost_clear_list: function () {
+    this.ghost_instance_list = []
   },
 
   ghost_promote_instance_to_actual: function (ghost_index) {
@@ -4060,7 +4069,6 @@ export default Vue.extend( {
 
   ghost_may_promote_instance_to_actual: function () {
     if (this.label_settings.show_ghost_instances == false) { return }
-
     if (this.ghost_instance_hover_index != undefined) { // may be 0!
       this.instance_hover_index = this.ghost_instance_hover_index
       this.instance_hover_type = this.ghost_instance_hover_type
@@ -5661,6 +5669,7 @@ export default Vue.extend( {
       await this.prepare_canvas_for_new_file();
 
       this.full_file_loading = false;
+      this.ghost_clear_for_file_change_context()
 
     },
     on_change_current_file: async function () {
@@ -5689,6 +5698,7 @@ export default Vue.extend( {
       await this.prepare_canvas_for_new_file();
 
       this.full_file_loading = false;
+      this.ghost_clear_for_file_change_context()
     },
 
     refresh_attributes_from_current_file: async function (file) {
