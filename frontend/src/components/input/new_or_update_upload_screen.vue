@@ -287,10 +287,8 @@
                 } else {
                   file.data_type = 'Raw Media';
                 }
-                $vm.file_list_to_upload.push({
-                  ...file,
-                  source: 'local'
-                });
+                file.source = 'local';
+                $vm.file_list_to_upload.push(file);
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
@@ -340,8 +338,7 @@
           const to_add = [];
           for (const item of file_list){
             let data_type = 'Raw Media';
-            const re = /(?:\.([^.]+))?$/;
-            const extension = re.exec(item.name);
+            const extension = item.name.split('.').pop();
             if(extension && this.accepted_annotation_file_types.includes(extension)){
               data_type = 'Annotations'
             }
