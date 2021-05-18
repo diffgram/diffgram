@@ -2942,6 +2942,7 @@ export default Vue.extend( {
     },
 
     duplicate_instance_into_ghost_list: function (instance){
+      if (!instance) { return }
       let instance_clipboard = this.duplicate_instance(instance);
       instance_clipboard.id = null
       instance_clipboard.created_time = null  //
