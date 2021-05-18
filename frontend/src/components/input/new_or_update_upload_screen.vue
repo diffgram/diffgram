@@ -362,7 +362,8 @@
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_local_raw_media: async function(local_file_list){
-          if(!local_file_list){return}
+          console.log('local1', local_file_list)
+          if(!local_file_list || local_file_list.length === 0){return}
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for(const file of this.$refs.myVueDropzone.dropzone.files){
             const new_file_data = local_file_list.find(elm => elm.upload.uuid === file.upload.uuid)
@@ -381,7 +382,8 @@
           this.$emit('update_progress_percentage', percent)
         },
         upload_connection_raw_media: async function(connection_file_list){
-          if(!connection_file_list){return}
+          console.log('aaaa', connection_file_list)
+          if(!connection_file_list || connection_file_list.length === 0){return}
           const connector_id = this.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;
           try {
@@ -420,7 +422,7 @@
         upload_raw_media: async function(file_list){
           this.$emit('upload_in_progress')
           const local_file_list = file_list.filter(f => f.source === 'local');
-          await this.upload_local_raw_media();
+          await this.upload_local_raw_media(local_file_list);
           const connection_file_list = file_list.filter(f => f.source === 'connection');
           await this.upload_connection_raw_media(connection_file_list);
         },
