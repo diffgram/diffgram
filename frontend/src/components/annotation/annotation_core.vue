@@ -1035,6 +1035,9 @@ export default Vue.extend( {
         filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
         filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
         instance_buffer_size: 60,
+        canvas_scale_global_is_automatic: true,
+        canvas_scale_global_setting: 0.5,
+        left_nav_width: 450,
         on_instance_creation_advance_sequence: true
       },
 
