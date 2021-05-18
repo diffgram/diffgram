@@ -1,6 +1,6 @@
 
 
-# Diffgram - Supervised Learning Data Platform
+# Diffgram - Open AI Data Platform
 
 ![](./github_assets/overview_diffgram_high_level.PNG)
 
@@ -49,7 +49,8 @@ python install.py
 # After install:  View the Web UI at: http://localhost:8085
 ```
 ### Other Useful Links For Starting Out
-- [Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
+- [Google GCP Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
+- [Azure AKS Kubernetes Install Guide](https://medium.com/diffgram/tutorial-installing-diffgram-on-azure-aks-b9447685e271)
 - [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
 - [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
 - [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
@@ -94,7 +95,7 @@ Security issues: Do not create a public issue. Email security@diffgram.com with 
 * [Streaming](https://diffgram.com/streaming)
 * [Security and Privacy](https://diffgram.com/secure)
 * [Speed Up with AI Userscripts](https://diffgram.readme.io/docs/userscript-examples)
-* Open Core (This Repo!)
+* Open Source (This Repo!)
 * [Integrations](#integrations)
 
 # Speed Ups & AI
@@ -110,7 +111,7 @@ Latest AI + More
 * [Diffgram API](https://diffgram.readme.io/reference) Any language
 * [AWS - Amazon Storage](https://diffgram.readme.io/docs/amazon-web-services-connection-requirements)
 * [GCP Google Storage](https://diffgram.readme.io/docs/google-connection-requirements)
-* Azure - (Select during install - not available as separate connection yet)
+* Azure - Now available
 * [Scale AI](https://diffgram.readme.io/docs/scale-ai)
 * [Datasaur](https://diffgram.readme.io/docs/datasaur-integration)
 * [Labelbox](https://diffgram.readme.io/docs/labelbox-integration)
