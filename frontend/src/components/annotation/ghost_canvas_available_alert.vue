@@ -22,21 +22,21 @@
         Instances that may be useful but are not yet confirmed by you.
         <br> <br>
 
-        <h3> Identify a Ghost by the Dashed Lines.</h3>
+        <h3> Identify a Ghost by the Dashed Lines</h3>
         All ghost objects are showing as dashed lines instead of the normal solid lines.
 
         <br><br>
-        <h3> Give a Ghost a New Life:</h3>
+        <h3> Give a Ghost a New Life</h3>
         Click or drag the ghost object to promote it to a normal annotation.
         After, Right click "Pause Object" to prevent future ghost frames for that object from showing.
         <br> <br>
 
-        <h3> Safely Ignore Irrelevant Ghosts </h3>
+        <h3> Safely Ignore Irrelevant Ghosts</h3>
         If a ghost object is not relevant, you can safely ignore it. Ghost objects
         are never saved unless you expressly click them or drag them.
         <br> <br>
-        <h3> Banish All Ghosts: </h3>
-        To hide all ghosts press "G" or go to More / Settings / Show Ghost Instances
+        <h3> Banish All Ghosts</h3>
+        To hide/show all ghosts press <kbd>G</kbd> or go to More / Settings / Show Ghost Instances
 
       </v-card-text>
       <v-card-actions>
