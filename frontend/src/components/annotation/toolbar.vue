@@ -693,6 +693,16 @@
                         v-model="label_settings_local.instance_buffer_size">
               </v-slider>
 
+              <tooltip_button
+                tooltip_message="Restore All User Settings & Prompts"
+                @click="$store.commit('restore_default_user_settings')"
+                color="primary"
+                icon="mdi-refresh"
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+
             </v-layout>
           </template>
 
