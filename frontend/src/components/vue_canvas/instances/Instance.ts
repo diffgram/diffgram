@@ -41,6 +41,7 @@ export class Instance{
   public on_instance_hovered: Function = undefined;
   public on_instance_unhovered: Function = undefined;
   public on_instance_deselected: Function = undefined;
+  public pause_object: false
 
 
   public get_instance_data(): object{
@@ -77,6 +78,7 @@ export class Instance{
       points: this.points,
       sequence_id: this.sequence_id,
       soft_delete: this.soft_delete,
+      pause_object: this.pause_object
     }
   }
 

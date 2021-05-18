@@ -279,6 +279,11 @@ class Annotation_Update():
 		{'change_source': {
 			'kind': str,
 			'required': False
+		}
+        },
+        	{'pause_object': {
+			'kind': bool,
+			'required': False
 		}}
 	])
 
@@ -835,7 +840,8 @@ class Annotation_Update():
 					change_source = input['change_source'],
 					hash_instances=hash_instances,
 					validate_label_file=validate_label_file,
-					overwrite_existing_instances = overwrite_existing_instances
+					overwrite_existing_instances = overwrite_existing_instances,
+                    pause_object = input['pause_object']
 				)
 
 	def get_min_coordinates_instance(self, instance):
@@ -966,7 +972,8 @@ class Annotation_Update():
 			edges = [],
 			hash_instances = True,
 			overwrite_existing_instances = True,
-			validate_label_file = True):
+			validate_label_file = True,
+            pause_object = None):
 		"""
 		Assumes a "system" level context
 
@@ -1047,6 +1054,7 @@ class Annotation_Update():
 			'p2': p2,
 			'nodes': {'nodes': nodes},
 			'edges': {'edges': edges},
+            'pause_object': pause_object
 		}
 
 		if overwrite_existing_instances and id is not None:
