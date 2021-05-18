@@ -64,6 +64,19 @@ class S3Connector(Connector):
             return {'log': log}
 
     @with_connection
+    def __get_string_data(self, opts):
+        """
+
+        :param opts:
+        :return:
+        """
+        bytes_buffer = io.BytesIO()
+        self.connection_client.download_fileobj(Bucket = opts['bucket_name'], Key = opts['path'], Fileobj = bytes_buffer)
+        byte_value = bytes_buffer.getvalue()
+        str_value = byte_value.decode()  # python3, default decoding is utf-8
+        return {'data': str_value}
+
+    @with_connection
     def __fetch_object(self, opts):
         """Upload a file to diffgram from an S3 bucket
 
@@ -371,6 +384,8 @@ class S3Connector(Connector):
         action_type = opts.pop('action_type')
         if action_type == 'fetch_object':
             return self.__fetch_object(opts)
+        if action_type == 'get_string_data':
+            return self.__get_string_data(opts)
         if action_type == 'list_objects':
             return self.__fetch_object(opts)
         if action_type == 'count_objects':

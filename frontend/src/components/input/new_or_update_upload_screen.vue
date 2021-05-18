@@ -201,7 +201,7 @@
   import axios from 'axios';
   import Vue from "vue";
   import connector_import_renderer from "../connectors/connector_import_renderer";
-
+  import mime from 'mime-types';
   export default Vue.extend({
       name: 'new_or_update_upload_screen',
       components: {
@@ -230,7 +230,7 @@
           sync_job_list: [],
           current_directory: undefined,
           connection_upload_error: undefined,
-          accepted_annotation_file_types: ['.json', '.csv'],
+          accepted_annotation_file_types: ['json', 'csv'],
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
             {
@@ -339,13 +339,15 @@
           for (const item of file_list){
             let data_type = 'Raw Media';
             const extension = item.name.split('.').pop();
+            console.log('es', extension)
             if(extension && this.accepted_annotation_file_types.includes(extension)){
               data_type = 'Annotations'
             }
             to_add.push({
               ...item,
               source: 'connection',
-              data_type: data_type
+              data_type: data_type,
+              type: mime.lookup(extension)
             })
           }
           this.file_list_to_upload = this.file_list_to_upload.filter(item => item.source !== 'connection');
@@ -362,7 +364,6 @@
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_local_raw_media: async function(local_file_list){
-          console.log('local1', local_file_list)
           if(!local_file_list || local_file_list.length === 0){return}
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for(const file of this.$refs.myVueDropzone.dropzone.files){
@@ -382,7 +383,6 @@
           this.$emit('update_progress_percentage', percent)
         },
         upload_connection_raw_media: async function(connection_file_list){
-          console.log('aaaa', connection_file_list)
           if(!connection_file_list || connection_file_list.length === 0){return}
           const connector_id = this.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;

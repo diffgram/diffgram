@@ -937,18 +937,18 @@
         upload_raw_media: async function (file_list) {
           this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
         },
-        load_annotation_from_local: async function(file){
-          const textData = await file.text();
+        load_annotation_from_local: function(file, text_data){
+
           if (file.type === 'application/json') {
             this.pre_labels_file_type = 'json';
-            this.pre_labeled_data = JSON.parse(textData);
+            this.pre_labeled_data = JSON.parse(text_data);
             const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
             this.pre_label_key_list = [...pre_label_keys];
             this.pre_labels_file_list.push(file);
           }
           else if(file.type === 'text/csv'){
             this.pre_labels_file_type = 'csv';
-            let lines = textData.split("\n");
+            let lines = text_data.split("\n");
             const headers = lines.shift().split(this.csv_separator)
             if(lines[lines.length - 1] == [""]){
               lines.pop();
@@ -962,7 +962,35 @@
               headers.forEach((h, i) => obj[h] = row[i]);
               return obj;
             })
+          }
+          else{
+            throw new Error('Invalid file type for loading annotations')
+          }
+        },
+        load_annotations_from_connection: async function(){
+          const connector_id = this.$refs.new_or_update_upload_screen.incoming_connection.id;
+          const directory_id = this.$store.state.project.current_directory.directory_id;
+          const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
+          try {
+            const response = await axios.post(`/api/walrus/v1/connectors/${connector_id}/fetch-data`, {
+              opts: {
+                action_type: 'get_string_data',
+                path: file.id,
+                bucket_name: this.$refs.new_or_update_upload_screen.bucket_name,
+              },
+              project_string_id: this.$props.project_string_id
+            });
 
+            if (response.status === 200) {
+              const text_data = response.data.data;
+              this.load_annotation_from_local(file, text_data);
+            }
+
+          }catch (error) {
+            // Discuss if there already exists a good abstraction for error handling.
+            this.connection_upload_error = this.$route_api_errors(error);
+            this.$emit('error_upload_connections', this.connection_upload_error)
+            console.error(error);
           }
         },
         load_annotations_file: async function () {
@@ -970,7 +998,8 @@
           console.log('fileee', file)
           try{
             if(file.source === 'local'){
-              this.load_annotation_from_local(file);
+              const text_data = await file.text();
+              this.load_annotation_from_local(file, text_data);
             }
             else if(file.source === 'connection'){
               this.load_annotations_from_connection(file);
