@@ -221,7 +221,7 @@
 
       </instance_history_sidepanel>
       <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                          v-show="show_issue_panel && !current_issue"
+                          v-show="show_issue_panel == true && !current_issue"
                           :instance_list="instance_list"
                           :task="task"
                           :file="file"
@@ -233,7 +233,7 @@
       ></create_issue_panel>
       <view_edit_issue_panel
           v-if="!loading"
-          v-show="show_issue_panel && current_issue"
+          v-show="show_issue_panel == true && current_issue"
           :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
           :task="task"
           :instance_list="instance_list"
@@ -883,6 +883,17 @@ export default Vue.extend( {
 
         this.clear_selected()
 
+      },
+      show_issue_panel: function () {
+        if (this.show_issue_panel == true) {
+          this.label_settings.show_ghost_instances = false
+          this.label_settings.ghost_instances_closed_by_open_view_edit_panel = true
+        } else {
+          if (this.label_settings.ghost_instances_closed_by_open_view_edit_panel == true) {
+            this.label_settings.show_ghost_instances = true
+            this.label_settings.ghost_instances_closed_by_open_view_edit_panel = false
+          }
+        }
       }
    },
 
@@ -1038,7 +1049,8 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true,
         canvas_scale_global_setting: 0.5,
         left_nav_width: 450,
-        on_instance_creation_advance_sequence: true
+        on_instance_creation_advance_sequence: true,
+        ghost_instances_closed_by_open_view_edit_panel: false
       },
 
       annotations_loading: false,
