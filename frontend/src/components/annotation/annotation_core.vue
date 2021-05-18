@@ -350,6 +350,15 @@
           >
 
           </autoborder_avaiable_alert>
+
+          <ghost_canvas_available_alert
+            :x_position="canvas_alert_x"
+            :y_position="canvas_alert_y"
+            ref="ghost_canvas_available_alert"
+          >
+
+          </ghost_canvas_available_alert>
+
           <canvas
             data-cy="canvas"
             ref="canvas"
@@ -719,6 +728,7 @@ import axios from 'axios';
 import Vue from 'vue';
 import instance_detail_list_view from './instance_detail_list_view'
 import autoborder_avaiable_alert from './autoborder_avaiable_alert'
+import ghost_canvas_available_alert from './ghost_canvas_available_alert'
 import canvas_current_instance from '../vue_canvas/current_instance'
 import canvas_instance_list from '../vue_canvas/instance_list'
 import ghost_instance_list_canvas from '../vue_canvas/ghost_instance_list'
@@ -784,7 +794,8 @@ export default Vue.extend( {
       task_status_icons,
       context_menu,
       userscript,
-      toolbar
+      toolbar,
+      ghost_canvas_available_alert
     },
     props: {
       'project_string_id': {
@@ -2850,8 +2861,21 @@ export default Vue.extend( {
 
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(keyframes_to_sequences)
 
+      this.may_fire_user_ghost_canvas_available_alert()
+
       console.log(this.ghost_instance_list)
 
+    },
+
+    may_fire_user_ghost_canvas_available_alert: function () {
+      if (this.$store.state.user.settings.hide_ghost_canvas_available_alert == true) {
+        return
+      }
+      if (this.ghost_instance_list.length >= 1) {
+        this.canvas_alert_x = this.mouse_position.x
+        this.canvas_alert_y = this.mouse_position.y
+        this.$refs.ghost_canvas_available_alert.show_alert();
+      }
     },
     build_keyframes_to_sequences_dict: function () {
       /*
