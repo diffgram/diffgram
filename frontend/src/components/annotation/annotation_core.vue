@@ -4061,6 +4061,7 @@ export default Vue.extend( {
   },
 
   ghost_promote_instance_to_actual: function (ghost_index) {
+      this.has_changed = true  // otherwise user click event won't trigger change detection 
 
       let instance = this.ghost_instance_list[ghost_index]
       this.add_instance_to_frame_buffer(instance, this.current_frame)    // this handles the creation_ref_id stuff too
