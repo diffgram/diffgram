@@ -32,6 +32,7 @@
                            v-if="!bucket_empty">
 
                 <v-treeview v-model="selection"
+                            @input="on_update_selection"
                             selectionType="leaf"
                             selectable
                             selected-color="blue"
@@ -68,19 +69,19 @@
           </v-skeleton-loader>
       </v-col>
     </v-row>
-    <v-row v-if="Object.keys(error_connection).length === 0">
-      <v-col cols="12">
-        <v-btn
-               :disabled="(loading && status_test_connection !== 200) || (bucket === '' || bucket_empty) || this.selection.length === 0"
-               large
-               id="google-import-button"
-               color="success"
-               data-cy="show-import-dialog"
-               @click="show_confirm_dialog">
-          Import to Diffgram
-        </v-btn>
-      </v-col>
-    </v-row>
+<!--    <v-row v-if="Object.keys(error_connection).length === 0">-->
+<!--      <v-col cols="12">-->
+<!--        <v-btn-->
+<!--               :disabled="(loading && status_test_connection !== 200) || (bucket === '' || bucket_empty) || this.selection.length === 0"-->
+<!--               large-->
+<!--               id="google-import-button"-->
+<!--               color="success"-->
+<!--               data-cy="show-import-dialog"-->
+<!--               @click="show_confirm_dialog">-->
+<!--          Import to Diffgram-->
+<!--        </v-btn>-->
+<!--      </v-col>-->
+<!--    </v-row>-->
     <v-row class="flex ma-0" justify="space-between">
       <v-col padding="0" cols="12" class="pa-0 d-flex flex-row align-center ma-0">
         <v-dialog
@@ -204,6 +205,9 @@
       this.list_buckets();
     },
     methods: {
+      on_update_selection: function(selection){
+        this.$emit('update_file_list', selection)
+      },
       fetch_folder: function (item) {
         const connector_id = this.connection.id;
         return axios.post(`/api/walrus/v1/connectors/${connector_id}/fetch-data`,

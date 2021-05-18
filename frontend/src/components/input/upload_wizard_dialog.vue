@@ -43,6 +43,8 @@
 
           <new_or_update_upload_screen
             @file_list_updated="file_list_updated"
+            @update_progress_percentage="update_progress_percentage"
+            @error_upload_connections="error_upload_connections"
             @upload_in_progress="show_upload_progress_screen"
             @change_step_no_annotations="el = 4"
             @change_step_annotations="load_annotations_file"
@@ -52,6 +54,7 @@
             @file_added="file_added"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
+            :batch="batch"
             :error_file_uploads="error_file_uploads"
             :project_string_id="project_string_id">
 
@@ -479,7 +482,7 @@
                 </v-data-table>
               </v-expansion-panel-content>
             </v-expansion-panel>
-            
+
             <v-expansion-panel key="cuboid" class="ma-4" v-if="included_instance_types.cuboid">
               <v-expansion-panel-header color="primary lighten-2" class="text--white">
                 <span class="white--text"><strong>Cuboid Type (Click to match schema)</strong></span>
@@ -583,12 +586,14 @@
             :current_directory="current_directory"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             @upload_raw_media="upload_raw_media"
+            @created_batch="set_batch"
           ></upload_summary>
           <upload_progress
             v-if="upload_in_progress"
             :total_bytes="dropzone_total_file_size"
             :uploaded_bytes="dropzone_uploaded_file_size"
             :currently_uploading="currently_uploading_bytes"
+            :progress_percentage="progress_percentage"
             @close_wizard="close"
           >
 
@@ -613,6 +618,9 @@
     const initial_state = {
       csv_separator: ',',
       uploaded_bytes: null,
+      progress_percentage: null,
+      batch: null,
+      connection_upload_error: undefined,
       error_file_uploads: null,
       total_bytes: null,
       percent_uploaded: null,
@@ -885,6 +893,15 @@
       },
 
       methods: {
+        update_progress_percentage: function(percent){
+          this.progress_percentage = percent
+        },
+        set_batch: function(batch){
+          this.batch = batch;
+        },
+        error_upload_connections: function(error){
+          this.connection_upload_error = error;
+        },
         get_preview_data_for_key: function(instance_type, key){
           if(!instance_type || !key){return ''}
           let result = '';
@@ -903,7 +920,9 @@
           this.dropzone_total_file_size = 0;
         },
         file_added: function(file){
-          this.dropzone_total_file_size += file.size;
+          if(file.size){
+            this.dropzone_total_file_size += file.size;
+          }
         },
         update_progress_values: function(file, total_bytes, uploaded_bytes){
           this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
@@ -918,36 +937,46 @@
         upload_raw_media: async function (file_list) {
           this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
         },
+        load_annotation_from_local: async function(file){
+          const textData = await file.text();
+          if (file.type === 'application/json') {
+            this.pre_labels_file_type = 'json';
+            this.pre_labeled_data = JSON.parse(textData);
+            const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
+            this.pre_label_key_list = [...pre_label_keys];
+            this.pre_labels_file_list.push(file);
+          }
+          else if(file.type === 'text/csv'){
+            this.pre_labels_file_type = 'csv';
+            let lines = textData.split("\n");
+            const headers = lines.shift().split(this.csv_separator)
+            if(lines[lines.length - 1] == [""]){
+              lines.pop();
+            }
+            this.pre_label_key_list = headers;
+            this.pre_labels_file_list.push(file);
+            this.pre_labeled_data = lines.map(line => {
+              const row = line.split(this.csv_separator)
+
+              let obj = {};
+              headers.forEach((h, i) => obj[h] = row[i]);
+              return obj;
+            })
+
+          }
+        },
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
-          const textData = await file.text();
           try{
-            if (file.type === 'application/json') {
-              this.pre_labels_file_type = 'json';
-              this.pre_labeled_data = JSON.parse(textData);
-              const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
-              this.pre_label_key_list = [...pre_label_keys];
-              this.pre_labels_file_list.push(file);
+            if(file.source === 'local'){
+              this.load_annotation_from_local(file);
             }
-            else if(file.type === 'text/csv'){
-              this.pre_labels_file_type = 'csv';
-              let lines = textData.split("\n");
-              const headers = lines.shift().split(this.csv_separator)
-              if(lines[lines.length - 1] == [""]){
-                lines.pop();
-              }
-              this.pre_label_key_list = headers;
-              this.pre_labels_file_list.push(file);
-              this.pre_labeled_data = lines.map(line => {
-                const row = line.split(this.csv_separator)
-
-                let obj = {};
-                headers.forEach((h, i) => obj[h] = row[i]);
-                return obj;
-              })
-
+            else if(file.source === 'connection'){
+              this.load_annotations_from_connection(file);
             }
-
+            else{
+              throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
+            }
             this.el = 2;
           }
           catch(error){
