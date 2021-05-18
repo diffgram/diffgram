@@ -21,9 +21,6 @@
         type: Boolean
 
       },
-      "render_mode": {
-        default: null
-      },
       "label_file_colour_map": {},
       "current_instance_template": {
         default: undefined
@@ -51,10 +48,6 @@
           return
         }
 
-        if (this.render_mode == "file_diff") {
-          done();
-          return
-        }
 
         if (this.is_actively_drawing == false) {
           done();

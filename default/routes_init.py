@@ -24,6 +24,10 @@ def do_routes_importing():
     from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
 
+    from methods.task.stats.stats_leaderboard import stats_leadboard_api
+    from methods.task.stats.stats_job import stats_job_api
+    from methods.task.stats.stats_task import stats_task_api
+    
     from methods.task.task_template.job_cancel import job_cancel_api
     from methods.task.task_template.job_info_builder import job_info_builder_api
     from methods.task.task_template.job_trainer_info import job_trainer_info_api

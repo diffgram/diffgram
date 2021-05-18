@@ -339,7 +339,7 @@
                     <!-- Prob need to set this as a flag and move to application logic at this point -->
 
                     <v-btn v-if="render_mode != 'gold_standard'
-                            && task.task_type != 'review'
+                            && task && task.task_type != 'review'
                             && !view_only_mode
                             && props.item.soft_delete != true"
                             @click="instance_update('delete', props.index, props.item.id)"
@@ -351,7 +351,7 @@
 
                 <!-- Review and gold standard stuff -->
 
-                    <rating_review  v-if="task.task_type == 'review' && render_mode != 'gold_standard' "
+                    <rating_review  v-if="task && task.task_type == 'review' && render_mode != 'gold_standard' "
                                     :rating_prop="props.item.rating"
                                     @rating_update="instance_update(
                                                       'rating_update',
@@ -467,7 +467,6 @@ import Vue from "vue";
       'draw_mode',
       'instance_list',
       'label_file_colour_map',
-      'render_mode',
       'refresh',
       'view_only_mode',
       'label_settings',
@@ -511,7 +510,7 @@ import Vue from "vue";
       },
 
       current_file: function() {
-
+        if (!this.current_file ) { return }
         if (this.video_mode == true) {return}
 
         if (this.prior_file_id == this.current_file.id ) { return }
@@ -533,6 +532,8 @@ import Vue from "vue";
     data() {
       return {
 
+        render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
+ 
         data_table_hover_index: -1,
         data_table_hover_click_index: -1,
         data_table_inner_menu_open: false,
@@ -642,7 +643,7 @@ import Vue from "vue";
 
         else {
 
-          if (this.task.task_type == 'review' && this.render_mode != "gold_standard") {
+          if (this.task && this.task.task_type == 'review' && this.render_mode != "gold_standard") {
             // This is really brittle but works for now
             this.base_header[3].width = "600px"
           }
@@ -834,7 +835,10 @@ import Vue from "vue";
         if (instance && instance.id) {
           instance_id = instance.id
         }
-        this.$addQueriesToLocation({'instance': instance_id})
+        if(instance_id != null){
+          // this.$addQueriesToLocation({'instance': instance_id})
+          // this.$route.query.instance = instance_id
+        }
       },
 
       show_all: function () {

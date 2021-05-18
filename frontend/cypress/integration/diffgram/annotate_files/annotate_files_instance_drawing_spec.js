@@ -21,7 +21,7 @@ describe('Annotate Files Tests', () => {
     context('It Correctly Draws and Edits all Instance Types', () => {
       it('Correctly creates a bounding box.', () => {
         cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(3000)
         const min_x = 75;
         const min_y = 75;
@@ -68,7 +68,7 @@ describe('Annotate Files Tests', () => {
       it('Correctly creates a polygon.', () => {
         cy.get('[data-cy="instance-type-select"]').click({force: true})
         cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(1000);
         const points = [
           {x: 200, y: 25},
@@ -128,7 +128,7 @@ describe('Annotate Files Tests', () => {
       it('Correctly creates a point.', () => {
         cy.get('[data-cy="instance-type-select"]').click({force: true})
         cy.get('.v-list.v-select-list div').contains('Point').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(1000)
         const point = {x: 25, y:25};
         cy.mousedowncanvas(point.x, point.y);
@@ -161,7 +161,7 @@ describe('Annotate Files Tests', () => {
 
         cy.get('[data-cy="instance-type-select"]').click({force: true})
         cy.get('.v-list.v-select-list div').contains('Line').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(1000)
         cy.mousedowncanvas(points[0].x,points[0].y);
         cy.mouseupcanvas()
@@ -201,7 +201,7 @@ describe('Annotate Files Tests', () => {
       it('Correctly creates a Cuboid.', () => {
         cy.get('[data-cy="instance-type-select"]').click({force: true})
         cy.get('.v-list.v-select-list div').contains('Cuboid').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(3000)
         const rear_top_left = {x: 160, y: 160};
         const rear_bot_right = {x: 195, y: 180};
@@ -257,7 +257,7 @@ describe('Annotate Files Tests', () => {
       it('Correctly creates an Ellipse.', () => {
         cy.get('[data-cy="instance-type-select"]').click({force: true})
         cy.get('.v-list.v-select-list div').contains('Ellipse').click({force: true})
-        cy.get(`[data-cy="${testLabels[0].name}"]`).first().click({force: true})
+        cy.select_label()
         cy.wait(3000)
         const start = {x: 80, y: 175};
         const borders = {x: 135, y: 160};
