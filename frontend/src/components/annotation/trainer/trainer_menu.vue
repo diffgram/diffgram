@@ -6,7 +6,7 @@
         tooltip_message="Guide"
         icon="mdi-book-open"
         :close_by_button="true"
-        color="green"
+        color="primary"
         offset="y"
             >
 
