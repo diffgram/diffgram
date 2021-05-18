@@ -2857,13 +2857,11 @@ export default Vue.extend( {
       if (!this.sequence_list_local_copy) { return }
 
       let keyframes_to_sequences = this.build_keyframes_to_sequences_dict()
-      console.log(keyframes_to_sequences)
+      //console.log(keyframes_to_sequences)
 
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(keyframes_to_sequences)
 
       this.may_fire_user_ghost_canvas_available_alert()
-
-      console.log(this.ghost_instance_list)
 
     },
 
@@ -2924,7 +2922,7 @@ export default Vue.extend( {
       for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
 
         let instance_list = this.instance_buffer_dict[keyframe];
-        console.log(keyframe, instance_list)
+        //console.log(keyframe, instance_list)
         if (!instance_list) { continue }
 
         for (let instance of instance_list) {
