@@ -336,8 +336,8 @@
             marker_frame_number: this.$props.frame_number,
             marker_type: 'point',
             marker_data: {
-              x: this.$props.mouse_position.x,
-              y: this.$props.mouse_position.y,
+              x: this.$props.mouse_position ? this.$props.mouse_position.x : undefined,
+              y: this.$props.mouse_position ? this.$props.mouse_position.y : undefined,
             },
             description: this.editor.getHTML(),
             attached_elements: this.attached_elements
