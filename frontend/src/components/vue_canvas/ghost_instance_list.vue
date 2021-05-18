@@ -15,14 +15,15 @@
 
  export default Vue.extend({
       props: {
+        "show": {
+          default: true,
+          type: Boolean
+        },
         "ord": {},
         "mode": {
           default: 'default'
         },
         "instance_list": {},
-        "issues_list": undefined,
-        "auto_border_polygon_p1": undefined,
-        "auto_border_polygon_p2": undefined,
         "is_actively_resizing": {
           "default": false,
           type: Boolean
@@ -43,6 +44,7 @@
         "canvas_transform" : {},
         "show_annotations": {},
         "annotations_loading": {},
+        "render_mode": {},
         "label_file_colour_map": {},
         "label_settings": {
           default: null
@@ -185,19 +187,6 @@
           })
 
         },
-        draw_pause: function(instance, ctx){
-          if(!ctx.material_icons_loaded){
-            return
-          }
-          const old_color = ctx.fillStyle;
-          const old_font = ctx.font
-          ctx.font = '30px material-icons';
-          ctx.fillStyle = 'rgb(0,0,0)';
-          const point = this.get_instance_corner(instance)
-          ctx.fillText('pause', point.x, point.y);
-          ctx.fillStyle = old_color;
-          ctx.font = old_font;
-        },
         draw_checkmark: function(instance, ctx){
           if(!ctx.material_icons_loaded){
             return
@@ -245,7 +234,7 @@
 
         // MAIN function
         draw: function (ctx, done) {
-          if (this.show_annotations != true) {
+          if (this.show != true) {
             done()
             return
           }
@@ -339,11 +328,9 @@
           let fillColor = undefined;
           let lineWidth = undefined;
 
-          if (instance.fan_made == true) {
-            ctx.setLineDash([3])
-          } else {
-            ctx.setLineDash([0])
-          }
+          // GHOST
+          ctx.setLineDash([3])
+
           if(this.instance_select_for_issue){
             // Case of selecting instance for issue creation
             let r = 255
@@ -406,7 +393,6 @@
             if (instance.selected == true) {
               strokeColor = "blue"
             }
-
             if(this.instance_select_for_issue && !this.view_issue_mode){
               if(instance.selected){
                 strokeColor = "green"
@@ -448,6 +434,7 @@
           if (instance.selected == undefined){
             instance.selected = false
           }
+
           // TODO review this.colour isolation here
 
 
@@ -533,14 +520,6 @@
             }
             */
 
-           this.draw_icons(instance, ctx)
-
-        },
-
-        draw_icons: function (instance, ctx) {
-          if(instance.pause_object == true){
-            this.draw_pause(instance, ctx);
-          }
         },
 
         get_spatial_line_size: function (){
@@ -835,7 +814,7 @@
         draw_cuboid_corner_circles: function(instance, ctx, i){
           let result = false;
           if (this.draw_mode == false) {
-            if (this.mode == 'default') {
+            if (this.render_mode != "file_diff" && this.mode == 'default') {
               const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
               this.draw_single_path_circle(instance.front_face.top_left.x  , instance.front_face.top_left.y , radius, ctx)
               if(this.is_mouse_in_path(ctx, i, instance)){ result = true}
@@ -1077,7 +1056,7 @@
         draw_ellipse_corner_circles: function(instance, ctx, i){
           let result = false;
           if (this.draw_mode == false) {
-            if (this.mode == 'default') {
+            if (this.render_mode != "file_diff" && this.mode == 'default') {
               if(!instance.angle){
                 instance.angle = 0
               }
@@ -1252,7 +1231,7 @@
         draw_box_edit_corners: function (ctx, i, instance) {
 
           if (this.draw_mode == false && (this.previous_instance_hover_index == i || instance.selected)) {
-            if (this.mode == 'default') {
+            if (this.render_mode != "file_diff" && this.mode == 'default') {
 
               this.draw_circle(instance.x_min, instance.y_min, ctx)
               ctx.moveTo(instance.x_max, instance.y_min);
