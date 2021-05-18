@@ -1237,7 +1237,7 @@
           }
         },
         build_points_for_polygon(){
-          if(this.$props.pre_labels_file_type === 'json'){
+          if(this.pre_labels_file_type === 'json'){
             return
           }
           for(const instance of this.pre_labeled_data){
