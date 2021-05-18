@@ -967,6 +967,7 @@
         },
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
+          console.log('fileee', file)
           try{
             if(file.source === 'local'){
               this.load_annotation_from_local(file);
