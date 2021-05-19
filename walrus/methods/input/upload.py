@@ -92,13 +92,17 @@ class Upload():
         pre_labels = input_batch.pre_labeled_data
         if pre_labels is None:
             return input
-        uuid = self.request.form.get('uuid')
-        file_data = pre_labels.get(uuid)
+        uuid = None
+        file_data = None
+        if self.request:
+            uuid = self.request.form.get('uuid')
+            file_data = pre_labels.get(uuid)
         if file_data is None:
             # Try finding the pre_labels with the file_name as a backup
             file_data = pre_labels.get(file_name)
             if file_data is None:
                 logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
+                return
         project_labels = self.get_project_labels()
 
         if file_data['instance_list']:

@@ -14,33 +14,36 @@ try:
 except:
     pass
 from shared.regular import regular_methods
+from methods.input.upload import Upload
 
 
 def enqueue_packet(project_string_id,
                    session,
-                   media_url=None,
-                   media_type=None,
-                   file_id=None,
-                   job_id=None,
-                   batch_id=None,
-                   directory_id=None,
-                   source_directory_id=None,
-                   instance_list=None,
-                   video_split_duration=None,
-                   frame_packet_map=None,
-                   remove_link=None,
-                   add_link=None,
-                   copy_instance_list=None,
-                   commit_input=False,
-                   task_id=None,
-                   video_parent_length=None,
-                   type=None,
-                   task_action=None,
-                   external_map_id=None,
-                   external_map_action=None,
-                   enqueue_immediately=False,
-                   mode=None,
-                   allow_duplicates=False):
+                   media_url = None,
+                   media_type = None,
+                   file_id = None,
+                   file_name = None,
+                   job_id = None,
+                   batch_id = None,
+                   directory_id = None,
+                   source_directory_id = None,
+                   instance_list = None,
+                   video_split_duration = None,
+                   frame_packet_map = None,
+                   remove_link = None,
+                   add_link = None,
+                   copy_instance_list = None,
+                   commit_input = False,
+                   task_id = None,
+                   video_parent_length = None,
+                   type = None,
+                   task_action = None,
+                   external_map_id = None,
+                   external_map_action = None,
+                   enqueue_immediately = False,
+                   mode = None,
+                   allow_duplicates = False,
+                   extract_labels_from_batch = False):
     """
         Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
@@ -48,7 +51,7 @@ def enqueue_packet(project_string_id,
     :return:
     """
     diffgram_input = Input()
-
+    project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
@@ -60,7 +63,7 @@ def enqueue_packet(project_string_id,
     diffgram_input.external_map_action = external_map_action
     diffgram_input.task_action = task_action
     diffgram_input.mode = mode
-    diffgram_input.project = Project.get(session, project_string_id)
+    diffgram_input.project = project
     diffgram_input.media_type = media_type
     diffgram_input.type = "from_url"
     diffgram_input.url = media_url
@@ -77,7 +80,11 @@ def enqueue_packet(project_string_id,
 
     session.add(diffgram_input)
     session.flush()
-
+    if batch_id and extract_labels_from_batch:
+        upload_tools = Upload(session = session, project = project, request = None)
+        upload_tools.extract_instance_list_from_batch(input = diffgram_input,
+                                                      input_batch_id = batch_id,
+                                                      file_name = file_name)
     # Expect temp dir to be None here.
     # because each machine should assign it's own temp dir
     # Something else to consider for future here!

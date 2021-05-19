@@ -397,7 +397,7 @@
                   bucket_name: this.bucket_name,
                   video_split_duration: this.$props.video_split_duration,
                   job_id: this.$props.job_id,
-                  batch_id: this.$props.batch_id,
+                  batch_id: this.$props.batch.id,
                   file_uuid: file.uuid,
                 },
                 project_string_id: this.$props.project_string_id

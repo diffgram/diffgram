@@ -134,6 +134,7 @@
             const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}};
+            result[file.name] = {instance_list: [], frame_packet_map: {}};
             for (const instance of file_instances) {
               const type = instance[diffgram_schema.instance_type]
               const diffgram_formatted_instance = {
@@ -215,14 +216,19 @@
 
               if(this.supported_image_files.includes(file.type)){
                 result[file.uuid].instance_list.push(diffgram_formatted_instance)
+                result[file.name].instance_list.push(diffgram_formatted_instance)
 
               }
               else if(this.supported_video_files.includes(file.type)){
                 if(!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]){
                   result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
+                  result[file.name].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
                 }
                 else{
                   result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number].push(
+                    diffgram_formatted_instance
+                  )
+                  result[file.name].frame_packet_map[diffgram_formatted_instance.frame_number].push(
                     diffgram_formatted_instance
                   )
                 }
