@@ -191,6 +191,16 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
+    def __get_string_data(self, opts):
+        # get bucket with name
+        bucket = self.connection_client.get_bucket(opts['bucket_name'])
+        blob = bucket.blob(opts['path'])
+        # download as string
+        str_value = blob.download_as_string().decode("utf-8")
+        return {'data': str_value}
+
+    @with_connection
+    @with_google_exception_handler
     def __list_objects(self, opts):
         blobs = self.connection_client.list_blobs(opts['bucket_name'], prefix=opts['path'])
         return {'result': [x.name for x in blobs]}
@@ -265,13 +275,17 @@ class GoogleCloudStorageConnector(Connector):
                         continue
                     result = []
                     # TODO: check Input() table for duplicate file?
+                    print('aaaaa', opts)
                     created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                           session=session,
                                                           media_url=signed_url,
                                                           media_type=media_type,
                                                           job_id=opts.get('job_id'),
+                                                          batch_id=opts.get('batch_id'),
+                                                          file_name=path,
                                                           video_split_duration=opts.get('video_split_duration'),
-                                                          directory_id=opts.get('directory_id'))
+                                                          directory_id=opts.get('directory_id'),
+                                                          extract_labels_from_batch = True)
                     log = regular_log.default()
                     log['opts'] = opts
                     Event.new(
@@ -318,6 +332,8 @@ class GoogleCloudStorageConnector(Connector):
         action_type = opts.pop('action_type')
         if action_type == 'fetch_object':
             return self.__fetch_object(opts)
+        if action_type == 'get_string_data':
+            return self.__get_string_data(opts)
         if action_type == 'list_objects':
             return self.__list_objects(opts)
         if action_type == 'count_objects':

@@ -188,6 +188,7 @@
       <div class="d-flex justify-end pa-4">
         <v-btn @click="move_to_next_step"
                x-large
+               :loading="loading_annotations"
                color="primary"
                :disabled="file_list_to_upload.length === 0 || file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0">
           Continue
@@ -230,6 +231,7 @@
           sync_job_list: [],
           current_directory: undefined,
           connection_upload_error: undefined,
+          loading_annotations: false,
           accepted_annotation_file_types: ['json', 'csv'],
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
