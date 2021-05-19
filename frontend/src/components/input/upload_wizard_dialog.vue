@@ -995,14 +995,14 @@
         },
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
-          console.log('fileee', file)
+          this.$refs.new_or_update_upload_screen.loading_annotations = true;
           try{
             if(file.source === 'local'){
               const text_data = await file.text();
-              this.load_annotation_from_local(file, text_data);
+              await this.load_annotation_from_local(file, text_data);
             }
             else if(file.source === 'connection'){
-              this.load_annotations_from_connection(file);
+              await this.load_annotations_from_connection(file);
             }
             else{
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
@@ -1014,6 +1014,7 @@
             this.error_file_uploads['annotations_file'] = `Error on file ${file.name}: ${error.toString()}`;
             console.error(error);
           }
+          this.$refs.new_or_update_upload_screen.loading_annotations = false;
 
         },
         file_list_updated: function (new_file_list) {
