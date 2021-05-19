@@ -150,6 +150,7 @@
     <upload_wizard_dialog
       :project_string_id="project_string_id"
       :initial_dataset="undefined"
+      @closed="request_refresh = new Date()"
       ref="upload_wizard_dialog">
 
     </upload_wizard_dialog>
