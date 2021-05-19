@@ -1023,6 +1023,7 @@
         close: function () {
           this.is_open = false;
           Object.assign(this.$data, get_initial_state());
+          this.$emit('closed')
         },
 
         check_box_key_structure: function (key_name) {

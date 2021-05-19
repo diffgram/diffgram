@@ -72,7 +72,6 @@ class AzureConnector(Connector):
         :param opts: Dictionary with parameters for object fetching.
         :return: file obj if file was uploaded, else False
         """
-        print('OBJECTCT', opts)
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input = opts,
@@ -143,8 +142,11 @@ class AzureConnector(Connector):
                                                   media_url = sas_url,
                                                   media_type = media_type,
                                                   job_id = opts.get('job_id'),
+                                                  batch_id = opts.get('batch_id'),
+                                                  file_name = opts.get('path'),
                                                   video_split_duration = opts.get('video_split_duration'),
-                                                  directory_id = opts.get('directory_id'))
+                                                  directory_id = opts.get('directory_id'),
+                                                  extract_labels_from_batch = True)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
@@ -179,6 +181,23 @@ class AzureConnector(Connector):
                     }
                     opts_fetch_object.update(new_opts)
                     self.__fetch_object(opts_fetch_object)
+
+    @with_connection
+    @with_azure_exception_handler
+    def __get_string_data(self, opts):
+        """
+            Get a blob as a string variable.
+        :param opts:
+        :return:
+        """
+        path = opts['path']
+        blob_client = self.connection_client.get_blob_client(container =  opts['bucket_name'], blob = path)
+        download_stream = blob_client.download_blob()
+
+        bytes_data = download_stream.content_as_bytes()
+        str_data = bytes_data.decode()
+        return {'data': str_data}
+
 
     @with_connection
     @with_azure_exception_handler
@@ -395,6 +414,8 @@ class AzureConnector(Connector):
             return self.__start_folder_fetch(opts)
         if action_type == 'list_buckets':
             return self.__list_buckets(opts)
+        if action_type == 'get_string_data':
+            return self.__get_string_data(opts)
         if action_type == 'get_folder_contents':
             return self.__get_folder_contents(opts)
 
