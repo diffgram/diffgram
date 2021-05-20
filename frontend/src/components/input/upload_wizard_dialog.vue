@@ -1254,6 +1254,10 @@
                   this.load_label_names = false;
                   return
                 }
+                else{
+                  const label = labels.find(l => l.label.name === instance[this.diffgram_schema_mapping.name]);
+                  instance.label_file_id = label.id;
+                }
               }
               this.valid_labels = true;
               await this.$nextTick();

@@ -452,7 +452,9 @@
                 instance_list: file.instance_list,
                 frame_packet_map: file.frame_packet_map,
                 mode: 'update',
-                project_string_id: this.$props.project_string_id
+                batch_id: this.$props.batch.id,
+                project_string_id: this.$props.project_string_id,
+                extract_labels_from_batch: true
               });
               if (data.status === 200 && !data.data.error) {
                 this.$emit('error_update_files', undefined);
