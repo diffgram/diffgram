@@ -6,8 +6,7 @@
         <v-btn @click="upload_mode = 'update'">Update Existing</v-btn>
       </v-btn-toggle>
       <div class="pa-4">
-        <v_error_multiple :error="error">
-        </v_error_multiple>
+
         <button_with_menu
           tooltip_message="Import Settings"
           icon="settings"
@@ -42,7 +41,7 @@
         </button_with_menu>
       </div>
     </div>
-    <v-card-text class="pa-0" v-if="upload_mode === 'new'">
+    <v-card-text class="pa-0" v-if="upload_mode === 'new' || 'update'">
 
       <v-layout class="pa-8" column>
 
@@ -186,11 +185,13 @@
         </template>
       </v-data-table>
       <div class="d-flex justify-end pa-4">
+        <v_error_multiple :error="error">
+        </v_error_multiple>
         <v-btn @click="move_to_next_step"
                x-large
                :loading="loading_annotations"
                color="primary"
-               :disabled="file_list_to_upload.length === 0 || file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0">
+               :disabled="should_disable_continue">
           Continue
         </v-btn>
       </div>
@@ -231,6 +232,7 @@
           sync_job_list: [],
           current_directory: undefined,
           connection_upload_error: undefined,
+          file_update_error: undefined,
           loading_annotations: false,
           accepted_annotation_file_types: ['json', 'csv'],
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
@@ -264,7 +266,20 @@
 
       },
       computed: {
-
+        should_disable_continue: function(){
+          if(this.upload_mode === 'new'){
+            if(this.file_list_to_upload.length === 0 ||
+              this.file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0){
+              return true
+            }
+          }
+          if(this.upload_mode === 'update'){
+            if(this.file_list_to_upload.length === 0){
+              return true
+            }
+          }
+          return false;
+        },
         cloud_col_count: function () {
           if (!this.incoming_connection) {
             return 6
@@ -322,6 +337,9 @@
         }
       },
       watch: {
+        upload_mode: function(new_val){
+          this.$emit('upload_mode_change', new_val)
+        },
         incoming_connection: function (newval, oldval) {
           if (!this.newval) {
             this.bucket_name = undefined;
@@ -406,7 +424,6 @@
               });
 
               if (data.status === 200 && !data.data.error) {
-                this.$emit('error_upload_connections', undefined);
                 processed_files += 1;
                 this.update_progress_percentage((processed_files * 1.0 / connection_file_list.length) * 100);
                 return data;
@@ -417,23 +434,82 @@
           }catch (error) {
             // Discuss if there already exists a good abstraction for error handling.
             this.connection_upload_error = this.$route_api_errors(error);
-            this.$emit('error_upload_connections', this.connection_upload_error)
+            this.$emit('error_update_files', this.connection_upload_error)
             console.error(error);
           }
         },
+        update_files: async function(file_data){
+          try{
+            console.log(
+              'UPDATE FILESSSS', file_data
+            )
+            let processed_files = 0;
+            await Promise.all(Object.keys(file_data).map(async (file_key) => {
+              const file = file_data[file_key]
+              console.log('updating file...', file)
+              const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
+                file_id: file.file_id,
+                instance_list: file.instance_list,
+                frame_packet_map: file.frame_packet_map,
+                mode: 'update',
+                project_string_id: this.$props.project_string_id
+              });
+              if (data.status === 200 && !data.data.error) {
+                this.$emit('error_update_files', undefined);
+                processed_files += 1;
+                this.update_progress_percentage((processed_files * 1.0 / Object.keys(file_data).length) * 100);
+                return data;
+
+              }
+            }));
+
+          }
+          catch(error){
+            this.file_update_error = this.$route_api_errors(error);
+            this.$emit('file_update_error', this.file_update_error)
+            console.error(error);
+          }
+
+        },
         upload_raw_media: async function(file_list){
           this.$emit('upload_in_progress')
-          const local_file_list = file_list.filter(f => f.source === 'local');
-          await this.upload_local_raw_media(local_file_list);
-          const connection_file_list = file_list.filter(f => f.source === 'connection');
-          await this.upload_connection_raw_media(connection_file_list);
+          if(this.upload_mode ==='update'){
+            await this.update_files(file_list)
+          }
+          else if(this.upload_mode === 'new'){
+            const local_file_list = file_list.filter(f => f.source === 'local');
+            await this.upload_local_raw_media(local_file_list);
+            const connection_file_list = file_list.filter(f => f.source === 'connection');
+            await this.upload_connection_raw_media(connection_file_list);
+          }
+          else{
+            throw new Error('Invalid upload mode.')
+          }
+
         },
         move_to_next_step: function(){
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
-          if(raw_media.length === 0){
-            this.error.media_files = 'Please upload at least one media file to continue.'
-            return
+
+          if(this.upload_mode === 'update'){
+            if(raw_media.length > 0){
+              this.error = {}
+              this.error.media_files = 'Media file not allowed in update mode. Please upload a CSV or a JSON file.'
+              return
+            }
+            if(annotationFile.length != 1){
+              this.error = {}
+              this.error.annotations_file = 'Please upload just 1 annotation file.'
+              return
+            }
+
+          }
+          else if(this.upload_mode === 'new'){
+            if(raw_media.length === 0){
+              this.error = {}
+              this.error.media_files = 'Please upload at least one media file to continue.'
+              return
+            }
           }
           if (annotationFile.length === 0){
             // No Annotations Case, jump to last step
@@ -445,7 +521,13 @@
           }
         },
         remove_file: function(file){
-          this.$refs.myVueDropzone.removeFile(file)
+          this.error = undefined;
+          if(file.source === 'local'){
+            this.$refs.myVueDropzone.removeFile(file)
+          }
+         else if(file.source === 'connection'){
+            this.$refs.connection_import_renderer.remove_selection(file)
+          }
         },
         update_bucket_name: function (name) {
           this.bucket_name = name

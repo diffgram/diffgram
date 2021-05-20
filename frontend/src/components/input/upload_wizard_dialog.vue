@@ -42,9 +42,12 @@
         <v-stepper-content step="1">
 
           <new_or_update_upload_screen
+            @upload_mode_change="upload_mode = $event"
+            @file_update_error="file_update_error = $event"
             @file_list_updated="file_list_updated"
             @update_progress_percentage="update_progress_percentage"
             @error_upload_connections="error_upload_connections"
+            @error_update_files="error_update_files = $event"
             @upload_in_progress="show_upload_progress_screen"
             @change_step_no_annotations="el = 4"
             @change_step_annotations="load_annotations_file"
@@ -104,7 +107,7 @@
                   </v-select>
                 </div>
               </div>
-              <div class="d-flex justify-start align-center">
+              <div class="d-flex justify-start align-center" v-if="upload_mode === 'new'">
                 <div class="d-flex flex-column justify-start">
                   <h3 class="pa-2 black--text">* Select the Field Corresponding to the File Name</h3>
                   <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** The value of this key must
@@ -117,6 +120,25 @@
                             dense
                             :items="pre_label_key_list"
                             v-model="diffgram_schema_mapping.file_name">
+
+                  </v-select>
+                </div>
+              </div>
+              <div class="d-flex justify-start align-center" v-if="upload_mode === 'update'">
+                <div class="d-flex flex-column justify-start">
+                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the Diffgram File ID:</h3>
+                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>
+                    ** The value of this key must
+                    match with an existing Diffgram File ID.
+                  </strong></p>
+
+                </div>
+                <div class="d-flex justify-end flex-grow-1">
+                  <v-select class="pt-4"
+                            style="max-width: 200px"
+                            dense
+                            :items="pre_label_key_list"
+                            v-model="diffgram_schema_mapping.file_id">
 
                   </v-select>
                 </div>
@@ -195,11 +217,7 @@
           </v-layout>
           <v-layout v-else>
             <v-container fluid class="d-flex flex-column justify-center align-center">
-              <h2>Validating Label Schema...</h2>
-              <v-progress-circular indeterminate v-if="!valid_labels"></v-progress-circular>
-              <v-fade-transition v-if="valid_labels">
-                <h2>Valid Labels <v-icon x-large color="success">mdi-check</v-icon></h2>
-              </v-fade-transition>
+              <h2>Validating File Data...</h2>
             </v-container>
           </v-layout>
           <v-layout class="d-flex justify-end">
@@ -581,6 +599,7 @@
           <upload_summary
             v-if="!upload_in_progress && file_list_to_upload"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
+            :upload_mode="upload_mode"
             :project_string_id="project_string_id"
             :pre_labeled_data="pre_labeled_data"
             :current_directory="current_directory"
@@ -588,6 +607,7 @@
             @upload_raw_media="upload_raw_media"
             @created_batch="set_batch"
           ></upload_summary>
+          <v_error_multiple :error="file_update_error"></v_error_multiple>
           <upload_progress
             v-if="upload_in_progress"
             :total_bytes="dropzone_total_file_size"
@@ -618,9 +638,11 @@
     const initial_state = {
       csv_separator: ',',
       uploaded_bytes: null,
+      upload_mode: 'new',
       progress_percentage: null,
+      error_update_files: undefined,
       batch: null,
-      connection_upload_error: undefined,
+      file_update_error: undefined,
       error_file_uploads: null,
       total_bytes: null,
       percent_uploaded: null,
@@ -663,6 +685,7 @@
       ],
       diffgram_schema_mapping: {
         instance_type: null,
+        file_id: null,
         name: null,
         file_name: null,
         frame_number: null,
@@ -846,7 +869,13 @@
           return this.diffgram_schema_mapping.instance_type != null;
         },
         file_name_schema_is_set: function () {
-          return this.diffgram_schema_mapping.file_name != null;
+          if(this.upload_mode === 'new'){
+            return this.diffgram_schema_mapping.file_name != null;
+          }
+          else{
+            return this.diffgram_schema_mapping.file_id != null;
+          }
+
         },
         dropzoneOptions: function () {
 
@@ -987,7 +1016,6 @@
             }
 
           }catch (error) {
-            // Discuss if there already exists a good abstraction for error handling.
             this.connection_upload_error = this.$route_api_errors(error);
             this.$emit('error_upload_connections', this.connection_upload_error)
             console.error(error);
@@ -1243,29 +1271,33 @@
           }
         },
         validate_frame_and_sequences(){
+          if(this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0){
+            return true
+          }
           for (const instance of this.pre_labeled_data) {
             const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
             if(!related_file){
               this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
               this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
+              return false
             }
             if(this.supported_video_files.includes(related_file.type)){
               if (instance[this.diffgram_schema_mapping.frame_number] == undefined) {
                 this.errors_file_schema = {}
                 this.errors_file_schema['frame_number'] = `Provide frame numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
-                return
+                return false
               }
 
               if (instance[this.diffgram_schema_mapping.number] == undefined) {
                 this.errors_file_schema = {}
                 this.errors_file_schema['sequence_numbers'] = `Provide Sequence numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
-                return
+                return false
               }
             }
-
           }
+          return true
         },
         build_points_for_polygon(){
           if(this.pre_labels_file_type === 'json'){
@@ -1299,21 +1331,61 @@
             this.diffgram_schema_mapping.polygon.points = 'points';
           }
         },
+        async validate_file_id_list_for_update(){
+          try{
+            const file_id_list = this.pre_labeled_data.map(inst => inst[this.diffgram_schema_mapping.file_id]);
+            for(const id of file_id_list){
+              if(isNaN(id)){
+                this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
+                return false;
+              }
+            }
+            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/exists`, {
+              file_id_list: file_id_list
+            });
+
+            if(response.status === 200){
+              if(!response.data.exists){
+                this.errors_file_schema['file_ids'] = 'Invalid file IDs on this JSON file. Please check that all files IDs exists on this project.'
+                return false;
+              }
+              else{
+                return true
+              }
+            }
+            return false
+          }
+          catch(error){
+            this.errors_file_schema = this.$route_api_errors(error)
+            console.error(error)
+            return false;
+          }
+        },
         async check_errors_and_go_to_step(step) {
           if (step === 3) {
             this.errors_file_schema = undefined
-            this.get_included_instance_types();
-            if (!this.diffgram_schema_mapping.file_name) {
+            if (!this.diffgram_schema_mapping.file_name && this.update_mode === 'new') {
               this.errors_file_schema = {};
               this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
               return
             }
-            this.validate_frame_and_sequences();
-            await this.validate_label_names();
 
+            this.get_included_instance_types();
+            const valid_frames = this.validate_frame_and_sequences();
+            if(!valid_frames){
+              return
+            }
+            const valid_ids = await this.validate_file_id_list_for_update();
+            console.log('validdd', valid_ids)
+            if (!valid_ids) {
+              return
+            }
+            await this.validate_label_names();
             if (Object.keys(this.errors_file_schema).length === 0) {
               this.el = step;
             }
+
+
           } else if (step === 4) {
             this.errors_instance_schema = undefined;
             this.build_points_for_polygon()
