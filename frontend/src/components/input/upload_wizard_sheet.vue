@@ -1,16 +1,18 @@
 <template>
 
-  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
+  <v-bottom-sheet fullscreen v-if="is_open" v-model="is_open"
+                  width="1700px" id="task-input-list-dialog"
+
             persistent>
     <v-layout style="position: relative; z-index: 999999">
-      <v-btn class="" @click="close" icon x-large style="position: absolute; top: 0; right: 0">
+      <v-btn class="" @click="close" icon x-large style="position: absolute; top: 0; right: -10px;">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-layout>
 
-    <v-stepper v-model="el" class="pa-8" :non-linear="true">
+    <v-stepper v-model="el"  :non-linear="true" style="height: 100%;">
 
-      <v-stepper-header class="ma-4">
+      <v-stepper-header class="ma-0 pl-8 pr-8">
         <v-stepper-step
           editable
           :complete="el > 1"
@@ -38,8 +40,8 @@
         </v-stepper-step>
       </v-stepper-header>
 
-      <v-stepper-items>
-        <v-stepper-content step="1">
+      <v-stepper-items style="height: 100%">
+        <v-stepper-content step="1" style="height: 100%">
 
           <new_or_update_upload_screen
             @upload_mode_change="upload_mode = $event"
@@ -598,6 +600,7 @@
 
         <v-stepper-content step="4">
           <upload_summary
+            style="height: 100%"
             v-if="!upload_in_progress && file_list_to_upload"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :upload_mode="upload_mode"
@@ -625,7 +628,7 @@
       </v-stepper-items>
 
     </v-stepper>
-  </v-dialog>
+  </v-bottom-sheet>
 </template>
 
 <script lang="ts">
@@ -833,7 +836,7 @@
   }
 
   export default Vue.extend({
-      name: 'upload_wizard_dialog',
+      name: 'upload_wizard_sheet',
       components: {
         input_view,
         upload_summary,
@@ -1453,3 +1456,8 @@
     }
   ) </script>
 
+<style>
+  .v-stepper__wrapper{
+    height: 100%;
+  }
+</style>
