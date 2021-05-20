@@ -144,7 +144,7 @@
           for(const file of this.$props.file_list){
             file.input_batch_id = batch.id
           }
-          this.$emit('created_batch', batch)
+
         },
         create_batch: async function (labels_payload) {
           try {
@@ -153,6 +153,7 @@
             });
             if (response.status === 200) {
               this.input_batch = response.data.input_batch;
+              this.$emit('created_batch', this.input_batch)
             }
           } catch (e) {
 
@@ -162,9 +163,6 @@
           // This function Creates the final payload accepted by the API based on the schema mapping.
           if(!pre_labeled_data){return}
           const result = {};
-          console.log(
-            'UPDATE prepare_pre_labeled_data_payload', file_list
-          )
           for (const file of file_list) {
             const uuid = uuidv4();
             const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
@@ -180,6 +178,7 @@
                 file_uuid: uuid,
                 type: type,
                 file_id: file.file_id,
+                label_file_id: instance.label_file_id,
                 file_name: instance[diffgram_schema.file_name],
                 name: instance[diffgram_schema.name],
                 model_id: instance[diffgram_schema.model_id],
