@@ -29,7 +29,7 @@
                     <v-row  v-if="!bucket_name || bucket_name == ''">
                       <v-col cols="12" class="d-flex justify-center">
                         <v-btn
-                          @click="open_upload_wizard_dialog"
+                          @click="open_upload_wizard_sheet"
                           :disabled="!current_directory"
                           color="success"
                           x-large>
@@ -147,13 +147,13 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <upload_wizard_dialog
+    <upload_wizard_sheet
       :project_string_id="project_string_id"
       :initial_dataset="undefined"
       @closed="request_refresh = new Date()"
-      ref="upload_wizard_dialog">
+      ref="upload_wizard_sheet">
 
-    </upload_wizard_dialog>
+    </upload_wizard_sheet>
   </div>
 
 
@@ -165,14 +165,14 @@
 
   import Vue from "vue";
 
-  import upload_wizard_dialog from "./input/upload_wizard_dialog.vue";
+  import upload_wizard_sheet from "./input/upload_wizard_sheet.vue";
   import axios from "axios";
   import {create_event} from "./event/create_event";
 
   export default Vue.extend({
       name: 'upload_large',
       components: {
-        upload_wizard_dialog
+        upload_wizard_sheet
       },
       props: {
         'project_string_id': {
@@ -272,8 +272,8 @@
         clearInterval(this.refresh_interval)
       },
       methods: {
-        open_upload_wizard_dialog: function(){
-          this.$refs.upload_wizard_dialog.open();
+        open_upload_wizard_sheet: function(){
+          this.$refs.upload_wizard_sheet.open();
         },
         upload_to_diffgram: function(file, pre_labeled_data){
           this.file_list_to_upload.push(file)

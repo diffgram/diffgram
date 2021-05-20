@@ -1,11 +1,11 @@
 <template>
-  <v-card elevation="0" class="mb-5">
+  <v-card elevation="0" style="height: 100%" class="ma-0 d-flex flex-column">
     <div class="d-flex justify-end align-center">
       <v-btn-toggle v-model="upload_mode_toggle" color="secondary">
         <v-btn @click="upload_mode = 'new'">Upload New Data</v-btn>
         <v-btn @click="upload_mode = 'update'">Update Existing</v-btn>
       </v-btn-toggle>
-      <div class="pa-4">
+      <div class="pa-0">
 
         <button_with_menu
           tooltip_message="Import Settings"
@@ -14,7 +14,7 @@
           :close_by_button="true"
         >
           <template slot="content">
-            <v-layout column class="pa-6">
+            <v-layout column class="pa-0">
 
               <v-alert type="info">
                 Select desired setting before uploading. <br>
@@ -41,14 +41,17 @@
         </button_with_menu>
       </div>
     </div>
-    <v-card-text class="pa-0" v-if="upload_mode === 'new' || 'update'">
+    <v-card-text v-if="upload_mode === 'new' || 'update'">
 
-      <v-layout class="pa-8" column>
+      <v-container style="height: 100%" fluid class="pa-0 pl-4" column >
 
 
         <v-row
+          style="height: 100%;"
           v-if="$store.state.project.current_directory && Object.keys($store.state.project.current_directory).length > 0">
-          <v-col :cols="cloud_col_count" class="pa-4">
+          <v-col cols="8"
+
+                 class="pa-4">
             <v-layout column>
               <v-row>
                 <h2>Upload to the following dataset: </h2>
@@ -98,7 +101,7 @@
                   <v-progress-circular v-else indeterminate></v-progress-circular>
                 </v-alert>
               </v-row>
-              <v-row class="pa-0 mt-12">
+              <v-row class="pa-0 mt-1">
                 <v-col class="pa-0">
                   <h2 v-if="!bucket_name || bucket_name == ''">Select Connection or Drag & Drop Files: </h2>
                   <h2 v-else>Select Files: [{{bucket_name}}]: </h2>
@@ -131,60 +134,68 @@
                   </connector_import_renderer>
                 </v-col>
               </v-row>
+              <v-row v-if="!incoming_connection || !incoming_connection.id">
+                <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
+                              data-cy="vue-dropzone"
+                              style="min-height: 350px"
+                              :useCustomSlot=true
+                              :options="dropzoneOptions"
+                              @vdropzone-upload-progress="update_progress"
+                              @vdropzone-file-added="file_added"
+                              @vdropzone-sending="drop_zone_sending_event"
+                              @vdropzone-complete="drop_zone_complete">
+                  <div class="dropzone-custom-content">
+                    <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
+                    <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
+                  </div>
+                </vue-dropzone>
+              </v-row>
             </v-layout>
           </v-col>
-          <v-col v-if="!bucket_name || bucket_name == ''" cols="6" class="pa-4">
-            <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
-                          data-cy="vue-dropzone"
-                          style="min-height: 350px"
-                          :useCustomSlot=true
-                          :options="dropzoneOptions"
-                          @vdropzone-upload-progress="update_progress"
-                          @vdropzone-file-added="file_added"
-                          @vdropzone-sending="drop_zone_sending_event"
-                          @vdropzone-complete="drop_zone_complete">
-              <div class="dropzone-custom-content">
-                <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
-                <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
-              </div>
-            </vue-dropzone>
+          <v-col cols="4" class="pa-0  ma-0 pt-10" style="max-height: 700px; overflow-y: auto">
+            <h2>Data to Upload: </h2>
+            <v-data-table hide-default-footer :headers="file_table_headers" :items="file_list_to_upload">
+              <template v-slot:body="{ items }">
+                <tbody>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
+                  <td>
+                    <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
+                  </td>
+                  <td>
+                    <p class="secondary--text  ma-0"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
+                  </td>
+                  <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
 
+                </tr>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
+                  <td>
+                    <p class="ma-0"><strong>{{ file.name }}</strong></p>
+                  </td>
+                  <td>
+                    <p class="ma-0"><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
+                  </td>
+                  <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+
+                </tr>
+                </tbody>
+              </template>
+            </v-data-table>
           </v-col>
-          <v-row> <v_error_multiple :error="error_file_uploads"></v_error_multiple></v-row>
-        </v-row>
 
+        </v-row>
         <v-alert class="pa-4 ma-8" v-else type="warning"> Please select a dataset/directory to upload files.
 
         </v-alert>
-      </v-layout>
-      <h2>Data to Upload: </h2>
-      <v-data-table hide-default-footer :headers="file_table_headers" :items="file_list_to_upload">
-        <template v-slot:body="{ items }">
-          <tbody>
-          <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
-            <td>
-              <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
-            </td>
-            <td>
-              <p class="secondary--text  ma-0"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
-            </td>
-            <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+        <v-row> <v_error_multiple :error="error_file_uploads"></v_error_multiple></v-row>
+        <v-row>
 
-          </tr>
-          <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
-            <td>
-              <p class="ma-0"><strong>{{ file.name }}</strong></p>
-            </td>
-            <td>
-              <p class="ma-0"><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
-            </td>
-            <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+        </v-row>
+      </v-container>
 
-          </tr>
-          </tbody>
-        </template>
-      </v-data-table>
-      <div class="d-flex justify-end pa-4">
+
+    </v-card-text>
+    <v-card-actions class="d-flex justify-end flex-grow-1" style="align-items: center">
+      <div >
         <v_error_multiple :error="error">
         </v_error_multiple>
         <v-btn @click="move_to_next_step"
@@ -195,7 +206,7 @@
           Continue
         </v-btn>
       </div>
-    </v-card-text>
+    </v-card-actions>
   </v-card>
 </template>
 
@@ -281,7 +292,7 @@
           return false;
         },
         cloud_col_count: function () {
-          if (!this.incoming_connection) {
+          if (!this.incoming_connection || !this.incoming_connection.id) {
             return 6
           }
           if (this.bucket_name !== '') {
@@ -621,7 +632,8 @@
 
 <style scoped>
   .vue-dropzone{
-    max-height: 450px;
+    max-height: 350px;
+    width: 100%;
     display: flex;
     flex-wrap: wrap;
     overflow-y: auto;
