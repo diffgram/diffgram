@@ -1,6 +1,6 @@
 <template>
 
-  <v-dialog  v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
+  <v-dialog v-if="is_open" v-model="is_open" width="1700px" id="task-input-list-dialog" style="min-height: 800px;"
             persistent>
     <v-layout style="position: relative; z-index: 999999">
       <v-btn class="" @click="close" icon x-large style="position: absolute; top: 0; right: 0">
@@ -76,7 +76,7 @@
                   <p style="font-size: 12px" class="primary--text text--lighten-3">
                     <strong>
                       ** Allowed values here are:
-                    {{allowed_instance_types}}
+                      {{allowed_instance_types}}
                     </strong>
                   </p>
 
@@ -162,7 +162,8 @@
               </div>
               <div class="d-flex justify-start align-center">
                 <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the Sequence Number (Video Only)</h3>
+                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the Sequence Number (Video
+                    Only)</h3>
                   <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** For Video Only</strong>
                   </p>
 
@@ -634,7 +635,8 @@
   import upload_progress from './upload_progress'
   import axios from 'axios';
   import Vue from "vue";
-  function get_initial_state(){
+
+  function get_initial_state() {
     const initial_state = {
       csv_separator: ',',
       uploaded_bytes: null,
@@ -829,6 +831,7 @@
     };
     return initial_state;
   }
+
   export default Vue.extend({
       name: 'upload_wizard_dialog',
       components: {
@@ -869,10 +872,9 @@
           return this.diffgram_schema_mapping.instance_type != null;
         },
         file_name_schema_is_set: function () {
-          if(this.upload_mode === 'new'){
+          if (this.upload_mode === 'new') {
             return this.diffgram_schema_mapping.file_name != null;
-          }
-          else{
+          } else {
             return this.diffgram_schema_mapping.file_id != null;
           }
 
@@ -922,51 +924,53 @@
       },
 
       methods: {
-        update_progress_percentage: function(percent){
+        update_progress_percentage: function (percent) {
           this.progress_percentage = percent
         },
-        set_batch: function(batch){
+        set_batch: function (batch) {
           this.batch = batch;
         },
-        error_upload_connections: function(error){
+        error_upload_connections: function (error) {
           this.connection_upload_error = error;
         },
-        get_preview_data_for_key: function(instance_type, key){
-          if(!instance_type || !key){return ''}
+        get_preview_data_for_key: function (instance_type, key) {
+          if (!instance_type || !key) {
+            return ''
+          }
           let result = '';
-          for(const instance of this.pre_labeled_data){
+          for (const instance of this.pre_labeled_data) {
             const value = instance[this.diffgram_schema_mapping[instance_type][key]];
-            if(value){
+            if (value) {
               result += `${value}, \n`
             }
           }
           return result
         },
-        set_current_directory: function(current_directory){
+        set_current_directory: function (current_directory) {
           this.current_directory = current_directory;
         },
-        reset_total_files_size: function(){
+        reset_total_files_size: function () {
           this.dropzone_total_file_size = 0;
         },
-        file_added: function(file){
-          if(file.size){
+        file_added: function (file) {
+          if (file.size) {
             this.dropzone_total_file_size += file.size;
           }
         },
-        update_progress_values: function(file, total_bytes, uploaded_bytes){
+        update_progress_values: function (file, total_bytes, uploaded_bytes) {
           this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
-          if(file.size <= uploaded_bytes){
+          if (file.size <= uploaded_bytes) {
             this.currently_uploading_bytes = 0; // reset current upload bytes counter
             this.dropzone_uploaded_file_size += uploaded_bytes; // add finished file to total upload
           }
         },
-        show_upload_progress_screen: function(){
+        show_upload_progress_screen: function () {
           this.upload_in_progress = true;
         },
         upload_raw_media: async function (file_list) {
           this.$refs.new_or_update_upload_screen.upload_raw_media(file_list);
         },
-        load_annotation_from_local: function(file, text_data){
+        load_annotation_from_local: function (file, text_data) {
 
           if (file.type === 'application/json') {
             this.pre_labels_file_type = 'json';
@@ -974,12 +978,11 @@
             const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
             this.pre_label_key_list = [...pre_label_keys];
             this.pre_labels_file_list.push(file);
-          }
-          else if(file.type === 'text/csv'){
+          } else if (file.type === 'text/csv') {
             this.pre_labels_file_type = 'csv';
             let lines = text_data.split("\n");
             const headers = lines.shift().split(this.csv_separator)
-            if(lines[lines.length - 1] == [""]){
+            if (lines[lines.length - 1] == [""]) {
               lines.pop();
             }
             this.pre_label_key_list = headers;
@@ -991,12 +994,11 @@
               headers.forEach((h, i) => obj[h] = row[i]);
               return obj;
             })
-          }
-          else{
+          } else {
             throw new Error('Invalid file type for loading annotations')
           }
         },
-        load_annotations_from_connection: async function(){
+        load_annotations_from_connection: async function () {
           const connector_id = this.$refs.new_or_update_upload_screen.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
@@ -1015,7 +1017,7 @@
               this.load_annotation_from_local(file, text_data);
             }
 
-          }catch (error) {
+          } catch (error) {
             this.connection_upload_error = this.$route_api_errors(error);
             this.$emit('error_upload_connections', this.connection_upload_error)
             console.error(error);
@@ -1024,20 +1026,17 @@
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           this.$refs.new_or_update_upload_screen.loading_annotations = true;
-          try{
-            if(file.source === 'local'){
+          try {
+            if (file.source === 'local') {
               const text_data = await file.text();
               await this.load_annotation_from_local(file, text_data);
-            }
-            else if(file.source === 'connection'){
+            } else if (file.source === 'connection') {
               await this.load_annotations_from_connection(file);
-            }
-            else{
+            } else {
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
             }
             this.el = 2;
-          }
-          catch(error){
+          } catch (error) {
             this.error_file_uploads = {}
             this.error_file_uploads['annotations_file'] = `Error on file ${file.name}: ${error.toString()}`;
             console.error(error);
@@ -1253,8 +1252,7 @@
                   this.valid_labels = false;
                   this.load_label_names = false;
                   return
-                }
-                else{
+                } else {
                   const label = labels.find(l => l.label.name === instance[this.diffgram_schema_mapping.name]);
                   instance.label_file_id = label.id;
                 }
@@ -1274,18 +1272,18 @@
 
           }
         },
-        validate_frame_and_sequences(){
-          if(this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0){
+        validate_frame_and_sequences() {
+          if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {
             return true
           }
           for (const instance of this.pre_labeled_data) {
             const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
-            if(!related_file){
+            if (!related_file) {
               this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
               this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
               return false
             }
-            if(this.supported_video_files.includes(related_file.type)){
+            if (this.supported_video_files.includes(related_file.type)) {
               if (instance[this.diffgram_schema_mapping.frame_number] == undefined) {
                 this.errors_file_schema = {}
                 this.errors_file_schema['frame_number'] = `Provide frame numbers.`
@@ -1303,29 +1301,29 @@
           }
           return true
         },
-        build_points_for_polygon(){
-          if(this.pre_labels_file_type === 'json'){
+        build_points_for_polygon() {
+          if (this.pre_labels_file_type === 'json') {
             return
           }
-          for(const instance of this.pre_labeled_data){
+          for (const instance of this.pre_labeled_data) {
             let x_points = instance[this.diffgram_schema_mapping.polygon.points_x];
             x_points = x_points.split(';').map(x => parseInt(x, 10))
             let y_points = instance[this.diffgram_schema_mapping.polygon.points_y];
             y_points = y_points.split(';').map(y => parseInt(y, 10))
-            if(!x_points || !y_points){
+            if (!x_points || !y_points) {
               this.errors_instance_schema = {};
               this.errors_instance_schema['points'] = 'Provide X, Y point values.';
               this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
               return
             }
-            if(x_points.length !== y_points.length){
+            if (x_points.length !== y_points.length) {
               this.errors_instance_schema = {};
               this.errors_instance_schema['x_points'] = 'X and Y values must be the same length';
               this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
               return
             }
             instance.points = []
-            for(let i = 0; i < x_points.length; i++){
+            for (let i = 0; i < x_points.length; i++) {
               instance.points.push({
                 x: x_points[i],
                 y: y_points[i],
@@ -1335,11 +1333,14 @@
             this.diffgram_schema_mapping.polygon.points = 'points';
           }
         },
-        async validate_file_id_list_for_update(){
-          try{
+        async validate_file_id_list_for_update() {
+          try {
+            if (this.upload_mode !== 'update') {
+              return true
+            }
             const file_id_list = this.pre_labeled_data.map(inst => inst[this.diffgram_schema_mapping.file_id]);
-            for(const id of file_id_list){
-              if(isNaN(id)){
+            for (const id of file_id_list) {
+              if (isNaN(id)) {
                 this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
                 return false;
               }
@@ -1348,18 +1349,16 @@
               file_id_list: file_id_list
             });
 
-            if(response.status === 200){
-              if(!response.data.exists){
+            if (response.status === 200) {
+              if (!response.data.exists) {
                 this.errors_file_schema['file_ids'] = 'Invalid file IDs on this JSON file. Please check that all files IDs exists on this project.'
                 return false;
-              }
-              else{
+              } else {
                 return true
               }
             }
             return false
-          }
-          catch(error){
+          } catch (error) {
             this.errors_file_schema = this.$route_api_errors(error)
             console.error(error)
             return false;
@@ -1376,7 +1375,7 @@
 
             this.get_included_instance_types();
             const valid_frames = this.validate_frame_and_sequences();
-            if(!valid_frames){
+            if (!valid_frames) {
               return
             }
             const valid_ids = await this.validate_file_id_list_for_update();
@@ -1393,16 +1392,16 @@
           } else if (step === 4) {
             this.errors_instance_schema = undefined;
             this.build_points_for_polygon()
-            if(this.errors_instance_schema){
+            if (this.errors_instance_schema) {
               return
             }
             for (const instance_key in this.included_instance_types) {
               if (this.included_instance_types[instance_key]) {
                 for (const schema_key in this.diffgram_schema_mapping[instance_key]) {
-                  if(!this.diffgram_schema_mapping[instance_key][schema_key]
+                  if (!this.diffgram_schema_mapping[instance_key][schema_key]
                     && instance_key === 'polygon'
                     && ['points_x', 'points_y'].includes(schema_key)
-                    && this.$props.pre_labels_file_type === 'json'){
+                    && this.$props.pre_labels_file_type === 'json') {
                     // Skip polygon x,y points when pre_labels are in json format.
                     continue
                   }
