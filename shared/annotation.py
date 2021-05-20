@@ -22,7 +22,7 @@ from shared.database.label import Label
 from shared.helpers.permissions import LoggedIn, defaultRedirect, get_gcs_service_account
 from shared.helpers.permissions import getUserID
 from shared.utils.task import task_complete
-
+from shared.model.model_manager import ModelManager
 from shared.database.video.video import Video
 from shared.database.video.sequence import Sequence
 from shared.database.external.external import ExternalMap
@@ -93,6 +93,18 @@ class Annotation_Update():
         }
         },
         {'root_id': {
+            'default': None,
+            'kind': int,
+            'required': False
+        }
+        },
+        {'model_id': {
+            'default': None,
+            'kind': int,
+            'required': False
+        }
+        },
+        {'model_run_id': {
             'default': None,
             'kind': int,
             'required': False
@@ -350,6 +362,13 @@ class Annotation_Update():
 
         return self.new_added_instances
 
+    def populate_new_models_and_runs(self):
+        model_manager = ModelManager(session = self.session,
+                                     instance_list_dicts = self.instance_list_new,
+                                     member = self.member,
+                                     project = self.project)
+        model_manager.check_instances_and_create_new_models()
+
     def annotation_update_main(self):
 
         """
@@ -364,8 +383,11 @@ class Annotation_Update():
         self.build_existing_hash_list()
 
         ### Main work
+        self.populate_new_models_and_runs()
 
         self.update_instance_list()
+
+
         ###
 
         # Early exit if errors, eg from instance limits
@@ -802,6 +824,8 @@ class Annotation_Update():
                 end_token = input['end_token'],
                 sentence = input['sentence'],
                 creation_ref_id = input['creation_ref_id'],
+                model_id = input['model_id'],
+                model_run_id = input['model_run_id'],
                 previous_id = input['id'],  # Careful, purposely different
                 version = input['version'],
                 root_id = input['root_id'],
@@ -933,6 +957,8 @@ class Annotation_Update():
                         end_token = None,
                         sentence = None,
                         creation_ref_id = None,
+                        model_id = None,
+                        model_run_id = None,
                         previous_id = None,
                         version = None,
                         root_id = None,
@@ -1019,6 +1045,8 @@ class Annotation_Update():
             'end_token': end_token,
             'sentence': sentence,
             'creation_ref_id': creation_ref_id,
+            'model_id': model_id,
+            'model_run_id': model_run_id,
             'previous_id': previous_id,
             'version': version,
             'root_id': root_id,

@@ -1,8 +1,5 @@
 # OPENCORE - ADD
 from shared.database.common import *
-from shared.database.discussion.discussion_member import DiscussionMember
-import shared.database.discussion.discussion_relation as discussion_relation_models
-from shared.database.annotation.instance import Instance
 from shared.shared_logger import get_shared_logger
 
 logger = get_shared_logger()
@@ -38,9 +35,9 @@ class Model(Base):
         return model_run
 
     @staticmethod
-    def get_by_reference_id(session, reference_id):
-        model_run = session.query(Model).filter(Model.reference_id == reference_id).first()
-        return model_run
+    def get_by_reference_id(session, reference_id, project_id):
+        model = session.query(Model).filter(Model.reference_id == reference_id, Model.project_id == project_id).first()
+        return model
 
     @staticmethod
     def new(session,

@@ -157,7 +157,7 @@
 
         </v-alert>
       </v-layout>
-      <h2>Uploaded Data: </h2>
+      <h2>Data to Upload: </h2>
       <v-data-table hide-default-footer :headers="file_table_headers" :items="file_list_to_upload">
         <template v-slot:body="{ items }">
           <tbody>
@@ -440,13 +440,9 @@
         },
         update_files: async function(file_data){
           try{
-            console.log(
-              'UPDATE FILESSSS', file_data
-            )
             let processed_files = 0;
             await Promise.all(Object.keys(file_data).map(async (file_key) => {
               const file = file_data[file_key]
-              console.log('updating file...', file)
               const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
                 file_id: file.file_id,
                 instance_list: file.instance_list,

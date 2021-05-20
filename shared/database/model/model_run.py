@@ -2,7 +2,7 @@
 from shared.database.common import *
 
 
-class ModelRun:
+class ModelRun(Base):
     """
 
 
@@ -35,8 +35,10 @@ class ModelRun:
         return model_run
 
     @staticmethod
-    def get_by_reference_id(session, reference_id):
-        model_run = session.query(ModelRun).filter(ModelRun.reference_id == reference_id).first()
+    def get_by_reference_id(session, reference_id, model_id):
+        model_run = session.query(ModelRun).filter(
+            ModelRun.reference_id == reference_id,
+            ModelRun.model_id == model_id).first()
         return model_run
 
     @staticmethod
