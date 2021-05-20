@@ -208,7 +208,7 @@
                             style="max-width: 200px"
                             dense
                             :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.point.model_run_id">
+                            v-model="diffgram_schema_mapping.model_run_id">
 
                   </v-select>
                 </div>

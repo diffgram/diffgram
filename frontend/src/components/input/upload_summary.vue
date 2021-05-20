@@ -181,8 +181,8 @@
                 label_file_id: instance.label_file_id,
                 file_name: instance[diffgram_schema.file_name],
                 name: instance[diffgram_schema.name],
-                model_id: instance[diffgram_schema.model_id],
-                run_id: instance[diffgram_schema.run_id],
+                model_ref: instance[diffgram_schema.model_id],
+                model_run_ref: instance[diffgram_schema.model_run_id],
                 frame_number: instance[diffgram_schema.frame_number],
                 number: instance[diffgram_schema.number],
               }

@@ -4,6 +4,8 @@ import shared.data_tools_core as data_tools_core
 import hashlib
 import json
 from sqlalchemy.schema import Index
+from shared.database.model.model import Model
+from shared.database.model.model_run import ModelRun
 
 
 class Instance(Base):
@@ -40,10 +42,10 @@ class Instance(Base):
     project = relationship("Project")
 
     model_id = Column(Integer, ForeignKey('model.id'))
-    model = relationship("Model")
+    model = relationship(Model)
 
     model_run_id = Column(Integer, ForeignKey('model_run.id'))
-    model_run = relationship("ModelRun")
+    model_run = relationship(ModelRun)
 
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
