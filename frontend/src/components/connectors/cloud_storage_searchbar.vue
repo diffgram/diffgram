@@ -205,6 +205,9 @@
       this.list_buckets();
     },
     methods: {
+      remove_selection: function(file){
+        this.selection = this.selection.filter(f => f.id !== file.id);
+      },
       on_update_selection: function(selection){
         this.$emit('update_file_list', selection)
       },

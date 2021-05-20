@@ -23,6 +23,7 @@ def do_routes_importing():
 
     from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
+    from methods.source_control.file.file_exists import file_list_exists_api
 
     from methods.task.stats.stats_leaderboard import stats_leadboard_api
     from methods.task.stats.stats_job import stats_job_api

@@ -167,7 +167,7 @@ def input_packet(project_string_id):
 
     # Careful, getting this from headers...
     directory_id = request.headers.get('directory_id', None)
-    if directory_id is None:
+    if directory_id is None and input['mode'] != 'update':
         log["error"]['directory'] = "'directory_id' not supplied"
         return jsonify(log=log), 400
 
@@ -205,7 +205,10 @@ def input_packet(project_string_id):
     diffgram_input_id = None
     video_split_duration = input['video_split_duration']
 
-    client_id = request.authorization.get('username', None)
+    client_id = None
+    if request.authorization:
+        client_id = request.authorization.get('username', None)
+
     with sessionMaker.session_scope() as session:
         # Creates and input and puts it in the media processing queue.
         diffgram_input = enqueue_packet(project_string_id=project_string_id,
@@ -219,15 +222,18 @@ def input_packet(project_string_id):
                                         video_split_duration=video_split_duration,
                                         frame_packet_map=untrusted_input.get('frame_packet_map', None),
                                         mode=mode)
-
-        auth_api = Auth_api.get(
-            session=session,
-            client_id=client_id)
+        auth_api = None
+        if client_id:
+            auth_api = Auth_api.get(
+                session=session,
+                client_id=client_id)
+        else:
+            user = User.get(session)
 
         Event.new(
             session=session,
             kind="input_from_packet",
-            member_id=auth_api.member_id,
+            member_id=auth_api.member_id if auth_api else user.member.id,
             project_id=diffgram_input.project.id,
             description=str(diffgram_input.media_type),
             input_id=diffgram_input.id
