@@ -218,11 +218,6 @@ class Upload():
         content_size = len(stream)
 
         try:
-            print('content start', self.dzchunkbyteoffset)
-            print('content content_size', content_size)
-            print('content total_size', self.dztotalfilesize)
-            print('content dzchunkindex', self.dzchunkindex)
-            print('content dztotalchunkcount', self.dztotalchunkcount)
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
                 blob_path=input.raw_data_blob_path,
@@ -241,7 +236,6 @@ class Upload():
                 return
 
         except Exception as exception:
-            print("for input id", str(input.id), exception)
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
             raise Exception #TODO REMOVE

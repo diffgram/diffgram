@@ -39,6 +39,12 @@ class Instance(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
 
+    model_id = Column(Integer, ForeignKey('model.id'))
+    model = relationship("Model")
+
+    model_run_id = Column(Integer, ForeignKey('model_run.id'))
+    model_run = relationship("ModelRun")
+
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
