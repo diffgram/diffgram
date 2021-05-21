@@ -78,372 +78,23 @@
             :file_list_to_upload="file_list_to_upload"
             :pre_labeled_data="pre_labeled_data"
             @change_step_wizard="check_errors_and_go_to_step(3)"
+            @set_included_instance_types="included_instance_types = $event"
           ></file_schema_mapper>
         </v-stepper-content>
 
         <v-stepper-content step="3">
-          <h1 class="pa-10 black--text">Match Fields to Diffgram Schema</h1>
-          <v-expansion-panels accordion>
-            <v-expansion-panel key="box" class="ma-4" v-if="included_instance_types.box">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Box Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-layout class="d-flex column">
-                  <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                    <template v-slot:body="{ items }">
-                      <tbody>
-                      <tr v-for="key in Object.keys(diffgram_schema_mapping.box)">
-                        <td><strong>{{key}}:</strong></td>
-                        <td>
-                          {{get_preview_data_for_key('box', key)}}
-                        </td>
-                        <td class="d-flex align-center">
-                          <v-select class="pt-4"
-                                    style="max-width: 200px"
-                                    dense
-                                    @change="check_box_key_structure(key)"
-                                    :items="pre_label_key_list"
-                                    v-model="diffgram_schema_mapping.box[key]">
-
-                          </v-select>
-                        </td>
-                        <td>
-                          <p style="font-size: 12px" class="primary--text text--lighten-3">
-                            <strong>
-                              ** {{key}} coordinate must be a number
-                            </strong>
-                            <strong v-if="valid_points_values_box_instance_type[key]">
-                              <v-icon color="success">mdi-check</v-icon>
-                              Valid Values
-                            </strong>
-                            <v_error_multiple dense :error="error_box_instance[key]">
-                            </v_error_multiple>
-                          </p>
-
-                        </td>
-                      </tr>
-                      </tbody>
-                    </template>
-                  </v-data-table>
-                </v-layout>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-
-            <v-expansion-panel key="polygon" class="ma-4" v-if="included_instance_types.polygon">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Polygon Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                  <template v-slot:body="{ items }">
-                    <tbody>
-
-                    <tr v-if="pre_labels_file_type === 'json'">
-                      <td><strong>points:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('polygon', 'points')}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  @change="check_polygon_points_key_structure"
-                                  v-model="diffgram_schema_mapping.polygon.points">
-
-                        </v-select>
-                      </td>
-                      <td>Preview Data</td>
-                      <td v-if="pre_labels_file_type === 'json'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points Must be an array of objects with the structure:
-                            "{x: Number, y: Number}"
-                          </strong>
-                          <strong v-if="valid_points_values_polygon">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_polygon_instance">
-                          </v_error_multiple>
-                        </p>
-                      </td>
-                      <td v-if="pre_labels_file_type === 'csv'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points must be in 2 columns, one for the X values and one for the Y
-                            values. Each column should be comma separated numbers of the corresponding
-                            point coordinates.
-                          </strong>
-                        </p>
-                      </td>
-                    </tr>
-                    <tr v-if="pre_labels_file_type === 'csv'">
-                      <td><strong>points X:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('polygon', 'points_x')}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  @change="check_polygon_points_key_structure"
-                                  v-model="diffgram_schema_mapping.polygon.points_x">
-
-                        </v-select>
-                      </td>
-                      <td>Preview Data</td>
-                      <td v-if="pre_labels_file_type === 'json'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points Must be an array of objects with the structure:
-                            "{x: Number, y: Number}"
-                          </strong>
-                          <strong v-if="valid_points_values_polygon">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_polygon_instance">
-                          </v_error_multiple>
-                        </p>
-                      </td>
-                      <td v-if="pre_labels_file_type === 'csv'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points must be in 2 columns, one for the X values and one for the Y
-                            values. The values inside each column should be separated by ';'.
-                          </strong>
-                        </p>
-                      </td>
-                    </tr>
-                    <tr v-if="pre_labels_file_type === 'csv'">
-                      <td><strong>points Y:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('polygon', 'points_y')}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  @change="check_polygon_points_key_structure"
-                                  v-model="diffgram_schema_mapping.polygon.points_y">
-
-                        </v-select>
-                      </td>
-                      <td>Preview Data</td>
-                      <td v-if="pre_labels_file_type === 'json'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points Must be an array of objects with the structure:
-                            "{x: Number, y: Number}"
-                          </strong>
-                          <strong v-if="valid_points_values_polygon">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_polygon_instance">
-                          </v_error_multiple>
-                        </p>
-                      </td>
-                      <td v-if="pre_labels_file_type === 'csv'">
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** Points must be in 2 columns, one for the X values and one for the Y
-                            values. The values inside each column should be separated by ';'.
-                          </strong>
-                        </p>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-data-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-
-            <v-expansion-panel key="point" class="ma-4" v-if="included_instance_types.point">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Point Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                  <template v-slot:body="{ items }">
-                    <tbody>
-                    <tr v-for="key in Object.keys(diffgram_schema_mapping.point)">
-                      <td><strong>point {{key}} value:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('point', key)}}
-                      </td>
-                      <td>
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  :items="pre_label_key_list"
-                                  @change="check_points_key_structure(key)"
-                                  v-model="diffgram_schema_mapping.point[key]">
-
-                        </v-select>
-                      </td>
-                      <td>
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** {{key}} coordinate must be a number
-                          </strong>
-                          <strong v-if="valid_points_values_point_instance_type[key]">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_point_instance[key]">
-                          </v_error_multiple>
-                        </p>
-
-                      </td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-data-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-
-            <v-expansion-panel key="line" class="ma-4" v-if="included_instance_types.line">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Line Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                  <template v-slot:body="{ items }">
-                    <tbody>
-                    <tr v-for="key in Object.keys(diffgram_schema_mapping.line)">
-                      <td><strong>line {{key}} value:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('line', key)}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  @change="check_line_key_structure(key)"
-                                  :items="pre_label_key_list"
-                                  v-model="diffgram_schema_mapping.line[key]">
-
-                        </v-select>
-                      </td>
-                      <td>
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** coordinate must be a number
-                          </strong>
-                          <strong v-if="valid_points_values_line_instance_type[key]">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_line_instance[key]">
-                          </v_error_multiple>
-                        </p>
-
-
-                      </td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-data-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-
-            <v-expansion-panel key="cuboid" class="ma-4" v-if="included_instance_types.cuboid">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Cuboid Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                  <template v-slot:body="{ items }">
-                    <tbody>
-                    <tr v-for="key in Object.keys(diffgram_schema_mapping.cuboid)">
-                      <td><strong>{{key}}:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('cuboid', key)}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  @change="check_cuboid_key_structure(key)"
-                                  :items="pre_label_key_list"
-                                  v-model="diffgram_schema_mapping.cuboid[key]">
-                        </v-select>
-                      </td>
-                      <td>
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** coordinate must be a number
-                          </strong>
-                          <strong v-if="valid_points_values_cuboid_instance_type[key]">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_cuboid_instance[key]">
-                          </v_error_multiple>
-                        </p>
-                      </td>
-                    </tr>
-
-
-                    </tbody>
-                  </template>
-                </v-data-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-
-            <v-expansion-panel key="ellipse" class="ma-4" v-if="included_instance_types.ellipse">
-              <v-expansion-panel-header color="primary lighten-2" class="text--white">
-                <span class="white--text"><strong>Ellipse Type (Click to match schema)</strong></span>
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
-                  <template v-slot:body="{ items }">
-                    <tbody>
-                    <tr v-for="key in Object.keys(diffgram_schema_mapping.ellipse)">
-                      <td><strong>{{key}}:</strong></td>
-                      <td>
-                        {{get_preview_data_for_key('ellipse', key)}}
-                      </td>
-                      <td class="d-flex align-center">
-                        <v-select class="pt-4"
-                                  style="max-width: 200px"
-                                  dense
-                                  @change="check_ellipse_key_structure(key)"
-                                  :items="pre_label_key_list"
-                                  v-model="diffgram_schema_mapping.ellipse[key]">
-
-                        </v-select>
-                      </td>
-                      <td>
-                        <p style="font-size: 12px" class="primary--text text--lighten-3">
-                          <strong>
-                            ** value must be a number
-                          </strong>
-                          <strong v-if="valid_points_values_ellipse_instance_type[key]">
-                            <v-icon color="success">mdi-check</v-icon>
-                            Valid Values
-                          </strong>
-                          <v_error_multiple dense :error="error_ellipse_instance[key]">
-                          </v_error_multiple>
-                        </p>
-                      </td>
-                    </tr>
-                    </tbody>
-                  </template>
-                </v-data-table>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-          <div class="d-flex justify-end">
-            <v_error_multiple dense :error="errors_instance_schema">
-            </v_error_multiple>
-            <v-btn @click="check_errors_and_go_to_step(4)" color="primary" x-large> Continue</v-btn>
-          </div>
+          <instance_schema_mapper
+            :project_string_id="project_string_id"
+            :pre_label_key_list="pre_label_key_list"
+            :upload_mode="upload_mode"
+            :included_instance_types="included_instance_types"
+            :supported_video_files="supported_video_files"
+            :diffgram_schema_mapping="diffgram_schema_mapping"
+            :file_list_to_upload="file_list_to_upload"
+            :pre_labeled_data="pre_labeled_data"
+            @change_step_wizard="check_errors_and_go_to_step(4)"
+            @set_included_instance_types="included_instance_types = $event"
+          ></instance_schema_mapper>
         </v-stepper-content>
 
         <v-stepper-content step="4">
@@ -483,6 +134,7 @@
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
   import file_schema_mapper from './file_schema_mapper'
+  import instance_schema_mapper from './instance_schema_mapper'
   import upload_summary from './upload_summary'
   import upload_progress from './upload_progress'
   import axios from 'axios';
@@ -503,32 +155,7 @@
       current_directory: null,
       supported_video_files: ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
       supported_image_files: ['image/jpg', 'image/jpeg', 'image/png'],
-      schema_match_headers: [
-        {
-          text: 'Diffgram Value',
-          align: 'start',
-          sortable: false,
-          value: 'diffgram_value',
-        },
-        {
-          text: 'Preview Data',
-          value: 'preview',
-          align: 'start',
-          sortable: false,
-        },
-        {
-          text: 'File Value',
-          value: 'file_value',
-          align: 'start',
-          sortable: false,
-        },
-        {
-          text: 'Notes',
-          value: 'file_value',
-          align: 'start',
-          sortable: false,
-        },
-      ],
+
 
       diffgram_schema_mapping: {
         instance_type: null,
@@ -605,73 +232,12 @@
       valid_labels: false,
       pre_labeled_data: null,
       file_list_to_upload: [],
-      valid_points_values_polygon: false,
-      valid_points_values_point_instance_type: {x: false, y: false},
-      valid_points_values_box_instance_type: {x_min: false, x_max: false, y_min: false, y_max: false},
-      valid_points_values_line_instance_type: {x1: false, y1: false, x2: false, y2: false},
-      valid_points_values_ellipse_instance_type: {
-        center_x: false,
-        center_y: false,
-        width: false,
-        height: false,
-        angle: false,
-      },
-      valid_points_values_cuboid_instance_type: {
-        front_face_bottom_left_x: false,
-        front_face_bottom_left_y: false,
-        front_face_bottom_right_x: false,
-        front_face_bottom_right_y: false,
-        front_face_top_left_x: false,
-        front_face_top_left_y: false,
-        front_face_top_right_x: false,
-        front_face_top_right_y: false,
 
-        rear_face_bottom_left_x: false,
-        rear_face_bottom_left_y: false,
-        rear_face_bottom_right_x: false,
-        rear_face_bottom_right_y: false,
-        rear_face_top_left_x: false,
-        rear_face_top_left_y: false,
-        rear_face_top_right_x: false,
-        rear_face_top_right_y: false
-
-      },
       pre_labels_file_list: [],
       pre_label_key_list: [],
 
       pre_labels_file_type: null,
-      errors_instance_schema: {},
-      error_polygon_instance: {},
-      error_point_instance: {x: {}, y: {}},
-      error_line_instance: {x1: {}, y1: {}, x2: {}, y2: {}},
-      error_box_instance: {x_min: {}, x_max: {}, y_min: {}, y_max: {}},
-      error_cuboid_instance: {
-        front_face_bottom_left_x: {},
-        front_face_bottom_left_y: {},
-        front_face_bottom_right_x: {},
-        front_face_bottom_right_y: {},
-        front_face_top_left_x: {},
-        front_face_top_left_y: {},
-        front_face_top_right_x: {},
-        front_face_top_right_y: {},
 
-        rear_face_bottom_left_x: {},
-        rear_face_bottom_left_y: {},
-        rear_face_bottom_right_x: {},
-        rear_face_bottom_right_y: {},
-        rear_face_top_left_x: {},
-        rear_face_top_left_y: {},
-        rear_face_top_right_x: {},
-        rear_face_top_right_y: {}
-
-      },
-      error_ellipse_instance: {
-        center_x: {},
-        center_y: {},
-        width: {},
-        height: {},
-        angle: {},
-      },
     };
     return initial_state;
   }
@@ -682,6 +248,7 @@
         input_view,
         upload_summary,
         file_schema_mapper,
+        instance_schema_mapper,
         new_or_update_upload_screen,
         upload_progress
       },
@@ -778,19 +345,7 @@
         error_upload_connections: function (error) {
           this.connection_upload_error = error;
         },
-        get_preview_data_for_key: function (instance_type, key) {
-          if (!instance_type || !key) {
-            return ''
-          }
-          let result = '';
-          for (const instance of this.pre_labeled_data) {
-            const value = instance[this.diffgram_schema_mapping[instance_type][key]];
-            if (value) {
-              result += `${value}, \n`
-            }
-          }
-          return result
-        },
+
         set_current_directory: function (current_directory) {
           this.current_directory = current_directory;
         },
