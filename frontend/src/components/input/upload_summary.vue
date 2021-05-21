@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v-layout class="d-flex column justify-center">
       <h2 class="ma-8 black--text" v-if="upload_mode === 'new'">You are about to upload {{file_list.length}} file(s):
@@ -7,52 +7,56 @@
       </h2>
       <h2 v-if="upload_mode === 'update'">You will Update {{files_to_update_list.length}} File(s): </h2>
 
-      <v-list-item
+      <v-container fluid class="d-flex flex-column"  style="max-height: 450 px; overflow-y: auto">
+        <v-list-item
 
-        v-for="(item, i) in file_list_for_summary"
-        :key="i"
-        dense
-        two-line
-        style="min-height: 30px"
-      >
-        <v-list-item-icon class="ma-0">
-          <v-icon v-text="'mdi-file'"></v-icon>
-        </v-list-item-icon>
-        <v-list-item-title>
-          <v-list-item-title v-if="upload_mode === 'new'" v-text="item.name"></v-list-item-title>
-          <v-list-item-title v-if="upload_mode === 'update'" v-text="`File ID: ${item.file_id}`"></v-list-item-title>
-          <v-list-item v-if="item.instances" class="d-flex flex-column justify-start align-baseline">
-            <v-list-item-title class="align-self-baseline" v-text="`Total Instances to add: ${item.instances.length}`">
+          v-for="(item, i) in file_list_for_summary"
+          :key="i"
+          dense
+          two-line
+          style="min-height: 30px"
+        >
+          <v-list-item-icon class="ma-0">
+            <v-icon v-text="'mdi-file'"></v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>
+            <v-list-item-title v-if="upload_mode === 'new'" v-text="item.name"></v-list-item-title>
+            <v-list-item-title v-if="upload_mode === 'update'" v-text="`File ID: ${item.file_id}`"></v-list-item-title>
+            <v-list-item v-if="item.instances" class="d-flex flex-column justify-start align-baseline">
+              <v-list-item-title class="align-self-baseline" v-text="`Total Instances to add: ${item.instances.length}`">
 
-            </v-list-item-title>
-            <v-list-item-subtitle
-              class="ml-4"
-              v-if="item.box_instances.length > 0"
-              v-text="`Boxes: ${item.box_instances.length}`">
-            </v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.point_instances.length > 0"
-                                  v-text="`Points: ${item.point_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.polygon_instances.length > 0"
-                                  v-text="`Polygons: ${item.polygon_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.line_instances.length > 0"
-                                  v-text="`Lines: ${item.line_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.cuboid_instances.length > 0"
-                                  v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
-            <v-list-item-subtitle class="ml-4" v-if="item.ellipse_instances.length > 0"
-                                  v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
+              </v-list-item-title>
+              <v-list-item-subtitle
+                class="ml-4"
+                v-if="item.box_instances.length > 0"
+                v-text="`Boxes: ${item.box_instances.length}`">
+              </v-list-item-subtitle>
+              <v-list-item-subtitle class="ml-4" v-if="item.point_instances.length > 0"
+                                    v-text="`Points: ${item.point_instances.length}`"></v-list-item-subtitle>
+              <v-list-item-subtitle class="ml-4" v-if="item.polygon_instances.length > 0"
+                                    v-text="`Polygons: ${item.polygon_instances.length}`"></v-list-item-subtitle>
+              <v-list-item-subtitle class="ml-4" v-if="item.line_instances.length > 0"
+                                    v-text="`Lines: ${item.line_instances.length}`"></v-list-item-subtitle>
+              <v-list-item-subtitle class="ml-4" v-if="item.cuboid_instances.length > 0"
+                                    v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
+              <v-list-item-subtitle class="ml-4" v-if="item.ellipse_instances.length > 0"
+                                    v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
 
-            <v-list-item-title v-if="item.labels" class="align-self-baseline" v-text="`Total Labels: ${Object.keys(item.labels).length} [${Object.keys(item.labels)}]`">
+              <v-list-item-title v-if="item.labels" class="align-self-baseline" v-text="`Total Labels: ${Object.keys(item.labels).length} [${Object.keys(item.labels)}]`">
 
-            </v-list-item-title>
-            <v-list-item-subtitle class="ml-4"
-                                  v-for="key in Object.keys(item.labels)"
-                                  v-text="`- '${key}' => Num instances: ${item.labels[key]}`">
+              </v-list-item-title>
+              <v-list-item-subtitle class="ml-4"
+                                    v-for="key in Object.keys(item.labels)"
+                                    v-text="`- '${key}' => Num instances: ${item.labels[key]}`">
 
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list-item-title>
-      </v-list-item>
-      <v-btn x-large class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list-item-title>
+        </v-list-item>
+      </v-container>
+      <v-container fluid class="d-flex justify-end align-center">
+        <v-btn x-large class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
+      </v-container>
     </v-layout>
   </v-container>
 

@@ -152,7 +152,7 @@
               </v-row>
             </v-layout>
           </v-col>
-          <v-col cols="4" class="pa-0  ma-0 pt-10" style="max-height: 700px; overflow-y: auto">
+          <v-col cols="4" class="pa-0  ma-0 pt-10" style="max-height: 600px; overflow-y: auto">
             <h2>Data to Upload: </h2>
             <v-data-table hide-default-footer :headers="file_table_headers" :items="file_list_to_upload">
               <template v-slot:body="{ items }">
