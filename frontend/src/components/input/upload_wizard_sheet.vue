@@ -32,7 +32,7 @@
           editable
           :complete="el > 3"
           step="3">
-          Match data to Diffgram Schema
+          Match Instance Types to Diffgram Schema
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step :complete="el > 4" step="4" editable>
@@ -68,169 +68,17 @@
         </v-stepper-content>
 
         <v-stepper-content step="2">
-          <v_error_multiple :error="errors_file_schema">
-          </v_error_multiple>
-          <v-layout v-if="!load_label_names" class="d-flex flex-column justify-center align-center pa-10">
-            <v-container class="d-flex flex-column pa-0">
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the instance type</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3">
-                    <strong>
-                      ** Allowed values here are:
-                      {{allowed_instance_types}}
-                    </strong>
-                  </p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.instance_type">
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the Label Name</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3">
-                    <strong>** Labels Must Already exist in project.</strong></p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.name">
-
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center" v-if="upload_mode === 'new'">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the File Name</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** The value of this key must
-                    match with the file name in order to identify the instances.</strong></p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.file_name">
-
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center" v-if="upload_mode === 'update'">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">* Select the Field Corresponding to the Diffgram File ID:</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>
-                    ** The value of this key must
-                    match with an existing Diffgram File ID.
-                  </strong></p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.file_id">
-
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the frame number (Video Only)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** For Video Only</strong>
-                  </p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.frame_number">
-
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">** Select the Field Corresponding to the Sequence Number (Video
-                    Only)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** For Video Only</strong>
-                  </p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.number">
-
-                  </v-select>
-                </div>
-              </div>
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">Select the Field Corresponding to the Model ID (Optional)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** If model already exists,
-                    instances will be binded to existing model.</strong></p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.model_id">
-
-                  </v-select>
-                </div>
-              </div>
-
-              <div class="d-flex justify-start align-center">
-                <div class="d-flex flex-column justify-start">
-                  <h3 class="pa-2 black--text">Select the Field Corresponding to the Model Run ID (Optional)</h3>
-                  <p style="font-size: 12px" class="primary--text text--lighten-3"><strong>** If the run already exists,
-                    instances will be binded to existing run.</strong></p>
-
-                </div>
-                <div class="d-flex justify-end flex-grow-1">
-                  <v-select class="pt-4"
-                            style="max-width: 200px"
-                            dense
-                            :items="pre_label_key_list"
-                            v-model="diffgram_schema_mapping.model_run_id">
-
-                  </v-select>
-                </div>
-              </div>
-
-            </v-container>
-          </v-layout>
-          <v-layout v-else>
-            <v-container fluid class="d-flex flex-column justify-center align-center">
-              <h2>Validating File Data...</h2>
-            </v-container>
-          </v-layout>
-          <v-layout class="d-flex justify-end">
-            <v-btn x-large
-                   class="primary ma-8"
-                   :disabled="!instance_type_schema_is_set || !file_name_schema_is_set"
-                   @click="check_errors_and_go_to_step(3)">
-              Continue
-            </v-btn>
-          </v-layout>
+          <file_schema_mapper
+            :project_string_id="project_string_id"
+            :pre_label_key_list="pre_label_key_list"
+            :upload_mode="upload_mode"
+            :included_instance_types="included_instance_types"
+            :supported_video_files="supported_video_files"
+            :diffgram_schema_mapping="diffgram_schema_mapping"
+            :file_list_to_upload="file_list_to_upload"
+            :pre_labeled_data="pre_labeled_data"
+            @change_step_wizard="check_errors_and_go_to_step(3)"
+          ></file_schema_mapper>
         </v-stepper-content>
 
         <v-stepper-content step="3">
@@ -634,6 +482,7 @@
 <script lang="ts">
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
+  import file_schema_mapper from './file_schema_mapper'
   import upload_summary from './upload_summary'
   import upload_progress from './upload_progress'
   import axios from 'axios';
@@ -680,14 +529,7 @@
           sortable: false,
         },
       ],
-      allowed_instance_types: [
-        'box',
-        'polygon',
-        'line',
-        'point',
-        'cuboid',
-        'ellipse',
-      ],
+
       diffgram_schema_mapping: {
         instance_type: null,
         file_id: null,
@@ -756,7 +598,6 @@
       },
       is_open: false,
       el: 1,
-      load_label_names: false,
       dropzone_total_file_size: 0,
       dropzone_uploaded_file_size: 0,
       currently_uploading_bytes: 0,
@@ -797,7 +638,7 @@
       },
       pre_labels_file_list: [],
       pre_label_key_list: [],
-      errors_file_schema: undefined,
+
       pre_labels_file_type: null,
       errors_instance_schema: {},
       error_polygon_instance: {},
@@ -840,6 +681,7 @@
       components: {
         input_view,
         upload_summary,
+        file_schema_mapper,
         new_or_update_upload_screen,
         upload_progress
       },
@@ -1240,70 +1082,7 @@
             this.valid_points_values_polygon = true;
           }
         },
-        validate_label_names: async function () {
-          try {
-            this.load_label_names = true
-            this.valid_labels = false;
-            const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
-            if (response.status === 200) {
-              const labels = response.data.labels_out;
-              const label_names = labels.map(elm => elm.label.name)
-              for (const instance of this.pre_labeled_data) {
-                if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
-                  this.errors_file_schema = {}
-                  this.errors_file_schema['label_names'] = `The label name "${instance[this.diffgram_schema_mapping.name]}" does not exist in the project. Please create it.`
-                  this.valid_labels = false;
-                  this.load_label_names = false;
-                  return
-                } else {
-                  const label = labels.find(l => l.label.name === instance[this.diffgram_schema_mapping.name]);
-                  instance.label_file_id = label.id;
-                }
-              }
-              this.valid_labels = true;
-              await this.$nextTick();
-              setTimeout(() => {
-                this.load_label_names = false;
-              }, 3000)
-            }
 
-          } catch (e) {
-            console.error(e);
-            this.valid_labels = false;
-            this.load_label_names = false;
-          } finally {
-
-          }
-        },
-        validate_frame_and_sequences() {
-          if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {
-            return true
-          }
-          for (const instance of this.pre_labeled_data) {
-            const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
-            if (!related_file) {
-              this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
-              this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
-              return false
-            }
-            if (this.supported_video_files.includes(related_file.type)) {
-              if (instance[this.diffgram_schema_mapping.frame_number] == undefined) {
-                this.errors_file_schema = {}
-                this.errors_file_schema['frame_number'] = `Provide frame numbers.`
-                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
-                return false
-              }
-
-              if (instance[this.diffgram_schema_mapping.number] == undefined) {
-                this.errors_file_schema = {}
-                this.errors_file_schema['sequence_numbers'] = `Provide Sequence numbers.`
-                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
-                return false
-              }
-            }
-          }
-          return true
-        },
         build_points_for_polygon() {
           if (this.pre_labels_file_type === 'json') {
             return
@@ -1336,62 +1115,12 @@
             this.diffgram_schema_mapping.polygon.points = 'points';
           }
         },
-        async validate_file_id_list_for_update() {
-          try {
-            if (this.upload_mode !== 'update') {
-              return true
-            }
-            const file_id_list = this.pre_labeled_data.map(inst => inst[this.diffgram_schema_mapping.file_id]);
-            for (const id of file_id_list) {
-              if (isNaN(id)) {
-                this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
-                return false;
-              }
-            }
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/exists`, {
-              file_id_list: file_id_list
-            });
 
-            if (response.status === 200) {
-              if (!response.data.exists) {
-                this.errors_file_schema['file_ids'] = 'Invalid file IDs on this JSON file. Please check that all files IDs exists on this project.'
-                return false;
-              } else {
-                return true
-              }
-            }
-            return false
-          } catch (error) {
-            this.errors_file_schema = this.$route_api_errors(error)
-            console.error(error)
-            return false;
-          }
-        },
         async check_errors_and_go_to_step(step) {
+          console.log('check_errors_and_go_to_step', step)
           if (step === 3) {
-            this.errors_file_schema = undefined
-            if (!this.diffgram_schema_mapping.file_name && this.update_mode === 'new') {
-              this.errors_file_schema = {};
-              this.errors_file_schema['file_name'] = 'Must set the file name key mapping to continue.'
-              return
-            }
-
-            this.get_included_instance_types();
-            const valid_frames = this.validate_frame_and_sequences();
-            if (!valid_frames) {
-              return
-            }
-            const valid_ids = await this.validate_file_id_list_for_update();
-            console.log('validdd', valid_ids)
-            if (!valid_ids) {
-              return
-            }
-            await this.validate_label_names();
-            if (Object.keys(this.errors_file_schema).length === 0) {
-              this.el = step;
-            }
-
-
+            this.errors_file_schema = undefined;
+            this.el = step;
           } else if (step === 4) {
             this.errors_instance_schema = undefined;
             this.build_points_for_polygon()
@@ -1422,22 +1151,7 @@
           }
 
         },
-        get_included_instance_types: function () {
-          this.errors_file_schema = {};
-          for (const elm of this.pre_labeled_data) {
-            if (elm[this.diffgram_schema_mapping.instance_type]) {
 
-              const instance_type = elm[this.diffgram_schema_mapping.instance_type];
-              if (this.allowed_instance_types.includes(instance_type)) {
-                this.included_instance_types[instance_type] = true;
-              } else {
-                this.errors_file_schema = {};
-                this.errors_file_schema[instance_type] = `Invalid instance type "${instance_type}"`;
-              }
-
-            }
-          }
-        },
         extract_pre_label_key_list: function (pre_labels_object) {
           const result = []
           for (const elm of pre_labels_object) {
