@@ -633,7 +633,7 @@
 <style scoped>
   .vue-dropzone{
     max-height: 350px;
-    width: 100%;
+    width: 83%;
     display: flex;
     flex-wrap: wrap;
     overflow-y: auto;
