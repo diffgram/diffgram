@@ -48,11 +48,13 @@
 
               <v-container fluid class="d-flex justify-center flex-grow-1">
 
-                <v-select class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.instance_type">
-                </v-select>
+                <v-autocomplete
+                  class="pt-4"
+                  clearable
+                  :items="pre_label_key_list"
+                  v-model="diffgram_schema_mapping.instance_type"
+                  >
+                </v-autocomplete>
 
               </v-container>
 
@@ -74,11 +76,12 @@
                 <strong>** Labels Must Already exist in project.</strong>
               </p>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.name">
-                </v-select>
+                <v-autocomplete
+                    class="pt-4"
+                    clearable
+                    :items="pre_label_key_list"
+                    v-model="diffgram_schema_mapping.name">
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -97,11 +100,11 @@
                 </strong>
               </p>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.file_name">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -118,11 +121,11 @@
               </h3>
 
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.file_id">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -139,11 +142,11 @@
                 </strong>
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.frame_number">">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -159,11 +162,11 @@
                 </strong>
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.number">">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -198,11 +201,11 @@
                 </strong>
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.model_id">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
@@ -218,11 +221,11 @@
                 </strong>
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
-                <v-select class="pt-4"
+                <v-autocomplete class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.model_run_id">
-                </v-select>
+                </v-autocomplete>
               </v-container>
             </div>
           </div>
