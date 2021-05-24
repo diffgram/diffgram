@@ -24,18 +24,26 @@
         <v-stepper-step
           editable
           :complete="el > 2"
-          step="2">
-          Prepare Prelabeled Data
+          step="2"
+        >
+          Dataset Selection
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           editable
           :complete="el > 3"
           step="3">
+          Prepare Prelabeled Data
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step
+          editable
+          :complete="el > 4"
+          step="4">
           Match Instance Types to Diffgram Schema
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="el > 4" step="4" editable>
+        <v-stepper-step :complete="el > 5" step="5" editable>
           Confirm Upload
         </v-stepper-step>
       </v-stepper-header>
@@ -46,13 +54,64 @@
       <v-progress-linear
         color="secondary"
         striped
-        value="50"
+        v-model="global_progress"
         height="12"
       >
       </v-progress-linear>
 
       <v-stepper-items style="height: 100%">
         <v-stepper-content step="1" style="height: 100%">
+          <div class="d-flex justify-center flex-column">
+            <h1 class="text-center"><v-icon x-large color="primary">mdi-upload</v-icon>Welcome to the Diffgram Upload Wizard!</h1>
+            <h3 class="text-center">We will guide you through all the steps you need to take to add new data to your project</h3>
+            <br>
+            <br>
+            <h2 class="text-center mb-12">Do you want to upload Pre-labeled data?</h2>
+            <div class="d-flex justify-space-around">
+              <v-btn
+                x-large
+                color="primary lighten-2"
+                @click="set_with_pre_labels(false)"
+              >No, just files.</v-btn>
+              <v-btn
+                color="primary"
+                x-large
+                @click="set_with_pre_labels(true)"
+
+              >
+                Yes, upload labels too.
+              </v-btn>
+            </div>
+          </div>
+        </v-stepper-content>
+        <v-stepper-content step="2" style="height: 100%">
+          <div class="d-flex justify-center flex-column align-center ma-auto">
+            <h1 class="text-center"><v-icon x-large color="primary">mdi-folder</v-icon>Select Dataset: </h1>
+            <h3 class="text-center">Please select the dataset where you want to upload your files, or create a new one.</h3>
+            <br>
+            <br>
+            <div class="d-flex justify-space-around">
+              <v-container fluid class="d-flex align-center justify-center">
+
+                <v_directory_list :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
+                                  :show_text_buttons="true"
+                                  :project_string_id="project_string_id"
+                                  @change_directory="on_change_directory"
+                                  :show_new="true"
+                                  :show_update="true"
+                >
+                </v_directory_list>
+
+
+
+
+
+
+              </v-container>
+            </div>
+          </div>
+        </v-stepper-content>
+        <v-stepper-content step="3" style="height: 100%">
 
           <new_or_update_upload_screen
             @upload_mode_change="upload_mode = $event"
@@ -78,23 +137,8 @@
 
         </v-stepper-content>
 
-        <v-stepper-content step="2">
+        <v-stepper-content step="4">
           <file_schema_mapper
-            :project_string_id="project_string_id"
-            :pre_label_key_list="pre_label_key_list"
-            :upload_mode="upload_mode"
-            :included_instance_types="included_instance_types"
-            :supported_video_files="supported_video_files"
-            :diffgram_schema_mapping="diffgram_schema_mapping"
-            :file_list_to_upload="file_list_to_upload"
-            :pre_labeled_data="pre_labeled_data"
-            @change_step_wizard="check_errors_and_go_to_step(3)"
-            @set_included_instance_types="included_instance_types = $event"
-          ></file_schema_mapper>
-        </v-stepper-content>
-
-        <v-stepper-content step="3">
-          <instance_schema_mapper
             :project_string_id="project_string_id"
             :pre_label_key_list="pre_label_key_list"
             :upload_mode="upload_mode"
@@ -105,10 +149,25 @@
             :pre_labeled_data="pre_labeled_data"
             @change_step_wizard="check_errors_and_go_to_step(4)"
             @set_included_instance_types="included_instance_types = $event"
+          ></file_schema_mapper>
+        </v-stepper-content>
+
+        <v-stepper-content step="5">
+          <instance_schema_mapper
+            :project_string_id="project_string_id"
+            :pre_label_key_list="pre_label_key_list"
+            :upload_mode="upload_mode"
+            :included_instance_types="included_instance_types"
+            :supported_video_files="supported_video_files"
+            :diffgram_schema_mapping="diffgram_schema_mapping"
+            :file_list_to_upload="file_list_to_upload"
+            :pre_labeled_data="pre_labeled_data"
+            @change_step_wizard="check_errors_and_go_to_step(5)"
+            @set_included_instance_types="included_instance_types = $event"
           ></instance_schema_mapper>
         </v-stepper-content>
 
-        <v-stepper-content step="4">
+        <v-stepper-content step="6">
           <upload_summary
             style="height: 100%"
             v-if="!upload_in_progress && file_list_to_upload"
@@ -156,7 +215,12 @@
       csv_separator: ',',
       uploaded_bytes: null,
       upload_mode: 'new',
+      completed_questions: 0,
+      completed_questions_dict: {},
+      total_questions: 15,
       progress_percentage: null,
+      with_pre_labels: null,
+
       error_update_files: undefined,
       batch: null,
       file_update_error: undefined,
@@ -277,6 +341,9 @@
         return get_initial_state();
       },
       computed: {
+        global_progress: function(){
+
+        },
         selected_polygon_key_has_nested_valued: function () {
           if (!this.diffgram_schema_mapping.polygon.points) {
             return false
@@ -347,6 +414,15 @@
       },
 
       methods: {
+        set_with_pre_labels: function(with_pre_labels){
+          this.with_pre_labels = with_pre_labels;
+          this.set_completed_questions(1);
+          this.check_errors_and_go_to_step(2)
+        },
+        set_completed_questions: function(value){
+          this.completed_questions = value;
+
+        },
         update_progress_percentage: function (percent) {
           this.progress_percentage = percent
         },
@@ -684,10 +760,10 @@
 
         async check_errors_and_go_to_step(step) {
           console.log('check_errors_and_go_to_step', step)
-          if (step === 3) {
+          if (step === 4) {
             this.errors_file_schema = undefined;
             this.el = step;
-          } else if (step === 4) {
+          } else if (step === 5) {
             this.errors_instance_schema = undefined;
             this.build_points_for_polygon()
             if (this.errors_instance_schema) {
@@ -712,10 +788,45 @@
               }
             }
             this.el = step
-
-
+          }
+          else{
+            this.el = step
           }
 
+        },
+        async update_sync_jobs_list(dir) {
+          try {
+            if (!dir || !dir.jobs_to_sync || !dir.jobs_to_sync.job_ids || !dir.jobs_to_sync.job_ids.length > 0) {
+              return []
+            }
+            const response = await axios.post('/api/v1/job/list', {
+              metadata: {
+                mode_data: 'job_detail',
+                builder_or_trainer: {
+                  mode: 'builder'
+                },
+                project_string_id: this.$store.state.project.current.project_string_id,
+                status: 'active',
+                job_ids: dir.jobs_to_sync.job_ids
+              }
+
+
+            })
+
+            if (response.data.Job_list) {
+              return response.data.Job_list
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        },
+
+        async on_change_directory(directory) {
+          this.loading_sync_jobs = true;
+          this.current_directory = directory;
+          this.sync_job_list = await this.update_sync_jobs_list(directory)
+          this.loading_sync_jobs = false;
+          this.$emit('current_directory', this.current_directory)
         },
 
         extract_pre_label_key_list: function (pre_labels_object) {
