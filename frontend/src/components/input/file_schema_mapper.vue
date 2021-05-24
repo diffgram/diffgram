@@ -33,25 +33,29 @@
         <v-fade-transition> :group="true" hide-on-leave leave-absolute>
           <div key="1" v-if="current_question === 1" class="d-flex justify-center align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the instance
-                type:</h1>
+              <h1 class="pa-2 black--text">Type:</h1>
+              <h2> {{current_question}}) Select the Field Corresponding to the instance type.</h2>
               <h4>
                 This field indicates what the instance type is (box, ellipse, polygon, etc). Please select
                 the option on your file that corresponds to the instance type.
               </h4>
               <p style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
-                  ** Allowed values here are:
+                  Allowed values here are:
                   {{allowed_instance_types}}
                 </strong>
               </p>
+
               <v-container fluid class="d-flex justify-center flex-grow-1">
+
                 <v-select class="pt-4"
                           clearable
                           :items="pre_label_key_list"
                           v-model="diffgram_schema_mapping.instance_type">
                 </v-select>
+
               </v-container>
+
             </div>
 
           </div>
