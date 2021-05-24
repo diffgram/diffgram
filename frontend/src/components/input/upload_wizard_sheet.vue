@@ -40,6 +40,17 @@
         </v-stepper-step>
       </v-stepper-header>
 
+      <!-- Idea of this globally updating
+        especially as large inner steps like mapping
+        complete progress-->
+      <v-progress-linear
+        color="secondary"
+        striped
+        value="50"
+        height="12"
+      >
+      </v-progress-linear>
+
       <v-stepper-items style="height: 100%">
         <v-stepper-content step="1" style="height: 100%">
 
