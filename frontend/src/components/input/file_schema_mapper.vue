@@ -3,17 +3,33 @@
     <v_error_multiple :error="errors_file_schema">
     </v_error_multiple>
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
-      <h1 class="secondary--text">
-        <strong>
-          <v-icon large color="secondary">mdi-cable-data</v-icon>
-          Let's map your data!</strong>
-      </h1>
-      <p class="secondary--text">
-        <strong>
-          The following questions will guide you towards the mapping of your JSON or CSV file to Diffgram's data format:
-        </strong>
-      </p>
+
       <v-container v-if="diffgram_schema_mapping" class="d-flex flex-column pa-0" style="height: 500px">
+
+        <v-fade-transition> :group="true" hide-on-leave leave-absolute>
+
+          <div key="0"
+               v-if="current_question === 0"
+               class="d-flex justify-center align-center">
+            <div class="d-flex flex-column justify-start">
+
+              <h1 class="secondary--text">
+                <strong>
+                  <v-icon large color="secondary">mdi-cable-data</v-icon>
+                  Let's map your data!</strong>
+              </h1>
+              <p class="secondary--text">
+                <strong>
+                  The following questions will guide you towards the mapping of your JSON or CSV file to Diffgram's data format:
+                </strong>
+              </p>
+
+            </div>
+
+          </div>
+        </v-fade-transition>
+
+
         <v-fade-transition> :group="true" hide-on-leave leave-absolute>
           <div key="1" v-if="current_question === 1" class="d-flex justify-center align-center">
             <div class="d-flex flex-column justify-start">
@@ -40,6 +56,7 @@
 
           </div>
         </v-fade-transition>
+
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="2" v-if="current_question === 2" class="d-flex justify-start align-center">
 
@@ -276,7 +293,7 @@
             'cuboid',
             'ellipse',
           ],
-          current_question: 1,
+          current_question: 0,
           valid_value: {},
           errors_file_schema: undefined,
           load_label_names: false,
@@ -355,6 +372,10 @@
           await new Promise(resolve => setTimeout(resolve, 500));
           await this.$nextTick();
           this.errors_file_schema = undefined;
+
+          if (current_number == 0) {
+            valid = true
+          }
 
           if (current_number === 1) {
             valid = this.get_included_instance_types();
