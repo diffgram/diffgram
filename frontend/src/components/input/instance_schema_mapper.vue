@@ -32,14 +32,14 @@
                             {{get_preview_data_for_key('box', key)}}
                           </td>
                           <td class="d-flex align-center">
-                            <v-select class="pt-4"
+                            <v-autocomplete class="pt-4"
                                       style="max-width: 200px"
                                       dense
                                       @change="check_box_key_structure(key)"
                                       :items="pre_label_key_list"
                                       v-model="diffgram_schema_mapping.box[key]">
 
-                            </v-select>
+                            </v-autocomplete>
                           </td>
                           <td>
                             <p style="font-size: 12px" class="primary--text text--lighten-3">
@@ -100,14 +100,14 @@
                         {{get_preview_data_for_key('polygon', 'points')}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
                                   @change="check_polygon_points_key_structure"
                                   v-model="diffgram_schema_mapping.polygon.points">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>Preview Data</td>
                       <td v-if="pre_labels_file_type === 'json'">
@@ -140,14 +140,14 @@
                         {{get_preview_data_for_key('polygon', 'points_x')}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
                                   @change="check_polygon_points_key_structure"
                                   v-model="diffgram_schema_mapping.polygon.points_x">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>Preview Data</td>
                       <td v-if="pre_labels_file_type === 'json'">
@@ -179,14 +179,14 @@
                         {{get_preview_data_for_key('polygon', 'points_y')}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
                                   @change="check_polygon_points_key_structure"
                                   v-model="diffgram_schema_mapping.polygon.points_y">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>Preview Data</td>
                       <td v-if="pre_labels_file_type === 'json'">
@@ -232,14 +232,14 @@
                         {{get_preview_data_for_key('point', key)}}
                       </td>
                       <td>
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   :items="pre_label_key_list"
                                   @change="check_points_key_structure(key)"
                                   v-model="diffgram_schema_mapping.point[key]">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>
                         <p style="font-size: 12px" class="primary--text text--lighten-3">
@@ -276,14 +276,14 @@
                         {{get_preview_data_for_key('line', key)}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   @change="check_line_key_structure(key)"
                                   :items="pre_label_key_list"
                                   v-model="diffgram_schema_mapping.line[key]">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>
                         <p style="font-size: 12px" class="primary--text text--lighten-3">
@@ -321,13 +321,13 @@
                         {{get_preview_data_for_key('cuboid', key)}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   @change="check_cuboid_key_structure(key)"
                                   :items="pre_label_key_list"
                                   v-model="diffgram_schema_mapping.cuboid[key]">
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>
                         <p style="font-size: 12px" class="primary--text text--lighten-3">
@@ -365,14 +365,14 @@
                         {{get_preview_data_for_key('ellipse', key)}}
                       </td>
                       <td class="d-flex align-center">
-                        <v-select class="pt-4"
+                        <v-autocomplete class="pt-4"
                                   style="max-width: 200px"
                                   dense
                                   @change="check_ellipse_key_structure(key)"
                                   :items="pre_label_key_list"
                                   v-model="diffgram_schema_mapping.ellipse[key]">
 
-                        </v-select>
+                        </v-autocomplete>
                       </td>
                       <td>
                         <p style="font-size: 12px" class="primary--text text--lighten-3">
