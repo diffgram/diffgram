@@ -364,6 +364,8 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
     data() {
       return {
 
+        changing_userscript: false,
+
         userscript_editor_width: null,
         userscript_editor_height: null,
 
@@ -490,6 +492,9 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
       change_userscript: function (event) {
 
         if(!event) { return }
+        if(event.id == this.userscript_literal.id) { return }
+        if(this.changing_userscript == true) { return }
+        this.changing_userscript = true
 
         this.userscript_literal = event
         //console.log(this.userscript_literal)
@@ -500,6 +505,8 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
 
         // if we can make the userscript literal an instance of the class we can avoid this 
         this.userscript_class.reset_shared()
+
+        this.changing_userscript = false
 
       },
 
