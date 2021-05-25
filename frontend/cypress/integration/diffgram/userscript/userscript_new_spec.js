@@ -23,6 +23,9 @@ describe('UserScript New', () => {
     context('Clicking New Button', () => {
       it('Clicking New Button', () => {
 
+        cy.get('[data-cy="show_userscript_panel_button"]').click({force: true})
+        cy.wait(1000)
+
         cy.get('[data-cy="userscript_new"]').click({force: true})
         cy.wait(1000)
 
