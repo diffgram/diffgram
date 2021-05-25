@@ -7,7 +7,7 @@
       </h2>
       <h2 v-if="upload_mode === 'update'">You will Update {{files_to_update_list.length}} File(s): </h2>
 
-      <v-container fluid class="d-flex flex-column"  style="max-height: 450 px; overflow-y: auto">
+      <v-container fluid class="d-flex flex-column"  style="max-height: 450px; overflow-y: auto">
         <v-list-item
 
           v-for="(item, i) in file_list_for_summary"

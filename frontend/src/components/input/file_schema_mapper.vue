@@ -1,7 +1,13 @@
 <template>
   <v-container fluid>
-    <v_error_multiple :error="errors_file_schema">
-    </v_error_multiple>
+
+    <div class="d-flex align-center">
+      <v_error_multiple :error="errors_file_schema">
+      </v_error_multiple>
+      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0" color="secondary"
+             @click="open_labels">Go To Labels
+      </v-btn>
+    </div>
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
 
       <v-container v-if="diffgram_schema_mapping" class="d-flex flex-column pa-0" style="height: 500px">
@@ -20,7 +26,8 @@
               </h1>
               <p class="secondary--text">
                 <strong>
-                  The following questions will guide you towards the mapping of your JSON or CSV file to Diffgram's data format:
+                  The following questions will guide you towards the mapping of your JSON or CSV file to Diffgram's data
+                  format:
                 </strong>
               </p>
 
@@ -51,9 +58,10 @@
                 <v-autocomplete
                   class="pt-4"
                   clearable
+                  hide-selected
                   :items="pre_label_key_list"
                   v-model="diffgram_schema_mapping.instance_type"
-                  >
+                >
                 </v-autocomplete>
 
               </v-container>
@@ -77,10 +85,12 @@
               </p>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete
-                    class="pt-4"
-                    clearable
-                    :items="pre_label_key_list"
-                    v-model="diffgram_schema_mapping.name">
+                  class="pt-4"
+                  clearable
+
+                  hide-selected
+                  :items="pre_label_key_list"
+                  v-model="diffgram_schema_mapping.name">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -101,9 +111,11 @@
               </p>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.file_name">
+                                clearable
+
+                                hide-selected
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.file_name">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -113,7 +125,8 @@
           <div key="4" v-if="current_question === 3 && upload_mode === 'update'"
                class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Diffgram File ID:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Diffgram File
+                ID:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3"><strong>
                 ** The value of this key must
                 match with an existing Diffgram File ID.
@@ -122,9 +135,11 @@
 
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.file_id">
+                                clearable
+
+                                hide-selected
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.file_id">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -134,7 +149,8 @@
 
           <div key="5" v-if="current_question === 4" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the frame number:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the frame
+                number:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** This field should indicate at what frame is this instance occuring. This value is a number
@@ -143,9 +159,9 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.frame_number">">
+                                clearable
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.frame_number">">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -154,7 +170,8 @@
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="6" v-if="current_question === 5" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Sequence Number:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Sequence
+                Number:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** This field should indicate at what sequence this instance belongs to. This value is a number
@@ -163,9 +180,9 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.number">">
+                                clearable
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.number">">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -202,9 +219,9 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.model_id">
+                                clearable
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.model_id">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -222,9 +239,9 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                          clearable
-                          :items="pre_label_key_list"
-                          v-model="diffgram_schema_mapping.model_run_id">
+                                clearable
+                                :items="pre_label_key_list"
+                                v-model="diffgram_schema_mapping.model_run_id">
                 </v-autocomplete>
               </v-container>
             </div>
@@ -268,13 +285,13 @@
         'project_string_id': {
           default: null
         },
-        'file_list_to_upload':{
+        'file_list_to_upload': {
           default: null
         },
         'upload_mode': {
           default: 'new'
         },
-        'supported_video_files':{
+        'supported_video_files': {
           default: () => ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
         },
         'pre_label_key_list': {
@@ -301,14 +318,28 @@
             'ellipse',
           ],
           current_question: 0,
-          valid_value: {},
           errors_file_schema: undefined,
           load_label_names: false,
           loading: false,
           valid_value: false,
         }
       },
-      computed: {},
+      computed: {
+        selected_keys: function () {
+          const result = [];
+          for (const key of Object.keys(this.diffgram_schema_mapping)) {
+            const file_keys = ['instance_type', 'name', 'file_name', 'file_id', 'frame_number', 'number', 'model_id', 'model_run_if']
+            if (this.diffgram_schema_mapping[key] && file_keys.includes(key)) {
+              result.push(this.diffgram_schema_mapping[key])
+            }
+
+          }
+          return result;
+        },
+        pre_label_key_list_filtered: function () {
+          return this.pre_label_key_list.filter(key => !this.selected_keys.includes(key));
+        }
+      },
       watch: {},
       mounted() {
       },
@@ -318,6 +349,9 @@
 
       },
       methods: {
+        open_labels: function(){
+          window.open(`/project/${this.$props.project_string_id}/labels`, '_blank');
+        },
         validate_file_names: function () {
           const file_name_list = [];
           for (const instance of this.$props.pre_labeled_data) {
@@ -346,7 +380,7 @@
 
           return true;
         },
-        previous_step: async function(current_number){
+        previous_step: async function (current_number) {
           const old_number = parseInt(current_number, 10);
           this.current_question = undefined;
           await this.$nextTick();
@@ -354,19 +388,19 @@
           await this.$nextTick();
           this.current_question = old_number - 1;
         },
-        check_for_videos_in_uploaded_files: function(){
-          for(const file of this.$props.file_list_to_upload){
-            if(this.supported_video_files.includes(file.type)){
+        check_for_videos_in_uploaded_files: function () {
+          for (const file of this.$props.file_list_to_upload) {
+            if (this.supported_video_files.includes(file.type)) {
               return true
             }
           }
           return false;
         },
-        validate_model_id: function(){
+        validate_model_id: function () {
           // Nothing to validate for now
           return true;
         },
-        validate_mode_run_id: function(){
+        validate_mode_run_id: function () {
           // Nothing to validate for now.
           return true
         },
@@ -397,51 +431,44 @@
               throw Error('Invalid upload mode.')
               valid = false;
             }
-          }
-          else if(current_number === 4){
+          } else if (current_number === 4) {
             // Validate frame numbers
             valid = this.validate_frames();
-            console.log('framess', valid)
-          }
-          else if(current_number === 5){
+          } else if (current_number === 5) {
             // Validate frame sequences
             valid = this.validate_sequences();
-          }
-          else if(current_number === 6){
+          } else if (current_number === 6) {
             valid = true;
-          }
-          else if(current_number === 7 ){
+          } else if (current_number === 7) {
             valid = this.validate_model_id();
-          }
-          else if(current_number === 8){
+          } else if (current_number === 8) {
             valid = this.validate_mode_run_id();
           }
 
           if (valid) {
-            if(current_number === 3){
+            if (current_number === 3) {
               // Check for the existence of Videos.
               const has_video = this.check_for_videos_in_uploaded_files();
-              if(has_video){
+              if (has_video) {
                 this.current_question = old_number + 1;
                 return
-              }
-              else{
+              } else {
                 this.current_question = old_number + 3;
                 return
               }
             }
-            if(current_number === 8){
+            if (current_number === 8) {
               this.$emit('change_step_wizard')
               this.current_question = old_number;
               return
             }
             this.current_question = old_number + 1;
-          }
-          else{
+          } else {
             this.current_question = old_number;
           }
           this.loading = false;
         },
+
         validate_label_names: async function () {
           try {
             this.load_label_names = true
@@ -454,6 +481,7 @@
                 if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
                   this.errors_file_schema = {}
                   this.errors_file_schema['label_names'] = `The label name "${instance[this.diffgram_schema_mapping.name]}" does not exist in the project. Please create it.`
+                  this.show_labels_link = false;
                   this.valid_labels = false;
                   this.load_label_names = false;
                   return false
@@ -474,7 +502,7 @@
 
           }
         },
-        validate_frames: function(){
+        validate_frames: function () {
           if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {
             return true
           }

@@ -10,7 +10,7 @@
       </v-btn>
     </v-layout>
 
-    <v-stepper v-model="el"  :non-linear="true" style="height: 100%;">
+    <v-stepper v-model="el"  :non-linear="true" style="height: 100%;" @change="on_change_step">
 
       <v-stepper-header class="ma-0 pl-8 pr-8">
         <v-stepper-step
@@ -40,10 +40,14 @@
           editable
           :complete="el > 4"
           step="4">
-          Match Instance Types to Diffgram Schema
+          Match File Schema
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step :complete="el > 5" step="5" editable>
+          Match Instance Schema
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step :complete="el > 6" step="6" editable>
           Confirm Upload
         </v-stepper-step>
       </v-stepper-header>
@@ -66,20 +70,19 @@
             <h3 class="text-center">We will guide you through all the steps you need to take to add new data to your project</h3>
             <br>
             <br>
-            <h2 class="text-center mb-12">Do you want to upload Pre-labeled data?</h2>
+            <h2 class="text-center mb-12">Do you want to upload new data or update existing files?</h2>
             <div class="d-flex justify-space-around">
               <v-btn
                 x-large
                 color="primary lighten-2"
-                @click="set_with_pre_labels(false)"
-              >No, just files.</v-btn>
+                @click="set_upload_mode('update')"
+              >Update Existing</v-btn>
               <v-btn
                 color="primary"
                 x-large
-                @click="set_with_pre_labels(true)"
-
+                @click="set_upload_mode('new')"
               >
-                Yes, upload labels too.
+                Upload New Data
               </v-btn>
             </div>
           </div>
@@ -102,26 +105,31 @@
                 >
                 </v_directory_list>
 
-
-
-
-
-
               </v-container>
+
+            </div>
+            <div class="d-flex">
+              <v-btn
+                color="primary"
+                x-large
+                @click="check_errors_and_go_to_step(3)"
+              >
+                Continue
+              </v-btn>
             </div>
           </div>
         </v-stepper-content>
         <v-stepper-content step="3" style="height: 100%">
 
           <new_or_update_upload_screen
-            @upload_mode_change="upload_mode = $event"
             @file_update_error="file_update_error = $event"
             @file_list_updated="file_list_updated"
             @update_progress_percentage="update_progress_percentage"
+            @complete_question="set_completed_questions"
             @error_upload_connections="error_upload_connections"
             @error_update_files="error_update_files = $event"
             @upload_in_progress="show_upload_progress_screen"
-            @change_step_no_annotations="el = 4"
+            @change_step_no_annotations="el = 6"
             @change_step_annotations="load_annotations_file"
             @progress_updated="update_progress_values"
             @reset_total_files_size="reset_total_files_size"
@@ -129,6 +137,7 @@
             @file_added="file_added"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
+            :upload_mode="upload_mode"
             :batch="batch"
             :error_file_uploads="error_file_uploads"
             :project_string_id="project_string_id">
@@ -147,7 +156,7 @@
             :diffgram_schema_mapping="diffgram_schema_mapping"
             :file_list_to_upload="file_list_to_upload"
             :pre_labeled_data="pre_labeled_data"
-            @change_step_wizard="check_errors_and_go_to_step(4)"
+            @change_step_wizard="check_errors_and_go_to_step(5)"
             @set_included_instance_types="included_instance_types = $event"
           ></file_schema_mapper>
         </v-stepper-content>
@@ -162,7 +171,8 @@
             :diffgram_schema_mapping="diffgram_schema_mapping"
             :file_list_to_upload="file_list_to_upload"
             :pre_labeled_data="pre_labeled_data"
-            @change_step_wizard="check_errors_and_go_to_step(5)"
+            :pre_labels_file_type="pre_labels_file_type"
+            @change_step_wizard="check_errors_and_go_to_step(6)"
             @set_included_instance_types="included_instance_types = $event"
           ></instance_schema_mapper>
         </v-stepper-content>
@@ -414,8 +424,15 @@
       },
 
       methods: {
-        set_with_pre_labels: function(with_pre_labels){
-          this.with_pre_labels = with_pre_labels;
+        on_change_step: function(step){
+          const stepnum = parseInt(step, 10);
+          if(stepnum === 3){
+            this.$refs.new_or_update_upload_screen.upload_source = undefined;
+            this.$refs.new_or_update_upload_screen.with_prelabeled = undefined;
+          }
+        },
+        set_upload_mode: function(mode){
+          this.upload_mode = mode;
           this.set_completed_questions(1);
           this.check_errors_and_go_to_step(2)
         },
@@ -513,6 +530,7 @@
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           this.$refs.new_or_update_upload_screen.loading_annotations = true;
+
           try {
             if (file.source === 'local') {
               const text_data = await file.text();
@@ -522,7 +540,8 @@
             } else {
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
             }
-            this.el = 2;
+
+            this.el = 4;
           } catch (error) {
             this.error_file_uploads = {}
             this.error_file_uploads['annotations_file'] = `Error on file ${file.name}: ${error.toString()}`;
@@ -540,253 +559,12 @@
           this.$emit('closed')
         },
 
-        check_box_key_structure: function (key_name) {
-          this.error_box_instance = {
-            x_max: {},
-            y_max: {},
-            x_min: {},
-            y_min: {},
-          };
-          this.valid_points_values_box_instance_type = {
-            x_max: false,
-            y_max: false,
-            x_min: false,
-            y_min: false,
-          };
-          if (!this.diffgram_schema_mapping.box[key_name]) {
-            throw new Error('Invalid key name for Diffgram Schema Mapping.')
-            return
-          } else {
-            const key_name_local = this.diffgram_schema_mapping.box[key_name];
-            const box_labels = this.pre_labeled_data.filter(inst => inst.type === 'box');
-            for (const box_instance of box_labels) {
-              if (isNaN(box_instance[key_name_local])) {
-                this.error_box_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_box_instance[key_name]['wrong_data'] = JSON.stringify(box_instance[key_name_local]);
-                return
-              }
-            }
-            this.valid_points_values_box_instance_type[key_name] = true;
-          }
-        },
-        check_ellipse_key_structure: function (key_name) {
-          this.error_ellipse_instance = {
-            center_x: {},
-            center_y: {},
-            width: {},
-            height: {},
-            angle: {},
-          };
-          this.valid_points_values_ellipse_instance_type = {
-            center_x: false,
-            center_y: false,
-            width: false,
-            height: false,
-            angle: false,
-          };
-          if (!this.diffgram_schema_mapping.ellipse[key_name]) {
-            throw new Error('Invalid key name for Diffgram Schema Mapping.')
-            return
-          } else {
-            const key_name_local = this.diffgram_schema_mapping.ellipse[key_name];
-            const ellipse_labels = this.pre_labeled_data.filter(inst => inst.type === 'ellipse');
-            for (const ellipse_instance of ellipse_labels) {
-              if (isNaN(ellipse_instance[key_name_local])) {
-                this.error_ellipse_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_ellipse_instance[key_name]['wrong_data'] = JSON.stringify(ellipse_instance[key_name_local]);
-                return
-              }
-            }
-            this.valid_points_values_ellipse_instance_type[key_name] = true;
-          }
-        },
-        check_cuboid_key_structure: function (key_name) {
-          this.error_cuboid_instance = {
-            front_face_bottom_left_x: {},
-            front_face_bottom_left_y: {},
-            front_face_bottom_right_x: {},
-            front_face_bottom_right_y: {},
-            front_face_top_left_x: {},
-            front_face_top_left_y: {},
-            front_face_top_right_x: {},
-            front_face_top_right_y: {},
-
-            rear_face_bottom_left_x: {},
-            rear_face_bottom_left_y: {},
-            rear_face_bottom_right_x: {},
-            rear_face_bottom_right_y: {},
-            rear_face_top_left_x: {},
-            rear_face_top_left_y: {},
-            rear_face_top_right_x: {},
-            rear_face_top_right_y: {}
-
-          };
-          this.valid_points_values_cuboid_instance_type = {
-            front_face_bottom_left_x: false,
-            front_face_bottom_left_y: false,
-            front_face_bottom_right_x: false,
-            front_face_bottom_right_y: false,
-            front_face_top_left_x: false,
-            front_face_top_left_y: false,
-            front_face_top_right_x: false,
-            front_face_top_right_y: false,
-
-            rear_face_bottom_left_x: false,
-            rear_face_bottom_left_y: false,
-            rear_face_bottom_right_x: false,
-            rear_face_bottom_right_y: false,
-            rear_face_top_left_x: false,
-            rear_face_top_left_y: false,
-            rear_face_top_right_x: false,
-            rear_face_top_right_y: false
-
-          };
-          if (!this.diffgram_schema_mapping.cuboid[key_name]) {
-            throw new Error('Invalid key name for Diffgram Schema Mapping.')
-            return
-          } else {
-            const key_name_local = this.diffgram_schema_mapping.cuboid[key_name];
-            const cuboid_labels = this.pre_labeled_data.filter(inst => inst.type === 'cuboid');
-            for (const cuboid_instance of cuboid_labels) {
-              if (isNaN(cuboid_instance[key_name_local])) {
-                this.error_cuboid_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_cuboid_instance[key_name]['wrong_data'] = JSON.stringify(cuboid_instance[key_name_local]);
-                return
-              }
-            }
-            this.valid_points_values_cuboid_instance_type[key_name] = true;
-          }
-        },
-        check_line_key_structure: function (key_name) {
-          this.error_line_instance = {x1: {}, y1: {}, x2: {}, y2: {}};
-          this.valid_points_values_point_instance_type[key_name] = false;
-          if (!this.diffgram_schema_mapping.line[key_name]) {
-            throw new Error('Invalid key name for Diffgram Schema Mapping.')
-            return
-          } else {
-            const key_name_local = this.diffgram_schema_mapping.line[key_name];
-            const line_labels = this.pre_labeled_data.filter(inst => inst.type === 'line');
-            for (const line_instance of line_labels) {
-              if (isNaN(line_instance[key_name_local])) {
-                this.error_line_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_line_instance[key_name]['wrong_data'] = JSON.stringify(line_instance[key_name_local]);
-                return
-              }
-            }
-            this.valid_points_values_line_instance_type[key_name] = true;
-          }
-        },
-        check_points_key_structure: function (key_name) {
-          this.error_point_instance = {x: {}, y: {}};
-          this.valid_points_values_point_instance_type[key_name] = false;
-          if (!this.diffgram_schema_mapping.point[key_name]) {
-            throw new Error('Invalid key name for Diffgram Schema Mapping.')
-            return
-          } else {
-            const key_name_local = this.diffgram_schema_mapping.point[key_name];
-            const point_labels = this.pre_labeled_data.filter(inst => inst.type === 'point');
-            for (const point_instance of point_labels) {
-              if (isNaN(point_instance[key_name_local])) {
-                this.error_point_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_point_instance[key_name]['wrong_data'] = JSON.stringify(point_instance[key_name_local]);
-                return
-              }
-            }
-            this.valid_points_values_point_instance_type[key_name] = true;
-          }
-        },
-        check_polygon_points_key_structure() {
-          this.error_polygon_instance = {}
-          this.valid_points_values_polygon = false
-          if (!this.diffgram_schema_mapping.polygon.points) {
-            return
-          } else {
-            const key_name = this.diffgram_schema_mapping.polygon.points;
-            const polygon_labels = this.pre_labeled_data.filter(inst => inst.type === 'polygon');
-            let i = 0;
-            for (const polygon_instance of polygon_labels) {
-              const value = polygon_instance[key_name];
-              if (!Array.isArray(value)) {
-                this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})';
-                return
-              }
-              for (const point of value) {
-                if ((!point.x || isNaN(point.x)) || (!point.y || isNaN(point.y))) {
-                  this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
-                  this.error_polygon_instance['row_number'] = i
-                  this.error_polygon_instance['data'] = JSON.stringify(polygon_instance[key_name_local]);
-                  return
-                }
-              }
-
-              i += 1;
-            }
-            this.valid_points_values_polygon = true;
-          }
-        },
-
-        build_points_for_polygon() {
-          if (this.pre_labels_file_type === 'json') {
-            return
-          }
-          for (const instance of this.pre_labeled_data) {
-            let x_points = instance[this.diffgram_schema_mapping.polygon.points_x];
-            x_points = x_points.split(';').map(x => parseInt(x, 10))
-            let y_points = instance[this.diffgram_schema_mapping.polygon.points_y];
-            y_points = y_points.split(';').map(y => parseInt(y, 10))
-            if (!x_points || !y_points) {
-              this.errors_instance_schema = {};
-              this.errors_instance_schema['points'] = 'Provide X, Y point values.';
-              this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
-              return
-            }
-            if (x_points.length !== y_points.length) {
-              this.errors_instance_schema = {};
-              this.errors_instance_schema['x_points'] = 'X and Y values must be the same length';
-              this.errors_instance_schema['wrong_data'] = JSON.stringify(instance);
-              return
-            }
-            instance.points = []
-            for (let i = 0; i < x_points.length; i++) {
-              instance.points.push({
-                x: x_points[i],
-                y: y_points[i],
-              })
-            }
-            // Automatically map to 'points' value of the instance.
-            this.diffgram_schema_mapping.polygon.points = 'points';
-          }
-        },
-
         async check_errors_and_go_to_step(step) {
-          console.log('check_errors_and_go_to_step', step)
-          if (step === 4) {
+          if (step === 5) {
             this.errors_file_schema = undefined;
             this.el = step;
-          } else if (step === 5) {
-            this.errors_instance_schema = undefined;
-            this.build_points_for_polygon()
-            if (this.errors_instance_schema) {
-              return
-            }
-            for (const instance_key in this.included_instance_types) {
-              if (this.included_instance_types[instance_key]) {
-                for (const schema_key in this.diffgram_schema_mapping[instance_key]) {
-                  if (!this.diffgram_schema_mapping[instance_key][schema_key]
-                    && instance_key === 'polygon'
-                    && ['points_x', 'points_y'].includes(schema_key)
-                    && this.$props.pre_labels_file_type === 'json') {
-                    // Skip polygon x,y points when pre_labels are in json format.
-                    continue
-                  }
-                  if (!this.diffgram_schema_mapping[instance_key][schema_key]) {
-                    this.errors_instance_schema = {}
-                    this.errors_instance_schema[instance_key] = `${schema_key} key is missing. Please fill out the value.`
-                    return
-                  }
-                }
-              }
-            }
+          } else if (step === 6) {
+
             this.el = step
           }
           else{
