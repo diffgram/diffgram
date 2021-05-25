@@ -21,6 +21,7 @@ export class UserScript {
   private time_start = null
   private time_end = null
   private run_time = null
+  private loading_scripts = false
 
   private watch_functions = {
       'create_instance' : []
@@ -383,7 +384,9 @@ export class UserScript {
      * design -> https://docs.google.com/document/d/1RFJMy0T8fI9B6he79V6mrwV2Vynth3v0Uwe_G8aZOtw/edit#heading=h.l39b6gu96vsv
      */
     if (!script_url_list) { return true }
+    if (this.loading_scripts == true ) { return }
 
+    this.loading_scripts = true
     this.status_loaded_scripts = false
 
     console.debug("Attempting to add", script_url_list)
@@ -430,7 +433,7 @@ export class UserScript {
     }
 
     this.status_loaded_scripts = true
-
+    this.loading_scripts = false
   }
 
   private check_scripts_exist(id): any  {
@@ -444,12 +447,7 @@ export class UserScript {
   private add_script(
     script_url_string,
     insertion_node): any {
-    /* Order
-     *  1. add to document
-     *  2. add onload call back
-     *  3. add script src
-     * 
-     */
+
 
     let userscript_namespace_string = this.userscript_namespace_string    // promise will be different context
 
@@ -460,11 +458,11 @@ export class UserScript {
       newScriptTag.id = script_url_string
       newScriptTag.title = userscript_namespace_string
 
-      // 1 add to document
+      // add to document
       // https://www.javascripttutorial.net/javascript-dom/javascript-insertafter/
       insertion_node.parentNode.insertBefore(newScriptTag, insertion_node.nextSibling)
 
-      // 2 add onload call back
+      // add onload call back
       newScriptTag.onload = function () {
         console.log("added", script_url_string)
         resolve()
@@ -473,7 +471,7 @@ export class UserScript {
       newScriptTag.onerror = function (error) {
         reject(error, newScriptTag)
       }
-      // 3 add script src
+      // add script src
       newScriptTag.setAttribute('src', script_url_string)
 
 
