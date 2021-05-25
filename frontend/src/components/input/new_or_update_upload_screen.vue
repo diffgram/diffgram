@@ -1,12 +1,60 @@
 <template>
-  <v-card elevation="0" style="height: 100%" class="ma-0 d-flex flex-column">
+  <div v-if="!upload_source" class="d-flex justify-center flex-column">
+    <h1 class="text-center">
+      <v-icon x-large color="primary">mdi-upload</v-icon>
+      Where do you want to upload your files from?
+    </h1>
+    <br>
+    <br>
+    <div class="d-flex justify-space-around">
+      <v-btn
+        x-large
+        color="primary lighten-2"
+        @click="set_upload_source('connections')"
+      >
+        <v-icon class="mr-4">mdi-cloud</v-icon>
+        Cloud Providers
+      </v-btn>
+      <v-btn
+        color="primary"
+        x-large
+        @click="set_upload_source('local')"
+      >
+        <v-icon class="mr-4">mdi-laptop</v-icon>
+        My Computer
+      </v-btn>
+    </div>
+  </div>
+  <div v-else-if="with_prelabeled == undefined && upload_mode === 'new'" class="d-flex justify-center flex-column">
+    <h1 class="text-center">
+      <v-icon x-large color="primary">mdi-upload</v-icon>
+      Do you want to add Pre-Labeled data? (Json/Csv format)
+    </h1>
+    <br>
+    <br>
+    <div class="d-flex justify-space-around">
+      <v-btn
+        x-large
+        color="primary lighten-2"
+        @click="set_with_pre_labeled(false)"
+      >
+        No
+      </v-btn>
+      <v-btn
+        color="primary"
+        x-large
+        @click="set_with_pre_labeled(true)"
+      >
+        Yes
+      </v-btn>
+    </div>
+  </div>
+  <v-card v-else elevation="0" style="height: 100%" class="ma-0 d-flex flex-column">
+    <v-card-title v-if="upload_mode === 'update'">Update Files</v-card-title>
+    <v-card-title v-if="upload_mode === 'new'">Upload New Files</v-card-title>
     <div class="d-flex justify-end align-center">
-      <v-btn-toggle v-model="upload_mode_toggle" color="secondary">
-        <v-btn @click="upload_mode = 'new'">Upload New Data</v-btn>
-        <v-btn @click="upload_mode = 'update'">Update Existing</v-btn>
-      </v-btn-toggle>
-      <div class="pa-0">
 
+      <div class="pa-0">
         <button_with_menu
           tooltip_message="Import Settings"
           icon="settings"
@@ -43,7 +91,7 @@
     </div>
     <v-card-text v-if="upload_mode === 'new' || 'update'">
 
-      <v-container style="height: 100%" fluid class="pa-0 pl-4" column >
+      <v-container style="height: 100%" fluid class="pa-0 pl-4" column>
 
 
         <v-row
@@ -53,14 +101,7 @@
 
                  class="pa-4">
             <v-layout column>
-              <v-row class="pa-0 mt-1">
-                <v-col class="pa-0">
-                  <h2 v-if="!bucket_name || bucket_name == ''">Select Connection or Drag & Drop Files: </h2>
-                  <h2 v-else>Select Files: [{{bucket_name}}]: </h2>
-                </v-col>
-              </v-row>
-              <v-row>
-
+              <v-row v-if="upload_source === 'connections'">
                 <v-col cols="12" class="pa-0">
                   <connection_select
                     :project_string_id="project_string_id"
@@ -72,7 +113,7 @@
                   </connection_select>
                 </v-col>
               </v-row>
-              <v-row>
+              <v-row v-if="upload_source === 'connections'">
                 <v-col cols="12" class="pa-0">
 
                   <connector_import_renderer
@@ -86,7 +127,7 @@
                   </connector_import_renderer>
                 </v-col>
               </v-row>
-              <v-row v-if="!incoming_connection || !incoming_connection.id">
+              <v-row v-if="upload_source === 'local'">
                 <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
                               data-cy="vue-dropzone"
                               style="min-height: 350px"
@@ -114,9 +155,15 @@
                     <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
-                    <p class="secondary--text  ma-0"><strong><v-icon color="secondary">mdi-brush</v-icon>{{file.data_type}}</strong></p>
+                    <p class="secondary--text  ma-0"><strong>
+                      <v-icon color="secondary">mdi-brush</v-icon>
+                      {{file.data_type}}</strong></p>
                   </td>
-                  <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+                  <td>
+                    <v-btn color="error" icon @click="remove_file(file)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </td>
 
                 </tr>
                 <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
@@ -124,9 +171,15 @@
                     <p class="ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
-                    <p class="ma-0"><strong><v-icon>mdi-file</v-icon>{{file.data_type}}</strong></p>
+                    <p class="ma-0"><strong>
+                      <v-icon>mdi-file</v-icon>
+                      {{file.data_type}}</strong></p>
                   </td>
-                  <td><v-btn color="error" icon @click="remove_file(file)"> <v-icon>mdi-delete</v-icon></v-btn></td>
+                  <td>
+                    <v-btn color="error" icon @click="remove_file(file)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </td>
 
                 </tr>
                 </tbody>
@@ -138,7 +191,9 @@
         <v-alert class="pa-4 ma-8" v-else type="warning"> Please select a dataset/directory to upload files.
 
         </v-alert>
-        <v-row> <v_error_multiple :error="error_file_uploads"></v_error_multiple></v-row>
+        <v-row>
+          <v_error_multiple :error="error_file_uploads"></v_error_multiple>
+        </v-row>
         <v-row>
 
         </v-row>
@@ -147,7 +202,7 @@
 
     </v-card-text>
     <v-card-actions class="d-flex justify-end flex-grow-1" style="align-items: center">
-      <div >
+      <div>
         <v_error_multiple :error="error">
         </v_error_multiple>
         <v-btn @click="move_to_next_step"
@@ -167,6 +222,7 @@
   import Vue from "vue";
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';
+
   export default Vue.extend({
       name: 'new_or_update_upload_screen',
       components: {
@@ -179,12 +235,16 @@
         'initial_dataset': {
           default: undefined
         },
-        'error_file_uploads':{
+        'error_file_uploads': {
           default: null
         },
-        'batch':{
+        'batch': {
+          default: null
+        },
+        'upload_mode': {
           default: null
         }
+
       },
 
       data() {
@@ -194,9 +254,11 @@
           error: {},
           sync_job_list: [],
           current_directory: undefined,
+          with_prelabeled: undefined,
           connection_upload_error: undefined,
           file_update_error: undefined,
           loading_annotations: false,
+          upload_source: null,
           accepted_annotation_file_types: ['json', 'csv'],
           accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
@@ -219,7 +281,6 @@
               sortable: false,
             },
           ],
-          upload_mode: 'new',
           bucket_name: undefined,
           incoming_connection: null,
           upload_mode_toggle: 0,
@@ -229,15 +290,15 @@
 
       },
       computed: {
-        should_disable_continue: function(){
-          if(this.upload_mode === 'new'){
-            if(this.file_list_to_upload.length === 0 ||
-              this.file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0){
+        should_disable_continue: function () {
+          if (this.$props.upload_mode === 'new') {
+            if (this.file_list_to_upload.length === 0 ||
+              this.file_list_to_upload.filter(f => f.data_type === 'Raw Media').length === 0) {
               return true
             }
           }
-          if(this.upload_mode === 'update'){
-            if(this.file_list_to_upload.length === 0){
+          if (this.$props.upload_mode === 'update') {
+            if (this.file_list_to_upload.length === 0) {
               return true
             }
           }
@@ -300,7 +361,7 @@
         }
       },
       watch: {
-        upload_mode: function(new_val){
+        upload_mode: function (new_val) {
           this.$emit('upload_mode_change', new_val)
         },
         incoming_connection: function (newval, oldval) {
@@ -317,13 +378,22 @@
       },
 
       methods: {
-        update_file_list_from_connection: function(file_list){
+        set_with_pre_labeled: function (val) {
+          console.log('aaaaa', val)
+          this.with_prelabeled = val;
+          this.$emit('complete_question', 3);
+        },
+        set_upload_source: function (val) {
+          this.upload_source = val;
+          this.$emit('complete_question', 4);
+        },
+        update_file_list_from_connection: function (file_list) {
           const to_add = [];
-          for (const item of file_list){
+          for (const item of file_list) {
             let data_type = 'Raw Media';
             const extension = item.name.split('.').pop();
             console.log('es', extension)
-            if(extension && this.accepted_annotation_file_types.includes(extension)){
+            if (extension && this.accepted_annotation_file_types.includes(extension)) {
               data_type = 'Annotations'
             }
             to_add.push({
@@ -337,21 +407,23 @@
           this.file_list_to_upload = [...this.file_list_to_upload, ...to_add]
           this.$emit('file_list_updated', this.file_list_to_upload)
         },
-        reset_total_files_size: function(file){
+        reset_total_files_size: function (file) {
           this.$emit('reset_total_files_size')
         },
-        file_added: function(file){
+        file_added: function (file) {
           this.$emit('file_added', file)
         },
-        update_progress: function(file, totalBytes, totalBytesSent){
+        update_progress: function (file, totalBytes, totalBytesSent) {
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
-        upload_local_raw_media: async function(local_file_list){
-          if(!local_file_list || local_file_list.length === 0){return}
+        upload_local_raw_media: async function (local_file_list) {
+          if (!local_file_list || local_file_list.length === 0) {
+            return
+          }
           // We want to remove them because we'll re-add them with the batch data and uuid data.
-          for(const file of this.$refs.myVueDropzone.dropzone.files){
+          for (const file of this.$refs.myVueDropzone.dropzone.files) {
             const new_file_data = local_file_list.find(elm => elm.upload.uuid === file.upload.uuid)
-            if(!new_file_data){
+            if (!new_file_data) {
               // If there's no match its because we are handling the prelabeled data json or csv, so we discard it here.
               this.$refs.myVueDropzone.removeFile(file);
               continue
@@ -362,11 +434,13 @@
           }
           this.$refs.myVueDropzone.processQueue();
         },
-        update_progress_percentage: function(percent){
+        update_progress_percentage: function (percent) {
           this.$emit('update_progress_percentage', percent)
         },
-        upload_connection_raw_media: async function(connection_file_list){
-          if(!connection_file_list || connection_file_list.length === 0){return}
+        upload_connection_raw_media: async function (connection_file_list) {
+          if (!connection_file_list || connection_file_list.length === 0) {
+            return
+          }
           const connector_id = this.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;
           try {
@@ -394,15 +468,15 @@
               }
             }));
 
-          }catch (error) {
+          } catch (error) {
             // Discuss if there already exists a good abstraction for error handling.
             this.connection_upload_error = this.$route_api_errors(error);
             this.$emit('error_update_files', this.connection_upload_error)
             console.error(error);
           }
         },
-        update_files: async function(file_data){
-          try{
+        update_files: async function (file_data) {
+          try {
             let processed_files = 0;
             await Promise.all(Object.keys(file_data).map(async (file_key) => {
               const file = file_data[file_key]
@@ -424,69 +498,67 @@
               }
             }));
 
-          }
-          catch(error){
+          } catch (error) {
             this.file_update_error = this.$route_api_errors(error);
             this.$emit('file_update_error', this.file_update_error)
             console.error(error);
           }
 
         },
-        upload_raw_media: async function(file_list){
+        upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
-          if(this.upload_mode ==='update'){
+          if (this.$props.upload_mode === 'update') {
             await this.update_files(file_list)
-          }
-          else if(this.upload_mode === 'new'){
+          } else if (this.$props.upload_mode === 'new') {
             const local_file_list = file_list.filter(f => f.source === 'local');
             await this.upload_local_raw_media(local_file_list);
             const connection_file_list = file_list.filter(f => f.source === 'connection');
             await this.upload_connection_raw_media(connection_file_list);
-          }
-          else{
+          } else {
             throw new Error('Invalid upload mode.')
           }
 
         },
-        move_to_next_step: function(){
+        move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
-
-          if(this.upload_mode === 'update'){
-            if(raw_media.length > 0){
+          if(this.with_prelabeled && annotationFile.length === 0){
+            this.error = {}
+            this.error.pre_labeled_data = 'Please upload your pre labeled data on a JSON or CSV file to continue.'
+            return
+          }
+          if (this.$props.upload_mode === 'update') {
+            if (raw_media.length > 0) {
               this.error = {}
               this.error.media_files = 'Media file not allowed in update mode. Please upload a CSV or a JSON file.'
               return
             }
-            if(annotationFile.length != 1){
+            if (annotationFile.length != 1) {
               this.error = {}
               this.error.annotations_file = 'Please upload just 1 annotation file.'
               return
             }
 
-          }
-          else if(this.upload_mode === 'new'){
-            if(raw_media.length === 0){
+          } else if (this.$props.upload_mode === 'new') {
+            if (raw_media.length === 0) {
               this.error = {}
               this.error.media_files = 'Please upload at least one media file to continue.'
               return
             }
           }
-          if (annotationFile.length === 0){
+          if (annotationFile.length === 0) {
             // No Annotations Case, jump to last step
             this.$emit('change_step_no_annotations')
-          }
-          else{
+          } else {
             // No Annotations Case, jump to last step
             this.$emit('change_step_annotations')
           }
         },
-        remove_file: function(file){
+        remove_file: function (file) {
           this.error = undefined;
-          if(file.source === 'local'){
+          if (file.source === 'local') {
             this.$refs.myVueDropzone.removeFile(file)
-          }
-         else if(file.source === 'connection'){
+          } else if (file.source === 'connection') {
             this.$refs.connection_import_renderer.remove_selection(file)
           }
         },
@@ -550,7 +622,7 @@
   ) </script>
 
 <style scoped>
-  .vue-dropzone{
+  .vue-dropzone {
     max-height: 350px;
     width: 83%;
     display: flex;
