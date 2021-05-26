@@ -14,7 +14,7 @@
           spacial types.
         </strong>
       </p>
-      <v-container fluid v-if="diffgram_schema_mapping" class="d-flex flex-column pa-0" style="height: 500px">
+      <v-container fluid v-if="diffgram_schema_mapping" class="d-flex flex-column pa-0">
         <v-fade-transition :group="true" hide-on-leave leave-absolute>
           <div key="1" v-if="current_key === 'box'"
                class="d-flex justify-center align-center">
@@ -206,7 +206,7 @@
                   </div>
                 </v-col>
                 <v-col cols="4">
-                  <img src="https://storage.googleapis.com/diffgram-002/public/image/polygon.png"/>
+                  <img width="700px" src="https://storage.googleapis.com/diffgram-002/public/image/polygon.png"/>
                 </v-col>
               </v-row>
             </v-layout>
@@ -221,7 +221,7 @@
                   <div class="d-flex flex-column justify-start">
                     <h1>We've Detected Cuboid Instances!</h1>
                     <h1 class="pa-2 black--text">Please map the values of the coordinates below.:</h1>
-                    <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
+                    <v-data-table style="height: 430px" :headers="schema_match_headers" dense :hide-default-footer="true">
                       <template v-slot:body="{ items }">
                         <tbody>
                         <tr v-for="key in Object.keys(diffgram_schema_mapping.cuboid)">
@@ -260,7 +260,7 @@
                   </div>
                 </v-col>
                 <v-col cols="4">
-                  <img src="https://storage.googleapis.com/diffgram-002/public/image/cuboid.png"/>
+                  <img width="700px" src="https://storage.googleapis.com/diffgram-002/public/image/cuboid.png"/>
                 </v-col>
               </v-row>
             </v-layout>
@@ -314,7 +314,7 @@
                   </div>
                 </v-col>
                 <v-col cols="4">
-                  <img src="https://storage.googleapis.com/diffgram-002/public/image/point.png"/>
+                  <img width="300px" src="https://storage.googleapis.com/diffgram-002/public/image/point.png"/>
                 </v-col>
               </v-row>
             </v-layout>
@@ -327,7 +327,7 @@
               <v-row>
                 <v-col cols="8">
                   <div class="d-flex flex-column justify-start">
-                    <h1>We've Detected box Instances!</h1>
+                    <h1>We've Detected Line Instances!</h1>
                     <h1 class="pa-2 black--text">Please map the values of the coordinates below.:</h1>
                     <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
                       <template v-slot:body="{ items }">
@@ -369,7 +369,7 @@
                   </div>
                 </v-col>
                 <v-col cols="4">
-                  <img src="https://storage.googleapis.com/diffgram-002/public/image/line.png"/>
+                  <img width="600px" src="https://storage.googleapis.com/diffgram-002/public/image/line.png"/>
                 </v-col>
               </v-row>
             </v-layout>
@@ -422,7 +422,7 @@
                   </div>
                 </v-col>
                 <v-col cols="4">
-                  <img src="https://storage.googleapis.com/diffgram-002/public/image/ellipse.png"/>
+                  <img width="600px" src="https://storage.googleapis.com/diffgram-002/public/image/ellipse.png"/>
                 </v-col>
               </v-row>
             </v-layout>
@@ -613,7 +613,7 @@
           await this.$nextTick();
           await new Promise(resolve => setTimeout(resolve, 500));
           await this.$nextTick();
-          if(this.current_question > 0){t
+          if(old_number >= 0){
             this.current_question = old_number - 1;
           }
         },
@@ -824,7 +824,10 @@
           }
           let result = '';
           for (const instance of this.pre_labeled_data) {
-            const value = instance[this.diffgram_schema_mapping[instance_type][key]];
+            let value = instance[this.diffgram_schema_mapping[instance_type][key]];
+            if(typeof value === "object"){
+              value = JSON.stringify(instance[this.diffgram_schema_mapping[instance_type][key]]);
+            }
             if (value) {
               result += `${value}, \n`
             }
@@ -886,23 +889,19 @@
           else{
             valid = true;
           }
-          if(current_number === num_types - 1){
-            for (const instance_key in this.included_instance_types) {
-              if (this.included_instance_types[instance_key]) {
-                for (const schema_key in this.diffgram_schema_mapping[instance_key]) {
-                  if (!this.diffgram_schema_mapping[instance_key][schema_key]
-                    && instance_key === 'polygon'
-                    && ['points_x', 'points_y'].includes(schema_key)
-                    && this.$props.pre_labels_file_type === 'json') {
-                    // Skip polygon x,y points when pre_labels are in json format.
-                    continue
-                  }
-                  if (!this.diffgram_schema_mapping[instance_key][schema_key]) {
-                    this.errors_instance_schema = {}
-                    this.errors_instance_schema[instance_key] = `${schema_key} key is missing. Please fill out the value.`
-                    valid = false
-                  }
-                }
+          if (this.included_instance_types[this.current_key]) {
+            for (const schema_key in this.diffgram_schema_mapping[this.current_key]) {
+              if (!this.diffgram_schema_mapping[this.current_key][schema_key]
+                && this.current_key === 'polygon'
+                && ['points_x', 'points_y'].includes(schema_key)
+                && this.$props.pre_labels_file_type === 'json') {
+                // Skip polygon x,y points when pre_labels are in json format.
+                continue
+              }
+              if (!this.diffgram_schema_mapping[this.current_key][schema_key]) {
+                this.errors_instance_schema = {}
+                this.errors_instance_schema[this.current_key] = `${schema_key} key is missing. Please fill out the value.`
+                valid = false
               }
             }
           }
