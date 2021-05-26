@@ -64,7 +64,7 @@ def file_list_exists_core(session,
     :return:
     """
     try:
-        file_list_db = session.query(File).filter(File.id.in_(file_id_list)).all()
+        file_list_db = File.get_files_in_project_id_list(session, project.id,file_id_list)
         db_id_list = [f.id for f in file_list_db]
         result = True
     except Exception as e:
