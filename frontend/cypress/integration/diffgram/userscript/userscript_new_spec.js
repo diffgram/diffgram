@@ -26,6 +26,9 @@ describe('UserScript New', () => {
         cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
         cy.wait(1000)
 
+        cy.get('[data-cy="show_userscript_panel_button"]').click({force: true})
+        cy.wait(1000)
+
         cy.get('[data-cy="userscript_new"]').click({force: true})
         cy.wait(1000)
 
