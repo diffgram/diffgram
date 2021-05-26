@@ -157,7 +157,9 @@
             :file_list_to_upload="file_list_to_upload"
             :pre_labeled_data="pre_labeled_data"
             @change_step_wizard="check_errors_and_go_to_step(5)"
+            @complete_question="set_completed_questions"
             @set_included_instance_types="included_instance_types = $event"
+            :previously_completed_questions="5"
           ></file_schema_mapper>
         </v-stepper-content>
 
@@ -173,6 +175,7 @@
             :pre_labeled_data="pre_labeled_data"
             :pre_labels_file_type="pre_labels_file_type"
             @change_step_wizard="check_errors_and_go_to_step(6)"
+            :previously_completed_questions="11"
             @set_included_instance_types="included_instance_types = $event"
           ></instance_schema_mapper>
         </v-stepper-content>
@@ -188,6 +191,7 @@
             :current_directory="current_directory"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             @upload_raw_media="upload_raw_media"
+            @complete_question="set_completed_questions"
             @created_batch="set_batch"
           ></upload_summary>
           <v_error_multiple :error="file_update_error"></v_error_multiple>
@@ -227,7 +231,7 @@
       upload_mode: 'new',
       completed_questions: 0,
       completed_questions_dict: {},
-      total_questions: 15,
+      total_questions: 18,
       progress_percentage: null,
       with_pre_labels: null,
 
@@ -352,6 +356,7 @@
       },
       computed: {
         global_progress: function(){
+          return 100 * (parseFloat(this.completed_questions) / this.total_questions);
 
         },
         selected_polygon_key_has_nested_valued: function () {
@@ -433,7 +438,13 @@
         },
         set_upload_mode: function(mode){
           this.upload_mode = mode;
-          this.set_completed_questions(1);
+          if(mode === 'new'){
+            this.set_completed_questions(1);
+          }
+          else{
+            this.set_completed_questions(1);
+          }
+
           this.check_errors_and_go_to_step(2)
         },
         set_completed_questions: function(value){
@@ -565,6 +576,10 @@
             this.el = step;
           } else if (step === 6) {
 
+            this.el = step
+          }
+          else if(step === 3){
+            this.set_completed_questions(2);
             this.el = step
           }
           else{

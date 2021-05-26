@@ -318,6 +318,7 @@
           this.attach_batch_to_files(this.input_batch);
 
           this.request_upload_raw_media(labels_payload);
+          this.$emit('complete_question', 18)
 
         },
         compute_attached_instance_per_file: function () {
