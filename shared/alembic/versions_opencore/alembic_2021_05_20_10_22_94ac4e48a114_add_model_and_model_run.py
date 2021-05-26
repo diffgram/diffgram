@@ -51,12 +51,15 @@ def upgrade():
     op.add_column('instance', sa.Column('model_run_id', sa.Integer()))
     op.create_foreign_key("model_id_fkey", "instance", "model", ["model_id"], ["id"])
     op.create_foreign_key("model_run_id_fkey", "instance", "model_run", ["model_run_id"], ["id"])
-
+    op.create_unique_constraint('unique_model_refs', 'model', ['reference_id', 'project_id'])
+    op.create_unique_constraint('unique_model_run_refs', 'model_run', ['reference_id', 'project_id', 'model_id'])
 
 def downgrade():
 
     op.drop_constraint('model_id_fkey', 'instance', type_ = 'foreignkey')
     op.drop_constraint('model_run_id_fkey', 'instance', type_ = 'foreignkey')
+    op.drop_constraint('unique_model_refs', 'model', type_ = 'foreignkey')
+    op.drop_constraint('unique_model_run_refs', 'model_run', type_ = 'foreignkey')
 
     op.drop_column('instance', 'model_id')
     op.drop_column('instance', 'model_run_id')
