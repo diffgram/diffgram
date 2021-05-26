@@ -302,6 +302,9 @@
         },
         'pre_labeled_data': {
           default: null
+        },
+        'previously_completed_questions':{
+          default: 0
         }
       },
       data() {
@@ -453,6 +456,7 @@
                 this.current_question = old_number + 3;
                 return
               }
+
             }
             if (current_number === 8) {
               this.$emit('change_step_wizard')
@@ -463,6 +467,7 @@
           } else {
             this.current_question = old_number;
           }
+          this.$emit('complete_question', this.current_question + this.$props.previously_completed_questions)
           this.loading = false;
         },
 

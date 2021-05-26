@@ -221,7 +221,7 @@
                   <div class="d-flex flex-column justify-start">
                     <h1>We've Detected Cuboid Instances!</h1>
                     <h1 class="pa-2 black--text">Please map the values of the coordinates below.:</h1>
-                    <v-data-table style="height: 430px" :headers="schema_match_headers" dense :hide-default-footer="true">
+                    <v-data-table style="height: 430px; overflow-y: scroll;" :headers="schema_match_headers" dense :hide-default-footer="true">
                       <template v-slot:body="{ items }">
                         <tbody>
                         <tr v-for="key in Object.keys(diffgram_schema_mapping.cuboid)">
@@ -487,6 +487,9 @@
         },
         'pre_labels_file_type': {
           default: null
+        },
+        'previously_completed_questions':{
+          default: 0
         }
       },
       data() {
@@ -915,6 +918,8 @@
             else{
               this.current_question = old_number + 1;
             }
+
+            this.$emit('complete_question', this.current_question + this.$props.previously_completed_questions)
 
           } else {
             this.current_question = old_number;

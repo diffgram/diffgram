@@ -381,11 +381,11 @@
         set_with_pre_labeled: function (val) {
           console.log('aaaaa', val)
           this.with_prelabeled = val;
-          this.$emit('complete_question', 3);
+          this.$emit('complete_question', 4);
         },
         set_upload_source: function (val) {
           this.upload_source = val;
-          this.$emit('complete_question', 4);
+          this.$emit('complete_question', 3);
         },
         update_file_list_from_connection: function (file_list) {
           const to_add = [];
@@ -549,10 +549,14 @@
           if (annotationFile.length === 0) {
             // No Annotations Case, jump to last step
             this.$emit('change_step_no_annotations')
+            this.$emit('complete_question', 17)
+
           } else {
             // No Annotations Case, jump to last step
             this.$emit('change_step_annotations')
+            this.$emit('complete_question', 5)
           }
+
         },
         remove_file: function (file) {
           this.error = undefined;
