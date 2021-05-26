@@ -4,7 +4,7 @@
     <div class="d-flex align-center">
       <v_error_multiple :error="errors_file_schema">
       </v_error_multiple>
-      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0" color="secondary"
+      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
              @click="open_labels">Go To Labels
       </v-btn>
     </div>
@@ -75,7 +75,7 @@
           <div key="2" v-if="current_question === 2" class="d-flex justify-start align-center">
 
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Label Name:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Label Name:</h1>
               <h4>
                 This field indicates what the label name will be. For example if you are labeling cars,
                 the it would contain something like "car".
@@ -100,7 +100,7 @@
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="3" v-if="current_question === 3 && upload_mode === 'new'" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the File Name:</h1>
+              <h1 class="pa-2 black--text">{{current_question}})File Name:</h1>
               <h4>
                 This field indicates what the name of the file is (example: 'image1.jpg').
               </h4>
@@ -125,8 +125,7 @@
           <div key="4" v-if="current_question === 3 && upload_mode === 'update'"
                class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Diffgram File
-                ID:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Diffgram File ID:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3"><strong>
                 ** The value of this key must
                 match with an existing Diffgram File ID.
@@ -149,8 +148,7 @@
 
           <div key="5" v-if="current_question === 4" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the frame
-                number:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Frame Number:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** This field should indicate at what frame is this instance occuring. This value is a number
@@ -170,8 +168,7 @@
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="6" v-if="current_question === 5" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Sequence
-                Number:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Sequence Number:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** This field should indicate at what sequence this instance belongs to. This value is a number
@@ -211,7 +208,7 @@
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="7" v-if="current_question === 7" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Select the Field Corresponding to the Model ID:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Model ID:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** If model ID already exists, instances will be binded to existing the model.
@@ -230,7 +227,7 @@
         <v-fade-transition> :group="true" hide-on-leave>
           <div key="8" v-if="current_question === 8" class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}})Select the Field Corresponding to the Model Run ID:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Model Run ID:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3">
                 <strong>
                   ** If the Model Run ID already exists,
@@ -321,7 +318,7 @@
           errors_file_schema: undefined,
           load_label_names: false,
           loading: false,
-          valid_value: false,
+          valid_labels: false,
         }
       },
       computed: {
