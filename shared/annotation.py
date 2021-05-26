@@ -71,6 +71,8 @@ class Annotation_Update():
     is_new_file = False  # defaults to False, ie for images?
     video_parent_file = None
     sequence = None
+    allowed_model_run_id_list: list = None
+    allowed_model_id_list: list = None
 
     count_instances_changed = 0
 
@@ -362,13 +364,6 @@ class Annotation_Update():
 
         return self.new_added_instances
 
-    def populate_new_models_and_runs(self):
-        model_manager = ModelManager(session = self.session,
-                                     instance_list_dicts = self.instance_list_new,
-                                     member = self.member,
-                                     project = self.project)
-        model_manager.check_instances_and_create_new_models()
-
     def annotation_update_main(self):
 
         """
@@ -383,10 +378,8 @@ class Annotation_Update():
         self.build_existing_hash_list()
 
         ### Main work
-        self.populate_new_models_and_runs()
 
         self.update_instance_list()
-
 
         ###
 
@@ -728,6 +721,38 @@ class Annotation_Update():
             result = instance_list
         return result
 
+    def check_allowed_model_ids(self, instance_list):
+        if not self.allowed_model_id_list:
+            return
+        # Check for models
+        for instance in instance_list:
+            if instance.get('model_id') is None:
+                continue
+            if instance.get('model_id') not in self.allowed_model_id_list:
+                self.log['error']['model_id'] = 'Invalid model_id {} allowed models are {}'.format(
+                    instance.get('model_id'),
+                    self.allowed_model_id_list
+                )
+                return False
+
+        return True
+
+    def check_allowed_model_run_ids(self, instance_list):
+        if not self.allowed_model_run_id_list:
+            return
+        # Check for models
+        for instance in instance_list:
+            if instance.get('model_run_id') is None:
+                continue
+            if instance.get('model_run_id') not in self.allowed_model_run_id_list:
+                self.log['error']['model_run_id'] = 'Invalid model_run_id {} allowed runs are {}'.format(
+                    instance.get('model_run_id'),
+                    self.allowed_model_run_id_list
+                )
+                return False
+
+        return True
+
     def update_instance_list(self,
                              hash_instances = True,
                              validate_label_file = True,
@@ -762,7 +787,10 @@ class Annotation_Update():
             logger.warning(str(exception) + "_trace_4f36a2aa")
             communicate_via_email.send(settings.DEFAULT_ENGINEERING_EMAIL,
                                        '[Exception] Duplicate ID On Annotation_Update', str(self.log))
-
+        valid_models = self.check_allowed_model_ids(cleaned_instance_list)
+        valid_runs = self.check_allowed_model_run_ids(cleaned_instance_list)
+        if not valid_models or not valid_runs:
+            return False
         for instance_proposed in cleaned_instance_list:
 
             # For other checks that are specific to
