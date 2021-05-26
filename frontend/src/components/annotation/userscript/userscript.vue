@@ -414,14 +414,15 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
     },    
     computed:{
        play_ready: function () {
-
             if (!this.userscript_literal.code) {
                 return false
             }
             if (!this.userscript_class) {
                 return false
             }
-            if (!this.userscript_class.status_loaded_scripts) {
+            if (this.userscript_class.external_src_list
+              && this.userscript_class.external_src_list.length > 0
+              && !this.userscript_class.status_loaded_scripts) {
                 return false
             }
             if (this.userscript_class.running) {
@@ -438,7 +439,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
        },
 
        public_script_not_super_admin: function () {
-           if (this.userscript_literal.is_public
+           if (this.userscript_literal.is_public == true
             && this.$store.state.user.current.is_super_admin != true) {
                return true
            }
