@@ -182,6 +182,11 @@ class File(Base, Caching):
                                         uselist=False,
                                         foreign_keys=[default_external_map_id])
 
+    @staticmethod
+    def get_files_in_project_id_list(session, project_id, id_list):
+        file_list_db = session.query(File).filter(File.id.in_(id_list)).all()
+        return file_list_db
+
 
     @staticmethod
     def get_frame_from_video(
