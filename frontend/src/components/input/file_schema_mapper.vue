@@ -59,7 +59,7 @@
                   class="pt-4"
                   clearable
                   hide-selected
-                  :items="pre_label_key_list"
+                  :items="pre_label_key_list_filtered"
                   v-model="diffgram_schema_mapping.instance_type"
                 >
                 </v-autocomplete>
@@ -89,7 +89,7 @@
                   clearable
 
                   hide-selected
-                  :items="pre_label_key_list"
+                  :items="pre_label_key_list_filtered"
                   v-model="diffgram_schema_mapping.name">
                 </v-autocomplete>
               </v-container>
@@ -114,7 +114,7 @@
                                 clearable
 
                                 hide-selected
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.file_name">
                 </v-autocomplete>
               </v-container>
@@ -137,7 +137,7 @@
                                 clearable
 
                                 hide-selected
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.file_id">
                 </v-autocomplete>
               </v-container>
@@ -158,7 +158,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.frame_number">">
                 </v-autocomplete>
               </v-container>
@@ -178,7 +178,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.number">">
                 </v-autocomplete>
               </v-container>
@@ -217,7 +217,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_id">
                 </v-autocomplete>
               </v-container>
@@ -237,7 +237,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
-                                :items="pre_label_key_list"
+                                :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_run_id">
                 </v-autocomplete>
               </v-container>
@@ -328,7 +328,7 @@
         selected_keys: function () {
           const result = [];
           for (const key of Object.keys(this.diffgram_schema_mapping)) {
-            const file_keys = ['instance_type', 'name', 'file_name', 'file_id', 'frame_number', 'number', 'model_id', 'model_run_if']
+            const file_keys = ['instance_type', 'name', 'file_name', 'file_id', 'frame_number', 'number', 'model_id', 'model_run_id']
             if (this.diffgram_schema_mapping[key] && file_keys.includes(key)) {
               result.push(this.diffgram_schema_mapping[key])
             }
@@ -337,7 +337,11 @@
           return result;
         },
         pre_label_key_list_filtered: function () {
-          return this.pre_label_key_list.filter(key => !this.selected_keys.includes(key));
+          return this.pre_label_key_list.map(key => ({
+            text: key,
+            value: key,
+            disabled: this.selected_keys.includes(key)
+          }));
         }
       },
       watch: {},
