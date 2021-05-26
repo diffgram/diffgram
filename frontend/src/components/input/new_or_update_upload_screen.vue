@@ -135,13 +135,16 @@
                               :options="dropzoneOptions"
                               @vdropzone-upload-progress="update_progress"
                               @vdropzone-file-added="file_added"
+                              v-on:vdropzone-thumbnail="thumbnail"
                               @vdropzone-sending="drop_zone_sending_event"
                               @vdropzone-complete="drop_zone_complete">
                   <div class="dropzone-custom-content">
                     <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
                     <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
                   </div>
+
                 </vue-dropzone>
+
               </v-row>
             </v-layout>
           </v-col>
@@ -330,6 +333,8 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
+                console.log('FILEEEE', file)
+
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
@@ -347,15 +352,16 @@
             // number of concurrent uploads at a time, each upload still goes at same speed
             parallelUploads: 1,
 
-            thumbnailWidth: 75,
-            thumbnailHeight: 75,
+            thumbnailWidth: 150,
+            thumbnailHeight: 150,
             maxFilesize: 5000,
             headers: {
               "project_string_id": this.project_string_id,
               "mode": this.mode,
               "flow_id": this.flow_id
             },
-            acceptedFiles: this.accepted_files
+            acceptedFiles: this.accepted_files,
+            previewTemplate: this.template()
           }
 
         }
@@ -378,6 +384,38 @@
       },
 
       methods: {
+        template: function () {
+          return `<div class="dz-preview dz-file-preview" style="width: 150px; height: 150px;">
+              <div class="dz-image" style="width: 150px; height: 150px;">
+                  <div style="width: 150px; height: 150px;" data-dz-thumbnail-bg></div>
+              </div>
+              <div class="dz-details">
+                  <div class="dz-size"><span data-dz-size></span></div>
+                  <div class="dz-filename"><span data-dz-name></span></div>
+              </div>
+              <div class="dz-success"><i class="fa fa-check"></i></div>
+              <div class="dz-error-message"><span data-dz-errormessage></span></div>
+              <div class="dz-success-mark"><i class="fa fa-check"></i></div>
+              <div class="dz-error-mark"><i class="fa fa-close"></i></div>
+          </div>`;
+        },
+        thumbnail: function(file, dataUrl) {
+          var j, len, ref, thumbnailElement;
+          if (file.previewElement) {
+            file.previewElement.classList.remove("dz-file-preview");
+            ref = file.previewElement.querySelectorAll("[data-dz-thumbnail-bg]");
+            for (j = 0, len = ref.length; j < len; j++) {
+              thumbnailElement = ref[j];
+              thumbnailElement.alt = file.name;
+              thumbnailElement.style.backgroundImage = 'url("' + dataUrl + '")';
+            }
+            return setTimeout(((function (_this) {
+              return function () {
+                return file.previewElement.classList.add("dz-image-preview");
+              };
+            })(this)), 1);
+          }
+        },
         set_with_pre_labeled: function (val) {
           console.log('aaaaa', val)
           this.with_prelabeled = val;
