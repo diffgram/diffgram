@@ -254,7 +254,8 @@
                   size="28">mdi-language-javascript</v-icon>
           UserScripts
           <v-spacer></v-spacer>
-          <v-btn @click="userscript_minimized=!userscript_minimized"
+          <v-btn data-cy="show_userscript_panel_button"
+                 @click="userscript_minimized=!userscript_minimized"
                  v-if="userscript_minimized" icon>
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>
