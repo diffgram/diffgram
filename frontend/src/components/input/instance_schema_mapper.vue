@@ -37,7 +37,7 @@
                                             style="max-width: 200px"
                                             dense
                                             @change="check_box_key_structure(key)"
-                                            :items="pre_label_key_list"
+                                            :items="pre_label_key_list_filtered"
                                             v-model="diffgram_schema_mapping.box[key]">
 
                             </v-autocomplete>
@@ -91,7 +91,7 @@
                             <v-autocomplete class="pt-4"
                                       style="max-width: 200px"
                                       dense
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       @change="check_polygon_points_key_structure"
                                       v-model="diffgram_schema_mapping.polygon.points">
 
@@ -131,7 +131,7 @@
                             <v-autocomplete class="pt-4"
                                       style="max-width: 200px"
                                       dense
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       @change="check_polygon_points_key_structure"
                                       v-model="diffgram_schema_mapping.polygon.points_x">
 
@@ -170,7 +170,7 @@
                             <v-autocomplete class="pt-4"
                                       style="max-width: 200px"
                                       dense
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       @change="check_polygon_points_key_structure"
                                       v-model="diffgram_schema_mapping.polygon.points_y">
 
@@ -234,7 +234,7 @@
                                       style="max-width: 200px"
                                       dense
                                       @change="check_cuboid_key_structure(key)"
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       v-model="diffgram_schema_mapping.cuboid[key]">
                             </v-autocomplete>
                           </td>
@@ -287,7 +287,7 @@
                             <v-autocomplete class="pt-4"
                                       style="max-width: 200px"
                                       dense
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       @change="check_points_key_structure(key)"
                                       v-model="diffgram_schema_mapping.point[key]">
 
@@ -342,7 +342,7 @@
                                       style="max-width: 200px"
                                       dense
                                       @change="check_line_key_structure(key)"
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       v-model="diffgram_schema_mapping.line[key]">
 
                             </v-autocomplete>
@@ -397,7 +397,7 @@
                                       style="max-width: 200px"
                                       dense
                                       @change="check_ellipse_key_structure(key)"
-                                      :items="pre_label_key_list"
+                                      :items="pre_label_key_list_filtered"
                                       v-model="diffgram_schema_mapping.ellipse[key]">
 
                             </v-autocomplete>
@@ -599,6 +599,30 @@
         current_key: function(){
           return Object.keys(this.$props.included_instance_types).filter(key => this.$props.included_instance_types[key] === true)[this.current_question];
         },
+        selected_keys: function () {
+          const result = [];
+          for (const key of Object.keys(this.diffgram_schema_mapping)) {
+            if (this.diffgram_schema_mapping[key] && typeof this.diffgram_schema_mapping[key] !== 'object') {
+              result.push(this.diffgram_schema_mapping[key])
+            }
+            else if (['point', 'polygon', 'ellipse', 'line', 'cuboid', 'box'].includes(key)){
+              for(const subkey of Object.keys(this.diffgram_schema_mapping[key])){
+                if (this.diffgram_schema_mapping[key][subkey]) {
+                  result.push(this.diffgram_schema_mapping[key][subkey])
+                }
+              }
+            }
+
+          }
+          return result;
+        },
+        pre_label_key_list_filtered: function () {
+          return this.pre_label_key_list.map(key => ({
+            text: key,
+            value: key,
+            disabled: this.selected_keys.includes(key)
+          }));
+        }
       },
       watch: {},
       mounted() {
