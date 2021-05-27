@@ -460,7 +460,15 @@ Cypress.Commands.add('uploadAndViewSampleImage', function (project_string_id) {
 
 Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
   cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
-
+  cy.get('[data-cy=start_upload_wizard]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=upload_new_data]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=set_dataset_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=from_local_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=with_no_pre_labels_button]').click({force: true});
   cy.fixture('./test-videos/challenge_videoTrim_re_saved.mp4', 'binary')
     .then(Cypress.Blob.binaryStringToBlob)
     .then(fileContent => {
@@ -473,7 +481,13 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
       }
     );
 
-  cy.wait(20000);
+
+  cy.get('[data-cy=continue_upload_step]').click();
+  cy.wait(700);
+  cy.get('[data-cy=start_files_upload_button]').click();
+  cy.wait(8000);
+  cy.get('[data-cy=close_wizard_button]').click();
+  cy.wait(10000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
   cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
