@@ -727,7 +727,7 @@ class Annotation_Update():
 
     def check_allowed_model_ids(self, instance_list):
         if not self.allowed_model_id_list:
-            return
+            return True
         # Check for models
         for instance in instance_list:
             if instance.get('model_id') is None:
@@ -743,7 +743,7 @@ class Annotation_Update():
 
     def check_allowed_model_run_ids(self, instance_list):
         if not self.allowed_model_run_id_list:
-            return
+            return True
         # Check for models
         for instance in instance_list:
             if instance.get('model_run_id') is None:
@@ -793,10 +793,13 @@ class Annotation_Update():
                                        '[Exception] Duplicate ID On Annotation_Update', str(self.log))
         valid_models = self.check_allowed_model_ids(cleaned_instance_list)
         valid_runs = self.check_allowed_model_run_ids(cleaned_instance_list)
+        print('cleaned_instance_list cleaned_instance_list', cleaned_instance_list)
+        print('valid_models instance', valid_models)
+        print('valid_runs instance', valid_runs)
         if not valid_models or not valid_runs:
             return False
         for instance_proposed in cleaned_instance_list:
-
+            print('adding instance', instance_proposed)
             # For other checks that are specific to
             # to certain instance types
             self.instance_proposed = instance_proposed

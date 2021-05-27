@@ -1417,7 +1417,7 @@ class Process_Media():
         )
 
         ###
-
+        self.populate_new_models_and_runs()
         # If it's a video then we expect it will be handled by the above detection
         if self.input.media_type == 'image':
 
@@ -1461,7 +1461,7 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-
+        print('INSTANCE LIST', self.input.instance_list)
         if not self.input.instance_list:
             return
 
@@ -1499,7 +1499,6 @@ class Process_Media():
         file = File.get_by_id(self.session, file_id)  # For video, expects it to be parent video file, not a frame
         allowed_model_id_list = self.__get_allowed_model_ids()
         allowed_model_runs_id_list = self.__get_allowed_model_run_ids()
-        print('ALLOWED MODELS', allowed_model_id_list, allowed_model_runs_id_list)
         try:
             annotation_update = Annotation_Update(
                 session=self.session,
@@ -1960,11 +1959,11 @@ class Process_Media():
 
             self.input.frame_packet_map = new_frame_packet_map
         elif self.input.media_type == 'image':
-            if not self.input.instance_list:
+            if not not self.input.instance_list or not self.input.instance_list.get('list'):
                 return
-            instance_list = self.input.instance_list.copy()
+            instance_list = self.input.instance_list['list'].copy()
             model_manager = ModelManager(session = self.session,
-                                         instance_list_dicts = self.input.instance_list_new,
+                                         instance_list_dicts = instance_list,
                                          member = self.member,
                                          project = self.project)
             model_manager.check_instances_and_create_new_models()
