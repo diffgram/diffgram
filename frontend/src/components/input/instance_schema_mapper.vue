@@ -27,7 +27,7 @@
                     <v-data-table :headers="schema_match_headers" dense :hide-default-footer="true">
                       <template v-slot:body="{ items }">
                         <tbody>
-                        <tr v-for="key in Object.keys(diffgram_schema_mapping.box)">
+                        <tr v-for="key in Object.keys(diffgram_schema_mapping.box)" :key="key">
                           <td><strong>{{key}}:</strong></td>
                           <td>
                             {{get_preview_data_for_key('box', key)}}
@@ -36,6 +36,7 @@
                             <v-autocomplete class="pt-4"
                                             style="max-width: 200px"
                                             dense
+                                            :data-cy="`select_${key}`"
                                             @change="check_box_key_structure(key)"
                                             :items="pre_label_key_list_filtered"
                                             v-model="diffgram_schema_mapping.box[key]">
@@ -436,6 +437,7 @@
              :disabled="current_question === 1"
              class="primary lighten-4 ma-8"
              style="justify-self: start"
+
              @click="previous_step(current_question)">
         Back
       </v-btn>
@@ -443,6 +445,7 @@
              style="justify-self: end"
              :loading="loading"
              class="primary ma-8"
+             data-cy="continue_instance_mapping"
              @click="next_step(current_question)">
         Continue
       </v-btn>

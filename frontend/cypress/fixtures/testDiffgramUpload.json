@@ -1,6 +1,6 @@
 [
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 25,
     "lower_y": 25,
     "type": "box",
@@ -27,7 +27,7 @@
     "name": "apple"
   },
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 150,
     "type": "box",
     "lower_y": 150,
@@ -55,7 +55,7 @@
     "name": "apple"
   },
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 110,
     "lower_y": 110,
     "points": [
@@ -82,7 +82,7 @@
     "run_id": "my_super_model_1__run_1"
   },
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 250,
     "frame_number": 6,
     "sequence_number": 1,
@@ -109,7 +109,7 @@
     "run_id": "my_super_model_1__run_1"
   },
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 180,
     "lower_y": 180,
     "points": [
@@ -136,7 +136,7 @@
     "run_id": "my_super_model_1__run_1"
   },
   {
-    "myFileName": "testImage1.jpg",
+    "myFileName": "testimage2.jpg",
     "lower_x": 25,
     "lower_y": 50,
     "upper_x": 75,

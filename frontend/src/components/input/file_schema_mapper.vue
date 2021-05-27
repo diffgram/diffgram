@@ -59,6 +59,7 @@
                   class="pt-4"
                   clearable
                   hide-selected
+                  data-cy="select_instance_type"
                   :items="pre_label_key_list_filtered"
                   v-model="diffgram_schema_mapping.instance_type"
                 >
@@ -87,7 +88,7 @@
                 <v-autocomplete
                   class="pt-4"
                   clearable
-
+                  data-cy="select_label_name"
                   hide-selected
                   :items="pre_label_key_list_filtered"
                   v-model="diffgram_schema_mapping.name">
@@ -112,6 +113,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                data-cy="select_file_name"
 
                                 hide-selected
                                 :items="pre_label_key_list_filtered"
@@ -135,6 +137,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                data-cy="select_file_id"
 
                                 hide-selected
                                 :items="pre_label_key_list_filtered"
@@ -158,6 +161,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                data-cy="select_frame_number"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.frame_number">">
                 </v-autocomplete>
@@ -178,6 +182,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                data-cy="select_number"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.number">">
                 </v-autocomplete>
@@ -195,10 +200,10 @@
                 instances. This is an optional step.
               </h4>
               <v-container fluid class="d-flex justify-center flex-grow-1 mt-8">
-                <v-btn x-large color="primary" class="mr-8" @click="next_step(current_question + 2, false)">
+                <v-btn x-large color="primary" data-cy="no_model_button" class="mr-8" @click="next_step(current_question + 2, false)">
                   No
                 </v-btn>
-                <v-btn x-large color="primary" @click="next_step(current_question)">
+                <v-btn x-large color="primary" data-cy="use_model_button" @click="next_step(current_question)">
                   Yes
                 </v-btn>
               </v-container>
@@ -216,7 +221,8 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                                clearable
+                                clearabledata-cy="select_model_id"
+                                data-cy="select_model_id"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_id">
                 </v-autocomplete>
@@ -237,6 +243,7 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                data-cy="select_model_run_id"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_run_id">
                 </v-autocomplete>
@@ -260,6 +267,7 @@
       <v-btn x-large
              style="justify-self: end"
              :loading="loading"
+             data-cy="continue_file_mapping"
              class="primary ma-8"
              @click="next_step(current_question)">
         Continue
