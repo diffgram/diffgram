@@ -64,15 +64,15 @@ def file_list_exists_core(session,
     :return:
     """
     try:
-        file_list_db = File.get_files_in_project_id_list(session, project.id,file_id_list)
+        file_list_db = File.get_files_in_project_id_list(session, project.id, file_id_list)
         db_id_list = [f.id for f in file_list_db]
         result = True
     except Exception as e:
         log['error']['file_list'] = str(e)
         return False, log
-
-    for id in db_id_list:
-        if id not in file_id_list:
+    
+    for id in file_id_list:
+        if id not in db_id_list:
             result = False
             break
     return result, log

@@ -184,7 +184,7 @@ class File(Base, Caching):
 
     @staticmethod
     def get_files_in_project_id_list(session, project_id, id_list):
-        file_list_db = session.query(File).filter(File.id.in_(id_list)).all()
+        file_list_db = session.query(File).filter(File.id.in_(id_list), File.project_id == project_id).all()
         return file_list_db
 
 
