@@ -16,7 +16,7 @@
     <v-icon color="success" size="86">mdi-check</v-icon>
     <h1>Files Succesfully Uploaded</h1>
     <p class="secondary--text"><strong>Check Input Table to view Pre-processing progress.</strong></p>
-    <v-btn x-large @click="close_wizard" color="success">Close</v-btn>
+    <v-btn x-large @click="close_wizard" data-cy="close_wizard_button" color="success">Close</v-btn>
   </v-container>
 
 </template>

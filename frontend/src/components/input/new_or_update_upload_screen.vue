@@ -10,6 +10,7 @@
       <v-btn
         x-large
         color="primary lighten-2"
+        data-cy="from_connections_button"
         @click="set_upload_source('connections')"
       >
         <v-icon class="mr-4">mdi-cloud</v-icon>
@@ -18,6 +19,7 @@
       <v-btn
         color="primary"
         x-large
+        data-cy="from_local_button"
         @click="set_upload_source('local')"
       >
         <v-icon class="mr-4">mdi-laptop</v-icon>
@@ -35,6 +37,7 @@
     <div class="d-flex justify-space-around">
       <v-btn
         x-large
+        data-cy="with_no_pre_labels_button"
         color="primary lighten-2"
         @click="set_with_pre_labeled(false)"
       >
@@ -43,6 +46,7 @@
       <v-btn
         color="primary"
         x-large
+        data-cy="with_pre_labels_button"
         @click="set_with_pre_labeled(true)"
       >
         Yes
@@ -210,6 +214,7 @@
         </v_error_multiple>
         <v-btn @click="move_to_next_step"
                x-large
+               data-cy="continue_upload_step"
                :loading="loading_annotations"
                color="primary"
                :disabled="should_disable_continue">
