@@ -69,6 +69,7 @@ class InputBatch(Base):
             'id': self.id,
             'status': self.status,
             'directory_id': self.directory_id,
+            'project_id': self.project_id,
             'source_directory_id': self.source_directory_id,
             'member_created_id': self.member_created_id,
             'member_updated_id': self.member_updated_id,
