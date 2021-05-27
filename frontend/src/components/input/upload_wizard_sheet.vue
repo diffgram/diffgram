@@ -471,7 +471,7 @@
           this.dropzone_total_file_size = 0;
         },
         file_added: function (file) {
-          if (file.size) {
+          if (file.size && file.data_type != 'Annotations') {
             this.dropzone_total_file_size += file.size;
           }
         },

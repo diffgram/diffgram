@@ -27,6 +27,7 @@ import 'cypress-file-upload';
 import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
+import labelsForAttributes from "../fixtures/labelsForAttributes.json";
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -349,6 +350,84 @@ Cypress.Commands.add('createLabels', function (labels_list) {
 
 });
 
+Cypress.Commands.add('uploadImageWithLabels', function (project_string_id) {
+  cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
+  cy.get('[data-cy=start_upload_wizard]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=upload_new_data]').click({force: true});
+  cy.wait(1200);
+  cy.get('[data-cy=set_dataset_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=from_local_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=with_pre_labels_button]').click({force: true});
+  const fileFixture = {
+    filePath: './test-images/testimage2.jpg',
+    fileName: `testimage2.jpg`,
+  }
+  const labelsFixture = {
+    filePath: './testDiffgramUpload.json',
+    fileName: `testDiffgramUpload.json`,
+  }
+  cy.get('.dz-hidden-input').attachFile(fileFixture)
+  cy.get('.dz-hidden-input').attachFile(labelsFixture)
+
+  cy.wait(1000);
+  cy.get('[data-cy=continue_upload_step]').click();
+  cy.wait(500);
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  // Mapping Process
+  cy.wait(700);
+  cy.get('[data-cy=select_instance_type]').click({force: true})
+  cy.get('.v-list-item__title').contains('type').first().click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_label_name]').click({force: true})
+  cy.get('.v-list-item__title').contains('name').first().click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_file_name]').click({force: true})
+  cy.get('.v-list-item__title').contains('myFileName').first().click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=use_model_button]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_model_id]').click({force: true})
+  cy.get('.v-list-item__title').contains('model_id').first().click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_model_run_id]').click({force: true})
+  cy.get('.v-list-item__title').contains('run_id').first().click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_x_min]').first().click({force: true})
+  cy.get('.v-menu__content:visible .v-list-item__title').contains('lower_x').eq(0).click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=select_x_max]').first().click({force: true})
+  cy.get('.v-menu__content:visible .v-list-item__title').contains('upper_x').eq(0).click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=select_y_min]').first().click({force: true})
+  cy.get('.v-menu__content:visible .v-list-item__title').contains('lower_y').eq(0).click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=select_y_max]').first().click({force: true})
+  cy.get('.v-menu__content:visible .v-list-item__title').contains('upper_y').eq(0).click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_instance_mapping]').click({force:true})
+  cy.wait(700);
+  cy.get('[data-cy=start_files_upload_button]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=close_wizard_button]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=refresh-input-icon]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+
+});
 Cypress.Commands.add('uploadAndViewSampleImage', function (project_string_id) {
   cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
   cy.get('[data-cy=start_upload_wizard]').click({force: true});
