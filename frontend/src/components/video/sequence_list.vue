@@ -422,7 +422,8 @@ export default Vue.extend( {
     },
     'request_clear_sequence_list_cache': {
       default: null
-    }
+    },
+    'label_settings': {}
 
   },
   data() {
@@ -547,6 +548,7 @@ export default Vue.extend( {
         return  // see comment above.
       }
 
+
       // set from parent
       this.current_sequence = new_sequence
 
@@ -558,11 +560,15 @@ export default Vue.extend( {
       if (index !== -1) {
        this.sequence_list.splice(index, 1, new_sequence)
       } else {
+        //creation context
+
         this.sequence_list.push(new_sequence)
 
         // prior we expected to this from the response
         // same concept.
         this.highest_sequence_number = new_sequence.number
+
+        this.may_auto_advance_sequence()
       }
 
       this.emit_current_sequence()
@@ -954,6 +960,12 @@ export default Vue.extend( {
 
       this.change_current_sequence(this.sequence_list[0])
 
+    },
+
+    may_auto_advance_sequence: function () {
+      if(this.$props.label_settings.on_instance_creation_advance_sequence == true){
+        this.force_new_sequence()
+      }
     },
 
     update_sequence(sequence_id, payload, mode) {

@@ -103,7 +103,7 @@
       vertical
     ></v-divider>
 
-    <div class="pt-3 pl-1 pr-2">
+    <div class="pt-3 pl-2 pr-2">
 
       <v-tooltip bottom
                   color="info"
@@ -130,8 +130,8 @@
       vertical
     ></v-divider>
 
-    <v-flex xs2>
-      <div class="pl-3 pr-3 pt-4">
+    <div style="width: 310px">
+      <div class="pl-2 pr-3 pt-4">
         <label_select_annotation
             :project_string_id="project_string_id"
             :label_file_list="label_list"
@@ -144,7 +144,7 @@
         >
         </label_select_annotation>
       </div>
-    </v-flex>
+    </div>
 
     <!-- TODO @get_next_instance="request_next_instance" -->
 
@@ -382,7 +382,7 @@
 
   </button_with_menu>
 
-    <button_with_menu
+  <button_with_menu
     tooltip_message="Hotkeys"
     v-if="view_only_mode != true"
     color="primary"
@@ -391,52 +391,7 @@
         >
 
     <template slot="content">
-      <v-layout column>
-
-        <h2> General </h2>
-
-        Right click an instance to bring up context menu.
-
-        <p> <kbd>Esc</kbd> Toggle draw and edit mode </p>
-
-        <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
-
-        <p> <kbd>W</kbd> Toggle Label Menu </p>
-        <p> <kbd>1 - 9</kbd> Change label </p>
-
-        <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
-        <p> <kbd>Ctrl</kbd> + <kbd>c</kbd> Copy Selected Instance </p>
-        <p> <kbd>Ctrl</kbd> + <kbd>v</kbd> Paste Selected Instance </p>
-
-        <p> <kbd>C</kbd> Complete. Save, Mark as Complete, Go to Next.</p>
-
-        <h2> Video </h2>
-
-        <p> <kbd>Spacebar</kbd> Play/Pause Video </p>
-
-        <p> <kbd>←</kbd>,<kbd>→</kbd> or <kbd>A</kbd>, <kbd>D</kbd> Previous or Next Frame</p>
-
-        <p> <kbd>F</kbd> New Sequence </p>
-        <p> <kbd>Shift</kbd> + <kbd>n</kbd> Jump to Next Instance </p>
-        <h2> Image / Frame </h2>
-        <p> <kbd>S</kbd> Save </p>
-
-        <p> <kbd>Delete</kbd> Deletes selected instances </p>
-
-        <p> <kbd>Mouse wheel</kbd> Zoom / pan </p>
-
-        <p> <kbd>Ctrl</kbd> Pan Only </p>
-
-        <h2> Polygons </h2>
-        <p> <kbd>Enter</kbd> Complete polygon (Or click first point again)  </p>
-
-        <p> <b>Hold </b> <kbd>Shift</kbd>
-          🔥 Turbo mode, auto places point as you move mouse.
-          <br />
-          Can switch between this mode and normal as needed by
-          releasing shift.</p>
-
-      </v-layout>
+      <hotkeys></hotkeys>
     </template>
 
   </button_with_menu>
@@ -717,6 +672,15 @@
                         v-model="label_settings_local.spatial_line_size">
               </v-slider>
 
+              <v-checkbox label="Show Ghost Instances"
+                          data-cy="show_ghost_instances"
+                          v-model="label_settings_local.show_ghost_instances">
+              </v-checkbox>
+
+              <v-checkbox label="On Instance Creation: Advance Sequence Number"
+                          data-cy="on_instance_creation_advance_sequence"
+                          v-model="label_settings_local.on_instance_creation_advance_sequence">
+              </v-checkbox>
 
               <!-- Note backend enforces hard
                 limit on this (ie max 1000) , so need to update
@@ -728,6 +692,16 @@
                         ticks
                         v-model="label_settings_local.instance_buffer_size">
               </v-slider>
+
+              <tooltip_button
+                tooltip_message="Restore All User Settings & Prompts"
+                @click="$store.commit('restore_default_user_settings')"
+                color="primary"
+                icon="mdi-refresh"
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
 
             </v-layout>
           </template>
@@ -788,6 +762,7 @@ import file_meta_data_card from './file_meta_data_card'
 import task_relations_card from './task_relations_card'
 import file_relations_card from './file_relations_card'
 import task_meta_data_card from './task_meta_data_card'
+import hotkeys from './hotkeys'
 
 export default Vue.extend( {
 
@@ -798,6 +773,7 @@ export default Vue.extend( {
     file_relations_card,
     task_meta_data_card,
     task_relations_card,
+    hotkeys
   },
   props: {
     'project_string_id': {

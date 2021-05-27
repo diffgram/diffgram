@@ -204,6 +204,14 @@
         this.locked_mouse_position = {...this.mouse_position};
       },
 
+      pause_object(event) {
+        let instance_update = {
+          index: this.instance_hover_index_locked,
+          mode: "pause_object"
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
+
       change_sequence(event) {
         let instance_update = {
           index: this.instance_hover_index_locked,
@@ -309,6 +317,7 @@
       <div v-if="video_mode == true">
         <sequence_select
           v-if="instance_hover_index_locked != undefined"
+          label="Change Sequence"
           class="pt-2 pl-4 pr-4"
           :sequence_list="sequence_list"
           :select_this_id="selected_instance.sequence_id"
@@ -318,11 +327,34 @@
             won't be part of the event detection for clicking,
             and the hover index will become None-->
         </sequence_select>
+
+        <v-divider></v-divider>
       </div>
 
       <v-list-item
         dense
-        v-if="!draw_mode && video_mode && (instance_hover_index_locked != null || instance_clipboard)"
+        v-if="video_mode
+              && instance_hover_index_locked != null"
+        @click="pause_object()"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Pause Object"
+            icon="mdi-pause-octagon"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Pause Object
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-list-item
+        dense
+        v-if="video_mode && (instance_hover_index_locked != null || instance_clipboard)"
         @click="display_paste_menu"
       >
 
@@ -370,6 +402,8 @@
           </v-card-actions>
         </v-card>
       </v-menu>
+
+      <v-divider></v-divider>
 
       <v-list-item
         link

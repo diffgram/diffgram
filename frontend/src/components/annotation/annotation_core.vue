@@ -221,7 +221,7 @@
 
       </instance_history_sidepanel>
       <create_issue_panel :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                          v-show="show_issue_panel && !current_issue"
+                          v-show="show_issue_panel == true && !current_issue"
                           :instance_list="instance_list"
                           :task="task"
                           :file="file"
@@ -233,7 +233,7 @@
       ></create_issue_panel>
       <view_edit_issue_panel
           v-if="!loading"
-          v-show="show_issue_panel && current_issue"
+          v-show="show_issue_panel == true && current_issue"
           :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
           :task="task"
           :instance_list="instance_list"
@@ -254,7 +254,8 @@
                   size="28">mdi-language-javascript</v-icon>
           UserScripts
           <v-spacer></v-spacer>
-          <v-btn @click="userscript_minimized=!userscript_minimized"
+          <v-btn data-cy="show_userscript_panel_button"
+                 @click="userscript_minimized=!userscript_minimized"
                  v-if="userscript_minimized" icon>
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>
@@ -350,6 +351,15 @@
           >
 
           </autoborder_avaiable_alert>
+
+          <ghost_canvas_available_alert
+            :x_position="canvas_alert_x"
+            :y_position="canvas_alert_y"
+            ref="ghost_canvas_available_alert"
+          >
+
+          </ghost_canvas_available_alert>
+
           <canvas
             data-cy="canvas"
             ref="canvas"
@@ -422,6 +432,32 @@
                                   :emit_instance_hover="!draw_mode || emit_instance_hover"
                                   >
             </canvas_instance_list>
+
+
+            <ghost_instance_list_canvas
+                :ord="4"
+                :show="label_settings.show_ghost_instances"
+                :instance_list="ghost_instance_list"
+                :vertex_size="label_settings.vertex_size"
+                :video_mode="video_mode"
+                :current_frame="current_frame"
+                :label_settings="label_settings"
+                :is_actively_drawing="is_actively_drawing"
+                :refresh="refresh"
+                :draw_mode="draw_mode"
+                :mouse_position="mouse_position"
+                :canvas_transform="canvas_transform"
+                :show_annotations="show_annotations"
+                :annotations_loading="annotations_loading"
+                :label_file_colour_map="label_file_colour_map"
+                :hidden_label_id_list="hidden_label_id_list"
+                :is_actively_resizing="is_actively_resizing"
+                :emit_instance_hover="true"
+                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1])"
+                                  >
+            </ghost_instance_list_canvas>
+
+
 
 
             <!-- Careful, must have this object exist
@@ -563,6 +599,7 @@
           :force_new_sequence_request="force_new_sequence_request"
           :label_file_list="label_list"
           :request_clear_sequence_list_cache="request_clear_sequence_list_cache"
+          :label_settings="label_settings"
           ref="sequence_list"
           >
         </v_sequence_list>
@@ -692,8 +729,10 @@ import axios from 'axios';
 import Vue from 'vue';
 import instance_detail_list_view from './instance_detail_list_view'
 import autoborder_avaiable_alert from './autoborder_avaiable_alert'
+import ghost_canvas_available_alert from './ghost_canvas_available_alert'
 import canvas_current_instance from '../vue_canvas/current_instance'
 import canvas_instance_list from '../vue_canvas/instance_list'
+import ghost_instance_list_canvas from '../vue_canvas/ghost_instance_list'
 import instance_history_sidepanel from '../annotation/instance_history_sidepanel'
 import v_bg from '../vue_canvas/v_bg'
 import v_text from '../vue_canvas/v_text'
@@ -749,13 +788,15 @@ export default Vue.extend( {
       canvas_current_instance,
       current_instance_template,
       canvas_instance_list,
+      ghost_instance_list_canvas,
       v_bg,
       v_text,
       target_reticle,
       task_status_icons,
       context_menu,
       userscript,
-      toolbar
+      toolbar,
+      ghost_canvas_available_alert
     },
     props: {
       'project_string_id': {
@@ -843,12 +884,27 @@ export default Vue.extend( {
 
         this.clear_selected()
 
+      },
+      show_issue_panel: function () {
+        if (this.show_issue_panel == true) {
+          this.label_settings.show_ghost_instances = false
+          this.label_settings.ghost_instances_closed_by_open_view_edit_panel = true
+        } else {
+          if (this.label_settings.ghost_instances_closed_by_open_view_edit_panel == true) {
+            this.label_settings.show_ghost_instances = true
+            this.label_settings.ghost_instances_closed_by_open_view_edit_panel = false
+          }
+        }
       }
    },
 
   // data()   comment is here for searching
   data() {
     return {
+
+      ghost_instance_hover_index: null,
+      ghost_instance_hover_type: null,
+      ghost_instance_list: [],
 
       show_default_navigation: true,
 
@@ -976,6 +1032,7 @@ export default Vue.extend( {
       loading: false,
 
       label_settings: {
+        show_ghost_instances: true,
         show_text: true,
         show_label_text: true,
         show_attribute_text: true,
@@ -993,7 +1050,8 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true,
         canvas_scale_global_setting: 0.5,
         left_nav_width: 450,
-
+        on_instance_creation_advance_sequence: true,
+        ghost_instances_closed_by_open_view_edit_panel: false
       },
 
       annotations_loading: false,
@@ -2377,6 +2435,11 @@ export default Vue.extend( {
          return
       }
 
+      if (update.mode == 'pause_object'){
+        instance.pause_object = true
+        console.log(instance.pause_object)
+      }
+
       // instance update
       if (update.mode == "update_label") {
         // not 100% sure if we need both here
@@ -2805,12 +2868,112 @@ export default Vue.extend( {
       this.seeking = seeking
     },
 
+    ghost_refresh_instances: function () {
+      this.ghost_instance_list = []
+      if (!this.sequence_list_local_copy) { return }
+
+      let keyframes_to_sequences = this.build_keyframes_to_sequences_dict()
+      //console.log(keyframes_to_sequences)
+
+      this.populate_ghost_list_with_most_recent_instances_from_keyframes(keyframes_to_sequences)
+
+      this.may_fire_user_ghost_canvas_available_alert()
+
+    },
+
+    may_fire_user_ghost_canvas_available_alert: function () {
+      if (this.$store.state.user.settings.hide_ghost_canvas_available_alert == true) {
+        return
+      }
+      if (this.ghost_instance_list.length >= 1) {
+        this.canvas_alert_x = this.mouse_position.x
+        this.canvas_alert_y = this.mouse_position.y
+        this.$refs.ghost_canvas_available_alert.show_alert();
+      }
+    },
+    build_keyframes_to_sequences_dict: function () {
+      /*
+       * build dict of keyframes with sequences
+       * context that searching each instance_list might as well do all at once.
+       * returns example like
+       * frame: [list of sequence ids]
+       * 351: [3619]
+         355: [3620, 3621]
+       * 
+       */
+      let keyframes_to_sequences = {}
+
+      for (let sequence of this.sequence_list_local_copy){
+        if (!sequence.keyframe_list) { return }
+        if (!sequence.keyframe_list.frame_number_list) { return }
+
+        let frame_number_list = sequence.keyframe_list.frame_number_list
+        let last_keyframe = frame_number_list[frame_number_list.length - 1]
+        if (last_keyframe == undefined) {continue}  // careful, 0th frame is ok
+
+        if(!keyframes_to_sequences[last_keyframe]) {
+          keyframes_to_sequences[last_keyframe] = [sequence.number];
+        } else {
+          keyframes_to_sequences[last_keyframe].push(sequence.number);
+        }
+      }
+      return keyframes_to_sequences
+    },
+
+    ghost_determine_if_no_conflicts_with_existing: function (ghost_instance) {
+      for (let existing_instance of this.instance_list){
+        if (existing_instance.sequence_id == ghost_instance.sequence_id) {
+          return false
+        }
+        if (existing_instance.label_file_id == ghost_instance.label_file_id &&
+            existing_instance.number == ghost_instance.number) {
+          return false
+        }
+      }
+      return true
+    },
+
+    populate_ghost_list_with_most_recent_instances_from_keyframes: function(keyframes_to_sequences){
+
+      for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
+
+        let instance_list = this.instance_buffer_dict[keyframe];
+        //console.log(keyframe, instance_list)
+        if (!instance_list) { continue }
+
+        for (let instance of instance_list) {
+          if (sequence_numbers.includes(instance.number)) {
+
+            // if it's the last object then we don't show ghost
+            if (instance.pause_object == true) { continue }
+
+            if (this.ghost_determine_if_no_conflicts_with_existing(instance) == false) {
+              continue
+            }
+
+            this.duplicate_instance_into_ghost_list(instance)
+          }
+        }
+      }
+    },
+
+    duplicate_instance_into_ghost_list: function (instance){
+      if (!instance) { return }
+      let instance_clipboard = this.duplicate_instance(instance);
+      instance_clipboard.id = null
+      instance_clipboard.created_time = null  //
+      instance_clipboard.creation_ref_id = null // we expect this will be set once user accepts it
+      this.ghost_instance_list.push(instance_clipboard)
+    },
+
+
     change_frame_from_video_event: function (url) {
       /* Careful to call get_instances() since this handles
        * if we are on a keyframe and  don't need to call instance buffer
        * this method supercedes the old video_file_update()
        */
       this.get_instances()
+      this.ghost_refresh_instances()
 
       if (url) {
         this.add_image_process(url)
@@ -2918,6 +3081,20 @@ export default Vue.extend( {
     cuboid_face_hover_update: function(cuboid_face){
       this.cuboid_face_hover = cuboid_face;
     },
+
+    ghost_instance_hover_update: function (index: Number, type : String) {
+      //if (this.lock_point_hover_change == true) {return}
+      if (index != null) {
+        this.ghost_instance_hover_index = parseInt(index)
+        this.ghost_instance_hover_type = type   // ie polygon, box, etc.
+      }
+      else{
+        this.ghost_instance_hover_index = null;
+        this.ghost_instance_hover_type = null;
+      }
+
+    },
+
     instance_hover_update: function (index: Number, type : String) {
 
       if (this.lock_point_hover_change == true) {return}
@@ -3881,6 +4058,39 @@ export default Vue.extend( {
     this.instance_list.splice(this.instance_hover_index, 1, instance);
     return true
   },
+
+  ghost_clear_for_file_change_context: function()  {
+    this.ghost_clear_hover_index()
+    this.ghost_clear_list()
+  },
+
+  ghost_clear_hover_index: function () {
+    this.ghost_instance_hover_index = null   
+    this.ghost_instance_hover_type = null
+  },
+
+  ghost_clear_list: function () {
+    this.ghost_instance_list = []
+  },
+
+  ghost_promote_instance_to_actual: function (ghost_index) {
+      this.has_changed = true  // otherwise user click event won't trigger change detection 
+
+      let instance = this.ghost_instance_list[ghost_index]
+      this.add_instance_to_frame_buffer(instance, this.current_frame)    // this handles the creation_ref_id stuff too
+      this.ghost_instance_list.splice(ghost_index, 1)   // remove from ghost list
+    },
+
+  ghost_may_promote_instance_to_actual: function () {
+    if (this.label_settings.show_ghost_instances == false) { return }
+    if (this.ghost_instance_hover_index != undefined) { // may be 0!
+      this.instance_hover_index = this.ghost_instance_hover_index
+      this.instance_hover_type = this.ghost_instance_hover_type
+      this.ghost_promote_instance_to_actual(this.ghost_instance_hover_index)
+      this.ghost_clear_hover_index()
+    }
+  },
+
   move_something: function (event) {
 
       /*
@@ -5065,6 +5275,9 @@ export default Vue.extend( {
       if (this.mouse_down_limits(event) == false) {
         return
       }
+
+      this.ghost_may_promote_instance_to_actual()
+
       // For new refactored instance types (eventually all should be here)
       const mouse_down_interaction = this.generate_event_interactions(event);
       if(mouse_down_interaction){
@@ -5470,6 +5683,7 @@ export default Vue.extend( {
       await this.prepare_canvas_for_new_file();
 
       this.full_file_loading = false;
+      this.ghost_clear_for_file_change_context()
 
     },
     on_change_current_file: async function () {
@@ -5498,6 +5712,7 @@ export default Vue.extend( {
       await this.prepare_canvas_for_new_file();
 
       this.full_file_loading = false;
+      this.ghost_clear_for_file_change_context()
     },
 
     refresh_attributes_from_current_file: async function (file) {
@@ -5651,6 +5866,10 @@ export default Vue.extend( {
 
       if (event.key === "f") {
         this.force_new_sequence_request = Date.now()
+      }
+
+      if (event.key === "g") {
+        this.label_settings.show_ghost_instances = !this.label_settings.show_ghost_instances
       }
 
       if (event.keyCode === 83) { // save
@@ -6012,6 +6231,7 @@ export default Vue.extend( {
       }
 
     },
+
     save: async function (and_complete=false) {
       this.save_error = {}
 
