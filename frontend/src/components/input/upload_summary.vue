@@ -55,7 +55,7 @@
         </v-list-item>
       </v-container>
       <v-container fluid class="d-flex justify-end align-center">
-        <v-btn x-large class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
+        <v-btn x-large data-cy="start_files_upload_button" class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
       </v-container>
     </v-layout>
   </v-container>

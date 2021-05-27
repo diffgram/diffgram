@@ -74,12 +74,14 @@
             <div class="d-flex justify-space-around">
               <v-btn
                 x-large
+                data-cy="upload_existing_data"
                 color="primary lighten-2"
                 @click="set_upload_mode('update')"
               >Update Existing</v-btn>
               <v-btn
                 color="primary"
                 x-large
+                data-cy="upload_new_data"
                 @click="set_upload_mode('new')"
               >
                 Upload New Data
@@ -112,6 +114,7 @@
               <v-btn
                 color="primary"
                 x-large
+                data-cy="set_dataset_button"
                 @click="check_errors_and_go_to_step(3)"
               >
                 Continue

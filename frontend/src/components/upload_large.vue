@@ -37,6 +37,7 @@
                       <v-col cols="12" class="d-flex justify-center">
                         <v-btn
                           @click="open_upload_wizard_sheet"
+                          data-cy="start_upload_wizard"
                           :disabled="!current_directory"
                           color="success"
                           x-large>
