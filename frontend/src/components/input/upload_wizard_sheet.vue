@@ -71,7 +71,7 @@
             <br>
             <br>
             <h2 class="text-center mb-12">Do you want to upload new data or update existing files?</h2>
-            <div class="d-flex justify-space-around">
+            <div class="d-flex justify-space-around ">
               <v-btn
                 x-large
                 data-cy="upload_existing_data"
@@ -86,6 +86,15 @@
               >
                 Upload New Data
               </v-btn>
+            </div>
+            <div class="d-flex flex-column mt-12 justify-center align-center">
+              <h4 class="mb-4 primary--text lighten-2"><v-icon>mdi-database-check-outline</v-icon>Want an example JSON to test out?</h4>
+              <p class="secondary--text"><strong>
+                <a class="secondary--text" href="https://storage.googleapis.com/diffgram-002/public/diffgramDataUploadExample.zip">
+                  <v-icon large>mdi-download</v-icon>
+                  Download our sample data clicking here.
+                </a>
+              </strong></p>
             </div>
           </div>
         </v-stepper-content>

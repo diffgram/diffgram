@@ -1938,7 +1938,6 @@ class Process_Media():
             self.input.status = "downloaded"
 
     def populate_new_models_and_runs(self):
-
         if self.input.media_type == 'video':
             print('populate_new mode;s', self.input.frame_packet_map)
             if not self.input.frame_packet_map:
@@ -1959,16 +1958,17 @@ class Process_Media():
 
             self.input.frame_packet_map = new_frame_packet_map
         elif self.input.media_type == 'image':
-            if not not self.input.instance_list or not self.input.instance_list.get('list'):
+            if not self.input.instance_list or self.input.instance_list.get('list') is None:
                 return
             instance_list = self.input.instance_list['list'].copy()
+            self.input.instance_list = {}
             model_manager = ModelManager(session = self.session,
                                          instance_list_dicts = instance_list,
                                          member = self.member,
                                          project = self.project)
             model_manager.check_instances_and_create_new_models()
             # Replace with the instance list that has model_ids and run_ids
-            self.input.instance_list = instance_list
+            self.input.instance_list = {'list': instance_list}
         self.session.add(self.input)
         self.try_to_commit()
 
