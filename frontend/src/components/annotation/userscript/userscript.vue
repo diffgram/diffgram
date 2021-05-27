@@ -273,24 +273,8 @@
     </v-card>
   </v-dialog>
 
-      <!-- We assume if there is no script selected we don't show editor because
-           otherwise confusing if user starts to enter code -->
-
-      <codemirror v-if="show_code_editor == true
-                    && userscript_exists"
-                  ref="userscript_editor"
-                  v-model="userscript_literal.code"
-                  :options="cmOptions"
-                  @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                  @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                  :width="userscript_editor_width"
-                  :height="userscript_editor_height"
-                  >
-      </codemirror>
-
-
-      <v_error_multiple :error="error">
-      </v_error_multiple>
+    <v_error_multiple :error="error">
+     </v_error_multiple>
 
     <div v-if="userscript_class">
       <v-alert v-if="userscript_class.error_construction ||
@@ -311,6 +295,24 @@
       -->
 
     </div>
+
+      <!-- We assume if there is no script selected we don't show editor because
+           otherwise confusing if user starts to enter code -->
+
+      <codemirror v-if="show_code_editor == true
+                    && userscript_exists"
+                  ref="userscript_editor"
+                  v-model="userscript_literal.code"
+                  :options="cmOptions"
+                  @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                  @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                  :width="userscript_editor_width"
+                  :height="userscript_editor_height"
+                  >
+      </codemirror>
+
+
+
 
 
     </div>
@@ -364,6 +366,8 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
     data() {
       return {
 
+        changing_userscript: false,
+
         userscript_editor_width: null,
         userscript_editor_height: null,
 
@@ -412,14 +416,15 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
     },    
     computed:{
        play_ready: function () {
-
             if (!this.userscript_literal.code) {
                 return false
             }
             if (!this.userscript_class) {
                 return false
             }
-            if (!this.userscript_class.status_loaded_scripts) {
+            if (this.userscript_class.external_src_list
+              && this.userscript_class.external_src_list.length > 0
+              && !this.userscript_class.status_loaded_scripts) {
                 return false
             }
             if (this.userscript_class.running) {
@@ -436,7 +441,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
        },
 
        public_script_not_super_admin: function () {
-           if (this.userscript_literal.is_public
+           if (this.userscript_literal.is_public == true
             && this.$store.state.user.current.is_super_admin != true) {
                return true
            }
@@ -490,6 +495,9 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
       change_userscript: function (event) {
 
         if(!event) { return }
+        if(event.id == this.userscript_literal.id) { return }
+        if(this.changing_userscript == true) { return }
+        this.changing_userscript = true
 
         this.userscript_literal = event
         //console.log(this.userscript_literal)
@@ -500,6 +508,8 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
 
         // if we can make the userscript literal an instance of the class we can avoid this 
         this.userscript_class.reset_shared()
+
+        this.changing_userscript = false
 
       },
 

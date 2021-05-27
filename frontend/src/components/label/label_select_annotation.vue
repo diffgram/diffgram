@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak >
+  <div v-cloak  id="label_select_annotation">
     <v-layout >
 
 
@@ -82,19 +82,18 @@
 
         <template v-slot:selection="data">
 
-          <v-chip color="white">
-            <v-icon
-              :style="style_color(data.item.colour.hex)">
-              flag
-            </v-icon>
+          <v-icon
+            left
+            :style="style_color(data.item.colour.hex)">
+            flag
+          </v-icon>
 
-            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                    color="black">
-              mdi-flag-checkered
-            </v-icon>
+          <v-icon v-if="data.item.label.default_sequences_to_single_frame"
+                  color="black">
+            mdi-flag-checkered
+          </v-icon>
 
-            {{ data.item.label.name}}
-          </v-chip>
+          {{ label_name_truncated(data.item.label.name) }}
 
         </template>
 
@@ -215,6 +214,20 @@
       },
 
       methods: {
+
+        label_name_truncated: function(name) {
+          let max_size = 23
+          let default_selector_size = 290 // feels pretty brittle
+          if (document.getElementById('label_select_annotation').offsetWidth
+                < default_selector_size) {
+            max_size = 5
+          }
+          if (name.length > max_size) {
+            return name.slice(0, max_size) + '...'
+          } else {
+            return name
+          }
+        },
 
         toggle_label_visible(label) {
           if (typeof label.is_visible == "undefined") {

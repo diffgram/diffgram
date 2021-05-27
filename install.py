@@ -141,7 +141,7 @@ class DiffgramInstallTool:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
             env_file += 'DATABASE_URL={}\n'.format("postgresql+psycopg2://postgres:postgres@db/diffgram")
         else:
-            env_file += 'POSTGRES_IMAGE={}\n'.format('scratch')
+            env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
             env_file += 'DATABASE_URL={}\n'.format(self.database_url)
 
         text_file = open(".env", "w")

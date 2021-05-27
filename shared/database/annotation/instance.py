@@ -80,6 +80,8 @@ class Instance(Base):
 
     global_frame_number = Column(Integer)
 
+    pause_object = Column(Boolean)
+
     # TODO review interpolated
     # And other options in relation to say box
     machine_made = Column(Boolean)
@@ -338,7 +340,8 @@ class Instance(Base):
             self.soft_delete,
             self.attribute_groups,
             self.machine_made,
-            self.sequence_id
+            self.sequence_id,
+            self.pause_object
         ]
 
         self.hash = hashlib.sha256(json.dumps(
@@ -411,7 +414,8 @@ class Instance(Base):
             'root_id': self.root_id,
             'version': self.version,
             'nodes': nodes,
-            'edges': edges
+            'edges': edges,
+            'pause_object': self.pause_object
 
         }
 
