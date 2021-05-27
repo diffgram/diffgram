@@ -72,7 +72,7 @@ class TestModelRun(testing_setup.DiffgramBaseTestCase):
             flush_session = True
         )
 
-        model_run2 = ModelRun.get_by_id(self.session, model.id)
+        model_run2 = ModelRun.get_by_id(self.session, model_run.id)
         self.assertEqual(model_run.id, model_run2.id)
         self.assertEqual(model_run.reference_id, model_run2.reference_id)
 
