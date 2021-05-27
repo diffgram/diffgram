@@ -205,103 +205,6 @@ class Annotation_Update():
         }
         },
 
-		{'start_token': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'end_token': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'sentence': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'creation_ref_id': {
-			'default': None,
-			'kind': str
-		}
-		},
-		{'front_face': {
-			'default': None,
-			'kind': dict
-		}
-		},
-		{'rear_face': {
-			'default': None,
-			'kind': dict
-		}
-		},
-		{'angle': {
-			'default': None,
-			'kind': float
-		}
-		},
-		{'center_x': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'center_y': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'width': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'height': {
-			'default': None,
-			'kind': int
-		}
-		},
-		{'p1': {
-			'default': None,
-			'kind': dict
-		}
-		},
-		{'p2': {
-			'default': None,
-			'kind': dict
-		}
-		},
-		{'cp': {
-			'default': None,
-			'kind': dict
-		}
-		},
-		{'nodes': {
-			'default': [],
-			'kind': list,
-			'allow_empty': True
-		}
-		},
-		{'edges': {
-			'default': [],
-			'kind': list,
-			'allow_empty': True
-		}
-		},
-		{'client_created_time': {
-			'kind': 'datetime',
-			'required': False
-		}
-		},
-		{'change_source': {
-			'kind': str,
-			'required': False
-		}
-        },
-        	{'pause_object': {
-			'kind': bool,
-			'required': False
-		}}
-	])
         {'start_token': {
             'default': None,
             'kind': int
@@ -391,6 +294,10 @@ class Annotation_Update():
         },
         {'change_source': {
             'kind': str,
+            'required': False
+        }},
+        {'pause_object': {
+            'kind': bool,
             'required': False
         }}
     ])
@@ -968,7 +875,8 @@ class Annotation_Update():
                 change_source = input['change_source'],
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
-                overwrite_existing_instances = overwrite_existing_instances
+                overwrite_existing_instances = overwrite_existing_instances,
+                pause_object = input['pause_object']
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1101,7 +1009,8 @@ class Annotation_Update():
                         edges = [],
                         hash_instances = True,
                         overwrite_existing_instances = True,
-                        validate_label_file = True):
+                        validate_label_file = True,
+                        pause_object = None):
         """
         Assumes a "system" level context
 
@@ -1185,6 +1094,7 @@ class Annotation_Update():
             'p2': p2,
             'nodes': {'nodes': nodes},
             'edges': {'edges': edges},
+            'pause_object': pause_object
         }
 
         if overwrite_existing_instances and id is not None:
@@ -1204,52 +1114,6 @@ class Annotation_Update():
         self.instance.x_max = int(deducted_x_max)
         self.instance.y_max = int(deducted_y_max)
 
-	def update_instance(self,
-			type: str,
-			x_min: int,
-			y_min: int,
-			x_max: int,
-			y_max: int,
-			label_file_id: int,
-			id = None,
-			front_face: dict = None,
-			rear_face: dict = None,
-			soft_delete: bool = False,
-			number: int = None,
-			sequence_id: int = None,
-			rating = None,
-			attribute_groups = None,
-			interpolated = False,
-			machine_made = False,
-			start_char=None,
-			end_char=None,
-			start_sentence=None,
-			end_sentence=None,
-			start_token=None,
-			end_token=None,
-			sentence=None,
-			creation_ref_id=None,
-			previous_id=None,
-			version=None,
-			root_id=None,
-			center_x=None,
-			center_y=None,
-			angle=None,
-			width=None,
-			height=None,
-			change_source=None,
-			client_created_time=None,
-			cp=None,
-			p1=None,
-			p2=None,
-			nodes = [],
-			edges = [],
-			hash_instances = True,
-			overwrite_existing_instances = True,
-			validate_label_file = True,
-            pause_object = None):
-		"""
-		Assumes a "system" level context
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
             return False
@@ -1277,61 +1141,6 @@ class Annotation_Update():
 
         self.__perform_external_map_action()
 
-		if self.file:
-			logger.debug('Creating Instance with file id: {}'.format(self.file.id))
-			logger.debug('Creating Instance with project id: {}'.format(self.file.project.id))
-			logger.debug('Creating Instance with type: {}'.format(type))
-			logger.debug('Creating Instance with TOKENS: {} {} {} {}'.format(start_sentence, end_sentence, end_char, start_char))
-		if version is None:
-			version = 0
-		version += 1
-		instance_attrs = {
-			'file_id': self.file.id if self.file else None,
-			'project_id': self.file.project_id if self.file else None,
-			'frame_number': self.frame_number,
-			'member_created_id': member_created_id,
-			'global_frame_number': self.file.global_frame_number if self.file else None,
-			'task': self.task,  # for stats
-			'type': type,
-			'x_min': x_min,
-			'y_min': y_min,
-			'x_max': x_max,
-			'y_max': y_max,
-			'front_face': front_face,
-			'rear_face': rear_face,
-			'soft_delete': soft_delete,
-			'change_source': change_source,
-			'label_file_id': label_file_id,
-			'number': number,
-			'sequence_id': sequence_id,
-			'rating': rating,
-			'attribute_groups': attribute_groups,
-			'interpolated': interpolated,
-			'client_created_time': client_created_time,
-			'machine_made': machine_made,
-			'start_char': start_char,
-			'end_char': end_char,
-			'start_sentence': start_sentence,
-			'end_sentence': end_sentence,
-			'start_token': start_token,
-			'end_token': end_token,
-			'sentence': sentence,
-			'creation_ref_id': creation_ref_id,
-			'previous_id': previous_id,
-			'version': version,
-			'root_id': root_id,
-			'center_x': center_x,
-			'center_y': center_y,
-			'angle': angle,
-			'width': width,
-			'height': height,
-			'cp': cp,
-			'p1': p1,
-			'p2': p2,
-			'nodes': {'nodes': nodes},
-			'edges': {'edges': edges},
-            'pause_object': pause_object
-		}
         self.update_cache_single_instance_in_list_context()
         logger.debug('is_new_instance {}'.format(is_new_instance))
         if is_new_instance is False:
