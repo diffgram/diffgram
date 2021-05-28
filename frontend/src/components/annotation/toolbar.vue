@@ -1,13 +1,12 @@
 <template>
-<div v-cloak>
-
 <v-toolbar
       v-if="show_toolbar"
       dense
-      elevation="1"
+      width="100%"
+      elevation="0"
       fixed
       :height="height"
-      style="overflow: hidden; padding:0"
+      style="overflow: hidden; padding:0; border-bottom: 1px solid #e0e0e0"
       >
   <v-toolbar-items>
 
@@ -744,14 +743,13 @@
 
       </template>
      </button_with_menu>
+    <v-spacer class="flex-grow-1"></v-spacer>
 
 
 
       </v-toolbar-items>
     </v-toolbar>
 
-
-</div>
 </template>
 
 <script lang="ts">
