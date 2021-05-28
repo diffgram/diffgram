@@ -157,9 +157,9 @@
       </template>
     </v-snackbar>
 
-  <v-sheet >
+  <v-sheet style="outline: none" >
 
-   <v-layout >
+   <v-layout style="outline: none">
 
 
 
@@ -6400,3 +6400,10 @@ export default Vue.extend( {
     }
   }
   ) </script>
+
+<style>
+  #canvas_wrapper, #annotation_core{
+    outline: none;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+  }
+</style>
