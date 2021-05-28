@@ -6,6 +6,7 @@
 
 
       <main_menu :height="`${show_default_navigation ? '100px' : '50px'}`"
+
                  :show_default_navigation="show_default_navigation">
 
         <template slot="second_row" >
@@ -318,8 +319,7 @@
         </v-container>
       </v-container>
       <div id="annotation" tabindex="0"
-           v-if="!error_no_permissions.data"
-           class="pl-1 pt-1">
+           v-if="!error_no_permissions.data">
 
         <!-- Must wrap canvas to detect events in this context
       Careful, the slider needs to be in this context too
@@ -2899,7 +2899,7 @@ export default Vue.extend( {
        * frame: [list of sequence ids]
        * 351: [3619]
          355: [3620, 3621]
-       * 
+       *
        */
       let keyframes_to_sequences = {}
 
@@ -4065,7 +4065,7 @@ export default Vue.extend( {
   },
 
   ghost_clear_hover_index: function () {
-    this.ghost_instance_hover_index = null   
+    this.ghost_instance_hover_index = null
     this.ghost_instance_hover_type = null
   },
 
@@ -4074,7 +4074,7 @@ export default Vue.extend( {
   },
 
   ghost_promote_instance_to_actual: function (ghost_index) {
-      this.has_changed = true  // otherwise user click event won't trigger change detection 
+      this.has_changed = true  // otherwise user click event won't trigger change detection
 
       let instance = this.ghost_instance_list[ghost_index]
       this.add_instance_to_frame_buffer(instance, this.current_frame)    // this handles the creation_ref_id stuff too

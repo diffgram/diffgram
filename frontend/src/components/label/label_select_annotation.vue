@@ -82,18 +82,20 @@
 
         <template v-slot:selection="data">
 
-          <v-icon
-            left
-            :style="style_color(data.item.colour.hex)">
-            flag
-          </v-icon>
+          <div class="mb-4">
+            <v-icon
+              left
+              :style="style_color(data.item.colour.hex)">
+              flag
+            </v-icon>
 
-          <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                  color="black">
-            mdi-flag-checkered
-          </v-icon>
+            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
+                    color="black">
+              mdi-flag-checkered
+            </v-icon>
 
-          {{ label_name_truncated(data.item.label.name) }}
+            {{ label_name_truncated(data.item.label.name) }}
+          </div>
 
         </template>
 
