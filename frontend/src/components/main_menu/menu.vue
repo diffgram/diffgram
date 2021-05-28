@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="padding: 0">
     <!-- v toolbar has drawer access button which interfaces
      with v navigation drawer. they are technically seperate components
      but are logically connected given this button so keeping together here
@@ -111,12 +111,13 @@
 
 
     <v-app-bar app
+               style="padding: 0; background: white;"
                elevation="0"
                :height="height">
 
     <v-layout column>
 
-      <v-layout>
+      <v-layout >
 
       <!-- TODO would like to add  style="overflow: hidden"
            to toolbar but on marketing menu it causes
@@ -125,6 +126,7 @@
 
       <v-toolbar height="50px"
                  padding="0"
+                 class="pl-4 pr-4"
                  v-if="show_default_navigation == true"
                  >
       <ahref_seo_optimal :href="route_home">
@@ -169,7 +171,7 @@
           <!-- Only show menu if a builder mode is enabled
       (new users have no mode enabled-->
 
- 
+
 
           <!-- END action menu -->
 
@@ -486,3 +488,8 @@ import Vue from "vue";
   }
 }
 ) </script>
+<style>
+  .v-toolbar__content{
+    padding: 0;
+  }
+</style>

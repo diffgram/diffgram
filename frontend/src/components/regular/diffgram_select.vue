@@ -79,7 +79,7 @@
     <!-- Menu CLOSED -->
       <template v-slot:selection="data">
 
-        <v-layout>
+        <v-layout class="mb-4">
 
           <v-icon v-if="data.item.icon"
                   :color="data.item.color"
