@@ -26,6 +26,7 @@
     "codemirror": "^5.60.0",
     "cypress": "7.4.0",
     "debounce": "^1.2.0",
+    "filesize": "^6.3.0",
     "highlight.js": "^10.6.0",
     "lodash.debounce": "^4.0.8",
     "mailslurp-client": "^10.2.1",

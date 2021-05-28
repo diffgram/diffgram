@@ -76,7 +76,6 @@ class TestS3Connector(testing_setup.DiffgramBaseTestCase):
                 'connection_id': -1
             }
         })
-        print('AAAA', created_input)
 
         self.assertEqual(type(created_input), type(Input()))
 

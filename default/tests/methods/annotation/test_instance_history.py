@@ -79,7 +79,7 @@ class TestInstanceHistory(testing_setup.DiffgramBaseTestCase):
             project = self.project,
             instance_id = instance1.id
         )
-        print('AASDASD', log)
+
         self.assertEqual(len(history_serialized), 4)
         ids = [x['id'] for x in history_serialized]
         self.assertTrue(instance1.id in ids)

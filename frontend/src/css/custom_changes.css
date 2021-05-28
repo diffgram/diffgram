@@ -5,7 +5,9 @@
 .clickable:hover {
   cursor: pointer;
 }
-
+html{
+  overflow-y: auto;
+}
 .StripeElement {
   background-color: white;
   height: 40px;

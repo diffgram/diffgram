@@ -1,8 +1,8 @@
 <template>
   <div id="input_view">
 
-    <v-card>
-      <v-container>
+    <v-card elevation="0">
+      <v-container fluid>
 
         <v-card-title>
           <h3> {{ title }} </h3>
@@ -143,7 +143,7 @@
 
               <td>
 
-                <!-- 
+                <!--
                    These are two seperate tooltips even though they repeat the status text
                    in new setup having two activators in one template did not seem to work
                    maybe have to use a different variable name (ie "on" can't be reused??)

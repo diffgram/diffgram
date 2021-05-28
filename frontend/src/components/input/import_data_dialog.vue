@@ -4,6 +4,7 @@
     <v-dialog v-model="is_open" max-width="1500px" id="export-dialog">
       <v-card elevation="0">
         <v_upload_large :initial_dataset="latest_dataset" :show_labels_button="false":project_string_id="project_string_id" class="pa-8"></v_upload_large>
+
       </v-card>
     </v-dialog>
 

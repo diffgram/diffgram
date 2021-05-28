@@ -23,7 +23,6 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-print('AAAAAAAAAAAAAAA', settings.DATABASE_URL)
 db_url_escaped = settings.DATABASE_URL.replace('%', '%%')
 config.set_main_option('sqlalchemy.url', db_url_escaped)
 

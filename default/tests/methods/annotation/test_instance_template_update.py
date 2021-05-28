@@ -110,7 +110,6 @@ class TeseInstanceTemplateUpdate(testing_setup.DiffgramBaseTestCase):
                                                                             instance_list = new_instance_list,
                                                                             instance_template_id = instance_template1.id,
                                                                             log = regular_log.default())
-        print('asdasd', result)
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertTrue('instance_list' in result)
         self.assertTrue('name' in result)

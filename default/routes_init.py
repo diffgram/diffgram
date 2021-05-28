@@ -23,6 +23,7 @@ def do_routes_importing():
 
     from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
+    from methods.source_control.file.file_exists import file_list_exists_api
 
     from methods.task.stats.stats_leaderboard import stats_leadboard_api
     from methods.task.stats.stats_job import stats_job_api
@@ -110,3 +111,5 @@ def do_routes_importing():
     from methods.report.report_runner import report_save_api
     from methods.report.report_list import report_list_api
     from methods.userscript.userscript import userscript_new_api
+
+    from methods.batch.batch_new import new_input_batch

@@ -452,7 +452,7 @@
 
     .dropzone .dz-preview .dz-progress {
       opacity: 1;
-      z-index: 1000;
+      z-index: 15;
       pointer-events: none;
       position: absolute;
       height: 16px;
