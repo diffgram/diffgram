@@ -3,14 +3,14 @@
   <v-bottom-sheet fullscreen v-if="is_open" v-model="is_open"
                   width="1700px" id="task-input-list-dialog"
 
-            persistent>
+                  persistent>
     <v-layout style="position: relative; z-index: 999999">
       <v-btn class="" @click="close" icon x-large style="position: absolute; top: 0; right: -10px;">
         <v-icon>mdi-close</v-icon>
       </v-btn>
     </v-layout>
 
-    <v-stepper v-model="el"  :non-linear="true" style="height: 100%;" @change="on_change_step">
+    <v-stepper v-model="el" :non-linear="true" style="height: 100%;" @change="on_change_step">
 
       <v-stepper-header class="ma-0 pl-8 pr-8">
         <v-stepper-step
@@ -66,8 +66,12 @@
       <v-stepper-items style="height: 100%">
         <v-stepper-content step="1" style="height: 100%">
           <div class="d-flex justify-center flex-column">
-            <h1 class="text-center"><v-icon x-large color="primary">mdi-upload</v-icon>Welcome to the Diffgram Upload Wizard!</h1>
-            <h3 class="text-center">We will guide you through all the steps you need to take to add new data to your project</h3>
+            <h1 class="text-center">
+              <v-icon x-large color="primary">mdi-upload</v-icon>
+              Welcome to the Diffgram Upload Wizard!
+            </h1>
+            <h3 class="text-center">We will guide you through all the steps you need to take to add new data to your
+              project</h3>
             <br>
             <br>
             <h2 class="text-center mb-12">Do you want to upload new data or update existing files?</h2>
@@ -77,7 +81,8 @@
                 data-cy="upload_existing_data"
                 color="primary lighten-2"
                 @click="set_upload_mode('update')"
-              >Update Existing</v-btn>
+              >Update Existing
+              </v-btn>
               <v-btn
                 color="primary"
                 x-large
@@ -88,9 +93,13 @@
               </v-btn>
             </div>
             <div class="d-flex flex-column mt-12 justify-center align-center">
-              <h4 class="mb-4 primary--text lighten-2"><v-icon>mdi-database-check-outline</v-icon>Want an example JSON to test out?</h4>
+              <h4 class="mb-4 primary--text lighten-2">
+                <v-icon>mdi-database-check-outline</v-icon>
+                Want an example JSON to test out?
+              </h4>
               <p class="secondary--text"><strong>
-                <a class="secondary--text" href="https://storage.googleapis.com/diffgram-002/public/diffgramDataUploadExample.zip">
+                <a class="secondary--text"
+                   href="https://storage.googleapis.com/diffgram-002/public/diffgramDataUploadExample.zip">
                   <v-icon large>mdi-download</v-icon>
                   Download our sample data clicking here.
                 </a>
@@ -100,8 +109,12 @@
         </v-stepper-content>
         <v-stepper-content step="2" style="height: 100%">
           <div class="d-flex justify-center flex-column align-center ma-auto">
-            <h1 class="text-center"><v-icon x-large color="primary">mdi-folder</v-icon>Select Dataset: </h1>
-            <h3 class="text-center">Please select the dataset where you want to upload your files, or create a new one.</h3>
+            <h1 class="text-center">
+              <v-icon x-large color="primary">mdi-folder</v-icon>
+              Select Dataset:
+            </h1>
+            <h3 class="text-center">Please select the dataset where you want to upload your files, or create a new
+              one.</h3>
             <br>
             <br>
             <div class="d-flex justify-space-around">
@@ -367,7 +380,7 @@
         return get_initial_state();
       },
       computed: {
-        global_progress: function(){
+        global_progress: function () {
           return 100 * (parseFloat(this.completed_questions) / this.total_questions);
 
         },
@@ -431,7 +444,22 @@
 
         },
       },
-      watch: {},
+      watch: {
+        $route(to, from) {
+          // react to route changes...
+          console.log('TOO', to.query.step)
+          if(!to.query.step){
+            this.el = 1;
+            this.close();
+          }
+          else{
+            this.el = to.query.step;
+          }
+        },
+        el: function(newVal, oldVal){
+          this.$router.push({query: {step: newVal}}).catch(() => {})
+        }
+      },
       mounted() {
         this.set_current_directory(this.$store.state.project.current_directory)
       },
@@ -441,25 +469,25 @@
       },
 
       methods: {
-        on_change_step: function(step){
+        on_change_step: function (step) {
           const stepnum = parseInt(step, 10);
-          if(stepnum === 3){
+          if (stepnum === 3) {
             this.$refs.new_or_update_upload_screen.upload_source = undefined;
             this.$refs.new_or_update_upload_screen.with_prelabeled = undefined;
           }
+          this.$router.push({query:{step: step}}).catch(()=>{});
         },
-        set_upload_mode: function(mode){
+        set_upload_mode: function (mode) {
           this.upload_mode = mode;
-          if(mode === 'new'){
+          if (mode === 'new') {
             this.set_completed_questions(1);
-          }
-          else{
+          } else {
             this.set_completed_questions(1);
           }
 
           this.check_errors_and_go_to_step(2)
         },
-        set_completed_questions: function(value){
+        set_completed_questions: function (value) {
           this.completed_questions = value;
 
         },
@@ -580,6 +608,7 @@
           this.is_open = false;
           Object.assign(this.$data, get_initial_state());
           this.$emit('closed')
+          this.$router.push({query: {}}).catch(()=>{});
         },
 
         async check_errors_and_go_to_step(step) {
@@ -587,17 +616,13 @@
             this.errors_file_schema = undefined;
             this.el = step;
           } else if (step === 6) {
-
             this.el = step
-          }
-          else if(step === 3){
+          } else if (step === 3) {
             this.set_completed_questions(2);
             this.el = step
-          }
-          else{
+          } else {
             this.el = step
           }
-
         },
         async update_sync_jobs_list(dir) {
           try {
@@ -653,7 +678,7 @@
   ) </script>
 
 <style>
-  .v-stepper__wrapper{
+  .v-stepper__wrapper {
     height: 100%;
   }
 </style>
