@@ -11,7 +11,7 @@ from shared.database.core import MutableDict, JSONEncodedDict
 
 # revision identifiers, used by Alembic.
 revision = '990839b415fc'
-down_revision = '77907aedd319'
+down_revision = 'c3d95120b9ce'
 branch_labels = None
 depends_on = None
 
