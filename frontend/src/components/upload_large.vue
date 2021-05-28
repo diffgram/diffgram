@@ -156,9 +156,10 @@
       </template>
     </v-snackbar>
     <upload_wizard_sheet
+      v-if="open_wizard"
       :project_string_id="project_string_id"
       :initial_dataset="undefined"
-      @closed="request_refresh = new Date()"
+      @closed="on_wizard_closed"
       ref="upload_wizard_sheet">
 
     </upload_wizard_sheet>
@@ -221,6 +222,7 @@
           loading_sync_jobs: false,
 
           is_actively_sending: false,
+          open_wizard: false,
 
           tabs: 2,
 
@@ -280,10 +282,16 @@
         clearInterval(this.refresh_interval)
       },
       methods: {
+        on_wizard_closed: function(){
+          this.open_wizard = false;
+          this.request_refresh = new Date();
+        },
         open_confirm_dialog_sample_data: function(){
           this.dialog_confirm_sample_data = true;
         },
-        open_upload_wizard_sheet: function(){
+        open_upload_wizard_sheet: async function(){
+          this.open_wizard = true;
+          await this.$nextTick();
           this.$refs.upload_wizard_sheet.open();
         },
         upload_to_diffgram: function(file, pre_labeled_data){

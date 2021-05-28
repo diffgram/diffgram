@@ -75,9 +75,10 @@
 
     </div>
     <upload_wizard_sheet
+      v-if="open_wizard"
+      @closed="on_close_wizard"
       :project_string_id="project_string_id"
       :initial_dataset="latest_dataset"
-      @closed="request_refresh = new Date()"
       ref="upload_wizard_sheet">
 
     </upload_wizard_sheet>
@@ -125,7 +126,9 @@
 
       data() {
         return {
-          attached_dirs: []
+          attached_dirs: [],
+          open_wizard: false,
+          request_refresh: new Date()
         }
       },
       created() {
@@ -138,7 +141,13 @@
         }
       },
       methods: {
-        open_import_data_sheet: function(){
+        on_close_wizard: function(){
+          this.open_wizard = false;
+          this.request_refresh = new Date();
+        },
+        open_import_data_sheet: async function(){
+          this.open_wizard = false;
+          await this.$nextTick();
           this.$refs.upload_wizard_sheet.open();
         },
         update_attached_dirs: function () {
