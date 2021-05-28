@@ -3,9 +3,11 @@
        v-if="error != undefined">
 
     <v-alert v-if="Object.keys(error).length"
+             v-model="show"
              type="error"
              :width="width"
              :height="height"
+             :dense="dense"
              dismissible
              >
 
@@ -70,10 +72,24 @@ import Vue from "vue"; export default Vue.extend( {
     },
     'height':{
       default: undefined
-    }
+    },
+    'dense': {
+      default: false
+    },
   },
   data() {
     return {
+      show: false
+    }
+  },
+  watch:{
+    error: function(newVal, oldVal){
+      if(newVal){
+        this.show = true
+      }
+      else{
+        this.show = false;
+      }
     }
   },
   computed: {

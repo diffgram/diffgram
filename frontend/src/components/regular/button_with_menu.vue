@@ -6,7 +6,8 @@
     :right="tooltip_direction_right"
     :left="tooltip_direction_left"
     :disabled="!tooltip_message"
-             >
+
+  >
     <!-- disabled note: hides tooltip visual. button / inner content still works -->
 
     {{ tooltip_message }}

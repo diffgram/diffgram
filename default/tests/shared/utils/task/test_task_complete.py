@@ -66,7 +66,6 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
                                          'file': file,
                                          'job': job,
                                          'file_original': original_file}, self.session)
-        print('aasadsd', task.job, task.job.completion_directory_id)
         task_complete.merge_task(self.session, job, task)
         self.session.commit()
         file_link = self.session.query(WorkingDirFileLink).filter(

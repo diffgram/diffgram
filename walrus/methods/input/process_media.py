@@ -37,16 +37,17 @@ from shared.data_tools_core import Data_tools
 
 global Update_Input
 from methods.input.input_update import Update_Input
-
+from shared.database.model.model_run import ModelRun
+from shared.database.model.model import Model
 from shared.utils import job_dir_sync_utils
 from shared.database.task.job.job import Job
 from tenacity import retry, wait_random_exponential, stop_after_attempt
 from shared.database.text_file import TextFile
 from shared.database.task.job.job_working_dir import JobWorkingDir
+from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
 import numpy as np
-
 
 data_tools = Data_tools().data_tools
 
@@ -68,6 +69,7 @@ class PrioritizedItem:
     video_id: Any = field(compare=False, default=None)
     video_parent_file: Any = field(compare=False, default=None)
     frame_number: Any = field(compare=False, default=None)
+    global_frame_number: Any = field(compare=False, default=None)
     frame_completion_controller: Any = None
     total_frames: int = 0
     num_frames_to_update: int = 0
@@ -165,9 +167,6 @@ def add_item_to_queue(item):
         FRAME_QUEUE.put(item)
     else:
         VIDEO_QUEUE.put(item)
-
-    print('FRAME_QUEUE', FRAME_QUEUE.qsize())
-    print('VIDEO_QUEUE', VIDEO_QUEUE.qsize())
 
 
 def process_media_queue_worker(queue):
@@ -944,7 +943,7 @@ class Process_Media():
             "video": self.process_video,
             "csv": self.process_csv_file
         }
-        print('ON route_based_on_media_type', strategy_operations)
+
         operation = None
 
         if not self.input:
@@ -1007,6 +1006,7 @@ class Process_Media():
             return
 
         try:
+            print('comit...')
             self.session.commit()
         except:
             self.session.rollback()
@@ -1417,7 +1417,7 @@ class Process_Media():
         )
 
         ###
-
+        self.populate_new_models_and_runs()
         # If it's a video then we expect it will be handled by the above detection
         if self.input.media_type == 'image':
 
@@ -1441,6 +1441,14 @@ class Process_Media():
 
         return True
 
+    def __get_allowed_model_ids(self):
+        models = Model.list(session = self.session, project_id = self.project_id)
+        return [m.id for m in models]
+
+    def __get_allowed_model_run_ids(self):
+        model_run_list = ModelRun.list(session = self.session, project_id = self.project_id)
+        return [m.id for m in model_run_list]
+
     def process_existing_instance_list(self, init_existing_instances=False):
         """
         Assumptions
@@ -1453,7 +1461,7 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-
+        print('INSTANCE LIST', self.input.instance_list)
         if not self.input.instance_list:
             return
 
@@ -1465,7 +1473,6 @@ class Process_Media():
         instance_list = self.input.instance_list.get('list')
         task = None
         should_complete_task = False
-
         if not instance_list:
             return
 
@@ -1490,30 +1497,38 @@ class Process_Media():
             }
 
         file = File.get_by_id(self.session, file_id)  # For video, expects it to be parent video file, not a frame
-        
-        annotation_update = Annotation_Update(
-            session=self.session,
-            file=file,
-            instance_list_new=instance_list,
-            project_id=self.input.project_id,
-            video_data=video_data,
-            task=task,
-            complete_task=should_complete_task,
-            do_init_existing_instances=init_existing_instances,
-            external_map=self.input.external_map,
-            external_map_action=self.input.external_map_action,
-            do_update_sequences=False
-        )
+        allowed_model_id_list = self.__get_allowed_model_ids()
+        allowed_model_runs_id_list = self.__get_allowed_model_run_ids()
+        try:
+            annotation_update = Annotation_Update(
+                session=self.session,
+                file=file,
+                instance_list_new=instance_list,
+                project_id=self.input.project_id,
+                video_data=video_data,
+                task=task,
+                complete_task=should_complete_task,
+                do_init_existing_instances=init_existing_instances,
+                external_map=self.input.external_map,
+                external_map_action=self.input.external_map_action,
+                do_update_sequences=False,
+                allowed_model_id_list = allowed_model_id_list,
+                allowed_model_run_id_list = allowed_model_runs_id_list
+            )
+            # This returns original file type which would be different
+            new_file = annotation_update.main()
+            # Because we don't have great way to handle old and new yet
+            # Maybe just do this for update mode
+            # Careful, for frames, "file" changes here.
+            # eg file doesn't exist, then annotation creates it.
+            annotation_update.file.set_cache_key_dirty('instance_list')
 
+        except Exception as e:
+            trace = traceback.format_exc()
+            self.input.status = "failed"
+            self.input.status_text = "Instance List Creation error: {}".format(trace)
+            logger.error(trace)
 
-        # This returns original file type which would be different
-        new_file = annotation_update.main()
-
-        # Because we don't have great way to handle old and new yet
-        # Maybe just do this for update mode
-        # Careful, for frames, "file" changes here.
-        # eg file doesn't exist, then annotation creates it. 
-        annotation_update.file.set_cache_key_dirty('instance_list')
         # Propgate errors if any back up to input
         if len(annotation_update.log["error"].keys()) >= 1:
             self.input.status = "failed"
@@ -1922,6 +1937,40 @@ class Process_Media():
 
             self.input.status = "downloaded"
 
+    def populate_new_models_and_runs(self):
+        if self.input.media_type == 'video':
+            print('populate_new mode;s', self.input.frame_packet_map)
+            if not self.input.frame_packet_map:
+                return
+            frame_packet_map = self.input.frame_packet_map.copy()
+            self.input.frame_packet_map = {}
+            self.session.add(self.input)
+            new_frame_packet_map = {}
+            for frame_num, instance_list in frame_packet_map.items():
+
+                model_manager = ModelManager(session = self.session,
+                                             instance_list_dicts = instance_list,
+                                             member = self.member,
+                                             project = self.project)
+                model_manager.check_instances_and_create_new_models()
+                new_frame_packet_map[frame_num] = instance_list
+            # Replace with the instance list that has model_ids and run_ids
+
+            self.input.frame_packet_map = new_frame_packet_map
+        elif self.input.media_type == 'image':
+            if not self.input.instance_list or self.input.instance_list.get('list') is None:
+                return
+            instance_list = self.input.instance_list['list'].copy()
+            self.input.instance_list = {}
+            model_manager = ModelManager(session = self.session,
+                                         instance_list_dicts = instance_list,
+                                         member = self.member,
+                                         project = self.project)
+            model_manager.check_instances_and_create_new_models()
+            # Replace with the instance list that has model_ids and run_ids
+            self.input.instance_list = {'list': instance_list}
+        self.session.add(self.input)
+        self.try_to_commit()
 
     def process_video(self):
 
@@ -1940,14 +1989,17 @@ class Process_Media():
 
         # TODO Would prefer to just pass input here
         # Not redeclaring
+
         try:
-            print('PROCESSING VIDEO')
+            self.populate_new_models_and_runs()
             file = new_video.load(
                 video_file_name=self.input.temp_dir_path_and_filename,
                 original_filename=self.input.original_filename,
                 extension=self.input.extension,
                 input=self.input,
                 directory_id=self.input.directory_id)
+
+
         except Exception as e:
             self.input.status = 'failed'
             self.log['error']['process_video'] = 'Failed To process video: {}'.format(traceback.format_exc())

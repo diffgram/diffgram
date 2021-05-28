@@ -14,33 +14,36 @@ try:
 except:
     pass
 from shared.regular import regular_methods
+from methods.input.upload import Upload
 
 
 def enqueue_packet(project_string_id,
                    session,
-                   media_url=None,
-                   media_type=None,
-                   file_id=None,
-                   job_id=None,
-                   batch_id=None,
-                   directory_id=None,
-                   source_directory_id=None,
-                   instance_list=None,
-                   video_split_duration=None,
-                   frame_packet_map=None,
-                   remove_link=None,
-                   add_link=None,
-                   copy_instance_list=None,
-                   commit_input=False,
-                   task_id=None,
-                   video_parent_length=None,
-                   type=None,
-                   task_action=None,
-                   external_map_id=None,
-                   external_map_action=None,
-                   enqueue_immediately=False,
-                   mode=None,
-                   allow_duplicates=False):
+                   media_url = None,
+                   media_type = None,
+                   file_id = None,
+                   file_name = None,
+                   job_id = None,
+                   batch_id = None,
+                   directory_id = None,
+                   source_directory_id = None,
+                   instance_list = None,
+                   video_split_duration = None,
+                   frame_packet_map = None,
+                   remove_link = None,
+                   add_link = None,
+                   copy_instance_list = None,
+                   commit_input = False,
+                   task_id = None,
+                   video_parent_length = None,
+                   type = None,
+                   task_action = None,
+                   external_map_id = None,
+                   external_map_action = None,
+                   enqueue_immediately = False,
+                   mode = None,
+                   allow_duplicates = False,
+                   extract_labels_from_batch = False):
     """
         Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
@@ -48,7 +51,7 @@ def enqueue_packet(project_string_id,
     :return:
     """
     diffgram_input = Input()
-
+    project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
@@ -60,7 +63,7 @@ def enqueue_packet(project_string_id,
     diffgram_input.external_map_action = external_map_action
     diffgram_input.task_action = task_action
     diffgram_input.mode = mode
-    diffgram_input.project = Project.get(session, project_string_id)
+    diffgram_input.project = project
     diffgram_input.media_type = media_type
     diffgram_input.type = "from_url"
     diffgram_input.url = media_url
@@ -77,7 +80,11 @@ def enqueue_packet(project_string_id,
 
     session.add(diffgram_input)
     session.flush()
-
+    if batch_id and extract_labels_from_batch:
+        upload_tools = Upload(session = session, project = project, request = None)
+        upload_tools.extract_instance_list_from_batch(input = diffgram_input,
+                                                      input_batch_id = batch_id,
+                                                      file_name = file_name)
     # Expect temp dir to be None here.
     # because each machine should assign it's own temp dir
     # Something else to consider for future here!
@@ -139,6 +146,7 @@ def input_packet(project_string_id):
     spec_list = [{'job_id': None},
                  {'file_id': None},
                  {'mode': None},
+                 {'batch_id': None},
                  {"media": {
                      'default': {},
                      'kind': dict,
@@ -160,7 +168,7 @@ def input_packet(project_string_id):
 
     # Careful, getting this from headers...
     directory_id = request.headers.get('directory_id', None)
-    if directory_id is None:
+    if directory_id is None and input['mode'] != 'update':
         log["error"]['directory'] = "'directory_id' not supplied"
         return jsonify(log=log), 400
 
@@ -198,7 +206,10 @@ def input_packet(project_string_id):
     diffgram_input_id = None
     video_split_duration = input['video_split_duration']
 
-    client_id = request.authorization.get('username', None)
+    client_id = None
+    if request.authorization:
+        client_id = request.authorization.get('username', None)
+
     with sessionMaker.session_scope() as session:
         # Creates and input and puts it in the media processing queue.
         diffgram_input = enqueue_packet(project_string_id=project_string_id,
@@ -210,17 +221,21 @@ def input_packet(project_string_id):
                                         directory_id=directory_id,
                                         instance_list=untrusted_input.get('instance_list', None),
                                         video_split_duration=video_split_duration,
-                                        frame_packet_map=untrusted_input.get('frame_packet_map', None),
+                                        frame_packet_map=input.get('frame_packet_map', None),
+                                        batch_id = untrusted_input.get('batch_id', None),
                                         mode=mode)
-
-        auth_api = Auth_api.get(
-            session=session,
-            client_id=client_id)
+        auth_api = None
+        if client_id:
+            auth_api = Auth_api.get(
+                session=session,
+                client_id=client_id)
+        else:
+            user = User.get(session)
 
         Event.new(
             session=session,
             kind="input_from_packet",
-            member_id=auth_api.member_id,
+            member_id=auth_api.member_id if auth_api else user.member.id,
             project_id=diffgram_input.project.id,
             description=str(diffgram_input.media_type),
             input_id=diffgram_input.id

@@ -79,7 +79,6 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
                 'Authorization': 'Basic {}'.format(credentials)
             }
         )
-        print('asdasdsada', response.json)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json['url_list']), 3)
         i = 1

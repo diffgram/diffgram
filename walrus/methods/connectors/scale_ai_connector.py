@@ -487,7 +487,6 @@ def send_task_to_scale_ai():
             scale_ai_task, log = scale_ai_sync_manager.send_diffgram_task(task)
             logger.debug('Scale AI create result: {} || {}'.format(scale_ai_task, log))
             if not scale_ai_task:
-                print('aaaaaaaaaaaaaa', log)
                 return jsonify(log=log), 400
 
             return jsonify({'message': 'OK.', 'scale_ai_task_id': scale_ai_task.id})

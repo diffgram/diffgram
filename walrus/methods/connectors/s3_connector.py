@@ -1,6 +1,7 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
 import boto3
+
 from shared.helpers import sessionMaker
 from shared.database.project import Project
 from shared.database.auth.member import Member
@@ -64,6 +65,19 @@ class S3Connector(Connector):
             return {'log': log}
 
     @with_connection
+    def __get_string_data(self, opts):
+        """
+
+        :param opts:
+        :return:
+        """
+        bytes_buffer = io.BytesIO()
+        self.connection_client.download_fileobj(Bucket = opts['bucket_name'], Key = opts['path'], Fileobj = bytes_buffer)
+        byte_value = bytes_buffer.getvalue()
+        str_value = byte_value.decode()  # python3, default decoding is utf-8
+        return {'data': str_value}
+
+    @with_connection
     def __fetch_object(self, opts):
         """Upload a file to diffgram from an S3 bucket
 
@@ -113,15 +127,18 @@ class S3Connector(Connector):
                     success=False
                 )
                 return None
-            # print('AAAAA', opts, opts.get('job_id'))
+
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                   session=session,
                                                   media_url=signed_url,
                                                   media_type=media_type,
+                                                  file_name = opts['path'],
                                                   job_id=opts.get('job_id'),
+                                                  batch_id=opts.get('batch_id'),
                                                   video_split_duration=opts.get('video_split_duration'),
-                                                  directory_id=opts.get('directory_id'))
+                                                  directory_id=opts.get('directory_id'),
+                                                  extract_labels_from_batch=True)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
@@ -152,6 +169,7 @@ class S3Connector(Connector):
                         new_opts = {
                             'path': obj['Key'],
                             'directory_id': opts.get('directory_id'),
+                            'batch_id': opts.get('batch_id'),
                             'bucket_name': opts.get('bucket_name'),
                         }
                         opts_fetch_object.update(new_opts)
@@ -372,6 +390,8 @@ class S3Connector(Connector):
         action_type = opts.pop('action_type')
         if action_type == 'fetch_object':
             return self.__fetch_object(opts)
+        if action_type == 'get_string_data':
+            return self.__get_string_data(opts)
         if action_type == 'list_objects':
             return self.__fetch_object(opts)
         if action_type == 'count_objects':

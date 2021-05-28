@@ -1,0 +1,165 @@
+[
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 25,
+    "lower_y": 25,
+    "type": "box",
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "upper_x": 80,
+    "upper_y": 80,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1",
+    "frame_number": 3,
+    "sequence_number": 1,
+    "name": "apple"
+  },
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 150,
+    "type": "box",
+    "lower_y": 150,
+    "upper_x": 200,
+    "upper_y": 200,
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "name": "apple",
+    "frame_number": 4,
+    "sequence_number": 1,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1",
+    "name": "apple"
+  },
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 110,
+    "lower_y": 110,
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "upper_x": 145,
+    "type": "box",
+    "upper_y": 145,
+    "name": "apple",
+    "frame_number": 5,
+    "sequence_number": 1,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1"
+  },
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 250,
+    "frame_number": 6,
+    "sequence_number": 1,
+    "lower_y": 250,
+    "upper_x": 320,
+    "type": "box",
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "name": "apple",
+    "upper_y": 320,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1"
+  },
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 180,
+    "lower_y": 180,
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "upper_x": 215,
+    "type": "box",
+    "upper_y": 215,
+    "name": "apple",
+    "frame_number": 3,
+    "sequence_number": 1,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1"
+  },
+  {
+    "myFileName": "testimage2.jpg",
+    "lower_x": 25,
+    "lower_y": 50,
+    "upper_x": 75,
+    "points": [
+      {
+        "x": 125,
+        "y": 125
+      },
+      {
+        "x": 195,
+        "y": 210
+      },
+      {
+        "x": 45,
+        "y": 38
+      }
+    ],
+    "type": "box",
+    "upper_y": 145,
+    "name": "apple",
+    "frame_number": 1803,
+    "sequence_number": 1,
+    "model_id": "my_super_model_1",
+    "run_id": "my_super_model_1__run_1"
+  }
+]

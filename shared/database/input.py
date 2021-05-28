@@ -190,6 +190,7 @@ class Input(Base):
             sequence_map: dict = None,
             processing_deferred: bool = False,
             parent_input_id: int = None,
+            batch_id: int = None,
             video_split_duration: int = None
     ):
         """
@@ -223,6 +224,7 @@ class Input(Base):
             parent_input_id=parent_input_id,
             video_parent_length = video_parent_length,
             video_split_duration=video_split_duration,
+            batch_id=batch_id,
             copy_instance_list=copy_instance_list
         )
         input.parent_file_id = parent_file_id

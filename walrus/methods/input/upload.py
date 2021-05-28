@@ -10,9 +10,10 @@ from methods.input.process_media import PrioritizedItem
 from methods.input.process_media import add_item_to_queue
 
 from shared.database.input import Input
+from shared.database.batch.batch import InputBatch
 
 from shared.data_tools_core import Data_tools
-
+from shared.database.source_control.file import File
 
 data_tools = Data_tools().data_tools
 
@@ -51,7 +52,7 @@ def api_project_upload_large(project_string_id):
             return jsonify(log=upload.log), 400
 
         more_chunks_expected: bool = int(upload.dzchunkindex) + 1 != int(upload.dztotalchunkcount)
-        print('more_chunks_expected', more_chunks_expected)
+
         if more_chunks_expected is False:
             upload.start_media_processing(input=upload.input)
 
@@ -69,6 +70,56 @@ class Upload():
         self.project = project
         self.request = request
         self.log = regular_log.default()
+
+    def get_project_labels(self):
+        result = []
+        directory = self.project.directory_default
+
+        working_dir_sub_query = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == directory.id,
+            WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
+
+        working_dir_file_list = self.session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id).all()
+
+        for file in working_dir_file_list:
+            if file.state != "removed":
+                result.append(file.serialize_with_label_and_colour(session = self.session))
+        return result
+
+    def extract_instance_list_from_batch(self, input, input_batch_id, file_name):
+        input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        pre_labels = input_batch.pre_labeled_data
+        if pre_labels is None:
+            return input
+        uuid = None
+        file_data = None
+        if self.request:
+            uuid = self.request.form.get('uuid')
+            file_data = pre_labels.get(uuid)
+        if file_data is None:
+            # Try finding the pre_labels with the file_name as a backup
+            file_data = pre_labels.get(file_name)
+            if file_data is None:
+                logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
+                return
+        project_labels = self.get_project_labels()
+
+        if file_data['instance_list']:
+            instance_list = file_data['instance_list']
+            for instance in instance_list:
+                label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                instance['label_file_id'] = label_file['id']
+            input.instance_list = {'list': file_data['instance_list']}
+
+        if file_data['frame_packet_map']:
+            frame_packet_map = file_data['frame_packet_map']
+            for frame, instance_list in frame_packet_map.items():
+                for instance in instance_list:
+                    label_file = list(filter(lambda x: x['label']['name'] == instance['name'], project_labels))[0]
+                    instance['label_file_id'] = label_file['id']
+            input.frame_packet_map = frame_packet_map
+        return input
 
     def route_from_unique_id(self):
         """
@@ -167,11 +218,6 @@ class Upload():
         content_size = len(stream)
 
         try:
-            print('content start', self.dzchunkbyteoffset)
-            print('content content_size', content_size)
-            print('content total_size', self.dztotalfilesize)
-            print('content dzchunkindex', self.dzchunkindex)
-            print('content dztotalchunkcount', self.dztotalchunkcount)
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
                 blob_path=input.raw_data_blob_path,
@@ -190,7 +236,6 @@ class Upload():
                 return
 
         except Exception as exception:
-            print("for input id", str(input.id), exception)
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
             raise Exception #TODO REMOVE
@@ -226,8 +271,11 @@ class Upload():
             media_type=None,
             job_id=request.form.get('job_id'),
             directory_id=request.form.get('directory_id'),  # Not trusted
-            video_split_duration=request.form.get('video_split_duration')
+            video_split_duration=request.form.get('video_split_duration'),
+            batch_id=request.form.get('input_batch_id')
         )
+
+        self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
 
         self.session.add(self.input)
 

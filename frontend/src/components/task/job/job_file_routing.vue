@@ -65,7 +65,7 @@
 
       <tooltip_button
           tooltip_message="Open Quick Import Window"
-          @click="open_import_data_dialog"
+          @click="open_import_data_sheet"
           icon="mdi-application-import"
           :icon_style="true"
           :large="true"
@@ -74,12 +74,14 @@
       </tooltip_button>
 
     </div>
+    <upload_wizard_sheet
+      v-if="open_wizard"
+      @closed="on_close_wizard"
+      :project_string_id="project_string_id"
+      :initial_dataset="latest_dataset"
+      ref="upload_wizard_sheet">
 
-    <import_data_dialog :latest_dataset="latest_dataset"
-                        :project_string_id="project_string_id"
-                        ref="import_data_dialog">
-
-    </import_data_dialog>
+    </upload_wizard_sheet>
   </v-container>
 
 </template>
@@ -88,7 +90,7 @@
 
   import axios from 'axios';
   import label_select_only from '../../label/label_select_only.vue'
-  import import_data_dialog from '../../input/import_data_dialog'
+  import upload_wizard_sheet from '../../input/upload_wizard_sheet'
   import directory_icon_selector from '../../source_control/directory_icon_selector.vue'
   import job_output_dir_selector from './job_output_dir_selector.vue'
   import {route_errors} from '../../regular/regular_error_handling'
@@ -105,7 +107,7 @@
         label_select_only: label_select_only,
         directory_icon_selector: directory_icon_selector,
         job_output_dir_selector: job_output_dir_selector,
-        import_data_dialog: import_data_dialog
+        upload_wizard_sheet: upload_wizard_sheet
       },
       props: {
         'job': {
@@ -124,7 +126,9 @@
 
       data() {
         return {
-          attached_dirs: []
+          attached_dirs: [],
+          open_wizard: false,
+          request_refresh: new Date()
         }
       },
       created() {
@@ -137,8 +141,14 @@
         }
       },
       methods: {
-        open_import_data_dialog: function(){
-          this.$refs.import_data_dialog.open();
+        on_close_wizard: function(){
+          this.open_wizard = false;
+          this.request_refresh = new Date();
+        },
+        open_import_data_sheet: async function(){
+          this.open_wizard = false;
+          await this.$nextTick();
+          this.$refs.upload_wizard_sheet.open();
         },
         update_attached_dirs: function () {
           if (this.$props.job && this.$props.job.original_attached_directories_dict && this.$props.job.original_attached_directories_dict.attached_directories_list) {
