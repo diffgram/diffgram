@@ -2437,7 +2437,6 @@ export default Vue.extend( {
 
       if (update.mode == 'pause_object'){
         instance.pause_object = true
-        console.log(instance.pause_object)
       }
 
       // instance update
@@ -2873,7 +2872,6 @@ export default Vue.extend( {
       if (!this.sequence_list_local_copy) { return }
 
       let keyframes_to_sequences = this.build_keyframes_to_sequences_dict()
-      //console.log(keyframes_to_sequences)
 
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(keyframes_to_sequences)
 

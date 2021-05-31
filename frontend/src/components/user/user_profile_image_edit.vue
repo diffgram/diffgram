@@ -47,7 +47,7 @@
                       :options="dropzoneOptions"
                       v-on:vdropzone-success="upload_success">
         </vue-dropzone>
-  
+
       </v-card>
 
     </v-menu>
@@ -78,7 +78,7 @@ import Vue from "vue";
       },
 
       error_list: [],
-      
+
     }
   },
 
@@ -87,7 +87,7 @@ import Vue from "vue";
   },
 
   created() {
-    
+
   },
 
   methods: {
@@ -96,7 +96,6 @@ import Vue from "vue";
 
       let response = JSON.parse(file.xhr.response)
 
-      console.log(typeof (response), response)
       if (response.success == true) {
         this.$store.commit('set_current_user', response.user)
 

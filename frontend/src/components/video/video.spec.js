@@ -64,7 +64,6 @@ describe('video.vue', () => {
     await vue_instance.video_play();
     await vue_instance.$nextTick();
     expect(vue_instance.playing).to.equals(true);
-    console.log(vue_instance.playback_info);
     expect(vue_instance.playback_info).to.exist;
   })
 

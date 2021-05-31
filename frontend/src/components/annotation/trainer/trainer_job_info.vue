@@ -17,7 +17,7 @@
       More generally this component is a little bit confused
 
         -->
-      
+
       <div v-if="job.td_api_trainer_basic_training == true">
         <h2> <v-icon>mdi-heart</v-icon> Basic Training </h2>
       </div>
@@ -80,7 +80,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
           this.loading = false
 
         });

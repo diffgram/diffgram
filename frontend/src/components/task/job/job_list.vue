@@ -968,7 +968,7 @@
 
           })
             .catch(error => {
-              console.log(error);
+              console.error(error);
               this.loading = false
               this.logout()
             });

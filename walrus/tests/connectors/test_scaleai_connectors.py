@@ -67,6 +67,5 @@ class TestScaleAIConnection(testing_setup.DiffgramBaseTestCase):
                 'with_labels': True,
                 'metadata': meta_data,
             })
-        print('RESSS', result)
         self.assertEqual(type(result['result']).__name__, ScaleAITask.__name__)
         self.session.close()

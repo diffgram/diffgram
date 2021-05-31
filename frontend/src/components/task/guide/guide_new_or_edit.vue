@@ -18,7 +18,7 @@
           </v_error_multiple>
 
           <v-alert type="success"
-                   
+
                    v-if="success">
             Updated.
           </v-alert>
@@ -177,7 +177,7 @@
               this.error = error.response.data.log.error
             }
             this.loading = false
-            console.log(error)
+            console.error(error)
           });
 
       },
@@ -208,7 +208,7 @@
               this.error = error.response.data.log.error
             }
             this.loading = false
-            console.log(error)
+            console.error(error)
           });
 
       }

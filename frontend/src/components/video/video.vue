@@ -171,7 +171,7 @@
           </v-btn>
 
           </template>
-      </button_with_menu>  
+      </button_with_menu>
 
       <button_with_menu
           tooltip_message="More"
@@ -200,7 +200,7 @@
 
 
             <v-layout class="pb-2">
-          
+
               <tooltip_button
                   :loading="loading"
                   :disabled="go_to_keyframe_loading || playing"
@@ -240,7 +240,7 @@
             </template>
         </button_with_menu>
 
-  
+
         </v-row>
 
         <v-row @mousemove="mousemove_slider"
@@ -613,12 +613,10 @@ export default Vue.extend( {
       let padding = 16
       if (!this.$store.state.user.settings.studio_left_nav_width){
         this.$store.commit('set_user_setting', ['studio_left_nav_width', 350])
-        console.log("error, studio_left_nav_width is unavailable")
       }
       let offset = padding + this.$store.state.user.settings.studio_left_nav_width
       // guess declaritive is ok here
       if (isNaN(offset)){
-        console.log("offset is NaN")
         return
       }
 
@@ -626,7 +624,6 @@ export default Vue.extend( {
       let percent_on_slider = (this.mouse_x - offset) / slider_width
       // eg roughly between range 0 - > 1
       if (isNaN(percent_on_slider)){
-        console.log("percent_on_slider is NaN")
         return
       }
       // could also min/max it at 0 and highest frame
@@ -642,7 +639,6 @@ export default Vue.extend( {
       rounded_integer = Math.max(rounded_integer, 0)
 
       if (isNaN(rounded_integer)){
-        console.log("rounded_integer is NaN")
         return
       }
 
@@ -693,7 +689,6 @@ export default Vue.extend( {
 
       if (this.has_changed == true) {
         await this.sleep(200) // give it a chance to save / fire off thing
-        console.log("paused")
       }
 
       return true
@@ -706,7 +701,6 @@ export default Vue.extend( {
           break
         }
         await this.sleep(100)
-        //console.log("waiting", this.has_changed)
       }
 
       if (this.has_changed == true) {
@@ -768,7 +762,6 @@ export default Vue.extend( {
         return
 
       } else {
-        //console.log("fired")
 
         // assume for now if valid to run this then not at end of video.
         this.at_end_of_video = false
@@ -830,7 +823,6 @@ export default Vue.extend( {
       if(!this.primary_video){
         return;
       }
-      //console.log("push frame called")
 
       // TODO, just use "original frame rate" instead of doing multiplication here?
       // fps_conversion_ratio ie == 6, if original fps was 30 and new is 5 (original / actual fps)
@@ -891,7 +883,6 @@ export default Vue.extend( {
       if (frame_number != this.slider_end_cache) {
         this.slider_end_cache = frame_number
         this.video_current_frame_guess = frame_number
-        //console.log("Slide end")
         if (typeof this.video_current_frame_guess != "undefined") {
           this.get_video_single_image(frame_number)
         }
@@ -973,7 +964,6 @@ export default Vue.extend( {
        *  https://docs.google.com/document/d/1jZwKsHqzkuXMw9j8vVwdXAd_Kt6JZZiLZmtdHocW6Ng/edit#heading=h.fbzi8nmnh88v
        *
        */
-      //console.log("this.primary_video.currentTime", this.primary_video.currentTime)
 
       // Feb 24, 2020
       // only do this for high resolution media
@@ -994,7 +984,6 @@ export default Vue.extend( {
 
       } else {
 
-        //console.log("fired")
 
         /* Experiment that issue only seems to be on first load
          *
@@ -1038,7 +1027,6 @@ export default Vue.extend( {
           this.playPromise.then(_ => {
             // Automatic playback started!
             // Show playing UI.
-            //console.log("Success")
 
             this.playing = true
             this.playback_info = null // reset
@@ -1059,13 +1047,10 @@ export default Vue.extend( {
           .catch(error => {
             // Auto-play was prevented
             // Show paused UI.
-            // console.log("Failed")
-
             // TODO treat 403 / permissions errors differently
 
             this.playback_info = "Please check your internet connection. Or try reloading. Contact us if this persists."
             this.$emit('video_play_failed')
-            console.log(error)
 
             // throw new error for sentry IO capturing benefit
             // context of trying to get understanding of what client side issue
@@ -1090,7 +1075,6 @@ export default Vue.extend( {
       // returns a type long, a request id value
       // we can pass that to cancel to cancel animation
       // TODO clarify it's ok we reuse this.animation_request in this way
-     //  console.log("this.animation_request", this.animation_request)
 
     },
 
@@ -1112,7 +1096,6 @@ export default Vue.extend( {
       // TODO better logging of this type of info
       // ie retrying if can't load etc...
       // https://www.w3schools.com/tags/av_prop_networkstate.asp
-      // console.log(this.primary_video.networkState)
       // integer codes for state...
 
       // must be at end?
@@ -1269,7 +1252,6 @@ export default Vue.extend( {
         return url_list;
       } catch(error){
         this.error = this.$route_api_errors(error)
-        console.log(error)
       }
     },
     get_missing_frames_ahead: function(frame_number, n){
@@ -1295,7 +1277,6 @@ export default Vue.extend( {
         this.error = {}
 
         if (this.preview_frame_url_dict[frame_number]){
-          //console.log("Used cache")
           this.preview_frame_url = this.preview_frame_url_dict[frame_number]
           this.preview_frame_refresh = Date.now()
           // may have been different issue but good to have something that changes if URL is the same
@@ -1304,7 +1285,6 @@ export default Vue.extend( {
         }
         else{
           if (this.preview_frame_loading) {
-            //console.log("already loading")
             return}
           this.preview_frame_loading = true
           try{
@@ -1315,8 +1295,8 @@ export default Vue.extend( {
             this.preview_frame_loading = false;
           } catch(error){
             this.error = this.$route_api_errors(error)
-            console.log(error)
-            this.preview_frame_loading = false
+            this.preview_frame_loading = false;
+            console.error(error);
           }
 
         }
@@ -1363,8 +1343,6 @@ export default Vue.extend( {
             // Soft fail, ie can't get image and just want to annotate
             // of of video screen
             this.$emit('change_frame_from_video_event', false)
-            console.log("Using video image instead of still frame.")
-            //console.log(e)
 
             /* Context that on first load if it fails then need to "play" it to get first frame
              */
@@ -1415,7 +1393,6 @@ export default Vue.extend( {
             this.$store.commit('set_video_current', this.current_video)
           }
         }).catch(error => {
-          console.log(error)
           this.error = this.$route_api_errors(error)
         })
     },
@@ -1516,7 +1493,8 @@ export default Vue.extend( {
           }
         }).catch(e => {
           this.running_interpolation = false
-          console.log(e) })
+          console.log(e)
+        })
     },
     run_tracking() {
       this.run_tracking_disabled = true
@@ -1529,7 +1507,7 @@ export default Vue.extend( {
             this.run_tracking_disabled = false
 
           }
-        }).catch(e => { console.log(e) })
+        }).catch(e => { console.error(e) })
     },
     run_FAN() {
 
@@ -1547,7 +1525,7 @@ export default Vue.extend( {
           // Until we have better system
           //this.run_FAN_disabled = false
         }).catch(e => {
-          console.log(e)
+          console.error(e)
           this.run_FAN_disabled = false
         })
 

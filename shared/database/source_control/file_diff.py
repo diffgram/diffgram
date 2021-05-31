@@ -44,12 +44,10 @@ def difference_between_files(
 		annotation_list_bravo = bravo.instance_list
 		bravo_hash_list, bravo_hash_to_object = build_annotation_hash_list_to_object(
 			annotation_list_bravo)
-		#print("bravo_hash_list", bravo_hash_list)
 
 	annotation_list_alpha = alpha.instance_list
 	alpha_hash_list, alpha_hash_to_object = build_annotation_hash_list_to_object(
 		annotation_list_alpha)
-	#print("alpha_hash_list", alpha_hash_list)
 
 	# Could maybe compare hash_to_object directly? would have to test...
 	if bravo:
@@ -60,10 +58,6 @@ def difference_between_files(
 		unchanged = set_alpha.intersection(set_bravo)
 		added = set_alpha.difference(set_bravo)
 		deleted = set_bravo.difference(set_alpha)
-	
-		#print(added)
-		#print(unchanged)
-		#print(deleted)
 
 		changes['unchanged'] = get_annotation_database_objects(unchanged,
 															   alpha_hash_to_object)

@@ -134,7 +134,7 @@
             this.$store.dispatch('log_out')
           })
           .catch(error => {
-            console.log(error);
+            console.error(error);
           });
       },
       new_user: function () {
@@ -154,7 +154,7 @@
          'signup_code': this.signup_code
         }).then(response => {
 
-      
+
 
           this.$store.commit('log_in');
           this.$store.commit('set_user_name', this.email)

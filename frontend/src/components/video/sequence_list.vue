@@ -526,7 +526,6 @@ export default Vue.extend( {
        *
        */
 
-      //console.log(this.current_sequence, prior, old)
 
       if (!new_sequence) { return }
 
@@ -588,7 +587,6 @@ export default Vue.extend( {
 
 
       this.get_sequence_list()
-      //console.log(this.label_file_id)
     },
 
     // watch sequence_list cache (tags for seraching)
@@ -597,7 +595,6 @@ export default Vue.extend( {
        * design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
        */
 
-      //console.log("updated sequence_list cache")
 
       this.cache_sequence_list[this.label_file_id] =
         {
@@ -619,7 +616,6 @@ export default Vue.extend( {
   },
   created() {
 
-    //console.log(this.label_file_id)
     this.get_sequence_list()
 
     var self = this

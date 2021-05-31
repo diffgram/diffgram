@@ -60,7 +60,6 @@ export class CreateInstanceCommand {
         // Get the pushed instance to have the creation ref ID in future redo's
         this.instance = this._copyInstance(this.ann_core_ctx.instance_list[this.created_instance_index]);
         const polygon_alert_shown = this.ann_core_ctx.$store.state.user.settings.polygon_autoborder_info;
-        //console.log('polygon_alert_shown',polygon_alert_shown)
         if(this.instance.type === 'polygon' && !polygon_alert_shown){
           this.ann_core_ctx.canvas_alert_x = this.ann_core_ctx.mouse_position.x;
           this.ann_core_ctx.canvas_alert_y = this.ann_core_ctx.mouse_position.y;

@@ -86,7 +86,7 @@ import axios from 'axios';
 import Vue from "vue"; export default Vue.extend( {
   name: 'profile_in_menu',
   components: {
-    
+
   },
   data() {
     return {
@@ -103,7 +103,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
         });
     },
     edit: function () {

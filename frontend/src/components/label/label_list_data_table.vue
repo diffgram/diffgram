@@ -17,7 +17,7 @@
               :search="search"
               v-model="selected"
               class="elevation-1"
-              item-key="id"                          
+              item-key="id"
               ref="label_data_table"
               >
 
@@ -32,8 +32,8 @@
         </v-checkbox>
       </td>
 
-      <td>                 
-                                
+      <td>
+
         <div v-if="props.item.colour != undefined">
           <v-icon :style="style_color(props.item.colour.hex)"
                   class="clickable"
@@ -43,7 +43,7 @@
 
       </td>
 
-      <td> 
+      <td>
         {{ props.item.label.name }}
       </td>
     </tr>
@@ -56,7 +56,7 @@
 
 </v-data-table>
 
- 
+
 
 </div>
 </template>
@@ -70,13 +70,13 @@ import axios from 'axios';
 
     props: {
       'project_string_id': {},
-      'view_only_mode': {} 
+      'view_only_mode': {}
       },
   watch: {
 
   },
   mounted() {
-   
+
    this.refresh_label_list()
 
   },
@@ -88,7 +88,7 @@ import axios from 'axios';
       label_list : [],
 
       selected : [],  // would prefer selected_list but vuetify seems to need 'selected'
-      
+
       header_list: [
         {
           text: "Selected",
@@ -131,7 +131,7 @@ import axios from 'axios';
 
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
       });
 
     },

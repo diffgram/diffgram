@@ -89,7 +89,7 @@ import Vue from "vue"; export default Vue.extend( {
       },
 
       // TODO determine if should show message
-   
+
       loading: false,
 
 
@@ -126,13 +126,13 @@ import Vue from "vue"; export default Vue.extend( {
 
       })
         .catch(error => {
-          console.log(error);
+          console.error(error);
           this.loading = false
 
         });
     }
 
-  
+
   }
 }
 ) </script>

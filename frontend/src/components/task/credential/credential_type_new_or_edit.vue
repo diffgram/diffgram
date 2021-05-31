@@ -31,7 +31,7 @@
             </v-text-field>
 
              <v-btn v-if="mode=='new'"
-                   @click="new_credential_type_api"                
+                   @click="new_credential_type_api"
                    :loading="loading"
                    :disabled="loading"
                    color="primary">
@@ -71,7 +71,7 @@
                 <v-flex>
                   <!-- Archive button -->
 
-                  <!-- 
+                  <!--
                     not sure of fan of this being here should maybe be more from list
                     perspective? the api call is in this component
                     so just leaving it for now-->
@@ -98,7 +98,7 @@
       </v_error_multiple>
 
       <v-alert type="success"
-                
+
                 v-if="show_success">
         Updated.
       </v-alert>
@@ -124,7 +124,7 @@
         default: null
       },
       'mode': { // new, edit
-        default: 'new', 
+        default: 'new',
         type: String
       }
     }
@@ -218,9 +218,9 @@
           }).catch(error => {
             this.error= error.response.data.log.error
             this.loading = false
-            console.log(error)
+            console.error(error)
           });
-   
+
       },
       upload_success: function (file) {
 
@@ -235,11 +235,9 @@
         var self = this
         setTimeout(function () {
           self.$emit('refresh_list')
-          console.log(1)
         }, 2000)
         */
-        //console.log(typeof (response), response)
-       
+
       },
 
 
@@ -265,14 +263,14 @@
             this.show_success = true
             this.$emit('edit_success')
             this.loading = false
-      
+
 
           }).catch(error => {
             this.error= error.response.data.log.error
             this.loading = false
-            console.log(error)
+            console.error(error)
           });
-   
+
       },
 
     }
