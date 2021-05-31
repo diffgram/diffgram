@@ -4,10 +4,10 @@
       <v-layout>
         <!-- TODO clarify difference between this and trainer_job_info -->
 
-      
+
         <job_type :type="job.type"
                   :size="30">
-        </job_type>      
+        </job_type>
 
         <h2>
           {{ job.name }}
@@ -81,7 +81,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
           this.loading = false
 
         });

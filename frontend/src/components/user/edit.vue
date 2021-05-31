@@ -215,7 +215,7 @@ import Vue from "vue"; export default Vue.extend( {
 
           this.api_user_update_loading = false
           this.error_multiple = e.response.data.log.error
-          console.log(e)
+          console.error(e)
 
         })
 

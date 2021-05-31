@@ -72,7 +72,7 @@ export default Vue.extend({
   methods: {
     image_error: function (error){
       this.error = true
-      console.log(error)
+      console.error(error)
     }
 
 

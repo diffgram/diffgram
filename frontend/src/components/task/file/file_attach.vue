@@ -137,7 +137,7 @@
             // Till we handle error messages better here
             this.$store.commit('init_media_refresh')
 
-            console.log(error);
+            console.error(error);
             this.loading = false
           });
 

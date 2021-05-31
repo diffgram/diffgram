@@ -205,7 +205,7 @@ import Vue from "vue"; export default Vue.extend( {
           }
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
         });
 
     }

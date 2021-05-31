@@ -1461,7 +1461,6 @@ class Process_Media():
 
         Curious if better way to test this individual function here
         """
-        print('INSTANCE LIST', self.input.instance_list)
         if not self.input.instance_list:
             return
 

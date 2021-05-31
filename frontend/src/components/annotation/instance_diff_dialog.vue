@@ -64,7 +64,6 @@
       old_instance: function(newVal, oldVal){
         if(newVal != undefined){
           this.old_instance_text = this.render_instance_text(newVal)
-          console.log('old_instance_text', this.old_instance_text);
         }
       },
       new_instance: function(newVal, oldVal){

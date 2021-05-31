@@ -22,7 +22,7 @@
                v-if="error">
         {{error}}
       </v-alert>
-       
+
   </div>
 
 </template>
@@ -70,7 +70,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.$store.commit('patch_current_user', ['security_email_verified', true])
         }
 
-        console.log(error);
+        console.error(error);
         this.loading = false
       });
     }

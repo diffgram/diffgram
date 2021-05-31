@@ -48,7 +48,6 @@ class TestTaskTemplateLaunchHandler(testing_setup.DiffgramBaseTestCase):
             'project': self.project,
             'type': "Normal",
         }, self.session)
-        print(job.label_dict)
         result = task_template_launch_handler.task_template_launch_core(self.session, job)
         self.assertEqual(result, job)
         result = task_template_launch_handler.task_template_launch_core(self.session, None)

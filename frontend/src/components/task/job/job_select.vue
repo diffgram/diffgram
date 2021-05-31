@@ -291,8 +291,6 @@
             this.job_internal = job
             this.$emit('change', this.job_internal)
           }
-
-          //console.log(this.job_internal)
         },
         fetch_job: function () {
           // Just fetch if we have a job selected.
@@ -317,7 +315,7 @@
 
           })
             .catch(error => {
-              console.log(error);
+              console.error(error);
               this.loading_job_fetch = false;
             });
         },
@@ -375,7 +373,7 @@
 
           })
             .catch(error => {
-              console.log(error);
+              console.error(error);
               this.loading_internal = false
             });
         }
