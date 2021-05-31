@@ -222,7 +222,7 @@
               this.label_file_colour_map_from_project = response.data.label_file_colour_map
             })
             .catch(error => {
-            console.log(error);
+            console.error(error);
           });
 
         },

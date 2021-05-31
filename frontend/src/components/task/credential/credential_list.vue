@@ -555,7 +555,7 @@ import {create_event} from "../../event/create_event"; export default Vue.extend
 
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
           this.loading = false
           //this.logout()
         });
@@ -598,7 +598,7 @@ import {create_event} from "../../event/create_event"; export default Vue.extend
           this.loading = false
 
         }).catch(e => {
-          console.log(e)
+          console.error(e)
           this.error_attach = e.response.data.log.error
           this.loading = false
 

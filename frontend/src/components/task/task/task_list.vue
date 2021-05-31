@@ -702,7 +702,7 @@
             }
             return response
           } catch (error) {
-            console.log(error);
+            console.error(error);
             return false;
           }
         },
@@ -729,7 +729,7 @@
             }
             return response
           } catch (error) {
-            console.log(error);
+            console.error(error);
             return false;
           } finally {
             this.loading = false

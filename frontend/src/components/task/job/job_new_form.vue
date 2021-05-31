@@ -499,7 +499,7 @@
             this.success_action = 'Job created successfully.'
             return response
           } catch (error) {
-            console.log(error);
+            console.error(error);
             this.loading = false
             this.job_new_error = route_errors(error)
             return error;

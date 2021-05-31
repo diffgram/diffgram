@@ -794,7 +794,7 @@
 
             })
             .catch(error => {
-              console.log(error);
+              console.error(error);
             });
 
         },
@@ -822,7 +822,6 @@
           // generally we expect that the label we emit
           // is valid so lets reject invalid labels here?
           if (label == undefined) {
-            console.log("Label Undefined")
             return
           }
 
@@ -847,7 +846,6 @@
 
           let hotkey = null
           hotkey = this.hotkey_dict[event.keyCode]
-          //console.log(event.keyCode, hotkey)
           if (hotkey != null) {
             this.change_label_function(this.Labels[hotkey])
           }
@@ -884,7 +882,7 @@
               this.api_file_update_loading = false
 
             }).catch(e => {
-            console.log(e)
+            console.error(e)
             this.api_file_update_loading = false
 
           })

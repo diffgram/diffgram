@@ -167,7 +167,7 @@
                           >
           </tooltip_button>
 
-   
+
           <tooltip_button
               v-if="userscript_literal.archived"
               tooltip_message="Restore"
@@ -238,10 +238,10 @@
                 </v-chip>
             </div>
           </div>
-                   
-   
+
+
            {{userscript_class.run_time}}
-          
+
 
           <v-progress-linear
           :active="userscript_class.running"
@@ -405,7 +405,6 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
           this.userscript_literal.external_src_list)
       },
       create_instance: function (instance) {
-        //console.log(instance)
 
         this.userscript_class.run_event(instance)
 
@@ -413,7 +412,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
       current_userscript_prop: function (userscript) {
         this.change_userscript(userscript)
       }
-    },    
+    },
     computed:{
        play_ready: function () {
             if (!this.userscript_literal.code) {
@@ -489,7 +488,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
 
             this.update_userscript_with_servercall()
         }
-    
+
      },
 
       change_userscript: function (event) {
@@ -500,13 +499,12 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
         this.changing_userscript = true
 
         this.userscript_literal = event
-        //console.log(this.userscript_literal)
 
         let allowed_scripts = this.userscript_literal.external_src_list
         let result_bool = this.userscript_class.remove_old_add_new(allowed_scripts)
 
 
-        // if we can make the userscript literal an instance of the class we can avoid this 
+        // if we can make the userscript literal an instance of the class we can avoid this
         this.userscript_class.reset_shared()
 
         this.changing_userscript = false
@@ -536,7 +534,6 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
 
         this.userscript_literal = this.userscript_class.copy_userscript(
             this.userscript_literal)
-        console.log(this.userscript_literal)
 
         this.loading = true;
         this.error = {}
@@ -547,7 +544,6 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
             this.userscript_literal
           )
           if(result.status === 200){
-            console.log(result)
             this.userscript_literal.id = result.data.userscript.id;
             this.userscript_literal.time_created = result.data.userscript.time_created;
 
@@ -560,7 +556,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
-          console.log(error)
+          console.error(error)
 
         }
         finally {
@@ -574,7 +570,6 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
       new_userscript_with_servercall: async function(){
 
         this.userscript_literal = this.userscript_class.new_userscript()
-        console.log(this.userscript_literal)
 
         this.loading = true;
         this.error = {}
@@ -585,7 +580,6 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
             this.userscript_literal
           )
           if(result.status === 200){
-            console.log(result)
             this.userscript_literal.id = result.data.userscript.id;
             this.userscript_literal.time_created = result.data.userscript.time_created;
 
@@ -598,7 +592,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
-          console.log(error)
+          console.error(error)
 
         }
         finally {
@@ -646,7 +640,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
-          console.log(error)
+          console.error(error)
 
         }
         finally {

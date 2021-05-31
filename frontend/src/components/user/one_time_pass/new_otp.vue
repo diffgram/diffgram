@@ -95,14 +95,14 @@ import Vue from "vue"; export default Vue.extend( {
 
         } else {
 
-          console.log(response)
+          console.error(response)
 
         }
         this.loading = false
 
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
         this.loading = false
       });
     }

@@ -438,7 +438,6 @@
             project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined
 
           }).then(response => {
-            console.log(response)
             this.success_run = true
             this.loading_test = false
             this.save_connection(false);
@@ -491,8 +490,6 @@
 
           if (this.has_changes == false &&
             this.connection.id != null) {
-
-            console.log("No changes to save")
             return
           }
 

@@ -106,7 +106,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.loading = false
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
         });
     },
     toggle(index) {
@@ -123,7 +123,7 @@ import Vue from "vue"; export default Vue.extend( {
         '/annotation/' + String(this.annotation_project_results[index].id) + '/cancel')
         .then(response => {
           this.annotation_project_versions()
-        }).catch(error => { console.log(error); })
+        }).catch(error => { console.error(error); })
 
     }
   }

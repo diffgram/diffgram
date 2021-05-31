@@ -414,7 +414,7 @@
 
         })
           .catch(error => {
-            console.log(error);
+            console.error(error);
             this.loading = false
 
           });
@@ -451,7 +451,7 @@
           }).catch(e => {
 
             this.error_attach = e.response.data.log.error
-            console.log(e)
+            console.error(e)
             this.loading = false
 
           })

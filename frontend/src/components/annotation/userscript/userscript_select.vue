@@ -194,7 +194,6 @@ export default Vue.extend({
             if (this.blocklist.find( x => {
                   return x.id == list[i].id}))
             {
-            //console.log("Found", list[i])
             list.splice(i, 1)
           }
         }
@@ -237,13 +236,12 @@ export default Vue.extend({
             // temp disable because swapping doesn't clear as expected
             //this.current_userscript = this.internal_userscript_list[0]
             //this.$emit('change', this.current_userscript)
-           
+
           }
         }
 
       } catch (error) {
         this.error = this.$route_api_errors(error)
-        console.log(this.error)
 
       } finally {
         this.loading = false;
@@ -254,7 +252,7 @@ export default Vue.extend({
       this.date = event
       this.refresh()
     },
-      
+
   },
   beforeDestroy() {
   }

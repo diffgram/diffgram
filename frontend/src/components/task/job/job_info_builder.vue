@@ -137,7 +137,7 @@
       </button_with_confirm>
 
     </v-layout>
-            
+
     <v-alert
             v-if="label_select_view_only_mode == false"
             type="info"
@@ -293,7 +293,7 @@ export default Vue.extend( {
             this.$store.commit('error_permission')
           }
 
-          console.log(error);
+          console.error(error);
           this.loading = false
 
         });
