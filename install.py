@@ -1,13 +1,44 @@
+# -*- coding: utf-8 -*-
 import os
 import random
 import string
 import base64
+import time
+
+try:
+    from sqlalchemy import create_engine
+except Exception as e:
+    raise(e)
+    print('Error: Some dependencies are missing on the Diffgram Installer.')
+    print('Please try running: "pip3 install -r requirements.txt"')
+    print('And try again.')
+    exit(1)
 
 
 def create_random_string(length):
     return ''.join(random.choice(string.ascii_lowercase + \
                                  string.digits) for x in range(length))
 
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+    @staticmethod
+    def printcolor(string, color):
+        print(color + string + '\033[0m')
+
+    @staticmethod
+    def inputcolor(string, color = '\033[96m'):
+        val = input(color + string + '\033[0m')
+        return val
 
 class DiffgramInstallTool:
     static_storage_provider = None
@@ -31,11 +62,11 @@ class DiffgramInstallTool:
     def set_gcp_credentials(self):
         is_valid = False
         # Ask For Service Account
-        service_account_path = input('Please provide the Full Path of your GCP service account JSON file: ')
+        service_account_path = bcolors.inputcolor('Please provide the Full Path of your GCP service account JSON file: ')
         while not is_valid:
             try:
                 if not service_account_path.endswith('.json'):
-                    print('Path must be a JSON file')
+                    bcolors.printcolor('Path must be a JSON file', bcolors.WARNING)
                     is_valid = False
                     continue
                 f = open(service_account_path)
@@ -43,11 +74,11 @@ class DiffgramInstallTool:
                 self.gcp_credentials_path = service_account_path
                 is_valid = True
             except IOError:
-                print("Invalid path, make sure your are writing the full path to your GCP credentials JSON file")
+                bcolors.printcolor("Invalid path, make sure your are writing the full path to your GCP credentials JSON file", bcolors.FAIL)
             finally:
                 f.close()
         # Ask for bucket name
-        bucket_name = input('Please provide the GCP Storage Bucket Name [Default is diffgram-storage]: ')
+        bucket_name = bcolors.inputcolor('Please provide the GCP Storage Bucket Name [Default is diffgram-storage]: ')
         if bucket_name == '':
             self.bucket_name = 'diffgram-storage'
         else:
@@ -57,9 +88,9 @@ class DiffgramInstallTool:
         # Ask For Access Key ID
         is_valid = False
         while not is_valid:
-            s3_access_id = input('Please provide the AWS Access Key ID: ')
+            s3_access_id = bcolors.inputcolor('Please provide the AWS Access Key ID: ')
             if s3_access_id == '':
-                print('Please a enter a valid value.')
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
                 continue
             else:
                 self.s3_access_id = s3_access_id
@@ -69,16 +100,16 @@ class DiffgramInstallTool:
         is_valid = False
 
         while not is_valid:
-            s3_access_secret = input('Please provide the AWS Access Key Secret: ')
+            s3_access_secret = bcolors.inputcolor('Please provide the AWS Access Key Secret: ')
             if s3_access_secret == '':
-                print('Please a enter a valid value.')
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
                 continue
             else:
                 self.s3_access_secret = s3_access_secret
                 is_valid = True
 
         # Ask for bucket name
-        bucket_name = input('Please provide the AWS S3 Bucket Name [Default is diffgram-storage]: ')
+        bucket_name = bcolors.inputcolor('Please provide the AWS S3 Bucket Name [Default is diffgram-storage]: ')
         if bucket_name == '':
             self.bucket_name = 'diffgram-storage'
         else:
@@ -89,7 +120,7 @@ class DiffgramInstallTool:
         is_valid = False
 
         while not is_valid:
-            azure_connection_string = input('Please provide the Azure Connection String: ')
+            azure_connection_string = bcolors.inputcolor('Please provide the Azure Connection String: ')
             if azure_connection_string == '':
                 print('Please a enter a valid value.')
                 continue
@@ -98,7 +129,7 @@ class DiffgramInstallTool:
                 is_valid = True
 
         # Ask for bucket name
-        bucket_name = input('Please provide the Azure Container Name [Default is diffgram-storage]: ')
+        bucket_name = bcolors.inputcolor('Please provide the Azure Container Name [Default is diffgram-storage]: ')
         if bucket_name == '':
             self.bucket_name = 'diffgram-storage'
         else:
@@ -106,7 +137,7 @@ class DiffgramInstallTool:
 
     def populate_env(self):
         env_file = ''
-        print('Generating Environment Variables file...')
+        bcolors.printcolor('Generating Environment Variables file...', bcolors.OKBLUE)
         if self.static_storage_provider == 'gcp':
             env_file = 'GCP_SERVICE_ACCOUNT_FILE_PATH={}\n'.format(self.gcp_credentials_path)
             env_file += 'CLOUD_STORAGE_BUCKET={}\n'.format(self.bucket_name)
@@ -147,47 +178,66 @@ class DiffgramInstallTool:
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
-        print('Environment file written to: {}'.format(os.path.abspath(text_file.name)))
+        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)
 
     def launch_dockers(self):
-        print('Launching Diffgram...')
-        os.system('docker-compose up -d')
-        print('Diffgram Successfully Launched!')
-        print('View the Web UI at: http://localhost:8085')
+        try:
+            print('Launching Diffgram...')
+            os.system('docker-compose up -d')
+            print('✓ Diffgram Successfully Launched!')
+            print('View the Web UI at: http://localhost:8085')
+        except Exception as e:
+            print('Error Launching diffgram {}'.format(str(e)))
 
     def set_diffgram_version(self):
-        version = input('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
+        version = bcolors.inputcolor('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
         if version == "":
             self.diffgram_version = 'latest'
         else:
             self.diffgram_version = version
 
     def database_config(self):
-        local_database = input('Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
+        local_database = bcolors.inputcolor('Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
         local_database = local_database.lower()
         if local_database == 'y' or local_database == '':
             self.local_database = True
         else:
             self.local_database = False
-            database_url = input(
-                '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ')
-            self.database_url = database_url
+            valid = False
+            while not valid:
+                database_url = bcolors.inputcolor(
+                    '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ', bcolors.OKBLUE)
+
+                bcolors.printcolor('Testing DB Connection...', bcolors.WARNING)
+                try:
+                    # Testing connection
+                    engine = create_engine(database_url)
+                    conn = engine.connect()
+                    conn.close()
+                    valid = True
+                    self.database_url = database_url
+                    bcolors.printcolor('✓ DB connection succesful!', bcolors.OKGREEN)
+                    time.sleep(2)
+                except Exception as e:
+                    bcolors.printcolor('Connection test failed: Please check that your DB URL has the correct values and try again.', bcolors.FAIL)
+                    bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
+                    valid = False
 
     def install(self):
         self.print_logo()
         print('')
         print('')
-        print('Welcome To the Diffgram Installer.')
+        bcolors.printcolor('Welcome To the Diffgram Installer.', bcolors.OKGREEN)
         print('')
         print('')
 
-        print('First We need to know what static storage provider you will use: ')
+        bcolors.printcolor('First We need to know what static storage provider you will use: ', bcolors.OKCYAN)
         print('1. Google Cloud Storage (GCP)')
         print('2. Amazon Web Services S3 (AWS S3)')
         print('3. Microsoft Azure Storage (Azure)')
         option_valid = False
         while not option_valid:
-            option = input('Enter 1, 2 or 3. Or write exit to quit the installation: ')
+            option = bcolors.inputcolor('Enter 1, 2 or 3. Or write exit to quit the installation: ')
 
             if option.isnumeric() and int(option) in [1, 2, 3]:
                 option_valid = True
