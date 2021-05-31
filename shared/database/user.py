@@ -205,6 +205,7 @@ class User(Base):
 
 		return {
 			'member_id': self.member_id,
+			'email': self.email,
 			'first_name': self.first_name,
 			'last_name' : self.last_name,
 			'profile_image_thumb_url': self.profile_image_thumb_url,

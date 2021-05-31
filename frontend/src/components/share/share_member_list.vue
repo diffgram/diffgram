@@ -45,14 +45,15 @@
     <v-alert :value="success"
              type="success"
              dismissible>
-      Updated.            
+      Updated.
     </v-alert>
 
-    <!-- We don't appear to be sending a member id so we would want to revisit using      
+    <!-- We don't appear to be sending a member id so we would want to revisit using
                   item-key="member_id"-->
 
     <v-data-table :headers="headers"
                   :items="members_list"
+                  dense
                   :search="search"
                   class="elevation-1"
                   v-model="selected"
@@ -78,6 +79,13 @@
             <v-icon>mdi-key</v-icon>
           </td>
 
+          <td v-if="props.item.member_kind == 'human'">
+            {{props.item.email}}
+          </td>
+          <td v-if="props.item.member_kind == 'api'">
+           --
+          </td>
+
 
           <td v-if="props.item.member_kind == 'human'">
             {{props.item.username}}
@@ -87,10 +95,10 @@
           </td>
 
           <td v-if="props.item.member_kind == 'human'">
-            {{props.item.first_name}}
+            {{props.item.first_name}} {{ props.item.last_name }}
           </td>
-          <td v-if="props.item.member_kind == 'api'"></td>
-
+          <td v-if="props.item.member_kind == 'api'">
+              SDK/API Access User
           <td>
 
             <div v-if="mode=='project'">
@@ -159,13 +167,19 @@ import Vue from "vue"; export default Vue.extend( {
         value: null
       },
       {
-        text: "Type",
+        text: "Picture",
         align: 'left',
         sortable: true,
         value: 'member_kind'
       },
       {
-        text: "Member",
+        text: "Email",
+        align: 'left',
+        sortable: true,
+        value: 'email'
+      },
+      {
+        text: "Member ID",
         align: 'left',
         sortable: false,
         value: "name"
@@ -187,7 +201,7 @@ import Vue from "vue"; export default Vue.extend( {
     }
   },
   watch: {
-    
+
   },
   created() {
     this.refresh_member_list()
@@ -204,7 +218,7 @@ import Vue from "vue"; export default Vue.extend( {
   },
   methods: {
 
-    
+
     api_member_update(mode) {
 
       this.api_member_update_loading = true
@@ -218,7 +232,7 @@ import Vue from "vue"; export default Vue.extend( {
           mode: mode
         })
         .then(response => {
-        
+
           this.refresh_member_list()
           this.selected = []    // reset
 
