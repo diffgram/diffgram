@@ -141,36 +141,10 @@ class New_video():
 
         original_fps = clip.fps  # Cache, since it will change
 
-        """
-        Context here is that a user may set FPS to be say 60
-        but if the video is only 30 FPS, we just want to use that not convert it
+        # Always using original. FPS conversion is now deprecated
+        fps = original_fps
 
-        TODO feel like this could be merged with FPS == 0? feels a bit funny still
-        Also not quite clear if there's value of using the set_fps() function in this case
-        or if we should skip that
-
-        """
-        if fps > original_fps:
-            fps = original_fps
-
-        # TODO log this instead of printing it
-        # print("original length", int(clip.duration * original_fps))
-
-        if fps == 0 or fps == original_fps:
-            # 1)  == 0 is flag for conversion disabled
-            # 2) == original_fps, we are using the "original" FPS, so there is no conversion
-            # This could be because of the > check or some other reason.
-
-            fps_conversion_ratio = 1
-            # keep in mind we store "fps" below on other stuff...
-            # so should make sure this is up to date
-            fps = original_fps  # case of setting to 0 to disable
-
-        else:
-
-            fps_conversion_ratio = original_fps / fps
-
-            clip = clip.set_fps(fps)
+        clip = clip.set_fps(fps)
         # https://zulko.github.io/moviepy/ref/VideoClip/VideoClip.html#moviepy.video.VideoClip.VideoClip.set_fps
         # Returns a copy of the clip with a new default fps for functions like write_videofile, iterframe, etc.
 
