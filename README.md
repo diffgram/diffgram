@@ -44,6 +44,7 @@ Requires Docker and Docker Compose
 ```
 git clone https://github.com/diffgram/diffgram.git
 cd diffgram
+pip install -r requirements.txt
 python install.py
 # Follow the installer instruction and 
 # After install:  View the Web UI at: http://localhost:8085
