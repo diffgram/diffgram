@@ -46,9 +46,10 @@
 
         <v-card-title
               @click="job_detail_page_route_by_status(job)"
-              style="cursor: pointer;">
+              style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
           <span>
-          {{job.name | truncate(40)}}</span>
+          {{job.name | truncate(40)}}
+          </span>
         </v-card-title>
 
         <v-card-subtitle>
