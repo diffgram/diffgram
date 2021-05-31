@@ -53,11 +53,7 @@ class Test():
 
 		assert connection_operations.connection.private_secret_encrypted != decrypted_secret
 
-		#print(decrypted_secret)
-		#print(type(decrypted_secret))
 		sandbox_key = "\n"
-		#print(type(sandbox_key))
-
 		def diff(a, b):
 			for i,s in enumerate(difflib.ndiff(a, b)):
 				if s[0]==' ': continue

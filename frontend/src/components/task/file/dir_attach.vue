@@ -115,7 +115,7 @@
               this.error = error.response.data.log.error
             }
 
-            console.log(error);
+            console.error(error);
             this.loading = false
           });
 

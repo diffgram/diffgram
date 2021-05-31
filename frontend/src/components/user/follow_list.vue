@@ -16,14 +16,14 @@
 
               <v-list-item v-for="user in user_list"
                            :key="user.name"
-                           
+
                            >
 
 
                 <a @click="route_user(user)">
                   {{user.first_name}}
                 </a>
-   
+
 
                 <div v-if="user.profile_image_thumb_url">
                   <v-avatar size="48">
@@ -110,7 +110,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.loading = false
         })
         .catch(error => {
-          console.log(error);
+          console.error(error);
 
         });
     },

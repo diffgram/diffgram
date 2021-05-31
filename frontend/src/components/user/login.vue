@@ -373,7 +373,7 @@ import Vue from "vue"; export default Vue.extend( {
 
       })
       .catch(error => {
-        console.log(error)
+        console.error(error)
         this.loading = false
       });
 
@@ -416,7 +416,7 @@ import Vue from "vue"; export default Vue.extend( {
       //this.$store.commit('set_user_projects', response.data['user']['projects'])
 
       if (this.no_redirect == true) {
-        //console.log(this.no_redirect)
+
       }
       else {
         if ('redirect' in this.$route.query) {

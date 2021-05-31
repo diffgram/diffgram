@@ -45,10 +45,10 @@
     <v-alert :value="success"
              type="success"
              dismissible>
-      Updated.            
+      Updated.
     </v-alert>
 
-    <!-- We don't appear to be sending a member id so we would want to revisit using      
+    <!-- We don't appear to be sending a member id so we would want to revisit using
                   item-key="member_id"-->
 
     <v-data-table :headers="headers"
@@ -187,7 +187,7 @@ import Vue from "vue"; export default Vue.extend( {
     }
   },
   watch: {
-    
+
   },
   created() {
     this.refresh_member_list()
@@ -204,7 +204,7 @@ import Vue from "vue"; export default Vue.extend( {
   },
   methods: {
 
-    
+
     api_member_update(mode) {
 
       this.api_member_update_loading = true
@@ -218,7 +218,7 @@ import Vue from "vue"; export default Vue.extend( {
           mode: mode
         })
         .then(response => {
-        
+
           this.refresh_member_list()
           this.selected = []    // reset
 
@@ -231,7 +231,7 @@ import Vue from "vue"; export default Vue.extend( {
             if (e.response.status == 400) {
                 this.error = e.response.data.log.error
             }
-            console.log(e)
+            console.error(e)
             this.api_member_update_loading = false
           }
         })

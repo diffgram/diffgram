@@ -86,7 +86,7 @@ export class UserScript {
     // caution replace returns a new string NOT in place
     // g operator all instances https://www.digitalocean.com/community/tutorials/replace-all-instances-of-a-string-in-javascript
     // CAREFUL regular expression eg so can't do string + operator
-    
+
     let class_special_word = 'diffgram'
     let reg_exp = new RegExp(class_special_word, 'g')
 
@@ -97,7 +97,6 @@ export class UserScript {
 
     // TODO link to this specific component not yet defined
     //local_content = local_content.replace(/console.log/g, 'this.__userscript_console')
-    //console.log("replaced", local_content)
 
 
     this.error_construction = null // reset error
@@ -115,7 +114,7 @@ export class UserScript {
     }
     catch (error) {
       class_context.error_construction = error
-      console.log(error)
+      console.error(error)
       // It appears that there isn't a line number usually available
       // for construction type errors
     }
@@ -124,24 +123,21 @@ export class UserScript {
       return
     }
 
-    // console.log(new_function)
-
     // catch errors at run time
     async function parsed_function(...data) {
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters
         try {
-            //console.log(data)
             await new_function(data);
         } catch (error) {
             class_context.error_runtime = class_context.strip_desired_context_from_error(error.message)
-            console.log(error)
+            console.error(error)
             if (error.stack) {
               let error_line_and_char = class_context.get_line_number(error.stack)
               class_context.error_line = error_line_and_char[0]
               class_context.error_char = error_line_and_char[1]
             }
         } finally {
-            //console.log('We do cleanup here');
+
         }
     }
 
@@ -160,7 +156,6 @@ export class UserScript {
     let ending_index = watcher.lastIndexOf("}");
     //let ending_index = watcher.indexOf("}");
     watcher = watcher.slice( 0 , ending_index)
-    console.log("watcher string", watcher)
 
     this.build_and_register_watcher(watcher, desired_context)
 
@@ -198,7 +193,6 @@ export class UserScript {
     this.running = true
     this.time_start = performance.now()
 
-    console.log("event create_instance")
     await desired_function(event)
 
     this.time_end = performance.now()
@@ -217,7 +211,6 @@ export class UserScript {
 
     this.watch_functions['create_instance'].push(parsed_function)
 
-    console.log(this.watch_functions['create_instance'])
 
     this.status_loaded_watchers = true
 
@@ -236,7 +229,6 @@ export class UserScript {
     if (allow_cache == true) {
       if (this.prior_content == content) {
         parsed_function = this.prior_parsed_function
-        console.log("Used cached function")
       }
     }
 
@@ -274,7 +266,6 @@ export class UserScript {
     let starting_index = this.desired_context.search("__vue__");
     let context_string = this.desired_context.slice(starting_index)
     let search = context_string // note just the first instance for now
-    console.log(search)
     local_content = local_content.replace(search, 'diffgram')
     return local_content
   }
@@ -288,7 +279,6 @@ export class UserScript {
   public remove_old_add_new(allowed_scripts): any {
 
     let remove_result_bool = this.remove_userscripts_not_allowed(allowed_scripts)
-    //console.log(remove_result_bool)
 
     this.add_script_multiple(allowed_scripts)
 
@@ -311,7 +301,6 @@ export class UserScript {
       local_allow_list)
 
     let result_bool = this.remove_script_multiple(discovered_scripts_list)
-    //console.log('remove_userscripts_not_allowed', result_bool)
 
   }
 
@@ -333,7 +322,6 @@ export class UserScript {
 
     let discovered_scripts_list = []
     let existing_scripts_list = document.getElementsByTagName("script")
-    //console.log(existing_scripts_list)
 
     for (let script of existing_scripts_list){
       if (script.title != this.userscript_namespace_string) {  // may be other scripts on page, isolate to userscript
@@ -342,13 +330,11 @@ export class UserScript {
 
       if (allow_list &&
           !allow_list.includes(script.src)) {
-        //console.log("discovered", script.title, script.src)
         discovered_scripts_list.push(script.src)
       }
 
     }
 
-    //console.log("discovered_scripts_list", discovered_scripts_list)
 
     return discovered_scripts_list
 
@@ -359,7 +345,6 @@ export class UserScript {
     for (let script_url_string of script_url_list){
       if (!script_url_string) { continue }    // handle null cases
       let result = this.remove_script(script_url_string)
-      console.log(result)
     }
     return true
   }
@@ -419,7 +404,6 @@ export class UserScript {
       // prevents duplicates from user and from valid existing scripts
 
       if (typeof script_url_string != 'string') {
-        console.log("Not a valid string")
         continue
       }
 
@@ -429,7 +413,6 @@ export class UserScript {
 
       // 2 We assume we will insert before any position we provide here
       insertion_node = insertion_node.nextSibling
-      console.log(insertion_node)
     }
 
     this.status_loaded_scripts = true
@@ -439,7 +422,6 @@ export class UserScript {
   private check_scripts_exist(id): any  {
 
     let result = document.getElementById(id)
-    console.log(result)
     if (result) { return true }
     else {return false}
   }
@@ -464,7 +446,6 @@ export class UserScript {
 
       // add onload call back
       newScriptTag.onload = function () {
-        console.log("added", script_url_string)
         resolve()
       }
       // error
@@ -490,7 +471,6 @@ export class UserScript {
     let start = starting_index + offset
 
     let line_and_char = stack.slice(start + 1, ending_index - 2)
-    console.log(line_and_char)
 
     let line_and_char_list = line_and_char.split(":")
     let line = parseInt(line_and_char_list[0])
@@ -503,6 +483,6 @@ export class UserScript {
     char = char + char_offset
     //console.debug(line, char)
 
-    return [line, char] 
+    return [line, char]
   }
 }

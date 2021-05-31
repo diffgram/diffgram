@@ -778,7 +778,7 @@
             }
           } catch (error) {
             this.error = this.$route_api_errors(error)
-            console.log(error)
+            console.error(error)
           } finally {
             this.loading = false
           }
@@ -815,7 +815,7 @@
 
               }
             }).catch(e => {
-            console.log(e)
+            console.error(e)
           })
         },
 
@@ -846,7 +846,7 @@
 
 
             }).catch(e => {
-            console.log(e)
+            console.error(e)
             this.loading = false
           })
         }
