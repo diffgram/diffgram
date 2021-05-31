@@ -24,17 +24,6 @@
               <v-flex lg4>
                 <v-layout>
 
-                  <v-slider min="0"
-                            max="120"
-                            label="Video conversion FPS"
-                            v-model="project.settings_input_video_fps"
-                            ticks
-                            hint="Set to 0 to disable. Default is 30."
-                            persistent-hint
-                            thumb-label="always"
-                            >
-                  </v-slider>
-
                   <tooltip_button
                       tooltip_message="Video help"
                       href="https://diffgram.readme.io/docs/video-specifications"
@@ -47,12 +36,6 @@
               </v-flex>
 
             </v-card-text>
-            <!--
-            <v-text-field label="Video FPS conversion target"
-                          v-model="project.settings_input_video_fps"
-                          :rules="[rules.fps]">
-            </v-text-field>
-              -->
             <v-card-actions>
               <v-btn @click="save"
                      color="primary">
