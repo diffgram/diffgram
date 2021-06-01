@@ -33,7 +33,7 @@
                       :target_text="this.instance.number"
                       :canvas_transform="canvas_transform">
       </target_reticle>
-      <slot name="instance_drawer"></slot>
+      <slot name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <slot name="current_instance_drawer"></slot>
     </canvas>
 

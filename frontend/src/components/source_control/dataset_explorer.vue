@@ -33,9 +33,11 @@
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
-        v-for="file in this.file_list"
+        v-for="(file, index) in this.file_list"
+        :key="file.id"
         :project_string_id="project_string_id"
         :file="file"
+        :instance_list="file.instance_list"
       ></file_preview>
 
     </v-layout>
@@ -46,11 +48,12 @@
 <script>
   import Vue from "vue";
   import axios from "axios";
+
   import file_preview from "./file_preview";
   export default Vue.extend({
     name: "dataset_explorer",
     components:{
-      file_preview
+      file_preview,
     },
     props: [
       'project_string_id',
@@ -73,7 +76,7 @@
           'page_number': this.page_number,
           'request_next_page': false,
           'request_previous_page' : false,
-          'file_view_mode': 'annotation',
+          'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
         }

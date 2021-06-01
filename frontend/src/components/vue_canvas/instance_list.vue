@@ -52,7 +52,9 @@
         },
         // CAUTION  there is some type of performance issue with monitoring cuboid_hover_index
         // when we are also emiting an event
-        "hidden_label_id_list": {},
+        "hidden_label_id_list": {
+          default: () => []
+        },
         "emit_instance_hover": {
           type: Boolean,
           default: true
@@ -249,7 +251,6 @@
             done()
             return
           }
-
           this.circle_size = 6 / this.canvas_transform['canvas_scale_combined']
           let font_size = this.label_settings.font_size / this.canvas_transform['canvas_scale_combined']
           ctx.font = font_size + "px Verdana";
@@ -438,6 +439,7 @@
           var instance = this.instance_list[i]
 
           let result = this.draw_single_instance_limits(instance, i)
+
           if (result == false)  {
             return
           }
@@ -469,6 +471,7 @@
           }
           if (instance.type == "box") {
             ctx.beginPath()
+
             this.draw_box(instance, ctx, i)
             ctx.lineWidth = this.get_spatial_line_size()
             ctx.stroke()
@@ -590,7 +593,9 @@
         },
 
         is_mouse_in_path: function (ctx, i, instance) {
-
+          if(!this.mouse_position){
+            return false
+          }
           // This is first because we always want user to know which one they are on
           if (ctx.isPointInPath(
             this.mouse_position.raw.x,
@@ -1307,7 +1312,7 @@
           ctx.stroke()
 
           ctx.fill()
-
+          console.log('instance box qqqq', this.canvas_transform)
           this.is_mouse_in_path(ctx, i, instance)
 
           // after we know if it's in path
@@ -1316,7 +1321,7 @@
           // run again so we still capture the corners for editing
           this.is_mouse_in_path(ctx, i, instance)
 
-
+          console.log('finish drawing', instance, i)
         },
 
          // inspired by http://jsfiddle.net/m1erickson/8j6kdf4o/
