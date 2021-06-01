@@ -47,7 +47,7 @@
             datacy="restore-down-file-explorer-button"
                         >
         </tooltip_button>
- 
+
         <tooltip_button
             v-if="!full_screen"
             tooltip_message="Maximize"
@@ -70,7 +70,7 @@
             datacy="close-file-explorer-button"
                         >
         </tooltip_button>
- 
+
 
 
           <v-tabs-items v-model="tab">
@@ -89,6 +89,11 @@
                             ref="media_core"
               >
               </v_media_core>
+            </v-tab-item>
+            <v-tab-item>
+              <dataset_explorer :project_string_id="project_string_id"
+                                ref="dataset_explorer">
+              </dataset_explorer>
             </v-tab-item>
           </v-tabs-items>
         </v-tabs>
@@ -118,7 +123,7 @@
 
 <script>
   import Vue from "vue";
-
+  import dataset_explorer from "./dataset_explorer";
   export default Vue.extend({
     name: "file_manager_sheet",
     props: [
@@ -129,6 +134,9 @@
       'job_id',
 
     ],
+    components:{
+      dataset_explorer
+    },
     data: function () {
       return {
         media_sheet: true,
@@ -137,10 +145,10 @@
             text: 'File Management',
             icon: 'mdi-file'
           },
-          // {
-          //   text: 'Dataset Explorer',
-          //   icon: 'mdi-folder'
-          // }
+          {
+            text: 'Dataset Explorer',
+            icon: 'mdi-folder'
+          }
         ],
         persistent_bottom_sheet: true,
         full_screen: false,

@@ -21,6 +21,7 @@
       ></v_bg>
 
       <target_reticle target_type="canvas_cross"
+                      v-if="editable"
                       :x="mouse_position.x"
                       :y="mouse_position.y"
                       :mouse_position="mouse_position"
@@ -64,6 +65,9 @@
       },
       video_mode: {
         default: false
+      },
+      editable:{
+        default: true
       },
       annotations_loading:{
         default: false
