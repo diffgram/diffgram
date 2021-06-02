@@ -11,8 +11,8 @@
       v-canvas:cb="onRendered"
       :id="canvas_id"
       :canvas_transform="canvas_transform"
-      :height="canvas_height"
-      :width="canvas_width">
+      :height="canvas_height_scaled"
+      :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
         :ord="1"
@@ -150,6 +150,7 @@
           y: 0
         },
         canvas_scale_local: 1,
+        canvas_scale_global: 1,
         show_target_reticle: true,
         canvas_mouse_tools: undefined,
         canvas_ctx: undefined,
@@ -178,8 +179,13 @@
       update_window_size_from_listener: function(){
         this.window_width_from_listener = window.innerWidth
         this.window_height_from_listener = window.innerHeight
-        let height_scaled = middle_pane_height / image_size_height
-        let width_scaled = middle_pane_width / image_size_width
+        let height_scaled = this.window_width_from_listener / this.$props.canvas_height;
+        let width_scaled = this.window_height_from_listener / this.$props.canvas_width;
+        // careful to do the scale first, so we do the min of scaled values
+        let lowest_size = Math.min(height_scaled, width_scaled)
+
+        let new_size = Math.round(lowest_size * 100) / 100
+        this.canvas_scale_global = new_size;
       },
       zoom_in: function(){
         this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
@@ -234,6 +240,14 @@
 
     },
     computed: {
+      canvas_width_scaled: function () {
+        return this.canvas_width * this.canvas_scale_global
+      },
+
+      canvas_height_scaled: function () {
+        return this.canvas_height * this.canvas_scale_global
+      },
+
       mouse_computed: function () {
         if (this.$store.state.annotation_state.mouse_down == false) {
           return {
@@ -256,7 +270,7 @@
       },
       canvas_transform: function () {
         return {
-          'canvas_scale_global': this.$props.canvas_scale_global,
+          'canvas_scale_global': this.canvas_scale_global,
           'canvas_scale_local': this.canvas_scale_local,
           'canvas_scale_combined': this.canvas_scale_local * this.canvas_scale_global,
           'translate': this.canvas_translate
