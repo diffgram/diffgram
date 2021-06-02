@@ -800,7 +800,7 @@ class Process_Media():
             self.input.update_log['error']['update_from_frame_packet_map'] = str(e)
             self.input.status = 'failed'
             self.session.add(self.input)
-            logger.error(e)
+            logger.error(str(e))
 
 
         if len(self.input.update_log["error"].keys()) >= 1:
