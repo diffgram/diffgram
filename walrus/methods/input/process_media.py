@@ -777,6 +777,13 @@ class Process_Media():
         global New_video  # important
         from methods.video.video import New_video
 
+        if not self.input.frame_packet_map:
+            self.input.update_log['error']['frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
+            self.input.status = 'error'
+            self.input.status_text = "Please provide a frame packet map. It cannot be empty.'"
+            return
+
+
         # TODO "new video" name makes less sense in new context
         new_video = New_video(
             session=self.session,
