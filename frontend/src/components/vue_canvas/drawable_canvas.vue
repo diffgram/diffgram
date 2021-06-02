@@ -71,9 +71,6 @@
       project_string_id: {
         default: undefined
       },
-      canvas_scale_global:{
-        default: 1
-      },
       video_mode: {
         default: false
       },
@@ -153,6 +150,8 @@
         canvas_scale_global: 1,
         show_target_reticle: true,
         canvas_mouse_tools: undefined,
+        window_width_from_listener: undefined,
+        window_height_from_listener: undefined,
         canvas_ctx: undefined,
         instance_type: 'keypoints',
         seeking: false,
@@ -170,6 +169,7 @@
 
 
       window.addEventListener('resize', this.update_window_size_from_listener)
+      this.update_window_size_from_listener();
     },
     beforeDestroy() {
       this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update);
@@ -177,14 +177,15 @@
     },
     methods: {
       update_window_size_from_listener: function(){
-        this.window_width_from_listener = window.innerWidth
-        this.window_height_from_listener = window.innerHeight
-        let height_scaled = this.window_width_from_listener / this.$props.canvas_height;
-        let width_scaled = this.window_height_from_listener / this.$props.canvas_width;
+        this.window_width_from_listener = document.getElementById(this.$props.canvas_wrapper_id).offsetWidth;
+        this.window_height_from_listener = document.getElementById(this.$props.canvas_wrapper_id).offsetHeight;
+        let width_scaled = this.window_width_from_listener / this.$props.canvas_width;
+        let height_scaled = this.window_height_from_listener / this.$props.canvas_height;
+
         // careful to do the scale first, so we do the min of scaled values
         let lowest_size = Math.min(height_scaled, width_scaled)
 
-        let new_size = Math.round(lowest_size * 100) / 100
+        let new_size = Math.round(lowest_size * 100.0) / 100.0
         this.canvas_scale_global = new_size;
       },
       zoom_in: function(){

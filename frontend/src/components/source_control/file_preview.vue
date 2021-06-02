@@ -3,9 +3,8 @@
     <v-card-text class="pa-0 ma-0">
       <drawable_canvas
         :image_bg="image_bg"
-        :canvas_height="320"
-        :canvas_width="430"
-        :canvas_scale_global="1"
+        :canvas_height="file_preview_height"
+        :canvas_width="file_preview_width"
         :editable="false"
         :auto_scale_bg="true"
         :refresh="refresh"
@@ -51,6 +50,12 @@
       'instance_list': {
         default: undefined
       },
+      'file_preview_width':{
+        default: 430
+      },
+      'file_preview_height':{
+        default: 320
+      }
     },
     data: function(){
       return{
@@ -86,8 +91,6 @@
         else{
           if(newFile.image){
             const image = new Image();
-            image.style.width = '430px'
-            image.style.height = 'auto'
             image.src = this.$props.file.image.url_signed;
             this.image_bg = image;
             this.refresh = new Date();
