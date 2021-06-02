@@ -1,18 +1,21 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8">
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" v-if="image_bg">
     <v-card-text class="pa-0 ma-0">
       <drawable_canvas
-        ref="drawable_canvas"
         :image_bg="image_bg"
         :canvas_height="320"
         :canvas_width="430"
-        :editable="false"
+        :editable="true"
         :auto_scale_bg="true"
+        :refresh="refresh"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
+        :canvas_id="`canvas__${file.id}`"
       >
-        <instance_list :ord="1"
+        <instance_list
                               slot-scope="props"
                               :instance_list="instance_list"
                               :vertex_size="3"
+                              :refresh="refresh"
                               :video_mode="false"
                               :label_settings="label_settings"
                               :show_annotations="true"
@@ -49,6 +52,8 @@
     },
     data: function(){
       return{
+        image_bg: undefined,
+        refresh: null,
         label_settings:{
           font_size: 20,
           show_removed_instances: false,
@@ -59,20 +64,34 @@
         }
       }
     },
-    computed:{
-      image_bg: function(){
-        if(!this.$props.file){
-          return undefined
+    mounted() {
+      if(this.$props.file){
+        this.set_bg(this.$props.file)
+      }
+      this.$forceUpdate();
+    },
+    watch:{
+      file: function(newFile, oldFile){
+        this.set_bg(newFile);
+      }
+    },
+    methods: {
+      set_bg: function(newFile){
+        if(!newFile){
+          this.image_bg = undefined;
+          this.refresh = new Date();
         }
         else{
-          if(this.$props.file.image){
+          if(newFile.image){
             const image = new Image();
             image.style.width = '430px'
             image.style.height = 'auto'
             image.src = this.$props.file.image.url_signed;
-            return image
+            this.image_bg = image;
+            this.refresh = new Date();
           }
         }
+        this.$forceUpdate();
       }
     }
   });

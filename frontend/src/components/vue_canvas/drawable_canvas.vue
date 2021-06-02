@@ -1,5 +1,5 @@
 <template>
-  <div id="canvas_wrapper"
+  <div :id="canvas_wrapper_id"
        class="ma-auto"
        @mousemove="mouse_move"
        @mousedown="mouse_down"
@@ -9,19 +9,24 @@
     <canvas
       data-cy="canvas"
       v-canvas:cb="onRendered"
+      :id="canvas_id"
       :canvas_transform="canvas_transform"
       :height="canvas_height"
       :width="canvas_width">
-
+      <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
+        :ord="1"
         :background="bg_color"
         :image="image_bg"
+        :refresh="refresh"
         :annotations_loading="annotations_loading"
         :auto_scale_bg="auto_scale_bg"
+        @update_canvas="update_canvas"
       ></v_bg>
 
       <target_reticle target_type="canvas_cross"
                       v-if="editable"
+                      :ord="2"
                       :x="mouse_position.x"
                       :y="mouse_position.y"
                       :mouse_position="mouse_position"
@@ -33,7 +38,7 @@
                       :target_text="this.instance.number"
                       :canvas_transform="canvas_transform">
       </target_reticle>
-      <slot name="instance_drawer" :canvas_transform="canvas_transform"></slot>
+
       <slot name="current_instance_drawer"></slot>
     </canvas>
 
@@ -60,6 +65,9 @@
       v_bg
     },
     props: {
+      canvas_wrapper_id:{
+        default: 'canvas_wrapper'
+      },
       project_string_id: {
         default: undefined
       },
@@ -74,6 +82,9 @@
       },
       auto_scale_bg:{
         default: false
+      },
+      refresh: {
+        default: null
       },
       text_color: {
         default: "#000000"
@@ -150,7 +161,7 @@
         this.mouse_position,
         this.canvas_translate,
       )
-      this.canvas_wrapper = document.getElementById("canvas_wrapper")
+      this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       this.canvas_wrapper.addEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
     },
     beforeDestroy() {
@@ -199,6 +210,13 @@
         this.canvas_ctx = ctx;
         ctx.restore()
       },
+      update_canvas: function(){
+        this.refresh = new Date();
+        this.canvas_element = document.getElementById(this.$props.canvas_id)
+        this.canvas_element_ctx = this.canvas_element.getContext('2d');
+
+        this.$forceUpdate();
+      }
 
 
     },
@@ -220,7 +238,7 @@
         }
       },
       canvas_element: function () {
-        return this.$el.querySelector('canvas')
+        return document.getElementById(this.$props.canvas_id)
 
       },
       canvas_style: function () {

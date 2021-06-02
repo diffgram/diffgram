@@ -355,6 +355,9 @@ class New_video():
         be skipped
         """
 
+        if self.input.frame_packet_map == {}:
+
+
         self.__prepare_sequences(parent_input = self.input)
 
         if self.check_update_log_errors() is False: return

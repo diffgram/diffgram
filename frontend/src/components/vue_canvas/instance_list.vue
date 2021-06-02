@@ -1312,7 +1312,7 @@
           ctx.stroke()
 
           ctx.fill()
-          console.log('instance box qqqq', this.canvas_transform)
+          console.log('instance box qqqq', this.canvas_transform, ctx.strokeStyle, ctx.fillStyle)
           this.is_mouse_in_path(ctx, i, instance)
 
           // after we know if it's in path
