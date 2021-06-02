@@ -120,7 +120,8 @@ class New_video():
             input.status_text = "Could not load video. Try again, try a different format or contact us."
             # only for internal use
             # could look at storing in DB later or Using event logging.
-            logger.error('Could not load video. Try again, try a different format or contact us. Exception:  {}'.format(str(exception)))
+            logger.error('Could not load video. Try again, try a different format or contact us. Exception:  {}'.format(
+                str(exception)))
             return None
 
         # https://stackoverflow.com/questions/43966523/getting-oserror-winerror-6-the-handle-is-invalid-in-videofileclip-function
@@ -356,7 +357,7 @@ class New_video():
         """
 
         self.__prepare_sequences(parent_input = self.input)
-
+    
         if self.check_update_log_errors() is False: return
 
         self.try_to_commit()  # 1/2 needed otherwise foreign key violation because
