@@ -779,8 +779,10 @@ class Process_Media():
 
         if not self.input.frame_packet_map:
             self.input.update_log['error']['frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
-            self.input.status = 'error'
+            self.input.status = 'failed'
             self.input.status_text = "Please provide a frame packet map. It cannot be empty.'"
+            self.session.add(self.input)
+            self.try_to_commit()
             return
 
 
