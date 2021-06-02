@@ -179,13 +179,13 @@
       update_window_size_from_listener: function(){
         this.window_width_from_listener = document.getElementById(this.$props.canvas_wrapper_id).offsetWidth;
         this.window_height_from_listener = document.getElementById(this.$props.canvas_wrapper_id).offsetHeight;
-        let width_scaled = this.window_width_from_listener / this.$props.canvas_width;
-        let height_scaled = this.window_height_from_listener / this.$props.canvas_height;
+        let width_scaled = this.window_width_from_listener / this.$props.image_bg.width;
+        let height_scaled = this.window_height_from_listener / this.$props.image_bg.height;
 
         // careful to do the scale first, so we do the min of scaled values
         let lowest_size = Math.min(height_scaled, width_scaled)
 
-        let new_size = Math.round(lowest_size * 100.0) / 100.0
+        let new_size = Math.round(lowest_size * 100) / 100
         this.canvas_scale_global = new_size;
       },
       zoom_in: function(){
