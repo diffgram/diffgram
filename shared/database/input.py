@@ -290,6 +290,12 @@ class Input(Base):
             'newly_copied_file_id': self.newly_copied_file_id
         }
 
+    def serialize_with_frame_packet(self):
+        result = self.serialize()
+        result['frame_packet_map'] = self.frame_packet_map
+        result['instance_list'] = self.instance_list
+        return result
+
     @staticmethod
     def directory_not_equal_to_status(
             session,
