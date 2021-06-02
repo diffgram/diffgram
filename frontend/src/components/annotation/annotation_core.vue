@@ -374,8 +374,6 @@
             <v_bg :image="html_image"
                   :current_file="file"
                   :current_video="current_video"
-                  :canvas_width="canvas_width"
-                  :canvas_height="canvas_height"
                   :refresh="refresh"
                   @update_canvas="update_canvas"
                   :canvas_filters="canvas_filters"

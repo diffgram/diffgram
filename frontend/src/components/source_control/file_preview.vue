@@ -5,7 +5,7 @@
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
-        :editable="false"
+        :editable="true"
         :auto_scale_bg="true"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"

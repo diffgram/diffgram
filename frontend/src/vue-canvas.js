@@ -73,7 +73,15 @@ import Vue from 'vue'
         ctx.translate(-canvas_transform['translate']['x'], -canvas_transform['translate']['y'])
 
         // maybe skip if scale is == 1?
-        ctx.scale(canvas_transform['canvas_scale_global'], canvas_transform['canvas_scale_global'])
+        if(canvas_transform.canvas_scale_global_x && canvas_transform.canvas_scale_global_y){
+          ctx.scale(canvas_transform['canvas_scale_global_x'], canvas_transform['canvas_scale_global_y'])
+
+        }
+        else{
+          ctx.scale(canvas_transform['canvas_scale_global'], canvas_transform['canvas_scale_global'])
+
+        }
+
       }
 
 
