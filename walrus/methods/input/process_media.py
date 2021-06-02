@@ -793,7 +793,14 @@ class Process_Media():
             input=self.input
         )
 
-        new_video.update_from_frame_packet_map()
+        try:
+            new_video.update_from_frame_packet_map()
+        except Exception as e:
+            traceback.format_exc()
+            self.input.update_log['error']['update_from_frame_packet_map'] = str(e)
+            self.input.status = 'failed'
+            self.session.add(self.input)
+
 
         if len(self.input.update_log["error"].keys()) >= 1:
             self.input = self.update_video_status_when_update_has_errors(input = self.input)  # 'parent' here not frame
