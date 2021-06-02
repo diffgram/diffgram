@@ -357,9 +357,10 @@ class New_video():
         """
 
         if self.input.frame_packet_map == {}:
+            return
 
-
-        if self.check_update_log_errors() is False: return
+        if self.check_update_log_errors() is False:
+            return
 
         self.try_to_commit()  # 1/2 needed otherwise foreign key violation because
         # 2/2 new sequences won't exist yet
