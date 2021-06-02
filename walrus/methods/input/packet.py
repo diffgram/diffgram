@@ -221,7 +221,7 @@ def input_packet(project_string_id):
                                         directory_id=directory_id,
                                         instance_list=untrusted_input.get('instance_list', None),
                                         video_split_duration=video_split_duration,
-                                        frame_packet_map=input.get('frame_packet_map', None),
+                                        frame_packet_map=untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
                                         mode=mode)
         auth_api = None
