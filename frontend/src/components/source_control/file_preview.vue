@@ -5,12 +5,14 @@
         :image_bg="image_bg"
         :canvas_height="320"
         :canvas_width="430"
-        :editable="true"
+        :canvas_scale_global="1"
+        :editable="false"
         :auto_scale_bg="true"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
       >
+
         <instance_list
                               slot-scope="props"
                               :instance_list="instance_list"

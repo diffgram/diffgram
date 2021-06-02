@@ -71,6 +71,9 @@
       project_string_id: {
         default: undefined
       },
+      canvas_scale_global:{
+        default: 1
+      },
       video_mode: {
         default: false
       },
@@ -163,11 +166,21 @@
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       this.canvas_wrapper.addEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
+
+
+      window.addEventListener('resize', this.update_window_size_from_listener)
     },
     beforeDestroy() {
-      this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
+      this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update);
+      window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {
+      update_window_size_from_listener: function(){
+        this.window_width_from_listener = window.innerWidth
+        this.window_height_from_listener = window.innerHeight
+        let height_scaled = middle_pane_height / image_size_height
+        let width_scaled = middle_pane_width / image_size_width
+      },
       zoom_in: function(){
         this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
       },
@@ -241,15 +254,9 @@
         return document.getElementById(this.$props.canvas_id)
 
       },
-      canvas_style: function () {
-        return "width:" + 800 + "px"
-      },
-      canvas_scale_global: function(){
-        return 1
-      },
       canvas_transform: function () {
         return {
-          'canvas_scale_global': this.canvas_scale_global,
+          'canvas_scale_global': this.$props.canvas_scale_global,
           'canvas_scale_local': this.canvas_scale_local,
           'canvas_scale_combined': this.canvas_scale_local * this.canvas_scale_global,
           'translate': this.canvas_translate
