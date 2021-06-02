@@ -11,6 +11,9 @@
         <v-layout v-if="input && input.instance_list">
           {{input.instance_list}}
         </v-layout>
+        <v-layout v-if="input && !input.instance_list && !input.frame_packet_map" class="d-flex justify-center ma-12">
+          <h2><v-icon x-large>mdi-dolly</v-icon>Empty Payload</h2>
+        </v-layout>
       </v-card-text>
     </v-card>
   </v-dialog>
