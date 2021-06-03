@@ -1,6 +1,6 @@
 <template>
   <v-layout column>
-    <v-toolbar extended elevation="0">
+    <v-toolbar extended elevation="0" class="ma-8">
       <v-toolbar-title class="d-flex align-center">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
       </v-toolbar-title>
@@ -20,19 +20,21 @@
         </v_directory_list>
       </div>
       <div class="d-flex align-center align-content-center">
-        <h4 class="ma-auto mt-4 mr-4" >Compare Runs: </h4>
+        <h4 class="mt-4 mr-4 mb-3">Compare Runs: </h4>
         <model_run_selector
           class="mt-4"
           :multi_select="false"
           :model_run_list="model_run_list"
+          @model_run_change="update_base_model_run"
           :project_string_id="project_string_id">
 
         </model_run_selector>
-        <h2 class="font-weight-light">VS</h2>
+        <h2 class="font-weight-light mr-4 ml-4">VS</h2>
         <model_run_selector
           class="mt-4"
-          :multi_select="false"
+          :multi_select="true"
           :model_run_list="model_run_list"
+          @model_run_change="update_compare_to_model_runs"
           :project_string_id="project_string_id">
 
         </model_run_selector>
@@ -53,6 +55,8 @@
       <file_preview
         v-else
         v-for="(file, index) in this.file_list"
+        :base_model_run="base_model_run"
+        :compare_to_model_runs="compare_to_model_run"
         :key="file.id"
         :project_string_id="project_string_id"
         :file="file"
@@ -88,6 +92,7 @@
         this.selected_dir = this.$props.directory;
       }
       this.fetch_file_list();
+      this.fetch_model_run_list();
     },
     data: function () {
       return {
@@ -95,6 +100,8 @@
         model_run_list: [],
         loading: false,
         selected_dir: undefined,
+        base_model_run: undefined,
+        compare_to_model_run: undefined,
         metadata: {
           'directory_id': undefined,
           'limit': this.metadata_limit,
@@ -115,7 +122,13 @@
       }
     },
     methods: {
-      fetch_model_run_list: async function(){
+      update_compare_to_model_runs: function(value){
+        this.compare_to_model_run = value
+      },
+      update_base_model_run: function(value){
+        this.base_model_run = value
+      },
+      fetch_file_list: async function(){
         this.loading = true
         try{
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
@@ -135,7 +148,7 @@
           this.loading = false;
         }
       },
-      fetch_file_list: async function(){
+      fetch_model_run_list: async function(){
         this.loading = true
         try{
           const response = await axios.post(

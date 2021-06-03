@@ -336,10 +336,19 @@
 
         color_instance: function (instance, ctx) {
           // TODO test this better, and also try to move other colors stuff here...
+
           let strokeColor = undefined;
           let fillColor = undefined;
           let lineWidth = undefined;
-
+          console.log('AAAAA', instance.override_color)
+          if(instance.override_color){
+            fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
+            strokeColor = instance.override_color;
+            ctx.strokeStyle = strokeColor;
+            ctx.fillStyle = fillColor;
+            ctx.lineWidth = 1;
+            return
+          }
           if (instance.fan_made == true) {
             ctx.setLineDash([3])
           } else {

@@ -168,7 +168,6 @@
             return
           }
           const result = {};
-          console.log('FILE LIST', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
             let file_instances = [];

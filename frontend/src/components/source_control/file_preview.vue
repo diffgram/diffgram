@@ -14,7 +14,7 @@
 
         <instance_list
                               slot-scope="props"
-                              :instance_list="instance_list"
+                              :instance_list="filtered_instance_list"
                               :vertex_size="3"
                               :refresh="refresh"
                               :video_mode="false"
@@ -55,12 +55,19 @@
       },
       'file_preview_height':{
         default: 325
+      },
+      'base_model_run':{
+        default: null
+      },
+      'compare_to_model_run':{
+        default: null
       }
     },
     data: function(){
       return{
         image_bg: undefined,
         refresh: null,
+        filtered_instance_list: [],
         label_settings:{
           font_size: 20,
           show_removed_instances: false,
@@ -74,6 +81,8 @@
     mounted() {
       if(this.$props.file){
         this.set_bg(this.$props.file);
+        this.filtered_instance_list = this.$props.instance_list;
+        this.prepare_base_instance_list();
         this.prepare_compare_instance_lists();
       }
       this.$forceUpdate();
@@ -82,9 +91,28 @@
       file: function(newFile, oldFile){
         this.set_bg(newFile);
         this.prepare_compare_instance_lists();
+      },
+      base_model_run: function(){
+        this.prepare_base_instance_list();
+      },
+      compare_to_model_run: function(){
+        this.prepare_compare_instance_lists();
       }
     },
     methods: {
+      prepare_base_instance_list: function(){
+        if(!this.$props.base_model_run){return}
+
+        this.filtered_instance_list = this.$props.instance_list.filter(inst => {
+          return inst.model_run_id === this.$props.base_model_run.id;
+        })
+        this.filtered_instance_list = this.filtered_instance_list.map(inst => {
+          return {
+            ...inst,
+            override_color: this.$props.base_model_run.color
+          }
+        })
+      },
       prepare_compare_instance_lists: function(){
 
       },

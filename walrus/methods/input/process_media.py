@@ -716,6 +716,8 @@ class Process_Media():
                     Try including instances in single request, or waiting for file to finish processing before sending."
             return False
 
+        self.populate_new_models_and_runs()
+
         # TODO what other input keys do we need to update (ie this assumes images etc)
         if file and self.input.media_type == "video":
             logger.debug("Parent Video File Update")
@@ -1955,7 +1957,6 @@ class Process_Media():
 
     def populate_new_models_and_runs(self):
         if self.input.media_type == 'video':
-            print('populate_new mode;s', self.input.frame_packet_map)
             if not self.input.frame_packet_map:
                 return
             frame_packet_map = self.input.frame_packet_map.copy()
