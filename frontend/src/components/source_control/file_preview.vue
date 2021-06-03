@@ -72,7 +72,6 @@
       }
     },
     mounted() {
-      console.log('DRAWW', this.$props.file)
       if(this.$props.file){
         this.set_bg(this.$props.file);
         this.prepare_compare_instance_lists();

@@ -47,7 +47,6 @@ export default Vue.extend({
 
           ctx.filter = brightness + contrast + grayscale
           if(!this.$props.auto_scale_bg){
-            console.log('drawImage', this.image)
             ctx.drawImage(this.image, 0, 0);
           }
           else{

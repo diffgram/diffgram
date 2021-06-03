@@ -4,20 +4,30 @@
       <v-toolbar-title class="d-flex align-center">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
       </v-toolbar-title>
-      <div class="d-flex align-center">
+      <div class="d-flex align-center mr-5">
         <v_directory_list :project_string_id="project_string_id"
                           @change_directory="on_change_ground_truth_dir"
                           ref="ground_truth_dir_list"
                           class="mt-5"
                           :change_on_mount="true"
                           :show_new="false"
-                          :initial_dir_from_state="false"
+                          :initial_dir_from_state="true"
                           :update_from_state="false"
                           :set_current_dir_on_change="false"
                           :view_only_mode="false"
                           :show_update="false"
-                          :set_from_id="$store.state.project.current_directory.directory_id">
+                          :set_from_id="directory.directory_id">
         </v_directory_list>
+      </div>
+      <div class="d-flex align-center">
+        <h4 class="ma-auto">Compare Runs: </h4>
+        <model_run_selector
+          :multi_select="false"
+          :model_run_list="[]"
+          :project_string_id="project_string_id">
+
+        </model_run_selector>
+
       </div>
       <v-spacer></v-spacer>
 
@@ -29,7 +39,7 @@
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-layout fluid class="d-flex flex-wrap">
+    <v-layout fluid class="d-flex flex-wrap" style="min-height: 300px">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
@@ -49,20 +59,25 @@
 <script>
   import Vue from "vue";
   import axios from "axios";
-
+  import directory_icon_selector from '../source_control/directory_icon_selector'
+  import model_run_selector from "../model_runs/model_run_selector";
   import file_preview from "./file_preview";
   export default Vue.extend({
     name: "dataset_explorer",
     components:{
+      model_run_selector,
+      directory_icon_selector,
       file_preview,
     },
     props: [
       'project_string_id',
+      'directory'
 
     ],
     mounted() {
       if(!this.metadata.directory_id){
-        this.metadata.directory_id = this.$store.state.project.current_directory.directory_id;
+        this.metadata.directory_id = this.$props.directory.directory_id;
+        this.selected_dir = this.$props.directory;
       }
       this.fetch_file_list();
     },
@@ -70,6 +85,7 @@
       return {
         file_list: [],
         loading: false,
+        selected_dir: undefined,
         metadata: {
           'directory_id': undefined,
           'limit': this.metadata_limit,
@@ -82,6 +98,11 @@
           'search_term': this.search_term
         }
 
+      }
+    },
+    watch:{
+      selected_dir: function () {
+        this.fetch_file_list();
       }
     },
     methods: {
@@ -110,6 +131,7 @@
       on_change_ground_truth_dir: function(dir){
         console.log('changee', this.$store.state.project)
         this.metadata.directory_id = dir.id;
+        this.selected_dir = dir;
 
       }
     }

@@ -246,7 +246,6 @@
 
     },
     mounted() {
-      console.log('aaaa', this.set_from_id)
       if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
         this.current_directory = this.directory_list_filtered.find(
           x => {return x.directory_id == this.set_from_id});

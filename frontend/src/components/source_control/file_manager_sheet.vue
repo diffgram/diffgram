@@ -92,6 +92,7 @@
             </v-tab-item>
             <v-tab-item>
               <dataset_explorer :project_string_id="project_string_id"
+                                :directory="$store.state.project.current_directory"
                                 ref="dataset_explorer">
               </dataset_explorer>
             </v-tab-item>
