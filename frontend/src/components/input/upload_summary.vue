@@ -3,59 +3,58 @@
     <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v-layout class="d-flex column justify-center">
       <h2 class="ma-8 black--text" v-if="upload_mode === 'new'">You are about to upload {{file_list.length}} file(s):
-      to Dataset: <v-icon>mdi-folder</v-icon> <strong v-if="current_directory">{{current_directory.nickname}}</strong>
+        to Dataset:
+        <v-icon>mdi-folder</v-icon>
+        <strong v-if="current_directory">{{current_directory.nickname}}</strong>
       </h2>
       <h2 v-if="upload_mode === 'update'">You will Update {{files_to_update_list.length}} File(s): </h2>
 
-      <v-container fluid class="d-flex flex-column"  style="max-height: 450px; overflow-y: auto">
-        <v-list-item
-
-          v-for="(item, i) in file_list_for_summary"
-          :key="i"
-          dense
-          two-line
-          style="min-height: 30px"
-        >
-          <v-list-item-icon class="ma-0">
-            <v-icon v-text="'mdi-file'"></v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>
-            <v-list-item-title v-if="upload_mode === 'new'" v-text="item.name"></v-list-item-title>
-            <v-list-item-title v-if="upload_mode === 'update'" v-text="`File ID: ${item.file_id}`"></v-list-item-title>
-            <v-list-item v-if="item.instances" class="d-flex flex-column justify-start align-baseline">
-              <v-list-item-title class="align-self-baseline" v-text="`Total Instances to add: ${item.instances.length}`">
+      <v-container fluid class="d-flex flex-column" style="max-height: 450px; overflow-y: auto">
+          <div
+            v-for="(item, i) in file_list_for_summary"
+            :key="i"
+          >
+            <v-list-item class="d-flex ma-auto align-center">
+              <v-list-item-icon>
+                <v-icon v-text="'mdi-file'"></v-icon>
+              </v-list-item-icon>
+              <v-list-item-title v-text="upload_mode === 'new' ? item.name : `File ID: ${item.file_id}`">
 
               </v-list-item-title>
-              <v-list-item-subtitle
-                class="ml-4"
+            </v-list-item>
+            <v-list-item v-if="item.instances" class="d-flex ma-0 flex-column ml-8" style="align-items: start">
+              <h5 class="font-weight-medium" v-text="`Total Instances to add: ${item.instances.length}`"></h5>
+              <h5 class="font-weight-light ml-8 "
                 v-if="item.box_instances.length > 0"
                 v-text="`Boxes: ${item.box_instances.length}`">
-              </v-list-item-subtitle>
-              <v-list-item-subtitle class="ml-4" v-if="item.point_instances.length > 0"
-                                    v-text="`Points: ${item.point_instances.length}`"></v-list-item-subtitle>
-              <v-list-item-subtitle class="ml-4" v-if="item.polygon_instances.length > 0"
-                                    v-text="`Polygons: ${item.polygon_instances.length}`"></v-list-item-subtitle>
-              <v-list-item-subtitle class="ml-4" v-if="item.line_instances.length > 0"
-                                    v-text="`Lines: ${item.line_instances.length}`"></v-list-item-subtitle>
-              <v-list-item-subtitle class="ml-4" v-if="item.cuboid_instances.length > 0"
-                                    v-text="`Cuboids: ${item.cuboid_instances.length}`"></v-list-item-subtitle>
-              <v-list-item-subtitle class="ml-4" v-if="item.ellipse_instances.length > 0"
-                                    v-text="`Ellipses: ${item.ellipse_instances.length}`"></v-list-item-subtitle>
+              </h5>
+              <h5 class="ml-8 font-weight-light" v-if="item.point_instances.length > 0"
+                                    v-text="`Points: ${item.point_instances.length}`"></h5>
+              <h5 class="ml-8 font-weight-light" v-if="item.polygon_instances.length > 0"
+                                    v-text="`Polygons: ${item.polygon_instances.length}`"></h5>
+              <h5 class="ml-8 font-weight-light" v-if="item.line_instances.length > 0"
+                                    v-text="`Lines: ${item.line_instances.length}`"></h5>
+              <h5 class="ml-8 font-weight-light" v-if="item.cuboid_instances.length > 0"
+                                    v-text="`Cuboids: ${item.cuboid_instances.length}`"></h5>
+              <h5 class="ml-8 font-weight-light" v-if="item.ellipse_instances.length > 0"
+                                    v-text="`Ellipses: ${item.ellipse_instances.length}`"></h5>
 
-              <v-list-item-title v-if="item.labels" class="align-self-baseline" v-text="`Total Labels: ${Object.keys(item.labels).length} [${Object.keys(item.labels)}]`">
+              <h5 class="font-weight-medium" v-if="item.labels"
+                                 v-text="`Total Labels: ${Object.keys(item.labels).length} [${Object.keys(item.labels)}]`">
 
-              </v-list-item-title>
-              <v-list-item-subtitle class="ml-4"
-                                    v-for="key in Object.keys(item.labels)"
+              </h5>
+              <h5 class="font-weight-light ml-8"                  v-for="key in Object.keys(item.labels)"
                                     v-text="`- '${key}' => Num instances: ${item.labels[key]}`">
 
-              </v-list-item-subtitle>
+              </h5>
             </v-list-item>
-          </v-list-item-title>
-        </v-list-item>
+
+          </div>
       </v-container>
       <v-container fluid class="d-flex justify-end align-center">
-        <v-btn x-large data-cy="start_files_upload_button" class="success ma-8" @click="start_upload">Upload to Diffgram</v-btn>
+        <v-btn x-large data-cy="start_files_upload_button" class="success ma-8" @click="start_upload">Upload to
+          Diffgram
+        </v-btn>
       </v-container>
     </v-layout>
   </v-container>
@@ -86,7 +85,7 @@
         'current_directory': {
           default: null
         },
-        'upload_mode':{
+        'upload_mode': {
           default: null
         }
       },
@@ -99,21 +98,22 @@
         }
       },
       computed: {
-        files_to_update_list: function(){
-          if(!this.pre_labeled_data){ return  []}
+        files_to_update_list: function () {
+          if (!this.pre_labeled_data) {
+            return []
+          }
           const result = [];
-          for(const inst of this.pre_labeled_data){
-            if(inst[this.diffgram_schema_mapping.file_id] && !result.includes(inst[this.diffgram_schema_mapping.file_id])){
+          for (const inst of this.pre_labeled_data) {
+            if (inst[this.diffgram_schema_mapping.file_id] && !result.includes(inst[this.diffgram_schema_mapping.file_id])) {
               result.push(inst[this.diffgram_schema_mapping.file_id])
             }
           }
           return result
         },
-        file_list_for_summary: function(){
-          if(this.$props.upload_mode === 'update'){
+        file_list_for_summary: function () {
+          if (this.$props.upload_mode === 'update') {
             return this.file_list_update;
-          }
-          else if(this.$props.upload_mode === 'new'){
+          } else if (this.$props.upload_mode === 'new') {
             return this.$props.file_list
           }
         }
@@ -134,18 +134,17 @@
 
       },
       methods: {
-        request_upload_raw_media: function(labels_payload){
-          if(this.upload_mode === 'new'){
+        request_upload_raw_media: function (labels_payload) {
+          if (this.upload_mode === 'new') {
             this.$emit('upload_raw_media', [...this.$props.file_list]);
 
-          }
-          else if(this.upload_mode === 'update'){
+          } else if (this.upload_mode === 'update') {
             this.$emit('upload_raw_media', labels_payload);
           }
 
         },
-        attach_batch_to_files: function(batch){
-          for(const file of this.$props.file_list){
+        attach_batch_to_files: function (batch) {
+          for (const file of this.$props.file_list) {
             file.input_batch_id = batch.id
           }
 
@@ -165,14 +164,24 @@
         },
         prepare_pre_labeled_data_payload: function (pre_labeled_data, diffgram_schema, file_list) {
           // This function Creates the final payload accepted by the API based on the schema mapping.
-          if(!pre_labeled_data){return}
+          if (!pre_labeled_data) {
+            return
+          }
           const result = {};
+          console.log('FILE LIST', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
-            const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+            let file_instances = [];
+            if(this.upload_mode === 'new'){
+              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+            }
+            else{
+              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_id] === file.file_id);
+            }
+
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}, file_id: file.file_id};
-            if(file.name){
+            if (file.name) {
               result[file.name] = {instance_list: [], frame_packet_map: {}, file_id: file.file_id};
             }
 
@@ -249,47 +258,43 @@
                     y: instance[diffgram_schema.cuboid.rear_face_bot_right_y]
                   },
                 }
-              } else if(type === 'ellipse'){
+              } else if (type === 'ellipse') {
                 diffgram_formatted_instance.center_x = instance[diffgram_schema.ellipse.center_x];
                 diffgram_formatted_instance.center_y = instance[diffgram_schema.ellipse.center_y];
                 diffgram_formatted_instance.angle = instance[diffgram_schema.ellipse.angle];
                 diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
                 diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
               }
-              if(this.upload_mode === 'update'){
-                  // Assumption on update is that if instance has a frame_number it should be a video.
-                  if(diffgram_formatted_instance.frame_number){
-                    result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number].push(
+              if (this.upload_mode === 'update') {
+                // Assumption on update is that if instance has a frame_number it should be a video.
+                if (diffgram_formatted_instance.frame_number) {
+                  result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number].push(
+                    diffgram_formatted_instance
+                  )
+                  if (file.name) {
+                    result[file.name].frame_packet_map[diffgram_formatted_instance.frame_number].push(
                       diffgram_formatted_instance
                     )
-                    if(file.name){
-                      result[file.name].frame_packet_map[diffgram_formatted_instance.frame_number].push(
-                        diffgram_formatted_instance
-                      )
-                    }
-
-
                   }
-                  else{
-                    result[file.uuid].instance_list.push(diffgram_formatted_instance)
-                    if(file.name){
-                      result[file.name].instance_list.push(diffgram_formatted_instance)
-                    }
 
+
+                } else {
+                  result[file.uuid].instance_list.push(diffgram_formatted_instance)
+                  if (file.name) {
+                    result[file.name].instance_list.push(diffgram_formatted_instance)
                   }
-              }
-              else if (this.upload_mode === 'new'){
-                if(this.supported_image_files.includes(file.type)){
+
+                }
+              } else if (this.upload_mode === 'new') {
+                if (this.supported_image_files.includes(file.type)) {
                   result[file.uuid].instance_list.push(diffgram_formatted_instance)
                   result[file.name].instance_list.push(diffgram_formatted_instance)
 
-                }
-                else if(this.supported_video_files.includes(file.type)){
-                  if(!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]){
+                } else if (this.supported_video_files.includes(file.type)) {
+                  if (!result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number]) {
                     result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
                     result[file.name].frame_packet_map[diffgram_formatted_instance.frame_number] = [diffgram_formatted_instance]
-                  }
-                  else{
+                  } else {
                     result[file.uuid].frame_packet_map[diffgram_formatted_instance.frame_number].push(
                       diffgram_formatted_instance
                     )
@@ -297,8 +302,7 @@
                       diffgram_formatted_instance
                     )
                   }
-                }
-                else{
+                } else {
                   throw new Error(`${file.type} is not a supported file format.`)
                 }
               }
@@ -322,8 +326,10 @@
 
         },
         compute_attached_instance_per_file: function () {
-          if(!this.$props.pre_labeled_data){ return }
-          if(this.upload_mode === 'new'){
+          if (!this.$props.pre_labeled_data) {
+            return
+          }
+          if (this.upload_mode === 'new') {
             for (let i = 0; i < this.$props.file_list.length; i++) {
               const file = this.$props.file_list[i];
               file.labels = {}
@@ -343,17 +349,15 @@
               file.ellipse_instances = ellipse_instances;
 
               // Compute labels count
-              for(const instance of all_instances){
-                if(!file.instances[instance[this.$props.diffgram_schema_mapping.name]]){
+              for (const instance of all_instances) {
+                if (!file.instances[instance[this.$props.diffgram_schema_mapping.name]]) {
                   file.labels[instance[this.$props.diffgram_schema_mapping.name]] = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.name] === instance[this.$props.diffgram_schema_mapping.name]).length;
                 }
               }
             }
-          }
-          else if(this.upload_mode === 'update'){
+          } else if (this.upload_mode === 'update') {
             this.file_list_update = []
             const file_ids = this.files_to_update_list;
-            console.log('idsss', file_ids)
             for (let i = 0; i < file_ids.length; i++) {
               const file_id = file_ids[i];
               const file = {
@@ -367,7 +371,7 @@
                 cuboid_instances: [],
                 ellipse_instances: [],
               }
-              const all_instances = this.$props.pre_labeled_data.filter(inst => inst[this.$props.diffgram_schema_mapping.file_name] == file.name)
+              const all_instances = this.$props.pre_labeled_data.filter(inst => inst[this.$props.diffgram_schema_mapping.file_id] == file_id)
               file.instances = all_instances;
               const box_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'box')
               const point_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'point')
@@ -383,8 +387,8 @@
               file.ellipse_instances = ellipse_instances;
 
               // Compute labels count
-              for(const instance of all_instances){
-                if(!file.instances[instance[this.$props.diffgram_schema_mapping.name]]){
+              for (const instance of all_instances) {
+                if (!file.instances[instance[this.$props.diffgram_schema_mapping.name]]) {
                   file.labels[instance[this.$props.diffgram_schema_mapping.name]] = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.name] === instance[this.$props.diffgram_schema_mapping.name]).length;
                 }
               }
