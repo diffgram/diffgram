@@ -67,8 +67,7 @@ class ModelRun(Base):
              project_id: int = None,
              model_id: int = None,
              ends: str = None,
-             starts: str = None,
-             ):
+             starts: str = None):
 
         if project_id is None:
             return
@@ -87,3 +86,16 @@ class ModelRun(Base):
         model_list = query.all()
 
         return model_list
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'created_time': self.created_time,
+            'last_updated_time': self.last_updated_time,
+            'deleted_time': self.deleted_time,
+            'reference_id': self.reference_id,
+            'model_id': self.model_id,
+            'member_created_id': self.member_created_id,
+            'member_updated_id': self.member_updated_id,
+            'project_id': self.project_id,
+        }
