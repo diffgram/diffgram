@@ -1,7 +1,12 @@
 <template>
-  <v-container fluid>
+  <div>
+    <v-autocomplete
+      dense
+      v-model="current_run"
+      :items="model_run_list"
+    ></v-autocomplete>
 
-  </v-container>
+  </div>
 </template>
 
 <script>
@@ -20,6 +25,11 @@
         default: false
       }
 
+    },
+    data: function(){
+      return{
+        current_run: undefined
+      }
     }
   })
 </script>

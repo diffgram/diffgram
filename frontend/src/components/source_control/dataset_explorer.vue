@@ -19,15 +19,23 @@
                           :set_from_id="directory.directory_id">
         </v_directory_list>
       </div>
-      <div class="d-flex align-center">
-        <h4 class="ma-auto">Compare Runs: </h4>
+      <div class="d-flex align-center align-content-center">
+        <h4 class="ma-auto mt-4 mr-4" >Compare Runs: </h4>
         <model_run_selector
+          class="mt-4"
           :multi_select="false"
-          :model_run_list="[]"
+          :model_run_list="model_run_list"
           :project_string_id="project_string_id">
 
         </model_run_selector>
+        <h2 class="font-weight-light">VS</h2>
+        <model_run_selector
+          class="mt-4"
+          :multi_select="false"
+          :model_run_list="model_run_list"
+          :project_string_id="project_string_id">
 
+        </model_run_selector>
       </div>
       <v-spacer></v-spacer>
 
@@ -84,6 +92,7 @@
     data: function () {
       return {
         file_list: [],
+        model_run_list: [],
         loading: false,
         selected_dir: undefined,
         metadata: {
@@ -106,10 +115,9 @@
       }
     },
     methods: {
-      fetch_file_list: async function(){
+      fetch_model_run_list: async function(){
         this.loading = true
         try{
-          console.log('metaa', this.metadata)
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
             'metadata': this.metadata,
@@ -118,6 +126,24 @@
           })
           if (response.data['file_list'] != null) {
             this.file_list = response.data.file_list;
+          }
+        }
+        catch (error) {
+          console.error(error);
+        }
+        finally {
+          this.loading = false;
+        }
+      },
+      fetch_file_list: async function(){
+        this.loading = true
+        try{
+          const response = await axios.post(
+            `/api/v1/project/${this.$props.project_string_id}/model-runs/list`,
+            {}
+          );
+          if (response.data['model_run_list'] != undefined) {
+            this.model_run_list = response.data.model_run_list;
           }
         }
         catch (error) {
