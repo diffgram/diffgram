@@ -168,9 +168,17 @@
             return
           }
           const result = {};
+          console.log('FILE LIST', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
-            const file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+            let file_instances = [];
+            if(this.upload_mode === 'new'){
+              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+            }
+            else{
+              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_id] === file.file_id);
+            }
+
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}, file_id: file.file_id};
             if (file.name) {

@@ -447,7 +447,6 @@
       watch: {
         $route(to, from) {
           // react to route changes...
-          console.log('TOO', to.query.step)
           if(!to.query.step){
             this.el = 1;
             this.close();
