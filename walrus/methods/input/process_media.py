@@ -1873,7 +1873,7 @@ class Process_Media():
 
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
-        if not self.input.original_filename.endswith(self.input.extension):
+        if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
             self.input.original_filename = self.input.original_filename + self.input.extension
             
         if self.__file_does_not_exist_in_target_directory() is False:
