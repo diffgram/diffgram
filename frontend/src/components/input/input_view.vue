@@ -440,7 +440,7 @@
 
 
                   <tooltip_button
-                    v-if="props.item.has_instance_list || props.item.has_frame_packet_map"
+                    v-if="props.item.mode == 'update' || props.item.mode == 'update_with_existing'"
                     tooltip_message="Raw Instance List & Frame Map"
                     icon="mdi-dump-truck"
                     :icon_style="true"

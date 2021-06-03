@@ -90,7 +90,7 @@ def process_media_unit_of_work(item):
             try:
                 process_media.main_entry()
             except Exception as e:
-                print(e)
+                traceback.format_exc(e)
                 print("[Process Media] Main failed on", str(item.input_id))
         else:
             process_media.main_entry()
@@ -777,6 +777,15 @@ class Process_Media():
         global New_video  # important
         from methods.video.video import New_video
 
+        if not self.input.frame_packet_map:
+            self.input.update_log['error']['frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
+            self.input.status = 'failed'
+            self.input.status_text = "Please provide a frame packet map. It cannot be empty.'"
+            self.session.add(self.input)
+            self.try_to_commit()
+            return
+
+
         # TODO "new video" name makes less sense in new context
         new_video = New_video(
             session=self.session,
@@ -784,7 +793,15 @@ class Process_Media():
             input=self.input
         )
 
-        new_video.update_from_frame_packet_map()
+        try:
+            new_video.update_from_frame_packet_map()
+        except Exception as e:
+            traceback.format_exc()
+            self.input.update_log['error']['update_from_frame_packet_map'] = str(e)
+            self.input.status = 'failed'
+            self.session.add(self.input)
+            logger.error(str(e))
+
 
         if len(self.input.update_log["error"].keys()) >= 1:
             self.input = self.update_video_status_when_update_has_errors(input = self.input)  # 'parent' here not frame
@@ -1856,7 +1873,7 @@ class Process_Media():
 
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
-        if not self.input.original_filename.endswith(self.input.extension):
+        if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
             self.input.original_filename = self.input.original_filename + self.input.extension
             
         if self.__file_does_not_exist_in_target_directory() is False:

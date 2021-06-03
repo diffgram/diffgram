@@ -22,9 +22,7 @@ def input_view_detail_api(project_string_id, input_id):
 
     log = regular_log.default()
 
-
     with sessionMaker.session_scope() as session:
-
         project = Project.get(session, project_string_id)
 
         # MAIN
@@ -32,7 +30,7 @@ def input_view_detail_api(project_string_id, input_id):
             session = session,
             project = project,
             input_id = input_id,
-            log=log,
+            log = log,
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -43,10 +41,10 @@ def input_view_detail_api(project_string_id, input_id):
 
 
 def input_detail_core(
-        session,
-        project: Project,
-        input_id: int,
-        log: dict):
+    session,
+    project: Project,
+    input_id: int,
+    log: dict):
     """
         TODO put as part of Input class
     """
