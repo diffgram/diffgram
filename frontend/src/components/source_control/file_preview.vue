@@ -5,8 +5,8 @@
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
-        :editable="true"
-        :auto_scale_bg="true"
+        :editable="false"
+        :auto_scale_bg="false"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
@@ -54,7 +54,7 @@
         default: 430
       },
       'file_preview_height':{
-        default: 320
+        default: 325
       }
     },
     data: function(){
@@ -72,18 +72,24 @@
       }
     },
     mounted() {
+      console.log('DRAWW', this.$props.file)
       if(this.$props.file){
-        this.set_bg(this.$props.file)
+        this.set_bg(this.$props.file);
+        this.prepare_compare_instance_lists();
       }
       this.$forceUpdate();
     },
     watch:{
       file: function(newFile, oldFile){
         this.set_bg(newFile);
+        this.prepare_compare_instance_lists();
       }
     },
     methods: {
-      set_bg: function(newFile){
+      prepare_compare_instance_lists: function(){
+
+      },
+      set_bg: async function(newFile){
         if(!newFile){
           this.image_bg = undefined;
           this.refresh = new Date();
@@ -91,9 +97,12 @@
         else{
           if(newFile.image){
             const image = new Image();
+            image.onload = () =>{
+              this.image_bg = image;
+              this.refresh = new Date();
+            }
             image.src = this.$props.file.image.url_signed;
-            this.image_bg = image;
-            this.refresh = new Date();
+
           }
         }
         this.$forceUpdate();

@@ -18,12 +18,13 @@
       <v_bg
         :ord="1"
         :background="bg_color"
+        ref="background"
         :image="image_bg"
         :refresh="refresh"
         :canvas_width="canvas_width"
         :canvas_height="canvas_height"
         :annotations_loading="annotations_loading"
-        :auto_scale_bg="false"
+        :auto_scale_bg="auto_scale_bg"
         @update_canvas="update_canvas"
       ></v_bg>
 
@@ -37,6 +38,7 @@
                       :width="canvas_width"
                       :show="show_target_reticle"
                       :target_colour="reticle_colour"
+                      ref="reticle"
                       :text_color="text_color"
                       :target_text="this.instance.number"
                       :canvas_transform="canvas_transform">
@@ -86,9 +88,6 @@
       auto_scale_bg:{
         default: false
       },
-      refresh: {
-        default: null
-      },
       text_color: {
         default: "#000000"
       },
@@ -125,6 +124,8 @@
         this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
       },
       image_bg: function(){
+        console.log('image_bg watcherrr')
+        this.canvas_element.width+=0;
         this.update_window_size_from_listener();
       }
     },
@@ -158,6 +159,7 @@
         canvas_scale_global_x: 1,
         show_target_reticle: true,
         canvas_mouse_tools: undefined,
+        refresh: undefined,
         window_width_from_listener: undefined,
         window_height_from_listener: undefined,
         canvas_ctx: undefined,
@@ -168,6 +170,7 @@
       }
     },
     mounted() {
+      this.loading = true
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
@@ -178,6 +181,9 @@
 
       window.addEventListener('resize', this.update_window_size_from_listener)
       this.update_window_size_from_listener();
+      this.canvas_element.width += 0;
+      this.loading = false;
+      this.update_canvas();
     },
 
     beforeDestroy() {
@@ -185,8 +191,7 @@
       window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {
-      update_window_size_from_listener: function(){
-        console.log('aaaa', this.$props.image_bg.width, this.$props.image_bg.width)
+      update_window_size_from_listener: async function(){
         let width_scaled = this.$props.canvas_width / this.$props.image_bg.width;
         let height_scaled = this.$props.canvas_height / this.$props.image_bg.height;
         // careful to do the scale first, so we do the min of scaled values
@@ -195,6 +200,7 @@
         let new_size = Math.round(lowest_size * 100) / 100
         this.canvas_scale_global_x = width_scaled;
         this.canvas_scale_global_y = height_scaled;
+        await this.$nextTick();
       },
       zoom_in: function(){
         this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
@@ -240,7 +246,6 @@
       },
       update_canvas: function(){
         this.refresh = new Date();
-        this.canvas_element = document.getElementById(this.$props.canvas_id)
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
 
         this.$forceUpdate();

@@ -47,12 +47,14 @@ export default Vue.extend({
 
           ctx.filter = brightness + contrast + grayscale
           if(!this.$props.auto_scale_bg){
+            console.log('drawImage', this.image)
             ctx.drawImage(this.image, 0, 0);
           }
           else{
             var hRatio = ctx.canvas.width / this.image.width;
             var vRatio = ctx.canvas.height / this.image.height;
             var ratio  = Math.min ( hRatio, vRatio );
+
             ctx.drawImage(
               this.image,
               0,
@@ -63,6 +65,7 @@ export default Vue.extend({
               0,
               ctx.canvas.width,
               ctx.canvas.height); // destination rectangle
+
           }
           ctx.filter = "none"
           // note, must be after we draw image if we want writing over top
@@ -89,6 +92,7 @@ export default Vue.extend({
           // we need to make a refresh update anytime we make
           // a change to image. (In annotation core)
           let local_refresh = this.refresh
+
           if(!this.$props.background){
             this.draw_image_bg(ctx)
           }

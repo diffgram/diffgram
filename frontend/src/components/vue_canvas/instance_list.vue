@@ -1321,7 +1321,6 @@
           // run again so we still capture the corners for editing
           this.is_mouse_in_path(ctx, i, instance)
 
-          console.log('finish drawing', instance, i)
         },
 
          // inspired by http://jsfiddle.net/m1erickson/8j6kdf4o/

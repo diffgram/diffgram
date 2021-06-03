@@ -33,6 +33,7 @@
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
+        v-else
         v-for="(file, index) in this.file_list"
         :key="file.id"
         :project_string_id="project_string_id"
