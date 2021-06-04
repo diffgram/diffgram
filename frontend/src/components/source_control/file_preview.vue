@@ -176,8 +176,25 @@
       },
 
       view_image_details: function(){
-        this.$router.push(`/studio/annotate/${this.$props.project_string_id}?file=${this.$props.file.id}`).catch(()=>{});
-        this.$emit('view_file_detail', this.$props.file)
+
+        let model_runs = [];
+        if(this.base_model_run){
+          model_runs.push(this.$props.base_model_run)
+        }
+        if(this.$props.compare_to_model_run_list){
+          model_runs = model_runs.concat(this.$props.compare_to_model_run_list);
+        }
+        console.log('model_runs',model_runs)
+        const model_run_ids = model_runs.map(run => run.id);
+        this.$router.push({
+          path: `/studio/annotate/${this.$props.project_string_id}`,
+          query: {
+            file: this.$props.file.id,
+            model_runs:  model_runs.length > 0 ? encodeURIComponent(model_run_ids): undefined,
+
+          }
+        }).catch(()=>{});
+        this.$emit('view_file_detail', this.$props.file, model_runs)
       }
 
 

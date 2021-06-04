@@ -824,7 +824,11 @@ export default Vue.extend( {
           }
         }
       },
+      'model_run_id_list': {
+        default: null
+      },
       'current_version_prop': {},
+
       'view_only_mode': {
         default: false
       }

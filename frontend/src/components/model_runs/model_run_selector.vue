@@ -1,6 +1,7 @@
 <template>
   <div class="d-flex">
     <v-autocomplete
+      style="max-width: 350px"
       clearable
       :multiple="multi_select"
       :items="model_run_list"
@@ -25,6 +26,7 @@
 
 <script>
   import Vue from "vue";
+  import {model_run_colors} from "./model_run_colors";
 
   export default Vue.extend( {
     name: "model_run_selector",
@@ -39,23 +41,13 @@
         default: false
       },
       selected_color: {
-        default: 'blue'
+        default: 'lime'
       }
     },
     data: function(){
       return{
         current_run: undefined,
-        color_list: [
-          'red',
-          'green',
-          'yellow',
-          'orange',
-          'lime',
-          'aqua',
-          'maroon',
-          'darkslateblue',
-          'darkolivegreen'
-        ]
+        color_list: model_run_colors
       }
     },
     computed:{

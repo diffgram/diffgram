@@ -5,6 +5,7 @@
       <div v-if="show_annotation_core == true">
         <v_annotation_core
           :project_string_id="computed_project_string_id"
+          :model_run_id_list="model_run_id_list"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
@@ -92,6 +93,7 @@
           task: null,
           current_file: null,
           request_save: false,
+          model_run_id_list: [],
 
           view_only: false,
 
@@ -113,6 +115,12 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
+
+          if(to.query.model_runs){
+            console.log('query model runs',  decodeURIComponent(to.query.model_runs).split(','))
+            this.model_run_id_list = decodeURIComponent(to.query.model_runs).split(',');
+          }
+
         }
       },
       created() {

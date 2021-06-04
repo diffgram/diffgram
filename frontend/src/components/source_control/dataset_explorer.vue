@@ -183,8 +183,8 @@
         this.selected_dir = dir;
 
       },
-      view_detail: function(file){
-        this.$emit('view_detail', file)
+      view_detail: function(file, model_runs){
+        this.$emit('view_detail', file, model_runs)
       }
     }
 
