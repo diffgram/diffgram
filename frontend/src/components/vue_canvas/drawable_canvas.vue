@@ -15,6 +15,7 @@
       :height="canvas_height_scaled "
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
+      <slot :ord="4" name="compare_to_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
         :ord="1"
         :background="bg_color"

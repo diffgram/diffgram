@@ -71,15 +71,26 @@
         return item.reference_id;
       },
       model_run_change: function(item){
-        console.log('change model run ', item)
-        const final_val = {...item}
+        console.log('cjnassse', item)
         if(this.$props.multi_select){
-          final_val.color = this.color_list[item.index]
+          let final_val = item;
+          let index = 0;
+          for(const elm of final_val){
+            elm.color = this.color_list[index]
+            index += 1;
+          }
+          this.$emit('model_run_change', final_val);
         }
         else{
+          if(!item){
+            this.$emit('model_run_change', item);
+            return
+          }
+          let final_val = {...item}
           final_val.color = this.$props.selected_color;
+          this.$emit('model_run_change', final_val);
         }
-        this.$emit('model_run_change', final_val);
+
       }
     }
   })

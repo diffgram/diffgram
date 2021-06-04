@@ -14,6 +14,7 @@ import Vue from 'vue'
 
       if (!drawFuncs[uid]) {
         var children = children.filter(function (child) {
+
           return child.componentOptions !== undefined && child.componentInstance !== undefined;
         });
 
@@ -24,7 +25,19 @@ import Vue from 'vue'
         drawFuncs[uid] = children.map(function (child) {
           return child.componentInstance.draw;
         });
-      };
+      }
+      // else{
+      //   var children = children.filter(function (child) {
+      //
+      //     return child.componentOptions !== undefined && child.componentInstance !== undefined;
+      //   });
+      //
+      //   console.log('      var children = vnode.children;', vnode.children)
+      //   console.log('childdd', children)
+      //   console.log('uid[uid]', uid)
+      //   console.log('drawFuncs[uid]', drawFuncs[uid])
+      //
+      // }
 
       var promises = drawFuncs[uid].map(function (draw) {
         return function () {

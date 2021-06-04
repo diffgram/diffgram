@@ -13,18 +13,20 @@
       >
 
         <instance_list
-                              slot-scope="props"
-                              :instance_list="filtered_instance_list"
-                              :vertex_size="3"
-                              :refresh="refresh"
-                              :video_mode="false"
-                              :label_settings="label_settings"
-                              :show_annotations="true"
-                              :draw_mode="false"
-                              :canvas_transform="props.canvas_transform"
-                              slot="instance_drawer"
+          slot-scope="props"
+          :instance_list="filtered_instance_list"
+          :vertex_size="3"
+          :refresh="refresh"
+          :video_mode="false"
+          :label_settings="label_settings"
+          :show_annotations="true"
+          :draw_mode="false"
+          :canvas_transform="props.canvas_transform"
+          slot="instance_drawer"
         >
         </instance_list>
+
+
       </drawable_canvas>
     </v-card-text>
   </v-card>
@@ -34,14 +36,15 @@
   import Vue from "vue";
   import instance_list from "../vue_canvas/instance_list";
   import drawable_canvas from "../vue_canvas/drawable_canvas";
+
   export default Vue.extend({
     name: "file_preview",
-    components:{
+    components: {
       drawable_canvas,
       instance_list
     },
-    props:{
-      'project_string_id':{
+    props: {
+      'project_string_id': {
         default: undefined
       },
       'file': {
@@ -50,25 +53,29 @@
       'instance_list': {
         default: undefined
       },
-      'file_preview_width':{
+      'file_preview_width': {
         default: 430
       },
-      'file_preview_height':{
+      'file_preview_height': {
         default: 325
       },
-      'base_model_run':{
+      'base_model_run': {
         default: null
       },
-      'compare_to_model_run':{
+      'compare_to_model_run_list': {
+        default: null
+      },
+      'show_ground_truth':{
         default: null
       }
     },
-    data: function(){
-      return{
+    data: function () {
+      return {
         image_bg: undefined,
         refresh: null,
         filtered_instance_list: [],
-        label_settings:{
+        compare_to_instance_list_set: [],
+        label_settings: {
           font_size: 20,
           show_removed_instances: false,
           spatial_line_size: 2,
@@ -79,52 +86,86 @@
       }
     },
     mounted() {
-      if(this.$props.file){
+      if (this.$props.file) {
         this.set_bg(this.$props.file);
-        this.filtered_instance_list = this.$props.instance_list;
-        this.prepare_base_instance_list();
-        this.prepare_compare_instance_lists();
+
+        this.prepare_filtered_instance_list();
       }
-      this.$forceUpdate();
     },
-    watch:{
-      file: function(newFile, oldFile){
+    watch: {
+      file: function (newFile, oldFile) {
         this.set_bg(newFile);
-        this.prepare_compare_instance_lists();
+        this.prepare_filtered_instance_list();
       },
-      base_model_run: function(){
-        this.prepare_base_instance_list();
+      base_model_run: function () {
+
+        this.prepare_filtered_instance_list();
       },
-      compare_to_model_run: function(){
-        this.prepare_compare_instance_lists();
+      compare_to_model_run_list: function () {
+        this.prepare_filtered_instance_list();
+      },
+      show_ground_truth: function(){
+        this.prepare_filtered_instance_list();
       }
     },
     methods: {
-      prepare_base_instance_list: function(){
-        if(!this.$props.base_model_run){return}
+      prepare_filtered_instance_list: function () {
+        this.filtered_instance_list = []
+        if (this.$props.base_model_run) {
+          this.filtered_instance_list = this.$props.instance_list.filter(inst => {
+            return inst.model_run_id === this.$props.base_model_run.id;
+          })
+          this.filtered_instance_list = this.filtered_instance_list.map(inst => {
+            return {
+              ...inst,
+              override_color: this.$props.base_model_run.color
+            }
+          })
+        }
 
-        this.filtered_instance_list = this.$props.instance_list.filter(inst => {
-          return inst.model_run_id === this.$props.base_model_run.id;
-        })
-        this.filtered_instance_list = this.filtered_instance_list.map(inst => {
-          return {
-            ...inst,
-            override_color: this.$props.base_model_run.color
+
+        if (this.$props.compare_to_model_run_list) {
+          let added_ids = this.filtered_instance_list.map(inst => inst.id);
+          for (const model_run of this.$props.compare_to_model_run_list) {
+
+            let filtered_instances = this.$props.instance_list.filter(inst => {
+              return inst.model_run_id === model_run.id;
+            })
+            console.log('model urn', model_run)
+            filtered_instances = filtered_instances.map(inst => {
+              return {
+                ...inst,
+                override_color: model_run.color
+              }
+            })
+            for(const instance of filtered_instances){
+              if(!added_ids.includes(instance.id)){
+                this.filtered_instance_list.push(instance);
+                added_ids.push(instance.id)
+              }
+            }
           }
-        })
-      },
-      prepare_compare_instance_lists: function(){
+        }
 
+
+        if(this.$props.show_ground_truth){
+          const ground_truth_instances = this.$props.instance_list.filter(inst => !inst.model_run_id);
+          console.log('ground_truth_instances', ground_truth_instances)
+          for(const inst of ground_truth_instances){
+
+            this.filtered_instance_list.push(inst)
+          }
+        }
       },
-      set_bg: async function(newFile){
-        if(!newFile){
+
+      set_bg: async function (newFile) {
+        if (!newFile) {
           this.image_bg = undefined;
           this.refresh = new Date();
-        }
-        else{
-          if(newFile.image){
+        } else {
+          if (newFile.image) {
             const image = new Image();
-            image.onload = () =>{
+            image.onload = () => {
               this.image_bg = image;
               this.refresh = new Date();
             }
@@ -132,7 +173,6 @@
 
           }
         }
-        this.$forceUpdate();
       }
     }
   });

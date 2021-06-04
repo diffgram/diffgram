@@ -21,6 +21,9 @@
         },
         "instance_list": {},
         "issues_list": undefined,
+        "compare_to_instance_list_set": {
+          default: null
+        },
         "auto_border_polygon_p1": undefined,
         "auto_border_polygon_p2": undefined,
         "is_actively_resizing": {
@@ -340,10 +343,11 @@
           let strokeColor = undefined;
           let fillColor = undefined;
           let lineWidth = undefined;
-          console.log('AAAAA', instance.override_color)
+
           if(instance.override_color){
             fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
             strokeColor = instance.override_color;
+            ctx.setLineDash([[5]])
             ctx.strokeStyle = strokeColor;
             ctx.fillStyle = fillColor;
             ctx.lineWidth = 1;
@@ -1381,15 +1385,14 @@
               + (mouse.y - point.y) ** 2) < radius  // < number == circle.radius
         },
       },
-   computed:{
-     instance_select_for_issue: function(){
-       return this.$store.getters.get_instance_select_for_issue;
-     },
-     view_issue_mode: function(){
-       return this.$store.getters.get_view_issue_mode;
-     }
-   }
-
+      computed:{
+         instance_select_for_issue: function(){
+           return this.$store.getters.get_instance_select_for_issue;
+         },
+         view_issue_mode: function(){
+           return this.$store.getters.get_view_issue_mode;
+         }
+      }
     })
 
 

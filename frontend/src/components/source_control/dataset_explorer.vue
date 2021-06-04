@@ -20,7 +20,8 @@
         </v_directory_list>
       </div>
       <div class="d-flex align-center align-content-center">
-        <h4 class="mt-4 mr-4 mb-3">Compare Runs: </h4>
+
+        <h4 class="mt-4 mr-4 mb-3">Compare Inferences: </h4>
         <model_run_selector
           class="mt-4"
           :multi_select="false"
@@ -38,6 +39,12 @@
           :project_string_id="project_string_id">
 
         </model_run_selector>
+        <div class="mt-4 ml-4">
+          <v-switch
+            v-model="show_ground_truth"
+            :label="`Show Ground Truth`"
+          ></v-switch>
+        </div>
       </div>
       <v-spacer></v-spacer>
 
@@ -56,11 +63,12 @@
         v-else
         v-for="(file, index) in this.file_list"
         :base_model_run="base_model_run"
-        :compare_to_model_runs="compare_to_model_run"
+        :compare_to_model_run_list="compare_to_model_run_list"
         :key="file.id"
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
+        :show_ground_truth="show_ground_truth"
       ></file_preview>
 
     </v-layout>
@@ -99,9 +107,10 @@
         file_list: [],
         model_run_list: [],
         loading: false,
+        show_ground_truth: false,
         selected_dir: undefined,
         base_model_run: undefined,
-        compare_to_model_run: undefined,
+        compare_to_model_run_list: undefined,
         metadata: {
           'directory_id': undefined,
           'limit': this.metadata_limit,
@@ -123,7 +132,7 @@
     },
     methods: {
       update_compare_to_model_runs: function(value){
-        this.compare_to_model_run = value
+        this.compare_to_model_run_list = value
       },
       update_base_model_run: function(value){
         this.base_model_run = value
