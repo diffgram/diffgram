@@ -69,6 +69,7 @@
         :file="file"
         :instance_list="file.instance_list"
         :show_ground_truth="show_ground_truth"
+        @view_file_detail="view_detail"
       ></file_preview>
 
     </v-layout>
@@ -181,6 +182,9 @@
         this.metadata.directory_id = dir.id;
         this.selected_dir = dir;
 
+      },
+      view_detail: function(file){
+        this.$emit('view_detail', file)
       }
     }
 

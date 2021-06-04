@@ -1,5 +1,5 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" v-if="image_bg">
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" v-if="image_bg" @click="view_image_details">
     <v-card-text class="pa-0 ma-0">
       <drawable_canvas
         :image_bg="image_bg"
@@ -173,7 +173,14 @@
 
           }
         }
+      },
+
+      view_image_details: function(){
+        this.$router.push(`/studio/annotate/${this.$props.project_string_id}?file=${this.$props.file.id}`).catch(()=>{});
+        this.$emit('view_file_detail', this.$props.file)
       }
+
+
     }
   });
 </script>

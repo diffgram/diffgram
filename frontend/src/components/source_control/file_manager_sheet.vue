@@ -93,6 +93,7 @@
             <v-tab-item>
               <dataset_explorer :project_string_id="project_string_id"
                                 :directory="$store.state.project.current_directory"
+                                @view_detail="change_file_and_close"
                                 ref="dataset_explorer">
               </dataset_explorer>
             </v-tab-item>
@@ -184,6 +185,10 @@
       },
       set_permissions_error: function (new_error) {
         this.error_permissions = new_error;
+      },
+      change_file_and_close: function(file){
+        this.change_file(file);
+        this.hide_file_manager_sheet();
       },
       change_file: function (file) {
         this.minimize_sheet()
