@@ -261,7 +261,6 @@ class New_video():
         # Video object is not created yet so stored locally and then used here...
         video.original_fps = original_fps
         video.fps = fps
-        video.fps_conversion_ratio = fps_conversion_ratio
         video.offset_in_seconds = input.offset_in_seconds
 
         video.root_blob_path_to_frames = settings.PROJECT_IMAGES_BASE_DIR + \
