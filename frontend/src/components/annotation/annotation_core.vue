@@ -2656,6 +2656,7 @@ export default Vue.extend( {
       // Reset issue mode
       this.$store.commit('set_instance_select_for_issue', false);
       this.$store.commit('set_view_issue_mode', false);
+      this.$store.commit('set_user_is_typing_or_menu_open', false)
       this.add_event_listeners()
       this.fetch_instance_template();
 
@@ -5909,6 +5910,7 @@ export default Vue.extend( {
         this.canvas_element.style.cursor = 'move'
       }
 
+      console.log('AAAAAA is_typing_or_menu_open', this.$store.state.user.is_typing_or_menu_open);
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         //console.debug("Blocked by is_typing_or_menu_open")
         return
@@ -5945,6 +5947,7 @@ export default Vue.extend( {
 
         this.save(true);  // and_complete == true
       }
+      console.log('AAAAAA', event.keyCode);
       if (event.keyCode === 27) { // Esc
         if (this.$props.view_only_mode == true) { return }
         if(this.instance_select_for_issue || this.view_issue_mode){return}
