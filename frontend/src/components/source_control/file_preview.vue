@@ -178,11 +178,14 @@
       view_image_details: function(){
 
         let model_runs = [];
+        let color_list = [];
         if(this.base_model_run){
           model_runs.push(this.$props.base_model_run)
+          color_list.push(this.$props.base_model_run.color)
         }
         if(this.$props.compare_to_model_run_list){
           model_runs = model_runs.concat(this.$props.compare_to_model_run_list);
+          color_list = color_list.concat(this.$props.compare_to_model_run_list.map(m => m.color));
         }
         console.log('model_runs',model_runs)
         const model_run_ids = model_runs.map(run => run.id);
@@ -191,10 +194,11 @@
           query: {
             file: this.$props.file.id,
             model_runs:  model_runs.length > 0 ? encodeURIComponent(model_run_ids): undefined,
+            color_list:  color_list.length > 0 ? encodeURIComponent(color_list): undefined,
 
           }
         }).catch(()=>{});
-        this.$emit('view_file_detail', this.$props.file, model_runs)
+        this.$emit('view_file_detail', this.$props.file, model_runs, color_list)
       }
 
 

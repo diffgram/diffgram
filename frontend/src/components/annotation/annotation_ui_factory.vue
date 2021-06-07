@@ -6,6 +6,7 @@
         <v_annotation_core
           :project_string_id="computed_project_string_id"
           :model_run_id_list="model_run_id_list"
+          :model_run_color_list="model_run_color_list"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
@@ -98,6 +99,7 @@
           view_only: false,
 
           labels_list_from_project: null,
+          model_run_color_list: null,
           label_file_colour_map_from_project: null
 
         }
@@ -199,8 +201,10 @@
       methods: {
         get_model_runs_from_query: function(query){
           if(query.model_runs){
-            console.log('query model runs',  decodeURIComponent(query.model_runs).split(','))
             this.model_run_id_list = decodeURIComponent(query.model_runs).split(',');
+            if(query.color_list){
+              this.model_run_color_list = decodeURIComponent(query.color_list).split(',');
+            }
           }
 
         },

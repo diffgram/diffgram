@@ -193,6 +193,7 @@
                                   ref="instance_detail_list"
                                   v-if="!task_error.task_request"
                                   :instance_list="instance_list"
+                                  :model_run_list="model_run_list"
                                   :label_file_colour_map="label_file_colour_map"
                                   :refresh="refresh"
                                   @toggle_instance_focus="focus_instance($event)"
@@ -825,6 +826,9 @@ export default Vue.extend( {
         }
       },
       'model_run_id_list': {
+        default: null
+      },
+      'model_run_color_list':{
         default: null
       },
       'current_version_prop': {},
@@ -5976,7 +5980,7 @@ export default Vue.extend( {
 
         this.save(true);  // and_complete == true
       }
-      
+
       if (event.keyCode === 27) { // Esc
         if (this.$props.view_only_mode == true) { return }
         if(this.instance_select_for_issue || this.view_issue_mode){return}

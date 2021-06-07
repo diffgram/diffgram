@@ -63,7 +63,6 @@
         return item.reference_id;
       },
       model_run_change: function(item){
-        console.log('cjnassse', item)
         if(this.$props.multi_select){
           let final_val = item;
           let index = 0;
