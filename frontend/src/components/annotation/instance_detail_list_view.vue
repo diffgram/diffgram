@@ -48,19 +48,21 @@
               Or may want to move attributes around / display them
               differently...
                -->
-
+            <v-divider class="mt-4"></v-divider>
+            <h3>Instances: </h3>
             <v-expansion-panels accordion flat v-model="panels">
               <v-expansion-panel v-for="grouped_list in filtered_instance_set">
-                <v-expansion-panel-header ripple v-if="grouped_list.model_run">
-                  <strong><v-icon :color="grouped_list.model_run.color">mdi-group</v-icon> {{grouped_list.model_run.reference_id}}</strong>
-                  <v-btn icon small v-on:click.stop="focus_model_run(grouped_list.model_run)">
-                    <v-icon v-if="current_model_run_filter && (current_model_run_filter.id === grouped_list.model_run.id)" color="secondary">mdi-eye</v-icon>
-                    <v-icon v-if="!current_model_run_filter" color="primary">mdi-eye</v-icon>
-                    <v-icon v-if="current_model_run_filter && (current_model_run_filter.id !== grouped_list.model_run.id)" color="primary">mdi-eye</v-icon>
-                  </v-btn>
-                </v-expansion-panel-header>
-                <v-expansion-panel-header ripple v-else>
-                  <strong>Instance List: </strong>
+                <v-expansion-panel-header  ripple v-if="grouped_list.model_run">
+                  <div class="d-flex justify-space-between">
+
+                    <strong v-if="grouped_list.model_run.id !== -1"><v-icon :color="grouped_list.model_run.color">mdi-group</v-icon> {{grouped_list.model_run.reference_id}}</strong>
+                    <strong v-if="grouped_list.model_run.id === -1"><v-icon color="secondary">mdi-group</v-icon>Ground Truth: </strong>
+                    <v-btn icon small v-on:click.stop="focus_model_run(grouped_list.model_run)">
+                      <v-icon v-if="current_model_run_filter && (current_model_run_filter.id === grouped_list.model_run.id)" color="secondary">mdi-eye</v-icon>
+                      <v-icon v-if="!current_model_run_filter" color="primary">mdi-eye</v-icon>
+                      <v-icon v-if="current_model_run_filter && (current_model_run_filter.id !== grouped_list.model_run.id)" color="primary">mdi-eye</v-icon>
+                    </v-btn>
+                  </div>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-data-table style="overflow-y:auto; max-height: 450px"
@@ -625,6 +627,11 @@ import Vue from "vue";
             })
 
           }
+          // Add Ground Truth
+          result.push({
+            model_run: {id: -1}, // Assume -1 Id for ground truth instances.
+            instance_list: this.instance_list.filter(inst => !inst.model_run_id)
+          })
           return result;
 
         }
@@ -902,10 +909,17 @@ import Vue from "vue";
         }
         // Set new filter
         this.instance_list.forEach(inst => {
-            if(inst.model_run_id === model_run.id){
+            console.log('qqq', model_run, inst, inst.id)
+            if(inst.model_run_id === model_run.id && model_run.id !== -1){
+              console.log('case1')
               inst.hidden = false
             }
+            else if(model_run.id === -1 && !inst.model_run_id){
+              console.log('case2')
+              inst.hidden = false;
+            }
             else{
+              console.log('case3')
               inst.hidden = true;
             }
         })
