@@ -19,6 +19,10 @@ def model_run_list_web(project_string_id):
             'kind': int,
             "required": False
         }},
+        {"id_list": {
+            'kind': list,
+            "required": False
+        }},
         {"file_id": {
             'kind': int,
             "required": False
@@ -68,6 +72,7 @@ def model_run_list_web(project_string_id):
             status = input['status'],
             starts = input['starts'],
             ends = input['ends'],
+            id_list = input['id_list'],
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -85,6 +90,7 @@ def model_run_list_core(session: object,
                     starts: str = None,
                     type: str = None,
                     ends: str = None,
+                    id_list: list = None,
                     members_list: list = []):
     """
         Returns serialized dictionary of the list of issues that match the given filters.
@@ -109,6 +115,9 @@ def model_run_list_core(session: object,
         project_id = project_id,
         starts = starts,
         ends = ends,
+        id_list = id_list,
+
+
     )
 
     model_run_data = [run.serialize() for run in model_run_list]

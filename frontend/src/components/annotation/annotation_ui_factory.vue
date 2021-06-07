@@ -115,11 +115,7 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
-
-          if(to.query.model_runs){
-            console.log('query model runs',  decodeURIComponent(to.query.model_runs).split(','))
-            this.model_run_id_list = decodeURIComponent(to.query.model_runs).split(',');
-          }
+          this.get_model_runs_from_query(to.query);
 
         }
       },
@@ -140,7 +136,7 @@
       },
       async mounted() {
         await this.get_project();
-
+        this.get_model_runs_from_query(this.$route.query);
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -201,6 +197,13 @@
         }
       },
       methods: {
+        get_model_runs_from_query: function(query){
+          if(query.model_runs){
+            console.log('query model runs',  decodeURIComponent(query.model_runs).split(','))
+            this.model_run_id_list = decodeURIComponent(query.model_runs).split(',');
+          }
+
+        },
         request_file_change: function(direction, file){
           this.$refs.file_manager_sheet.request_change_file(direction, file);
         },

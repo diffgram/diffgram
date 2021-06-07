@@ -905,6 +905,7 @@ export default Vue.extend( {
     return {
 
       ghost_instance_hover_index: null,
+      model_run_list: null,
       ghost_instance_hover_type: null,
       ghost_instance_list: [],
 
@@ -2659,6 +2660,7 @@ export default Vue.extend( {
       this.$store.commit('set_instance_select_for_issue', false);
       this.$store.commit('set_view_issue_mode', false);
       this.add_event_listeners()
+      this.fetch_model_run_list();
       this.fetch_instance_template();
 
       this.update_canvas()
@@ -2708,7 +2710,33 @@ export default Vue.extend( {
 
 
     },
+    fetch_model_run_list: async function(){
+      if(!this.$props.model_run_id_list){
+        return
+      }
+      if(this.$props.model_run_id_list.length === 0){
+        return
+      }
 
+      this.loading = true
+      try{
+        const response = await axios.post(
+          `/api/v1/project/${this.$props.project_string_id}/model-runs/list`,
+          {
+            id_list: this.$props.model_run_id_list.map(x => parseInt(x, 10))
+          }
+        );
+        if (response.data['model_run_list'] != undefined) {
+          this.model_run_list = response.data.model_run_list;
+        }
+      }
+      catch (error) {
+        console.error(error);
+      }
+      finally {
+        this.loading = false;
+      }
+    },
     task_mode_mounted: function () {
 
 

@@ -67,13 +67,16 @@ class ModelRun(Base):
              project_id: int = None,
              model_id: int = None,
              ends: str = None,
-             starts: str = None):
+             starts: str = None,
+             id_list: list = None):
 
         if project_id is None:
             return
 
         query = session.query(ModelRun).filter(ModelRun.project_id == project_id)
 
+        if id_list:
+            query = query.filter(ModelRun.id.in_(id_list))
         if starts:
             query = query.filter(ModelRun.created_time >= starts)
         if model_id:
