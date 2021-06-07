@@ -47,7 +47,35 @@
 
       <slot name="current_instance_drawer"></slot>
     </canvas>
-
+    <v_video  v-if="video_mode"
+              :style="style_max_width"
+              v-show="false"
+              class="pb-0"
+              :current_video="video"
+              :video_mode="video_mode"
+              @playing="video_playing = true"
+              @pause="video_playing = false"
+              @seeking_update="seeking_update($event)"
+              :project_string_id="project_string_id"
+              @change_frame_from_video_event="change_frame_from_video_event($event)"
+              @video_animation_unit_of_work="video_animation_unit_of_work($event)"
+              @video_current_frame_guess="current_frame = parseInt($event)"
+              @slide_start="detect_is_ok_to_save()"
+              @request_save="detect_is_ok_to_save()"
+              @go_to_keyframe="go_to_key_frame_handler()"
+              @set_canvas_dimensions="set_canvas_dimensions()"
+              @update_canvas="update_canvas"
+              :current_video_file_id="current_video_file_id"
+              :video_pause_request="video_pause"
+              :video_play_request="video_play"
+              :task="task"
+              :loading="any_loading"
+              :view_only_mode="view_only_mode"
+              :has_changed="has_changed"
+              :canvas_width_scaled="canvas_width_scaled"
+              ref="video_controllers"
+    >
+    </v_video>
   </div>
 </template>
 
@@ -97,6 +125,9 @@
       },
       image_bg: {
         default: undefined
+      },
+      video:{
+        default: undefined,
       },
       canvas_id: {
         default: 'my_canvas'
@@ -158,6 +189,7 @@
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
+        video_playing: false,
         show_target_reticle: true,
         canvas_mouse_tools: undefined,
         refresh: undefined,
@@ -255,6 +287,9 @@
 
     },
     computed: {
+      style_max_width: function () {
+        return "max-width:" + this.canvas_width_scaled + "px"
+      },
       canvas_width_scaled: function () {
         return this.canvas_width * this.canvas_scale_global
       },
