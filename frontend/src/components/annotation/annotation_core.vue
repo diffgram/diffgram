@@ -198,6 +198,7 @@
                                   :refresh="refresh"
                                   @toggle_instance_focus="focus_instance($event)"
                                   @show_all="focus_instance_show_all()"
+                                  @update_canvas="update_canvas"
                                   @instance_update="instance_update($event)"
                                   :video_mode="video_mode"
                                   :task="task"
@@ -852,7 +853,9 @@ export default Vue.extend( {
             }
           }
       },
-
+      model_run_id_list(newVal, oldVal){
+        this.fetch_model_run_list();
+      },
       mouse_computed(newval, oldval){
         // We don't want to create a new object here since the reference is used on all instance types.
         // If we create a new object we'll lose the reference on our class InstanceTypes
@@ -2733,6 +2736,9 @@ export default Vue.extend( {
         );
         if (response.data['model_run_list'] != undefined) {
           this.model_run_list = response.data.model_run_list;
+          for(let i = 0; i < this.model_run_list.length; i++){
+            this.model_run_list[i].color = this.model_run_color_list[i];
+          }
         }
       }
       catch (error) {
@@ -5491,6 +5497,25 @@ export default Vue.extend( {
         this.loading = false
       }
     },
+    add_override_colors_for_model_runs: function(){
+      if(!this.model_run_list){
+        return
+      }
+      for(const instance of this.instance_list){
+        console.log('intace', instance.model_run_id)
+        if(instance.model_run_id){
+          console.log('this.model_run_list', this.model_run_list)
+          let model_run = this.model_run_list.filter(m => m.id === instance.model_run_id);
+          if(model_run.length > 0){
+            model_run = model_run[0];
+            instance.override_color = model_run.color;
+          }
+
+        }
+      }
+      console.log('perorr', this.instance_list)
+
+    },
     get_instances: async function (play_after_success=false) {
       if(this.get_instances_loading){ return }
       this.get_instances_loading = true;
@@ -5528,6 +5553,7 @@ export default Vue.extend( {
         // Context of Images Only
         await this.get_instance_list_for_image();
       }
+      this.add_override_colors_for_model_runs();
       this.get_instances_loading = false;
       this.update_canvas();
 

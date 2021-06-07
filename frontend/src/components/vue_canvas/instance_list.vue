@@ -284,6 +284,9 @@
           if (instance.type == 'tag') { // tag is whole image so nothing to draw.
             return false
           }
+          if(instance.hidden){
+            return false
+          }
 
           if (instance.soft_delete == true &&
             this.label_settings.show_removed_instances != true) {
@@ -344,15 +347,7 @@
           let fillColor = undefined;
           let lineWidth = undefined;
 
-          if(instance.override_color){
-            fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
-            strokeColor = instance.override_color;
-            ctx.setLineDash([[5]])
-            ctx.strokeStyle = strokeColor;
-            ctx.fillStyle = fillColor;
-            ctx.lineWidth = 1;
-            return
-          }
+
           if (instance.fan_made == true) {
             ctx.setLineDash([3])
           } else {
@@ -415,7 +410,14 @@
             if (this.mode == 'default') {
               strokeColor = this.colour.hex
             }
-
+            if(instance.override_color && !instance.selected){
+              fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
+              strokeColor = instance.override_color;
+              ctx.setLineDash([[5]])
+              ctx.strokeStyle = strokeColor;
+              ctx.fillStyle = fillColor;
+              ctx.lineWidth = 1;
+            }
             lineWidth = '2'
             if (instance.selected == true) {
               strokeColor = "blue"
