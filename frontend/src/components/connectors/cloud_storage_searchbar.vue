@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="text-center pa-0">
+  <v-container fluid class="text-center pa-0"     >
     <v-row class="flex ma-0" >
       <v-col cols="12" class="pa-0">
         <v-skeleton-loader :loading="isFetchingBuckets" height="82px" type="list-item"
@@ -21,7 +21,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12">
+      <v-col cols="12" >
           <v-skeleton-loader v-if="Object.keys(error_connection).length === 0" :loading="isFetchingBuckets || loading" height="200px" type="card"
                              class="full-width skeleton-loader-autocomplete">
             <v-card elevation="1"
@@ -29,6 +29,7 @@
                     class="overflow-y-auto">
 
               <v-container class="d-flex justify-start ma-0"
+                           :style="max_height ? {maxHeight: max_height} : undefined"
                            v-if="!bucket_empty">
 
                 <v-treeview v-model="selection"
@@ -177,7 +178,7 @@
   import connection_docs_suggest from '../connection/connection_docs_suggest'
 
   export default {
-    props: ['connection', 'project_string_id', 'label', 'video_split_duration', 'job_id'],
+    props: ['connection', 'project_string_id', 'label', 'video_split_duration', 'job_id', 'max_height'],
     name: "cloud_storage_searchbar",
     components: {
       'diffgram_select': diffgram_select,

@@ -146,7 +146,7 @@
           this.request_refresh = new Date();
         },
         open_import_data_sheet: async function(){
-          this.open_wizard = false;
+          this.open_wizard = true;
           await this.$nextTick();
           this.$refs.upload_wizard_sheet.open();
         },
