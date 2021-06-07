@@ -1,5 +1,6 @@
 <template>
   <cloud_storage_searchbar
+    :max_height="max_height"
     v-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'google_gcp'"
     :project_string_id="project_string_id"
     label="Google Cloud Storage path"
@@ -11,6 +12,7 @@
     :job_id="job_id"
   ></cloud_storage_searchbar>
   <cloud_storage_searchbar
+    :max_height="max_height"
     v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'amazon_aws'"
     :project_string_id="project_string_id"
     ref="amazon_aws"
@@ -22,6 +24,7 @@
     :job_id="job_id"
   ></cloud_storage_searchbar>
   <cloud_storage_searchbar
+    :max_height="max_height"
     v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'microsoft_azure'"
     :project_string_id="project_string_id"
     ref="microsoft_azure"
@@ -56,6 +59,9 @@
       'job_id':{
         default: undefined,
         type: Number
+      },
+      'max_height':{
+        default: undefined
       }
     },
     name: "connector_import_renderer",

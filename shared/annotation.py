@@ -1105,6 +1105,10 @@ class Annotation_Update():
 
         self.instance_limits(validate_label_file = validate_label_file)
 
+        if len(self.log["error"].keys()) >= 1:
+            logger.error('Error on instance creation {}'.format(self.log))
+            return False
+
         # After instance limits to make sure points are available.
         deducted_x_min, deducted_y_min = self.get_min_coordinates_instance(self.instance)
         deducted_x_max, deducted_y_max = self.get_max_coordinates_instance(self.instance)
@@ -1267,7 +1271,8 @@ class Annotation_Update():
             spec_list = [{'points': {
                 'default': None,
                 'kind': list,
-                'required': True
+                'required': True,
+                'empty': False
             }
             }]
 

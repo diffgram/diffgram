@@ -118,9 +118,10 @@
                 </v-col>
               </v-row>
               <v-row v-if="upload_source === 'connections'">
-                <v-col cols="12" class="pa-0">
+                <v-col cols="12" class="pa-0" >
 
                   <connector_import_renderer
+                     max_height="375px"
                     :project_string_id="project_string_id"
                     :connection="incoming_connection"
                     :video_split_duration="video_split_duration"
