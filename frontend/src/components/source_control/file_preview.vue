@@ -1,6 +1,6 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" v-if="image_bg" @click="view_image_details">
-    <v-card-text class="pa-0 ma-0">
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8"  @click="view_image_details">
+    <v-card-text class="pa-0 ma-0" v-if="image_bg">
       <drawable_canvas
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
@@ -29,6 +29,36 @@
 
       </drawable_canvas>
     </v-card-text>
+    <v-card-text class="pa-0 ma-0" v-if="file.video">
+      <video_drawable_canvas
+        :video="file.video"
+        :file="file"
+        :canvas_height="file_preview_height"
+        :canvas_width="file_preview_width"
+        :editable="false"
+        :auto_scale_bg="false"
+        :refresh="refresh"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
+        :canvas_id="`canvas__${file.id}`"
+      >
+
+        <instance_list
+          slot-scope="props"
+          :instance_list="filtered_instance_list"
+          :vertex_size="3"
+          :refresh="refresh"
+          :video_mode="false"
+          :label_settings="label_settings"
+          :show_annotations="true"
+          :draw_mode="false"
+          :canvas_transform="props.canvas_transform"
+          slot="instance_drawer"
+        >
+        </instance_list>
+
+
+      </video_drawable_canvas>
+    </v-card-text>
   </v-card>
 </template>
 
@@ -36,10 +66,11 @@
   import Vue from "vue";
   import instance_list from "../vue_canvas/instance_list";
   import drawable_canvas from "../vue_canvas/drawable_canvas";
-
+  import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
   export default Vue.extend({
     name: "file_preview",
     components: {
+      video_drawable_canvas,
       drawable_canvas,
       instance_list
     },
@@ -66,6 +97,9 @@
         default: null
       },
       'show_ground_truth':{
+        default: null
+      },
+      'video':{
         default: null
       }
     },

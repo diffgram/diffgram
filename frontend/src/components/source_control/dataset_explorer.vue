@@ -178,7 +178,6 @@
 
       },
       on_change_ground_truth_dir: function(dir){
-        console.log('changee', this.$store.state.project)
         this.metadata.directory_id = dir.id;
         this.selected_dir = dir;
 

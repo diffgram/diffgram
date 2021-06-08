@@ -15,7 +15,6 @@
       :height="canvas_height_scaled "
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
-      <slot :ord="4" name="compare_to_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
         :ord="1"
         :background="bg_color"
@@ -47,35 +46,7 @@
 
       <slot name="current_instance_drawer"></slot>
     </canvas>
-    <v_video  v-if="video_mode"
-              :style="style_max_width"
-              v-show="false"
-              class="pb-0"
-              :current_video="video"
-              :video_mode="video_mode"
-              @playing="video_playing = true"
-              @pause="video_playing = false"
-              @seeking_update="seeking_update($event)"
-              :project_string_id="project_string_id"
-              @change_frame_from_video_event="change_frame_from_video_event($event)"
-              @video_animation_unit_of_work="video_animation_unit_of_work($event)"
-              @video_current_frame_guess="current_frame = parseInt($event)"
-              @slide_start="detect_is_ok_to_save()"
-              @request_save="detect_is_ok_to_save()"
-              @go_to_keyframe="go_to_key_frame_handler()"
-              @set_canvas_dimensions="set_canvas_dimensions()"
-              @update_canvas="update_canvas"
-              :current_video_file_id="current_video_file_id"
-              :video_pause_request="video_pause"
-              :video_play_request="video_play"
-              :task="task"
-              :loading="any_loading"
-              :view_only_mode="view_only_mode"
-              :has_changed="has_changed"
-              :canvas_width_scaled="canvas_width_scaled"
-              ref="video_controllers"
-    >
-    </v_video>
+
   </div>
 </template>
 
@@ -91,6 +62,7 @@
   import v_bg from '../vue_canvas/v_bg';
   import target_reticle from '../vue_canvas/target_reticle';
   import {CanvasMouseTools} from '../vue_canvas/CanvasMouseTools';
+  import axios from "axios";
 
   export default Vue.extend({
     name: "drawable_canvas",
@@ -104,9 +76,6 @@
       },
       project_string_id: {
         default: undefined
-      },
-      video_mode: {
-        default: false
       },
       editable:{
         default: true
@@ -125,9 +94,6 @@
       },
       image_bg: {
         default: undefined
-      },
-      video:{
-        default: undefined,
       },
       canvas_id: {
         default: 'my_canvas'
@@ -156,7 +122,6 @@
         this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
       },
       image_bg: function(){
-        console.log('image_bg watcherrr')
         this.canvas_element.width+=0;
         this.update_window_size_from_listener();
       }
@@ -189,15 +154,15 @@
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
-        video_playing: false,
         show_target_reticle: true,
+
         canvas_mouse_tools: undefined,
         refresh: undefined,
         window_width_from_listener: undefined,
         window_height_from_listener: undefined,
         canvas_ctx: undefined,
         instance_type: 'keypoints',
-        seeking: false,
+
         instance: {},
 
       }
@@ -224,6 +189,7 @@
       window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {
+
       update_window_size_from_listener: async function(){
         let width_scaled = this.$props.canvas_width / this.$props.image_bg.width;
         let height_scaled = this.$props.canvas_height / this.$props.image_bg.height;
@@ -287,6 +253,13 @@
 
     },
     computed: {
+      any_loading() {
+        /* Does not include save_loading because we currently
+         * pass this to v_bg which flashes screen when showing loading
+         * Something to review.
+         */
+        return  this.annotations_loading || this.loading || this.get_instances_loading
+      },
       style_max_width: function () {
         return "max-width:" + this.canvas_width_scaled + "px"
       },
