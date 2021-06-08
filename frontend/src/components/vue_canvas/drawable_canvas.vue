@@ -104,6 +104,9 @@
       canvas_width: {
         default: 800
       },
+      video_mode: {
+        default: false
+      },
       reticle_colour: {
         default: () => ({
           hex: '#ff0000',
@@ -122,8 +125,11 @@
         this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
       },
       image_bg: function(){
-        this.canvas_element.width+=0;
-        this.update_window_size_from_listener();
+        if(!this.$props.video_mode){
+          this.canvas_element.width+=0;
+          this.update_window_size_from_listener();
+          this.update_canvas();
+        }
       }
     },
     data: function () {
@@ -253,16 +259,8 @@
 
     },
     computed: {
-      any_loading() {
-        /* Does not include save_loading because we currently
-         * pass this to v_bg which flashes screen when showing loading
-         * Something to review.
-         */
-        return  this.annotations_loading || this.loading || this.get_instances_loading
-      },
-      style_max_width: function () {
-        return "max-width:" + this.canvas_width_scaled + "px"
-      },
+
+
       canvas_width_scaled: function () {
         return this.canvas_width * this.canvas_scale_global
       },

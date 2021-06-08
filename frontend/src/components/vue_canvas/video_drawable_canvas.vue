@@ -1,24 +1,57 @@
 <template>
-  <div>
+  <div style="position: relative">
       <drawable_canvas
+        @click="$emit('on_click_details')"
         :image_bg="html_image"
         :canvas_height="canvas_height"
         :canvas_width="canvas_width"
         :editable="false"
         :auto_scale_bg="false"
         :refresh="refresh"
+        :video_mode="true"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
         ref="drawable_canvas"
       >
-        <slot slot="instance_drawer"
+        <slot v-if="$refs.drawable_canvas" slot="instance_drawer"
               :ord="3"
               name="instance_drawer"
               :canvas_transform="$refs.drawable_canvas.canvas_transform">
 
         </slot>
       </drawable_canvas>
-
+    <v_video  v-if="$refs.drawable_canvas"
+              @mouseover="hovered = true"
+              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-18px', right: 0}"
+              :player_width="canvas_width"
+              :player_height="`${video_player_height}px`"
+              v-show="true"
+              :class="`pb-0 ${hovered ? 'hovered': ''}`"
+              :current_video="video"
+              :video_mode="true"
+              :video_primary_id="`video_primary__${file.id}`"
+              @playing="video_playing = true"
+              @pause="video_playing = false"
+              @seeking_update="seeking_update($event)"
+              :project_string_id="project_string_id"
+              @change_frame_from_video_event="change_frame_from_video($event)"
+              @video_animation_unit_of_work="video_animation_unit_of_work($event)"
+              @video_current_frame_guess="current_frame = parseInt($event)"
+              @slide_start="() => {}"
+              @request_save="() => {}"
+              @go_to_keyframe="() => {}"
+              @set_canvas_dimensions="() => {}"
+              @update_canvas="update_canvas"
+              :current_video_file_id="file.id"
+              :video_pause_request="video_pause"
+              :video_play_request="video_play"
+              :loading="any_loading"
+              :view_only_mode="true"
+              :has_changed="false"
+              :canvas_width_scaled="$refs.drawable_canvas.canvas_width_scaled"
+              ref="video_controllers"
+    >
+    </v_video>
   </div>
 
 </template>
@@ -43,9 +76,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
       file: {
         default: null
-      },
-      video_mode: {
-        default: false
       },
       editable:{
         default: true
@@ -82,21 +112,90 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     data: function(){
       return {
-        show_annotations: false,
         loading: false,
+        hovered: false,
         annotations_loading: false,
+        get_instances_loading: false,
         refresh: new Date(),
         html_image: new Image(),
         video_playing: false,
-        current_frame: undefined,
+        video_play: null,
+        video_pause: null,
+        current_frame: 0,
         seeking: false,
         instance_frame_start: 0,
+        video_player_height: 40,
+        instance_buffer_size: 60,
         instance_buffer_dict: {},
         instance_buffer_error: {},
         instance_buffer_metadata: {},
       }
     },
+    beforeDestroy(){
+      this.refresh_video_buffer_watcher()
+      //console.debug("Destroyed")
+    },
+    mounted() {
+      this.refresh_video_buffer_watcher = this.$store.watch((state) => {
+          return this.$store.state.annotation_state.refresh_video_buffer
+        },(new_val, old_val) => {
+
+          self.get_video_instance_buffer()
+        },
+      )
+    },
     methods:{
+      update_canvas: function(){
+        this.$refs.drawable_canvas.update_canvas()
+      },
+      video_animation_unit_of_work: function (image) {
+        /*
+         *  From animation in the context of getting
+         *  passed an image from a video
+         *  And NOT for pulling a single frame
+         *
+         *
+         *  Refresh workaround note:
+         *    As of Jan 16, 2020 it appears to not be
+         *    since perhaps instance_list is changing?
+         *
+         *    Question, is "refresh" a heavy operation?
+         *    the date thing shouldn't be, but not clear if the
+         *    settimeout and/or it's relation to animation from does
+         *    anthing?
+         *
+         */
+
+        this.html_image = image;
+        this.refresh = Date.now()
+        // //this.trigger_refresh_with_delay()
+        // let index = this.current_frame - this.instance_frame_start
+        // // todo getting buffer should be in Video component
+        // // also this could be a lot smarter ie getting instances
+        // // while still some buffer left etc.
+        // if (this.current_frame in this.instance_buffer_dict) {
+        //   // We want to initialize the buffer dict before assinging the pointer on instance_list.
+        //   this.initialize_instance_buffer_dict_frame(this.current_frame)
+        //   // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
+        //   // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
+        //   this.instance_list = this.instance_buffer_dict[this.current_frame];
+        // } else {
+        //   this.video_pause = Date.now()
+        //
+        //   this.get_instances(true)
+        // }
+      },
+      get_instances: async function (play_after_success=false) {
+        if(this.get_instances_loading){ return }
+        this.get_instances_loading = true;
+        this.annotations_loading = true;
+
+        await this.update_instance_list_from_buffer_or_get_new_buffer(play_after_success)
+        this.get_instances_loading = false;
+        this.update_canvas();
+
+      },
+
       async get_video_instance_buffer(play_after_success) {
         /*
          * Directly triggers getting buffer
@@ -109,17 +208,15 @@ import {KeypointInstance} from "./instances/KeypointInstance";
          *
          */
 
-        this.show_annotations = false
         this.loading = true
         this.annotations_loading = true
         this.instance_buffer_error = {}
 
         this.instance_frame_start = this.current_frame
 
-        let url = `/api/project/${this.$props.project_string_id}/video/${String(this.current_video_file_id)}`
+        let url = `/api/project/${this.$props.project_string_id}/video/${String(this.$props.file.id)}`
 
-        url += `/instance/buffer/start/${this.current_frame}
-                /end/${(this.current_frame + this.label_settings.instance_buffer_size)}/list`
+        url += `/instance/buffer/start/${this.current_frame}/end/${(this.current_frame + this.instance_buffer_size)}/list`
         try{
           const response = await axios.post(url, {
             directory_id : this.$store.state.project.current_directory.directory_id
@@ -139,7 +236,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
             this.instance_list = []
           }
 
-          this.show_annotations = true
           this.loading = false
           this.annotations_loading = false
           setTimeout(() => this.refresh = Date.now(), 80)
@@ -209,7 +305,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         }
       },
       async update_instance_list_from_buffer_or_get_new_buffer(play_after_success) {
-
         if (this.current_frame in this.instance_buffer_dict) {
           // Initialize instances to class objects before assigning pointer.
           this.initialize_instance_buffer_dict_frame(this.current_frame);
@@ -219,7 +314,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
 
           this.instance_list = this.instance_buffer_dict[this.current_frame];
 
-          this.show_annotations = true
           this.loading = false
           this.annotations_loading = false
           if(this.instance_buffer_metadata[this.current_frame] && this.instance_buffer_metadata[this.current_frame].pending_save){
@@ -230,13 +324,24 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           await this.get_video_instance_buffer(play_after_success)
         }
       },
+      addImageProcess: function (src) {
+        return new Promise((resolve, reject) => {
+          let image = new Image()
+          image.src = src
+          if(process.env.NODE_ENV === 'testing'){
+            image.crossOrigin = "anonymous";
+          }
+          image.onload = () => resolve(image)
+          image.onerror = reject
+        })
+      },
       load_video_frame_from_url: function (url) {
         var self = this
         self.addImageProcess(url).then(image => {
           self.html_image = image
-          self.canvas_wrapper.style.display = ""
+          self.$refs.drawable_canvas.canvas_wrapper.style.display = ""
           self.loading = false
-          self.trigger_refresh_with_delay()
+          this.refresh = Date.now();
         })
       },
       change_frame_from_video: function (url) {
@@ -249,10 +354,20 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       seeking_update: function (seeking) {
         this.seeking = seeking
       },
+    },
+    computed:{
+      any_loading() {
+        return  this.annotations_loading || this.loading || this.get_instances_loading
+      },
+      style_max_width: function () {
+        return "max-width:" + this.canvas_width_scaled + "px"
+      },
     }
   });
 </script>
 
 <style scoped>
-
+  .hovered{
+    opacity: 1;
+  }
 </style>

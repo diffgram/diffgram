@@ -1,7 +1,8 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8"  @click="view_image_details">
-    <v-card-text class="pa-0 ma-0" v-if="image_bg">
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8"  >
+    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details" >
       <drawable_canvas
+
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
@@ -31,6 +32,7 @@
     </v-card-text>
     <v-card-text class="pa-0 ma-0" v-if="file.video">
       <video_drawable_canvas
+        :project_string_id="project_string_id"
         :video="file.video"
         :file="file"
         :canvas_height="file_preview_height"
@@ -40,6 +42,7 @@
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
+        @on_click_details="view_file_details"
       >
 
         <instance_list
@@ -209,7 +212,7 @@
         }
       },
 
-      view_image_details: function(){
+      view_file_details: function(){
 
         let model_runs = [];
         let color_list = [];
@@ -240,6 +243,8 @@
   });
 </script>
 
-<style scoped>
-
+<style>
+.drawable-wrapper:hover{
+  cursor: pointer;
+}
 </style>

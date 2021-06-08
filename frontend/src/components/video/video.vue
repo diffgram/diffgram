@@ -1,13 +1,10 @@
 <template>
   <div v-cloak >
-    <v-card v-if="video_mode == true"
-            max-height="80"
-            elevation="1"
-            >
+    <v-card v-if="video_mode == true" max-height="80" elevation="1"  :width="player_width ? player_width: undefined">
       <v-container class="pa-2">
 
       <v-row
-            style="height: 40px; overflow: hidden"
+            :style="{height: player_height, overflow: 'hidden'}"
             class="pt-2">
 
         <!-- Previous Frame -->
@@ -16,7 +13,7 @@
           <tooltip_button
               datacy="back_3_frames"
               :disabled="loading || go_to_keyframe_loading || playing || video_current_frame_guess < 3"
-              @click="move_frame(-3)"
+              @click.stop="move_frame(-3)"
               icon="mdi-chevron-triple-left"
               tooltip_message="Back 3 Frames"
               color="primary"
@@ -367,7 +364,7 @@
     <video ref="video_source_ref"
             :width="0"
             height="0"
-            id="video_primary">
+            :id="video_primary_id">
 
       Your browser does not support the video tag.
 
@@ -408,7 +405,11 @@ export default Vue.extend( {
     'task',
     'loading',
     'has_changed',
-    'canvas_width_scaled'
+    'canvas_width_scaled',
+    'stop_propagation_for_player',
+    'video_primary_id',
+    'player_width',
+    'player_height',
     ],
   /* Careful, we want annotation_core to still make use of the files
    * for images, so we don't want to get confused between current_file
@@ -968,7 +969,6 @@ export default Vue.extend( {
       // Feb 24, 2020
       // only do this for high resolution media
 
-
       if (!this.primary_video) {
         // refresh if primary video ref doesn't exist
         // usually this should only be for debugging / hot reload purposes
@@ -1405,7 +1405,7 @@ export default Vue.extend( {
 
         this.preview_frame_url_dict = {} // reset cache
 
-        this.primary_video = document.getElementById("video_primary")
+        this.primary_video = document.getElementById(this.$props.video_primary_id)
 
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/ended_event
         this.primary_video.addEventListener('ended', this.video_end)

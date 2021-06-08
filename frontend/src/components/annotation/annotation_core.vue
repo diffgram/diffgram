@@ -375,7 +375,6 @@
 
             <v_bg :image="html_image"
                   :current_file="file"
-                  :current_video="current_video"
                   :refresh="refresh"
                   @update_canvas="update_canvas"
                   :canvas_filters="canvas_filters"
@@ -554,6 +553,8 @@
                   class="pb-0"
                   :current_video="current_video"
                   :video_mode="video_mode"
+                  :player_height="'40px'"
+                  :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
                   @pause="video_playing = false"
                   @seeking_update="seeking_update($event)"
@@ -2878,8 +2879,6 @@ export default Vue.extend( {
 
       this.html_image = image
       //this.trigger_refresh_with_delay()
-
-      let index = this.current_frame - this.instance_frame_start
       // todo getting buffer should be in Video component
       // also this could be a lot smarter ie getting instances
       // while still some buffer left etc.
@@ -2977,7 +2976,6 @@ export default Vue.extend( {
       for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
 
         let instance_list = this.instance_buffer_dict[keyframe];
-        //console.log(keyframe, instance_list)
         if (!instance_list) { continue }
 
         for (let instance of instance_list) {
@@ -3013,7 +3011,7 @@ export default Vue.extend( {
        */
       this.get_instances()
       this.ghost_refresh_instances()
-
+      console.log('change_frame_from_video_event', url)
       if (url) {
         this.add_image_process(url)
       }
@@ -5502,7 +5500,6 @@ export default Vue.extend( {
         return
       }
       for(const instance of this.instance_list){
-        console.log('intace', instance.model_run_id)
         if(instance.model_run_id){
           console.log('this.model_run_list', this.model_run_list)
           let model_run = this.model_run_list.filter(m => m.id === instance.model_run_id);
@@ -5513,8 +5510,6 @@ export default Vue.extend( {
 
         }
       }
-      console.log('perorr', this.instance_list)
-
     },
     get_instances: async function (play_after_success=false) {
       if(this.get_instances_loading){ return }
