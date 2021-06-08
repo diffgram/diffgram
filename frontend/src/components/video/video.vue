@@ -1,15 +1,13 @@
 <template>
   <div v-cloak >
-    <v-card v-if="video_mode == true" max-height="80" elevation="1"  :width="player_width ? player_width: undefined">
-      <v-container class="pa-2">
+    <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
+      <v-container fluid>
 
-      <v-row
-            :style="{height: player_height, overflow: 'hidden'}"
-            class="pt-2">
+      <v-row :style="{overflow: 'hidden'}" class="pt-2">
 
         <!-- Previous Frame -->
 
-        <div class="pl-3">
+        <div class="">
           <tooltip_button
               datacy="back_3_frames"
               :disabled="loading || go_to_keyframe_loading || playing || video_current_frame_guess < 3"
@@ -93,8 +91,6 @@
         </tooltip_button>
 
 
-        <v-spacer> </v-spacer>
-
         <div class="pl-2">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
@@ -143,6 +139,7 @@
         tooltip_message="Go To KeyFrame"
         icon="mdi-arrow-up"
         color="primary"
+        :x-small="true"
         :commit_menu_status="true"
         :disabled="loading || go_to_keyframe_loading || playing"
         :close_by_button="true"
@@ -174,6 +171,7 @@
           tooltip_message="More"
           icon="mdi-dots-vertical"
           color="primary"
+          :x-small="true"
           :commit_menu_status="true"
           :disabled="loading || go_to_keyframe_loading || playing"
           :close_by_button="true"
@@ -240,7 +238,7 @@
 
         </v-row>
 
-        <v-row @mousemove="mousemove_slider"
+      <v-row @mousemove="mousemove_slider"
                @mouseleave="mouseleave_slider"
                @mouseenter="mouseenter_slider">
           <!--

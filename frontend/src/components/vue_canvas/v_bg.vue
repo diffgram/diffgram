@@ -46,19 +46,17 @@ export default Vue.extend({
           let grayscale = `grayscale(${this.canvas_filters['grayscale']}%)`
           ctx.filter = brightness + contrast + grayscale
           if(!this.$props.auto_scale_bg){
+            console.log('DRAWWWW');
             ctx.drawImage(this.image, 0, 0);
           }
           else{
+            console.log('DRAWWWW SCALEE');
             var hRatio = ctx.canvas.width / this.image.width;
             var vRatio = ctx.canvas.height / this.image.height;
             var ratio  = Math.min ( hRatio, vRatio );
 
             ctx.drawImage(
               this.image,
-              0,
-              0,
-              this.image.width,
-              this.image.height,
               0,
               0,
               ctx.canvas.width,
@@ -90,6 +88,7 @@ export default Vue.extend({
           // we need to make a refresh update anytime we make
           // a change to image. (In annotation core)
           let local_refresh = this.refresh
+
           if(!this.$props.background){
             this.draw_image_bg(ctx)
           }

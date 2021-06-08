@@ -3,14 +3,15 @@
       <drawable_canvas
         @click="$emit('on_click_details')"
         :image_bg="html_image"
-        :canvas_height="canvas_height"
+        :canvas_height="canvas_height - video_player_height"
         :canvas_width="canvas_width"
-        :editable="false"
-        :auto_scale_bg="false"
+        :editable="editable"
+        :auto_scale_bg="auto_scale_bg"
         :refresh="refresh"
         :video_mode="true"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
+        @refresh="refresh = Date.now()"
         ref="drawable_canvas"
       >
         <slot v-if="$refs.drawable_canvas" slot="instance_drawer"
@@ -22,7 +23,7 @@
       </drawable_canvas>
     <v_video  v-if="$refs.drawable_canvas"
               @mouseover="hovered = true"
-              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-18px', right: 0}"
+              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
               :player_width="canvas_width"
               :player_height="`${video_player_height}px`"
               v-show="true"
@@ -98,6 +99,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       canvas_width: {
         default: 800
       },
+      initial_instances:{
+        default: null
+      },
       reticle_colour: {
         default: () => ({
           hex: '#ff0000',
@@ -124,16 +128,23 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         current_frame: 0,
         seeking: false,
         instance_frame_start: 0,
-        video_player_height: 40,
+        video_player_height: 80,
         instance_buffer_size: 60,
         instance_buffer_dict: {},
         instance_buffer_error: {},
         instance_buffer_metadata: {},
+        instance_list: [],
+
       }
     },
     beforeDestroy(){
       this.refresh_video_buffer_watcher()
       //console.debug("Destroyed")
+    },
+    watch: {
+      instance_list: function(){
+        this.$emit('update_instance_list', this.instance_list)
+      }
     },
     mounted() {
       this.refresh_video_buffer_watcher = this.$store.watch((state) => {
@@ -167,7 +178,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
          */
 
         this.html_image = image;
-        this.refresh = Date.now()
+
+        this.$refs.drawable_canvas.canvas_wrapper.style.display = "";
+        this.refresh = Date.now();
         // //this.trigger_refresh_with_delay()
         // let index = this.current_frame - this.instance_frame_start
         // // todo getting buffer should be in Video component

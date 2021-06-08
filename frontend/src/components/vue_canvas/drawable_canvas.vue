@@ -130,6 +130,11 @@
           this.update_window_size_from_listener();
           this.update_canvas();
         }
+        else{
+          this.canvas_element.width+=0;
+          this.update_canvas();
+        }
+        this.$emit('refresh')
       }
     },
     data: function () {

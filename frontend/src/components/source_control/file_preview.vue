@@ -38,16 +38,17 @@
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
         :editable="false"
-        :auto_scale_bg="false"
+        :auto_scale_bg="true"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
         @on_click_details="view_file_details"
+        ref="video_drawable_canvas"
       >
 
         <instance_list
           slot-scope="props"
-          :instance_list="filtered_instance_list"
+          :instance_list="$refs.video_drawable_canvas.instance_list"
           :vertex_size="3"
           :refresh="refresh"
           :video_mode="false"
@@ -88,7 +89,7 @@
         default: undefined
       },
       'file_preview_width': {
-        default: 430
+        default: 440
       },
       'file_preview_height': {
         default: 325
