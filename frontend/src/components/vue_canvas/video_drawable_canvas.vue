@@ -2,7 +2,7 @@
   <div class="video_canvas" style="position: relative; height: 100%" >
     <div @click="$emit('on_click_details', current_frame)">
       <drawable_canvas
-
+        :allow_zoom="allow_zoom"
         :image_bg="html_image"
         :canvas_height="canvas_height - video_player_height"
         :canvas_width="canvas_width"
@@ -118,6 +118,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
       filtered_instance_by_model_runs:{
         default: null
+      },
+      allow_zoom:{
+        default: true
       },
       reticle_colour: {
         default: () => ({

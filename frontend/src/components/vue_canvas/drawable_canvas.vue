@@ -107,6 +107,9 @@
       video_mode: {
         default: false
       },
+      allow_zoom:{
+        default: true
+      },
       reticle_colour: {
         default: () => ({
           hex: '#ff0000',
@@ -120,6 +123,15 @@
       }
     },
     watch:{
+      allow_zoom: function(newVal, oldVal){
+        if(newVal && !oldVal){
+          this.canvas_wrapper.addEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
+        }
+        else if(!newVal && oldVal){
+          this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update);
+        }
+
+      },
       mouse_computed(newval, oldval){
         this.mouse_down_delta_event.x = parseInt(newval.delta_x - oldval.delta_x)
         this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
@@ -187,8 +199,9 @@
         this.canvas_translate,
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
-      this.canvas_wrapper.addEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
-
+      if(this.$props.allow_zoom){
+        this.canvas_wrapper.addEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update)
+      }
 
       window.addEventListener('resize', this.update_window_size_from_listener)
       this.update_window_size_from_listener();
@@ -198,7 +211,9 @@
     },
 
     beforeDestroy() {
-      this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update);
+      if(this.$props.allow_zoom){
+        this.canvas_wrapper.removeEventListener('wheel', this.zoom_wheel_scroll_canvas_transform_update);
+      }
       window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {

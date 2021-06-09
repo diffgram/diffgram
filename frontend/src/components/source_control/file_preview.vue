@@ -2,7 +2,7 @@
   <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height">
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details" >
       <drawable_canvas
-
+        :allow_zoom="false"
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
@@ -32,6 +32,7 @@
     </v-card-text>
     <v-card-text class="pa-0 ma-0" v-if="file.video">
       <video_drawable_canvas
+        :allow_zoom="false"
         :project_string_id="project_string_id"
         :filtered_instance_by_model_runs="filtered_instance_list"
         :video="file.video"

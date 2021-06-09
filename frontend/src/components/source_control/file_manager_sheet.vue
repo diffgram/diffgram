@@ -3,16 +3,15 @@
   <div>
     <v-bottom-sheet :retain-focus="false"
                     hide-overlay
-                    scrollable
                     class="media-core-container"
                     no-click-animation
                     :fullscreen="full_screen"
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
                     v-model="media_sheet">
-      <v-card height="100%" class="pa-0">
+      <v-card class="pa-0 d-flex flex-column">
 
-        <v-card-text class="pa-0">
+        <v-card-text class="pa-0 d-flex flex-column">
           <v-tabs v-model="tab"
                   align-with-title
                   color="primary">
@@ -74,7 +73,7 @@
 
 
 
-            <v-tabs-items v-model="tab">
+            <v-tabs-items v-model="tab" class="d-flex flex-column">
               <v-tab-item>
                 <v_media_core :project_string_id="project_string_id"
                               file_view_mode="annotation"
@@ -91,7 +90,7 @@
                 >
                 </v_media_core>
               </v-tab-item>
-              <v-tab-item>
+              <v-tab-item class="d-flex flex-column">
                 <dataset_explorer :project_string_id="project_string_id"
                                   :full_screen="full_screen"
                                   :directory="$store.state.project.current_directory"

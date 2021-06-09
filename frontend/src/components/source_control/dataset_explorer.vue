@@ -1,5 +1,5 @@
 <template>
-  <v-layout column>
+  <v-layout class="d-flex flex-column">
     <v-toolbar extended elevation="0" class="ma-8 mb-0">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
@@ -56,10 +56,12 @@
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-layout fluid class="d-flex flex-wrap" :style="{height: full_screen ? undefined: '350px', overflow: 'auto'}">
+
+    <v-layout fluid class="d-flex flex-wrap" :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
+        :style="{flex: '1 1 auto'}"
         v-else
         v-for="(file, index) in this.file_list"
         :base_model_run="base_model_run"
@@ -71,7 +73,32 @@
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
       ></file_preview>
-
+<!--      <DynamicScroller-->
+<!--        :items="items"-->
+<!--        :min-item-size="54"-->
+<!--        class="scroller"-->
+<!--      >-->
+<!--        <template v-slot="{ item, index, active }">-->
+<!--          <DynamicScrollerItem-->
+<!--            :item="item"-->
+<!--            :active="active"-->
+<!--            :size-dependencies="[-->
+<!--          item.message,-->
+<!--        ]"-->
+<!--            :data-index="index"-->
+<!--          >-->
+<!--            <div class="avatar">-->
+<!--              <img-->
+<!--                :src="item.avatar"-->
+<!--                :key="item.avatar"-->
+<!--                alt="avatar"-->
+<!--                class="image"-->
+<!--              >-->
+<!--            </div>-->
+<!--            <div class="text">{{ item.message }}</div>-->
+<!--          </DynamicScrollerItem>-->
+<!--        </template>-->
+<!--      </DynamicScroller>-->
     </v-layout>
 
   </v-layout>
@@ -83,11 +110,18 @@
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
   import file_preview from "./file_preview";
+  import VueVirtualScroller from 'vue-virtual-scroller'
+  import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller'
+  import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
+  Vue.use(VueVirtualScroller)
+
   export default Vue.extend({
     name: "dataset_explorer",
     components:{
       model_run_selector,
       directory_icon_selector,
+      DynamicScroller,
+      DynamicScrollerItem,
       file_preview,
     },
     props: [
