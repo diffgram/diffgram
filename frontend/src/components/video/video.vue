@@ -530,7 +530,7 @@ export default Vue.extend( {
   mounted() {
 
       this.keyframe_watcher = this.create_keyframe_watcher()
-
+      this.go_to_keyframe(this.video_current_frame_guess)
   },
   watch: {
     'video_pause_request': 'video_pause',

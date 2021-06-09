@@ -56,7 +56,7 @@
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-layout fluid class="d-flex flex-wrap" :style="{height: full_screen ? '100%': '350px'}">
+    <v-layout fluid class="d-flex flex-wrap" :style="{height: full_screen ? undefined: '350px', overflow: 'auto'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview

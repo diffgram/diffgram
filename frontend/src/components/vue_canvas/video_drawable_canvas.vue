@@ -1,6 +1,6 @@
 <template>
   <div class="video_canvas" style="position: relative; height: 100%" >
-    <div @click="$emit('on_click_details', this.current_frame)">
+    <div @click="$emit('on_click_details', current_frame)">
       <drawable_canvas
 
         :image_bg="html_image"
@@ -177,6 +177,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           self.get_video_instance_buffer()
         },
       )
+
     },
     methods:{
       focus_in: function(){

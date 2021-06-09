@@ -1,5 +1,5 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height + 80">
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height">
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details" >
       <drawable_canvas
 

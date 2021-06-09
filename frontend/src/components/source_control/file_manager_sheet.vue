@@ -1,107 +1,109 @@
 <template>
 
   <div>
-    <v-bottom-sheet scrollable
-                    :retain-focus="false"
+    <v-bottom-sheet :retain-focus="false"
                     hide-overlay
+                    scrollable
                     class="media-core-container"
                     no-click-animation
                     :fullscreen="full_screen"
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
                     v-model="media_sheet">
-      <v-sheet>
+      <v-card height="100%" class="pa-0">
 
-        <v-tabs v-model="tab"
-                align-with-title
-                color="primary">
-          <v-tab
-            v-for="item in items"
-            :key="item.text"
-          >
-            <v-icon left>{{item.icon}}</v-icon>
-            {{ item.text }}
-          </v-tab>
+        <v-card-text class="pa-0">
+          <v-tabs v-model="tab"
+                  align-with-title
+                  color="primary">
+            <v-tab
+              v-for="item in items"
+              :key="item.text"
+            >
+              <v-icon left>{{item.icon}}</v-icon>
+              {{ item.text }}
+            </v-tab>
 
-        <v-spacer> </v-spacer>
+            <v-spacer> </v-spacer>
 
-        <tooltip_button
-            tooltip_message="Minimize"
-            @click="media_sheet = !media_sheet"
-            icon="mdi-window-minimize"
-            :icon_style="true"
-            color="primary"
-            :bottom="true"
-            datacy="minimize-file-explorer-button"
-                        >
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Minimize"
+              @click="media_sheet = !media_sheet"
+              icon="mdi-window-minimize"
+              :icon_style="true"
+              color="primary"
+              :bottom="true"
+              datacy="minimize-file-explorer-button"
+            >
+            </tooltip_button>
 
-        <tooltip_button
-            v-if="full_screen"
-            tooltip_message="Restore Down"
-            @click="minimize_sheet"
-            icon="mdi-window-restore"
-            :icon_style="true"
-            color="primary"
-            :bottom="true"
-            datacy="restore-down-file-explorer-button"
-                        >
-        </tooltip_button>
+            <tooltip_button
+              v-if="full_screen"
+              tooltip_message="Restore Down"
+              @click="minimize_sheet"
+              icon="mdi-window-restore"
+              :icon_style="true"
+              color="primary"
+              :bottom="true"
+              datacy="restore-down-file-explorer-button"
+            >
+            </tooltip_button>
 
-        <tooltip_button
-            v-if="!full_screen"
-            tooltip_message="Maximize"
-            @click="full_screen_sheet"
-            icon="mdi-window-maximize"
-            :icon_style="true"
-            color="primary"
-            :bottom="true"
-            datacy="fullscreen-file-explorer-button"
-                        >
-        </tooltip_button>
+            <tooltip_button
+              v-if="!full_screen"
+              tooltip_message="Maximize"
+              @click="full_screen_sheet"
+              icon="mdi-window-maximize"
+              :icon_style="true"
+              color="primary"
+              :bottom="true"
+              datacy="fullscreen-file-explorer-button"
+            >
+            </tooltip_button>
 
-        <tooltip_button
-            tooltip_message="Close"
-            @click="media_sheet = !media_sheet"
-            icon="mdi-close"
-            :icon_style="true"
-            color="primary"
-            :bottom="true"
-            datacy="close-file-explorer-button"
-                        >
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Close"
+              @click="media_sheet = !media_sheet"
+              icon="mdi-close"
+              :icon_style="true"
+              color="primary"
+              :bottom="true"
+              datacy="close-file-explorer-button"
+            >
+            </tooltip_button>
 
 
 
-          <v-tabs-items v-model="tab">
-            <v-tab-item>
-              <v_media_core :project_string_id="project_string_id"
-                            file_view_mode="annotation"
-                            :task="task"
-                            :full_screen="full_screen"
-                            :view_only_mode="view_only"
-                            :file_id_prop="file_id_prop"
-                            :job_id="job_id"
-                            :visible="media_sheet"
-                            @height="media_core_height = $event"
-                            @permissions_error="set_permissions_error"
-                            @file_changed="change_file"
-                            ref="media_core"
-              >
-              </v_media_core>
-            </v-tab-item>
-            <v-tab-item>
-              <dataset_explorer :project_string_id="project_string_id"
-                                :full_screen="full_screen"
-                                :directory="$store.state.project.current_directory"
-                                @view_detail="change_file_and_close"
-                                ref="dataset_explorer">
-              </dataset_explorer>
-            </v-tab-item>
-          </v-tabs-items>
-        </v-tabs>
+            <v-tabs-items v-model="tab">
+              <v-tab-item>
+                <v_media_core :project_string_id="project_string_id"
+                              file_view_mode="annotation"
+                              :task="task"
+                              :full_screen="full_screen"
+                              :view_only_mode="view_only"
+                              :file_id_prop="file_id_prop"
+                              :job_id="job_id"
+                              :visible="media_sheet"
+                              @height="media_core_height = $event"
+                              @permissions_error="set_permissions_error"
+                              @file_changed="change_file"
+                              ref="media_core"
+                >
+                </v_media_core>
+              </v-tab-item>
+              <v-tab-item>
+                <dataset_explorer :project_string_id="project_string_id"
+                                  :full_screen="full_screen"
+                                  :directory="$store.state.project.current_directory"
+                                  @view_detail="change_file_and_close"
+                                  ref="dataset_explorer">
+                </dataset_explorer>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-tabs>
+        </v-card-text>
 
-      </v-sheet>
+      </v-card>
     </v-bottom-sheet>
     <!-- Open Bottom Sheet -->
     <v-tooltip v-if="media_sheet == false && !task"
@@ -158,6 +160,16 @@
         tab: 0,
         media_core_height: 0,
         error_permissions: {},
+      }
+    },
+    watch:{
+      tab: function(newval){
+        if(newval === 1){
+          this.full_screen_sheet();
+        }
+        if(newval === 0){
+          this.minimize_sheet();
+        }
       }
     },
     methods: {
