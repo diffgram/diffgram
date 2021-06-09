@@ -16,7 +16,7 @@
       >
         <instance_list
           slot-scope="props"
-          :instance_list="instance_list"
+          :instance_list="filtered_instance_list"
           :vertex_size="3"
           :refresh="refresh"
           :video_mode="true"
@@ -57,8 +57,7 @@
               :view_only_mode="true"
               :has_changed="false"
               :canvas_width_scaled="$refs.drawable_canvas.canvas_width_scaled"
-              ref="video_controllers"
-    >
+              ref="video_controllers">
     </v_video>
   </div>
 
@@ -112,6 +111,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         default: 800
       },
       initial_instances:{
+        default: null
+      },
+      filtered_instance_by_model_runs:{
         default: null
       },
       reticle_colour: {
@@ -385,6 +387,15 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
     },
     computed:{
+      filtered_instance_list: function(){
+        const filtered_instance_id_list = this.$props.filtered_instance_by_model_runs.map(inst => inst.id)
+        const new_instance_list = this.instance_list.filter(inst => filtered_instance_id_list.includes(inst.id));
+        for(const inst of new_instance_list){
+          const new_instance = this.$props.filtered_instance_by_model_runs.find(elm => elm.id === inst.id);
+          inst.override_color = new_instance.override_color;
+        }
+        return new_instance_list;
+      },
       any_loading() {
         return  this.annotations_loading || this.loading || this.get_instances_loading
       },

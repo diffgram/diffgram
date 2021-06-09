@@ -333,6 +333,7 @@ def get_instance_buffer(session, video_file_id, start, end):
         buffer[i] = []
 
     for file in image_file_list:
+        file.set_cache_key_dirty('instance_list')
         buffer[file.frame_number] = file.get_with_cache(
             cache_key = 'instance_list',
             cache_miss_function = file.serialize_instance_list_only,

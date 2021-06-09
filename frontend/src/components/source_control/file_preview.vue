@@ -33,6 +33,7 @@
     <v-card-text class="pa-0 ma-0" v-if="file.video">
       <video_drawable_canvas
         :project_string_id="project_string_id"
+        :filtered_instance_by_model_runs="filtered_instance_list"
         :video="file.video"
         :file="file"
         :canvas_height="file_preview_height"
@@ -136,12 +137,13 @@
     methods: {
       set_video_instance_list: function(new_list){
         this.video_instance_list = new_list;
+        this.prepare_filtered_instance_list();
         this.refresh = Date.now()
       },
       prepare_filtered_instance_list: function () {
         this.filtered_instance_list = []
         if (this.$props.base_model_run) {
-          this.filtered_instance_list = this.$props.instance_list.filter(inst => {
+          this.filtered_instance_list = this.global_instance_list.filter(inst => {
             return inst.model_run_id === this.$props.base_model_run.id;
           })
           this.filtered_instance_list = this.filtered_instance_list.map(inst => {
@@ -157,7 +159,7 @@
           let added_ids = this.filtered_instance_list.map(inst => inst.id);
           for (const model_run of this.$props.compare_to_model_run_list) {
 
-            let filtered_instances = this.$props.instance_list.filter(inst => {
+            let filtered_instances = this.global_instance_list.filter(inst => {
               return inst.model_run_id === model_run.id;
             })
             console.log('model urn', model_run)
@@ -178,7 +180,7 @@
 
 
         if(this.$props.show_ground_truth){
-          const ground_truth_instances = this.$props.instance_list.filter(inst => !inst.model_run_id);
+          const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
           console.log('ground_truth_instances', ground_truth_instances)
           for(const inst of ground_truth_instances){
 
@@ -231,7 +233,18 @@
       }
 
 
-    }
+    },
+    computed:{
+      global_instance_list: function(){
+        // This instance list can either be the image instance list of the video instance list at current frame.
+        if(this.$props.file.image){
+          return this.$props.instance_list;
+        }
+        if(this.$props.file.video){
+          return this.video_instance_list;
+        }
+      }
+    },
   });
 </script>
 
