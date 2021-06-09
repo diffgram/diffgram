@@ -393,22 +393,26 @@ import Vue from "vue";
 
 export default Vue.extend( {
   name: 'v_video',
-    props: [
-    'project_string_id',
-    'current_video',
-    'video_mode',
-    'current_video_file_id',
-    'video_pause_request',
-    'video_play_request',
-    'task',
-    'loading',
-    'has_changed',
-    'canvas_width_scaled',
-    'stop_propagation_for_player',
-    'video_primary_id',
-    'player_width',
-    'player_height',
-    ],
+    props: {
+      'project_string_id': {},
+      'current_video': {},
+      'video_mode': {},
+      'current_video_file_id': {},
+      'video_pause_request': {},
+      'video_play_request': {},
+      'task': {},
+      'loading': {},
+      'has_changed': {},
+      'canvas_width_scaled': {},
+      'stop_propagation_for_player': {},
+      'video_primary_id': {},
+      'player_width': {},
+      'player_height': {},
+      'update_query_params':{
+        default: true
+      }
+    },
+
   /* Careful, we want annotation_core to still make use of the files
    * for images, so we don't want to get confused between current_file
    * and the special case of video
@@ -534,7 +538,10 @@ export default Vue.extend( {
     video_current_frame_guess: function(frame) {
       if (this.playing) return;
       if(!this.video_mode) return;
-      this.updateFrameUrl(frame)
+      if(this.$props.update_query_params){
+        this.updateFrameUrl(frame)
+      }
+
     },
   },
   beforeDestroy() {
@@ -1104,6 +1111,9 @@ export default Vue.extend( {
 		* @vue-event {Number} fr - Updates the ?frame=x query param in URL
 		*/
     updateFrameUrl(frame) {
+      if(!this.$props.update_query_params){
+        return
+      }
       // update the url w/ current frame if we are viewing a task
       if ((this.task && this.task.id) || this.$props.current_video_file_id) {
          this.$addQueriesToLocation({frame});

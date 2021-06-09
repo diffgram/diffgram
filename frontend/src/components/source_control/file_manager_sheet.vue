@@ -92,6 +92,7 @@
             </v-tab-item>
             <v-tab-item>
               <dataset_explorer :project_string_id="project_string_id"
+                                :full_screen="full_screen"
                                 :directory="$store.state.project.current_directory"
                                 @view_detail="change_file_and_close"
                                 ref="dataset_explorer">

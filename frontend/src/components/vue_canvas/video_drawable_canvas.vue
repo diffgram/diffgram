@@ -1,6 +1,6 @@
 <template>
-  <div class="video_canvas"   style="position: relative" >
-    <div @click="$emit('on_click_details')">
+  <div class="video_canvas" style="position: relative; height: 100%" >
+    <div @click="$emit('on_click_details', this.current_frame)">
       <drawable_canvas
 
         :image_bg="html_image"
@@ -35,6 +35,7 @@
               @mouseover="hovered = true"
               :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
               :player_width="canvas_width"
+              :update_query_params="false"
               :player_height="`${video_player_height}px`"
               v-show="true"
               :class="`pb-0 ${hovered ? 'hovered': ''}`"
@@ -156,11 +157,17 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     beforeDestroy(){
       this.refresh_video_buffer_watcher()
       //console.debug("Destroyed")
+      document.removeEventListener('focusin', this.focus_in)
+      document.removeEventListener('focusout', this.focus_out)
     },
     watch: {
       instance_list: function(){
         this.$emit('update_instance_list', this.instance_list)
       }
+    },
+    created() {
+      document.addEventListener('focusin', this.focus_in)
+      document.addEventListener('focusout', this.focus_out)
     },
     mounted() {
       this.refresh_video_buffer_watcher = this.$store.watch((state) => {
@@ -172,6 +179,12 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       )
     },
     methods:{
+      focus_in: function(){
+        this.focused = true;
+      },
+      focus_out: function(){
+        this.focused = false;
+      },
       update_canvas: function(){
         this.$refs.drawable_canvas.update_canvas()
       },

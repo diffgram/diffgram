@@ -1,7 +1,7 @@
 <template>
   <v-layout column>
-    <v-toolbar extended elevation="0" class="ma-8">
-      <v-toolbar-title class="d-flex align-center">
+    <v-toolbar extended elevation="0" class="ma-8 mb-0">
+      <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
       </v-toolbar-title>
       <div class="d-flex align-center mr-5">
@@ -56,7 +56,7 @@
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
     </v-toolbar>
-    <v-layout fluid class="d-flex flex-wrap" style="min-height: 300px">
+    <v-layout fluid class="d-flex flex-wrap" :style="{height: full_screen ? '100%': '350px'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
@@ -92,7 +92,8 @@
     },
     props: [
       'project_string_id',
-      'directory'
+      'directory',
+      'full_screen'
 
     ],
     mounted() {

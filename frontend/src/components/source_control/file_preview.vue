@@ -1,5 +1,5 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8"  >
+  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height + 80">
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details" >
       <drawable_canvas
 
@@ -206,7 +206,7 @@
         }
       },
 
-      view_file_details: function(){
+      view_file_details: function(current_frame){
         console.log('VIEW DETAILS')
         let model_runs = [];
         let color_list = [];
@@ -226,6 +226,7 @@
             file: this.$props.file.id,
             model_runs:  model_runs.length > 0 ? encodeURIComponent(model_run_ids): undefined,
             color_list:  color_list.length > 0 ? encodeURIComponent(color_list): undefined,
+            frame: current_frame
 
           }
         }).catch(()=>{});
