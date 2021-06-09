@@ -1,7 +1,8 @@
 <template>
-  <div style="position: relative">
+  <div class="video_canvas"   style="position: relative" >
+    <div @click="$emit('on_click_details')">
       <drawable_canvas
-        @click="$emit('on_click_details')"
+
         :image_bg="html_image"
         :canvas_height="canvas_height - video_player_height"
         :canvas_width="canvas_width"
@@ -28,6 +29,8 @@
         >
         </instance_list>
       </drawable_canvas>
+
+    </div>
     <v_video  v-if="$refs.drawable_canvas"
               @mouseover="hovered = true"
               :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
@@ -60,7 +63,6 @@
               ref="video_controllers">
     </v_video>
   </div>
-
 </template>
 
 <script>
@@ -409,5 +411,8 @@ import {KeypointInstance} from "./instances/KeypointInstance";
 <style scoped>
   .hovered{
     opacity: 1;
+  }
+  .video_canvas:hover{
+    cursor: pointer;
   }
 </style>

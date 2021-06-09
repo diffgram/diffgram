@@ -2893,6 +2893,7 @@ export default Vue.extend( {
 
         this.get_instances(true)
       }
+      this.add_override_colors_for_model_runs();
     },
 
     toggle_pause_play: function () {
@@ -3011,7 +3012,6 @@ export default Vue.extend( {
        */
       this.get_instances()
       this.ghost_refresh_instances()
-      console.log('change_frame_from_video_event', url)
       if (url) {
         this.add_image_process(url)
       }
@@ -5501,7 +5501,6 @@ export default Vue.extend( {
       }
       for(const instance of this.instance_list){
         if(instance.model_run_id){
-          console.log('this.model_run_list', this.model_run_list)
           let model_run = this.model_run_list.filter(m => m.id === instance.model_run_id);
           if(model_run.length > 0){
             model_run = model_run[0];
@@ -5564,7 +5563,7 @@ export default Vue.extend( {
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
 
         this.instance_list = this.instance_buffer_dict[this.current_frame];
-
+        this.add_override_colors_for_model_runs();
         this.show_annotations = true
         this.loading = false
         this.annotations_loading = false

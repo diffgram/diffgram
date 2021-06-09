@@ -207,7 +207,7 @@
       },
 
       view_file_details: function(){
-
+        console.log('VIEW DETAILS')
         let model_runs = [];
         let color_list = [];
         if(this.base_model_run){
