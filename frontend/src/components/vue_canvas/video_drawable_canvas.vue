@@ -6,7 +6,7 @@
         :canvas_height="canvas_height - video_player_height"
         :canvas_width="canvas_width"
         :editable="editable"
-        :auto_scale_bg="auto_scale_bg"
+        :auto_scale_bg="false"
         :refresh="refresh"
         :video_mode="true"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
@@ -14,12 +14,19 @@
         @refresh="refresh = Date.now()"
         ref="drawable_canvas"
       >
-        <slot v-if="$refs.drawable_canvas" slot="instance_drawer"
-              :ord="3"
-              name="instance_drawer"
-              :canvas_transform="$refs.drawable_canvas.canvas_transform">
-
-        </slot>
+        <instance_list
+          slot-scope="props"
+          :instance_list="instance_list"
+          :vertex_size="3"
+          :refresh="refresh"
+          :video_mode="true"
+          :label_settings="label_settings"
+          :show_annotations="true"
+          :draw_mode="false"
+          :canvas_transform="props.canvas_transform"
+          slot="instance_drawer"
+        >
+        </instance_list>
       </drawable_canvas>
     <v_video  v-if="$refs.drawable_canvas"
               @mouseover="hovered = true"
@@ -60,6 +67,7 @@
 <script>
 import Vue from "vue";
 import drawable_canvas from "./drawable_canvas";
+import instance_list from "./instance_list";
 import axios from "axios";
 import {KeypointInstance} from "./instances/KeypointInstance";
 
@@ -67,6 +75,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     name: "video_drawable_canvas",
     components: {
       drawable_canvas,
+      instance_list,
     },
     props: {
       canvas_wrapper_id:{
@@ -86,6 +95,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
       text_color: {
         default: "#000000"
+      },
+      label_settings:{
+        default: null
       },
       video:{
         default: undefined,
@@ -159,7 +171,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       update_canvas: function(){
         this.$refs.drawable_canvas.update_canvas()
       },
-      video_animation_unit_of_work: function (image) {
+      video_animation_unit_of_work: async function (image) {
         /*
          *  From animation in the context of getting
          *  passed an image from a video
@@ -179,24 +191,26 @@ import {KeypointInstance} from "./instances/KeypointInstance";
 
         this.html_image = image;
 
-        this.$refs.drawable_canvas.canvas_wrapper.style.display = "";
-        this.refresh = Date.now();
         // //this.trigger_refresh_with_delay()
         // let index = this.current_frame - this.instance_frame_start
         // // todo getting buffer should be in Video component
         // // also this could be a lot smarter ie getting instances
         // // while still some buffer left etc.
-        // if (this.current_frame in this.instance_buffer_dict) {
-        //   // We want to initialize the buffer dict before assinging the pointer on instance_list.
-        //   this.initialize_instance_buffer_dict_frame(this.current_frame)
-        //   // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
-        //   // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
-        //   this.instance_list = this.instance_buffer_dict[this.current_frame];
-        // } else {
-        //   this.video_pause = Date.now()
-        //
-        //   this.get_instances(true)
-        // }
+
+        if (this.current_frame in this.instance_buffer_dict) {
+          // We want to initialize the buffer dict before assinging the pointer on instance_list.
+          this.initialize_instance_buffer_dict_frame(this.current_frame)
+          // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
+          // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
+          this.instance_list = this.instance_buffer_dict[this.current_frame];
+        } else {
+          this.video_pause = Date.now()
+
+          this.get_instances(true)
+        }
+        this.$refs.drawable_canvas.canvas_wrapper.style.display = "";
+        this.refresh = Date.now();
+        this.update_canvas();
       },
       get_instances: async function (play_after_success=false) {
         if(this.get_instances_loading){ return }
@@ -336,6 +350,8 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         } else {
           await this.get_video_instance_buffer(play_after_success)
         }
+        this.refresh = Date.now()
+        this.update_canvas();
       },
       addImageProcess: function (src) {
         return new Promise((resolve, reject) => {

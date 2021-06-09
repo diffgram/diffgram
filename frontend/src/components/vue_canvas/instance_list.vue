@@ -250,6 +250,7 @@
 
         // MAIN function
         draw: function (ctx, done) {
+
           if (this.show_annotations != true) {
             done()
             return
@@ -1327,6 +1328,7 @@
           ctx.stroke()
 
           ctx.fill()
+
 
           this.is_mouse_in_path(ctx, i, instance)
 

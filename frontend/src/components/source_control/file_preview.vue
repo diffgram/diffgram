@@ -39,28 +39,14 @@
         :canvas_width="file_preview_width"
         :editable="false"
         :auto_scale_bg="true"
+        :label_settings="label_settings"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
         @on_click_details="view_file_details"
         ref="video_drawable_canvas"
+        @update_instance_list="set_video_instance_list"
       >
-
-        <instance_list
-          slot-scope="props"
-          :instance_list="$refs.video_drawable_canvas.instance_list"
-          :vertex_size="3"
-          :refresh="refresh"
-          :video_mode="false"
-          :label_settings="label_settings"
-          :show_annotations="true"
-          :draw_mode="false"
-          :canvas_transform="props.canvas_transform"
-          slot="instance_drawer"
-        >
-        </instance_list>
-
-
       </video_drawable_canvas>
     </v-card-text>
   </v-card>
@@ -112,6 +98,7 @@
         image_bg: undefined,
         refresh: null,
         filtered_instance_list: [],
+        video_instance_list: [],
         compare_to_instance_list_set: [],
         label_settings: {
           font_size: 20,
@@ -147,6 +134,10 @@
       }
     },
     methods: {
+      set_video_instance_list: function(new_list){
+        this.video_instance_list = new_list;
+        this.refresh = Date.now()
+      },
       prepare_filtered_instance_list: function () {
         this.filtered_instance_list = []
         if (this.$props.base_model_run) {

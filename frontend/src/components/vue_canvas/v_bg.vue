@@ -46,11 +46,9 @@ export default Vue.extend({
           let grayscale = `grayscale(${this.canvas_filters['grayscale']}%)`
           ctx.filter = brightness + contrast + grayscale
           if(!this.$props.auto_scale_bg){
-            console.log('DRAWWWW');
             ctx.drawImage(this.image, 0, 0);
           }
           else{
-            console.log('DRAWWWW SCALEE');
             var hRatio = ctx.canvas.width / this.image.width;
             var vRatio = ctx.canvas.height / this.image.height;
             var ratio  = Math.min ( hRatio, vRatio );

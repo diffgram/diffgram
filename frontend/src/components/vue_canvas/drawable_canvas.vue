@@ -132,6 +132,8 @@
         }
         else{
           this.canvas_element.width+=0;
+
+          this.update_window_size_from_listener();
           this.update_canvas();
         }
         this.$emit('refresh')
@@ -208,8 +210,12 @@
         let lowest_size = Math.min(height_scaled, width_scaled)
 
         let new_size = Math.round(lowest_size * 100) / 100
-        this.canvas_scale_global_x = width_scaled;
-        this.canvas_scale_global_y = height_scaled;
+        if(isFinite(width_scaled)){
+          this.canvas_scale_global_x = width_scaled;
+        }
+        if(isFinite(height_scaled)){
+          this.canvas_scale_global_y = height_scaled;
+        }
         await this.$nextTick();
       },
       zoom_in: function(){
