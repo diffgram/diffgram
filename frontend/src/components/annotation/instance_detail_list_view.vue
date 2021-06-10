@@ -231,6 +231,14 @@
                             >
                             </tooltip_icon>
 
+                            <tooltip_icon
+                              tooltip_message="Human Made"
+                              v-if="!props.item.machine_made"
+                              icon="mdi-account"
+                              color="primary"
+                            >
+                            </tooltip_icon>
+
                           </v-layout>
 
                         </td>

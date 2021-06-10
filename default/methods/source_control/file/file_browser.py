@@ -480,7 +480,6 @@ class File_Browser():
             if self.metadata["start_index"] < 0:
                 self.metadata["start_index"] = 0
 
-        print('AAAAA', self.metadata)
         self.metadata['pagination'] = self.metadata_proposed.get('pagination', {})
 
     # @timeit

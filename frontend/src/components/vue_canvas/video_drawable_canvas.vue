@@ -142,6 +142,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         annotations_loading: false,
         get_instances_loading: false,
         refresh: new Date(),
+        refresh_video_buffer: new Date(),
         html_image: new Image(),
         video_playing: false,
         video_play: null,
@@ -159,7 +160,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       }
     },
     beforeDestroy(){
-      this.refresh_video_buffer_watcher()
       //console.debug("Destroyed")
       document.removeEventListener('focusin', this.focus_in)
       document.removeEventListener('focusout', this.focus_out)
@@ -167,24 +167,28 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     watch: {
       instance_list: function(){
         this.$emit('update_instance_list', this.instance_list);
+      },
+      refresh_video_buffer: function(){
+        this.get_video_instance_buffer()
       }
     },
     created() {
       document.addEventListener('focusin', this.focus_in)
       document.addEventListener('focusout', this.focus_out)
     },
-    mounted() {
-      this.refresh_video_buffer_watcher = this.$store.watch((state) => {
-          return this.$store.state.annotation_state.refresh_video_buffer
-        },(new_val, old_val) => {
-
-          self.get_video_instance_buffer()
-        },
-      )
+    async mounted() {
       this.is_mounted = true;
+      await this.$nextTick();
+      await this.initialize_video();
 
     },
     methods:{
+      initialize_video: async function(){
+        this.$refs.video_controllers.reset_cache();
+        await this.get_instances();
+        await this.$nextTick();
+        await this.$refs.video_controllers.current_video_update();
+      },
       focus_in: function(){
         this.focused = true;
       },
@@ -193,7 +197,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
       update_canvas: function(){
         this.$refs.drawable_canvas.update_canvas()
-        this.$refs.video_controllers.go_to_keyframe(this.current_frame)
       },
       video_animation_unit_of_work: async function (image) {
         /*
@@ -212,7 +215,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
          *    anthing?
          *
          */
-
+        console.log('video_animation_unit_of_work', image, this.current_frame)
         this.html_image = image;
 
         // //this.trigger_refresh_with_delay()

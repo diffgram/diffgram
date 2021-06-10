@@ -394,20 +394,48 @@ import Vue from "vue";
 export default Vue.extend( {
   name: 'v_video',
     props: {
-      'project_string_id': {},
-      'current_video': {},
-      'video_mode': {},
-      'current_video_file_id': {},
-      'video_pause_request': {},
-      'video_play_request': {},
-      'task': {},
-      'loading': {},
-      'has_changed': {},
-      'canvas_width_scaled': {},
-      'stop_propagation_for_player': {},
-      'video_primary_id': {},
-      'player_width': {},
-      'player_height': {},
+      'project_string_id': {
+        default: undefined
+      },
+      'current_video': {
+        default: undefined
+      },
+      'video_mode': {
+        default: undefined
+      },
+      'current_video_file_id': {
+        default: undefined
+      },
+      'video_pause_request': {
+        default: undefined
+      },
+      'video_play_request': {
+        default: undefined
+      },
+      'task': {
+        default: undefined
+      },
+      'loading': {
+        default: undefined
+      },
+      'has_changed': {
+        default: undefined
+      },
+      'canvas_width_scaled': {
+        default: undefined
+      },
+      'stop_propagation_for_player': {
+        default: undefined
+      },
+      'video_primary_id': {
+        default: undefined
+      },
+      'player_width': {
+        default: undefined
+      },
+      'player_height': {
+        default: undefined
+      },
       'update_query_params':{
         default: true
       }
@@ -530,7 +558,6 @@ export default Vue.extend( {
   mounted() {
 
       this.keyframe_watcher = this.create_keyframe_watcher()
-      this.go_to_keyframe(this.video_current_frame_guess)
   },
   watch: {
     'video_pause_request': 'video_pause',
@@ -560,7 +587,6 @@ export default Vue.extend( {
       return this.$store.watch(() => {
         return this.$store.state.video.go_to_keyframe_refresh },
          (new_val, old_val) => {
-
           this.go_to_keyframe(this.$store.state.video.keyframe)
         },
       )
@@ -817,6 +843,7 @@ export default Vue.extend( {
       // where as when we got to a keyframe, we need to convert back to original time
       this.video_current_frame_guess = Math.floor(
         this.primary_video.currentTime * this.current_video.frame_rate)
+      console.log('update_current_frame_guess', this.primary_video.currentTime, this.current_video.frame_rate, this.video_current_frame_guess)
       this.$emit('video_current_frame_guess', this.video_current_frame_guess)
     },
 
@@ -942,7 +969,7 @@ export default Vue.extend( {
        * TODO review the fetch and play example
        */
 
-
+      console.log('VIDE PLAY', this.current_video.id)
       /*
        *   Jan 23, 2020
        *   Green screen issue
@@ -977,7 +1004,7 @@ export default Vue.extend( {
         // refresh if primary video ref doesn't exist
         // usually this should only be for debugging / hot reload purposes
         // alternative is every hot reload makes video fail
-        this.current_video_update()
+        await this.current_video_update()
       }
 
       this.play_loading = true
@@ -1002,7 +1029,7 @@ export default Vue.extend( {
         this.primary_video.muted = this.muted
 
         this.playPromise = this.primary_video.play()
-
+        console.log('PLAY PROMISE', this.playPromise)
         /* Jan 8, 2020
          * Added the basic detection if it failed to load or not
          * And show error message.
@@ -1044,7 +1071,7 @@ export default Vue.extend( {
 
             this.$emit('playing')
             this.primary_video.playbackRate = this.playback_rate
-
+            console.log('video animation start');
             this.video_animation_start()
 
           })
@@ -1094,7 +1121,7 @@ export default Vue.extend( {
 
       this.update_current_frame_guess()
       this.current_time = Math.round(this.primary_video.currentTime * 100) / 100
-
+      console.log('AAAA', this.current_time, this.primary_video.currentTime)
       this.detect_early_end(this.current_video.parent_video_split_duration)
 
       // TODO better logging of this type of info
@@ -1330,7 +1357,7 @@ export default Vue.extend( {
       const next_frames = this.get_next_n_frames(frame_number, 15)
       const prev_frames = this.get_previous_n_frames(frame_number, 15)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
-
+      console.log('AAAA', frame_number, this.go_to_keyframe_loading, this.prior_frame_number)
       if (frame_number != this.prior_frame_number) {
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
@@ -1436,9 +1463,13 @@ export default Vue.extend( {
         // this.current_video.current_frame = 0 // or could be where left off?
 
         if (this.current_video.frame_count != 0) {
-          const frame = parseInt(this.$route.query.frame || 0);
+          let frame = 0;
+          if(this.$props.update_query_params){
+            frame = parseInt(this.$route.query.frame || 0);
+          }
+
           await this.go_to_keyframe(frame);
-          this.$refs.video_source_ref.src = this.current_video.file_signed_url
+          this.$refs.video_source_ref.src = this.current_video.file_signed_url;
         }
         this.$emit('update_canvas');
       }
