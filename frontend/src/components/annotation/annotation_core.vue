@@ -2974,7 +2974,9 @@ export default Vue.extend( {
     },
 
     populate_ghost_list_with_most_recent_instances_from_keyframes: function(keyframes_to_sequences){
-
+      if(keyframes_to_sequences){
+        return
+      }
       for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
 
         let instance_list = this.instance_buffer_dict[keyframe];

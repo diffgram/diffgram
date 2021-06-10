@@ -90,7 +90,7 @@
                 >
                 </v_media_core>
               </v-tab-item>
-              <v-tab-item class="d-flex flex-column">
+              <v-tab-item>
                 <dataset_explorer :project_string_id="project_string_id"
                                   :full_screen="full_screen"
                                   :directory="$store.state.project.current_directory"

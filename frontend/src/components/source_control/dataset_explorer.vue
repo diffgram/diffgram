@@ -48,13 +48,9 @@
       </div>
       <v-spacer></v-spacer>
 
-      <v-btn icon>
-        <v-icon>mdi-filter</v-icon>
-      </v-btn>
-
-      <v-btn icon>
-        <v-icon>mdi-dots-vertical</v-icon>
-      </v-btn>
+<!--      <v-btn icon disabled>-->
+<!--        <v-icon>mdi-filter</v-icon>-->
+<!--      </v-btn>-->
     </v-toolbar>
 
     <v-layout id="infinite-list" fluid class="files-container d-flex justify-start" :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap'}">
