@@ -1755,7 +1755,10 @@ export default Vue.extend( {
   methods: {
 
     // userscript (to be placed in class once context figured)
-
+    set_instance_human_edited: function(instance){
+      instance.change_source = 'ui_diffgram_frontend'
+      instance.machine_made = false;
+    },
     get_roi_canvas_from_instance: function (instance, ghost_canvas) {
       // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData
 
@@ -2682,7 +2685,6 @@ export default Vue.extend( {
         return this.$store.state.annotation_state.get_instances
       },
         (new_val, old_val) => {
-
           self.get_instances()
         },
       )
@@ -2690,7 +2692,6 @@ export default Vue.extend( {
       this.refresh_video_buffer_watcher = this.$store.watch((state) => {
         return this.$store.state.annotation_state.refresh_video_buffer
       },(new_val, old_val) => {
-
           self.get_video_instance_buffer()
         },
       )
@@ -4179,6 +4180,8 @@ export default Vue.extend( {
     }
 
     if (box_did_move || polygon_did_move || cuboid_did_move || ellipse_did_move || curve_did_move || polygon_dragged || key_points_did_move) {
+
+      this.set_instance_human_edited(this.instance_list[this.instance_hover_index])
       this.has_changed = true;
     }
 
