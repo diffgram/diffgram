@@ -31,7 +31,7 @@
       </drawable_canvas>
 
     </div>
-    <v_video  v-if="$refs.drawable_canvas"
+    <v_video  v-if="is_mounted"
               @mouseover="hovered = true"
               :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
               :player_width="canvas_width"
@@ -138,6 +138,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       return {
         loading: false,
         hovered: false,
+        is_mounted: false,
         annotations_loading: false,
         get_instances_loading: false,
         refresh: new Date(),
@@ -180,7 +181,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           self.get_video_instance_buffer()
         },
       )
-
+      this.is_mounted = true;
 
     },
     methods:{

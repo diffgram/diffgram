@@ -541,7 +541,6 @@ export default Vue.extend( {
       if(this.$props.update_query_params){
         this.updateFrameUrl(frame)
       }
-
     },
   },
   beforeDestroy() {
