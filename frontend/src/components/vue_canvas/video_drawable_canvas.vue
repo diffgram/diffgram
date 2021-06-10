@@ -165,7 +165,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     watch: {
       instance_list: function(){
-        this.$emit('update_instance_list', this.instance_list)
+        this.$emit('update_instance_list', this.instance_list);
       }
     },
     created() {
@@ -181,6 +181,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         },
       )
 
+
     },
     methods:{
       focus_in: function(){
@@ -191,6 +192,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       },
       update_canvas: function(){
         this.$refs.drawable_canvas.update_canvas()
+        this.$refs.video_controllers.go_to_keyframe(this.current_frame)
       },
       video_animation_unit_of_work: async function (image) {
         /*
