@@ -906,7 +906,6 @@ import Vue from "vue";
       },
       focus_model_run: function(model_run){
         // Reset Hidden
-        console.log('model_run',model_run)
         this.instance_list.forEach(inst => {
           inst.hidden = false;
         })
@@ -917,17 +916,13 @@ import Vue from "vue";
         }
         // Set new filter
         this.instance_list.forEach(inst => {
-            console.log('qqq', model_run, inst, inst.id)
             if(inst.model_run_id === model_run.id && model_run.id !== -1){
-              console.log('case1')
               inst.hidden = false
             }
             else if(model_run.id === -1 && !inst.model_run_id){
-              console.log('case2')
               inst.hidden = false;
             }
             else{
-              console.log('case3')
               inst.hidden = true;
             }
         })

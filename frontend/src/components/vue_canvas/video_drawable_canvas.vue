@@ -215,7 +215,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
          *    anthing?
          *
          */
-        console.log('video_animation_unit_of_work', image, this.current_frame)
+
         this.html_image = image;
 
         // //this.trigger_refresh_with_delay()

@@ -4014,7 +4014,6 @@ export default Vue.extend( {
       if(is_updated){
         instance.status = 'updated'
       }
-      console.debug('moved faceeee', instance)
       this.instance_list.splice(this.instance_hover_index, 1, instance)
       return is_updated;
     },

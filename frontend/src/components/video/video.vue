@@ -277,8 +277,6 @@
       </v-container>
     </v-card>
 
-
-    <!-- Move alerts outside of the other panel for seperate sizing -->
     <v-card v-if="video_mode == true">
 
       <v-alert v-if="playback_info"
@@ -303,10 +301,6 @@
 
       <v_error_multiple :error="error">
       </v_error_multiple>
-
-      <!-- @input is for dismiss issue
-        in prior context it just worked.
-        -->
 
       <v-progress-linear
                 v-if="running_interpolation"
@@ -354,10 +348,6 @@
       </v-alert>
 
     </v-card>
-
-    <!-- This is purpusely outside of v-card tag
-      so that it's always available, ie no race condition with v-if
-      and add event listener on this id-->
 
     <video ref="video_source_ref"
             :width="0"
@@ -440,13 +430,6 @@ export default Vue.extend( {
         default: true
       }
     },
-
-  /* Careful, we want annotation_core to still make use of the files
-   * for images, so we don't want to get confused between current_file
-   * and the special case of video
-   *
-   *
-  */
   components: {
     frame_previewVue
   },
@@ -691,29 +674,11 @@ export default Vue.extend( {
       /* Context of wanting to make sure save completes before changing the state.
        * Not sure if this is a great way to solve it long term
        * Feels like it's needed to prevent issues in saving process
-       *
-       *   a) from user perspective feel like should be able to save "behind the scences" and let
-       *    the user go to next, this creates an artifical block in cases
        *   b) from coding perspecific this feels very cumbersome,
        *    would rather get an event notice / use a more "built in" system.
        *    in part this feels like the continued confusion / issue with
        *    data ownership in vue components. like logically video should be a seperate thing
        *    but the channel between video and annotation core is not great
-       *
-       * CAUTION
-       *  Also, functions that use this need to have 'async' keyword
-       *  and needs to be wrapped to block properly...
-       *  if (await this.save_and_await() == false) { // failure }
-       *  else { // normal code }
-       *
-       *  Context of sequence creation issues
-       *  https://app.hubspot.com/live-messages/5238859/inbox/300479634#reply-editor
-       *
-       *  UPDATE
-       *    Realized that this is basically an "anti pattern" in that part of the whole goal
-       *    of JS here is to be non blocking...
-       *    so really should be able to quickly cache and save a frame , and then however long it takes on server it's fine...
-       *
        */
 
       this.$emit('request_save')
@@ -724,21 +689,6 @@ export default Vue.extend( {
 
       return true
 
-      /*
-      for (let i = 0; i < 100 ; i++) {   // has changed also covers other saving methods?
-
-        if (this.has_changed == false) {
-          // changes saved, break out of waiting
-          break
-        }
-        await this.sleep(100)
-      }
-
-      if (this.has_changed == true) {
-          return false
-      }
-      return true
-    */
     },
 
     video_current_frame_guess_update: function () {
@@ -756,10 +706,6 @@ export default Vue.extend( {
       if (this.go_to_keyframe_loading == true) { // swallow spamming
         return
       }
-      /* Not sure why we weren't relying on that "loading" thing before... maybe because that
-       * "get image single" can get called from a different thing? And we wanted to make sure
-       * it got the "last" image? Maybe we just had that (other) catch thing in wrong place
-       */
       /* We currently emit frame updates while playing
        * So this way we know if a specific frame is requested.
        * Usually this is in the context of a user request.
@@ -769,19 +715,7 @@ export default Vue.extend( {
        * Add the 200 ms saving delay (IF changes) till we can better test
        * or better architect this.
        *
-       * ie A) we could check if has_changed becomes false
-       *  or B) we could cache the data in some other way so we are more confident about
-       *    going to next frame while "old" data is saved.
-       *
-       * Structurely it's probably good to have has_changed here,
-       * Then if we keep watching has_changed, if it fails to change,
-       * we could prevent the keyframe change from happening.
-       *
-       *
-       *  1) checking if "safe" to advance to frame should come first
-       *  2) would really prefer to get a callback notice when the save event happens
-       *  but not 100% clear how to do this so using a loop here for now.
-       */
+       * */
 
       frame = parseInt(frame) // edge cases
 
@@ -843,7 +777,6 @@ export default Vue.extend( {
       // where as when we got to a keyframe, we need to convert back to original time
       this.video_current_frame_guess = Math.floor(
         this.primary_video.currentTime * this.current_video.frame_rate)
-      console.log('update_current_frame_guess', this.primary_video.currentTime, this.current_video.frame_rate, this.video_current_frame_guess)
       this.$emit('video_current_frame_guess', this.video_current_frame_guess)
     },
 
@@ -923,7 +856,6 @@ export default Vue.extend( {
       }
     },
     update_from_slider: function (frame_number: number) {
-
       /*
        * Other events can cause slider to fire.
        * So we catch this here. We only want to do this update path if
@@ -944,23 +876,6 @@ export default Vue.extend( {
       }
     },
 
-    test_fail_video_src: function () {
-      /*
-       * Trying to move this to spec.js
-       * but need to do more mocking
-       */
-
-      this.current_video_update() // reset for dev...
-
-      this.$refs.video_source_ref.src = null
-      this.video_play()
-
-      // this part is not quite right yet...
-      setTimeout(console.assert(this.playback_info), 1000)
-
-
-    },
-
     video_play: async function () {
       /*
        * Some good patterns here
@@ -969,7 +884,7 @@ export default Vue.extend( {
        * TODO review the fetch and play example
        */
 
-      console.log('VIDE PLAY', this.current_video.id)
+
       /*
        *   Jan 23, 2020
        *   Green screen issue
@@ -1015,11 +930,6 @@ export default Vue.extend( {
 
       } else {
 
-
-        /* Experiment that issue only seems to be on first load
-         *
-         */
-
         if (this.current_video.width > 1920) {
           this.primary_video.currentTime = 0
         }
@@ -1029,29 +939,6 @@ export default Vue.extend( {
         this.primary_video.muted = this.muted
 
         this.playPromise = this.primary_video.play()
-        console.log('PLAY PROMISE', this.playPromise)
-        /* Jan 8, 2020
-         * Added the basic detection if it failed to load or not
-         * And show error message.
-         * Probably a lot more we could be doing here but maybe build
-         * better testing thing first.
-         *
-         * Was just doing basic testing by opening annotatino core in dev
-         * tools and running: (assuming it's 3rd file)
-         * $vm0.File_list[3].video.file_signed_url = "https"
-         *      (Or = null should work too)
-         *
-         * We emit the event but it's not really
-         * clear what annotation_core should do in terms of locking it,
-         * the "loading" thing spining just looks funny...
-         *
-         * Important!
-         *   The core annotation functions can actually still work
-         *   even if the video fails to load (thanks to our frame
-         *   by frame processing).
-         *   SO if the video doesn't load it is good to show that message
-         *   but we don't want to "freeze" everything. :)
-         */
 
         this.play_loading = false
         if (this.playPromise !== undefined) {
@@ -1062,10 +949,6 @@ export default Vue.extend( {
             this.playing = true
             this.playback_info = null // reset
 
-            // Play should be before time update to reduce jerkiness
-            // This is needed otherwise play trys to play based on actual time so it jerks back in time
-
-            // example is  current frame guess is say 5, and if frame rate is 5, it's 5/5 = 1 time is 1
             this.primary_video.currentTime = this.video_current_frame_guess / this.current_video.frame_rate
 
 
@@ -1121,7 +1004,6 @@ export default Vue.extend( {
 
       this.update_current_frame_guess()
       this.current_time = Math.round(this.primary_video.currentTime * 100) / 100
-      console.log('AAAA', this.current_time, this.primary_video.currentTime)
       this.detect_early_end(this.current_video.parent_video_split_duration)
 
       // TODO better logging of this type of info
@@ -1357,7 +1239,6 @@ export default Vue.extend( {
       const next_frames = this.get_next_n_frames(frame_number, 15)
       const prev_frames = this.get_previous_n_frames(frame_number, 15)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
-      console.log('AAAA', frame_number, this.go_to_keyframe_loading, this.prior_frame_number)
       if (frame_number != this.prior_frame_number) {
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
@@ -1531,7 +1412,7 @@ export default Vue.extend( {
           }
         }).catch(e => {
           this.running_interpolation = false
-          console.log(e)
+          console.error(e)
         })
     },
     run_tracking() {
