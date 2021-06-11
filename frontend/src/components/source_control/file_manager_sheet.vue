@@ -198,13 +198,13 @@
       set_permissions_error: function (new_error) {
         this.error_permissions = new_error;
       },
-      change_file_and_close: function(file){
-        this.change_file(file);
+      change_file_and_close: function(file, model_runs, color_list){
+        this.change_file(file, model_runs, color_list);
         this.hide_file_manager_sheet();
       },
-      change_file: function (file) {
+      change_file: function (file, model_runs, color_list) {
         this.minimize_sheet()
-        this.$emit('change_file', file)
+        this.$emit('change_file', file, model_runs, color_list)
       }
     }
 

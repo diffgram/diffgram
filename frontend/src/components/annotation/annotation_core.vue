@@ -855,7 +855,13 @@ export default Vue.extend( {
           }
       },
       model_run_id_list(newVal, oldVal){
-        this.fetch_model_run_list();
+        if(newVal && newVal.length > 0){
+          this.fetch_model_run_list();
+        }
+        else{
+          this.model_run_list = [];
+        }
+
       },
       mouse_computed(newval, oldval){
         // We don't want to create a new object here since the reference is used on all instance types.

@@ -625,7 +625,7 @@ import Vue from "vue";
           ...inst,
           instance_list_index: i
         }))
-        if(this.model_run_list){
+        if(this.model_run_list && this.model_run_list.length > 0){
           const result = [];
           for(const model_run of this.model_run_list){
             const new_instance_list = this.instance_list.filter(inst => inst.model_run_id === model_run.id);
