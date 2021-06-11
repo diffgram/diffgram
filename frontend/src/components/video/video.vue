@@ -1,7 +1,7 @@
 <template>
-  <div v-cloak >
+  <div v-cloak>
     <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
-      <v-container fluid>
+      <v-container fluid >
 
       <v-row :style="{overflow: 'hidden'}" class="pt-2">
 
@@ -239,6 +239,7 @@
         </v-row>
 
       <v-row @mousemove="mousemove_slider"
+              :id="`player_video__${current_video.id}`"
                @mouseleave="mouseleave_slider"
                @mouseenter="mouseenter_slider">
           <!--
@@ -255,6 +256,7 @@
 
           --->
           <v-slider
+
             class="pl-4 pr-4 pt-0"
             @input="update_from_slider(parseInt($event))"
             @end="slider_end(parseInt($event))"
@@ -428,6 +430,9 @@ export default Vue.extend( {
       },
       'update_query_params':{
         default: true
+      },
+      'user_nav_width_for_frame_previews':{
+        default: true
       }
     },
   components: {
@@ -440,6 +445,8 @@ export default Vue.extend( {
 
       mouse_x: null,
       mouse_y: null,
+      mouse_page_x: null,
+      mouse_page_y: null,
       frame_preview_visible: false,
       at_less_than_3_frames_from_end: false,
       preview_frame_refresh: null,
@@ -597,7 +604,9 @@ export default Vue.extend( {
 
     mousemove_slider: function (event) {
       this.mouse_x = event.clientX
+      this.mouse_page_x = event.pageX
       this.mouse_y = event.clientY
+      this.mouse_page_y = event.pageY
 
       this.predict_frame_from_mouse_location()
     },
@@ -624,18 +633,30 @@ export default Vue.extend( {
        * (postion - offset ) / canvas_width_scaled
        * // can fiddle with it for padding too
        */
+      let target = document.getElementById(`player_video__${this.$props.current_video.id}`);
+      let rect = target.getBoundingClientRect();
+      var x = this.mouse_x - rect.left;
       let padding = 16
-      if (!this.$store.state.user.settings.studio_left_nav_width){
+      if (this.$props.user_nav_width_for_frame_previews && !this.$store.state.user.settings.studio_left_nav_width){
         this.$store.commit('set_user_setting', ['studio_left_nav_width', 350])
       }
+      console.log('x', x)
+      console.log('rect', rect.left, rect)
       let offset = padding + this.$store.state.user.settings.studio_left_nav_width
+      if(!this.$props.user_nav_width_for_frame_previews){
+        offset = padding;
+      }
+
       // guess declaritive is ok here
       if (isNaN(offset)){
         return
       }
-
-      let slider_width = this.canvas_width_scaled - (padding * 2) // CAREFUL this is padding not step size
-      let percent_on_slider = (this.mouse_x - offset) / slider_width
+      // console.log('canvas_width_scaled', this.canvas_width_scaled)
+      let slider_width = rect.width - (padding * 2) // CAREFUL this is padding not step size.
+      // console.log('mouse_x', this.mouse_x)
+      // console.log('offset', offset)
+      // console.log('slider_width', slider_width)
+      let percent_on_slider = (x - offset) / slider_width
       // eg roughly between range 0 - > 1
       if (isNaN(percent_on_slider)){
         return
@@ -651,7 +672,6 @@ export default Vue.extend( {
 
       rounded_integer = Math.min(rounded_integer, this.video_settings.slider_end-1)
       rounded_integer = Math.max(rounded_integer, 0)
-
       if (isNaN(rounded_integer)){
         return
       }
@@ -824,6 +844,7 @@ export default Vue.extend( {
     },
 
     slide_change: function (event) {
+      console.log('SLIDER CHANGE', event)
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },

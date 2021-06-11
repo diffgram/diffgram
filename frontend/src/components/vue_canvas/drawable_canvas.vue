@@ -219,6 +219,9 @@
     methods: {
 
       update_window_size_from_listener: async function(){
+        if(!this.$props.image_bg){
+          return
+        }
         let width_scaled = this.$props.canvas_width / this.$props.image_bg.width;
         let height_scaled = this.$props.canvas_height / this.$props.image_bg.height;
         // careful to do the scale first, so we do the min of scaled values

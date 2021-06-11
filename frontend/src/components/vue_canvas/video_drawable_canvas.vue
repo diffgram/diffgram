@@ -33,6 +33,7 @@
     </div>
     <v_video  v-if="is_mounted"
               @mouseover="hovered = true"
+              :user_nav_width_for_frame_previews="false"
               :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
               :player_width="canvas_width"
               :update_query_params="false"
