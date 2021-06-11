@@ -333,6 +333,7 @@ def get_instance_buffer(session, video_file_id, start, end):
         buffer[i] = []
 
     for file in image_file_list:
+        file.set_cache_key_dirty('instance_list')
         buffer[file.frame_number] = file.get_with_cache(
             cache_key = 'instance_list',
             cache_miss_function = file.serialize_instance_list_only,
@@ -500,7 +501,7 @@ class File_Browser():
         # outside of limits...
 
         if self.metadata['file_view_mode'] is None or \
-            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task"]:
+            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer"]:
             return "Invalid file_view_mode", False
 
         ignore_id_list = None
@@ -612,7 +613,10 @@ class File_Browser():
 
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
-                file_serialized = file.serialize_with_type(self.session)
+                if self.metadata['file_view_mode'] == 'explorer':
+                    file_serialized = file.serialize_with_annotations(self.session)
+                else:
+                    file_serialized = file.serialize_with_type(self.session)
                 output_file_list.append(file_serialized)
                 limit_counter += 1
 

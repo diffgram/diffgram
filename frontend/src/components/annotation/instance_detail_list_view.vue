@@ -6,7 +6,9 @@
           <v-card :color="header_colour">
             <v-card-title>
 
-          <div v-if="render_mode!='gold_standard'">Instances & Attributes </div>
+          <div v-if="render_mode!='gold_standard'">Instances & Attributes
+            <v-chip v-if="current_instance && current_instance.id">ID: {{current_instance.id}}</v-chip>
+          </div>
           <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
               <v-spacer></v-spacer>
@@ -46,366 +48,394 @@
               Or may want to move attributes around / display them
               differently...
                -->
+            <v-divider class="mt-4"></v-divider>
+            <h3>Instances: </h3>
+            <v-expansion-panels accordion flat v-model="panels">
+              <v-expansion-panel v-for="grouped_list in filtered_instance_set">
+                <v-expansion-panel-header  ripple v-if="grouped_list.model_run">
+                  <div class="d-flex justify-space-between">
 
-            <v-data-table style="overflow-y:auto; max-height: 450px"
-                          :headers="header"
-                          :items="instance_list"
-                          :search="search"
-                          class="elevation-1"
-                          item-key="id"
-                          v-model="selected"
-                          hide-default-footer
-                          :options.sync="options"
-                          ref="instance_data_table">
-
-              <template slot="item" slot-scope="props">
-
-                <!-- v-if="props.item.soft_delete != true" -->
-
-                <tr v-if="props.item.soft_delete != true
-                    || label_settings.show_removed_instances == true"
-                    @mouseover="data_table_hover_index=props.index"
-                    @mouseleave="data_table_hover_index=-1"
-                    >
-
-                  <td v-if="render_mode == 'file_diff'">
-
-                    <div v-if="props.item.change_type=='added'">
-                      <v-icon color="green">add_circle</v-icon>
-                    </div>
-
-                    <div v-if="props.item.change_type=='deleted'">
-                      <v-icon color="red">remove_circle</v-icon>
-                    </div>
-
-                    <div v-if="props.item.change_type=='unchanged'">
-                      <v-icon color="grey">fiber_manual_record</v-icon>
-                    </div>
-                  </td>
-
-                  <!--
-  Hide until fully implemented -->
-                  <!--
-  <td v-if="render_mode != 'file_diff'">
-    <v-checkbox v-model="props.isSelected"
-                @change="props.select($event)"
-                primary>
-    </v-checkbox>
-  </td>
-  -->
-
-                  <td>
-
-                    <v-layout>
-
-
-                      <!-- TODO error handling here -->
-                      <div  class="color-box"
-                           @click="change_instance(props.item, props.index),show_all()"
-                           v-if="label_file_colour_map[props.item.label_file.id]">
-
-                        <div v-if="props.item.type =='box'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-checkbox-blank
-                          </v-icon>
-                        </div>
-
-                        <div v-if="props.item.type=='keypoints'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-vector-polyline
-                          </v-icon>
-                        </div>
-
-                        <div v-if="props.item.type=='polygon'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-vector-polygon
-                          </v-icon>
-                        </div>
-
-                        <div v-if="props.item.type=='tag'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-tag
-                          </v-icon>
-                        </div>
-
-                        <div v-if="props.item.type=='line'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-minus
-                          </v-icon>
-                        </div>
-
-                        <div v-if="props.item.type=='point'">
-                          <v-icon :style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                            mdi-circle-slice-8
-                          </v-icon>
-                        </div>
-
-
-                        <!--  1) :color="null"  otherwise it overrides the style!
-                              2) using style not color becuase vuetify seems to only support "named" colors-->
-
-                        <tooltip_icon
-                            tooltip_message="Cuboid"
-                            v-if="props.item.type == 'cuboid'"
-                            icon="mdi-cube-outline"
-                            :icon_style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                        </tooltip_icon>
-
-                        <tooltip_icon
-                            tooltip_message="Ellipse"
-                            v-if="props.item.type == 'ellipse'"
-                            icon="mdi-ellipse-outline"
-                            :icon_style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                        </tooltip_icon>
-
-                        <tooltip_icon
-                            tooltip_message="Curve"
-                            v-if="props.item.type == 'curve'"
-                            icon="mdi-chart-bell-curve-cumulative"
-                            :icon_style="style_color(label_file_colour_map[props.item.label_file.id].hex)">
-                        </tooltip_icon>
-                        <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
-                          ID: {{props.item.id}}
-                        </v-chip>
-                        <v-chip v-if="props.item.soft_delete == true"
-                                color="red"
-                                small
-                                text-color="white"
-                                >
-                          Removed
-                        </v-chip>
-
-                      </div>
-
-                      <!-- Sequence info & color -->
-                      <div>
-                        <v-chip v-if="props.item.sequence_id"
-                                :color="$get_sequence_color(props.item.sequence_id)"
-                                text-color="white"
-                                @click="change_instance(props.item, props.index),show_all()"
-                                class="pa-2"
-                                small
-                                >
-                          <span style="font-size: 12px;"> {{props.item.number}}</span>
-
-                        </v-chip>
-                      </div>
-
-                      <!-- More clarity on instance "source"
-                        ie human made, machine made, etc.-->
-
-                      <!-- Interpolated -->
-                      <tooltip_icon
-                          tooltip_message="Interpolated"
-                          v-if="props.item.interpolated &&
-                                props.item.interpolated == true"
-                          icon="filter_none"
-                          color="primary"
-                                    >
-                      </tooltip_icon>
-
-                      <tooltip_icon
-                          tooltip_message="Machine Made"
-                          v-if="props.item.machine_made &&
-                                props.item.machine_made == true"
-                          icon="mdi-memory"
-                          color="primary"
-                                    >
-                      </tooltip_icon>
-
-                    </v-layout>
-
-                  </td>
-
-                  <td style="max-width: 140px; position: relative">
-                  <!-- Full item comparison because
-                      new objects won't have id-->
-
-                  <div v-if="props.item == current_instance"
-                       style="position: absolute; right: 0; top: 0">
-
-                    <v-badge v-if="view_only_mode != true"
-                             overlap
-                             color="secondary"
-                             >
-                      <v-icon dark slot="badge">check</v-icon>
-                    </v-badge>
-
+                    <strong v-if="grouped_list.model_run.id !== -1"><v-icon :color="grouped_list.model_run.color">mdi-group</v-icon> {{grouped_list.model_run.reference_id}}</strong>
+                    <strong v-if="grouped_list.model_run.id === -1"><v-icon color="secondary">mdi-group</v-icon>Ground Truth: </strong>
+                    <v-btn icon small v-on:click.stop="focus_model_run(grouped_list.model_run)">
+                      <v-icon v-if="current_model_run_filter && (current_model_run_filter.id === grouped_list.model_run.id)" color="secondary">mdi-eye</v-icon>
+                      <v-icon v-if="!current_model_run_filter" color="primary">mdi-eye</v-icon>
+                      <v-icon v-if="current_model_run_filter && (current_model_run_filter.id !== grouped_list.model_run.id)" color="primary">mdi-eye</v-icon>
+                    </v-btn>
                   </div>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <v-data-table style="overflow-y:auto; max-height: 450px"
+                                :headers="header"
+                                :items="grouped_list.instance_list"
+                                :search="search"
+                                class="elevation-1"
+                                item-key="id"
+                                v-model="selected"
+                                hide-default-footer
+                                :options.sync="options"
+                                ref="instance_data_table">
 
-                    <div v-if="props.item.label_file">
+                    <template slot="item" slot-scope="props">
 
-                      <!-- Context, when a user focuses an instance, we expect it to select it
-                           However, when a user *just* selects an instance, we expect it to lose focus-->
-                      <span
-                         :style="style_instance_selected_color(props.item)"
-                         @click="change_instance(props.item, props.index),
+                      <!-- v-if="props.item.soft_delete != true" -->
+
+                      <tr v-if="props.item.soft_delete != true
+                    || label_settings.show_removed_instances == true"
+                          @mouseover="data_table_hover_index=props.item.instance_list_index"
+                          @mouseleave="data_table_hover_index=-1"
+                      >
+
+                        <td v-if="render_mode == 'file_diff'">
+
+                          <div v-if="props.item.change_type=='added'">
+                            <v-icon color="green">add_circle</v-icon>
+                          </div>
+
+                          <div v-if="props.item.change_type=='deleted'">
+                            <v-icon color="red">remove_circle</v-icon>
+                          </div>
+
+                          <div v-if="props.item.change_type=='unchanged'">
+                            <v-icon color="grey">fiber_manual_record</v-icon>
+                          </div>
+                        </td>
+
+                        <!--
+        Hide until fully implemented -->
+                        <!--
+        <td v-if="render_mode != 'file_diff'">
+          <v-checkbox v-model="props.isSelected"
+                      @change="props.select($event)"
+                      primary>
+          </v-checkbox>
+        </td>
+        -->
+
+                        <td>
+
+                          <v-layout>
+
+
+                            <!-- TODO error handling here -->
+                            <div  class="color-box"
+                                  @click="change_instance(props.item, props.item.instance_list_index),show_all()"
+                                  v-if="label_file_colour_map[props.item.label_file.id]">
+
+                              <div v-if="props.item.type =='box'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-checkbox-blank
+                                </v-icon>
+                              </div>
+
+                              <div v-if="props.item.type=='keypoints'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-vector-polyline
+                                </v-icon>
+                              </div>
+
+                              <div v-if="props.item.type=='polygon'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-vector-polygon
+                                </v-icon>
+                              </div>
+
+                              <div v-if="props.item.type=='tag'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-tag
+                                </v-icon>
+                              </div>
+
+                              <div v-if="props.item.type=='line'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-minus
+                                </v-icon>
+                              </div>
+
+                              <div v-if="props.item.type=='point'">
+                                <v-icon :style="get_instance_color(props.item)">
+                                  mdi-circle-slice-8
+                                </v-icon>
+                              </div>
+
+
+                              <!--  1) :color="null"  otherwise it overrides the style!
+                                    2) using style not color becuase vuetify seems to only support "named" colors-->
+
+                              <tooltip_icon
+                                tooltip_message="Cuboid"
+                                v-if="props.item.type == 'cuboid'"
+                                icon="mdi-cube-outline"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+
+                              <tooltip_icon
+                                tooltip_message="Ellipse"
+                                v-if="props.item.type == 'ellipse'"
+                                icon="mdi-ellipse-outline"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+
+                              <tooltip_icon
+                                tooltip_message="Curve"
+                                v-if="props.item.type == 'curve'"
+                                icon="mdi-chart-bell-curve-cumulative"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+                              <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
+                                ID: {{props.item.id}}
+                              </v-chip>
+                              <v-chip v-if="props.item.soft_delete == true"
+                                      color="red"
+                                      small
+                                      text-color="white"
+                              >
+                                Removed
+                              </v-chip>
+
+                            </div>
+
+                            <!-- Sequence info & color -->
+                            <div>
+                              <v-chip v-if="props.item.sequence_id"
+                                      :color="$get_sequence_color(props.item.sequence_id)"
+                                      text-color="white"
+                                      @click="change_instance(props.item, props.item.instance_list_index),show_all()"
+                                      class="pa-2"
+                                      small
+                              >
+                                <span style="font-size: 12px;"> {{props.item.number}}</span>
+
+                              </v-chip>
+                            </div>
+
+                            <!-- More clarity on instance "source"
+                              ie human made, machine made, etc.-->
+
+                            <!-- Interpolated -->
+                            <tooltip_icon
+                              tooltip_message="Interpolated"
+                              v-if="props.item.interpolated &&
+                                props.item.interpolated == true"
+                              icon="filter_none"
+                              color="primary"
+                            >
+                            </tooltip_icon>
+
+                            <tooltip_icon
+                              tooltip_message="Machine Made"
+                              v-if="props.item.machine_made &&
+                                props.item.machine_made == true"
+                              icon="mdi-memory"
+                              color="primary"
+                            >
+                            </tooltip_icon>
+
+                            <tooltip_icon
+                              tooltip_message="Human Made"
+                              v-if="!props.item.machine_made"
+                              icon="mdi-account"
+                              color="primary"
+                            >
+                            </tooltip_icon>
+
+                          </v-layout>
+
+                        </td>
+
+                        <td style="max-width: 140px; position: relative">
+                          <!-- Full item comparison because
+                              new objects won't have id-->
+
+                          <div v-if="props.item == current_instance"
+                               style="position: absolute; right: 0; top: 0">
+
+                            <v-badge v-if="view_only_mode != true"
+                                     overlap
+                                     color="secondary"
+                            >
+                              <v-icon dark slot="badge">check</v-icon>
+                            </v-badge>
+
+                          </div>
+
+                          <div v-if="props.item.label_file">
+
+                            <!-- Context, when a user focuses an instance, we expect it to select it
+                                 However, when a user *just* selects an instance, we expect it to lose focus-->
+                            <span
+                              :style="style_instance_selected_color(props.item)"
+                              @click="change_instance(props.item, props.item.instance_list_index),
                                  show_all()">
                         {{props.item.label_file.label.name}}
                       </span>
-                    </div>
+                          </div>
 
 
-                  </td>
+                        </td>
 
 
-                  <!-- Focus mode toggle -->
-                <td>
+                        <!-- Focus mode toggle -->
+                        <td>
 
-                  <div v-if="props.item.type != 'tag'
+                          <div v-if="props.item.type != 'tag'
                        && render_mode != 'gold_standard'
                        ">
-                    <div v-if="data_table_hover_index == props.index
-                            || instance_focused_index == props.index
+                            <div v-if="data_table_hover_index == props.item.instance_list_index
+                            || instance_focused_index == props.item.instance_list_index
                          ">
 
-                      <v-btn @click="toggle_instance_focus(props.index, props.item.id)"
-                             icon
-                             >
-                        <v-icon v-if="instance_focused_index == props.index"
-                                size="18"
-                                color="blue">remove_red_eye</v-icon>
+                              <v-btn @click="toggle_instance_focus(props.item.instance_list_index, props.item.id)"
+                                     icon
+                              >
+                                <v-icon v-if="instance_focused_index == props.item.instance_list_index"
+                                        size="18"
+                                        color="blue">remove_red_eye</v-icon>
 
-                         <v-icon v-if="instance_focused_index != props.index"
-                                 size="18"
-                                 color="gray">remove_red_eye</v-icon>
-                      </v-btn>
-                    </div>
-                    <!-- TODO better handling of focus mode
-                       (We do want to use it in gold standard mode too)
-                         Do we want to limit to one at a time?
-                        Or each click simply puts on / off for that specific instance?
-                        Confusing if it works differently from labels-->
-                    <!--
-                    <v-btn v-if=""
-                           icon @click="toggle_instance_focus(props.index, props.item.id)">
-                      <v-icon color="grey">remove_red_eye</v-icon>
-                    </v-btn>
-                        -->
-                  </div>
+                                <v-icon v-if="instance_focused_index != props.item.instance_list_index"
+                                        size="18"
+                                        color="gray">remove_red_eye</v-icon>
+                              </v-btn>
+                            </div>
+                            <!-- TODO better handling of focus mode
+                               (We do want to use it in gold standard mode too)
+                                 Do we want to limit to one at a time?
+                                Or each click simply puts on / off for that specific instance?
+                                Confusing if it works differently from labels-->
+                            <!--
+                            <v-btn v-if=""
+                                   icon @click="toggle_instance_focus(props.item.instance_list_index, props.item.id)">
+                              <v-icon color="grey">remove_red_eye</v-icon>
+                            </v-btn>
+                                -->
+                          </div>
 
-                </td>
+                        </td>
 
-                <!-- Actions -->
-                <td>
-                  <v-layout>
+                        <!-- Actions -->
+                        <td>
+                          <v-layout>
 
-                  <!-- Edit label
-                     For images only
-                    -->
-                  <div v-if="data_table_hover_index == props.index
+                            <!-- Edit label
+                               For images only
+                              -->
+                            <div v-if="data_table_hover_index == props.item.instance_list_index
                           || data_table_inner_menu_open == true
-                          && data_table_hover_click_index == props.index ">
-                    <button_with_menu
-                        v-if="video_mode != true"
-                        @menu_open="data_table_inner_menu_open = $event,
-                                    data_table_hover_click_index=props.index"
-                        tooltip_message="Change Label Template"
-                        icon="mdi-format-paint"
-                        color="primary"
-                        :close_by_button="true"
-                            >
+                          && data_table_hover_click_index == props.item.instance_list_index ">
+                              <button_with_menu
+                                v-if="video_mode != true"
+                                @menu_open="data_table_inner_menu_open = $event,
+                                    data_table_hover_click_index=props.item.instance_list_index"
+                                tooltip_message="Change Label Template"
+                                icon="mdi-format-paint"
+                                color="primary"
+                                :close_by_button="true"
+                              >
 
-                        <template slot="content">
-                          <v-layout column>
+                                <template slot="content">
+                                  <v-layout column>
 
-                            <label_select_only
-                              :label_file_list_prop=label_list
-                              :select_this_id_at_load=props.item.label_file_id
-                              @label_file="instance_update(
+                                    <label_select_only
+                                      :label_file_list_prop=label_list
+                                      :select_this_id_at_load=props.item.label_file_id
+                                      @label_file="instance_update(
                                               'update_label',
-                                               props.index,
+                                               props.item.instance_list_index,
                                                props.item.id,
                                                'default',
                                                $event)"
-                                        >
-                            </label_select_only>
+                                    >
+                                    </label_select_only>
 
 
-                          </v-layout>
-                        </template>
+                                  </v-layout>
+                                </template>
 
-                    </button_with_menu>
-                  </div>
+                              </button_with_menu>
+                            </div>
 
-                  <div v-if="data_table_hover_index == props.index">
-                    <v-btn v-if="!view_only_mode
+                            <div v-if="data_table_hover_index == props.item.instance_list_index">
+                              <v-btn v-if="!view_only_mode
                            && props.item.soft_delete == true"
-                           @click="instance_update('delete_undo', props.index, props.item.id)"
-                           icon>
-                      <v-icon> undo </v-icon>
-                    </v-btn>
+                                     @click="instance_update('delete_undo', props.item.instance_list_index, props.item.id)"
+                                     icon>
+                                <v-icon> undo </v-icon>
+                              </v-btn>
 
-                    <!-- Prob need to set this as a flag and move to application logic at this point -->
+                              <!-- Prob need to set this as a flag and move to application logic at this point -->
 
-                    <v-btn v-if="render_mode != 'gold_standard'
+                              <v-btn v-if="render_mode != 'gold_standard'
                             && task && task.task_type != 'review'
                             && !view_only_mode
                             && props.item.soft_delete != true"
-                            @click="instance_update('delete', props.index, props.item.id)"
-                            icon>
-                      <v-icon   size="18"> delete </v-icon>
-                    </v-btn>
-                   </div>
+                                     @click="instance_update('delete', props.item.instance_list_index, props.item.id)"
+                                     icon>
+                                <v-icon   size="18"> delete </v-icon>
+                              </v-btn>
+                            </div>
 
 
-                <!-- Review and gold standard stuff -->
+                            <!-- Review and gold standard stuff -->
 
-                    <rating_review  v-if="task && task.task_type == 'review' && render_mode != 'gold_standard' "
-                                    :rating_prop="props.item.rating"
-                                    @rating_update="instance_update(
+                            <rating_review  v-if="task && task.task_type == 'review' && render_mode != 'gold_standard' "
+                                            :rating_prop="props.item.rating"
+                                            @rating_update="instance_update(
                                                       'rating_update',
-                                                      props.index,
+                                                      props.item.instance_list_index,
                                                       props.item.id,
                                                       'default',
                                                       $event)">
-                      <!-- $event has rating value -->
-                    </rating_review>
+                              <!-- $event has rating value -->
+                            </rating_review>
 
 
-                  <!-- Should we use a toggle switching instead or? -->
-                       <!-- A toggle switch is tough to use here
-                      since v-model="props.item.missing" assumes all the gold standard ones
-                      have it set to false by default? -->
+                            <!-- Should we use a toggle switching instead or? -->
+                            <!-- A toggle switch is tough to use here
+                           since v-model="props.item.missing" assumes all the gold standard ones
+                           have it set to false by default? -->
 
-                    <v-layout v-if="render_mode == 'gold_standard'">
-                      <v-btn @click="instance_update('toggle_missing',
-                                         props.index,
+                            <v-layout v-if="render_mode == 'gold_standard'">
+                              <v-btn @click="instance_update('toggle_missing',
+                                         props.item.instance_list_index,
                                          props.item.id,
                                          'gold_standard')"
-                             :disabled="props.item.missing"
-                             color="primary"
-                             >
-                        Missing
-                      </v-btn>
+                                     :disabled="props.item.missing"
+                                     color="primary"
+                              >
+                                Missing
+                              </v-btn>
 
-                      <v-btn @click="instance_update('toggle_missing',
-                                         props.index,
+                              <v-btn @click="instance_update('toggle_missing',
+                                         props.item.instance_list_index,
                                          props.item.id,
                                          'gold_standard')"
-                             color="primary"
-                             icon
-                             text
-                             >
-                        <v-icon> undo </v-icon>
-                      </v-btn>
-                    </v-layout>
-                  </v-layout>
-                  </td>
+                                     color="primary"
+                                     icon
+                                     text
+                              >
+                                <v-icon> undo </v-icon>
+                              </v-btn>
+                            </v-layout>
+                          </v-layout>
+                        </td>
 
-                   <!-- End Actions -->
-
-
-                </tr>
+                        <!-- End Actions -->
 
 
-              </template>
+                      </tr>
 
-              <v-alert slot="no-results"  color="error" icon="warning">
-                Your search for "{{ search }}" found no results.
-              </v-alert>
 
-            </v-data-table>
+                    </template>
+
+                    <v-alert slot="no-results"  color="error" icon="warning">
+                      Your search for "{{ search }}" found no results.
+                    </v-alert>
+
+                  </v-data-table>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </v-expansion-panels>
+
 
 
           <v-alert type="success"
@@ -423,20 +453,6 @@
             Showing removed.
           </v-alert>
 
-          <!-- Hide serach till sort out index issue -->
-          <!--
-          <v-container>
-            <v-text-field v-model="search"
-                            append-icon="search"
-                            label="Search"
-                            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                            single-line
-                            hide-details>
-
-            </v-text-field>
-          </v-container>
-          -->
           </v-card>
         </v-flex>
       </v-layout>
@@ -467,6 +483,7 @@ import Vue from "vue";
       'draw_mode',
       'instance_list',
       'label_file_colour_map',
+      'model_run_list',
       'refresh',
       'view_only_mode',
       'label_settings',
@@ -486,7 +503,7 @@ import Vue from "vue";
 
           // but if say instance list changes or other fall back selects we do care about this ongoing basis
         this.determine_if_should_change_instance($event)
-
+        this.set_instance_index_numbers();
 
       },
 
@@ -524,16 +541,13 @@ import Vue from "vue";
 
     },
     mounted() {
-      /*
-
-      */
-
+      this.set_instance_index_numbers()
     },
     data() {
       return {
 
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
- 
+
         data_table_hover_index: -1,
         data_table_hover_click_index: -1,
         data_table_inner_menu_open: false,
@@ -549,6 +563,7 @@ import Vue from "vue";
 
         search: "",
 
+        panels: 0,
         selected: [],
 
         // Caution, this current_instance concept is different from the one in
@@ -556,6 +571,7 @@ import Vue from "vue";
         // there it's the one actively being drawn
         current_instance: {},
         current_instance_index: null,
+        current_model_run_filter: null,
 
         options: {
           'sortBy': ['column1'],
@@ -604,7 +620,39 @@ import Vue from "vue";
     },
 
     computed: {
+      filtered_instance_set: function(){
+        const instance_list = this.instance_list.map((inst, i) => ({
+          ...inst,
+          instance_list_index: i
+        }))
+        if(this.model_run_list && this.model_run_list.length > 0){
+          const result = [];
+          for(const model_run of this.model_run_list){
+            const new_instance_list = this.instance_list.filter(inst => inst.model_run_id === model_run.id);
+            result.push({
+              instance_list: new_instance_list,
+              model_run
+            })
 
+          }
+          // Add Ground Truth
+          result.push({
+            model_run: {id: -1}, // Assume -1 Id for ground truth instances.
+            instance_list: this.instance_list.filter(inst => !inst.model_run_id)
+          })
+          return result;
+
+        }
+        else{
+          return [
+            {
+              model_run: null,
+              instance_list
+            }
+          ]
+        }
+
+      },
       attribute_group_list_prop: function() {
 
         // attribute_group_list_prop handles determining which group it
@@ -661,7 +709,11 @@ import Vue from "vue";
 
     },
     methods: {
-
+      set_instance_index_numbers: function(){
+        for(let i = 0; i < this.instance_list.length; i++){
+          this.instance_list[i].instance_list_index = i;
+        }
+      },
       get_next_instance_index_from_sequence: function(number, label_file_id){
         const indexes = [];
         for (let i = 0; i < this.instance_list.length; i++){
@@ -731,7 +783,7 @@ import Vue from "vue";
 
 
         // Case of changing frame number
-  
+
         if( this.prior_current_frame != undefined && this.current_frame != undefined
           && this.prior_current_frame != this.current_frame ){
           if(this.current_instance.number != undefined){
@@ -797,6 +849,9 @@ import Vue from "vue";
           return
         }
 
+        for(let i = 0; i < this.instance_list.length; i++){
+          this.instance_list[i].instance_list_index = i;
+        }
 
       },
 
@@ -849,7 +904,31 @@ import Vue from "vue";
         this.focus_mode = false
         this.instance_focused_index = null
       },
-
+      focus_model_run: function(model_run){
+        // Reset Hidden
+        this.instance_list.forEach(inst => {
+          inst.hidden = false;
+        })
+        if(this.current_model_run_filter && (this.current_model_run_filter.id === model_run.id)){
+          this.current_model_run_filter = null;
+          this.$emit('update_canvas');
+          return
+        }
+        // Set new filter
+        this.instance_list.forEach(inst => {
+            if(inst.model_run_id === model_run.id && model_run.id !== -1){
+              inst.hidden = false
+            }
+            else if(model_run.id === -1 && !inst.model_run_id){
+              inst.hidden = false;
+            }
+            else{
+              inst.hidden = true;
+            }
+        })
+        this.current_model_run_filter = model_run;
+        this.$emit('update_canvas');
+      },
       toggle_instance_focus: function (
         instance_index : number,
         instance_id) {
@@ -882,7 +961,14 @@ import Vue from "vue";
           'list_type': list_type
         })
       },
-
+      get_instance_color(instance){
+        if(instance.override_color){
+          return this.style_color(instance.override_color)
+        }
+        else{
+          return this.style_color(this.label_file_colour_map[instance.label_file.id].hex)
+        }
+      },
       style_color: function (hex) {
         return "color:" + hex
       },
@@ -902,5 +988,11 @@ import Vue from "vue";
 <style scoped>
   .color-box:hover{
     cursor: pointer;
+  }
+</style>
+<style>
+
+  .v-expansion-panel-content__wrap{
+    padding: 0 !important;
   }
 </style>

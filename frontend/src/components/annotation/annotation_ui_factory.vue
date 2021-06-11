@@ -5,6 +5,8 @@
       <div v-if="show_annotation_core == true">
         <v_annotation_core
           :project_string_id="computed_project_string_id"
+          :model_run_id_list="model_run_id_list"
+          :model_run_color_list="model_run_color_list"
           :task="task"
           :file="current_file"
           :task_id_prop="task_id_prop"
@@ -32,7 +34,7 @@
           :view_only="view_only"
           :file_id_prop="file_id_prop"
           :job_id="job_id"
-          @change_file="change_file($event)"
+          @change_file="change_file"
         >
         </file_manager_sheet>
 
@@ -92,10 +94,12 @@
           task: null,
           current_file: null,
           request_save: false,
+          model_run_id_list: [],
 
           view_only: false,
 
           labels_list_from_project: null,
+          model_run_color_list: null,
           label_file_colour_map_from_project: null
 
         }
@@ -113,6 +117,8 @@
             this.fetch_single_task(this.$props.task_id_prop);
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
+          this.get_model_runs_from_query(to.query);
+
         }
       },
       created() {
@@ -132,7 +138,7 @@
       },
       async mounted() {
         await this.get_project();
-
+        this.get_model_runs_from_query(this.$route.query);
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
@@ -193,12 +199,28 @@
         }
       },
       methods: {
+        get_model_runs_from_query: function(query){
+          this.model_run_id_list = [];
+          this.model_run_color_list = [];
+          if(query.model_runs){
+            this.model_run_id_list = decodeURIComponent(query.model_runs).split(',');
+            if(query.color_list){
+              this.model_run_color_list = decodeURIComponent(query.color_list).split(',');
+            }
+          }
+
+        },
         request_file_change: function(direction, file){
           this.$refs.file_manager_sheet.request_change_file(direction, file);
         },
 
-        change_file: function(file){
+        change_file: function(file, model_runs, color_list){
           this.current_file = file;
+          let model_runs_data = '';
+          if(model_runs){
+            model_runs_data = encodeURIComponent(model_runs);
+          }
+          this.get_model_runs_from_query(model_runs_data);
         },
 
         get_labels_from_project: function () {

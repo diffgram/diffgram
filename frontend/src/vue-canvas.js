@@ -14,6 +14,7 @@ import Vue from 'vue'
 
       if (!drawFuncs[uid]) {
         var children = children.filter(function (child) {
+
           return child.componentOptions !== undefined && child.componentInstance !== undefined;
         });
 
@@ -24,7 +25,19 @@ import Vue from 'vue'
         drawFuncs[uid] = children.map(function (child) {
           return child.componentInstance.draw;
         });
-      };
+      }
+      // else{
+      //   var children = children.filter(function (child) {
+      //
+      //     return child.componentOptions !== undefined && child.componentInstance !== undefined;
+      //   });
+      //
+      //   console.log('      var children = vnode.children;', vnode.children)
+      //   console.log('childdd', children)
+      //   console.log('uid[uid]', uid)
+      //   console.log('drawFuncs[uid]', drawFuncs[uid])
+      //
+      // }
 
       var promises = drawFuncs[uid].map(function (draw) {
         return function () {
@@ -73,7 +86,15 @@ import Vue from 'vue'
         ctx.translate(-canvas_transform['translate']['x'], -canvas_transform['translate']['y'])
 
         // maybe skip if scale is == 1?
-        ctx.scale(canvas_transform['canvas_scale_global'], canvas_transform['canvas_scale_global'])
+        if(canvas_transform.canvas_scale_global_x && canvas_transform.canvas_scale_global_y){
+          ctx.scale(canvas_transform['canvas_scale_global_x'], canvas_transform['canvas_scale_global_y'])
+
+        }
+        else{
+          ctx.scale(canvas_transform['canvas_scale_global'], canvas_transform['canvas_scale_global'])
+
+        }
+
       }
 
 

@@ -42,6 +42,7 @@
                  :text="text_style"
                  :large="large"
                  :color="color"
+                 :x-small="xSmall"
                  @click="$emit('click', $event), click()"
           >
             <v-icon :large="large"
@@ -256,6 +257,9 @@
         'background': { // button text color , eg use background="white--text"
           default: null,
           type: String
+        },
+        'xSmall': {
+          default: false
         },
         'outlined': {
           default: false,

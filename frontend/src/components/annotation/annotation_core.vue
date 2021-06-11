@@ -193,10 +193,12 @@
                                   ref="instance_detail_list"
                                   v-if="!task_error.task_request"
                                   :instance_list="instance_list"
+                                  :model_run_list="model_run_list"
                                   :label_file_colour_map="label_file_colour_map"
                                   :refresh="refresh"
                                   @toggle_instance_focus="focus_instance($event)"
                                   @show_all="focus_instance_show_all()"
+                                  @update_canvas="update_canvas"
                                   @instance_update="instance_update($event)"
                                   :video_mode="video_mode"
                                   :task="task"
@@ -373,9 +375,6 @@
 
             <v_bg :image="html_image"
                   :current_file="file"
-                  :current_video="current_video"
-                  :canvas_width="canvas_width"
-                  :canvas_height="canvas_height"
                   :refresh="refresh"
                   @update_canvas="update_canvas"
                   :canvas_filters="canvas_filters"
@@ -554,6 +553,8 @@
                   class="pb-0"
                   :current_video="current_video"
                   :video_mode="video_mode"
+                  :player_height="'80px'"
+                  :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
                   @pause="video_playing = false"
                   @seeking_update="seeking_update($event)"
@@ -826,7 +827,14 @@ export default Vue.extend( {
           }
         }
       },
+      'model_run_id_list': {
+        default: null
+      },
+      'model_run_color_list':{
+        default: null
+      },
       'current_version_prop': {},
+
       'view_only_mode': {
         default: false
       }
@@ -846,7 +854,15 @@ export default Vue.extend( {
             }
           }
       },
+      model_run_id_list(newVal, oldVal){
+        if(newVal && newVal.length > 0){
+          this.fetch_model_run_list();
+        }
+        else{
+          this.model_run_list = [];
+        }
 
+      },
       mouse_computed(newval, oldval){
         // We don't want to create a new object here since the reference is used on all instance types.
         // If we create a new object we'll lose the reference on our class InstanceTypes
@@ -903,6 +919,7 @@ export default Vue.extend( {
     return {
 
       ghost_instance_hover_index: null,
+      model_run_list: null,
       ghost_instance_hover_type: null,
       ghost_instance_list: [],
 
@@ -1744,7 +1761,10 @@ export default Vue.extend( {
   methods: {
 
     // userscript (to be placed in class once context figured)
-
+    set_instance_human_edited: function(instance){
+      instance.change_source = 'ui_diffgram_frontend'
+      instance.machine_made = false;
+    },
     get_roi_canvas_from_instance: function (instance, ghost_canvas) {
       // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData
 
@@ -2658,6 +2678,7 @@ export default Vue.extend( {
       this.$store.commit('set_view_issue_mode', false);
       this.$store.commit('set_user_is_typing_or_menu_open', false)
       this.add_event_listeners()
+      this.fetch_model_run_list();
       this.fetch_instance_template();
 
       this.update_canvas()
@@ -2670,7 +2691,6 @@ export default Vue.extend( {
         return this.$store.state.annotation_state.get_instances
       },
         (new_val, old_val) => {
-
           self.get_instances()
         },
       )
@@ -2678,7 +2698,6 @@ export default Vue.extend( {
       this.refresh_video_buffer_watcher = this.$store.watch((state) => {
         return this.$store.state.annotation_state.refresh_video_buffer
       },(new_val, old_val) => {
-
           self.get_video_instance_buffer()
         },
       )
@@ -2707,7 +2726,36 @@ export default Vue.extend( {
 
 
     },
+    fetch_model_run_list: async function(){
+      if(!this.$props.model_run_id_list){
+        return
+      }
+      if(this.$props.model_run_id_list.length === 0){
+        return
+      }
 
+      this.loading = true
+      try{
+        const response = await axios.post(
+          `/api/v1/project/${this.$props.project_string_id}/model-runs/list`,
+          {
+            id_list: this.$props.model_run_id_list.map(x => parseInt(x, 10))
+          }
+        );
+        if (response.data['model_run_list'] != undefined) {
+          this.model_run_list = response.data.model_run_list;
+          for(let i = 0; i < this.model_run_list.length; i++){
+            this.model_run_list[i].color = this.model_run_color_list[i];
+          }
+        }
+      }
+      catch (error) {
+        console.error(error);
+      }
+      finally {
+        this.loading = false;
+      }
+    },
     task_mode_mounted: function () {
 
 
@@ -2838,8 +2886,6 @@ export default Vue.extend( {
 
       this.html_image = image
       //this.trigger_refresh_with_delay()
-
-      let index = this.current_frame - this.instance_frame_start
       // todo getting buffer should be in Video component
       // also this could be a lot smarter ie getting instances
       // while still some buffer left etc.
@@ -2854,6 +2900,7 @@ export default Vue.extend( {
 
         this.get_instances(true)
       }
+      this.add_override_colors_for_model_runs();
     },
 
     toggle_pause_play: function () {
@@ -2933,11 +2980,12 @@ export default Vue.extend( {
     },
 
     populate_ghost_list_with_most_recent_instances_from_keyframes: function(keyframes_to_sequences){
-
+      if(keyframes_to_sequences){
+        return
+      }
       for (const [keyframe, sequence_numbers] of Object.entries(keyframes_to_sequences)){
 
         let instance_list = this.instance_buffer_dict[keyframe];
-        //console.log(keyframe, instance_list)
         if (!instance_list) { continue }
 
         for (let instance of instance_list) {
@@ -2973,7 +3021,6 @@ export default Vue.extend( {
        */
       this.get_instances()
       this.ghost_refresh_instances()
-
       if (url) {
         this.add_image_process(url)
       }
@@ -3973,7 +4020,6 @@ export default Vue.extend( {
       if(is_updated){
         instance.status = 'updated'
       }
-      console.debug('moved faceeee', instance)
       this.instance_list.splice(this.instance_hover_index, 1, instance)
       return is_updated;
     },
@@ -4141,6 +4187,8 @@ export default Vue.extend( {
     }
 
     if (box_did_move || polygon_did_move || cuboid_did_move || ellipse_did_move || curve_did_move || polygon_dragged || key_points_did_move) {
+
+      this.set_instance_human_edited(this.instance_list[this.instance_hover_index])
       this.has_changed = true;
     }
 
@@ -5457,6 +5505,21 @@ export default Vue.extend( {
         this.loading = false
       }
     },
+    add_override_colors_for_model_runs: function(){
+      if(!this.model_run_list){
+        return
+      }
+      for(const instance of this.instance_list){
+        if(instance.model_run_id){
+          let model_run = this.model_run_list.filter(m => m.id === instance.model_run_id);
+          if(model_run.length > 0){
+            model_run = model_run[0];
+            instance.override_color = model_run.color;
+          }
+
+        }
+      }
+    },
     get_instances: async function (play_after_success=false) {
       if(this.get_instances_loading){ return }
       this.get_instances_loading = true;
@@ -5494,6 +5557,7 @@ export default Vue.extend( {
         // Context of Images Only
         await this.get_instance_list_for_image();
       }
+      this.add_override_colors_for_model_runs();
       this.get_instances_loading = false;
       this.update_canvas();
 
@@ -5509,7 +5573,7 @@ export default Vue.extend( {
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
 
         this.instance_list = this.instance_buffer_dict[this.current_frame];
-
+        this.add_override_colors_for_model_runs();
         this.show_annotations = true
         this.loading = false
         this.annotations_loading = false
@@ -5946,7 +6010,7 @@ export default Vue.extend( {
 
         this.save(true);  // and_complete == true
       }
-      
+
       if (event.keyCode === 27) { // Esc
         if (this.$props.view_only_mode == true) { return }
         if(this.instance_select_for_issue || this.view_issue_mode){return}

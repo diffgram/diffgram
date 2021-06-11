@@ -401,6 +401,8 @@ class Instance(Base):
             'number': self.number,
             'interpolated': self.interpolated,
             'machine_made': self.machine_made,
+            'model_id': self.model_id,
+            'model_run_id': self.model_run_id,
             'sequence_id': self.sequence_id,
             'fan_made': self.fan_made,
             'points': points,

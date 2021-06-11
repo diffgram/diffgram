@@ -68,13 +68,15 @@ class ModelRun(Base):
              model_id: int = None,
              ends: str = None,
              starts: str = None,
-             ):
+             id_list: list = None):
 
         if project_id is None:
             return
 
         query = session.query(ModelRun).filter(ModelRun.project_id == project_id)
 
+        if id_list:
+            query = query.filter(ModelRun.id.in_(id_list))
         if starts:
             query = query.filter(ModelRun.created_time >= starts)
         if model_id:
@@ -87,3 +89,16 @@ class ModelRun(Base):
         model_list = query.all()
 
         return model_list
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'created_time': self.created_time,
+            'last_updated_time': self.last_updated_time,
+            'deleted_time': self.deleted_time,
+            'reference_id': self.reference_id,
+            'model_id': self.model_id,
+            'member_created_id': self.member_created_id,
+            'member_updated_id': self.member_updated_id,
+            'project_id': self.project_id,
+        }

@@ -1,22 +1,17 @@
 <template>
-  <div v-cloak >
-    <v-card v-if="video_mode == true"
-            max-height="80"
-            elevation="1"
-            >
-      <v-container class="pa-2">
+  <div v-cloak style="position:relative;">
+    <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
+      <v-container fluid >
 
-      <v-row
-            style="height: 40px; overflow: hidden"
-            class="pt-2">
+      <v-row :style="{overflow: 'hidden'}" class="pt-2">
 
         <!-- Previous Frame -->
 
-        <div class="pl-3">
+        <div class="">
           <tooltip_button
               datacy="back_3_frames"
               :disabled="loading || go_to_keyframe_loading || playing || video_current_frame_guess < 3"
-              @click="move_frame(-3)"
+              @click.stop="move_frame(-3)"
               icon="mdi-chevron-triple-left"
               tooltip_message="Back 3 Frames"
               color="primary"
@@ -96,8 +91,6 @@
         </tooltip_button>
 
 
-        <v-spacer> </v-spacer>
-
         <div class="pl-2">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
@@ -146,6 +139,7 @@
         tooltip_message="Go To KeyFrame"
         icon="mdi-arrow-up"
         color="primary"
+        :x-small="true"
         :commit_menu_status="true"
         :disabled="loading || go_to_keyframe_loading || playing"
         :close_by_button="true"
@@ -177,6 +171,7 @@
           tooltip_message="More"
           icon="mdi-dots-vertical"
           color="primary"
+          :x-small="true"
           :commit_menu_status="true"
           :disabled="loading || go_to_keyframe_loading || playing"
           :close_by_button="true"
@@ -243,7 +238,8 @@
 
         </v-row>
 
-        <v-row @mousemove="mousemove_slider"
+      <v-row @mousemove="mousemove_slider"
+              :id="`player_video__${current_video.id}`"
                @mouseleave="mouseleave_slider"
                @mouseenter="mouseenter_slider">
           <!--
@@ -260,6 +256,7 @@
 
           --->
           <v-slider
+
             class="pl-4 pr-4 pt-0"
             @input="update_from_slider(parseInt($event))"
             @end="slider_end(parseInt($event))"
@@ -282,8 +279,6 @@
       </v-container>
     </v-card>
 
-
-    <!-- Move alerts outside of the other panel for seperate sizing -->
     <v-card v-if="video_mode == true">
 
       <v-alert v-if="playback_info"
@@ -308,10 +303,6 @@
 
       <v_error_multiple :error="error">
       </v_error_multiple>
-
-      <!-- @input is for dismiss issue
-        in prior context it just worked.
-        -->
 
       <v-progress-linear
                 v-if="running_interpolation"
@@ -360,23 +351,20 @@
 
     </v-card>
 
-    <!-- This is purpusely outside of v-card tag
-      so that it's always available, ie no race condition with v-if
-      and add event listener on this id-->
-
     <video ref="video_source_ref"
             :width="0"
             height="0"
-            id="video_primary">
+            :id="video_primary_id">
 
       Your browser does not support the video tag.
 
     </video>
 
     <frame_previewVue
+      v-if="box_client"
       :visible="frame_preview_visible"
-      :mouse_x="mouse_x"
-      :mouse_y="mouse_y"
+      :mouse_x="mouse_x - box_client.left"
+      :mouse_y="mouse_y - box_client.top"
       :frame_url="preview_frame_url"
       :refresh="preview_frame_refresh"
       :frame_estimate="preview_frame_final_estimate"
@@ -398,24 +386,56 @@ import Vue from "vue";
 
 export default Vue.extend( {
   name: 'v_video',
-    props: [
-    'project_string_id',
-    'current_video',
-    'video_mode',
-    'current_video_file_id',
-    'video_pause_request',
-    'video_play_request',
-    'task',
-    'loading',
-    'has_changed',
-    'canvas_width_scaled'
-    ],
-  /* Careful, we want annotation_core to still make use of the files
-   * for images, so we don't want to get confused between current_file
-   * and the special case of video
-   *
-   *
-  */
+    props: {
+      'project_string_id': {
+        default: undefined
+      },
+      'current_video': {
+        default: undefined
+      },
+      'video_mode': {
+        default: undefined
+      },
+      'current_video_file_id': {
+        default: undefined
+      },
+      'video_pause_request': {
+        default: undefined
+      },
+      'video_play_request': {
+        default: undefined
+      },
+      'task': {
+        default: undefined
+      },
+      'loading': {
+        default: undefined
+      },
+      'has_changed': {
+        default: undefined
+      },
+      'canvas_width_scaled': {
+        default: undefined
+      },
+      'stop_propagation_for_player': {
+        default: undefined
+      },
+      'video_primary_id': {
+        default: undefined
+      },
+      'player_width': {
+        default: undefined
+      },
+      'player_height': {
+        default: undefined
+      },
+      'update_query_params':{
+        default: true
+      },
+      'user_nav_width_for_frame_previews':{
+        default: true
+      }
+    },
   components: {
     frame_previewVue
   },
@@ -426,6 +446,8 @@ export default Vue.extend( {
 
       mouse_x: null,
       mouse_y: null,
+      mouse_page_x: null,
+      mouse_page_y: null,
       frame_preview_visible: false,
       at_less_than_3_frames_from_end: false,
       preview_frame_refresh: null,
@@ -488,6 +510,7 @@ export default Vue.extend( {
       },
 
       run_tracking_disabled: true,
+      box_client: null,
       run_FAN_disabled: false,
       run_FAN_success: false,
       interpolate_success: false,
@@ -527,7 +550,6 @@ export default Vue.extend( {
   mounted() {
 
       this.keyframe_watcher = this.create_keyframe_watcher()
-
   },
   watch: {
     'video_pause_request': 'video_pause',
@@ -535,7 +557,9 @@ export default Vue.extend( {
     video_current_frame_guess: function(frame) {
       if (this.playing) return;
       if(!this.video_mode) return;
-      this.updateFrameUrl(frame)
+      if(this.$props.update_query_params){
+        this.updateFrameUrl(frame)
+      }
     },
   },
   beforeDestroy() {
@@ -555,7 +579,6 @@ export default Vue.extend( {
       return this.$store.watch(() => {
         return this.$store.state.video.go_to_keyframe_refresh },
          (new_val, old_val) => {
-
           this.go_to_keyframe(this.$store.state.video.keyframe)
         },
       )
@@ -582,8 +605,11 @@ export default Vue.extend( {
     },
 
     mousemove_slider: function (event) {
+      this.box_client = event.target.getBoundingClientRect();
       this.mouse_x = event.clientX
+      this.mouse_page_x = event.pageX
       this.mouse_y = event.clientY
+      this.mouse_page_y = event.pageY
 
       this.predict_frame_from_mouse_location()
     },
@@ -610,19 +636,20 @@ export default Vue.extend( {
        * (postion - offset ) / canvas_width_scaled
        * // can fiddle with it for padding too
        */
+      let rect = this.box_client;
+      var x = this.mouse_x - rect.left;
       let padding = 16
-      if (!this.$store.state.user.settings.studio_left_nav_width){
-        this.$store.commit('set_user_setting', ['studio_left_nav_width', 350])
+
+      let offset = padding;
+      if(!this.$props.user_nav_width_for_frame_previews){
+        offset = padding;
       }
-      let offset = padding + this.$store.state.user.settings.studio_left_nav_width
-      // guess declaritive is ok here
       if (isNaN(offset)){
         return
       }
+      let slider_width = rect.width - (padding * 2)
 
-      let slider_width = this.canvas_width_scaled - (padding * 2) // CAREFUL this is padding not step size
-      let percent_on_slider = (this.mouse_x - offset) / slider_width
-      // eg roughly between range 0 - > 1
+      let percent_on_slider = (x - offset) / slider_width
       if (isNaN(percent_on_slider)){
         return
       }
@@ -631,13 +658,9 @@ export default Vue.extend( {
       let frame_guess_relative_to_video = percent_on_slider * this.video_settings.slider_end
       let rounded_integer = this.round_nearest_increment(
         frame_guess_relative_to_video, this.video_settings.step_size * 2)
-      // multiple (eg 2x) because normally step size more aggressive then preview thats needed
-
-      rounded_integer -= 3 // magic adjustment
 
       rounded_integer = Math.min(rounded_integer, this.video_settings.slider_end-1)
       rounded_integer = Math.max(rounded_integer, 0)
-
       if (isNaN(rounded_integer)){
         return
       }
@@ -660,29 +683,11 @@ export default Vue.extend( {
       /* Context of wanting to make sure save completes before changing the state.
        * Not sure if this is a great way to solve it long term
        * Feels like it's needed to prevent issues in saving process
-       *
-       *   a) from user perspective feel like should be able to save "behind the scences" and let
-       *    the user go to next, this creates an artifical block in cases
        *   b) from coding perspecific this feels very cumbersome,
        *    would rather get an event notice / use a more "built in" system.
        *    in part this feels like the continued confusion / issue with
        *    data ownership in vue components. like logically video should be a seperate thing
        *    but the channel between video and annotation core is not great
-       *
-       * CAUTION
-       *  Also, functions that use this need to have 'async' keyword
-       *  and needs to be wrapped to block properly...
-       *  if (await this.save_and_await() == false) { // failure }
-       *  else { // normal code }
-       *
-       *  Context of sequence creation issues
-       *  https://app.hubspot.com/live-messages/5238859/inbox/300479634#reply-editor
-       *
-       *  UPDATE
-       *    Realized that this is basically an "anti pattern" in that part of the whole goal
-       *    of JS here is to be non blocking...
-       *    so really should be able to quickly cache and save a frame , and then however long it takes on server it's fine...
-       *
        */
 
       this.$emit('request_save')
@@ -693,21 +698,6 @@ export default Vue.extend( {
 
       return true
 
-      /*
-      for (let i = 0; i < 100 ; i++) {   // has changed also covers other saving methods?
-
-        if (this.has_changed == false) {
-          // changes saved, break out of waiting
-          break
-        }
-        await this.sleep(100)
-      }
-
-      if (this.has_changed == true) {
-          return false
-      }
-      return true
-    */
     },
 
     video_current_frame_guess_update: function () {
@@ -725,10 +715,6 @@ export default Vue.extend( {
       if (this.go_to_keyframe_loading == true) { // swallow spamming
         return
       }
-      /* Not sure why we weren't relying on that "loading" thing before... maybe because that
-       * "get image single" can get called from a different thing? And we wanted to make sure
-       * it got the "last" image? Maybe we just had that (other) catch thing in wrong place
-       */
       /* We currently emit frame updates while playing
        * So this way we know if a specific frame is requested.
        * Usually this is in the context of a user request.
@@ -738,19 +724,7 @@ export default Vue.extend( {
        * Add the 200 ms saving delay (IF changes) till we can better test
        * or better architect this.
        *
-       * ie A) we could check if has_changed becomes false
-       *  or B) we could cache the data in some other way so we are more confident about
-       *    going to next frame while "old" data is saved.
-       *
-       * Structurely it's probably good to have has_changed here,
-       * Then if we keep watching has_changed, if it fails to change,
-       * we could prevent the keyframe change from happening.
-       *
-       *
-       *  1) checking if "safe" to advance to frame should come first
-       *  2) would really prefer to get a callback notice when the save event happens
-       *  but not 100% clear how to do this so using a loop here for now.
-       */
+       * */
 
       frame = parseInt(frame) // edge cases
 
@@ -859,6 +833,7 @@ export default Vue.extend( {
     },
 
     slide_change: function (event) {
+      console.log('SLIDER CHANGE', event)
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },
@@ -891,7 +866,6 @@ export default Vue.extend( {
       }
     },
     update_from_slider: function (frame_number: number) {
-
       /*
        * Other events can cause slider to fire.
        * So we catch this here. We only want to do this update path if
@@ -910,23 +884,6 @@ export default Vue.extend( {
         this.show_annotations = false
         this.push_key_frame()
       }
-    },
-
-    test_fail_video_src: function () {
-      /*
-       * Trying to move this to spec.js
-       * but need to do more mocking
-       */
-
-      this.current_video_update() // reset for dev...
-
-      this.$refs.video_source_ref.src = null
-      this.video_play()
-
-      // this part is not quite right yet...
-      setTimeout(console.assert(this.playback_info), 1000)
-
-
     },
 
     video_play: async function () {
@@ -968,12 +925,11 @@ export default Vue.extend( {
       // Feb 24, 2020
       // only do this for high resolution media
 
-
       if (!this.primary_video) {
         // refresh if primary video ref doesn't exist
         // usually this should only be for debugging / hot reload purposes
         // alternative is every hot reload makes video fail
-        this.current_video_update()
+        await this.current_video_update()
       }
 
       this.play_loading = true
@@ -983,11 +939,6 @@ export default Vue.extend( {
         return
 
       } else {
-
-
-        /* Experiment that issue only seems to be on first load
-         *
-         */
 
         if (this.current_video.width > 1920) {
           this.primary_video.currentTime = 0
@@ -999,29 +950,6 @@ export default Vue.extend( {
 
         this.playPromise = this.primary_video.play()
 
-        /* Jan 8, 2020
-         * Added the basic detection if it failed to load or not
-         * And show error message.
-         * Probably a lot more we could be doing here but maybe build
-         * better testing thing first.
-         *
-         * Was just doing basic testing by opening annotatino core in dev
-         * tools and running: (assuming it's 3rd file)
-         * $vm0.File_list[3].video.file_signed_url = "https"
-         *      (Or = null should work too)
-         *
-         * We emit the event but it's not really
-         * clear what annotation_core should do in terms of locking it,
-         * the "loading" thing spining just looks funny...
-         *
-         * Important!
-         *   The core annotation functions can actually still work
-         *   even if the video fails to load (thanks to our frame
-         *   by frame processing).
-         *   SO if the video doesn't load it is good to show that message
-         *   but we don't want to "freeze" everything. :)
-         */
-
         this.play_loading = false
         if (this.playPromise !== undefined) {
           this.playPromise.then(_ => {
@@ -1031,16 +959,12 @@ export default Vue.extend( {
             this.playing = true
             this.playback_info = null // reset
 
-            // Play should be before time update to reduce jerkiness
-            // This is needed otherwise play trys to play based on actual time so it jerks back in time
-
-            // example is  current frame guess is say 5, and if frame rate is 5, it's 5/5 = 1 time is 1
             this.primary_video.currentTime = this.video_current_frame_guess / this.current_video.frame_rate
 
 
             this.$emit('playing')
             this.primary_video.playbackRate = this.playback_rate
-
+            console.log('video animation start');
             this.video_animation_start()
 
           })
@@ -1090,7 +1014,6 @@ export default Vue.extend( {
 
       this.update_current_frame_guess()
       this.current_time = Math.round(this.primary_video.currentTime * 100) / 100
-
       this.detect_early_end(this.current_video.parent_video_split_duration)
 
       // TODO better logging of this type of info
@@ -1106,6 +1029,9 @@ export default Vue.extend( {
 		* @vue-event {Number} fr - Updates the ?frame=x query param in URL
 		*/
     updateFrameUrl(frame) {
+      if(!this.$props.update_query_params){
+        return
+      }
       // update the url w/ current frame if we are viewing a task
       if ((this.task && this.task.id) || this.$props.current_video_file_id) {
          this.$addQueriesToLocation({frame});
@@ -1323,7 +1249,6 @@ export default Vue.extend( {
       const next_frames = this.get_next_n_frames(frame_number, 15)
       const prev_frames = this.get_previous_n_frames(frame_number, 15)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
-
       if (frame_number != this.prior_frame_number) {
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
@@ -1405,7 +1330,7 @@ export default Vue.extend( {
 
         this.preview_frame_url_dict = {} // reset cache
 
-        this.primary_video = document.getElementById("video_primary")
+        this.primary_video = document.getElementById(this.$props.video_primary_id)
 
         // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/ended_event
         this.primary_video.addEventListener('ended', this.video_end)
@@ -1429,9 +1354,13 @@ export default Vue.extend( {
         // this.current_video.current_frame = 0 // or could be where left off?
 
         if (this.current_video.frame_count != 0) {
-          const frame = parseInt(this.$route.query.frame || 0);
+          let frame = 0;
+          if(this.$props.update_query_params){
+            frame = parseInt(this.$route.query.frame || 0);
+          }
+
           await this.go_to_keyframe(frame);
-          this.$refs.video_source_ref.src = this.current_video.file_signed_url
+          this.$refs.video_source_ref.src = this.current_video.file_signed_url;
         }
         this.$emit('update_canvas');
       }
@@ -1493,7 +1422,7 @@ export default Vue.extend( {
           }
         }).catch(e => {
           this.running_interpolation = false
-          console.log(e)
+          console.error(e)
         })
     },
     run_tracking() {
