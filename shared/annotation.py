@@ -855,6 +855,7 @@ class Annotation_Update():
                 end_token = input['end_token'],
                 sentence = input['sentence'],
                 creation_ref_id = input['creation_ref_id'],
+                machine_made = input['machine_made'],
                 model_id = input['model_id'],
                 model_run_id = input['model_run_id'],
                 previous_id = input['id'],  # Careful, purposely different

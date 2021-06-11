@@ -168,7 +168,6 @@
             return
           }
           const result = {};
-          console.log('FILE LIST', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
             let file_instances = [];
@@ -187,6 +186,10 @@
 
             for (const instance of file_instances) {
               const type = instance[diffgram_schema.instance_type]
+              let machine_made = false;
+              if(instance[diffgram_schema.model_run_id] || instance[diffgram_schema.model_id]){
+                machine_made = true;
+              }
               const diffgram_formatted_instance = {
                 file_uuid: uuid,
                 type: type,
@@ -198,6 +201,7 @@
                 model_run_ref: instance[diffgram_schema.model_run_id],
                 frame_number: instance[diffgram_schema.frame_number],
                 number: instance[diffgram_schema.number],
+                machine_made: machine_made,
               }
               if (type === 'box') {
 

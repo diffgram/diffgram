@@ -57,11 +57,11 @@ export default Vue.extend({
       // Hide it case
       if (!this.visible || this.error) {return '-1000px'}
       // Show it case:
-      return this.mouse_x - (this.height / 2) + 'px'
+      return this.mouse_x + 50 + 'px'
     },
     mouse_y_px () {
       if (!this.visible || this.error) {return '-1000px'}
-      return this.mouse_y - (this.width * 1.5) + 'px'
+      return (this.mouse_y ) + 50 + 'px'
     },
     height_px () { return this.height +'px'},
     width_px () { return this.width +'px'}
@@ -82,7 +82,7 @@ export default Vue.extend({
 <template>
   <div
     class="frame-preview"
-    :style="{top: mouse_y_px, left: mouse_x_px}"
+    :style="{bottom: mouse_y_px, left: mouse_x_px}"
   >
     <v-card
       :width="width"
