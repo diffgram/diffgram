@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak>
+  <div v-cloak style="position:relative;">
     <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
       <v-container fluid >
 
@@ -361,9 +361,10 @@
     </video>
 
     <frame_previewVue
+      v-if="box_client"
       :visible="frame_preview_visible"
-      :mouse_x="mouse_x"
-      :mouse_y="mouse_y"
+      :mouse_x="mouse_x - box_client.left"
+      :mouse_y="mouse_y - box_client.top"
       :frame_url="preview_frame_url"
       :refresh="preview_frame_refresh"
       :frame_estimate="preview_frame_final_estimate"
@@ -509,6 +510,7 @@ export default Vue.extend( {
       },
 
       run_tracking_disabled: true,
+      box_client: null,
       run_FAN_disabled: false,
       run_FAN_success: false,
       interpolate_success: false,
@@ -603,6 +605,7 @@ export default Vue.extend( {
     },
 
     mousemove_slider: function (event) {
+      this.box_client = event.target.getBoundingClientRect();
       this.mouse_x = event.clientX
       this.mouse_page_x = event.pageX
       this.mouse_y = event.clientY
@@ -633,31 +636,20 @@ export default Vue.extend( {
        * (postion - offset ) / canvas_width_scaled
        * // can fiddle with it for padding too
        */
-      let target = document.getElementById(`player_video__${this.$props.current_video.id}`);
-      let rect = target.getBoundingClientRect();
+      let rect = this.box_client;
       var x = this.mouse_x - rect.left;
       let padding = 16
-      if (this.$props.user_nav_width_for_frame_previews && !this.$store.state.user.settings.studio_left_nav_width){
-        this.$store.commit('set_user_setting', ['studio_left_nav_width', 350])
-      }
-      console.log('x', x)
-      console.log('rect', rect.left, rect)
-      let offset = padding + this.$store.state.user.settings.studio_left_nav_width
+
+      let offset = padding;
       if(!this.$props.user_nav_width_for_frame_previews){
         offset = padding;
       }
-
-      // guess declaritive is ok here
       if (isNaN(offset)){
         return
       }
-      // console.log('canvas_width_scaled', this.canvas_width_scaled)
-      let slider_width = rect.width - (padding * 2) // CAREFUL this is padding not step size.
-      // console.log('mouse_x', this.mouse_x)
-      // console.log('offset', offset)
-      // console.log('slider_width', slider_width)
+      let slider_width = rect.width - (padding * 2)
+
       let percent_on_slider = (x - offset) / slider_width
-      // eg roughly between range 0 - > 1
       if (isNaN(percent_on_slider)){
         return
       }
@@ -666,9 +658,6 @@ export default Vue.extend( {
       let frame_guess_relative_to_video = percent_on_slider * this.video_settings.slider_end
       let rounded_integer = this.round_nearest_increment(
         frame_guess_relative_to_video, this.video_settings.step_size * 2)
-      // multiple (eg 2x) because normally step size more aggressive then preview thats needed
-
-      rounded_integer -= 3 // magic adjustment
 
       rounded_integer = Math.min(rounded_integer, this.video_settings.slider_end-1)
       rounded_integer = Math.max(rounded_integer, 0)

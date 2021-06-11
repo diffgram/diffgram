@@ -553,7 +553,6 @@
                   class="pb-0"
                   :current_video="current_video"
                   :video_mode="video_mode"
-                  :user_nav_width_for_frame_previews="false"
                   :player_height="'80px'"
                   :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
