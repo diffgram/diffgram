@@ -605,7 +605,7 @@ export default Vue.extend( {
     },
 
     mousemove_slider: function (event) {
-      this.box_client = event.target.getBoundingClientRect();
+      this.box_client = event.currentTarget.getBoundingClientRect();
       this.mouse_x = event.clientX
       this.mouse_page_x = event.pageX
       this.mouse_y = event.clientY
@@ -638,7 +638,11 @@ export default Vue.extend( {
        */
       let rect = this.box_client;
       var x = this.mouse_x - rect.left;
+      console.log('AAAA', this.mouse_x, rect.left)
       let padding = 16
+      if(x < 0){
+        return
+      }
 
       let offset = padding;
       if(!this.$props.user_nav_width_for_frame_previews){
@@ -650,6 +654,9 @@ export default Vue.extend( {
       let slider_width = rect.width - (padding * 2)
 
       let percent_on_slider = (x - offset) / slider_width
+      console.log('percent on slider', percent_on_slider)
+      console.log('x', x)
+      console.log('offset x', offset)
       if (isNaN(percent_on_slider)){
         return
       }
