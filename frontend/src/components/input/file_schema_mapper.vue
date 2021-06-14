@@ -282,7 +282,7 @@
   import Vue from "vue";
   import {v4 as uuidv4} from 'uuid';
   import filesize from 'filesize';
-
+  import { _get } from "lodash";
   export default Vue.extend({
       name: 'file_schema_mapper',
       components: {},
@@ -367,7 +367,7 @@
         validate_file_names: function () {
           const file_name_list = [];
           for (const instance of this.$props.pre_labeled_data) {
-            const file_name = instance[this.$props.diffgram_schema_mapping.file_name];
+            const file_name = _get(instance, this.$props.diffgram_schema_mapping.file_name);
             if (typeof file_name === 'number') {
               this.errors_file_schema = {};
               this.errors_file_schema[this.$props.diffgram_schema_mapping.file_name] = `File name should be a string not a number.`;
@@ -492,15 +492,16 @@
               const labels = response.data.labels_out;
               const label_names = labels.map(elm => elm.label.name)
               for (const instance of this.$props.pre_labeled_data) {
-                if (!label_names.includes(instance[this.diffgram_schema_mapping.name])) {
+                let label_name = _get(instance, this.diffgram_schema_mapping.name)
+                if (!label_names.includes(label_name)) {
                   this.errors_file_schema = {}
-                  this.errors_file_schema['label_names'] = `The label name "${instance[this.diffgram_schema_mapping.name]}" does not exist in the project. Please create it.`
+                  this.errors_file_schema['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
                   this.show_labels_link = false;
                   this.valid_labels = false;
                   this.load_label_names = false;
                   return false
                 } else {
-                  const label = labels.find(l => l.label.name === instance[this.diffgram_schema_mapping.name]);
+                  const label = labels.find(l => l.label.name === label_name);
                   instance.label_file_id = label.id;
                 }
               }
@@ -521,14 +522,16 @@
             return true
           }
           for (const instance of this.$props.pre_labeled_data) {
-            const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
+            const file_name = _get(instance, this.diffgram_schema_mapping.file_name);
+            const related_file = this.file_list_to_upload.find(f => f.name === file_name);
             if (!related_file) {
-              this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
+              this.errors_file_schema['file_name'] = `No file named: ${file_name}`;
               this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
               return false
             }
             if (this.supported_video_files.includes(related_file.type)) {
-              if (instance[this.diffgram_schema_mapping.frame_number] == undefined) {
+              let frame_number = _get(instance, this.diffgram_schema_mapping.frame_number)
+              if (frame_number == undefined) {
                 this.errors_file_schema = {}
                 this.errors_file_schema['frame_number'] = `Provide frame numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
@@ -543,14 +546,16 @@
             return true
           }
           for (const instance of this.$props.pre_labeled_data) {
-            const related_file = this.file_list_to_upload.find(f => f.name === instance[this.diffgram_schema_mapping.file_name]);
+            const file_name = _get(instance, this.diffgram_schema_mapping.file_name);
+            const related_file = this.file_list_to_upload.find(f => f.name === file_name);
             if (!related_file) {
-              this.errors_file_schema['file_name'] = `No file named: ${instance[this.diffgram_schema_mapping.file_name]}`;
+              this.errors_file_schema['file_name'] = `No file named: ${file_name}`;
               this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
               return false
             }
             if (this.supported_video_files.includes(related_file.type)) {
-              if (instance[this.diffgram_schema_mapping.number] == undefined) {
+              const seq_number = _get(instance, this.diffgram_schema_mapping.number);
+              if (seq_number == undefined) {
                 this.errors_file_schema = {}
                 this.errors_file_schema['sequence_numbers'] = `Provide Sequence numbers.`
                 this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
@@ -565,7 +570,7 @@
             if (this.upload_mode !== 'update') {
               return true
             }
-            const file_id_list = this.$props.pre_labeled_data.map(inst => inst[this.diffgram_schema_mapping.file_id]);
+            const file_id_list = this.$props.pre_labeled_data.map(inst => _get(inst, this.diffgram_schema_mapping.file_id));
             for (const id of file_id_list) {
               if (isNaN(id)) {
                 this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
@@ -597,9 +602,8 @@
             this.$props.included_instance_types[key] = false;
           }
           for (const elm of this.$props.pre_labeled_data) {
-            if (elm[this.diffgram_schema_mapping.instance_type]) {
-
-              const instance_type = elm[this.diffgram_schema_mapping.instance_type];
+            const instance_type = _get(elm, this.diffgram_schema_mapping.instance_type)
+            if (instance_type) {
               if (this.allowed_instance_types.includes(instance_type)) {
                 this.included_instance_types[instance_type] = true;
               } else {
