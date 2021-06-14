@@ -37,12 +37,15 @@ def task_complete(session,
 
     if child_list:
         for child in child_list:
-
             if child.task_type == "review":
                 # Unlock review task
                 child.status = 'available'
+                session.add(child)
 
-                task.status = 'in_review'
+                # task.status = 'in_review'
+
+                # Currently removing the in-review concept since there is now way to get out of it
+                task.status = 'complete'
 
                 """
                 this is not supported yet, but if we did 

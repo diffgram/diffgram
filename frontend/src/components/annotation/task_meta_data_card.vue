@@ -35,6 +35,10 @@
             <span v-if="task.time_completed && task.time_completed != 'None'">{{ task.time_completed | moment("MMM Do, YYYY") }}</span>
             <span v-else>N/A</span>
           </p>
+          <p v-if="task.job_id">
+            <strong>Job ID: </strong>
+            <strong ><a class="secondary--text" :href="`/job/${ task.job_id }`"  target="_blank" style="text-decoration: none"><v-icon color="secondary">mdi-open-in-new</v-icon>{{task.job_id}}</a></strong>
+          </p>
         </v-layout>
         <v-layout column>
           <h5>File Data:</h5>
