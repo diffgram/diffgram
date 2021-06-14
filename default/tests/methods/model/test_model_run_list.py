@@ -43,7 +43,7 @@ class TestModelRunList(testing_setup.DiffgramBaseTestCase):
         )
         model_run = ModelRun.new(
             session = self.session,
-            reference_id = 'test_model_run',
+            reference_id = 'test_model_run__a',
             project_id = self.project.id,
             member_created_id = self.member.id,
             model_id = model.id,
@@ -52,7 +52,7 @@ class TestModelRunList(testing_setup.DiffgramBaseTestCase):
         )
         model_run2 = ModelRun.new(
             session = self.session,
-            reference_id = 'test_model_run',
+            reference_id = 'test_model_run__b',
             project_id = self.project.id,
             member_created_id = self.member.id,
             model_id = model.id,
@@ -98,7 +98,7 @@ class TestModelRunList(testing_setup.DiffgramBaseTestCase):
         )
         model_run = ModelRun.new(
             session = self.session,
-            reference_id = 'test_model_run',
+            reference_id = 'test_model_run__a',
             project_id = self.project.id,
             member_created_id = self.member.id,
             model_id = model.id,
@@ -107,7 +107,7 @@ class TestModelRunList(testing_setup.DiffgramBaseTestCase):
         )
         model_run2 = ModelRun.new(
             session = self.session,
-            reference_id = 'test_model_run',
+            reference_id = 'test_model_run__b',
             project_id = self.project.id,
             member_created_id = self.member.id,
             model_id = model.id,

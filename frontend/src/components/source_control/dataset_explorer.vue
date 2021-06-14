@@ -119,7 +119,7 @@
           file_count: null
         },
         loading: false,
-        show_ground_truth: false,
+        show_ground_truth: true,
         infinite_scroll_loading: false,
         selected_dir: undefined,
         base_model_run: undefined,
