@@ -459,7 +459,7 @@
   import Vue from "vue";
   import {v4 as uuidv4} from 'uuid';
   import filesize from 'filesize';
-
+  import { _get } from "lodash";
   export default Vue.extend({
       name: 'instance_schema_mapper',
       components: {},
@@ -667,9 +667,10 @@
             const key_name_local = this.diffgram_schema_mapping.box[key_name];
             const box_labels = this.pre_labeled_data.filter(inst => inst.type === 'box');
             for (const box_instance of box_labels) {
-              if (isNaN(box_instance[key_name_local])) {
+              const box_coord = _get(box_instance, key_name_local);
+              if ( isNaN( box_coord ) ) {
                 this.error_box_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_box_instance[key_name]['wrong_data'] = JSON.stringify(box_instance[key_name_local]);
+                this.error_box_instance[key_name]['wrong_data'] = JSON.stringify(box_coord);
                 return
               }
             }
@@ -698,9 +699,10 @@
             const key_name_local = this.diffgram_schema_mapping.ellipse[key_name];
             const ellipse_labels = this.pre_labeled_data.filter(inst => inst.type === 'ellipse');
             for (const ellipse_instance of ellipse_labels) {
-              if (isNaN(ellipse_instance[key_name_local])) {
+              let ellipse_coord = _get(ellipse_instance, key_name_local)
+              if (isNaN(ellipse_coord)) {
                 this.error_ellipse_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_ellipse_instance[key_name]['wrong_data'] = JSON.stringify(ellipse_instance[key_name_local]);
+                this.error_ellipse_instance[key_name]['wrong_data'] = JSON.stringify(ellipse_coord);
                 return
               }
             }
@@ -755,9 +757,10 @@
             const key_name_local = this.diffgram_schema_mapping.cuboid[key_name];
             const cuboid_labels = this.pre_labeled_data.filter(inst => inst.type === 'cuboid');
             for (const cuboid_instance of cuboid_labels) {
-              if (isNaN(cuboid_instance[key_name_local])) {
+              let cuboid_coord = _get(cuboid_instance, key_name_local);
+              if (isNaN(cuboid_coord)) {
                 this.error_cuboid_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_cuboid_instance[key_name]['wrong_data'] = JSON.stringify(cuboid_instance[key_name_local]);
+                this.error_cuboid_instance[key_name]['wrong_data'] = JSON.stringify(cuboid_coord);
                 return
               }
             }
@@ -774,9 +777,10 @@
             const key_name_local = this.diffgram_schema_mapping.line[key_name];
             const line_labels = this.pre_labeled_data.filter(inst => inst.type === 'line');
             for (const line_instance of line_labels) {
-              if (isNaN(line_instance[key_name_local])) {
+              let line_coord = _get(line_instance, key_name_local);
+              if (isNaN(line_coord)) {
                 this.error_line_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_line_instance[key_name]['wrong_data'] = JSON.stringify(line_instance[key_name_local]);
+                this.error_line_instance[key_name]['wrong_data'] = JSON.stringify(line_coord);
                 return
               }
             }
@@ -793,9 +797,10 @@
             const key_name_local = this.diffgram_schema_mapping.point[key_name];
             const point_labels = this.pre_labeled_data.filter(inst => inst.type === 'point');
             for (const point_instance of point_labels) {
-              if (isNaN(point_instance[key_name_local])) {
+              let point_coord = _get(point_instance, key_name_local)
+              if (isNaN(point_coord)) {
                 this.error_point_instance[key_name][key_name_local] = 'Value should be a number';
-                this.error_point_instance[key_name]['wrong_data'] = JSON.stringify(point_instance[key_name_local]);
+                this.error_point_instance[key_name]['wrong_data'] = JSON.stringify(point_coord);
                 return
               }
             }
@@ -812,7 +817,7 @@
             const polygon_labels = this.pre_labeled_data.filter(inst => inst.type === 'polygon');
             let i = 0;
             for (const polygon_instance of polygon_labels) {
-              const value = polygon_instance[key_name];
+              const value = _get(polygon_instance, key_name);
               if (!Array.isArray(value)) {
                 this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})';
                 return
@@ -821,7 +826,7 @@
                 if ((!point.x || isNaN(point.x)) || (!point.y || isNaN(point.y))) {
                   this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
                   this.error_polygon_instance['row_number'] = i
-                  this.error_polygon_instance['data'] = JSON.stringify(polygon_instance[key_name_local]);
+                  this.error_polygon_instance['data'] = JSON.stringify(value);
                   return
                 }
               }
@@ -853,9 +858,9 @@
           }
           let result = '';
           for (const instance of this.pre_labeled_data.slice(0, 10)) {
-            let value = instance[this.diffgram_schema_mapping[instance_type][key]];
+            let value = _get(instance, this.diffgram_schema_mapping[instance_type][key]);
             if(typeof value === "object"){
-              value = JSON.stringify(instance[this.diffgram_schema_mapping[instance_type][key]]);
+              value = JSON.stringify(value);
             }
             if (value) {
               result += `${value}, \n`
@@ -871,9 +876,9 @@
             return false
           }
           for (const instance of this.pre_labeled_data) {
-            let x_points = instance[this.diffgram_schema_mapping.polygon.points_x];
-            x_points = x_points.split(';').map(x => parseInt(x, 10))
-            let y_points = instance[this.diffgram_schema_mapping.polygon.points_y];
+            let x_points = _get(instance, this.diffgram_schema_mapping.polygon.points_x);
+            x_points = x_points.split(';').map(x => parseInt(x, 10));
+            let y_points = _get(instance, this.diffgram_schema_mapping.polygon.points_y);
             y_points = y_points.split(';').map(y => parseInt(y, 10))
             if (!x_points || !y_points) {
               this.errors_instance_schema = {};
