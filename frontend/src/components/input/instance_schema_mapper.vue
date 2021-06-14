@@ -852,7 +852,7 @@
             return ''
           }
           let result = '';
-          for (const instance of this.pre_labeled_data) {
+          for (const instance of this.pre_labeled_data.slice(0, 10)) {
             let value = instance[this.diffgram_schema_mapping[instance_type][key]];
             if(typeof value === "object"){
               value = JSON.stringify(instance[this.diffgram_schema_mapping[instance_type][key]]);

@@ -205,10 +205,10 @@
               }
               if (type === 'box') {
 
-                diffgram_formatted_instance.x_max = instance[diffgram_schema.box.x_max];
-                diffgram_formatted_instance.x_min = instance[diffgram_schema.box.x_min];
-                diffgram_formatted_instance.y_max = instance[diffgram_schema.box.y_max];
-                diffgram_formatted_instance.y_min = instance[diffgram_schema.box.y_min];
+                diffgram_formatted_instance.x_max = parseInt(instance[diffgram_schema.box.x_max], 10);
+                diffgram_formatted_instance.x_min = parseInt(instance[diffgram_schema.box.x_min], 10);
+                diffgram_formatted_instance.y_max = parseInt(instance[diffgram_schema.box.y_max], 10);
+                diffgram_formatted_instance.y_min = parseInt(instance[diffgram_schema.box.y_min], 10);
 
                 const width = diffgram_formatted_instance.x_max - diffgram_formatted_instance.x_min;
                 const height = diffgram_formatted_instance.y_max - diffgram_formatted_instance.y_min;
@@ -216,58 +216,58 @@
                 diffgram_formatted_instance.height = height;
               } else if (type === 'point') {
                 diffgram_formatted_instance.points = [
-                  {x: instance[diffgram_schema.point.x], y: instance[diffgram_schema.point.y]}
+                  {x: parseInt(instance[diffgram_schema.point.x], 10), y: parseInt(instance[diffgram_schema.point.y], 10)}
                 ]
               } else if (type === 'line') {
                 diffgram_formatted_instance.points = [
-                  {x: instance[diffgram_schema.line.x1], y: instance[diffgram_schema.line.y1]},
-                  {x: instance[diffgram_schema.line.x2], y: instance[diffgram_schema.line.y2]}
+                  {x: parseInt(instance[diffgram_schema.line.x1], 10), y: parseInt(instance[diffgram_schema.line.y1], 10)},
+                  {x: parseInt(instance[diffgram_schema.line.x2], 10), y: parseInt(instance[diffgram_schema.line.y2], 10)}
                 ]
               } else if (type === 'polygon') {
                 diffgram_formatted_instance.points = instance[diffgram_schema.polygon.points]
               } else if (type === 'cuboid') {
                 diffgram_formatted_instance.front_face = {
                   top_left: {
-                    x: instance[diffgram_schema.cuboid.front_face_top_left_x],
-                    y: instance[diffgram_schema.cuboid.front_face_top_left_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.front_face_top_left_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.front_face_top_left_y], 10)
                   },
                   top_right: {
-                    x: instance[diffgram_schema.cuboid.front_face_top_right_x],
-                    y: instance[diffgram_schema.cuboid.front_face_top_right_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.front_face_top_right_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.front_face_top_right_y], 10)
                   },
                   bot_left: {
-                    x: instance[diffgram_schema.cuboid.front_face_bot_left_x],
-                    y: instance[diffgram_schema.cuboid.front_face_bot_left_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.front_face_bot_left_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.front_face_bot_left_y], 10)
                   },
                   bot_right: {
-                    x: instance[diffgram_schema.cuboid.front_face_bot_right_x],
-                    y: instance[diffgram_schema.cuboid.front_face_bot_right_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.front_face_bot_right_x],10),
+                    y: parseInt(instance[diffgram_schema.cuboid.front_face_bot_right_y], 10)
                   },
                 }
                 diffgram_formatted_instance.rear_face = {
                   top_left: {
-                    x: instance[diffgram_schema.cuboid.rear_face_top_left_x],
-                    y: instance[diffgram_schema.cuboid.rear_face_top_left_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.rear_face_top_left_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.rear_face_top_left_y], 10)
                   },
                   top_right: {
-                    x: instance[diffgram_schema.cuboid.rear_face_top_right_x],
-                    y: instance[diffgram_schema.cuboid.rear_face_top_right_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.rear_face_top_right_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.rear_face_top_right_y], 10)
                   },
                   bot_left: {
-                    x: instance[diffgram_schema.cuboid.rear_face_bot_left_x],
-                    y: instance[diffgram_schema.cuboid.rear_face_bot_left_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.rear_face_bot_left_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.rear_face_bot_left_y], 10)
                   },
                   bot_right: {
-                    x: instance[diffgram_schema.cuboid.rear_face_bot_right_x],
-                    y: instance[diffgram_schema.cuboid.rear_face_bot_right_y]
+                    x: parseInt(instance[diffgram_schema.cuboid.rear_face_bot_right_x], 10),
+                    y: parseInt(instance[diffgram_schema.cuboid.rear_face_bot_right_y], 10)
                   },
                 }
               } else if (type === 'ellipse') {
-                diffgram_formatted_instance.center_x = instance[diffgram_schema.ellipse.center_x];
-                diffgram_formatted_instance.center_y = instance[diffgram_schema.ellipse.center_y];
-                diffgram_formatted_instance.angle = instance[diffgram_schema.ellipse.angle];
-                diffgram_formatted_instance.width = instance[diffgram_schema.ellipse.width];
-                diffgram_formatted_instance.height = instance[diffgram_schema.ellipse.height];
+                diffgram_formatted_instance.center_x = parseInt(instance[diffgram_schema.ellipse.center_x], 10);
+                diffgram_formatted_instance.center_y = parseInt(instance[diffgram_schema.ellipse.center_y], 10);
+                diffgram_formatted_instance.angle = parseFloat(instance[diffgram_schema.ellipse.angle]);
+                diffgram_formatted_instance.width = parseInt(instance[diffgram_schema.ellipse.width], 10);
+                diffgram_formatted_instance.height = parseInt(instance[diffgram_schema.ellipse.height], 10);
               }
               if (this.upload_mode === 'update') {
                 // Assumption on update is that if instance has a frame_number it should be a video.
