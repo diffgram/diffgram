@@ -17,13 +17,17 @@ class QueryCreator:
         Responsible for creating a DiffgramQuery based on the defined syntax.
     """
     grammar_definition = """
-        expr: term {or term}
-        term: factor{and factor}
+        start: expr
+        expr: term [or term]
+        term: factor [and factor]
         factor: compare_expr
+        compare_expr: NAME compare_op NAME
         compare_op: ">" | "<" | "=" | "!=" | ">=" | "<="
         or: "or"
-        
-        %import common.CNAME -> NAME 
+        and: "and"
+        %import common.CNAME -> NAME
+        _WHITESPACE: /[ \t]+/ 
+        %ignore _WHITESPACE
     """
 
     def __init__(self, query_string):
