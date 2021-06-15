@@ -28,6 +28,7 @@
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
     "highlight.js": "^10.6.0",
+    "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "mailslurp-client": "^10.2.1",
     "mathjs": "^7.5.1",
