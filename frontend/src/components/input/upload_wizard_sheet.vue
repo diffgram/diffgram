@@ -657,12 +657,35 @@
           this.loading_sync_jobs = false;
           this.$emit('current_directory', this.current_directory)
         },
+        extract_object_keys(obj, prepend = undefined){
+          let result = [];
+          for (const key in obj) {
+
+            if(typeof obj[key] != 'object'){
+              if (!result.includes(key)) {
+                if(prepend){
+                  result.push(prepend + key)
+                }
+                else{
+                  result.push(key)
+                }
+
+              }
+            }
+            else{
+              const nested_result = this.extract_object_keys(obj[key], `${ prepend ? `${prepend}${key}` : key}.`);
+              result = result.concat(nested_result)
+            }
+          }
+          return result
+        },
 
         extract_pre_label_key_list: function (pre_labels_object) {
-          const result = []
+          const result = [];
           for (const elm of pre_labels_object) {
-            for (const key in elm) {
-              if (!result.includes(key)) {
+            const current_result = this.extract_object_keys(elm, undefined);
+            for(const key of current_result){
+              if(!result.includes(key)){
                 result.push(key)
               }
             }
