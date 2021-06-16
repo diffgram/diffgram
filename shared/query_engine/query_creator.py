@@ -1,15 +1,32 @@
-from parsimonious.grammar import Grammar
+from shared.database.source_control.file import File
 from lark import Lark, Transformer, v_args
 
 
 @v_args(inline = True)  # Affects the signatures of the methods
 class DiffgramQueryProcessor(Transformer):
+    conditions = []
 
     def expr(self, a, b, c):
         print('ON EXPR', a, b, c)
 
-    def op(self):
-        print('ON OP')
+    def start(self, a):
+        print('ON start', a)
+        return
+
+    def factor(self, a):
+        print('ON factor', a)
+
+    def term(self, a):
+        print('ON term', a)
+
+    def compare_op(self):
+        print('ON compare_op')
+
+    def compare_expr(self, a, b, c):
+        print('on compare_expr', a, b, c)
+        self.conditions.push(
+
+        )
 
 
 class QueryCreator:
@@ -18,14 +35,16 @@ class QueryCreator:
     """
     grammar_definition = """
         start: expr
-        expr: term [or term]
-        term: factor [and factor]
+        expr: term [OR term]
+        term: factor [AND factor]
         factor: compare_expr
-        compare_expr: NAME compare_op NAME
-        compare_op: ">" | "<" | "=" | "!=" | ">=" | "<="
-        or: "or"
-        and: "and"
-        %import common.CNAME -> NAME
+        compare_expr: NAME COMPARE_OP NAME
+        COMPARE_OP: ">" | "<" | "=" | "!=" | ">=" | "<="
+        OR: "or"
+        AND: "and"
+        NAME: CNAME ["." CNAME]+ | NUMBER
+        %import common.CNAME 
+        %import common.NUMBER
         _WHITESPACE: /[ \t]+/ 
         %ignore _WHITESPACE
     """
