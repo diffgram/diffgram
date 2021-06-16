@@ -1553,6 +1553,7 @@ class Process_Media():
                     # to save computation? hmmmm
                     self.proprogate_frame_instance_update_errors_to_parent(
                         error_log = annotation_update.log["error"])
+                return False
             return True
         except Exception as e:
             trace = traceback.format_exc()
