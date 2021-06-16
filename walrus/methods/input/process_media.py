@@ -1541,29 +1541,31 @@ class Process_Media():
             # eg file doesn't exist, then annotation creates it.
             annotation_update.file.set_cache_key_dirty('instance_list')
 
+            # Propgate errors if any back up to input
+            if len(annotation_update.log["error"].keys()) >= 1:
+                self.input.status = "failed"
+                self.input.status_text = "Instance List Error:" + \
+                                         str(annotation_update.log["error"]) + \
+                                         " On SDK?: Some types of errors may be resolved by updating to latest."
+
+                if self.input.media_type == 'frame':
+                    # Note at the moment we don't propagate info that's not an error
+                    # to save computation? hmmmm
+                    self.proprogate_frame_instance_update_errors_to_parent(
+                        error_log = annotation_update.log["error"])
+
+                return False
+            return True
+        
         except Exception as e:
             trace = traceback.format_exc()
             self.input.status = "failed"
             self.input.status_text = "Instance List Creation error: {}".format(trace)
             logger.error(trace)
 
-        # Propgate errors if any back up to input
-        if len(annotation_update.log["error"].keys()) >= 1:
-            self.input.status = "failed"
-            self.input.status_text = "Instance List Error:" + \
-                                     str(annotation_update.log["error"]) + \
-                                     " On SDK?: Some types of errors may be resolved by updating to latest."
 
-            if self.input.media_type == 'frame':
 
-                # Note at the moment we don't propagate info that's not an error
-                # to save computation? hmmmm
-                self.proprogate_frame_instance_update_errors_to_parent(
-                    error_log = annotation_update.log["error"])
 
-            return False
-
-        return True
 
 
     def proprogate_frame_instance_update_errors_to_parent(self, 
