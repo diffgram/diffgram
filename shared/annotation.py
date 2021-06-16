@@ -399,7 +399,7 @@ class Annotation_Update():
 
         self.left_over_instance_deletion()
 
-        self.instance_list_cache_update()
+        self.   instance_list_cache_update()
 
         if len(self.log["error"].keys()) == 0:
             self.log['success'] = True
