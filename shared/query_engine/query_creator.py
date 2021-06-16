@@ -1,5 +1,7 @@
-from shared.database.source_control.file import File
+from shared.database_setup_supporting import *
+from shared.helpers.sessionMaker import session_factory
 from lark import Lark, Transformer, v_args
+from sqlalchemy import func
 
 
 @v_args(inline = True)  # Affects the signatures of the methods
@@ -58,4 +60,9 @@ class QueryCreator:
         return self.build_query(self.query_string)
 
 
+def get_files_by_instance_count(session):
+    instance_list_count = (session.query(func.count(Instance.id)).filter(
+        Instance.file_id == File.id,
 
+    ))
+    file_list = session.query(File).filter(File.project_id == 1, instance_list_count.as_scalar() > 4)
