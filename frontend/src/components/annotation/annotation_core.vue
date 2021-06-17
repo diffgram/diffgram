@@ -393,7 +393,7 @@
                               :height="canvas_height"
                               :width="canvas_width"
                               :show="show_target_reticle"
-                              :target_colour="current_label_file.colour"
+                              :target_colour="current_label_file ? current_label_file.colour : undefined"
                               :text_color="this.$get_sequence_color(this.current_instance.sequence_id)"
                               :target_text="this.current_instance.number"
                               :target_type="target_reticle_type"
