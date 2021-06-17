@@ -99,7 +99,10 @@
 
         </template>
 
-
+        <template v-slot:no-data>
+          No Labels Templates Created.
+          <v-btn color="primary" small @click="$router.push(`/project/${project_string_id}/labels`)">Create Label Templates</v-btn>
+        </template>
       </v-select>
 
     </v-layout>
