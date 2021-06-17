@@ -1,6 +1,7 @@
 from shared.database_setup_supporting import *
 from shared.helpers.sessionMaker import session_factory
 from lark import Lark, Transformer, v_args
+from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 from sqlalchemy import func
 
 
@@ -8,27 +9,33 @@ from sqlalchemy import func
 class DiffgramQueryProcessor(Transformer):
     conditions = []
 
-    def expr(self, a, b, c):
-        print('ON EXPR', a, b, c)
+    def expr(self, *args):
+        print('ON EXPR', args)
 
-    def start(self, a):
-        print('ON start', a)
+    def start(self, *args):
+        print('ON start', args)
         return
 
-    def factor(self, a):
-        print('ON factor', a)
+    def factor(self, *args):
+        print('ON factor', args)
 
-    def term(self, a):
-        print('ON term', a)
+    def term(self, *args):
+        print('ON term', args)
 
     def compare_op(self):
         print('ON compare_op')
 
-    def compare_expr(self, a, b, c):
-        print('on compare_expr', a, b, c)
-        self.conditions.push(
-
+    def compare_expr(self, *args):
+        print('on compare_expr', args)
+        self.conditions.append(
+            args
         )
+
+
+def show_next_possible_tokens(error):
+    print('error', error)
+    # print('ERROR HANDLER  :) TOKEN', error.interactive_parser)
+    return True
 
 
 class QueryCreator:
@@ -44,20 +51,55 @@ class QueryCreator:
         COMPARE_OP: ">" | "<" | "=" | "!=" | ">=" | "<="
         OR: "or"
         AND: "and"
-        NAME: CNAME ["." CNAME]+ | NUMBER
+        NAME: CNAME [DOT CNAME]+ | CNAME | NUMBER
+        DOT: "."
         %import common.CNAME 
         %import common.NUMBER
         _WHITESPACE: /[ \t]+/ 
         %ignore _WHITESPACE
     """
 
-    def __init__(self, query_string):
-        query_parser = Lark(self.grammar_definition, parser = 'lalr', transformer = DiffgramQueryProcessor())
+    def __init__(self, session, project):
+        self.project = project
+        self.session = session
+        self.parser = query_parser = Lark(self.grammar_definition,
+                                          parser = 'lalr',
+                                          transformer = DiffgramQueryProcessor())
         self.build_query = query_parser.parse
-        self.query_string = query_string
 
-    def create_query(self):
-        return self.build_query(self.query_string)
+    def get_suggestions(self, query_string):
+        if query_string == '':
+            return ['annotations', 'labels', 'file', 'instance', 'dataset', 'issues']
+        try:
+            result = self.create_query(query_string)
+            return result
+        except UnexpectedCharacters as chars_exception:
+            print('UnexpectedCharacters',chars_exception)
+        except UnexpectedToken as token_exception:
+            last_char_index = token_exception.state.state_stack[0]
+            print('LAST index: ', last_char_index)
+            print('LAST CHAR: ', query_string[last_char_index])
+            print('token: ', token_exception.token)
+            print('char: ', token_exception.char)
+            print('line: ', token_exception.line)
+            print('_terminals_by_name: ', token_exception._terminals_by_name)
+            print('column: ', token_exception.column)
+            print('accepts: ', token_exception.accepts)
+            print('state: ', token_exception.state)
+            print('state_stack: ', token_exception.state.state_stack)
+            print('state: ', token_exception.state.value_stack)
+            print('expected: ', token_exception.expected)
+            print('considered_rules: ', token_exception.considered_rules)
+            print('interactive_parser: ', token_exception.interactive_parser)
+            print('interactive_parser accepts: ', token_exception.interactive_parser.accepts())
+            print('interactive_parser choices: ', token_exception.interactive_parser.choices())
+            print('interactive_parser choices: ', token_exception.interactive_parser.choices())
+            print('_terminals_by_name: ', token_exception._terminals_by_name)
+            print('token_history: ', token_exception.token_history)
+
+
+    def create_query(self, query_string):
+        return self.build_query(query_string, on_error = show_next_possible_tokens)
 
 
 def get_files_by_instance_count(session):
