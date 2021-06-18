@@ -38,6 +38,7 @@ class BaseDiffgramQueryExecutor(Visitor, ABC):
     def compare_expr(self, *args):
         print('visting start: Not Implemented yet.')
 
+    @abstractmethod
     def execute_query(self):
         """
             Entrypoint for building the end query. This uses the diffgram query

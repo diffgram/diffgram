@@ -1,9 +1,18 @@
 <template>
   <v-layout class="d-flex flex-column">
+    <v-container fluid>
+      <v-text-field
+        label="Regular"
+        v-mode="query"
+        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+        @keydown.enter="execute_query"
+      ></v-text-field>
+    </v-container>
     <v-toolbar extended elevation="0" class="ma-8 mb-0">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
-        <v-input @change="execute_query" v-model="query"></v-input>
+
       </v-toolbar-title>
       <div class="d-flex align-center mr-5">
         <v_directory_list :project_string_id="project_string_id"
@@ -146,8 +155,8 @@
       }
     },
     methods: {
-      execute_query: async function(val){
-        this.query = val;
+      execute_query: async function(e){
+        this.query = e.target.value
         await this.fetch_file_list()
       },
       load_more_files: async function(){

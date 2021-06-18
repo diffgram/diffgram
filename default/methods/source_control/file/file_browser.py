@@ -439,6 +439,7 @@ class File_Browser():
         self.metadata['issues_filter'] = self.metadata_proposed.get("issues_filter", None)
 
         self.metadata['file'] = {}
+        self.metadata['query'] =  self.metadata_proposed.get("query", None)
         self.metadata['limit'] = 25
 
         self.metadata['directory_id'] = self.metadata_proposed.get("directory_id", None)
@@ -507,9 +508,13 @@ class File_Browser():
             return
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
-        executor = SqlAlchemyQueryExecutor(diffgram_query = diffgram_query_obj)
-        executor.execute_query()
-
+        executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
+        sql_alchemy_query = executor.execute_query()
+        print('sql queryyyyyy', sql_alchemy_query)
+        file_list = sql_alchemy_query.all()
+        print('file list', file_list)
+        return file_list
+    
     def file_view_core(
         self,
         mode = "serialize"):
@@ -523,8 +528,7 @@ class File_Browser():
 
         # The idea here is that the query will override any other filters sent by the user.
         # TODO: IN general maybe this should be managed in a completely different endpoint? like api/files/query?
-        if self.metadata.get('query') and self.metadata.get('query') != '':
-            return self.build_and_execute_query()
+
 
         output_file_list = []
         limit_counter = 0
@@ -617,31 +621,34 @@ class File_Browser():
             if requested_order_by == "time_last_updated":
                 order_by_class_and_attribute = File.time_last_updated
 
-        query, count = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = self.directory.id,
-            ann_is_complete = ann_is_complete,
-            type = media_type_query,
-            return_mode = "query",
-            limit = self.metadata["limit"],
-            date_from = self.metadata["date_from"],
-            date_to = self.metadata["date_to"],
-            issues_filter = self.metadata["issues_filter"],
-            offset = self.metadata["start_index"],
-            original_filename = self.metadata['search_term'],
-            order_by_class_and_attribute = File.id,
-            order_by_direction = order_by_direction,
-            exclude_removed = exclude_removed,
-            file_view_mode = self.metadata['file_view_mode'],
-            job_id = job_id,
-            has_some_machine_made_instances = has_some_machine_made_instances,
-            ignore_id_list = ignore_id_list,
-            count_before_limit = True
-        )
+        if self.metadata.get('query') and self.metadata.get('query') != '':
+            working_dir_file_list = self.build_and_execute_query()
+        else:
+            query, count = WorkingDirFileLink.file_list(
+                session = self.session,
+                working_dir_id = self.directory.id,
+                ann_is_complete = ann_is_complete,
+                type = media_type_query,
+                return_mode = "query",
+                limit = self.metadata["limit"],
+                date_from = self.metadata["date_from"],
+                date_to = self.metadata["date_to"],
+                issues_filter = self.metadata["issues_filter"],
+                offset = self.metadata["start_index"],
+                original_filename = self.metadata['search_term'],
+                order_by_class_and_attribute = File.id,
+                order_by_direction = order_by_direction,
+                exclude_removed = exclude_removed,
+                file_view_mode = self.metadata['file_view_mode'],
+                job_id = job_id,
+                has_some_machine_made_instances = has_some_machine_made_instances,
+                ignore_id_list = ignore_id_list,
+                count_before_limit = True
+            )
 
-        file_count += count
+            file_count += count
 
-        working_dir_file_list = query.all()
+            working_dir_file_list = query.all()
 
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):

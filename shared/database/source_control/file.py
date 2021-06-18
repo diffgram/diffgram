@@ -993,12 +993,15 @@ class File(Base, Caching):
 
     @staticmethod
     def get_by_label_name(session, label_name, project_id):
-        label = Label.get_by_name(label_name)
+        print('get_by_label_name', label_name)
+        label = Label.get_by_name(session = session, label_name = label_name)
         query = session.query(File).filter(
             File.project_id == project_id,
             File.type == 'label',
+            File.label_id == label.id
 
         )
+        return query.first()
     @staticmethod
     def __get_next_instance_and_migrate(session, video_parent_file_id, start_frame_number, label_file_id=None):
         # If there's no next frame let's retry with a join and migrate instances
