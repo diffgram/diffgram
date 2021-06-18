@@ -18,9 +18,10 @@ class QueryCreator:
         Responsible for creating a DiffgramQuery based on the defined syntax.
     """
 
-    def __init__(self, session, project):
+    def __init__(self, session, project, member):
         self.project = project
         self.session = session
+        self.member = member
         self.parser = query_parser = Lark(grammar_definition,
                                           parser = 'lalr',
                                           transformer = None)
@@ -57,12 +58,12 @@ class QueryCreator:
 
     def create_query(self, query_string):
         tree = self.build_query(query_string)
-        return DiffgramQuery(tree)
+        return DiffgramQuery(tree, self.project, self.member)
 
 
 def get_files_by_instance_count(session):
-    instance_list_count = (session.query(func.count(Instance.id)).filter(
+    instance_list_count_subquery = (session.query(func.count(Instance.id)).filter(
         Instance.file_id == File.id,
 
     ))
-    file_list = session.query(File).filter(File.project_id == 1, instance_list_count.as_scalar() > 4)
+    file_list = session.query(File).filter(File.project_id == 1, instance_list_count_subquery.as_scalar() > 4)

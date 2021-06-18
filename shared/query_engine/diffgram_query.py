@@ -9,5 +9,7 @@ class DiffgramQuery:
         the DiffgramQueryExecutor.
     """
 
-    def __init__(self, tree):
+    def __init__(self, tree, project, member):
         self.tree = tree
+        self.project = project
+        self.member = member

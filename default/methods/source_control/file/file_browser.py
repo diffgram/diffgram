@@ -8,6 +8,8 @@ from shared.database.task.job.job import Job
 from shared.database.source_control.file_diff import file_difference_and_serialize_for_web
 from sqlalchemy import asc
 from sqlalchemy import desc
+from shared.query_engine.query_creator import QueryCreator
+from shared.query_engine.sqlalchemy_query_exectutor import SqlAlchemyQueryExecutor
 
 
 @routes.route('/api/v1/file/view',
@@ -374,11 +376,20 @@ def view_file_list_web_route(project_string_id, username):
         if directory is False:
             return jsonify("Error with directory"), 400
 
+        user = User.get(session)
+        if user:
+            member = user.member
+        else:
+            client_id = request.authorization.get('username', None)
+            auth = Auth_api.get(session, client_id)
+            member = auth.member
+
         file_browser_instance = File_Browser(
             session = session,
             project = project,
             directory = directory,
-            metadata_proposed = metadata_proposed
+            metadata_proposed = metadata_proposed,
+            member = member
         )
 
         output_file_list = file_browser_instance.file_view_core(
@@ -398,12 +409,14 @@ class File_Browser():
         session,
         project,
         directory,
-        metadata_proposed
+        metadata_proposed,
+        member
     ):
 
         self.session = session
         self.project = project
         self.directory = directory
+        self.member = member
 
         self.metadata_proposed = metadata_proposed
         self.default_metadata()
@@ -482,7 +495,21 @@ class File_Browser():
 
         self.metadata['pagination'] = self.metadata_proposed.get('pagination', {})
 
-    # @timeit
+    def build_and_execute_query(self):
+        """
+            This functions builds a DiffgramQuery object and executes it with the
+            SQLAlchemy executor to get a list of File objects that we can serialized
+            and return to the user.
+        :return:
+        """
+        query_string = self.metadata.get('query')
+        if not query_string:
+            return
+        query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
+        diffgram_query_obj = query_creator.create_query(query_string = query_string)
+        executor = SqlAlchemyQueryExecutor(diffgram_query = diffgram_query_obj)
+        executor.execute_query()
+
     def file_view_core(
         self,
         mode = "serialize"):
@@ -493,6 +520,11 @@ class File_Browser():
             objects returns the database objects, ie for auto commit
 
         """
+
+        # The idea here is that the query will override any other filters sent by the user.
+        # TODO: IN general maybe this should be managed in a completely different endpoint? like api/files/query?
+        if self.metadata.get('query') and self.metadata.get('query') != '':
+            return self.build_and_execute_query()
 
         output_file_list = []
         limit_counter = 0

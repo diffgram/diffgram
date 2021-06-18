@@ -3,6 +3,7 @@
     <v-toolbar extended elevation="0" class="ma-8 mb-0">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
+        <v-input @change="execute_query" v-model="query"></v-input>
       </v-toolbar-title>
       <div class="d-flex align-center mr-5">
         <v_directory_list :project_string_id="project_string_id"
@@ -119,6 +120,7 @@
           file_count: null
         },
         loading: false,
+        query: undefined,
         show_ground_truth: true,
         infinite_scroll_loading: false,
         selected_dir: undefined,
@@ -144,6 +146,10 @@
       }
     },
     methods: {
+      execute_query: async function(val){
+        this.query = val;
+        await this.fetch_file_list()
+      },
       load_more_files: async function(){
         this.metadata.page_number += 1;
         this.metadata.request_next_page = true
@@ -169,6 +175,7 @@
             '/user/' + this.$store.state.user.current.username + '/file/list', {
             'metadata': {
               ...this.metadata,
+              query: this.query,
               previous: this.metadata_previous
             },
             'project_string_id': this.$props.project_string_id
