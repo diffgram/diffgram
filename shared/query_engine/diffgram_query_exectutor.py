@@ -47,4 +47,4 @@ class BaseDiffgramQueryExecutor(Visitor, ABC):
             grammar defined in grammar.py
         :return:
         """
-        self.visit(self.diffgram_query.tree)
+        return self.visit(self.diffgram_query.tree)
