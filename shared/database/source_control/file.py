@@ -15,6 +15,7 @@ import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
 from shared.shared_logger import get_shared_logger
+from sqlalchemy.dialects.postgresql import JSONB
 logger = get_shared_logger()
 
 
@@ -88,6 +89,8 @@ class File(Base, Caching):
     has_some_machine_made_instances = Column(Boolean)
 
     instance_type_count = Column(MutableDict.as_mutable(JSONEncodedDict))
+
+    file_metadata = Column(MutableDict.as_mutable(JSONB))
 
     # Deprecated shift to instance_type_count
     boxes_count = Column(Integer, default=0)

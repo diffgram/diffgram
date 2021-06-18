@@ -3,7 +3,7 @@ grammar_definition = """
     expr: term [OR term]
     term: factor [AND factor]
     factor: compare_expr
-    compare_expr: NAME COMPARE_OP NAME
+    compare_expr: NAME COMPARE_OP NAME 
     COMPARE_OP: ">" | "<" | "=" | "!=" | ">=" | "<="
     OR: "or"
     AND: "and"
