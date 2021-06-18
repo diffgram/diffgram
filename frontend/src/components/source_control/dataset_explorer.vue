@@ -1,15 +1,7 @@
 <template>
-  <v-layout class="d-flex flex-column">
-    <v-container fluid>
-      <v-text-field
-        label="Regular"
-        v-mode="query"
-        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-        @keydown.enter="execute_query"
-      ></v-text-field>
-    </v-container>
-    <v-toolbar extended elevation="0" class="ma-8 mb-0">
+  <v-layout class="d-flex flex-column" style="border-top: 1px solid #dcdbdb">
+
+    <v-toolbar extended elevation="0" class="ma-0">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
 
@@ -62,12 +54,20 @@
 <!--        <v-icon>mdi-filter</v-icon>-->
 <!--      </v-btn>-->
     </v-toolbar>
-
+    <v-layout>
+      <v-text-field
+        label="Query your data: "
+        v-mode="query"
+        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+        @keydown.enter="execute_query"
+      ></v-text-field>
+    </v-layout>
     <v-layout id="infinite-list" fluid class="files-container d-flex justify-start" :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
-        v-else
+        v-else-if="this.file_list && this.file_list.length > 0"
         v-for="(file, index) in this.file_list"
         :base_model_run="base_model_run"
         :compare_to_model_run_list="compare_to_model_run_list"
@@ -78,6 +78,10 @@
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
       ></file_preview>
+      <v-container fluid v-else-if="this.file_list.length === 0" class="d-flex flex-column justify-center">
+        <h1 class="text-center">There are no files available</h1>
+        <v-icon class="text-center" size="86">mdi-text-box-search-outline</v-icon>
+      </v-container>
       <v-progress-linear indeterminate v-if="infinite_scroll_loading"></v-progress-linear>
 
     </v-layout>
@@ -117,7 +121,10 @@
       const listElm = document.querySelector('#infinite-list');
       listElm.addEventListener('scroll', e => {
         if(listElm.scrollTop + listElm.clientHeight >= listElm.scrollHeight) {
-          this.load_more_files();
+          if(this.file_list.length > 0){
+            this.load_more_files();
+          }
+
         }
       });
     },

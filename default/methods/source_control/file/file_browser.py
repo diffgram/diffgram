@@ -509,12 +509,12 @@ class File_Browser():
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-        sql_alchemy_query = executor.execute_query()
+        sql_alchemy_query, execution_log = executor.execute_query()
         print('sql queryyyyyy', sql_alchemy_query)
         file_list = sql_alchemy_query.all()
         print('file list', file_list)
         return file_list
-    
+
     def file_view_core(
         self,
         mode = "serialize"):
@@ -525,11 +525,6 @@ class File_Browser():
             objects returns the database objects, ie for auto commit
 
         """
-
-        # The idea here is that the query will override any other filters sent by the user.
-        # TODO: IN general maybe this should be managed in a completely different endpoint? like api/files/query?
-
-
         output_file_list = []
         limit_counter = 0
 
