@@ -1,7 +1,7 @@
 <template>
   <v-layout class="d-flex flex-column" style="border-top: 1px solid #dcdbdb">
 
-    <v-toolbar extended elevation="0" class="ma-0">
+    <v-toolbar extended elevation="0" class="ma-0 pt-6" style="height: 80px">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
 
@@ -54,7 +54,8 @@
 <!--        <v-icon>mdi-filter</v-icon>-->
 <!--      </v-btn>-->
     </v-toolbar>
-    <v-layout>
+    <v-layout class="mr-5 ml-5 d-flex flex-column">
+      <v_error_multiple :error="query_error"></v_error_multiple>
       <v-text-field
         label="Query your data: "
         v-mode="query"
@@ -63,7 +64,10 @@
         @keydown.enter="execute_query"
       ></v-text-field>
     </v-layout>
-    <v-layout id="infinite-list" fluid class="files-container d-flex justify-start" :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap'}">
+    <v-layout id="infinite-list"
+              fluid
+              class="files-container d-flex justify-start"
+              :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
@@ -137,6 +141,7 @@
         },
         loading: false,
         query: undefined,
+        query_error: undefined,
         show_ground_truth: true,
         infinite_scroll_loading: false,
         selected_dir: undefined,
@@ -210,6 +215,7 @@
         }
         catch (error) {
           console.error(error);
+          this.query_error = this.$route_api_errors(error)
         }
         finally {
           if(reload_all){

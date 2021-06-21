@@ -8,7 +8,7 @@ from shared.query_engine.diffgram_query_exectutor import BaseDiffgramQueryExecut
 from shared.shared_logger import get_shared_logger
 import operator
 from shared.regular import regular_log
-
+from sqlalchemy.sql.expression import and_, or_
 logger = get_shared_logger()
 
 
@@ -32,22 +32,75 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             File.project_id == self.diffgram_query.project.id
         )
         self.conditions = []
-
-    def expr(self, *args):
-        print('visting expr: Not Implemented yet.')
+        self.valid = False
 
     def start(self, *args):
-        print('visting start: Not Implemented yet.')
+        self.valid = False
+        if len(args) == 1:
+            local_tree = args[0]
+            if len(local_tree.children) == 1:
+                child = local_tree.children[0]
+                self.final_query = self.final_query.filter(
+                    child.or_statement
+                )
+                self.valid = True
+
+            else:
+                error_msg = 'Invalid children number for start: Must have only 1 and has {}'.format(len(local_tree.children))
+                logger.error(error_msg)
+                self.log['error']['start'] = error_msg
+        else:
+            logger.error('Invalid child count for start. Must be 1 and is {}'.format(len(args)))
+            self.log['error']['start'] = 'Invalid child count for factor. Must be 1'
         return self.final_query
 
-    def factor(self, *args):
-        print('visting factor: Not Implemented yet.')
+    def expr(self, *args):
+        """
+            The expr rule should join one or more conditions in an OR statement.
+        :param args:
+        :return:
+        """
+        if len(args) == 1:
+            local_tree = args[0]
+            print('term tree', args)
+            conditions = []
+            for child in local_tree.children:
+                print('child', child)
+                if hasattr(child, 'and_statement'):
+                    conditions.append(child.and_statement)
+            print('conditions expr', conditions)
+            local_tree.or_statement = or_(*conditions)
+        else:
+            logger.error('Invalid child count for expr. Must be 1 and is {}'.format(len(args)))
+            self.log['error']['expr'] = 'Invalid child count for factor. Must be 1'
+        print('TERM', args)
 
     def term(self, *args):
-        print('visting term: Not Implemented yet.')
+        """
+            The term rule should join one or more conditions in an AND statement.
+        :param args:
+        :return:
+        """
+        if len(args) == 1:
+            local_tree = args[0]
+            conditions = []
+            for child in local_tree.children:
+                print('child', child)
+                if hasattr(child, 'query_condition'):
+                    conditions.append(child.query_condition)
+            local_tree.and_statement = and_(*conditions)
+        else:
+            logger.error('Invalid child count for term. Must be 1 and is {}'.format(len(args)))
+            self.log['error']['term'] = 'Invalid child count for factor. Must be 1'
 
-    def compare_op(self):
-        print('visting compare_op: Not Implemented yet.')
+    def factor(self, *args):
+        if len(args) == 1:
+            local_tree = args[0]
+            if len(local_tree.children) == 1:
+                local_tree.query_condition = local_tree.children[0].query_condition
+            else:
+                logger.error('Invalid child count for factor. Must be 1')
+                self.log['error']['factor'] = 'Invalid child count for factor. Must be 1'
 
     def __determine_entity_type(self, name_token):
         try:
@@ -133,7 +186,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             value_2 = self.__parse_value(token2)
 
             if operator.value not in ["=", "!="]:
-                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(operator.value, str(["=", "!="]))
+                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(operator.value,
+                                                                                                    str(["=", "!="]))
                 logger.error(error_string)
                 self.log['error']['compare_expr'] = error_string
                 return False
@@ -164,20 +218,21 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     )
                 )
                 if entity_type == "labels":
-                    self.final_query = self.final_query.filter(
-                        self.get_compare_op(compare_op)(
-                            value_1,
-                            value_2
-                        )
-                    )
-                else:
-                    self.final_query = self.final_query.filter(
-                        self.get_compare_op(compare_op)(
-                            value_1,
-                            str(value_2) # TODO: asummption that we just accept JSON string comparison (no numbers)
-                        )
-                    )
-                print('new final query is', self.final_query)
+                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, value_2)
+                    # self.final_query = self.final_query.filter(
+                    #     self.get_compare_op(compare_op)(
+                    #         value_1,
+                    #         value_2
+                    #     )
+                    # )
+                elif entity_type == 'file':
+                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, str(value_2))
+                    # self.final_query = self.final_query.filter(
+                    #     self.get_compare_op(compare_op)(
+                    #         value_1,
+                    #         str(value_2) # TODO: asummption that we just accept JSON string comparison (no numbers)
+                    #     )
+                    # )
             else:
                 return
 
@@ -194,7 +249,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :return:
         """
         self.visit(self.diffgram_query.tree)
-        if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0:
+        if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
             logger.error('Invalid query. Please check your syntax and try again.')
             return None, self.log
         return self.final_query, self.log
