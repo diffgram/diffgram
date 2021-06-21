@@ -11,6 +11,7 @@ from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.orm.query import Query
 
+
 class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
     """
 
