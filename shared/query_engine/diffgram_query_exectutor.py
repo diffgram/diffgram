@@ -31,10 +31,6 @@ class BaseDiffgramQueryExecutor(Visitor, ABC):
         print('visting start: Not Implemented yet.')
 
     @abstractmethod
-    def compare_op(self):
-        print('visting start: Not Implemented yet.')
-
-    @abstractmethod
     def compare_expr(self, *args):
         print('visting start: Not Implemented yet.')
 

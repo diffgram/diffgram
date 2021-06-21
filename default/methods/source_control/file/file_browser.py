@@ -505,15 +505,15 @@ class File_Browser():
         """
         query_string = self.metadata.get('query')
         if not query_string:
-            return
+            return False, {'error': {'query_string': 'Provide query_string'}}
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
+        if len(query_creator.log['error'].keys()) > 0:
+            return False, query_creator.log
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
-        print('sql queryyyyyy', sql_alchemy_query)
         file_list = sql_alchemy_query.all()
-        print('file list', file_list)
-        return file_list
+        return file_list, query_creator.log
 
     def file_view_core(
         self,
@@ -617,7 +617,9 @@ class File_Browser():
                 order_by_class_and_attribute = File.time_last_updated
 
         if self.metadata.get('query') and self.metadata.get('query') != '':
-            working_dir_file_list = self.build_and_execute_query()
+            working_dir_file_list, log = self.build_and_execute_query()
+            if not working_dir_file_list or len(log['error'].keys()) > 1:
+                return False
         else:
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,

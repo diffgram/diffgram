@@ -5,7 +5,7 @@ from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 from sqlalchemy import func
 from shared.query_engine.diffgram_query import DiffgramQuery
 from shared.query_engine.grammar import grammar_definition
-
+from shared.regular import regular_log
 
 @v_args(inline = True)  # Affects the signatures of the methods
 class DiffgramQueryProcessor(Transformer):
@@ -22,6 +22,7 @@ class QueryCreator:
         self.project = project
         self.session = session
         self.member = member
+        self.log = regular_log.default()
         self.parser = query_parser = Lark(grammar_definition,
                                           parser = 'lalr',
                                           transformer = None)
@@ -57,8 +58,12 @@ class QueryCreator:
             return
 
     def create_query(self, query_string):
-        tree = self.build_query(query_string)
-        return DiffgramQuery(tree, self.project, self.member)
+        try:
+            tree = self.build_query(query_string)
+            print(tree.pretty())
+            return DiffgramQuery(tree, self.project, self.member)
+        except Exception as e:
+            self.log['error']['parser'] = str(e)
 
 
 def get_files_by_instance_count(session):
