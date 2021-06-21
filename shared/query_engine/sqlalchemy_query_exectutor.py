@@ -35,6 +35,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.valid = False
 
     def start(self, *args):
+        if len(self.log['error'].keys()) > 0:
+            return
         self.valid = False
         if len(args) == 1:
             local_tree = args[0]
@@ -44,6 +46,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     child.or_statement
                 )
                 self.valid = True
+                return self.final_query
 
             else:
                 error_msg = 'Invalid children number for start: Must have only 1 and has {}'.format(len(local_tree.children))
@@ -60,20 +63,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param args:
         :return:
         """
+        if len(self.log['error'].keys()) > 0:
+            return
         if len(args) == 1:
             local_tree = args[0]
-            print('term tree', args)
             conditions = []
             for child in local_tree.children:
-                print('child', child)
                 if hasattr(child, 'and_statement'):
                     conditions.append(child.and_statement)
-            print('conditions expr', conditions)
             local_tree.or_statement = or_(*conditions)
+            return local_tree
         else:
             logger.error('Invalid child count for expr. Must be 1 and is {}'.format(len(args)))
             self.log['error']['expr'] = 'Invalid child count for factor. Must be 1'
-        print('TERM', args)
 
     def term(self, *args):
         """
@@ -81,23 +83,28 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param args:
         :return:
         """
+        if len(self.log['error'].keys()) > 0:
+            return
         if len(args) == 1:
             local_tree = args[0]
             conditions = []
             for child in local_tree.children:
-                print('child', child)
                 if hasattr(child, 'query_condition'):
                     conditions.append(child.query_condition)
             local_tree.and_statement = and_(*conditions)
+            return local_tree
         else:
             logger.error('Invalid child count for term. Must be 1 and is {}'.format(len(args)))
             self.log['error']['term'] = 'Invalid child count for factor. Must be 1'
 
     def factor(self, *args):
+        if len(self.log['error'].keys()) > 0:
+            return
         if len(args) == 1:
             local_tree = args[0]
             if len(local_tree.children) == 1:
                 local_tree.query_condition = local_tree.children[0].query_condition
+                return local_tree
             else:
                 logger.error('Invalid child count for factor. Must be 1')
                 self.log['error']['factor'] = 'Invalid child count for factor. Must be 1'
@@ -148,6 +155,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             label_file = File.get_by_label_name(session = self.session,
                                                 label_name = label_name,
                                                 project_id = self.diffgram_query.project.id)
+            if not label_file:
+                error_string = 'Label {} does not exists'.format(str(label_name))
+                logger.error(error_string)
+                self.log['error']['label_name'] = error_string
+                return
+
             instance_list_count_subquery = (self.session.query(func.count(Instance.id)).filter(
                 Instance.file_id == File.id,
                 Instance.label_file_id == label_file.id
@@ -159,7 +172,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             metadata_key = token.value.split('.')[1]
             return File.file_metadata[metadata_key].astext
         else:
-            error_string = 'Invalid entity type {}, valid values are {}'.format(str(token), str(VALID_ENTITIES))
+            error_string = 'Invalid entity type {}, valid values are {}'.format(str(token), str(self.VALID_ENTITIES))
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
 
@@ -175,11 +188,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         entity_type1 = self.__determine_entity_type(token1)
         entity_type2 = self.__determine_entity_type(token2)
-
+        print('qqqaaaaa', token1.value.split('.'))
         if len(token1.value.split('.')) == 1:
-            error_string = 'Error with token: {}. Should specify the label name or global count'.format(name1.vale)
+            error_string = 'Error with token: {}. Should specify the label name or global count'.format(token1.value)
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
+            return False
 
         if "file" in [entity_type1, entity_type2]:
             value_1 = self.__parse_value(token1)
@@ -197,20 +211,24 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         return True
 
+
+
     def compare_expr(self, *args):
+        if len(self.log['error'].keys()) > 0:
+            return
         local_tree = args[0]
-        print('children', local_tree.children)
         if len(local_tree.children) == 3:
             children = local_tree.children
             name1 = children[0]
             compare_op = children[1]
             name2 = children[2]
             entity_type = self.__determine_entity_type(name1)
-            print('entyt typeee', entity_type)
 
             if self.__validate_expression(name1, name2, compare_op):
                 value_1 = self.__parse_value(name1)
                 value_2 = self.__parse_value(name2)
+                if len(self.log['error'].keys()) > 0:
+                    return
                 self.conditions.append(
                     self.get_compare_op(compare_op)(
                         value_1,
@@ -225,6 +243,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     #         value_2
                     #     )
                     # )
+                    return local_tree
                 elif entity_type == 'file':
                     local_tree.query_condition = self.get_compare_op(compare_op)(value_1, str(value_2))
                     # self.final_query = self.final_query.filter(
@@ -233,6 +252,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     #         str(value_2) # TODO: asummption that we just accept JSON string comparison (no numbers)
                     #     )
                     # )
+                    return local_tree
             else:
                 return
 
