@@ -998,12 +998,16 @@ class File(Base, Caching):
     def get_by_label_name(session, label_name, project_id):
         print('get_by_label_name', label_name)
         label = Label.get_by_name(session = session, label_name = label_name)
+        print('REQUL QUERY', label_name)
+        if not label:
+            return None
         query = session.query(File).filter(
             File.project_id == project_id,
             File.type == 'label',
             File.label_id == label.id
 
         )
+        print('aaaa', query.first(), project_id, label_name, label.id, 'label')
         return query.first()
     @staticmethod
     def __get_next_instance_and_migrate(session, video_parent_file_id, start_frame_number, label_file_id=None):

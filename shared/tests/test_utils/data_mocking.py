@@ -332,6 +332,9 @@ def create_job(job_data, session):
 
 
 def create_label(label_data, session):
+    existing_label =Label.get_by_name(session = session, label_name = label_data.get('name'))
+    if existing_label:
+        return existing_label
     label = Label()
     label.name = label_data.get('name')
     session.add(label)
@@ -342,8 +345,15 @@ def create_label(label_data, session):
 def create_label_file(label_file_data, session):
     label_file = File()
     label_file.label = label_file_data.get('label')
+    label_file.label_id = label_file_data.get('label').id
     label_file.project_id = label_file_data['project_id']
     label_file.type = 'label'
+    session.add(label_file)
+    regular_methods.commit_with_rollback(session)
+    project = Project.get_by_id(session, label_file.project_id)
+    if project:
+        WorkingDirFileLink.add(session, project.directory_default_id, label_file)
+        project.refresh_label_dict(session)
     session.add(label_file)
     regular_methods.commit_with_rollback(session)
     return label_file
