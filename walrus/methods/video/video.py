@@ -248,7 +248,9 @@ class New_video():
             height = clip.h,
             directory_id = directory_id,
             parent_input_id = input.parent_input_id,
-            parent_video_split_duration = parent_video_split_duration)
+            parent_video_split_duration = parent_video_split_duration,
+            file_metadata = input.file_metadata,
+        )
 
         if self.input.frame_packet_map:
             self.__prepare_sequences(parent_input = input)

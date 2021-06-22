@@ -1361,7 +1361,8 @@ class Process_Media():
             text_file_id=self.new_text_file.id,
             original_filename=self.input.original_filename,
             project_id=self.project_id,
-            input_id=self.input.id
+            input_id=self.input.id,
+            file_metadata=self.input.file_metadata,
         )
         # Set success state for input.
         if self.input.media_type == 'text':
@@ -1432,7 +1433,8 @@ class Process_Media():
             image_id=self.new_image.id,
             original_filename=self.input.original_filename,
             project_id=self.project_id,  # TODO test if project_id is working as expected here
-            input_id=self.input.id
+            input_id=self.input.id,
+            file_metadata = self.input.file_metadata
         )
 
         ###

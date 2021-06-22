@@ -512,7 +512,10 @@ class File_Browser():
             return False, query_creator.log
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
-        file_list = sql_alchemy_query.all()
+        if sql_alchemy_query:
+            file_list = sql_alchemy_query.all()
+        else:
+            return False, execution_log
         return file_list, query_creator.log
 
     def file_view_core(

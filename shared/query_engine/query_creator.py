@@ -32,7 +32,6 @@ class QueryCreator:
             return self.ENTITY_TYPES
         try:
             result = self.build_query(query_string)
-            print('AAA', result)
             # If the query is correct we don't suggest anything
             return []
         except UnexpectedCharacters as chars_exception:
@@ -40,7 +39,6 @@ class QueryCreator:
                 if chars_exception.char == '.':
                     last_token = chars_exception.state.value_stack[0]
                     suggestions = []
-                    print('LAST TOKEN', last_token)
                     if last_token.value in ['label', 'labels']:
                         # Show available labels in project.
                         labels = self.project.get_label_list(self.session, directory = self.project.directory_default)
@@ -62,7 +60,7 @@ class QueryCreator:
     def create_query(self, query_string):
         try:
             tree = self.build_query(query_string)
-            print(tree.pretty())
+            # print(tree.pretty())
             return DiffgramQuery(tree, self.project, self.member)
         except Exception as e:
             self.log['error']['parser'] = str(e)
