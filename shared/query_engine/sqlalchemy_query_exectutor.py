@@ -172,9 +172,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             metadata_key = token.value.split('.')[1]
             return File.file_metadata[metadata_key].astext
         else:
-            error_string = 'Invalid entity type {}, valid values are {}'.format(str(token), str(self.VALID_ENTITIES))
-            logger.error(error_string)
-            self.log['error']['compare_expr'] = error_string
+            return token.value
 
     def __validate_expression(self, token1, token2, operator):
         """
@@ -188,7 +186,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         entity_type1 = self.__determine_entity_type(token1)
         entity_type2 = self.__determine_entity_type(token2)
-        print('qqqaaaaa', token1.value.split('.'))
         if len(token1.value.split('.')) == 1:
             error_string = 'Error with token: {}. Should specify the label name or global count'.format(token1.value)
             logger.error(error_string)

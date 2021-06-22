@@ -87,6 +87,29 @@ class Upload():
                 result.append(file.serialize_with_label_and_colour(session = self.session))
         return result
 
+    def extract_metadata_from_batch(self, input, input_batch_id, file_name):
+        input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        pre_labels = input_batch.pre_labeled_data
+        if pre_labels is None:
+            return input
+        uuid = None
+        file_data = None
+        if self.request:
+            uuid = self.request.form.get('uuid')
+            file_data = pre_labels.get(uuid)
+        if file_data is None:
+            # Try finding the pre_labels with the file_name as a backup
+            file_data = pre_labels.get(file_name)
+            if file_data is None:
+                logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
+                return
+
+        if file_data['file_metadata']:
+            file_metadata = file_data['file_metadata']
+            input.file_metadata = file_metadata
+
+        return input
+
     def extract_instance_list_from_batch(self, input, input_batch_id, file_name):
         input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
         pre_labels = input_batch.pre_labeled_data
@@ -272,10 +295,11 @@ class Upload():
             job_id=request.form.get('job_id'),
             directory_id=request.form.get('directory_id'),  # Not trusted
             video_split_duration=request.form.get('video_split_duration'),
-            batch_id=request.form.get('input_batch_id')
+            batch_id=request.form.get('input_batch_id'),
         )
 
         self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
+        self.extract_metadata_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
 
         self.session.add(self.input)
 

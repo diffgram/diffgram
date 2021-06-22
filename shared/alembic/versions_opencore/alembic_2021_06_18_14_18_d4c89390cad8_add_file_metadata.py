@@ -18,7 +18,9 @@ depends_on = None
 
 def upgrade():
     op.add_column('file', sa.Column('file_metadata', JSONB))
+    op.add_column('input', sa.Column('file_metadata', JSONB))
 
 
 def downgrade():
     op.drop_column('file', 'file_metadata')
+    op.drop_column('input', 'file_metadata')

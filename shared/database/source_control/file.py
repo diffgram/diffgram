@@ -787,7 +787,8 @@ class File(Base, Caching):
             video_parent_file=None,
             input_id=None,
             parent_id=None,
-            task=None
+            task=None,
+            file_metadata=None
             ):
         """
         "file_added" case
@@ -832,7 +833,8 @@ class File(Base, Caching):
             colour=colour,
             input_id=input_id,
             parent_id=parent_id,
-            task=task
+            task=task,
+            file_metadata=file_metadata
         )
 
         File.new_file_new_frame(file, video_parent_file)

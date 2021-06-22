@@ -290,4 +290,4 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
         sql_alchemy_query, execution_log = executor.execute_query()
 
         self.assertEqual(type(sql_alchemy_query), Query)
-        self.assertEqual(len(executor['error'].keys()), 0)
+        self.assertEqual(len(executor.log['error'].keys()), 0)

@@ -251,7 +251,46 @@
             </div>
           </div>
         </v-fade-transition>
+        <v-fade-transition> :group="true" hide-on-leave>
+          <div key="9" v-if="current_question === 9" class="d-flex justify-start align-center">
 
+            <div class="d-flex flex-column justify-start">
+              <h1 class="pa-2 black--text">{{current_question}}) Do you want to add extra metadata to the file?</h1>
+              <h4>
+                You can attach a JSON object with special keys like sensor ID's or camera ID's to further identify
+                and filter your dataset.
+              </h4>
+              <v-container fluid class="d-flex justify-center flex-grow-1 mt-8">
+                <v-btn x-large color="primary" data-cy="no_model_button" class="mr-8" @click="next_step(current_question + 1, false)">
+                  No
+                </v-btn>
+                <v-btn x-large color="primary" data-cy="use_model_button" @click="next_step(current_question)">
+                  Yes
+                </v-btn>
+              </v-container>
+            </div>
+          </div>
+        </v-fade-transition>
+        <v-fade-transition> :group="true" hide-on-leave>
+          <div key="10" v-if="current_question === 10" class="d-flex justify-start align-center">
+            <div class="d-flex flex-column justify-start">
+              <h1 class="pa-2 black--text">{{current_question}}) File Metadata:</h1>
+              <h3 style="font-size: 12px" class="primary--text text--lighten-3">
+                <strong>
+                  ** The metadata field must be a JSON object
+                </strong>
+              </h3>
+              <v-container fluid class="d-flex justify-center flex-grow-1">
+                <v-autocomplete class="pt-4"
+                                clearable
+                                data-cy="select_model_run_id"
+                                :items="pre_label_key_list_filtered"
+                                v-model="diffgram_schema_mapping.file_metadata">
+                </v-autocomplete>
+              </v-container>
+            </div>
+          </div>
+        </v-fade-transition>
 
       </v-container>
     </v-layout>
@@ -416,6 +455,19 @@
           // Nothing to validate for now.
           return true
         },
+        validate_metadata: function(){
+          for (const instance of this.$props.pre_labeled_data) {
+            const metadata = _.get(instance, this.$props.diffgram_schema_mapping.file_metadata);
+            if (typeof metadata !== 'object') {
+              this.errors_file_schema = {};
+              this.errors_file_schema[this.$props.diffgram_schema_mapping.file_name] = `File name should be a an object.`;
+              this.errors_file_schema['wrong_data'] = metadata;
+              return false
+            } else {
+              return true
+            }
+          }
+        },
         next_step: async function (current_number, validate_data = true) {
           let valid = false;
           let loading = true;
@@ -456,6 +508,12 @@
           } else if (current_number === 8) {
             valid = this.validate_mode_run_id();
           }
+          else if(current_number === 9){
+            valid = true
+          }
+          else if(current_number === 10 && validate_data){
+            valid = this.validate_metadata();
+          }
 
           if (valid) {
             if (current_number === 3) {
@@ -470,7 +528,7 @@
               }
 
             }
-            if (current_number === 8) {
+            if (current_number === 10) {
               this.$emit('change_step_wizard')
               this.current_question = old_number;
               return

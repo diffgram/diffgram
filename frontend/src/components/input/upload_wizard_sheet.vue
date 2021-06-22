@@ -280,6 +280,7 @@
         number: null,
         model_id: null,
         model_run_id: null,
+        file_metadata: null,
         box: {
           x_min: null,
           x_max: null,
@@ -660,7 +661,6 @@
         extract_object_keys(obj, prepend = undefined){
           let result = [];
           for (const key in obj) {
-
             if(typeof obj[key] != 'object'){
               if (!result.includes(key)) {
                 if(prepend){
@@ -673,6 +673,12 @@
               }
             }
             else{
+              if(prepend){
+                result.push(prepend + key)
+              }
+              else{
+                result.push(key)
+              }
               const nested_result = this.extract_object_keys(obj[key], `${ prepend ? `${prepend}${key}` : key}.`);
               result = result.concat(nested_result)
             }
