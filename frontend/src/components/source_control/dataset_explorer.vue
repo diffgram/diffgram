@@ -56,13 +56,32 @@
     </v-toolbar>
     <v-layout class="mr-5 ml-5 d-flex flex-column">
       <v_error_multiple :error="query_error"></v_error_multiple>
-      <v-text-field
-        label="Query your data: "
-        v-mode="query"
-        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-        @keydown.enter="execute_query"
-      ></v-text-field>
+
+      <v-menu :value="query_menu_open"
+              max-width="650px"
+
+              :offset-y="true"
+              :close-on-content-click="false"
+              :close-on-click="false"
+              z-index="99999999"
+              attach>
+        <template v-slot:activator="{ on, attrs }">
+          <v-text-field
+            label="Query your data: "
+            v-model="query"
+            @focus="on_focus_query"
+            @blur="on_blur_query"
+            @keydown.enter="execute_query($event.target.value)"
+          ></v-text-field>
+        </template>
+        <query_suggestion_menu
+          ref="query_suggestions"
+          @update_query="update_query"
+          @execute_query="execute_query"
+          :project_string_id="project_string_id"
+          :query="query" ></query_suggestion_menu>
+      </v-menu>
+
     </v-layout>
     <v-layout id="infinite-list"
               fluid
@@ -98,6 +117,7 @@
   import axios from "axios";
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
+  import query_suggestion_menu from "./query_suggestion_menu";
   import file_preview from "./file_preview";
 
   export default Vue.extend({
@@ -106,8 +126,10 @@
       model_run_selector,
       directory_icon_selector,
       file_preview,
+      query_suggestion_menu,
     },
     props: [
+      'project_string_id',
       'project_string_id',
       'directory',
       'full_screen'
@@ -144,6 +166,7 @@
         query_error: undefined,
         show_ground_truth: true,
         infinite_scroll_loading: false,
+        query_menu_open: false,
         selected_dir: undefined,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
@@ -154,6 +177,7 @@
           'page_number': 1,
           'request_next_page': false,
           'request_previous_page' : false,
+          'query_menu_open' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
@@ -167,8 +191,24 @@
       }
     },
     methods: {
-      execute_query: async function(e){
-        this.query = e.target.value
+      update_query: function(value){
+        if(!this.query){
+          this.query = value;
+        }
+        else{
+          this.query += value;
+        }
+      },
+      on_focus_query: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', true);
+        this.query_menu_open = true
+      },
+      on_blur_query: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', false)
+      },
+      execute_query: async function(query_str){
+        this.query_menu_open = false;
+        this.query = query_str;
         await this.fetch_file_list()
       },
       load_more_files: async function(){

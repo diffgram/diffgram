@@ -443,7 +443,6 @@ class Project(Base, Caching):
             colour_map = {}
 
         # In context of a Label File!!
-        print('working_dir_file_list', working_dir_file_list)
         for file in working_dir_file_list:
 
             # TODO should we keep file id here

@@ -506,7 +506,7 @@ class File_Browser():
         query_string = self.metadata.get('query')
         if not query_string:
             return False, {'error': {'query_string': 'Provide query_string'}}
-        query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
+        query_creator = QueryCreator(session = self.session, project = self.project, member = self.member, directory = self.directory)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
         if len(query_creator.log['error'].keys()) > 0:
             return False, query_creator.log
@@ -514,6 +514,7 @@ class File_Browser():
         sql_alchemy_query, execution_log = executor.execute_query()
         if sql_alchemy_query:
             file_list = sql_alchemy_query.all()
+            print('FILE LIST', file_list)
         else:
             return False, execution_log
         return file_list, query_creator.log
@@ -656,7 +657,9 @@ class File_Browser():
                     file_serialized = file.serialize_with_annotations(self.session)
                 else:
                     file_serialized = file.serialize_with_type(self.session)
+                print('aaaa', index_file, file, file_serialized)
                 output_file_list.append(file_serialized)
+
                 limit_counter += 1
 
         if mode == "objects":
