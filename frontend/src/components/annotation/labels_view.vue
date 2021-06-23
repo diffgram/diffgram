@@ -161,7 +161,7 @@
                   </v-btn>
 
                   <!-- Edit Page Case -->
-                  <h3 v-else :data-cy="props.item.label.name" data-cy="label_name_col"
+                  <h3 v-else :data-cy="props.item.label.name"
 
                       >{{ props.item.label.name }}</h3>
 
