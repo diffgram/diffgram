@@ -107,6 +107,7 @@
               <regular_table
                     :header_list="header_list"
                     :column_list="column_list"
+                    datacy="labels_table"
                     :item_list="Labels"
                     :elevation="0"
                     ref="label_data_table"
@@ -160,7 +161,7 @@
                   </v-btn>
 
                   <!-- Edit Page Case -->
-                  <h3 v-else :data-cy="props.item.label.name"
+                  <h3 v-else :data-cy="props.item.label.name" data-cy="label_name_col"
 
                       >{{ props.item.label.name }}</h3>
 

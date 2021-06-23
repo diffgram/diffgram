@@ -11,6 +11,7 @@
                 :disabled="label_refresh_loading"
                 @change="emit_selected()"
                 item-value="id"
+                data-cy="label_select"
                 ref="label_select"
                 >
 

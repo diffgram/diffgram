@@ -69,7 +69,7 @@
       </v-container>
       <div class="d-flex justify-end">
 
-        <v-btn color="success" class="text-right" @click="execute_query">Execute</v-btn>
+        <v-btn data-cy="execute_query_button" color="success" class="text-right" @click="execute_query">Execute</v-btn>
       </div>
     </v-container>
     <v-progress-circular indeterminate v-else></v-progress-circular>
