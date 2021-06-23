@@ -546,6 +546,7 @@ class Annotation_Update():
         """
         project = self.project
         if self.task:
+            logger.info('getting project from task {}'.format(self.task.id))
             project = self.task.project
 
         assert project is not None
