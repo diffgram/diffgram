@@ -69,6 +69,7 @@
           <v-text-field
             label="Query your data: "
             v-model="query"
+            data-cy="query_input_field"
             @focus="on_focus_query"
             @blur="on_blur_query"
             @keydown.enter="execute_query($event.target.value)"
@@ -90,6 +91,7 @@
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
+        class="file-preview"
         v-else-if="this.file_list && this.file_list.length > 0"
         v-for="(file, index) in this.file_list"
         :base_model_run="base_model_run"

@@ -339,14 +339,33 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 Cypress.Commands.add('createLabels', function (labels_list) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(2500)
-  cy.get('[data-cy=new_label_template]').first().click({force: true});
-  for (let i = 0; i < labels_list.length; i++) {
+  const label_list_obj = labels_list.map(elm => ({...elm, exists: false}))
+  cy.request({
+    method: 'GET',
+    url: `localhost:8085/api/project/diffgram-testing-e2e/labels/refresh`,
+    failOnStatusCode: false
+  }).then((response) =>{
+    cy.log('RESPONSE')
+    cy.log(response)
+    response.body.labels_out.forEach((label_response_obj) => {
+      const label_obj = label_list_obj.find(elm => elm.name === label_response_obj.label.name)
+      if(label_obj){
+        cy.log('LABEL EXSITSSS', label_obj.name, label_obj)
+        label_obj.exists = true;
+      }
+    })
+    cy.get('[data-cy=new_label_template]').first().click({force: true});
+    for (let i = 0; i < label_list_obj.length; i++) {
+      if(label_list_obj[i].exists){
+        continue
+      }
+      cy.get('[data-cy=label_name_text_field]').click({force: true});
+      cy.get('[data-cy=label_name_text_field]').type(label_list_obj[i].name);
+      cy.get('[data-cy=create_label_button]').click({force: true});
+      cy.wait(1500)
+    }
 
-    cy.get('[data-cy=label_name_text_field]').click({force: true});
-    cy.get('[data-cy=label_name_text_field]').type(labels_list[i].name);
-    cy.get('[data-cy=create_label_button]').click({force: true});
-    cy.wait(1500)
-  }
+  })
 
 });
 
@@ -521,8 +540,8 @@ Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
 
 Cypress.Commands.add('select_label', function (label_name) {
   // hook for future
-  // old command context:
-  // cy.select_label()
+  cy.get('[data-cy=label_select]').click({force: true})
+  cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
 
 
