@@ -27,6 +27,7 @@ for ann in x['annotations']:
         'y_max': ann['bbox'][3] + ann['bbox'][1],
         'image_name': img['file_name'],
         'class': cat['name'],
+        'type': 'box',
     }
     result.append(current)
     i += 1
