@@ -18,13 +18,15 @@ def query_suggest_web(project_string_id):
     issue_list_spec_list = [
         {"query": {
             'kind': str,
-            "required": True
+            "required": True,
+            "string_len_not_zero": False
         }},
     ]
 
     log, input, untrusted_input = regular_input.master(
         request = request,
-        spec_list = issue_list_spec_list)
+        spec_list = issue_list_spec_list,
+        string_len_not_zero = False)
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
@@ -43,18 +45,20 @@ def query_suggest_web(project_string_id):
             session = session,
             log = log,
             project = project,
-            query = input['query']
+            query = input['query'],
+            member = member,
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
-        return jsonify(model_run_list = model_run_data), 200
+        return jsonify(query_data), 200
 
 
 def query_suggest_core(session: object,
                        log: dict = regular_log.default(),
                        project: Project = None,
-                       query: str = None):
+                       query: str = None,
+                       member: object = None):
     """
         Returns suggestions based on query provided.
 
@@ -68,6 +72,6 @@ def query_suggest_core(session: object,
         log['error']['project'] = 'Provide project'
         return None, log
 
-    query_creator = QueryCreator(session, project)
-    suggestions = query_creator.get_suggestions(query)
-    return {'suggestions': suggestions}, log
+    query_creator = QueryCreator(session, project, member)
+    suggestions, type = query_creator.get_suggestions(query)
+    return {'suggestions': suggestions, 'type': type}, log

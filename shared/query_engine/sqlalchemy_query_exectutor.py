@@ -9,6 +9,9 @@ from shared.shared_logger import get_shared_logger
 import operator
 from shared.regular import regular_log
 from sqlalchemy.sql.expression import and_, or_
+from shared.database.source_control.working_dir import WorkingDirFileLink
+from shared.permissions.project_permissions import Project_permissions
+from shared.query_engine.query_creator import ENTITY_TYPES
 logger = get_shared_logger()
 
 
@@ -19,17 +22,27 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         usecases. This object is the input for classes that implement
         the DiffgramQueryExecutor.
     """
-    VALID_ENTITIES = [
-        'file',
-        'labels'
-    ]
+
 
     def __init__(self, session, diffgram_query: DiffgramQuery):
         self.diffgram_query = diffgram_query
         self.log = regular_log.default()
         self.session = session
-        self.final_query = self.session.query(File).filter(
-            File.project_id == self.diffgram_query.project.id
+        self.final_query = self.session.query(File).join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id).filter(
+            File.project_id == self.diffgram_query.project.id,
+            File.state != 'removed',
+            File.type.in_(['video', 'image'])
+        )
+        if diffgram_query.directory:
+            self.final_query = self.final_query.filter(
+                WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
+            )
+        # Additional security check just for sanity
+        Project_permissions.by_project_core(
+            project_string_id = self.diffgram_query.project.project_string_id,
+            Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
+            apis_project_list = [],
+            apis_user_list = ['security_email_verified']
         )
         self.conditions = []
         self.valid = False
