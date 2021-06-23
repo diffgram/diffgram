@@ -759,7 +759,7 @@ class Process_Media():
 
             self.__toggle_flags_from_input(input=parent_input)
             self.declare_success(input=parent_input)
-            self.session.add(parent_input)
+            self._add_input_to_session(parent_input)
 
 
     def __toggle_flags_from_input(self, input: Input):
@@ -783,7 +783,7 @@ class Process_Media():
             self.input.update_log['error']['frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
             self.input.status = 'failed'
             self.input.status_text = "Please provide a frame packet map. It cannot be empty.'"
-            self.session.add(self.input)
+            self._add_input_to_session(self.input)
             self.try_to_commit()
             return
 
@@ -801,13 +801,13 @@ class Process_Media():
             traceback.format_exc()
             self.input.update_log['error']['update_from_frame_packet_map'] = str(e)
             self.input.status = 'failed'
-            self.session.add(self.input)
+            self._add_input_to_session(self.input)
             logger.error(str(e))
 
 
         if len(self.input.update_log["error"].keys()) >= 1:
             self.input = self.update_video_status_when_update_has_errors(input = self.input)  # 'parent' here not frame
-            self.session.add(self.input)
+            self._add_input_to_session(self.input)
          
         # We should not declare success here, it's only started processing
         # TODO review if another state to put here like is_processing
@@ -1249,7 +1249,7 @@ class Process_Media():
                         parent_input.status = "processing_frames_in_queue"
                         parent_input.percent_complete = estimated_percent_complete
 
-                self.session.add(parent_input)
+                self._add_input_to_session(parent_input)
 
         """
         We only want to run this once. But the parent input thing could fire multiple times
@@ -1566,6 +1566,7 @@ class Process_Media():
             logger.error(trace)
 
 
+            return False
 
 
 
@@ -1584,7 +1585,7 @@ class Process_Media():
         parent_input.update_log['error']["Frame " + str(self.frame_number)] = error_log
         parent_input.update_log['last_updated'] = str(time.time())
 
-        self.session.add(parent_input)
+        self._add_input_to_session(parent_input)
 
 
     def save_raw_image_file(self):
@@ -1959,13 +1960,26 @@ class Process_Media():
 
             self.input.status = "downloaded"
 
+    def _add_input_to_session(self, input):
+        """
+            This helper function prevents adding frame inputs to the session
+            since the convention is that frames always stay in memory and should
+            be never commmited or added to an sql alchemy session.
+        :param input:
+        :return:
+        """
+        if input.media_type == 'frame':
+            return
+
+        self.session.add(input)
+
     def populate_new_models_and_runs(self):
         if self.input.media_type == 'video':
             if not self.input.frame_packet_map:
                 return
             frame_packet_map = self.input.frame_packet_map.copy()
             self.input.frame_packet_map = {}
-            self.session.add(self.input)
+            self._add_input_to_session(self.input)
             new_frame_packet_map = {}
             for frame_num, instance_list in frame_packet_map.items():
 
@@ -1990,7 +2004,8 @@ class Process_Media():
             model_manager.check_instances_and_create_new_models()
             # Replace with the instance list that has model_ids and run_ids
             self.input.instance_list = {'list': instance_list}
-        self.session.add(self.input)
+
+        self._add_input_to_session(self.input)
         self.try_to_commit()
 
     def process_video(self):
