@@ -8,14 +8,17 @@ from shared.query_engine.grammar import grammar_definition
 from shared.regular import regular_log
 from shared.shared_logger import get_shared_logger
 from shared.permissions.project_permissions import Project_permissions
+
 logger = get_shared_logger()
 
-ENTITY_TYPES = ['labels', 'file', 'instance', 'dataset', 'issues']
+# ENTITY_TYPES = ['labels', 'file', 'instance', 'dataset', 'issues']
+ENTITY_TYPES = ['labels', 'file']
+
+
 class QueryCreator:
     """
         Responsible for creating a DiffgramQuery based on the defined syntax.
     """
-
 
     def __init__(self, session, project, member, directory = None):
         self.project = project
@@ -31,8 +34,8 @@ class QueryCreator:
         )
         self.log = regular_log.default()
         self.parser = Lark(grammar_definition,
-                                          parser = 'lalr',
-                                          transformer = None)
+                           parser = 'lalr',
+                           transformer = None)
 
     def get_suggestions(self, query_string):
         suggest_type = 'entities'
@@ -62,21 +65,26 @@ class QueryCreator:
                     if num_nested == 1:
                         if last_token.value in ['label', 'labels']:
                             # Show available labels in project.
-                            labels = self.project.get_label_list(self.session, directory = self.project.directory_default)
+                            labels = self.project.get_label_list(self.session,
+                                                                 directory = self.project.directory_default)
                             for label in labels:
                                 suggestions.append(label['label']['name'])
                             suggest_type = 'labels'
                         elif last_token.value in ['file', 'files']:
                             # TODO: add metadata suggestions
-                            suggestions = ['date', 'tag']
-                            suggest_type = 'file_data'
+                            keys = File.get_metadata_keys(session = self.session,
+                                                   project = self.project,
+                                                   directory = self.directory)
+                            print('eys', keys)
+                            suggestions = keys
+                            suggest_type = 'labels'
                         elif last_token.value in ['instance', 'instances']:
                             suggestions = ['type', 'count', 'tag', 'model', 'model_run']
                             suggest_type = 'instance_data'
                         elif last_token.value in ['issues', 'issue']:
                             suggestions = ['status', 'count']
                             suggest_type = 'issues_data'
-                    elif num_nested ==2:
+                    elif num_nested == 2:
                         entity = last_token.value.split('.')[0]
                         if entity in ['label', 'labels']:
                             suggestions.append('$operator')

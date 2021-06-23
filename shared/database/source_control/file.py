@@ -15,6 +15,7 @@ import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
 from shared.shared_logger import get_shared_logger
+from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 logger = get_shared_logger()
 
@@ -1054,6 +1055,23 @@ class File(Base, Caching):
                                                     start_frame_number,
                                                     label_file_id)
 
+    @staticmethod
+    def get_metadata_keys(session, project, directory = None):
+        query = session.query(File).filter(
+            File.project_id == project.id,
+            File.state != 'removed'
+        )
+        if directory:
+            query = query.filter(
+                working_dir_database_models.WorkingDirFileLink.working_dir_id == directory.id
+            )
+        file_list = query.all()
+        result = []
+        for file in file_list:
+            print(file.file_metadata, type(file.file_metadata))
+            if file.file_metadata and type(file.file_metadata) == MutableDict:
+                result = result + list(file.file_metadata.keys())
+        return list(set(result))
 
     @staticmethod
     def toggle_flag_single_file(session,
