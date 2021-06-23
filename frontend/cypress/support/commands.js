@@ -540,6 +540,9 @@ Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
 
 Cypress.Commands.add('select_label', function (label_name) {
   // hook for future
+  if(!label_name){
+    return
+  }
   cy.get('[data-cy=label_select]').click({force: true})
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
