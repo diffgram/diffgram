@@ -159,6 +159,7 @@ const routerOptions = [
     component: 'annotation/annotation_ui_factory',
     props: true, meta: {
       requiresAuth: true,
+      available_on_public_project: true,
       hide_default_menu: true
     },
     name: 'studio'
@@ -513,26 +514,65 @@ const routerOptions = [
 ]
 
 import store from '../store'
+import axios from "axios";
+const fetch_public_project = async function(project_string_id){
+  try{
+    const response = await axios.get(`/api/project/${project_string_id}/view`);
+    if(response.status === 200){
+      return response.data.project
+    }
+    return false;
 
+  }
+  catch (error) {
+    console.error(error)
+  }
+  return false;
+}
 const routes = routerOptions.map(route => {
   return {
     ...route,
     component: () => import(`@/components/${route.component}.vue`),
-    beforeEnter: (to, from, next) => {
+    beforeEnter: async (to, from, next) => {
 
       if (to.matched.some(record => record.meta.requiresAuth)) {
         // this route requires auth, check if logged in
         // if not, redirect to login page.
 
-        if (store.state.user.logged_in != true) {
-          next({
-            path: '/user/login',
-            query: {redirect: to.fullPath}
-          })
-        } else {
+        if (store.state.user.logged_in !== true) {
+
+          // Test if the route can be accessed on a public project
+          if(to.matched.some(record => record.meta.available_on_public_project)){
+            const project_string_id = to.params.project_string_id;
+            const project = await this.fetch_public_project();
+            if(project){
+              // If project exists, this is a public project and we can see it
+              
+            }
+            else{
+              // Otherwise redirect to login
+              next({
+                path: '/user/login',
+                query: {redirect: to.fullPath}
+              })
+            }
+            console.log('PUBLIC PROJECTT', to)
+          }
+          else{
+            next({
+              path: '/user/login',
+              query: {redirect: to.fullPath}
+            })
+          }
+        }
+        else {
           next()
         }
-      } else {
+      }
+
+
+
+        else {
         next() // make sure to always call next()!
       }
     }

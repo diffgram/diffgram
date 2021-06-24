@@ -2,6 +2,7 @@
   <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height">
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details(undefined)" >
       <drawable_canvas
+        v-if="image_bg"
         :allow_zoom="false"
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
@@ -182,7 +183,6 @@
 
         if(this.$props.show_ground_truth){
           const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
-          console.log('ground_truth_instances', ground_truth_instances)
           for(const inst of ground_truth_instances){
 
             this.filtered_instance_list.push(inst)
@@ -208,7 +208,6 @@
       },
 
       view_file_details: function(current_frame){
-        console.log('VIEW DETAILS')
         let model_runs = [];
         let color_list = [];
         if(this.base_model_run){
@@ -244,6 +243,7 @@
         if(this.$props.file.video){
           return this.video_instance_list;
         }
+        return []
       }
     },
   });
