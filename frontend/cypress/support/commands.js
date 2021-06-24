@@ -420,10 +420,18 @@ Cypress.Commands.add('uploadImageWithLabels', function (project_string_id) {
   cy.get('[data-cy=continue_file_mapping]').click({force: true})
   cy.wait(700);
   cy.get('[data-cy=select_model_run_id]').click({force: true})
+
   cy.get('.v-list-item__title').contains('run_id').first().click({force: true})
   cy.wait(500)
   cy.get('[data-cy=continue_file_mapping]').click({force: true})
   cy.wait(700);
+  cy.get('[data-cy=yes_metadata_button]').click({force: true})
+  cy.wait(700);
+  cy.get('[data-cy=select_metadata]').click({force: true})
+  cy.get('.v-menu__content:visible .v-list-item__title').contains('metatada').eq(0).click({force: true})
+  cy.wait(500)
+  cy.get('[data-cy=continue_file_mapping]').click({force: true})
+  cy.wait(500)
   cy.get('[data-cy=select_x_min]').first().click({force: true})
   cy.get('.v-menu__content:visible .v-list-item__title').contains('lower_x').eq(0).click({force: true})
   cy.wait(500)
