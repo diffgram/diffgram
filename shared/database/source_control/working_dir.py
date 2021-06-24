@@ -530,7 +530,7 @@ class WorkingDirFileLink(Base):
         # Assumes working dir....
 
         if job_id:
-            query = session.query(File).filter(File.job_id == job_id)
+            query = session.query(File).distinct(File.id).filter(File.job_id == job_id)
 
         else:
             if directory_list is None:
@@ -542,7 +542,7 @@ class WorkingDirFileLink(Base):
                 file_link_sub_query = WorkingDirFileLink.get_list_sub_query(
                     session, directory_id_list, type)
 
-            query = session.query(File).filter(
+            query = session.query(File).distinct(File.id).filter(
                 File.id == file_link_sub_query.c.file_id)
 
         if exclude_removed is True:

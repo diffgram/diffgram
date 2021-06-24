@@ -17,7 +17,7 @@ describe('Annotate Files Tests', () => {
       cy.uploadAndViewSampleImage(testUser.project_string_id);
     })
 
-    context('It Has a Context Menu For Instance Specific Actions', () => {
+    context('It Can write a query and filter files', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
         cy.wait(2000)
         cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
@@ -37,7 +37,11 @@ describe('Annotate Files Tests', () => {
         }
         cy.get('[data-cy="file_explorer_button"]').click({force: true});
         cy.get('[data-cy="tab__Dataset Explorer"]').click({force: true});
+        cy.wait(500)
+        cy.get('[data-cy=query_input_field]').clear()
+        cy.wait(500)
         cy.get('[data-cy=query_input_field]').type('labels.apple > 1 {enter}')
+        cy.wait(500)
         cy.get('[data-cy=query_input_field]').blur()
         cy.wait(1000);
         cy.get('[data-cy=query_input_field]').focus();

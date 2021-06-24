@@ -91,6 +91,7 @@
                   data-cy="select_label_name"
                   hide-selected
                   :items="pre_label_key_list_filtered"
+                  menuProps="auto"
                   v-model="diffgram_schema_mapping.name">
                 </v-autocomplete>
               </v-container>
@@ -117,6 +118,7 @@
 
                                 hide-selected
                                 :items="pre_label_key_list_filtered"
+                                menuProps="auto"
                                 v-model="diffgram_schema_mapping.file_name">
                 </v-autocomplete>
               </v-container>
@@ -261,10 +263,10 @@
                 and filter your dataset.
               </h4>
               <v-container fluid class="d-flex justify-center flex-grow-1 mt-8">
-                <v-btn x-large color="primary" data-cy="no_model_button" class="mr-8" @click="next_step(current_question + 1, false)">
+                <v-btn x-large color="primary" data-cy="no_metadata_button" class="mr-8" @click="next_step(current_question + 1, false)">
                   No
                 </v-btn>
-                <v-btn x-large color="primary" data-cy="use_model_button" @click="next_step(current_question)">
+                <v-btn x-large color="primary" data-cy="yes_metadata_button" @click="next_step(current_question)">
                   Yes
                 </v-btn>
               </v-container>
@@ -283,7 +285,8 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
-                                data-cy="select_model_run_id"
+                                data-cy="select_metadata"
+                                menuProps="auto"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.file_metadata">
                 </v-autocomplete>
@@ -393,6 +396,7 @@
       },
       watch: {},
       mounted() {
+        this.$refs.select_file_name.lastItem = 200;
       },
       created() {
       },
