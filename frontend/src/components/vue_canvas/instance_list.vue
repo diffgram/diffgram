@@ -1021,6 +1021,9 @@
           }
         },
         detect_hover_on_ellipse: function(instance, ctx, i){
+          if(!this.mouse_position){
+            return
+          }
           const point = this.mouse_position.raw;
           if(ctx.isPointInPath(point.x, point.y)){
             this.count_instance_in_ctx_paths += 1;
