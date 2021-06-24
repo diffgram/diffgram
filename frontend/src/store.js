@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 
+
+
 Vue.use(Vuex)
 
 
@@ -117,7 +119,18 @@ export const user_module = {
   }
 }
 
+export const public_project = {
+  state: {
+    current:{
 
+    }
+  },
+  mutations:{
+    set_current_public_project(state, project) {
+      state.project = project
+    },
+  }
+}
 export const project = {
 
   // TODO merge name and string methods in project
@@ -580,7 +593,7 @@ const video = {
   }
 }
 
-
+const modulesToOmit = ['public_project']
 const my_store = new Vuex.Store({
   modules: {
     attribute: attribute,
@@ -601,9 +614,23 @@ const my_store = new Vuex.Store({
     video: video,
     job: job,
     connection: connection,
-    input: input
+    input: input,
+    public_project: public_project
   },
-  plugins: [createPersistedState()]
+  plugins: [createPersistedState({
+
+    reducer: (state) => {
+      let reducer = Object.assign({}, state)
+      for(const key in Object.keys(reducer)){
+        if(modulesToOmit.includes('key')){
+          delete reducer.key;
+        }
+      }
+
+
+      return (reducer)
+    }
+  })]
 })
 if (window.Cypress) {
   window.__store__ = my_store
