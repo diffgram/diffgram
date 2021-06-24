@@ -169,14 +169,28 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                                                 label_name = label_name,
                                                 project_id = self.diffgram_query.project.id)
             if not label_file:
+                # Strip underscores
+                label_name = label_name.replace('_', ' ')
+                label_file = File.get_by_label_name(session = self.session,
+                                                    label_name = label_name,
+                                                    project_id = self.diffgram_query.project.id)
+            if not label_file:
                 error_string = 'Label {} does not exists'.format(str(label_name))
                 logger.error(error_string)
                 self.log['error']['label_name'] = error_string
                 return
 
             instance_list_count_subquery = (self.session.query(func.count(Instance.id)).filter(
-                Instance.file_id == File.id,
-                Instance.label_file_id == label_file.id
+                or_(
+                   and_(
+                       Instance.file_id == File.id,
+                       Instance.label_file_id == label_file.id
+                   ),
+                    and_(
+                        Instance.parent_file_id == File.id,
+                        Instance.label_file_id == label_file.id
+                    )
+                )
 
             ))
             return instance_list_count_subquery.as_scalar()
