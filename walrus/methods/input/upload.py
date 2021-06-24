@@ -270,6 +270,7 @@ class Upload():
             project=project,
             media_type=None,
             job_id=request.form.get('job_id'),
+            type=request.form.get('source', 'from_resumable'),
             directory_id=request.form.get('directory_id'),  # Not trusted
             video_split_duration=request.form.get('video_split_duration'),
             batch_id=request.form.get('input_batch_id')
@@ -290,7 +291,6 @@ class Upload():
 
         # At somepoint should really declare
         # From UI here...
-        self.input.type = "from_resumable"
         self.input.dzuuid = self.dzuuid
         self.input.action_flow_id = request.headers.get('flow_id')
 

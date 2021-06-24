@@ -220,7 +220,6 @@
                     color="black">
                   </tooltip_icon>
 
-
                   <!-- VIDEO processing status -->
                   <tooltip_icon
                     v-if="props.item.status == 'loaded_video'"
@@ -418,18 +417,22 @@
                   </tooltip_icon>
 
                   <tooltip_icon
-                    v-if="props.item.source == 'from_video_split'"
+                    v-else-if="props.item.source == 'from_video_split'"
                     tooltip_message="Video Split"
                     icon="mdi-call-split"
                     color="blue">
                   </tooltip_icon>
 
                   <tooltip_icon
-                    v-if="props.item.source == 'from_url'"
+                    v-else-if="props.item.source == 'from_url'"
                     tooltip_message="SDK / API"
                     icon="mdi-api"
                     color="green">
                   </tooltip_icon>
+
+                  <v-chip v-else small color="primary">
+                    <strong> {{props.item.source}}</strong>
+                  </v-chip>
 
                   <tooltip_icon
                     v-if="props.item.mode == 'update'"
