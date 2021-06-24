@@ -469,7 +469,7 @@ class Process_Media():
                 return False
 
         if self.input.type in ["from_resumable",
-                               "from_url", "from_video_split"]:
+                               "from_url", "from_video_split", "ui_wizard"]:
 
             download_result = self.download_media()
 

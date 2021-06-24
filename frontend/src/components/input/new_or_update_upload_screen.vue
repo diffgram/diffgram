@@ -618,6 +618,8 @@
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
 
+          formData.append('source', 'ui_wizard');
+
           formData.append('video_split_duration',
             this.video_split_duration);
           formData.append('uuid', file.uuid);
