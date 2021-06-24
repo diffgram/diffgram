@@ -1,6 +1,7 @@
 <template>
 
   <v-bottom-sheet fullscreen v-if="is_open" v-model="is_open"
+
                   width="1700px" id="task-input-list-dialog"
 
                   persistent>
@@ -160,6 +161,7 @@
             @reset_total_files_size="reset_total_files_size"
             @current_directory="set_current_directory"
             @file_added="file_added"
+            @file_removed="file_removed"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
             :upload_mode="upload_mode"
@@ -506,6 +508,11 @@
         },
         reset_total_files_size: function () {
           this.dropzone_total_file_size = 0;
+        },
+        file_removed: function(file){
+          if (file.size && file.data_type != 'Annotations') {
+            this.dropzone_total_file_size -= file.size;
+          }
         },
         file_added: function (file) {
           if (file.size && file.data_type != 'Annotations') {

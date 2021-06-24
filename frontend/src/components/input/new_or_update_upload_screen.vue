@@ -140,6 +140,7 @@
                               :options="dropzoneOptions"
                               @vdropzone-upload-progress="update_progress"
                               @vdropzone-file-added="file_added"
+                              @vdropzone-removed-file="file_removed"
                               v-on:vdropzone-thumbnail="thumbnail"
                               @vdropzone-sending="drop_zone_sending_event"
                               @vdropzone-complete="drop_zone_complete">
@@ -383,6 +384,7 @@
         }
       },
       mounted() {
+
       },
 
       beforeDestroy() {
@@ -423,7 +425,6 @@
           }
         },
         set_with_pre_labeled: function (val) {
-          console.log('aaaaa', val)
           this.with_prelabeled = val;
           this.$emit('complete_question', 4);
         },
@@ -453,6 +454,9 @@
         },
         reset_total_files_size: function (file) {
           this.$emit('reset_total_files_size')
+        },
+        file_removed: function(file){
+          this.$emit('file_removed', file)
         },
         file_added: function (file) {
           this.$emit('file_added', file)
@@ -565,6 +569,9 @@
         },
         move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
+          // if(annotationFile.length > 0){
+          //   this.with_prelabeled = true;
+          // }
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           if(this.with_prelabeled && annotationFile.length === 0){
             this.error = {}
