@@ -1,6 +1,7 @@
 <template>
 
   <v-bottom-sheet fullscreen v-if="is_open" v-model="is_open"
+
                   width="1700px" id="task-input-list-dialog"
 
                   persistent>
