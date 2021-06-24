@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid :style="`position: relative; height: ${wizard_height}`">
 
     <div class="d-flex align-center">
       <v_error_multiple :error="errors_file_schema">
@@ -200,7 +200,8 @@
                 instances. This is an optional step.
               </h4>
               <v-container fluid class="d-flex justify-center flex-grow-1 mt-8">
-                <v-btn x-large color="primary" data-cy="no_model_button" class="mr-8" @click="next_step(current_question + 2, false)">
+                <v-btn x-large color="primary" data-cy="no_model_button" class="mr-8"
+                       @click="next_step(current_question + 2, false)">
                   No
                 </v-btn>
                 <v-btn x-large color="primary" data-cy="use_model_button" @click="next_step(current_question)">
@@ -260,12 +261,12 @@
              :loading="loading"
              :disabled="current_question === 1"
              class="primary lighten-4 ma-8"
-             style="justify-self: start"
+             style="justify-self: start; position: absolute; left: 0; bottom: 0"
              @click="previous_step(current_question)">
         Back
       </v-btn>
       <v-btn x-large
-             style="justify-self: end"
+             style="justify-self: end; position: absolute; right: 0; bottom: 0"
              :loading="loading"
              data-cy="continue_file_mapping"
              class="primary ma-8"
@@ -283,6 +284,7 @@
   import {v4 as uuidv4} from 'uuid';
   import filesize from 'filesize';
   import _ from "lodash";
+
   export default Vue.extend({
       name: 'file_schema_mapper',
       components: {},
@@ -311,7 +313,7 @@
         'pre_labeled_data': {
           default: null
         },
-        'previously_completed_questions':{
+        'previously_completed_questions': {
           default: 0
         }
       },
@@ -327,6 +329,7 @@
           ],
           current_question: 0,
           errors_file_schema: undefined,
+          wizard_height: '800px',
           load_label_names: false,
           loading: false,
           valid_labels: false,
@@ -356,12 +359,19 @@
       mounted() {
       },
       created() {
+        window.addEventListener("resize", this.resize_wizard);
+      },
+      destroyed() {
+        window.removeEventListener("resize", this.resize_wizard);
       },
       beforeDestroy() {
 
       },
       methods: {
-        open_labels: function(){
+        resize_wizard: function () {
+          this.wizard_height = `${ window.innerHeight - 130}px`
+        },
+        open_labels: function () {
           window.open(`/project/${this.$props.project_string_id}/labels`, '_blank');
         },
         validate_file_names: function () {
