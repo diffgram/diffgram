@@ -11,7 +11,7 @@
 
   <!-- TODO do show if job id and in attach to job mode-->
 
-<div v-cloak v-if="!task" id="media_core">
+<div v-cloak v-if="!task" id="media_core" style="border-top: 1px solid #dcdbdb">
   <v-card >
 
     <!-- TODO make this a bit smarter,
@@ -26,7 +26,7 @@
 
     <v-alert v-if="!loading && !media_loading && file_list.length == 0"
              type="info">
-      <v-layout> 
+      <v-layout>
 
         <p class="pr-4">
           No files match criteria. Change criteria and refresh. Or import new data.
@@ -97,7 +97,7 @@
                     >{{metadata_previous.file_count}}</v-chip>
 
               </div>
-              
+
               <!-- Note show conditions are different for next / previous
                 and show conditions are inverted as opposed to disable-->
               <!-- Only show next/previous page if it exists, saves real estate vs disabling-->

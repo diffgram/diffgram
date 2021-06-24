@@ -11,6 +11,7 @@
                     :headers="headers_view"
                     :class="`elevation-${elevation}`"
                     :options.sync="options"
+                    :data-cy="datacy"
                     v-model="selected_internal">
 
         <!-- appears to have to be item for vuetify syntax-->
@@ -187,6 +188,9 @@ export default Vue.extend( {
     // this assumes we want to propgate "selected" up this way???
     'value': {
 
+    },
+    'datacy':{
+      default: 'regular_table'
     },
 
     'loading' : {

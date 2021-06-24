@@ -2,6 +2,7 @@
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.user import UserbaseProject
+from shared.database.source_control.file import File
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.project_directory_list import Project_Directory_List
 from shared.database.event.event import Event
@@ -416,6 +417,52 @@ class Project(Base, Caching):
             'is_public': self.is_public,
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
+
+    def get_label_list(self, session, directory):
+        working_dir_sub_query = session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == directory.id,
+            WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
+
+        # Caution, don't do "state != "removed" here,
+        # Since we may have removed label files
+        # With active instances, and still need this for colour map
+        working_dir_file_list = session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id).all()
+
+        labels_out = []
+
+        # Now getting label file colour map from working dir
+
+        colour_map = directory.label_file_colour_map
+        rebuild_colour_map = False
+
+        if not colour_map:
+            rebuild_colour_map = True
+
+        if rebuild_colour_map is True:
+            colour_map = {}
+
+        # In context of a Label File!!
+        for file in working_dir_file_list:
+
+            # TODO should we keep file id here
+            # so can use for other aspects assoiated with label
+
+            if file.state != "removed":
+                labels_out.append(file.serialize_with_label_and_colour(
+                    session = session))
+            # label_file_colour_map[file.id] = file.colour
+            # directory.label_file_colour_map[file.id] = file.colour
+            if rebuild_colour_map is True:
+                colour_map[file.id] = file.colour
+                directory.label_file_colour_map = colour_map
+        # TODO store this...
+
+        if rebuild_colour_map is True:
+            directory.label_file_colour_map = colour_map
+            session.add(directory)
+
+        return labels_out
 
     def serialize_for_export(self):
         # Just basic information for now till we review / look at other stats thing here
