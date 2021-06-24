@@ -15,6 +15,8 @@ import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
 from shared.shared_logger import get_shared_logger
+from shared.database.core import MutableDict
+from sqlalchemy.dialects.postgresql import JSONB
 logger = get_shared_logger()
 
 
@@ -88,6 +90,8 @@ class File(Base, Caching):
     has_some_machine_made_instances = Column(Boolean)
 
     instance_type_count = Column(MutableDict.as_mutable(JSONEncodedDict))
+
+    file_metadata = Column(MutableDict.as_mutable(JSONB))
 
     # Deprecated shift to instance_type_count
     boxes_count = Column(Integer, default=0)
@@ -784,7 +788,8 @@ class File(Base, Caching):
             video_parent_file=None,
             input_id=None,
             parent_id=None,
-            task=None
+            task=None,
+            file_metadata=None
             ):
         """
         "file_added" case
@@ -829,7 +834,8 @@ class File(Base, Caching):
             colour=colour,
             input_id=input_id,
             parent_id=parent_id,
-            task=task
+            task=task,
+            file_metadata=file_metadata
         )
 
         File.new_file_new_frame(file, video_parent_file)
@@ -992,6 +998,21 @@ class File(Base, Caching):
         return file
 
     @staticmethod
+    def get_by_label_name(session, label_name, project_id):
+        print('get_by_label_name', label_name)
+        label = Label.get_by_name(session = session, label_name = label_name)
+        print('REQUL QUERY', label_name)
+        if not label:
+            return None
+        query = session.query(File).filter(
+            File.project_id == project_id,
+            File.type == 'label',
+            File.label_id == label.id
+
+        )
+        print('aaaa', query.first(), project_id, label_name, label.id, 'label')
+        return query.first()
+    @staticmethod
     def __get_next_instance_and_migrate(session, video_parent_file_id, start_frame_number, label_file_id=None):
         # If there's no next frame let's retry with a join and migrate instances
         # Might eventually remove this code when all instances are migrated.
@@ -1034,6 +1055,23 @@ class File(Base, Caching):
                                                     start_frame_number,
                                                     label_file_id)
 
+    @staticmethod
+    def get_metadata_keys(session, project, directory = None):
+        query = session.query(File).filter(
+            File.project_id == project.id,
+            File.state != 'removed'
+        )
+        if directory:
+            query = query.filter(
+                working_dir_database_models.WorkingDirFileLink.working_dir_id == directory.id
+            )
+        file_list = query.all()
+        result = []
+        for file in file_list:
+            print(file.file_metadata, type(file.file_metadata))
+            if file.file_metadata and type(file.file_metadata) == MutableDict:
+                result = result + list(file.file_metadata.keys())
+        return list(set(result))
 
     @staticmethod
     def toggle_flag_single_file(session,

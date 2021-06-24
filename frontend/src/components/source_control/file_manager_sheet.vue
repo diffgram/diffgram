@@ -17,6 +17,7 @@
                   color="primary">
             <v-tab
               v-for="item in items"
+              :data-cy="`tab__${item.text}`"
               :key="item.text"
             >
               <v-icon left>{{item.icon}}</v-icon>
@@ -112,6 +113,7 @@
         <v-btn
           style="position: absolute; bottom: 25px; right: 25px"
           color="primary"
+          data-cy="file_explorer_button"
           @click="media_sheet = !media_sheet"
           fab
           right

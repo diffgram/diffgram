@@ -1,8 +1,10 @@
 <template>
-  <v-layout class="d-flex flex-column">
-    <v-toolbar extended elevation="0" class="ma-8 mb-0">
+  <v-layout class="d-flex flex-column" style="border-top: 1px solid #dcdbdb">
+
+    <v-toolbar extended elevation="0" class="ma-0 pt-6" style="height: 80px">
       <v-toolbar-title class="d-flex align-center mb-0">
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
+
       </v-toolbar-title>
       <div class="d-flex align-center mr-5">
         <v_directory_list :project_string_id="project_string_id"
@@ -52,12 +54,45 @@
 <!--        <v-icon>mdi-filter</v-icon>-->
 <!--      </v-btn>-->
     </v-toolbar>
+    <v-layout class="mr-5 ml-5 d-flex flex-column">
+      <v_error_multiple :error="query_error"></v_error_multiple>
 
-    <v-layout id="infinite-list" fluid class="files-container d-flex justify-start" :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap'}">
+      <v-menu :value="query_menu_open"
+              max-width="650px"
+
+              :offset-y="true"
+              :close-on-content-click="false"
+              :close-on-click="false"
+              z-index="99999999"
+              attach>
+        <template v-slot:activator="{ on, attrs }">
+          <v-text-field
+            label="Query your data: "
+            v-model="query"
+            data-cy="query_input_field"
+            @focus="on_focus_query"
+            @blur="on_blur_query"
+            @keydown.enter="execute_query($event.target.value)"
+          ></v-text-field>
+        </template>
+        <query_suggestion_menu
+          ref="query_suggestions"
+          @update_query="update_query"
+          @execute_query="execute_query"
+          :project_string_id="project_string_id"
+          :query="query" ></query_suggestion_menu>
+      </v-menu>
+
+    </v-layout>
+    <v-layout id="infinite-list"
+              fluid
+              class="files-container d-flex justify-start"
+              :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
       <file_preview
-        v-else
+        class="file-preview"
+        v-else-if="this.file_list && this.file_list.length > 0"
         v-for="(file, index) in this.file_list"
         :base_model_run="base_model_run"
         :compare_to_model_run_list="compare_to_model_run_list"
@@ -68,6 +103,10 @@
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
       ></file_preview>
+      <v-container fluid v-else-if="this.file_list.length === 0" class="d-flex flex-column justify-center">
+        <h1 class="text-center">There are no files available</h1>
+        <v-icon class="text-center" size="86">mdi-text-box-search-outline</v-icon>
+      </v-container>
       <v-progress-linear indeterminate v-if="infinite_scroll_loading"></v-progress-linear>
 
     </v-layout>
@@ -80,6 +119,7 @@
   import axios from "axios";
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
+  import query_suggestion_menu from "./query_suggestion_menu";
   import file_preview from "./file_preview";
 
   export default Vue.extend({
@@ -88,8 +128,10 @@
       model_run_selector,
       directory_icon_selector,
       file_preview,
+      query_suggestion_menu,
     },
     props: [
+      'project_string_id',
       'project_string_id',
       'directory',
       'full_screen'
@@ -107,7 +149,10 @@
       const listElm = document.querySelector('#infinite-list');
       listElm.addEventListener('scroll', e => {
         if(listElm.scrollTop + listElm.clientHeight >= listElm.scrollHeight) {
-          this.load_more_files();
+          if(this.file_list.length > 0){
+            this.load_more_files();
+          }
+
         }
       });
     },
@@ -119,8 +164,11 @@
           file_count: null
         },
         loading: false,
+        query: undefined,
+        query_error: undefined,
         show_ground_truth: true,
         infinite_scroll_loading: false,
+        query_menu_open: false,
         selected_dir: undefined,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
@@ -131,6 +179,7 @@
           'page_number': 1,
           'request_next_page': false,
           'request_previous_page' : false,
+          'query_menu_open' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
@@ -144,6 +193,26 @@
       }
     },
     methods: {
+      update_query: function(value){
+        if(!this.query){
+          this.query = value;
+        }
+        else{
+          this.query += value;
+        }
+      },
+      on_focus_query: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', true);
+        this.query_menu_open = true
+      },
+      on_blur_query: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', false)
+      },
+      execute_query: async function(query_str){
+        this.query_menu_open = false;
+        this.query = query_str;
+        await this.fetch_file_list()
+      },
       load_more_files: async function(){
         this.metadata.page_number += 1;
         this.metadata.request_next_page = true
@@ -169,6 +238,7 @@
             '/user/' + this.$store.state.user.current.username + '/file/list', {
             'metadata': {
               ...this.metadata,
+              query: this.query,
               previous: this.metadata_previous
             },
             'project_string_id': this.$props.project_string_id
@@ -187,6 +257,7 @@
         }
         catch (error) {
           console.error(error);
+          this.query_error = this.$route_api_errors(error)
         }
         finally {
           if(reload_all){

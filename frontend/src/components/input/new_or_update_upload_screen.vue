@@ -341,7 +341,6 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
-                console.log('FILEEEE', file)
 
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });

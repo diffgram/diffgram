@@ -107,6 +107,7 @@
               <regular_table
                     :header_list="header_list"
                     :column_list="column_list"
+                    datacy="labels_table"
                     :item_list="Labels"
                     :elevation="0"
                     ref="label_data_table"

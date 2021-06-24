@@ -24,7 +24,12 @@
     "run_id": "my_super_model_1__run_1",
     "frame_number": 3,
     "sequence_number": 1,
-    "name": "apple"
+    "name": "apple",
+    "metatada": {
+      "sensor_id": 125,
+      "camera_id": 1,
+      "id_machine": "abc"
+    }
   },
   {
     "myFileName": "testimage2.jpg",

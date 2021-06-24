@@ -6,6 +6,7 @@ from sqlalchemy import event as sqlalchemy_event
 
 
 from sqlalchemy.schema import Index
+from sqlalchemy.dialects.postgresql import JSONB
 
 class Input(Base):
     __tablename__ = 'input'
@@ -109,6 +110,8 @@ class Input(Base):
 
     sequence_map = Column(MutableDict.as_mutable(JSONEncodedDict))
 
+    file_metadata = Column(MutableDict.as_mutable(JSONB))
+
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys=[task_id])
     task_action = Column(String())
@@ -191,7 +194,8 @@ class Input(Base):
             processing_deferred: bool = False,
             parent_input_id: int = None,
             batch_id: int = None,
-            video_split_duration: int = None
+            video_split_duration: int = None,
+            file_metadata: dict = None
     ):
         """
         Helps insure not forgetting stuff...
@@ -225,7 +229,8 @@ class Input(Base):
             video_parent_length = video_parent_length,
             video_split_duration=video_split_duration,
             batch_id=batch_id,
-            copy_instance_list=copy_instance_list
+            copy_instance_list=copy_instance_list,
+            file_metadata=file_metadata
         )
         input.parent_file_id = parent_file_id
 

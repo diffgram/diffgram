@@ -13,10 +13,10 @@
       :item-value="'id'"
     >
       <template v-slot:selection="data">
-        <v-chip class="d-flex align-content-start justify-start pa-2">
+        <v-chip class="d-flex align-content-start justify-start pa-2" small>
           {{ data.item.reference_id }}
-          <div v-if="!multi_select" class="ma-2" :style="{background: selected_color, width: '20px', height: '20px', borderRadius: '5px'}"></div>
-          <div v-else class="ma-2" :style="{background: color_list[data.index], width: '20px', height: '20px', borderRadius: '5px'}"></div>
+          <div v-if="!multi_select" class="ma-2" :style="{background: selected_color, width: '15px', height: '15px', borderRadius: '5px'}"></div>
+          <div v-else class="ma-2" :style="{background: color_list[data.index], width: '15px', height: '15px', borderRadius: '5px'}"></div>
         </v-chip>
       </template>
     </v-autocomplete>
