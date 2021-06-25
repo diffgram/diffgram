@@ -496,7 +496,7 @@ class File_Browser():
 
         self.metadata['pagination'] = self.metadata_proposed.get('pagination', {})
 
-    def build_and_execute_query(self):
+    def build_and_execute_query(self, limit = 25, offset = None):
         """
             This functions builds a DiffgramQuery object and executes it with the
             SQLAlchemy executor to get a list of File objects that we can serialized
@@ -513,8 +513,12 @@ class File_Browser():
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
         if sql_alchemy_query:
+            if limit is not None:
+                sql_alchemy_query = sql_alchemy_query.limit(limit)
+
+            if offset:
+                sql_alchemy_query = sql_alchemy_query.offset(offset)
             file_list = sql_alchemy_query.all()
-            print('FILE LIST', file_list)
         else:
             return False, execution_log
         return file_list, query_creator.log
@@ -621,7 +625,10 @@ class File_Browser():
                 order_by_class_and_attribute = File.time_last_updated
 
         if self.metadata.get('query') and self.metadata.get('query') != '':
-            working_dir_file_list, log = self.build_and_execute_query()
+            working_dir_file_list, log = self.build_and_execute_query(
+                limit = self.metadata["limit"],
+                offset = self.metadata["offset"],
+            )
             if not working_dir_file_list or len(log['error'].keys()) > 1:
                 return False
         else:
