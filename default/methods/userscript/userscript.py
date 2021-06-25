@@ -223,8 +223,8 @@ def __userscript_update(
               '/userscript/list',
               methods=['POST'])
 @Project_permissions.user_has_project(
-    Roles=["admin", "Editor", "Viewer"],
-    apis_user_list=['api_enabled_builder', 'security_email_verified', 'allow_if_project_is_public'])
+    Roles=["admin", "Editor", "Viewer", "allow_if_project_is_public"],
+    apis_user_list=['api_enabled_builder', 'security_email_verified'])
 def list_userscript_api(project_string_id):
     """
 

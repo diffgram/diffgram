@@ -5461,17 +5461,29 @@ export default Vue.extend( {
 
     },
     get_instance_list_for_image: async function(){
-      if (this.$store.state.builder_or_trainer.mode == "builder") {
-        let file = this.$props.file;
+      let url = undefined;
+      let file = this.$props.file;
+      if(this.$store.getters.is_on_public_project){
+        url = `/api/project/${this.$props.project_string_id}/file/${String(this.$props.file.id)}/annotation/list`;
+
+        const response = await axios.post(url, {
+          directory_id : this.$store.state.project.current_directory.directory_id,
+          job_id : this.job_id,
+          attached_to_job: file.attached_to_job
+        })
+        this.get_instances_core(response)
+        this.annotations_loading = false
+
+      }
+      else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
           // If a task is present, prefer this route to handle permissions
-          var url = '/api/v1/task/' + this.task.id + '/annotation/list';
+          url = '/api/v1/task/' + this.task.id + '/annotation/list';
           file = this.$props.task.file;
 
         } else {
 
-          var url = '/api/project/' + this.$props.project_string_id +
-            '/file/' + String(this.$props.file.id) + '/annotation/list'
+          url = `/api/project/${this.$props.project_string_id}/file/${String(this.$props.file.id)}/annotation/list`
         }
         try{
           const response = await axios.post(url, {
@@ -5489,21 +5501,20 @@ export default Vue.extend( {
         }
         return
       }
-
-
-      if (this.$store.state.builder_or_trainer.mode == "trainer") {
-        var url = '/api/v1/task/' + this.task.id +
+      else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        url = '/api/v1/task/' + this.task.id +
           '/annotation/list'
+        try{
+          const response = await axios.get(url, {})
+          this.get_instances_core(response)
+          this.annotations_loading = false
+        }
+        catch(error){
+          console.debug(error);
+          this.loading = false
+        }
       }
-      try{
-        const response = await axios.get(url, {})
-        this.get_instances_core(response)
-        this.annotations_loading = false
-      }
-      catch(error){
-        console.debug(error);
-        this.loading = false
-      }
+
     },
     add_override_colors_for_model_runs: function(){
       if(!this.model_run_list){
@@ -5601,6 +5612,7 @@ export default Vue.extend( {
       this.show_annotations = false
       this.loading = true
       this.annotations_loading = true
+
       this.instance_buffer_error = {}
 
       this.instance_frame_start = this.current_frame
