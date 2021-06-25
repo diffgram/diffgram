@@ -56,7 +56,7 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
 
         Project_permissions.by_project_core(
             project_string_id = input['project_string_id'],
-            Roles = ["admin", "Editor", "Viewer"])
+            Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 
         project = Project.get(
             session = session,

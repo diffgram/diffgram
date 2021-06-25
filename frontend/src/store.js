@@ -121,14 +121,24 @@ export const user_module = {
 
 export const public_project = {
   state: {
-    current:{
+    project:{
 
     }
   },
   mutations:{
     set_current_public_project(state, project) {
       state.project = project
-    },
+    }
+  },
+  getters:{
+    is_on_public_project(state){
+      if(state.project.project_string_id){
+        return true
+      }
+      else{
+        return false
+      }
+    }
   }
 }
 export const project = {

@@ -549,6 +549,7 @@ const routes = routerOptions.map(route => {
             if(project){
               // If project exists, this is a public project and we can see it
               store.commit('set_current_public_project', project);
+              next();
             }
             else{
               // Otherwise redirect to login
