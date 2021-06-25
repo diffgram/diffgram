@@ -158,6 +158,7 @@
             @change_step_no_annotations="el = 6"
             @change_step_annotations="load_annotations_file"
             @progress_updated="update_progress_values"
+            @update_is_actively_sending="update_is_actively_sending"
             @reset_total_files_size="reset_total_files_size"
             @current_directory="set_current_directory"
             @file_added="file_added"
@@ -226,6 +227,7 @@
             v-if="upload_in_progress"
             :total_bytes="dropzone_total_file_size"
             :uploaded_bytes="dropzone_uploaded_file_size"
+            :is_actively_sending="is_actively_sending"
             :currently_uploading="currently_uploading_bytes"
             :progress_percentage="progress_percentage"
             @close_wizard="close"
@@ -261,6 +263,7 @@
       total_questions: 18,
       progress_percentage: null,
       with_pre_labels: null,
+      is_actively_sending: true,
 
       error_update_files: undefined,
       batch: null,
@@ -282,6 +285,7 @@
         number: null,
         model_id: null,
         model_run_id: null,
+        file_metadata: null,
         box: {
           x_min: null,
           x_max: null,
@@ -470,6 +474,9 @@
       },
 
       methods: {
+        update_is_actively_sending: function(is_actively_sending){
+          this.is_actively_sending = is_actively_sending
+        },
         on_change_step: function (step) {
           const stepnum = parseInt(step, 10);
           if (stepnum === 3) {
@@ -667,7 +674,6 @@
         extract_object_keys(obj, prepend = undefined){
           let result = [];
           for (const key in obj) {
-
             if(typeof obj[key] != 'object'){
               if (!result.includes(key)) {
                 if(prepend){
@@ -680,6 +686,12 @@
               }
             }
             else{
+              if(prepend){
+                result.push(prepend + key)
+              }
+              else{
+                result.push(key)
+              }
               const nested_result = this.extract_object_keys(obj[key], `${ prepend ? `${prepend}${key}` : key}.`);
               result = result.concat(nested_result)
             }

@@ -121,7 +121,7 @@
                 <v-col cols="12" class="pa-0" >
 
                   <connector_import_renderer
-                     max_height="375px"
+                    max_height="375px"
                     :project_string_id="project_string_id"
                     :connection="incoming_connection"
                     :video_split_duration="video_split_duration"
@@ -341,7 +341,6 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
-                console.log('FILEEEE', file)
 
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
@@ -639,13 +638,14 @@
 
 
           this.is_actively_sending = true
+          this.$emit('update_is_actively_sending', this.is_actively_sending)
         },
 
 
         drop_zone_complete() {
 
           this.is_actively_sending = false
-
+          this.$emit('update_is_actively_sending', this.is_actively_sending)
           // Not super happy with this but something to think on
           // how deeply we want to integrate this with upload
           // or if we even want to show this here at all
