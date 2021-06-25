@@ -664,7 +664,6 @@ class File_Browser():
                     file_serialized = file.serialize_with_annotations(self.session)
                 else:
                     file_serialized = file.serialize_with_type(self.session)
-                print('aaaa', index_file, file, file_serialized)
                 output_file_list.append(file_serialized)
 
                 limit_counter += 1
