@@ -627,7 +627,7 @@ class File_Browser():
         if self.metadata.get('query') and self.metadata.get('query') != '':
             working_dir_file_list, log = self.build_and_execute_query(
                 limit = self.metadata["limit"],
-                offset = self.metadata["offset"],
+                offset = self.metadata["start_index"],
             )
             if not working_dir_file_list or len(log['error'].keys()) > 1:
                 return False
