@@ -19,8 +19,12 @@ depends_on = None
 def upgrade():
     op.add_column('file', sa.Column('file_metadata', JSONB))
     op.add_column('input', sa.Column('file_metadata', JSONB))
+    op.create_index('index__file_id__and__label_id', 'instance', ['file_id', 'label_file_id'])
+    op.create_index('index__parent_id__and__label_id', 'instance', ['parent_file_id', 'label_file_id'])
 
 
 def downgrade():
     op.drop_column('file', 'file_metadata')
     op.drop_column('input', 'file_metadata')
+    op.drop_index('index__file_id__and__label_id', 'instance')
+    op.drop_index('index__parent_id__and__label_id', 'instance')
