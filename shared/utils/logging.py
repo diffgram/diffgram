@@ -50,8 +50,8 @@ class DiffgramLogger:
             settings.RUNNING_LOCALLY == True:
             self.logger = self.configure_sandbox_testing_logger()
         elif system_mode == 'production':
-            self.logger = self.configure_sandbox_testing_logger()
-            # self.logger = self.configure_gcp_logger()
+            # self.logger = self.configure_sandbox_testing_logger()
+            self.logger = self.configure_gcp_logger()
 
         if self.logger is None and not DiffgramLogger.logging_initialized.get(self.logger_name):
             # Default to always create a logger, eg in case of some settings being mis-configured
