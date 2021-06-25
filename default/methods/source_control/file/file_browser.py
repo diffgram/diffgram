@@ -627,7 +627,7 @@ class File_Browser():
         if self.metadata.get('query') and self.metadata.get('query') != '':
             working_dir_file_list, log = self.build_and_execute_query(
                 limit = self.metadata["limit"],
-                offset = self.metadata["offset"],
+                offset = self.metadata["start_index"],
             )
             if not working_dir_file_list or len(log['error'].keys()) > 1:
                 return False
@@ -664,7 +664,6 @@ class File_Browser():
                     file_serialized = file.serialize_with_annotations(self.session)
                 else:
                     file_serialized = file.serialize_with_type(self.session)
-                print('aaaa', index_file, file, file_serialized)
                 output_file_list.append(file_serialized)
 
                 limit_counter += 1
