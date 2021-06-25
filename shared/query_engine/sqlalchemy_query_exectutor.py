@@ -184,7 +184,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 or_(
                    and_(
                        Instance.file_id == File.id,
-                       Instance.label_file_id == label_file.id
+                       Instance.label_file_id == label_file.id,
                    ),
                     and_(
                         Instance.parent_file_id == File.id,
