@@ -2,7 +2,7 @@
   <div id="annotation_core">
 
 
-    <div>
+    <div style="position: relative">
 
 
       <main_menu :height="`${show_default_navigation ? '100px' : '50px'}`"
@@ -52,16 +52,10 @@
                    >
           </toolbar>
 
-        <v-alert v-if="view_only_mode == true"
-                    type="info"
-                    icon="mdi-eye"
-                    width="250px"
-                    height="30px"
-                    class="ma-auto align-self-center d-flex justify-center align-center mr-5" >
-            View only
-        </v-alert>
+
 
         </template>
+
       </main_menu>
 
       <!-- Errors / info -->

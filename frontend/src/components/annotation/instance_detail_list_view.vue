@@ -313,7 +313,7 @@
                         </td>
 
                         <!-- Actions -->
-                        <td>
+                        <td v-if="!view_only_mode && !anonymous_user_in_public_project">
                           <v-layout>
 
                             <!-- Edit label
@@ -620,6 +620,14 @@ import Vue from "vue";
     },
 
     computed: {
+      anonymous_user_in_public_project: function(){
+        if(this.$store.getters.is_on_public_project && !this.$store.state.user.logged_in){
+          return true
+        }
+        else{
+          return false;
+        }
+      },
       filtered_instance_set: function(){
         const instance_list = this.instance_list.map((inst, i) => ({
           ...inst,
@@ -688,13 +696,20 @@ import Vue from "vue";
           return this.base_header
 
         }
-
-        else {
-
-          if (this.task && this.task.task_type == 'review' && this.render_mode != "gold_standard") {
-            // This is really brittle but works for now
-            this.base_header[3].width = "600px"
+        if (this.task && this.task.task_type == 'review' && this.render_mode != "gold_standard") {
+          // This is really brittle but works for now
+          this.base_header[3].width = "600px"
+        }
+        if(this.view_only_mode && this.anonymous_user_in_public_project){
+          for(let i = 0; i < this.base_header.length; i++){
+            const header = this.base_header[i];
+            if(header.text === 'Actions'){
+              this.base_header.splice(i, 1);
+            }
           }
+          return this.base_header
+        }
+        else {
 
           return this.base_header
         }

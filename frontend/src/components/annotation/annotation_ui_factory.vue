@@ -128,6 +128,7 @@
           this.view_only = true;
         }
         if(!this.$store.getters.is_on_public_project){
+
           if (this.$props.task_id_prop) {
             this.add_visit_history_event('task');
           } else if (this.$props.file_id_prop) {
@@ -135,6 +136,9 @@
           } else {
             this.add_visit_history_event('page')
           }
+        }
+        else{
+          this.view_only = true;
         }
 
       },
