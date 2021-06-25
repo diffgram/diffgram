@@ -833,7 +833,7 @@ class Annotation_Update():
             # To session until checked fully
             # logger.debug('Updating instance with {}'.format(input))
             parent_file_id = None
-            if self.file.type == "frame":
+            if self.file and self.file.type == "frame":
                 if self.video_parent_file:
                     parent_file_id = self.video_parent_file.id
 
