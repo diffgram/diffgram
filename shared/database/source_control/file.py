@@ -315,7 +315,8 @@ class File(Base, Caching):
                 file['video'] = self.video.serialize_list_view(session, self.project)
 
         if self.type == "text":
-            file['text'] = self.text_file.serialize()
+            if self.text_file:
+                file['text'] = self.text_file.serialize()
 
         # Could also get parent file information here too...
 
