@@ -545,7 +545,6 @@ const routes = routerOptions.map(route => {
           if(to.matched.some(record => record.meta.available_on_public_project)){
             const project_string_id = to.params.project_string_id;
             const project = await fetch_public_project(project_string_id);
-            console.log('public project', project)
             if(project){
               // If project exists, this is a public project and we can see it
               store.commit('set_current_public_project', project);

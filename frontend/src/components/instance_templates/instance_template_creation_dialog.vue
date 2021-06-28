@@ -250,7 +250,6 @@
         try {
           this.error = {};
           const has_empty_instances = this.validate_empty_instance_list();
-          console.log('has_empty_instances',has_empty_instances)
           if(!has_empty_instances){
             return
           }
@@ -285,7 +284,6 @@
         try {
           this.error = {};
           const has_empty_instances = this.validate_empty_instance_list();
-          console.log('has_empty_instances',has_empty_instances)
           if(!has_empty_instances){
             return
           }

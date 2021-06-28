@@ -333,7 +333,6 @@
           return {
             init: function () {
               this.on("addedfile", function (file) {
-                console.log('added file', file)
                 if (file.type === 'application/json' || file.type === 'text/csv') {
                   file.data_type = 'Annotations';
                 } else {
@@ -437,7 +436,6 @@
           for (const item of file_list) {
             let data_type = 'Raw Media';
             const extension = item.name.split('.').pop();
-            console.log('es', extension)
             if (extension && this.accepted_annotation_file_types.includes(extension)) {
               data_type = 'Annotations'
             }

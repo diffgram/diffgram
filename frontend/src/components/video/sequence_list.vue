@@ -164,7 +164,7 @@
 
       <v-data-table
                     style="overflow-y:auto; max-height: 400px;"
-                    :headers="headers"
+                    :headers="header_with_perms"
                     :items="sequence_list"
                     item-key="id"
                     :options.sync="options">
@@ -270,7 +270,7 @@
             </td>
 
 
-            <td>
+            <td v-if="!view_only_mode">
               <!-- Actions -->
 
               <!-- Change label
@@ -494,7 +494,18 @@ export default Vue.extend( {
     }
   },
   computed: {
-
+    header_with_perms: function(){
+      const result = [];
+      for(const header of this.headers){
+        if(header.text === 'Actions' && this.view_only_mode){
+          continue
+        }
+        else{
+          result.push(header)
+        }
+      }
+      return result
+    }
   },
   watch: {
 

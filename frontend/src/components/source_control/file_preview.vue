@@ -164,7 +164,6 @@
             let filtered_instances = this.global_instance_list.filter(inst => {
               return inst.model_run_id === model_run.id;
             })
-            console.log('model urn', model_run)
             filtered_instances = filtered_instances.map(inst => {
               return {
                 ...inst,
