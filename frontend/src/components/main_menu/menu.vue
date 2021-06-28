@@ -480,7 +480,8 @@ import Vue from "vue";
     route_home_new_tab: function () {
       if (this.$store.state.user.logged_in == true) {
         window.open('/home/dashboard')
-      } else {
+      }
+      else {
         window.open('/')
       }
     }

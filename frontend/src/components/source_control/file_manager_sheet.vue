@@ -5,6 +5,7 @@
                     hide-overlay
                     class="media-core-container"
                     no-click-animation
+                    style="position: fixed"
                     :fullscreen="full_screen"
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
@@ -111,7 +112,7 @@
       Open File Explorer
       <template v-slot:activator="{ on }">
         <v-btn
-          style="position: absolute; bottom: 25px; right: 25px"
+          style="position: fixed; bottom: 25px; right: 25px"
           color="primary"
           data-cy="file_explorer_button"
           @click="media_sheet = !media_sheet"

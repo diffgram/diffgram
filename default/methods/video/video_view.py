@@ -36,7 +36,7 @@ def get_video_single_image(project_string_id, video_parent_file_id, frame_number
 			  methods=['POST'],  defaults={'task_id': -1})
 @PermissionTaskOrProject.by_task_or_project_wrapper(
     apis_user_list = ["builder_or_trainer"],
-    roles = ["admin", "Editor", "Viewer"])
+    roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def get_video_image_list(project_string_id, task_id, video_parent_file_id):
 
 	spec_list = [{"frame_list" : {

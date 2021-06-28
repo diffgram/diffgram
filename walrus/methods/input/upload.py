@@ -53,7 +53,8 @@ def api_project_upload_large(project_string_id):
 
         more_chunks_expected: bool = int(upload.dzchunkindex) + 1 != int(upload.dztotalchunkcount)
 
-        if more_chunks_expected is False:
+        if more_chunks_expected is False and upload.input is not None:
+            session.commit()
             upload.start_media_processing(input=upload.input)
 
         return jsonify(success=True), 200

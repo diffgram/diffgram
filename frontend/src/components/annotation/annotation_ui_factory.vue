@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow-x:auto;">
+  <div>
 
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="show_annotation_core == true">
@@ -127,12 +127,18 @@
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
-        if (this.$props.task_id_prop) {
-          this.add_visit_history_event('task');
-        } else if (this.$props.file_id_prop) {
-          this.add_visit_history_event('file');
-        } else {
-          this.add_visit_history_event('page')
+        if(!this.$store.getters.is_on_public_project){
+
+          if (this.$props.task_id_prop) {
+            this.add_visit_history_event('task');
+          } else if (this.$props.file_id_prop) {
+            this.add_visit_history_event('file');
+          } else {
+            this.add_visit_history_event('page')
+          }
+        }
+        else{
+          this.view_only = true;
         }
 
       },
@@ -154,7 +160,6 @@
         }
       },
       computed: {
-
         file_id: function () {
           let file_id = this.$props.file_id_prop;
           if (this.$route.query.file) {

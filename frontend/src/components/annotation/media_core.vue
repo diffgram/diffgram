@@ -249,7 +249,7 @@
 
               <button_with_menu
                 tooltip_message="Transfer Selected Files"
-                v-if="!view_only_mode"
+                v-if="!view_only_mode && !anonymous_user_in_public_project"
                 icon="mdi-file-move"
                 color="primary"
                 :loading="api_file_update_loading"
@@ -279,7 +279,7 @@
                 color="primary"
                 :loading="api_file_update_loading"
                 :disabled="api_file_update_loading || selected.length == 0"
-                v-if="['annotation'].includes(file_view_mode)"
+                v-if="!view_only_mode && !anonymous_user_in_public_project && ['annotation'].includes(file_view_mode)"
                 :icon_style="true"
                 :bottom="true"
               >
@@ -1102,7 +1102,14 @@ import Vue from "vue";
     }
   },
   computed: {
-
+    anonymous_user_in_public_project: function(){
+      if(this.$store.getters.is_on_public_project && !this.$store.state.user.logged_in){
+        return true
+      }
+      else{
+        return false;
+      }
+    },
     select_all_data_table: function () {
       if (this.file_view_mode == "home") {
         return false

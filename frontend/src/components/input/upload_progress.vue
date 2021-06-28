@@ -1,5 +1,5 @@
 <template>
-  <v-container v-if="(!progress_percentage && percentage < 100) || (progress_percentage && progress_percentage < 100)">
+  <v-container v-if="(!progress_percentage && percentage < 100) || (progress_percentage && progress_percentage < 100) || is_actively_sending">
     <h1>Uploading Files...</h1>
     <h3 v-if="formatted_total && formatted_uploaded && !progress_percentage">
       {{formatted_uploaded}} of {{formatted_total}}
@@ -42,6 +42,9 @@
         },
         'progress_percentage': {
           default: null,
+        },
+        'is_actively_sending': {
+          default: true,
         }
       },
       data() {
@@ -50,7 +53,7 @@
       computed: {
         percentage: function(){
           if(this.$props.total_bytes === 0){ return 0}
-          return Math.round((this.$props.uploaded_bytes + this.$props.currently_uploading) / this.$props.total_bytes * 100);
+          return Math.round((this.$props.uploaded_bytes) / this.$props.total_bytes * 100);
         },
         formatted_total: function(){
           if(this.$props.total_bytes == undefined){ return undefined}

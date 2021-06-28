@@ -103,7 +103,7 @@ def new_label_file_object_core(session, input, project_string_id, log):
 @routes.route('/api/project/<string:project_string_id>' +
               '/labels/refresh',
               methods = ['GET'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def labelRefresh(project_string_id):
     """
     Get labels from project

@@ -58,7 +58,7 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
 
         Project_permissions.by_project_core(
             project_string_id = input['project_string_id'],
-            Roles = ["admin", "Editor", "Viewer"])
+            Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 
         project = Project.get(
             session = session,
@@ -377,13 +377,16 @@ def view_file_list_web_route(project_string_id, username):
             return jsonify("Error with directory"), 400
 
         user = User.get(session)
+        member = None
         if user:
             member = user.member
         else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
-
+            # In some cases there can be no authorization (since project can be public)
+            # So we check if authorization exists in request.
+            if request.authorization:
+                client_id = request.authorization.get('username', None)
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
         file_browser_instance = File_Browser(
             session = session,
             project = project,

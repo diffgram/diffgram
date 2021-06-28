@@ -121,7 +121,7 @@
                 <v-col cols="12" class="pa-0" >
 
                   <connector_import_renderer
-                     max_height="375px"
+                    max_height="375px"
                     :project_string_id="project_string_id"
                     :connection="incoming_connection"
                     :video_split_duration="video_split_duration"
@@ -333,7 +333,6 @@
           return {
             init: function () {
               this.on("addedfile", function (file) {
-                console.log('added file', file)
                 if (file.type === 'application/json' || file.type === 'text/csv') {
                   file.data_type = 'Annotations';
                 } else {
@@ -437,7 +436,6 @@
           for (const item of file_list) {
             let data_type = 'Raw Media';
             const extension = item.name.split('.').pop();
-            console.log('es', extension)
             if (extension && this.accepted_annotation_file_types.includes(extension)) {
               data_type = 'Annotations'
             }
@@ -638,13 +636,14 @@
 
 
           this.is_actively_sending = true
+          this.$emit('update_is_actively_sending', this.is_actively_sending)
         },
 
 
         drop_zone_complete() {
 
           this.is_actively_sending = false
-
+          this.$emit('update_is_actively_sending', this.is_actively_sending)
           // Not super happy with this but something to think on
           // how deeply we want to integrate this with upload
           // or if we even want to show this here at all
