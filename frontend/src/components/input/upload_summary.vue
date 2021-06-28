@@ -190,6 +190,21 @@
               if(instance[diffgram_schema.model_run_id] || instance[diffgram_schema.model_id]){
                 machine_made = true;
               }
+              if(!file.metadata && instance[diffgram_schema.file_metadata]){
+                file.metadata = {
+                  ...instance[diffgram_schema.file_metadata]
+                }
+                result[file.uuid].file_metadata = {...file.metadata};
+                if (file.name) {
+                  result[file.name].file_metadata = {...file.metadata};
+                }
+              }
+              else if(file.metadata && instance[diffgram_schema.file_metadata]){
+                file.metadata = {
+                  ...file.metadata,
+                  ...instance[diffgram_schema.file_metadata]
+                }
+              }
               const diffgram_formatted_instance = {
                 file_uuid: uuid,
                 type: type,

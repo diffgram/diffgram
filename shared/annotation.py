@@ -832,6 +832,10 @@ class Annotation_Update():
             # Pattern of creating object, but not adding to
             # To session until checked fully
             # logger.debug('Updating instance with {}'.format(input))
+            parent_file_id = None
+            if self.file and self.file.type == "frame":
+                if self.video_parent_file:
+                    parent_file_id = self.video_parent_file.id
 
             self.update_instance(
                 type = input['type'],
@@ -874,6 +878,7 @@ class Annotation_Update():
                 edges = input['edges'],
                 client_created_time = input['client_created_time'],
                 change_source = input['change_source'],
+                parent_file_id = parent_file_id,
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
@@ -1002,6 +1007,7 @@ class Annotation_Update():
                         width = None,
                         height = None,
                         change_source = None,
+                        parent_file_id = None,
                         client_created_time = None,
                         cp = None,
                         p1 = None,
@@ -1074,6 +1080,7 @@ class Annotation_Update():
             'machine_made': machine_made,
             'start_char': start_char,
             'end_char': end_char,
+            'parent_file_id': parent_file_id,
             'start_sentence': start_sentence,
             'end_sentence': end_sentence,
             'start_token': start_token,

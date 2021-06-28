@@ -272,7 +272,8 @@ def input_check_many(spec_list,
 
 def master( request,
 			spec_list,
-			untrusted_input=None
+			untrusted_input=None,
+            string_len_not_zero = True
 			):
 	"""
 	Combo init checker
@@ -299,7 +300,8 @@ def master( request,
 
 	log, input = input_check_many(spec_list=spec_list,
 								  log=log,
-								  untrusted_input=untrusted_input)
+								  untrusted_input=untrusted_input,
+                                  string_len_not_zero = string_len_not_zero)
 	
 	return log, input, untrusted_input
 

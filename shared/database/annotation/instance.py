@@ -113,9 +113,9 @@ class Instance(Base):
     is_template = Column(Boolean, default = False)
     # Kepoints features:
     nodes = Column(MutableDict.as_mutable(JSONEncodedDict),
-                    default = {'nodes': []})
+                   default = {'nodes': []})
     edges = Column(MutableDict.as_mutable(JSONEncodedDict),
-                    default = {'edges': []})
+                   default = {'edges': []})
     # Polygon features:
     # points.points = list of points, point = {x : value, y: value}
     points = Column(MutableDict.as_mutable(JSONEncodedDict),
@@ -144,7 +144,6 @@ class Instance(Base):
     p2 = Column(MutableDict.as_mutable(JSONEncodedDict))  # point 2
     cp = Column(MutableDict.as_mutable(JSONEncodedDict))  # Control point
 
-
     front_face = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     rear_face = Column(MutableDict.as_mutable(JSONEncodedDict))
@@ -166,7 +165,6 @@ class Instance(Base):
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
-
 
     __table_args__ = (
         Index('index__file_id__and__frame_number',
@@ -190,26 +188,24 @@ class Instance(Base):
         else:
             return history_list
 
-
     @staticmethod
     def get_by_id(session, instance_id):
         instance = session.query(Instance).filter(Instance.id == instance_id).first()
         return instance
 
-
     @staticmethod
     def list(
-            session,
-            file_id = None,
-            label_file_id = None,
-            sequence_id = None,
-            exclude_removed = True,
-            number = None,
-            limit = 100,
-            return_kind = "objects",
-            date_to = None,
-            date_from = None,
-            frame_number = None
+        session,
+        file_id = None,
+        label_file_id = None,
+        sequence_id = None,
+        exclude_removed = True,
+        number = None,
+        limit = 100,
+        return_kind = "objects",
+        date_to = None,
+        date_from = None,
+        frame_number = None
     ):
         """
 
@@ -224,7 +220,7 @@ class Instance(Base):
 
         # Base Query
         query = session.query(Instance)
-        
+
         if file_id:
             query = query.filter(Instance.file_id == file_id)
 
@@ -268,7 +264,6 @@ class Instance(Base):
         if return_kind == "objects":
             return query.all()
 
-
     def do_soft_delete(self) -> None:
         """
         Context of wanting to hash afterwards
@@ -286,7 +281,6 @@ class Instance(Base):
         self.soft_delete = True
         self.hash_instance()
         self.file.set_cache_key_dirty(cache_key = 'instance_list')
-
 
     def hash_instance(self) -> None:
         """
@@ -352,6 +346,7 @@ class Instance(Base):
     (ie just the label_file_id) but need to build stronger 
     label map / other stuff there.
     """
+
     def serialize_with_member_data(self):
         result = self.serialize()
         if self.member_created and self.member_created.user:
@@ -421,7 +416,6 @@ class Instance(Base):
 
         }
 
-
     def serialize_with_label(self):
 
         instance = self.serialize()
@@ -432,7 +426,6 @@ class Instance(Base):
 
         instance['label_file'] = label_file
         return instance
-
 
     def serialize_for_source_control(self):
         label_file = None
@@ -523,7 +516,7 @@ class Instance(Base):
 
         if self.preview_image_blob_dir:
             if self.preview_image_url_expiry is None or \
-                    self.preview_image_url_expiry <= time.time():
+                self.preview_image_url_expiry <= time.time():
 
                 try:
                     self.preview_image_url = data_tools.build_secure_url(path = self.preview_image_blob_dir)

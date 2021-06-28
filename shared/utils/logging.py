@@ -1,8 +1,8 @@
-
 from shared.settings import settings
 import logging
 from dataclasses import dataclass
 from typing import Any
+
 
 @dataclass
 class DiffgramLogger:
@@ -40,8 +40,7 @@ class DiffgramLogger:
     def get_concrete_logger(self):
         return self.logger
 
-
-    def configure_concrete_logger(self, 
+    def configure_concrete_logger(self,
                                   system_mode: str):
 
         self.logger = None
@@ -50,7 +49,7 @@ class DiffgramLogger:
             settings.RUNNING_LOCALLY == True:
             self.logger = self.configure_sandbox_testing_logger()
         elif system_mode == 'production':
-            self.logger = self.configure_gcp_logger()
+            self.logger = self.configure_sandbox_testing_logger()
 
         if self.logger is None and not DiffgramLogger.logging_initialized.get(self.logger_name):
             # Default to always create a logger, eg in case of some settings being mis-configured
@@ -68,9 +67,9 @@ class DiffgramLogger:
 
         # Instantiates a client
         fmt_str = '[%(asctime)s] %(levelname)s %(module)s.py @ line %(lineno)d: %(message)s'
-        logging.basicConfig(level=logging.INFO, format=fmt_str)
+        logging.basicConfig(level = logging.INFO, format = fmt_str)
         logging_client = gcp_logging.Client()
-        handler = CloudLoggingHandler(logging_client, name=self.logger_name)
+        handler = CloudLoggingHandler(logging_client, name = self.logger_name)
         handler.setFormatter(logging.Formatter(fmt_str))
         logger = logging.getLogger(self.logger_name)
         logger.addHandler(handler)
@@ -90,17 +89,17 @@ class DiffgramLogger:
         handler = colorlog.StreamHandler()
         formatter = ColoredFormatter(
             "%(log_color)s[%(asctime)s] %(levelname)s %(reset)s%(blue)s%(module)s.py Line %(lineno)d: %(reset)s%(white)s%(message)s",
-            datefmt=None,
-            reset=True,
-            log_colors={
+            datefmt = None,
+            reset = True,
+            log_colors = {
                 'DEBUG': 'cyan',
                 'INFO': 'green',
                 'WARNING': 'yellow',
                 'ERROR': 'red',
                 'CRITICAL': 'red,bg_white',
             },
-            secondary_log_colors={},
-            style='%'
+            secondary_log_colors = {},
+            style = '%'
         )
 
         handler.setFormatter(formatter)
@@ -117,11 +116,10 @@ class DiffgramLogger:
         DiffgramLogger.logging_initialized[self.logger_name] = True
         return logger
 
-
     def configure_default_logger(self):
 
         fmt_str = '[%(asctime)s] %(levelname)s %(module)s.py @ line %(lineno)d: %(message)s'
-        logging.basicConfig(level=logging.DEBUG, format=fmt_str)
+        logging.basicConfig(level = logging.DEBUG, format = fmt_str)
         logger = logging.getLogger(self.logger_name)
         logger.info('Logger setup success.')
         DiffgramLogger.logging_initialized[self.logger_name] = True

@@ -115,3 +115,4 @@ def do_routes_importing():
     from methods.batch.batch_new import new_input_batch
 
     from methods.model.model_run_list import model_run_list_web
+    from methods.query_engine.query_suggest import query_suggest_web

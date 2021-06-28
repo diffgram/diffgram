@@ -898,6 +898,9 @@
           return ctx.isPointInPath(point.x, point.y);
         },
         is_point_in_cuboid_face: function(side, front_face, rear_face, ctx){
+          if(!this.mouse_position){
+            return false;
+          }
           const mouse_x = this.mouse_position.raw.x;
           const mouse_y = this.mouse_position.raw.y;
           if(side === 'top'){
@@ -1090,7 +1093,7 @@
           if(ctx.isPointInPath(mouse.x, mouse.y)){
             if (this.instance_hover_index != i) {
               this.instance_hover_index = i
-              this.instance_hover_type = instance.type
+              this.instance_hover_type = instance.typedetect_hover_on_cuboid
             }
             this.count_instance_in_ctx_paths += 1
           }
