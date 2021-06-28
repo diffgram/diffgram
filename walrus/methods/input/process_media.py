@@ -90,7 +90,6 @@ def process_media_unit_of_work(item):
             try:
                 process_media.main_entry()
             except Exception as e:
-                traceback.format_exc(e)
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
         else:
@@ -161,6 +160,17 @@ def check_if_add_items_to_queue(add_deferred_items_time):
         return add_deferred_items_time
 
 
+
+# https://diffgram.com/docs/process-media-local-worker-queues
+VIDEO_QUEUE = PriorityQueue()
+FRAME_QUEUE = PriorityQueue()
+frame_queue_lock = threading.Lock()
+video_queue_lock = threading.Lock()
+threads = []
+
+video_threads = 1
+frame_threads = int(video_threads * 8)
+
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
 
@@ -170,30 +180,38 @@ def add_item_to_queue(item):
         VIDEO_QUEUE.put(item)
 
 
-def process_media_queue_worker(queue):
+def process_media_queue_worker(queue, queue_type):
+    queue_lock = None
+    if queue_type == 'frame':
+        queue_lock = frame_queue_lock
+    elif queue_type == 'video':
+        queue_lock = video_queue_lock
+    else:
+        logger.error('Invalid queue type')
+        return
     while True:
-        process_media_queue_getter(queue)
+        process_media_queue_getter(queue, queue_lock)
 
 
-def process_media_queue_getter(queue):
-    item = queue.get()
-    process_media_unit_of_work(item)
-    queue.task_done()
+def process_media_queue_getter(queue, queue_lock):
+    # https://diffgram.com/docs/process_media_queue_getter
+    queue_lock.acquire()
+    if not queue.empty():
+        item = queue.get()
+        queue_lock.release()
+        process_media_unit_of_work(item)
+        queue.task_done()
+    else:
+        queue_lock.release()
+        time.sleep(0.1)
 
-
-# https://diffgram.com/docs/process-media-local-worker-queues
-VIDEO_QUEUE = PriorityQueue()
-FRAME_QUEUE = PriorityQueue()
-threads = []
-
-video_threads = 1
-frame_threads = int(video_threads * 8)
 
 # Kick off worker threads for global queue
 for i in range(video_threads):
     t = threading.Thread(
         target=process_media_queue_worker,
-        args=((VIDEO_QUEUE),))
+        args=(VIDEO_QUEUE, 'video',)
+    )
     t.daemon = True  # Allow hot reload to work
     t.start()
     threads.append(t)
@@ -201,7 +219,8 @@ for i in range(video_threads):
 for i in range(frame_threads):
     t = threading.Thread(
         target=process_media_queue_worker,
-        args=((FRAME_QUEUE),))
+        args=(FRAME_QUEUE, 'frame',)
+    )
     t.daemon = True  # Allow hot reload to work
     t.start()
     threads.append(t)
@@ -1764,46 +1783,6 @@ class Process_Media():
         # TODO, the last successful item should set this...
         self.input.status = "success"
         return True
-
-    # DEPRECATED August 6th, moving to be part of main_entry if type is "from_url"
-    # Still used in machine_learning/predict/inference_from_url not removing yet
-    def process_url(
-            self):
-        """
-        Purpose:
-            1) Download raw media
-            2) Validate media type
-            3) Process media into system
-
-            Monitors process through Input class
-
-        Arguments:
-            url, string
-            temp_dir, string?
-            session, db object
-            project_id, int
-            project_string_id, string
-            directory_id, int  WorkingDir() class
-
-        Returns:
-            True if successful
-            False otherwise
-
-        """
-
-        self.session.flush()
-
-        download_result = self.download_media()
-
-        if download_result is False:
-            return False, self.input
-
-        process_result = self.main_entry()
-
-        if process_result is False:
-            return False, self.input
-
-        return True, self.input
 
     def download_media(self):
         """
