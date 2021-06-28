@@ -14,6 +14,7 @@ describe('Login Flow tests', function () {
       'action',
       'ai',
       'alert',
+      'public_project',
       'annotation_assignment',
       'annotation_project',
       'annotation_state',
