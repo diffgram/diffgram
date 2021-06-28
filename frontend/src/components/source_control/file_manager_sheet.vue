@@ -5,6 +5,7 @@
                     hide-overlay
                     class="media-core-container"
                     no-click-animation
+                    style="position: fixed"
                     :fullscreen="full_screen"
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
