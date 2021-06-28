@@ -399,7 +399,10 @@
       },
       watch: {},
       mounted() {
-        this.$refs.select_file_name.lastItem = 200;
+        if(this.$refs.select_file_name){
+          this.$refs.select_file_name.lastItem = 200;
+        }
+
       },
       created() {
         window.addEventListener("resize", this.resize_wizard);
