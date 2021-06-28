@@ -1,5 +1,5 @@
 <template>
-  <div style="overflow-x:auto;">
+  <div>
 
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="show_annotation_core == true">

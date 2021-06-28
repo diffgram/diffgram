@@ -111,7 +111,7 @@
       Open File Explorer
       <template v-slot:activator="{ on }">
         <v-btn
-          style="position: absolute; bottom: 25px; right: 25px"
+          style="position: fixed; bottom: 25px; right: 25px"
           color="primary"
           data-cy="file_explorer_button"
           @click="media_sheet = !media_sheet"

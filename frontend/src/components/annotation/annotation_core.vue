@@ -76,6 +76,7 @@
 
     </div>
     <v-snackbar
+      v-if="snackbar_issues"
       v-model="snackbar_issues"
       :multi-line="true"
       :timeout="-1"
@@ -95,6 +96,7 @@
     </v-snackbar>
 
     <v-snackbar
+      v-if="show_custom_snackbar"
       v-model="show_custom_snackbar"
       :multi-line="true"
       :timeout="-1"
@@ -115,6 +117,7 @@
 
 
     <v-snackbar
+      v-if="show_snackbar_auto_border"
       v-model="show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
@@ -133,6 +136,7 @@
       </template>
     </v-snackbar>
     <v-snackbar
+      v-if="show_snackbar_paste"
       v-model="show_snackbar_paste"
       :multi-line="true"
       :timeout="5000"
