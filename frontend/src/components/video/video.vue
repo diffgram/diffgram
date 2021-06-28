@@ -638,7 +638,6 @@ export default Vue.extend( {
        */
       let rect = this.box_client;
       var x = this.mouse_x - rect.left;
-      console.log('AAAA', this.mouse_x, rect.left)
       let padding = 16
       if(x < 0){
         return
@@ -654,9 +653,6 @@ export default Vue.extend( {
       let slider_width = rect.width - (padding * 2)
 
       let percent_on_slider = (x - offset) / slider_width
-      console.log('percent on slider', percent_on_slider)
-      console.log('x', x)
-      console.log('offset x', offset)
       if (isNaN(percent_on_slider)){
         return
       }
@@ -840,7 +836,6 @@ export default Vue.extend( {
     },
 
     slide_change: function (event) {
-      console.log('SLIDER CHANGE', event)
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },
@@ -971,7 +966,6 @@ export default Vue.extend( {
 
             this.$emit('playing')
             this.primary_video.playbackRate = this.playback_rate
-            console.log('video animation start');
             this.video_animation_start()
 
           })

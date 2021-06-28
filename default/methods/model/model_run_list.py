@@ -6,7 +6,7 @@ except:
 from shared.database.model.model_run import ModelRun
 
 @routes.route('/api/v1/project/<string:project_string_id>/model-runs/list', methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"], apis_user_list = ["api_enabled_builder"])
 def model_run_list_web(project_string_id):
     """
         List all the discussion based on the given filters.

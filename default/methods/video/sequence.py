@@ -20,7 +20,7 @@ from sqlalchemy.orm import joinedload
 			  '/video/single/<int:video_file_id>' +
 			  '/sequence/list', 
 			  methods=['GET'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def get_sequence(project_string_id, video_file_id):
 
 	start_time = time.time()
@@ -71,7 +71,7 @@ def get_sequence_from_label_using_task(task_id, label_file_id):
 			  '/label/<int:label_file_id>'
 			  '/sequence/list', 
 			  methods=['GET'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def get_sequence_from_label(project_string_id, video_file_id, label_file_id):
 
 	with sessionMaker.session_scope() as session:

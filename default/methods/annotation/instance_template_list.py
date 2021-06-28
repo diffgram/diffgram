@@ -8,7 +8,7 @@ from shared.annotation import Annotation_Update
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/instance-template/list', methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"], apis_user_list = ["api_enabled_builder"])
 def list_instance_template_api(project_string_id):
     """
         Fetch the list of instance templates in the project.

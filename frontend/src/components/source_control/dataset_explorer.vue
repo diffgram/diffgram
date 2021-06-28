@@ -3,10 +3,20 @@
 
     <v-toolbar extended elevation="0" class="ma-0 pt-6" style="height: 80px">
       <v-toolbar-title class="d-flex align-center mb-0">
+        <tooltip_button
+          tooltip_message="Refresh"
+          datacy="refresh_button"
+          @click="fetch_file_list"
+          icon="refresh"
+          :icon_style="true"
+          color="primary"
+        >
+        </tooltip_button>
         <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
 
       </v-toolbar-title>
       <div class="d-flex align-center mr-5">
+
         <v_directory_list :project_string_id="project_string_id"
                           @change_directory="on_change_ground_truth_dir"
                           ref="ground_truth_dir_list"
@@ -249,6 +259,12 @@
               this.file_list = response.data.file_list;
             }
             else{
+
+              for(const file in response.data.file_list){
+                if(!this.file_list.find(f => f.id === file.id)){
+                  this.file_list.push(file);
+                }
+              }
               this.file_list = this.file_list.concat(response.data.file_list);
             }
 

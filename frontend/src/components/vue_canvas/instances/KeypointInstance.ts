@@ -198,7 +198,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.is_dragging_instance = true;
   }
   public add_node_to_instance() {
-    console.log('add node instance')
     if (this.is_hovered) {
       if (this.current_node_connection.length === 1) {
         //console.log('aaaa ad edgeee', this.node_hover_index, this.current_node_connection)

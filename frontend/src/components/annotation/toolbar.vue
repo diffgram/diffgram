@@ -197,21 +197,24 @@
 
     <v-divider
       vertical
+      v-if="!view_only_mode"
     ></v-divider>
 
 
-    <tooltip_button
-      @click="$emit('save')"
-      datacy="save_button"
-      :loading="save_loading"
-      :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
-      color="primary"
-      icon="save"
-      tooltip_message="Save Image / Frame"
-      :icon_style="true"
-      :bottom="true">
-    </tooltip_button>
+    <div>
+      <tooltip_button
+          @click="$emit('save')"
+          datacy="save_button"
+          :loading="save_loading"
+          :disabled="!has_changed || save_loading || view_only_mode || (file == undefined && task == undefined)"
+          color="primary"
+          icon="save"
+          tooltip_message="Save Image / Frame"
+          :icon_style="true"
+          :bottom="true">
+      </tooltip_button>
 
+    </div>
     <div class="has-changed">
       <div style="width: 100px">
         <span v-if="save_loading"> Saving. </span>
@@ -223,6 +226,7 @@
     </div>
 
     <v-divider
+      v-if="!view_only_mode"
       vertical
     ></v-divider>
 
@@ -260,32 +264,34 @@
   <!--  without this div the order of the two buttons randomly swaps
     -->
   <div>
-    <tooltip_button
-      tooltip_message="Previous File"
-      v-if="!task && file && file.id"
-      @click="$emit('change_file', 'previous')"
-      :disabled="loading || annotations_loading || full_file_loading || !file"
-      color="primary"
-      icon="mdi-chevron-left-circle"
-      :icon_style="true"
-      :bottom="true"
-                    >
-    </tooltip_button>
-
+      <tooltip_button
+          tooltip_message="Previous File"
+          v-if="!task && file && file.id"
+          @click="$emit('change_file', 'previous')"
+          :disabled="loading || annotations_loading || full_file_loading || !file"
+          color="primary"
+          icon="mdi-chevron-left-circle"
+          :icon_style="true"
+          :bottom="true"
+      >
+      </tooltip_button>
       <!-- TODO Move some of disabled logic into functions don't like having
             so much of it here as it gets more complext -->
-    <tooltip_button
-      tooltip_message="Next File"
-      v-if="!task && file && file.id"
-      @click="$emit('change_file', 'next')"
-      :disabled="loading || annotations_loading ||  full_file_loading || !file"
-      color="primary"
-      icon="mdi-chevron-right-circle"
-      :icon_style="true"
-      :bottom="true"
-                    >
-    </tooltip_button>
+
   </div>
+    <div>
+      <tooltip_button
+          tooltip_message="Next File"
+          v-if="!task && file && file.id"
+          @click="$emit('change_file', 'next')"
+          :disabled="loading || annotations_loading ||  full_file_loading || !file"
+          color="primary"
+          icon="mdi-chevron-right-circle"
+          :icon_style="true"
+          :bottom="true"
+      >
+      </tooltip_button>
+    </div>
     <div>
       <tooltip_button
         tooltip_message="Previous Task"
@@ -748,6 +754,13 @@
 
 
       </v-toolbar-items>
+  <v-chip
+      v-if="view_only_mode == true"
+      small
+      color="primary"
+      class="d-flex pa-2 justify-center align-center" >
+    <span style="font-size: 12px" class="mr-2"><strong> <v-icon class="mr-2">mdi-eye</v-icon>View only</strong></span>
+  </v-chip>
     </v-toolbar>
 
 </template>
