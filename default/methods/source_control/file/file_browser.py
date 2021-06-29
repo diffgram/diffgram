@@ -10,7 +10,7 @@ from sqlalchemy import asc
 from sqlalchemy import desc
 from shared.query_engine.query_creator import QueryCreator
 from shared.query_engine.sqlalchemy_query_exectutor import SqlAlchemyQueryExecutor
-
+import math
 
 @routes.route('/api/v1/file/view',
               methods = ['POST'])
@@ -443,7 +443,14 @@ class File_Browser():
 
         self.metadata['file'] = {}
         self.metadata['query'] =  self.metadata_proposed.get("query", None)
+
         self.metadata['limit'] = 25
+        self.metadata['page'] = self.metadata_proposed.get("page", 1)
+        if self.metadata['page'] == 0:
+            self.metadata['page'] = 1
+        self.metadata['next_page'] = self.metadata_proposed.get("page", 1) + 1
+        self.metadata['total_pages'] = 1
+        self.metadata['prev_page'] = self.metadata_proposed.get("page", 1) - 1 if self.metadata_proposed.get("page", 1) > 1 else None
 
         self.metadata['directory_id'] = self.metadata_proposed.get("directory_id", None)
         self.metadata['date_from'] = self.metadata_proposed.get("date_from", None)
@@ -475,29 +482,9 @@ class File_Browser():
             else:
                 self.metadata["limit"] = server_side_limit
 
-        request_next_page = self.metadata_proposed.get('request_next_page', None)
-
-        # TODO this makes a lot of assumptions about which fires first,
-        # ie would rather have a "request_next_page_kind" or something...
-
-        # Why need meta data previous here?
-        # mainly based off 'end_index'
-        if request_next_page is True and self.metadata_proposed.get('previous', None):
-            self.metadata["start_index"] = int(
-                self.metadata_proposed['previous'].get('end_index', 0))
-
-        # self.metadata['label']["start_index"] = int(self.metadata_proposed['previous']['label'].get('end_index', 0))
-
-        request_previous_page = self.metadata_proposed.get('request_previous_page', None)
-        if request_previous_page is True:
-            # this seems kinda hacky to use the limit...
-            if self.metadata_proposed['previous'].get('start_index'):
-                self.metadata["start_index"] = int(
-                    self.metadata_proposed['previous'].get('start_index')) - int(self.metadata["limit"])
-            if self.metadata["start_index"] < 0:
-                self.metadata["start_index"] = 0
-
-        self.metadata['pagination'] = self.metadata_proposed.get('pagination', {})
+        # Index calculation is now done based on page and limit
+        self.metadata["start_index"] = (self.metadata["page"] - 1) * self.metadata["limit"]
+        print('start', self.metadata['start_index'], self.metadata['page'])
 
     def build_and_execute_query(self, limit = 25, offset = None):
         """
@@ -516,6 +503,7 @@ class File_Browser():
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
         if sql_alchemy_query:
+            count = sql_alchemy_query.count()
             if limit is not None:
                 sql_alchemy_query = sql_alchemy_query.limit(limit)
 
@@ -523,8 +511,9 @@ class File_Browser():
                 sql_alchemy_query = sql_alchemy_query.offset(offset)
             file_list = sql_alchemy_query.all()
         else:
-            return False, execution_log
-        return file_list, query_creator.log
+            count = None
+            return False, execution_log, count
+        return file_list, query_creator.log, count
 
     def file_view_core(
         self,
@@ -611,14 +600,13 @@ class File_Browser():
                 job_id = self.metadata['job_id']
 
         order_by_direction = desc
-        requested_direction = self.metadata['pagination'].get('descending')
-        if requested_direction == False:  # defaults to true...
+        if self.metadata.get('order', 'desc') == 'asc':  # defaults to true...
             order_by_direction = asc
 
         # Default
         order_by_class_and_attribute = File.time_last_updated
 
-        requested_order_by = self.metadata['pagination'].get('sortBy')
+        requested_order_by = self.metadata.get('sortBy')
         if requested_order_by:
             if requested_order_by == "filename":
                 order_by_class_and_attribute = File.original_filename
@@ -628,12 +616,13 @@ class File_Browser():
                 order_by_class_and_attribute = File.time_last_updated
 
         if self.metadata.get('query') and self.metadata.get('query') != '':
-            working_dir_file_list, log = self.build_and_execute_query(
+            working_dir_file_list, log, count = self.build_and_execute_query(
                 limit = self.metadata["limit"],
                 offset = self.metadata["start_index"],
             )
             if not working_dir_file_list or len(log['error'].keys()) > 1:
                 return False
+            file_count += count
         else:
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
@@ -660,6 +649,17 @@ class File_Browser():
             file_count += count
 
             working_dir_file_list = query.all()
+
+        self.metadata['total_pages'] = math.ceil(float(file_count) / float(self.metadata['limit']))
+        if self.metadata['page'] >= self.metadata['total_pages']:
+            self.metadata['next_page'] = None
+            self.metadata['prev_page'] = self.metadata['page'] - 1
+        else:
+            self.metadata['next_page'] = self.metadata['page'] + 1
+            if self.metadata['next_page'] > 1:
+                self.metadata['prev_page'] = self.metadata['page'] - 1
+            else:
+                self.metadata['prev_page'] = None
 
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
