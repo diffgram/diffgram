@@ -979,7 +979,7 @@ import Vue from "vue";
       annotation_status: "All",
 
       metadata_limit_options: [10, 25, 100, 250, 950],
-      metadata_limit: 10, // TODO attach to vue store.
+      metadata_limit: 25, // TODO attach to vue store.
 
       job_list: [],
       date: undefined,

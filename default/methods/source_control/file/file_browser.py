@@ -503,6 +503,7 @@ class File_Browser():
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
         if sql_alchemy_query:
+            count = sql_alchemy_query.count()
             if limit is not None:
                 sql_alchemy_query = sql_alchemy_query.limit(limit)
 
@@ -510,8 +511,9 @@ class File_Browser():
                 sql_alchemy_query = sql_alchemy_query.offset(offset)
             file_list = sql_alchemy_query.all()
         else:
-            return False, execution_log
-        return file_list, query_creator.log
+            count = None
+            return False, execution_log, count
+        return file_list, query_creator.log, count
 
     def file_view_core(
         self,
@@ -614,13 +616,13 @@ class File_Browser():
                 order_by_class_and_attribute = File.time_last_updated
 
         if self.metadata.get('query') and self.metadata.get('query') != '':
-            working_dir_file_list, log = self.build_and_execute_query(
+            working_dir_file_list, log, count = self.build_and_execute_query(
                 limit = self.metadata["limit"],
                 offset = self.metadata["start_index"],
             )
             if not working_dir_file_list or len(log['error'].keys()) > 1:
                 return False
-            # TODO ADD FILE COUNT TO QUERY EXECUTOR
+            file_count += count
         else:
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
