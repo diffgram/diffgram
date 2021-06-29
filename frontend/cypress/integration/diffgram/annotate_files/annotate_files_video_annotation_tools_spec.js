@@ -101,7 +101,7 @@ describe('Annotate Files Tests', () => {
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(2000)
 
-          expect(window.AnnotationCore.ghost_instance_list.length > 1);
+          expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
         });
 
