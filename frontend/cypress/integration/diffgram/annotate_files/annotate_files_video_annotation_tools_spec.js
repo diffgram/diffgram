@@ -85,6 +85,29 @@ describe('Annotate Files Tests', () => {
 
       })
 
+      it('Ghost box shows', () => {
+
+        cy.window().then(window => {
+
+          cy.get('[data-cy="edit_toggle"]').click({force: true})
+          cy.get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
+          cy.wait(2000)
+          cy.mousedowncanvas(85, 50);
+          cy.mouseupcanvas()
+          cy.wait(3000)
+          cy.dragcanvas(85, 85, 140, 140);
+          cy.wait(3000)
+
+          cy.get('[data-cy="forward_1_frame"]').click({force: true})
+          cy.wait(2000)
+
+          expect(window.AnnotationCore.ghost_instance_list.length > 1);
+
+        });
+
+      })
+
+
 
 
     })
