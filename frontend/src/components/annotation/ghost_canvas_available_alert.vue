@@ -40,11 +40,12 @@
 
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="show_menu = false" small color="primary">Ok</v-btn>
+        <v-btn @click="show_menu = false" data-cy="ghost_instance_ok" small color="primary">Ok</v-btn>
         <v-btn @click="show_menu = false,
                $store.commit('set_user_setting', ['hide_ghost_canvas_available_alert', true])
                "
                small
+               data-cy="ghost_instance_dont_show_again"
                color="secondary">Don't Show Again</v-btn>
       </v-card-actions>
     </v-card>
