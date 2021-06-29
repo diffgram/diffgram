@@ -117,7 +117,7 @@
                 <tooltip_button
                   v-show="!loading &&
                       (metadata_previous.end_index != metadata_previous.file_count
-                      || request_next_page_available)"
+                      || metadata_previous.next_page != undefined)"
                   tooltip_message="Next Page"
                   @click="next_page"
                   :loading="loading"
@@ -927,7 +927,7 @@ import Vue from "vue";
       file_list: [],
 
       height: 0,
-      page_number: 0,
+      page_number: 1,
       selected_dirs: [],
       job_attached_dirs: [],
       select_from_metadata: false,
@@ -979,10 +979,7 @@ import Vue from "vue";
       annotation_status: "All",
 
       metadata_limit_options: [10, 25, 100, 250, 950],
-      metadata_limit: 25, // TODO attach to vue store.
-
-      request_next_page_flag: false,
-      request_next_page_available: true,
+      metadata_limit: 10, // TODO attach to vue store.
 
       job_list: [],
       date: undefined,
@@ -1176,9 +1173,7 @@ import Vue from "vue";
         'issues_filter': this.issues_filter,
         'limit': this.metadata_limit,
         'media_type': this.filter_media_type_setting,
-        'page_number': this.page_number,
-        'request_next_page': this.request_next_page_flag,
-        'request_previous_page' : this.request_previous_page_flag,
+        'page': this.page_number,
         'file_view_mode': this.file_view_mode,
         'previous': this.metadata_previous,
         'options': this.options,
@@ -1463,9 +1458,8 @@ import Vue from "vue";
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
-      this.page_number = 0;
-      this.request_previous_page_flag = false;
-      this.request_next_page_flag = false;
+      this.page_number = 1;
+
       this.get_media(false);
 
 
@@ -1525,11 +1519,11 @@ import Vue from "vue";
         } else { i -= 1 }
 
         // limits
-        if (i < 0 && this.page_number > 0) {
+        if (i < 0 && this.page_number > 1) {
           await this.previous_page();
           i = this.file_list.length - 1
         }
-        else if(i < 0 && this.page_number == 0){
+        else if(i < 0 && this.page_number == 1){
           i = 0
         }
         // End of list, go to next page
@@ -1562,21 +1556,15 @@ import Vue from "vue";
     },
 
     item_changed() {
-      this.request_next_page_available = false
+
     },
     request_media() {
-      this.request_next_page_flag = false
-      this.request_previous_page_flag = false
-      this.request_next_page_available = true
-
       this.select_from_metadata = false
       this.selected = []
 
       this.get_media();
     },
     async next_page() {
-      this.request_next_page_flag = true
-      this.request_previous_page_flag = false
       this.page_number += 1
       await this.get_media();
     },
@@ -1585,8 +1573,6 @@ import Vue from "vue";
        * prefer to share this function...
        *
        */
-      this.request_next_page_flag = false
-      this.request_previous_page_flag = true
       this.page_number -= 1
       await this.get_media();
 
