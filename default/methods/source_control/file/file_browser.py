@@ -44,7 +44,7 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
     """
     spec_list = [{'file_id': int},
                  {'project_string_id': str},
-                 {'serialize_type': str}]
+                 {'serialize_type': {'type': str, 'required': False}}]
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
