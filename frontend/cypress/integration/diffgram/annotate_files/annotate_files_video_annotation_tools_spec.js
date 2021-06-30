@@ -48,7 +48,6 @@ describe('Annotate Files Tests', () => {
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(700)
-          cy.get('[data-cy="ghost_instance_ok"]').click({force: true})
 
 
           cy.wait(2000)
