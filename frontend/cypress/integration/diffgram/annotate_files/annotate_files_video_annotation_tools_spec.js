@@ -48,7 +48,6 @@ describe('Annotate Files Tests', () => {
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(700)
-          cy.get('[data-cy="ghost_instance_ok"]').click({force: true})
 
 
           cy.wait(2000)
@@ -90,8 +89,7 @@ describe('Annotate Files Tests', () => {
       })
 
       it('Shows Ghost Instances', () => {
-        cy.get('[data-cy="edit_toggle"]').click({force: true})
-        .wait(1000)
+        cy.wait(1000)
         .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Drawing')
         .wait(1000)
         .get('[data-cy="forward_1_frame"]').click({force: true})
