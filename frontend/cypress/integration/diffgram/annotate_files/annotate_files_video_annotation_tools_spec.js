@@ -88,6 +88,8 @@ describe('Annotate Files Tests', () => {
 
       })
 
+    })
+    context('It shows ghost instances', () =>{
       it('Shows Ghost Instances', () => {
         cy.get('[data-cy="edit_toggle"]').click({force: true})
         cy.wait(1000)
@@ -102,8 +104,6 @@ describe('Annotate Files Tests', () => {
         });
 
       })
-
-
     })
   })
 
