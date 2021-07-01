@@ -21,7 +21,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Can Draw Boxes And Keep buffer dict references', () => {
       it('Draws a box on Video', () => {
-        cy.wait(2000)
+
         cy.window().then(window => {
           cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
           cy.select_label()
@@ -45,9 +45,6 @@ describe('Annotate Files Tests', () => {
       it('Moves 1 frame forward and backward keeping instance references', () => {
 
         cy.window().then(window => {
-          cy.wait(2000)
-          cy.get('[data-cy="forward_1_frame"]').click({force: true})
-          cy.wait(700)
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(700)
@@ -86,19 +83,19 @@ describe('Annotate Files Tests', () => {
           cy.wait(2000)
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
-          cy.wait(2000)
+
         });
 
       })
 
       it('Shows Ghost Instances', () => {
         cy.get('[data-cy="edit_toggle"]').click({force: true})
-        .wait(1000)
-        .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Drawing')
-        .wait(1000)
-        .get('[data-cy="forward_1_frame"]').click({force: true})
-        .wait(2000)
-        .window().then(window => {
+          .wait(1000)
+          .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Drawing')
+          .wait(1000)
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .wait(2000)
+          .window().then(window => {
           cy.wait(2000)
           expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
