@@ -7,6 +7,9 @@
       <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
              @click="open_labels">Go To Labels
       </v-btn>
+      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
+             @click="create_missing_labels">Create Missing
+      </v-btn>
     </div>
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
 
@@ -326,6 +329,8 @@
   import {v4 as uuidv4} from 'uuid';
   import filesize from 'filesize';
   import _ from "lodash";
+  import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from 'vuetify/src/util/colorUtils'
+
 
   export default Vue.extend({
       name: 'file_schema_mapper',
@@ -370,6 +375,7 @@
             'ellipse',
           ],
           current_question: 0,
+          missing_labels: [],
           errors_file_schema: undefined,
           wizard_height: '800px',
           load_label_names: false,
@@ -557,7 +563,57 @@
           this.$emit('complete_question', this.current_question + this.$props.previously_completed_questions)
           this.loading = false;
         },
+        get_random_color: function(){
+          const color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+          return color
+        },
+        create_missing_labels: async function(){
+          this.loading = true
+          this.error = {}
+          if(!this.missing_labels){
+            return
+          }
+          for(const label_name of this.missing_labels){
+            const random_color_hex = this.get_random_color();
+            const rgba = HexToRGBA(random_color_hex);
+            const hsv = HexToHSVA(random_color_hex);
+            const hsl = HSVAtoHSLA(random_color_hex);
+            const color_obj ={
+              rgba,
+              hsv,
+              hsl,
+              hex: random_color_hex,
+              a: 1
+            }
+            try {
+              const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
+                {
+                  colour: color_obj,
+                  name: this.new_label_name,
+                  default_sequences_to_single_frame: false
+                });
+              this.new_label_name = null
 
+              // only if success?
+              this.$store.commit('init_label_refresh')
+              this.$emit('label_created', response.data.label)
+
+            } catch (error) {
+              this.loading = false
+
+              if (error) {
+                if (error.response.status == 400) {
+                  this.error = error.response.data.log.error
+                }
+              }
+
+            }
+          }
+          this.loading = false
+
+
+
+        },
         validate_label_names: async function () {
           try {
             this.load_label_names = true
@@ -566,9 +622,11 @@
             if (response.status === 200) {
               const labels = response.data.labels_out;
               const label_names = labels.map(elm => elm.label.name)
+              this.missing_labels = [];
               for (const instance of this.$props.pre_labeled_data) {
                 let label_name = _.get(instance, this.diffgram_schema_mapping.name)
                 if (!label_names.includes(label_name)) {
+                  this.missing_labels.push(label_name)
                   this.errors_file_schema = {}
                   this.errors_file_schema['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
                   this.show_labels_link = false;
