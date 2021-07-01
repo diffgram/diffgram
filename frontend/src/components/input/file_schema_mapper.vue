@@ -4,11 +4,12 @@
     <div class="d-flex align-center">
       <v_error_multiple :error="errors_file_schema">
       </v_error_multiple>
-      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
-             @click="open_labels">Go To Labels
+      <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
+      <v-btn small v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
+             @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Labels
       </v-btn>
-      <v-btn v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
-             @click="create_missing_labels">Create Missing
+      <v-btn :loading="loading" class="ml-6" v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="primary"
+            small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing
       </v-btn>
     </div>
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
@@ -329,7 +330,7 @@
   import {v4 as uuidv4} from 'uuid';
   import filesize from 'filesize';
   import _ from "lodash";
-  import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from 'vuetify/src/util/colorUtils'
+  import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from '../../utils/colorUtils'
 
 
   export default Vue.extend({
@@ -377,6 +378,7 @@
           current_question: 0,
           missing_labels: [],
           errors_file_schema: undefined,
+          success_missing_labels: false,
           wizard_height: '800px',
           load_label_names: false,
           loading: false,
@@ -569,6 +571,7 @@
         },
         create_missing_labels: async function(){
           this.loading = true
+          this.success_missing_labels = false
           this.error = {}
           if(!this.missing_labels){
             return
@@ -589,7 +592,7 @@
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
                   colour: color_obj,
-                  name: this.new_label_name,
+                  name: label_name,
                   default_sequences_to_single_frame: false
                 });
               this.new_label_name = null
@@ -606,9 +609,11 @@
                   this.error = error.response.data.log.error
                 }
               }
+              return
 
             }
           }
+          this.success_missing_labels = true;
           this.loading = false
 
 
