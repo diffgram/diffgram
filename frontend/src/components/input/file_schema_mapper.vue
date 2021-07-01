@@ -631,17 +631,23 @@
               for (const instance of this.$props.pre_labeled_data) {
                 let label_name = _.get(instance, this.diffgram_schema_mapping.name)
                 if (!label_names.includes(label_name)) {
-                  this.missing_labels.push(label_name)
+
                   this.errors_file_schema = {}
                   this.errors_file_schema['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
                   this.show_labels_link = false;
                   this.valid_labels = false;
                   this.load_label_names = false;
-                  return false
+                  if(!this.missing_labels.includes(label_name)){
+                    this.missing_labels.push(label_name)
+                  }
+
                 } else {
                   const label = labels.find(l => l.label.name === label_name);
                   instance.label_file_id = label.id;
                 }
+              }
+              if(this.missing_labels.length > 0){
+                return false
               }
               this.valid_labels = true;
               return true
