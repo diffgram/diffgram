@@ -12,7 +12,7 @@ from datetime import timedelta
 app = Flask('Diffgram',
             static_folder="./dist/static",
             template_folder="./dist")
-app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024    # 250 Mb limit
+
 sslify = SSLify(app, subdomains=True)
 
 
@@ -67,7 +67,7 @@ def default_walrus_alive():
 	"""
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=14)
-
+app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024    # 250 Mb limit
 
 @app.after_request
 def apply_security_rules(response):
