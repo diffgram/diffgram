@@ -105,8 +105,8 @@ class Upload():
                 logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
                 return
 
-        if file_data['file_metadata']:
-            file_metadata = file_data['file_metadata']
+        if file_data.get('file_metadata'):
+            file_metadata = file_data.get('file_metadata')
             input.file_metadata = file_metadata
 
         return input
