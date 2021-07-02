@@ -350,7 +350,6 @@ Cypress.Commands.add('createLabels', function (labels_list) {
     response.body.labels_out.forEach((label_response_obj) => {
       const label_obj = label_list_obj.find(elm => elm.name === label_response_obj.label.name)
       if(label_obj){
-        cy.log('LABEL EXSITSSS', label_obj.name, label_obj)
         label_obj.exists = true;
       }
     })
