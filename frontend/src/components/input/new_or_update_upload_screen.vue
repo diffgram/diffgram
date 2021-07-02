@@ -233,6 +233,7 @@
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';
   import pLimit from 'p-limit';
+  import sizeof from 'object-sizeof'
 
   export default Vue.extend({
       name: 'new_or_update_upload_screen',

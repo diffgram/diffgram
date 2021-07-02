@@ -73,6 +73,7 @@
   import axios from 'axios';
   import Vue from "vue";
   import {v4 as uuidv4} from 'uuid'
+  import sizeof from "object-sizeof";
 
   export default Vue.extend({
       name: 'upload_summary',
@@ -180,14 +181,22 @@
 
         },
         create_batch: async function (labels_payload) {
-          try {
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
-              pre_labeled_data: labels_payload
-            });
-            if (response.status === 200) {
-              this.input_batch = response.data.input_batch;
-              this.$emit('created_batch', this.input_batch)
+          try {;
+            const total_size = sizeof(labels_payload);
+            const chunk_size_mb =  10 * 1024 * 1024;
+            if(total_size < chunk_size_mb){
+              const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
+                pre_labeled_data: labels_payload
+              });
+              if (response.status === 200) {
+                this.input_batch = response.data.input_batch;
+                this.$emit('created_batch', this.input_batch)
+              }
             }
+            else{
+              
+            }
+
           } catch (e) {
             console.error(e)
           }
