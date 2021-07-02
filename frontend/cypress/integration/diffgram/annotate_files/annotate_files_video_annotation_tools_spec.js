@@ -48,7 +48,6 @@ describe('Annotate Files Tests', () => {
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(700)
-          cy.get('[data-cy="ghost_instance_ok"]').click({force: true})
 
 
           cy.wait(2000)
@@ -89,21 +88,21 @@ describe('Annotate Files Tests', () => {
 
       })
 
+    })
+    context('It show ghost instances', () =>{
       it('Shows Ghost Instances', () => {
+        cy.wait(2000)
         cy.get('[data-cy="edit_toggle"]').click({force: true})
-        cy.get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Drawing')
-        cy.wait(1000)
-        cy.get('[data-cy="forward_1_frame"]').click({force: true})
-        cy.wait(1000)
-        cy.window().then(window => {
-
+          .wait(1000)
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .wait(2000)
+          .window().then(window => {
+          cy.wait(2000)
           expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
         });
 
       })
-
-
     })
   })
 
