@@ -524,7 +524,7 @@
         update_files: async function (file_data) {
           try {
             let processed_files = 0;
-            await Promise.all(Object.keys(file_data).map(async (file_key) => {
+            for(const file_key of Object.keys(file_data)){
               const file = file_data[file_key]
               const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
                 file_id: file.file_id,
@@ -539,10 +539,8 @@
                 this.$emit('error_update_files', undefined);
                 processed_files += 1;
                 this.update_progress_percentage((processed_files * 1.0 / Object.keys(file_data).length) * 100);
-                return data;
-
               }
-            }));
+            }
 
           } catch (error) {
             this.file_update_error = this.$route_api_errors(error);
@@ -553,6 +551,7 @@
         },
         upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
+          console.log('FILE LIST', file_list)
           if (this.$props.upload_mode === 'update') {
             await this.update_files(file_list)
           } else if (this.$props.upload_mode === 'new') {
