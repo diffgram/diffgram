@@ -187,8 +187,6 @@
           'limit': 28,
           'media_type': this.filter_media_type_setting,
           'page_number': 1,
-          'request_next_page': false,
-          'request_previous_page' : false,
           'query_menu_open' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
@@ -225,7 +223,6 @@
       },
       load_more_files: async function(){
         this.metadata.page_number += 1;
-        this.metadata.request_next_page = true
         await this.fetch_file_list(false)
       },
       update_compare_to_model_runs: function(value){
@@ -237,7 +234,6 @@
       fetch_file_list: async function(reload_all = true){
         if(reload_all){
           this.metadata.page_number = 1;
-          this.metadata.request_next_page = false;
           this.loading = true
         }
         else{

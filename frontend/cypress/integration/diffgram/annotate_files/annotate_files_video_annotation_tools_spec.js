@@ -47,6 +47,10 @@ describe('Annotate Files Tests', () => {
         cy.window().then(window => {
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
+          cy.wait(700)
+          cy.get('[data-cy="ghost_instance_ok"]').click({force: true})
+
+
           cy.wait(2000)
 
           cy.get('[data-cy="back_1_frame"]').click({force: true})
@@ -85,6 +89,19 @@ describe('Annotate Files Tests', () => {
 
       })
 
+      it('Shows Ghost Instances', () => {
+        cy.get('[data-cy="edit_toggle"]').click({force: true})
+        cy.get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Drawing')
+        cy.wait(1000)
+        cy.get('[data-cy="forward_1_frame"]').click({force: true})
+        cy.wait(1000)
+        cy.window().then(window => {
+
+          expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
+
+        });
+
+      })
 
 
     })
