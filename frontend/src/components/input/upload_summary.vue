@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid v-if="!preparing_payload">
     <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v-layout class="d-flex column justify-center">
       <h2 class="ma-8 black--text" v-if="upload_mode === 'new'">You are about to upload {{file_list.length}} file(s):
@@ -7,11 +7,12 @@
         <v-icon>mdi-folder</v-icon>
         <strong v-if="current_directory">{{current_directory.nickname}}</strong>
       </h2>
-      <h2 v-if="upload_mode === 'update'">You will Update {{files_to_update_list.length}} File(s): </h2>
+      <h2 v-if="upload_mode === 'update' && !total_instance_count">You will Update {{files_to_update_list().length}} File(s): </h2>
+      <h2 v-if="upload_mode === 'update' && total_instance_count">You will Add {{total_instance_count}} Instances: </h2>
 
       <v-container fluid class="d-flex flex-column" style="max-height: 450px; overflow-y: auto">
           <div
-            v-for="(item, i) in file_list_for_summary"
+            v-for="(item, i) in summarized_file_list.slice(0, 500)"
             :key="i"
           >
             <v-list-item class="d-flex ma-auto align-center">
@@ -50,13 +51,20 @@
             </v-list-item>
 
           </div>
+          <div v-if="summarized_file_list.length > 500">
+            <h2>and {{summarized_file_list.length - 500}} More items...</h2>
+          </div>
       </v-container>
       <v-container fluid class="d-flex justify-end align-center">
-        <v-btn x-large data-cy="start_files_upload_button" class="success ma-8" @click="start_upload">Upload to
+        <v-btn :loading="loading" x-large data-cy="start_files_upload_button" class="success ma-8" @click="start_upload">Upload to
           Diffgram
         </v-btn>
       </v-container>
     </v-layout>
+  </v-container>
+
+  <v-container fluid v-else class="align-center justify-start">
+    <h1 class="pa-10 black--text">Preparing your data <v-progress-circular indeterminate></v-progress-circular></h1>
   </v-container>
 
 </template>
@@ -76,6 +84,9 @@
         'file_list': {
           default: null
         },
+        'total_instance_count':{
+          default: null
+        },
         'pre_labeled_data': {
           default: null
         },
@@ -92,48 +103,67 @@
       data() {
         return {
           input_batch: null,
+          preparing_payload: false,
+          loading: false,
           file_list_update: [],
+          summarized_file_list: [],
           supported_video_files: ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
           supported_image_files: ['image/jpg', 'image/jpeg', 'image/png']
         }
       },
       computed: {
-        files_to_update_list: function () {
-          if (!this.pre_labeled_data) {
-            return []
-          }
-          const result = [];
-          for (const inst of this.pre_labeled_data) {
-            if (inst[this.diffgram_schema_mapping.file_id] && !result.includes(inst[this.diffgram_schema_mapping.file_id])) {
-              result.push(inst[this.diffgram_schema_mapping.file_id])
-            }
-          }
-          return result
-        },
-        file_list_for_summary: function () {
-          if (this.$props.upload_mode === 'update') {
-            return this.file_list_update;
-          } else if (this.$props.upload_mode === 'new') {
-            return this.$props.file_list
-          }
-        }
+
       },
       watch: {
         file_list: function (new_val, old_val) {
           if (new_val) {
+            this.preparing_payload = true;
             this.compute_attached_instance_per_file();
+            this.summarized_file_list = this.file_list_for_summary();
+            this.preparing_payload = false;
           }
         },
       },
-      mounted() {
+      async mounted() {
+        this.preparing_payload = true;
+        await this.$nextTick();
+        this.compute_attached_instance_per_file();
+        this.summarized_file_list = this.file_list_for_summary();
+        this.preparing_payload = false;
       },
-      created() {
-        this.compute_attached_instance_per_file()
-      },
+
       beforeDestroy() {
 
       },
       methods: {
+        file_list_for_summary: function () {
+          if (this.$props.upload_mode === 'update') {
+            if(this.file_list_update){
+              return this.file_list_update;
+            }
+            else{
+              return []
+            }
+          } else if (this.$props.upload_mode === 'new') {
+            return this.$props.file_list
+          }
+        },
+        files_to_update_list: function(){
+          if (!this.pre_labeled_data) {
+            return []
+          }
+          const result = [];
+          const result_dict = {};
+          const pre_labels = JSON.parse(JSON.stringify(this.pre_labeled_data))
+          for (const inst of pre_labels) {
+            if (inst[this.diffgram_schema_mapping.file_id] && !result_dict[inst[this.diffgram_schema_mapping.file_id]]  ) {
+              result.push(inst[this.diffgram_schema_mapping.file_id]);
+              result_dict[inst[this.diffgram_schema_mapping.file_id]] = true;
+            }
+          }
+          Object.freeze(result)
+          return result
+        },
         request_upload_raw_media: function (labels_payload) {
           if (this.upload_mode === 'new') {
             this.$emit('upload_raw_media', [...this.$props.file_list]);
@@ -159,25 +189,47 @@
               this.$emit('created_batch', this.input_batch)
             }
           } catch (e) {
+            console.error(e)
+          }
+          finally {
 
           }
         },
-        prepare_pre_labeled_data_payload: function (pre_labeled_data, diffgram_schema, file_list) {
+        prepare_pre_labeled_data_payload: function (pre_labeled_data_prop, diffgram_schema, file_list) {
           // This function Creates the final payload accepted by the API based on the schema mapping.
-          if (!pre_labeled_data) {
+          if (!pre_labeled_data_prop) {
             return
+          }
+          const pre_labeled_data = JSON.parse(JSON.stringify(pre_labeled_data_prop))
+          const pre_labeled_dict = {}
+          for(const inst of pre_labeled_data){
+            let key = diffgram_schema.file_name;
+            if(this.upload_mode === 'new'){
+              key = inst[diffgram_schema.file_name];
+            }
+            else{
+              key = inst[diffgram_schema.file_id];
+            }
+            if(!pre_labeled_dict[key]){
+              pre_labeled_dict[key.toString()] = [inst]
+            }
+            else{
+              pre_labeled_dict[key.toString()].push(inst)
+            }
           }
           const result = {};
           for (const file of file_list) {
             const uuid = uuidv4();
             let file_instances = [];
+
+            let value = null;
             if(this.upload_mode === 'new'){
-              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_name] === file.name);
+              value = file.name;
             }
             else{
-              file_instances = pre_labeled_data.filter(inst => inst[diffgram_schema.file_id] === file.file_id);
+              value = file.file_id;
             }
-
+            file_instances = pre_labeled_dict[value.toString()]
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}, file_id: file.file_id};
             if (file.name) {
@@ -332,17 +384,23 @@
           return result;
         },
         start_upload: async function () {
+
+          console.log('diffgram_schema_mapping', this.$props.diffgram_schema_mapping)
+          console.log('file_list_for_summary', this.file_list_for_summary())
+          this.loading = true;
           const labels_payload = this.prepare_pre_labeled_data_payload(
             this.$props.pre_labeled_data,
             this.$props.diffgram_schema_mapping,
-            this.file_list_for_summary
+            this.file_list_for_summary()
           )
+          console.log('labels_payload', labels_payload)
+
           await this.create_batch(labels_payload)
           this.attach_batch_to_files(this.input_batch);
 
           this.request_upload_raw_media(labels_payload);
           this.$emit('complete_question', 18)
-
+          this.loading = false;
         },
         compute_attached_instance_per_file: function () {
           if (!this.$props.pre_labeled_data) {
@@ -374,9 +432,21 @@
                 }
               }
             }
-          } else if (this.upload_mode === 'update') {
+          }
+          else if (this.upload_mode === 'update') {
             this.file_list_update = []
-            const file_ids = this.files_to_update_list;
+            const file_ids = this.files_to_update_list();
+            console.log('file ids', file_ids)
+            const pre_labels_dict = {}
+            for (const inst of this.$props.pre_labeled_data){
+              if(!pre_labels_dict[inst[this.$props.diffgram_schema_mapping.file_id]]){
+                pre_labels_dict[inst[this.$props.diffgram_schema_mapping.file_id]] = [inst]
+              }
+              else{
+                pre_labels_dict[inst[this.$props.diffgram_schema_mapping.file_id]].push(inst)
+              }
+
+            }
             for (let i = 0; i < file_ids.length; i++) {
               const file_id = file_ids[i];
               const file = {
@@ -390,31 +460,33 @@
                 cuboid_instances: [],
                 ellipse_instances: [],
               }
-              const all_instances = this.$props.pre_labeled_data.filter(inst => inst[this.$props.diffgram_schema_mapping.file_id] == file_id)
+              const all_instances = pre_labels_dict[file_id]
               file.instances = all_instances;
-              const box_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'box')
-              const point_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'point')
-              const polygon_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'polygon')
-              const line_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'line')
-              const cuboid_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'cuboid')
-              const ellipse_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'ellipse')
-              file.box_instances = box_instances;
-              file.point_instances = point_instances;
-              file.polygon_instances = polygon_instances;
-              file.line_instances = line_instances;
-              file.cuboid_instances = cuboid_instances;
-              file.ellipse_instances = ellipse_instances;
+              if(file_ids.length > 500){
+                const box_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'box')
+                const point_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'point')
+                const polygon_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'polygon')
+                const line_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'line')
+                const cuboid_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'cuboid')
+                const ellipse_instances = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.instance_type] == 'ellipse')
+                file.box_instances = box_instances;
+                file.point_instances = point_instances;
+                file.polygon_instances = polygon_instances;
+                file.line_instances = line_instances;
+                file.cuboid_instances = cuboid_instances;
+                file.ellipse_instances = ellipse_instances;
 
-              // Compute labels count
-              for (const instance of all_instances) {
-                if (!file.instances[instance[this.$props.diffgram_schema_mapping.name]]) {
-                  file.labels[instance[this.$props.diffgram_schema_mapping.name]] = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.name] === instance[this.$props.diffgram_schema_mapping.name]).length;
+                // Compute labels count
+                for (const instance of all_instances) {
+                  if (!file.instances[instance[this.$props.diffgram_schema_mapping.name]]) {
+                    file.labels[instance[this.$props.diffgram_schema_mapping.name]] = all_instances.filter(inst => inst[this.$props.diffgram_schema_mapping.name] === instance[this.$props.diffgram_schema_mapping.name]).length;
+                  }
                 }
               }
+
               this.file_list_update.push(file)
             }
           }
-
         }
 
       }
