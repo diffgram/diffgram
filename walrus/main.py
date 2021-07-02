@@ -12,6 +12,7 @@ from datetime import timedelta
 app = Flask('Diffgram',
             static_folder="./dist/static",
             template_folder="./dist")
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024    # 50 Mb limit
 sslify = SSLify(app, subdomains=True)
 
 
