@@ -232,6 +232,7 @@
   import Vue from "vue";
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';
+  import pLimit from 'p-limit';
 
   export default Vue.extend({
       name: 'new_or_update_upload_screen',
@@ -266,6 +267,8 @@
           current_directory: undefined,
           with_prelabeled: undefined,
           connection_upload_error: undefined,
+          total_files_update: 0,
+          processed_files: 0,
           file_update_error: undefined,
           loading_annotations: false,
           upload_source: null,
@@ -521,26 +524,35 @@
             console.error(error);
           }
         },
+        create_input_for_update: async function(file_data, file_key){
+          const file = file_data[file_key]
+          const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
+            file_id: file.file_id,
+            instance_list: file.instance_list,
+            frame_packet_map: file.frame_packet_map,
+            mode: 'update',
+            batch_id: this.$props.batch.id,
+            project_string_id: this.$props.project_string_id,
+            extract_labels_from_batch: true
+          });
+          if (data.status === 200 && !data.data.error) {
+            this.$emit('error_update_files', undefined);
+            this.processed_files += 1;
+            this.update_progress_percentage((this.processed_files * 1.0 / this.total_files_update) * 100);
+            return data
+          }
+        },
         update_files: async function (file_data) {
+          const limit = pLimit(40); // 10 Max concurrent request.
           try {
-            let processed_files = 0;
-            for(const file_key of Object.keys(file_data)){
-              const file = file_data[file_key]
-              const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
-                file_id: file.file_id,
-                instance_list: file.instance_list,
-                frame_packet_map: file.frame_packet_map,
-                mode: 'update',
-                batch_id: this.$props.batch.id,
-                project_string_id: this.$props.project_string_id,
-                extract_labels_from_batch: true
-              });
-              if (data.status === 200 && !data.data.error) {
-                this.$emit('error_update_files', undefined);
-                processed_files += 1;
-                this.update_progress_percentage((processed_files * 1.0 / Object.keys(file_data).length) * 100);
-              }
-            }
+            this.processed_files = 0;
+            this.total_files_update = Object.keys(file_data).length;
+            const file_keys = Object.keys(file_data);
+            const promises = file_keys.map(file_key => {
+              return limit(() => this.create_input_for_update(file_data, file_key))
+            });
+            const result = await Promise.all(promises);
+            return result
 
           } catch (error) {
             this.file_update_error = this.$route_api_errors(error);
