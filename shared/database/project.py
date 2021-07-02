@@ -323,13 +323,12 @@ class Project(Base, Caching):
         file_list = WorkingDirFileLink.file_list(
             session=session,
             working_dir_id=self.directory_default_id,
-            limit=100,
+            limit=10000000,
             type="label",
             exclude_removed=False)  # eg for permissions
         if not self.label_dict:
             self.label_dict = {}
         self.label_dict['label_file_id_list'] = [file.id for file in file_list]
-        print(self.label_dict['label_file_id_list'])
 
     def serialize(self,
                   session=None):

@@ -186,6 +186,7 @@
             :pre_labeled_data="pre_labeled_data"
             @change_step_wizard="check_errors_and_go_to_step(5)"
             @complete_question="set_completed_questions"
+            @set_prelabeled_data="set_prelabeled_data"
             @set_included_instance_types="included_instance_types = $event"
             :previously_completed_questions="5"
           ></file_schema_mapper>
@@ -211,10 +212,11 @@
         <v-stepper-content step="6">
           <upload_summary
             style="height: 100%"
-            v-if="!upload_in_progress && file_list_to_upload"
+            v-if="!upload_in_progress && file_list_to_upload && el=== '6'"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :upload_mode="upload_mode"
             :project_string_id="project_string_id"
+            :total_instance_count="pre_labeled_data.length"
             :pre_labeled_data="pre_labeled_data"
             :current_directory="current_directory"
             :diffgram_schema_mapping="diffgram_schema_mapping"
@@ -495,6 +497,10 @@
 
           this.check_errors_and_go_to_step(2)
         },
+        set_prelabeled_data: function(new_data){
+          Object.freeze(new_data);
+          this.pre_labeled_data = new_data;
+        },
         set_completed_questions: function (value) {
           this.completed_questions = value;
 
@@ -542,7 +548,9 @@
 
           if (file.type === 'application/json') {
             this.pre_labels_file_type = 'json';
-            this.pre_labeled_data = JSON.parse(text_data);
+            const parsed_data = JSON.parse(text_data);
+            Object.freeze(parsed_data);
+            this.pre_labeled_data = parsed_data
             const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
             this.pre_label_key_list = [...pre_label_keys];
             this.pre_labels_file_list.push(file);
@@ -562,6 +570,7 @@
               headers.forEach((h, i) => obj[h] = row[i]);
               return obj;
             })
+            Object.freeze(this.pre_labeled_data)
           } else {
             throw new Error('Invalid file type for loading annotations')
           }

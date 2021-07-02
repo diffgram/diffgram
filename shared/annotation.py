@@ -70,6 +70,7 @@ class Annotation_Update():
     video_mode = False
     is_new_file = False  # defaults to False, ie for images?
     video_parent_file = None
+    clean_instances: bool = False
     sequence = None
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
@@ -376,7 +377,7 @@ class Annotation_Update():
 
         """
 
-        if not self.instance_list_new:
+        if not self.instance_list_new and not self.clean_instances:
             return self.return_orginal_file_type()
         logger.debug('Bulding existing hash list...')
         self.build_existing_hash_list()
@@ -1494,8 +1495,8 @@ class Annotation_Update():
                         instance = None,
                         update_existing_only = False):
         logger.debug('Checking update sequence: video_mode:{} interpolated:{} machine_made:{}'.format(self.video_mode,
-                                                                                                      self.instance.interpolated,
-                                                                                                      self.instance.machine_made))
+                                                                                                      self.instance.interpolated if self.instance else None,
+                                                                                                      self.instance.machine_made if self.instance else None))
         if self.video_mode is False:
             return
 
@@ -1616,9 +1617,10 @@ class Annotation_Update():
         Use cross reference list for constant time operation here
 
         """
+        print('existing', self.instance_list_existing)
         if self.instance_list_existing is None:
             return
-
+        print('hash_list', self.hash_list)
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]

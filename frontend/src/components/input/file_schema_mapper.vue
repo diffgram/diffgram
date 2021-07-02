@@ -5,13 +5,20 @@
       <v_error_multiple :error="errors_file_schema">
       </v_error_multiple>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
-      <v-btn small v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="secondary"
+      <v-btn small v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_file_schema.label_names" color="secondary"
              @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Labels
       </v-btn>
-      <v-btn :loading="loading" class="ml-6" v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels" color="primary"
+      <v-btn :loading="loading" class="ml-6" v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_file_schema.label_names" color="primary"
             small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing
       </v-btn>
     </div>
+    <div class="d-flex align-center justify-center" v-if="load_file_ids">
+      <h1>Validating File ID's... <v-progress-circular indeterminate></v-progress-circular></h1>
+    </div>
+    <div class="d-flex align-center justify-center" v-if="load_label_names">
+      <h1>Validating Labels... <v-progress-circular indeterminate></v-progress-circular></h1>
+    </div>
+
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
 
       <v-container v-if="diffgram_schema_mapping" class="d-flex flex-column pa-0" style="height: 500px">
@@ -144,7 +151,7 @@
                 <v-autocomplete class="pt-4"
                                 clearable
                                 data-cy="select_file_id"
-
+                                menuProps="auto"
                                 hide-selected
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.file_id">
@@ -167,6 +174,8 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                menuProps="auto"
+                                hide-selected
                                 data-cy="select_frame_number"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.frame_number">">
@@ -188,6 +197,8 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                menuProps="auto"
+                                hide-selected
                                 data-cy="select_number"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.number">">
@@ -228,8 +239,10 @@
               </h3>
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
-                                clearabledata-cy="select_model_id"
+                                menuProps="auto"
+                                hide-selected
                                 data-cy="select_model_id"
+
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_id">
                 </v-autocomplete>
@@ -250,6 +263,8 @@
               <v-container fluid class="d-flex justify-center flex-grow-1">
                 <v-autocomplete class="pt-4"
                                 clearable
+                                menuProps="auto"
+                                hide-selected
                                 data-cy="select_model_run_id"
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.model_run_id">
@@ -292,6 +307,7 @@
                                 clearable
                                 data-cy="select_metadata"
                                 menuProps="auto"
+                                hide-selected
                                 :items="pre_label_key_list_filtered"
                                 v-model="diffgram_schema_mapping.file_metadata">
                 </v-autocomplete>
@@ -327,8 +343,6 @@
 <script lang="ts">
   import axios from 'axios';
   import Vue from "vue";
-  import {v4 as uuidv4} from 'uuid';
-  import filesize from 'filesize';
   import _ from "lodash";
   import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from '../../utils/colorUtils'
 
@@ -378,6 +392,7 @@
           current_question: 0,
           missing_labels: [],
           errors_file_schema: undefined,
+          load_file_ids: false,
           success_missing_labels: false,
           wizard_height: '800px',
           load_label_names: false,
@@ -514,6 +529,7 @@
           } else if (current_number === 3) {
             if (this.$props.upload_mode === 'new') {
               valid = this.validate_file_names();
+
             } else if (this.$props.upload_mode === 'update') {
               valid = await this.validate_file_id_list_for_update();
             } else {
@@ -540,14 +556,25 @@
             valid = this.validate_metadata();
           }
 
+          else if(current_number === 10 && !validate_data){
+            valid = true
+          }
+
           if (valid) {
             if (current_number === 3) {
               // Check for the existence of Videos.
-              const has_video = this.check_for_videos_in_uploaded_files();
-              if (has_video) {
-                this.current_question = old_number + 1;
-                return
-              } else {
+              if(this.upload_mode !== 'update'){
+                const has_video = this.check_for_videos_in_uploaded_files();
+                if (has_video) {
+                  this.current_question = old_number + 1;
+                  return
+                } else {
+                  this.current_question = old_number + 3;
+                  return
+                }
+              }
+              else{
+
                 this.current_question = old_number + 3;
                 return
               }
@@ -615,6 +642,7 @@
           }
           this.success_missing_labels = true;
           this.loading = false
+          this.missing_labels = [];
 
 
 
@@ -628,7 +656,9 @@
               const labels = response.data.labels_out;
               const label_names = labels.map(elm => elm.label.name)
               this.missing_labels = [];
-              for (const instance of this.$props.pre_labeled_data) {
+              // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
+              const new_prelabeled_data = JSON.parse(JSON.stringify(this.$props.pre_labeled_data));
+              for (const instance of new_prelabeled_data) {
                 let label_name = _.get(instance, this.diffgram_schema_mapping.name)
                 if (!label_names.includes(label_name)) {
 
@@ -646,10 +676,14 @@
                   instance.label_file_id = label.id;
                 }
               }
+              this.$emit('set_prelabeled_data', new_prelabeled_data)
+
               if(this.missing_labels.length > 0){
+                this.load_label_names = false;
                 return false
               }
               this.valid_labels = true;
+              this.load_label_names = false;
               return true
             }
 
@@ -714,10 +748,20 @@
             if (this.upload_mode !== 'update') {
               return true
             }
-            const file_id_list = this.$props.pre_labeled_data.map(inst => _.get(inst, this.diffgram_schema_mapping.file_id));
+            const file_id_list = []
+            const file_id_obj = {};
+            this.load_file_ids = true;
+            for(const inst of this.$props.pre_labeled_data){
+              const file_id = _.get(inst, this.diffgram_schema_mapping.file_id);
+              if(!file_id_obj[file_id]){
+                file_id_list.push(file_id)
+                file_id_obj[file_id] = true;
+              }
+            }
             for (const id of file_id_list) {
               if (isNaN(id)) {
                 this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
+                this.load_file_ids = false;
                 return false;
               }
             }
@@ -727,9 +771,11 @@
 
             if (response.status === 200) {
               if (!response.data.exists) {
+                this.load_file_ids = false;
                 this.errors_file_schema['file_ids'] = 'Invalid file IDs on this JSON file. Please check that all files IDs exists on this project.'
                 return false;
               } else {
+                this.load_file_ids = false;
                 return true
               }
             }
@@ -737,6 +783,7 @@
           } catch (error) {
             this.errors_file_schema = this.$route_api_errors(error)
             console.error(error)
+            this.load_file_ids = false;
             return false;
           }
         },
