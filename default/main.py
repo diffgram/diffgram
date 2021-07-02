@@ -28,7 +28,7 @@ from datetime import timedelta
 app = Flask('Diffgram',
 			static_folder = "../frontend/dist/static",
 			template_folder = "./dist")
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024    # 50 Mb limit
+
 sslify = SSLify(app, subdomains=True)  
 
 @app.errorhandler(500)
@@ -51,7 +51,7 @@ from methods import routes as routes_blueprint
 
 app.register_blueprint(routes_blueprint)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024    # 50 Mb limit
 
 do_not_log_these_routes = [
 	'/api/user/login',
