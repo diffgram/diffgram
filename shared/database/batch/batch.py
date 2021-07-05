@@ -19,6 +19,8 @@ class InputBatch(Base):
     directory_id = Column(Integer, ForeignKey('working_dir.id'))  # target directory
     directory = relationship("WorkingDir", foreign_keys = [directory_id])
 
+    data_temp_dir = Column(String)
+
     source_directory_id = Column(Integer, ForeignKey('working_dir.id'))  # For internal only
     source_directory = relationship("WorkingDir", foreign_keys = [source_directory_id])
 

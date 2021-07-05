@@ -564,9 +564,10 @@
         },
         upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
-          console.log('FILE LIST', file_list)
           if (this.$props.upload_mode === 'update') {
             await this.update_files(file_list)
+            this.is_actively_sending = false
+            this.$emit('update_is_actively_sending', this.is_actively_sending)
           } else if (this.$props.upload_mode === 'new') {
             const local_file_list = file_list.filter(f => f.source === 'local');
             await this.upload_local_raw_media(local_file_list);
@@ -656,6 +657,7 @@
 
           this.is_actively_sending = false
           this.$emit('update_is_actively_sending', this.is_actively_sending)
+
           // Not super happy with this but something to think on
           // how deeply we want to integrate this with upload
           // or if we even want to show this here at all

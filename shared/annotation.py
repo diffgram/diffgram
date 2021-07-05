@@ -1322,15 +1322,22 @@ class Annotation_Update():
 
             self.instance.width = self.instance.x_max - self.instance.x_min
             self.instance.height = self.instance.y_max - self.instance.y_min
+            if self.instance.width < 1:
+                self.log['error']['width'] = "Width: {} less than 1 pixels or negative. xmin: {} xmax: {}".format(
+                    str(self.instance.width),
+                    str(self.instance.x_min),
+                    str(self.instance.x_max),
 
-            if self.instance.width <= 5:
-                self.log['error']['width'] = "Width: " + \
-                                             str(self.instance.width) + " less than 5 pixels or negative."
+                )
                 return False
 
-            if self.instance.height <= 5:
-                self.log['error']['height'] = "Height less than 5 pixels" + \
-                                              str(self.instance.height)
+            if self.instance.height < 1:
+                self.log['error']['height'] = "height: {} less than 1 pixels or negative. xmin: {} xmax: {}".format(
+                    str(self.instance.height),
+                    str(self.instance.y_min),
+                    str(self.instance.y_max),
+
+                )
                 return False
 
             if self.instance.x_min > self.instance.x_max:
