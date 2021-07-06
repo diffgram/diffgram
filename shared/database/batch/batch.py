@@ -1,7 +1,7 @@
 # OPENCORE - ADD
 from shared.database.common import *
 from shared.database.input import Input
-
+from shared.data_tools_core import Data_tools
 
 class InputBatch(Base):
     __tablename__ = 'input_batch'
@@ -70,6 +70,12 @@ class InputBatch(Base):
             session.flush()
 
         return batch
+
+    def get_pre_labeled_data_cloud_url(self):
+        data_tools = Data_tools().data_tools
+        url = data_tools.build_secure_url(self.data_temp_dir)
+        return url
+
 
     def serialize(self):
 
