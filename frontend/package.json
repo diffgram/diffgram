@@ -36,6 +36,7 @@
     "mime-types": "^2.1.27",
     "mxgraph": "^4.2.2",
     "npm-check-updates": "^4.1.2",
+    "object-sizeof": "^1.6.1",
     "orbit-controls-es6": "^2.0.1",
     "quaternion": "^1.1.0",
     "sillyname": "^0.1.0",

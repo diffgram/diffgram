@@ -10,7 +10,7 @@
       >
   <v-toolbar-items>
 
-
+    <v-chip v-if="file && file.state === 'removed'" color="error" small class="mt-3"><v-icon small>mdi-archive</v-icon>Archived</v-chip>
     <div v-show="task && task.id">
       <v-layout>
         <ahref_seo_optimal :href="'/home/dashboard'">
