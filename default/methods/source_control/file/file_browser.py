@@ -485,7 +485,6 @@ class File_Browser():
 
         # Index calculation is now done based on page and limit
         self.metadata["start_index"] = (self.metadata["page"] - 1) * self.metadata["limit"]
-        print('start', self.metadata['start_index'], self.metadata['page'])
 
     def build_and_execute_query(self, limit = 25, offset = None):
         """
@@ -666,6 +665,7 @@ class File_Browser():
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':
                     file_serialized = file.serialize_with_annotations(self.session)
+
                 elif self.metadata['file_view_mode'] == 'base':
                     file_serialized = file.serialize_base_file()
                 else:
@@ -688,7 +688,6 @@ class File_Browser():
         # from file_count
         if limit_counter == 0:
             self.metadata['no_results_match_search'] = True
-
         return output_file_list
 
 
