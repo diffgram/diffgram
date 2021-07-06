@@ -525,6 +525,7 @@
   import axios from 'axios';
   import input_payload_dialog from './input_payload_dialog'
   import Vue from "vue";
+  import sizeof from 'object-sizeof'
 
   export default Vue.extend({
       name: 'input_view',
@@ -756,7 +757,6 @@
             if (response.data.success == true) {
 
               this.input_list = response.data.input_list
-
 
               // Just check most recent one
               // Otherwise when this updates it keeps pulling message

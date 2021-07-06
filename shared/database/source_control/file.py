@@ -1001,7 +1001,8 @@ class File(Base, Caching):
     def get_by_label_name(session, label_name, project_id):
         label_file = session.query(File).join(Label, File.label_id == Label.id).filter(
             File.project_id == project_id,
-            Label.name == label_name
+            Label.name == label_name,
+            File.state == 'added'
         ).first()
         if not label_file:
             return None

@@ -216,7 +216,7 @@
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :upload_mode="upload_mode"
             :project_string_id="project_string_id"
-            :total_instance_count="pre_labeled_data.length"
+            :total_instance_count="pre_labeled_data ? pre_labeled_data.length : null"
             :pre_labeled_data="pre_labeled_data"
             :current_directory="current_directory"
             :diffgram_schema_mapping="diffgram_schema_mapping"
