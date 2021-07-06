@@ -347,6 +347,7 @@ def create_label_file(label_file_data, session):
     label_file.label = label_file_data.get('label')
     label_file.label_id = label_file_data.get('label').id
     label_file.project_id = label_file_data['project_id']
+    label_file.state = label_file_data.get('state', 'added')
     label_file.type = 'label'
     session.add(label_file)
     regular_methods.commit_with_rollback(session)

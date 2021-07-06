@@ -154,6 +154,7 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
             sql_alchemy_query, execution_log = executor.execute_query()
             result = executor.factor(diffgram_query_obj.tree.children[0].children[0].children[0])
+        print(execution_log)
         self.assertIsNotNone(execution_log['error'].get('label_name'))
         self.assertIsNone(result)
         self.assertFalse(executor.valid)
