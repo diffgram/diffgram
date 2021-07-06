@@ -230,8 +230,8 @@
         create_batch: async function (labels_payload) {
           try {
             const total_size = sizeof(labels_payload);
-            // const chunk_size_bytes = 10 * 1024 * 1024;
-            const chunk_size_bytes = 10 * 1024;
+            const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
+            // const chunk_size_bytes = 10 * 1024;
             if (total_size < chunk_size_bytes) {
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
                 pre_labeled_data: labels_payload
