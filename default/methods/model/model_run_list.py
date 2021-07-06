@@ -58,9 +58,10 @@ def model_run_list_web(project_string_id):
         if user:
             member = user.member
         else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
+            if request.authorization:
+                client_id = request.authorization.get('username', None)
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
 
         model_run_data, log = model_run_list_core(
             session = session,
