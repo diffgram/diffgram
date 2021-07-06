@@ -189,6 +189,8 @@
           let bytes_sent = 0;
           let chunk_start = 0;
           let chunk_end = chunk_start + chunk_size_bytes;
+          let index = 0;
+          let total_chunks = Math.ceil(parseFloat(fileClone.size) / chunk_size_bytes);
           while(bytes_sent < fileClone.size){
             const uuid = uuidv4();
             const formData = new FormData();
@@ -196,6 +198,8 @@
             const headers = {
               'Content-Type': 'multipart/form-data',
               'Content-Range': `bytes ${chunk_start}-${chunk_end - 1}/${fileClone.size}`,
+              'Content-Range-Index': index,
+              'Content-Range-Total-Chunks': total_chunks ,
               'chunk-file-id': `${uuid}`,
             }
             formData.set('file', slicedPart);
@@ -206,7 +210,8 @@
                 {headers: headers}
               );
               if(response.status === 200){
-                bytes_sent = chunk_end
+                bytes_sent = chunk_end;
+                index += 1;
                 chunk_start = chunk_end;
                 chunk_end = chunk_start + chunk_size_bytes
                 if(chunk_end >= fileClone.size){
@@ -229,10 +234,16 @@
 
         create_batch: async function (labels_payload) {
           try {
-            const total_size = sizeof(labels_payload);
-            const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
-            // const chunk_size_bytes = 10 * 1024;
-            if (total_size < chunk_size_bytes) {
+
+            // const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
+            const str = JSON.stringify(labels_payload);
+            const bytes = new TextEncoder().encode(str);
+            const blob = new Blob([bytes], {
+              type: "application/json;charset=utf-8"
+            });
+            const total_size = blob.size;
+            const chunk_size_bytes = 256 * 1024 // 256KB; 
+            if (total_size < chunk_size_bytes){
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
                 pre_labeled_data: labels_payload
               });
@@ -245,11 +256,7 @@
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {});
               if (response.status === 200) {
                 this.input_batch = response.data.input_batch;
-                const str = JSON.stringify(labels_payload);
-                const bytes = new TextEncoder().encode(str);
-                const blob = new Blob([bytes], {
-                  type: "application/json;charset=utf-8"
-                });
+
                 const result = await this.chunked_batch_data_upload(this.input_batch.id, blob, chunk_size_bytes);
                 if(result){
                   this.$emit('created_batch', this.input_batch);

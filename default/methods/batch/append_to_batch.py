@@ -7,7 +7,9 @@ from shared.database.batch.batch import InputBatch
 import os
 import tempfile
 from werkzeug.utils import secure_filename
+from shared.data_tools_core import Data_tools
 
+data_tools = Data_tools().data_tools
 
 @routes.route('/api/v1/project/<string:project_string_id>/input-batch/<int:batch_id>/append-data',
               methods = ['POST'])
@@ -62,32 +64,68 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
     # secure_filename makes sure the filename isn't unsafe to save
 
     content_range = request.headers.get('Content-Range')
+    content_range_index = int(request.headers.get('Content-Range-Index'))
+    total_chunks = int(request.headers.get('Content-Range-Total-Chunks'))
     if content_range.startswith('bytes'):
         new_range = content_range.replace('bytes ', '')
         chunks = new_range.split('/')[0]
         size = int(new_range.split('/')[1])
         chunk_start = int(new_range.split('-')[0])
         chunk_end = int(chunks.split('-')[1])
+        temp_dir_path = '/tmp/batches/{}_batch_payload.json'.format(batch.id)
+        print('temp_dir_path', temp_dir_path)
         if chunk_start == 0:
-            temp_dir = tempfile.mkdtemp()
-            batch.data_temp_dir = temp_dir
             session.add(batch)
-            save_path = os.path.join(temp_dir, secure_filename('{}_batch_payload.json'.format(batch.id)))
-        else:
-            save_path = os.path.join(batch.data_temp_dir, secure_filename('{}_batch_payload.json'.format(batch.id)))
+            url = data_tools.create_resumable_upload_session(
+                blob_path = temp_dir_path,
+                content_type = 'application/json',
+                input = None
+            )
+            print('ULR IS', url)
+            batch.data_temp_dir = url
+            session.add(batch)
+            stream = file.stream.read()
+            content_size = len(stream)
 
-        # We need to append to the file, and write as bytes
-        with open(save_path, 'ab') as f:
-            # Goto the offset, aka after the chunks we already wrote
-            f.seek(chunk_start)
-            f.write(file.stream.read())
+            response = data_tools.transmit_chunk_of_resumable_upload(
+                stream = stream,
+                blob_path = temp_dir_path,
+                content_type = 'application/json',
+                prior_created_url = batch.data_temp_dir,
+                content_start = chunk_start,
+                content_size = content_size,
+                total_size = size,
+                total_parts_count = total_chunks,
+                chunk_index = content_range_index,
+                input = None,
+                batch = batch,
+            )
+        else:
+            stream = file.stream.read()
+            content_size = len(stream)
+
+            response = data_tools.transmit_chunk_of_resumable_upload(
+                stream = stream,
+                blob_path = temp_dir_path,
+                content_type = 'application/json',
+                prior_created_url = batch.data_temp_dir,
+                content_start = chunk_start,
+                content_size = content_size,
+                total_size = size,
+                total_parts_count = total_chunks,
+                chunk_index = content_range_index,
+                input = None,
+                batch = batch,
+            )
+
+        session.add(batch)
         if chunk_end == (size - 1):
             # Get the complete file and write it to the input batch.
-            with open(save_path, 'r') as f:
-                # Goto the offset, aka after the chunks we already wrote
-                data = json.load(f)
-                batch.pre_labeled_data = data
-                session.add(batch)
+            data = data_tools.download_bytes(temp_dir_path)
+            # Goto the offset, aka after the chunks we already wrote
+            data = json.loads(data)
+            batch.pre_labeled_data = data
+            session.add(batch)
     else:
         log['error']['content_range'] = 'Invalid content range header.'
         return False, log

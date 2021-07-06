@@ -49,7 +49,8 @@ class DataToolsAzure:
             total_size: int,  # total size of whole upload (not chunk)
             total_parts_count: int,
             chunk_index: int,
-            input: object
+            input: object,
+            batch: object = None
 
     ):
         """
@@ -77,23 +78,37 @@ class DataToolsAzure:
 
         block_id = str(uuid.uuid4())
         blob_client.stage_block(block_id = block_id, data = stream)
-        if input.upload_azure_block_list is None or input.upload_azure_block_list.get(
-                'upload_azure_block_list') is None:
-            input.upload_azure_block_list = {
-                'upload_azure_block_list': [block_id]
-            }
-        else:
-            new_list = input.upload_azure_block_list['upload_azure_block_list'].copy()
-            new_list.append(block_id)
-            input.upload_azure_block_list = {'upload_azure_block_list': new_list}
-
+        if input:
+            if input.upload_azure_block_list is None or input.upload_azure_block_list.get(
+                    'upload_azure_block_list') is None:
+                input.upload_azure_block_list = {
+                    'upload_azure_block_list': [block_id]
+                }
+            else:
+                new_list = input.upload_azure_block_list['upload_azure_block_list'].copy()
+                new_list.append(block_id)
+                input.upload_azure_block_list = {'upload_azure_block_list': new_list}
+        elif batch and not input:
+            if batch.upload_azure_block_list is None or batch.upload_azure_block_list.get(
+                    'upload_azure_block_list') is None:
+                batch.upload_azure_block_list = {
+                    'upload_azure_block_list': [block_id]
+                }
+            else:
+                new_list = batch.upload_azure_block_list['upload_azure_block_list'].copy()
+                new_list.append(block_id)
+                batch.upload_azure_block_list = {'upload_azure_block_list': new_list}
         if int(chunk_index) == int(total_parts_count) - 1:
             # Build blocks list
             blocks = []
-            for block in input.upload_azure_block_list['upload_azure_block_list']:
-                blocks.append(BlobBlock(block_id = block))
-            blob_client.commit_block_list(blocks)
-
+            if input:
+                for block in input.upload_azure_block_list['upload_azure_block_list']:
+                    blocks.append(BlobBlock(block_id = block))
+                blob_client.commit_block_list(blocks)
+            elif not input and batch:
+                for block in input.upload_azure_block_list['upload_azure_block_list']:
+                    blocks.append(BlobBlock(block_id = block))
+                blob_client.commit_block_list(blocks)
         return True
 
     def download_from_cloud_to_local_file(self, cloud_uri, local_file):

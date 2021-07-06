@@ -23,7 +23,6 @@ class ModelManager:
         """
         create_models = []
         created_runs = []
-        print('CREATING MODELS FOR ', self.instance_list)
         for instance in self.instance_list:
             if instance.get('model_ref') is None and instance.get('model_id') is None:
                 continue

@@ -50,11 +50,11 @@ class DataToolsGCP:
         General concept here is just getting a signed url to a resource given this information
         that we can hit later to pass info
         """
-        if input is None:
-            raise Exception('Provide Input for resumable Upload creation')
+
         blob = self.bucket.blob(blob_path)
         url = blob.create_resumable_upload_session(content_type = content_type)
-        input.resumable_url = url
+        if input is not None:
+            input.resumable_url = url
         return url
 
     def transmit_chunk_of_resumable_upload(
@@ -68,7 +68,8 @@ class DataToolsGCP:
             total_size: int,  # total size of whole upload (not chunk),
             total_parts_count: int,
             chunk_index: int,
-            input: object
+            input: object,
+            batch: object = None
     ):
 
         """
@@ -110,11 +111,16 @@ class DataToolsGCP:
         # it's "includsive" ?
 
         end = int(content_start) + int(content_size) - 1
+        print('content_start', content_start)
+        print('content_size', content_size)
+        print('total_size', total_size)
+        print('stream', len(stream))
+        print('end', end)
 
         content_range_extended: str = "bytes " + str(content_start) + \
                                       "-" + str(end) + "/" + str(total_size)
 
-        # print(content_range_extended)
+        print(content_range_extended)
         headers = {"Content-Range": content_range_extended}
 
         try:
@@ -123,12 +129,14 @@ class DataToolsGCP:
                 data = stream,
                 headers = headers
             )
-        except:
+        except Exception as e:
+            raise e
             # TODO if we are going to have a try block
             # here should we error / pass this to Input instance in some way?
             return False
 
-        # print(response.text)
+        print('AAAAAAAAA', response, response.status_code)
+        print(response.text)
 
         return response
 
