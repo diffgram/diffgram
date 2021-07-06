@@ -179,8 +179,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 logger.error(error_string)
                 self.log['error']['label_name'] = error_string
                 return
-            print(self.diffgram_query.project.id, 'project id')
-            print(label_file.id, 'label_file id')
             instance_list_count_subquery = (self.session.query(func.count(Instance.id)).filter(
                 or_(
                    and_(
