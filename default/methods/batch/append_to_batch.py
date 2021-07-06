@@ -46,7 +46,6 @@ def append_to_batch_api(project_string_id, batch_id):
 
         return jsonify(input_batch = batch_data), 200
 
-
 def append_to_batch_core(session, log, batch_id, member, project, request):
     result = None
     batch = InputBatch.get_by_id(session = session, id = batch_id)
