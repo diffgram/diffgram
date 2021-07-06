@@ -495,11 +495,11 @@ class File_Browser():
         """
         query_string = self.metadata.get('query')
         if not query_string:
-            return False, {'error': {'query_string': 'Provide query_string'}}
+            return False, {'error': {'query_string': 'Provide query_string'}}, None
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member, directory = self.directory)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
         if len(query_creator.log['error'].keys()) > 0:
-            return False, query_creator.log
+            return False, query_creator.log, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
         if sql_alchemy_query:
