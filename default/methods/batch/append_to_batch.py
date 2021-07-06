@@ -121,11 +121,10 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
         session.add(batch)
         if chunk_end == (size - 1):
             # Get the complete file and write it to the input batch.
-            data = data_tools.download_bytes(temp_dir_path)
-            # Goto the offset, aka after the chunks we already wrote
-            data = json.loads(data)
-            batch.pre_labeled_data = data
+            batch.data_temp_dir = temp_dir_path
+            batch.pre_labeled_data = None
             session.add(batch)
+            result = batch.get_pre_labeled_data_cloud_url()
     else:
         log['error']['content_range'] = 'Invalid content range header.'
         return False, log
