@@ -123,7 +123,7 @@ def enqueue_packet(project_string_id,
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
               methods=['POST'])
 @Project_permissions.user_has_project(['admin', "Editor"])
-@limiter.limit("3 per second, 320 per minute, 3000 per day")
+@limiter.limit("20 per second")
 def input_packet(project_string_id):
     """
     Import single packet
