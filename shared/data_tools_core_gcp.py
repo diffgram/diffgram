@@ -111,16 +111,11 @@ class DataToolsGCP:
         # it's "includsive" ?
 
         end = int(content_start) + int(content_size) - 1
-        print('content_start', content_start)
-        print('content_size', content_size)
-        print('total_size', total_size)
-        print('stream', len(stream))
-        print('end', end)
+
 
         content_range_extended: str = "bytes " + str(content_start) + \
                                       "-" + str(end) + "/" + str(total_size)
 
-        print(content_range_extended)
         headers = {"Content-Range": content_range_extended}
 
         try:
@@ -135,8 +130,6 @@ class DataToolsGCP:
             # here should we error / pass this to Input instance in some way?
             return False
 
-        print('AAAAAAAAA', response, response.status_code)
-        print(response.text)
 
         return response
 

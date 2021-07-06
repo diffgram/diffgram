@@ -544,7 +544,7 @@
           }
         },
         update_files: async function (file_data) {
-          const limit = pLimit(10); // 10 Max concurrent request.
+          const limit = pLimit(3); // 10 Max concurrent request.
           try {
             this.processed_files = 0;
             this.total_files_update = Object.keys(file_data).length;
