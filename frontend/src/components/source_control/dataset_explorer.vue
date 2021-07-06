@@ -5,7 +5,7 @@
       <v-toolbar-title class="d-flex align-center mb-0">
         <tooltip_button
           tooltip_message="Refresh"
-          datacy="refresh_button"
+          datacy="refresh_explorer"
           @click="fetch_file_list"
           icon="refresh"
           :icon_style="true"
@@ -97,6 +97,7 @@
     <v-layout id="infinite-list"
               fluid
               class="files-container d-flex justify-start"
+              data-cy="file_review_container"
               :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
 
       <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
@@ -148,6 +149,9 @@
 
     ],
     mounted() {
+      if (window.Cypress) {
+        window.DatasetExplorer = this;
+      }
       if(!this.metadata.directory_id){
         this.metadata.directory_id = this.$props.directory.directory_id;
 
