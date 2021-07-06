@@ -69,7 +69,6 @@ def enqueue_packet(project_string_id,
     diffgram_input.url = media_url
     diffgram_input.video_split_duration = video_split_duration
     diffgram_input.allow_duplicates = allow_duplicates
-
     if instance_list:
         diffgram_input.instance_list = {}
         diffgram_input.instance_list['list'] = instance_list
@@ -88,7 +87,6 @@ def enqueue_packet(project_string_id,
     # Expect temp dir to be None here.
     # because each machine should assign it's own temp dir
     # Something else to consider for future here!
-
     # Once this is part of input, it will be smoothly handled at right time as part of
     # processing queue
     diffgram_input.job_id = job_id
@@ -107,7 +105,7 @@ def enqueue_packet(project_string_id,
 
 
     if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
-  
+
         print('diffgram_input_id', diffgram_input_id)
         if commit_input:
             regular_methods.commit_with_rollback(session = session)
@@ -223,6 +221,7 @@ def input_packet(project_string_id):
                                         video_split_duration=video_split_duration,
                                         frame_packet_map=untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
+                                        enqueue_immediately = False,
                                         mode=mode)
         auth_api = None
         if client_id:
