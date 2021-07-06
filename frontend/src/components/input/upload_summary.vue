@@ -235,8 +235,8 @@
         create_batch: async function (labels_payload) {
           try {
 
-            // const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
-            const chunk_size_bytes = 256 * 1024 // 256KB;
+            const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
+            // const chunk_size_bytes = 256 * 1024 // 256KB;
             const str = JSON.stringify(labels_payload);
             const bytes = new TextEncoder().encode(str);
             const blob = new Blob([bytes], {
