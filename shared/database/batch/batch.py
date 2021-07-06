@@ -19,7 +19,13 @@ class InputBatch(Base):
     directory_id = Column(Integer, ForeignKey('working_dir.id'))  # target directory
     directory = relationship("WorkingDir", foreign_keys = [directory_id])
 
+    # For temp storage of huge JSON pre labeled data.
     data_temp_dir = Column(String)
+    # For AWS S3 Uploads
+    upload_aws_id = Column(String())
+    upload_aws_parts_list = Column(MutableDict.as_mutable(JSONEncodedDict))
+    # For Azure Uploads
+    upload_azure_block_list = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     source_directory_id = Column(Integer, ForeignKey('working_dir.id'))  # For internal only
     source_directory = relationship("WorkingDir", foreign_keys = [source_directory_id])

@@ -57,7 +57,8 @@ class DataToolsS3:
             total_size: int,  # total size of whole upload (not chunk)
             total_parts_count: int,
             chunk_index: int,
-            input: object
+            input: object,
+            batch: object = None
 
     ):
         """
@@ -95,23 +96,33 @@ class DataToolsS3:
             Key = blob_path,
             UploadId = input.upload_aws_id,
             PartNumber = int(chunk_index) + 1)
-
-        if input.upload_aws_parts_list is None or \
-                input.upload_aws_parts_list.get('parts') is None:
-            input.upload_aws_parts_list = {
-                'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
-            }
-        else:
-            input.upload_aws_parts_list['parts'].append(
-                {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
-            )
+        if input:
+            if input.upload_aws_parts_list is None or \
+                    input.upload_aws_parts_list.get('parts') is None:
+                input.upload_aws_parts_list = {
+                    'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
+                }
+            else:
+                input.upload_aws_parts_list['parts'].append(
+                    {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
+                )
+        elif not input and batch:
+            if batch.upload_aws_parts_list is None or \
+                    batch.upload_aws_parts_list.get('parts') is None:
+                batch.upload_aws_parts_list = {
+                    'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
+                }
+            else:
+                batch.upload_aws_parts_list['parts'].append(
+                    {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
+                )
 
         if int(chunk_index) == int(total_parts_count) - 1:
             result = self.s3_client.complete_multipart_upload(
                 Bucket = self.s3_bucket_name,
                 Key = blob_path,
-                UploadId = input.upload_aws_id,
-                MultipartUpload = {"Parts": input.upload_aws_parts_list['parts']}
+                UploadId = input.upload_aws_id if input else batch.upload_aws_id,
+                MultipartUpload = {"Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
             )
         return True
 
