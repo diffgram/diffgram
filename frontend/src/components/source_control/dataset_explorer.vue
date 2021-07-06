@@ -186,7 +186,7 @@
           'directory_id': undefined,
           'limit': 28,
           'media_type': this.filter_media_type_setting,
-          'page_number': 1,
+          'page': 1,
           'query_menu_open' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
@@ -222,7 +222,7 @@
         await this.fetch_file_list()
       },
       load_more_files: async function(){
-        this.metadata.page_number += 1;
+        this.metadata.page += 1;
         await this.fetch_file_list(false)
       },
       update_compare_to_model_runs: function(value){
@@ -233,7 +233,7 @@
       },
       fetch_file_list: async function(reload_all = true){
         if(reload_all){
-          this.metadata.page_number = 1;
+          this.metadata.page = 1;
           this.loading = true
         }
         else{
