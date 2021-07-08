@@ -102,7 +102,7 @@ jobs:
           files: test-results/**/*.xml
 
   E2E-Tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # Service containers to run with `container-job`
 
     container:
