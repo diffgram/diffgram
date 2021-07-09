@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.create_unique_constraint('unique_frame_number', 'file', ['video_parent_file_id', 'frame_number'])
 
 
 def downgrade():
-    pass
+    op.drop_constraint('unique_frame_number', 'file')
