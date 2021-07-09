@@ -17,6 +17,8 @@ from sqlalchemy.orm import joinedload
 from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import UniqueConstraint
+
 logger = get_shared_logger()
 
 
@@ -186,6 +188,7 @@ class File(Base, Caching):
                                         uselist=False,
                                         foreign_keys=[default_external_map_id])
 
+    __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name='unique_frame_number_video'),)
     @staticmethod
     def get_files_in_project_id_list(session, project_id, id_list):
         file_list_db = session.query(File).filter(File.id.in_(id_list), File.project_id == project_id).all()
