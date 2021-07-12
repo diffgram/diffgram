@@ -34,12 +34,14 @@ def query_suggest_web(project_string_id):
 
         project = Project.get_by_string_id(session, project_string_id)
         user = User.get(session)
+        member = None
         if user:
             member = user.member
         else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
+            if request.authorization:
+                client_id = request.authorization.get('username', None)
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
 
         query_data, log = query_suggest_core(
             session = session,
