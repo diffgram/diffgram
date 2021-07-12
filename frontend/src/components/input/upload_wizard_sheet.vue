@@ -348,12 +348,12 @@
       is_open: false,
       el: 1,
       dropzone_total_file_size: 0,
-      dropzone_uploaded_file_size: 0,
       currently_uploading_bytes: 0,
       upload_in_progress: false,
       valid_labels: false,
       pre_labeled_data: null,
       file_list_to_upload: [],
+      per_file_progress: {},
 
       pre_labels_file_list: [],
       pre_label_key_list: [],
@@ -388,6 +388,14 @@
         return get_initial_state();
       },
       computed: {
+        dropzone_uploaded_file_size: function(){
+          let result = 0;
+          for(const file_key of Object.keys(this.per_file_progress)){
+            result += this.per_file_progress[file_key];
+          }
+          return result
+
+        },
         global_progress: function () {
           return 100 * (parseFloat(this.completed_questions) / this.total_questions);
 
@@ -532,10 +540,15 @@
           }
         },
         update_progress_values: function (file, total_bytes, uploaded_bytes) {
+          console.log('UPLOAD PROGRESS', file, total_bytes, uploaded_bytes, file.size <= uploaded_bytes)
           this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
+          this.per_file_progress = {
+            ...this.per_file_progress,
+              [file.upload.uuid]: uploaded_bytes
+          }
           if (file.size <= uploaded_bytes) {
+            console.log('updating values')
             this.currently_uploading_bytes = 0; // reset current upload bytes counter
-            this.dropzone_uploaded_file_size += uploaded_bytes; // add finished file to total upload
           }
         },
         show_upload_progress_screen: function () {
