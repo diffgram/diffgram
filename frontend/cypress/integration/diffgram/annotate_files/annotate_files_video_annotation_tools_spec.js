@@ -24,20 +24,20 @@ describe('Annotate Files Tests', () => {
 
         cy.window().then(window => {
           cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-          cy.select_label()
-          cy.wait(3000)
-          cy.mousedowncanvas(75, 75);
-          cy.wait(500)
+          .select_label()
+          .wait(3000)
+          .mousedowncanvas(75, 75)
+          .wait(500)
 
-          cy.mouseupcanvas();
-          cy.wait(1000)
+          .mouseupcanvas()
+          .wait(1000)
 
-          cy.mousedowncanvas(120, 120);
-          cy.wait(500)
-          cy.mouseupcanvas();
+          .mousedowncanvas(120, 120)
+          .wait(500)
+          .mouseupcanvas()
 
-          cy.wait(2000)
-          cy.log(window.AnnotationCore)
+          .wait(5000)
+          .log(window.AnnotationCore)
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
         });
 
@@ -45,15 +45,12 @@ describe('Annotate Files Tests', () => {
       it('Moves 1 frame forward and backward keeping instance references', () => {
 
         cy.window().then(window => {
-
-          cy.get('[data-cy="forward_1_frame"]').click({force: true})
-          cy.wait(700)
-
-
-          cy.wait(2000)
-
-          cy.get('[data-cy="back_1_frame"]').click({force: true})
-          cy.wait(2000)
+          cy.wait(1000)
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .wait(700)
+          .wait(2000)
+          .get('[data-cy="back_1_frame"]').click({force: true})
+          .wait(2000)
 
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
@@ -74,7 +71,7 @@ describe('Annotate Files Tests', () => {
           cy.mouseupcanvas()
           cy.wait(2000)
           cy.dragcanvas(85, 85, 140, 140);
-          cy.wait(3000)
+          cy.wait(5000)
 
           cy.get('[data-cy="forward_1_frame"]').click({force: true})
           cy.wait(2000)
