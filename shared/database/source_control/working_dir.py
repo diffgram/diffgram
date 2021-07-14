@@ -568,10 +568,7 @@ class WorkingDirFileLink(Base):
                 )
             else:
                 query = query.filter(
-                    or_(
-                        and_(File.type == "image", File.video_id == None),
-                        File.type == "video",
-                    )
+                    File.type.in_(type)
                 )
 
         if original_filename is not None:
