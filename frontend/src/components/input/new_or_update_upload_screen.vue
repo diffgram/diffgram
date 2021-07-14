@@ -573,6 +573,8 @@
             await this.upload_local_raw_media(local_file_list);
             const connection_file_list = file_list.filter(f => f.source === 'connection');
             await this.upload_connection_raw_media(connection_file_list);
+            this.is_actively_sending = false
+            this.$emit('update_is_actively_sending', this.is_actively_sending)
           } else {
             throw new Error('Invalid upload mode.')
           }
