@@ -1398,7 +1398,7 @@ export default Vue.extend( {
 
       let url = ""
 
-      if (this.task.id) {
+      if (this.task && this.task.id) {
          url += "/api/walrus/task/" + this.task.id + '/video/interpolate'
       }
       else {
