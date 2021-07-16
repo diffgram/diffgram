@@ -10,7 +10,7 @@
                     v-if="!error_permissions.data"
                     :persistent="persistent_bottom_sheet"
                     v-model="media_sheet">
-      <v-card class="pa-0 d-flex flex-column">
+      <v-card class="pa-0 d-flex flex-column" >
 
         <v-card-text class="pa-0 d-flex flex-column">
           <v-tabs v-model="tab"

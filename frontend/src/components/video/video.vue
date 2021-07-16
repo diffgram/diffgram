@@ -360,16 +360,16 @@
 
     </video>
 
-    <frame_previewVue
-      v-if="box_client"
-      :visible="frame_preview_visible"
-      :mouse_x="mouse_x - box_client.left"
-      :mouse_y="mouse_y - box_client.top"
-      :frame_url="preview_frame_url"
-      :refresh="preview_frame_refresh"
-      :frame_estimate="preview_frame_final_estimate"
-                      >
-    </frame_previewVue>
+      <frame_previewVue
+        v-if="box_client"
+        :visible="frame_preview_visible"
+        :mouse_x="mouse_x - box_client.left"
+        :mouse_y="mouse_y - box_client.top"
+        :frame_url="preview_frame_url"
+        :refresh="preview_frame_refresh"
+        :frame_estimate="preview_frame_final_estimate"
+      >
+      </frame_previewVue>
 
 
 
