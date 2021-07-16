@@ -7,50 +7,44 @@ from shared.permissions.super_admin_only import Super_Admin
 
 
 @routes.route('/api/v1/project/list',
-			  methods = ['POST'])
+              methods = ['POST'])
 @General_permissions.grant_permission_for(['normal_user', 'super_admin'])
 def project_list_api():
-	
-	spec_list = [ {'username': None}]
+    spec_list = [{'username': None}]
 
-	log, input, untrusted_input = regular_input.master(request=request,
-													   spec_list=spec_list)
-	if len(log["error"].keys()) >= 1:
-		return jsonify(log=log), 400
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log = log), 400
 
-	with sessionMaker.session_scope() as session:  
-	    	
-		# TODO this is a placeholder for future thing of getting projects 
-		# by username 
-		# But for now default case is getting logged in users project
-		# So we just use User.get()
+    with sessionMaker.session_scope() as session:
+        # TODO this is a placeholder for future thing of getting projects
+        # by username
+        # But for now default case is getting logged in users project
+        # So we just use User.get()
 
-		user = User.get(session = session)
+        user = User.get(session = session)
 
-		project_list = project_list_core(	session = session,
-											user = user)
+        project_list = project_list_core(session = session,
+                                         user = user)
 
-		log['success'] = True
-		return jsonify( log = log,
-					    project_list = project_list), 200
+        log['success'] = True
+        return jsonify(log = log,
+                       project_list = project_list), 200
 
 
 def project_list_core(session,
-					  user):
+                      user):
+    project_list = Project.list(
+        user = user,
+        session = session)
 
+    out_list = []
 
-	project_list = Project.list(
-		user = user,
-		session = session)
+    for project in project_list:
+        out_list.append(project.serialize(session = session))
 
-	out_list = []
-
-	for project in project_list:
-		out_list.append(project.serialize(session = session))
-		
-
-	return out_list
-
+    return out_list
 
 
 """
@@ -69,37 +63,39 @@ Other thing is the more "generic" search method for project is based on user obj
 Perhaps user should be passed as an option to a more generic method on Project itself...
 
 """
+
+
 @routes.route('/api/v1/admin/project/list',
-			  methods = ['POST'])
+              methods = ['POST'])
 @Super_Admin.is_super()
 def project_list_super_admin_api():
-	
-	# Could put other search options here...
-	spec_list = [
-		{"limit": {
-			'kind': int,
-			'default': 25
-			}
-		}]
+    # Could put other search options here...
+    spec_list = [
+        {"limit": {
+            'kind': int,
+            'default': 25
+        }
+        }]
 
-	log, input, untrusted_input = regular_input.master(request=request,
-													   spec_list=spec_list)
-	if len(log["error"].keys()) >= 1:
-		return jsonify(log=log), 400
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log = log), 400
 
-	with sessionMaker.session_scope() as session:  
-	    	
-		project_list = Project.list(
-			mode = "super_admin",
-			session = session,
-			limit = input['limit']
-			)
+    with sessionMaker.session_scope() as session:
 
-		out_list = []
+        project_list = Project.list(
+            mode = "super_admin",
+            session = session,
+            limit = input['limit']
+        )
 
-		for project in project_list:
-			out_list.append(project.serialize(session))
+        out_list = []
 
-		log['success'] = True
-		return jsonify( log = log,
-						project_list = out_list), 200
+        for project in project_list:
+
+            out_list.append(project.serialize(session))
+
+        log['success'] = True
+        return jsonify(log = log,
+                       project_list = out_list), 200
