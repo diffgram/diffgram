@@ -277,7 +277,6 @@ class Project(Base, Caching):
         """
 
         preview_file_list = []
-
         if self.session is None:
             return preview_file_list
 
@@ -285,6 +284,7 @@ class Project(Base, Caching):
             session=self.session,
             working_dir_id=self.directory_default_id,
             limit=3,
+            type=['image', 'video'],
             root_files_only=True  # Excludes labels  at time of writing
         )
 

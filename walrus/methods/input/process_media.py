@@ -1480,6 +1480,8 @@ class Process_Media():
                 print("shutil error")
                 pass
 
+        # Refresh Previews of project
+        self.project.set_cache_key_dirty('preview_file_list')
         return True
 
     def __get_allowed_model_ids(self):
