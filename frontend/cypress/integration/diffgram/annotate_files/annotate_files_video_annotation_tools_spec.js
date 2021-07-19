@@ -51,7 +51,7 @@ describe('Annotate Files Tests', () => {
           .wait(2000)
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
-
+          .get('[data-cy="ghost_instance_dont_show_again"]').click({force: true});
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
           // expect(window.AnnotationCore.instance_list[0].x_min).to.equal(true);
@@ -89,14 +89,13 @@ describe('Annotate Files Tests', () => {
     })
     context('It show ghost instances', () =>{
       it('Shows Ghost Instances', () => {
-
-          cy.window().then(window => {
-            cy.wait(2000)
-              .get('[data-cy="edit_toggle"]').click({force: true})
-              .wait(1000)
-              .get('[data-cy="forward_1_frame"]').click({force: true})
-              .wait(4000)
-              expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
+        cy.wait(2000)
+          .get('[data-cy="edit_toggle"]').click({force: true})
+          .wait(1000)
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .wait(4000)
+          .window().then(window => {
+            expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
           });
 
