@@ -21,17 +21,17 @@ def on_launch_error_retry(retry_state):
 class SyncActionsHandlerThread:
 
     def __init__(self,
-                 thread_sleep_time_min=settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MIN,
-                 thread_sleep_time_max=settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
-                 run_once=True):
+                 thread_sleep_time_min = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MIN,
+                 thread_sleep_time_max = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
+                 run_once = True):
 
         if run_once is True:
             self.thread = threading.Thread(
-                target=self.check_for_new_sync_actions)
+                target = self.check_for_new_sync_actions)
         else:
             self.thread_sleep_time_min = thread_sleep_time_min
             self.thread_sleep_time_max = thread_sleep_time_max
-            self.thread = threading.Thread(target=self.start_queue_check_loop)
+            self.thread = threading.Thread(target = self.start_queue_check_loop)
         if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
             self.thread.daemon = True  # Allow hot reload to work
             self.thread.start()
@@ -41,15 +41,14 @@ class SyncActionsHandlerThread:
 
         """
         regular_methods.loop_forever_with_random_load_balancing(
-            log_start_message='Starting SyncActionsHandlerThread Queue handler... ',
-            log_heartbeat_message='[SyncActions Queue heartbeat]',
-            function_call=self.check_for_new_sync_actions,
-            function_args={},
-            thread_sleep_time_min=self.thread_sleep_time_min,
-            thread_sleep_time_max=self.thread_sleep_time_max,
-            logger=logger
-            )
-
+            log_start_message = 'Starting SyncActionsHandlerThread Queue handler... ',
+            log_heartbeat_message = '[SyncActions Queue heartbeat]',
+            function_call = self.check_for_new_sync_actions,
+            function_args = {},
+            thread_sleep_time_min = self.thread_sleep_time_min,
+            thread_sleep_time_max = self.thread_sleep_time_max,
+            logger = logger
+        )
 
     def process_sync_actions(self, session, sync_action):
         """
@@ -60,16 +59,16 @@ class SyncActionsHandlerThread:
         """
         log = regular_log.default()
         sync_event = sync_action.sync_event
-        sync_events_manager = SyncEventManager(session=session, sync_event=sync_event)
+        sync_events_manager = SyncEventManager(session = session, sync_event = sync_event)
         logger.debug('Processing new sync event.')
         if sync_event.event_trigger_type == 'task_completed':
             completed_task = sync_event.completed_task
-            job_observable = task_file_observers.JobObservable(session=session,
-                                                               log=log,
-                                                               job=completed_task.job,
-                                                               task=completed_task,
-                                                               sync_events_manager=sync_events_manager)
-            job_observable.notify_all_observers(defer=False)
+            job_observable = task_file_observers.JobObservable(session = session,
+                                                               log = log,
+                                                               job = completed_task.job,
+                                                               task = completed_task,
+                                                               sync_events_manager = sync_events_manager)
+            job_observable.notify_all_observers(defer = False)
         elif sync_event.event_trigger_type == 'file_operation':
             logger.debug('Processing file_operation sync event.')
             destination_directory = sync_event.dataset_destination
@@ -83,17 +82,17 @@ class SyncActionsHandlerThread:
                     file = sync_event.new_file_copy
 
                 job_dir_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-                    session=session,
-                    log=log,
-                    directory=destination_directory,
+                    session = session,
+                    log = log,
+                    directory = destination_directory,
                 )
                 # we need to provide the source dir, so validation of incoming
                 # directory does not fail when checking the directory the file is coming from.
                 logger.debug('Syncing file on jobs...')
                 job_dir_sync_manager.add_file_to_all_jobs(
-                    file=file,
-                    source_dir=source_directory,
-                    create_tasks=True,
+                    file = file,
+                    source_dir = source_directory,
+                    create_tasks = True,
 
                 )
             else:
@@ -106,17 +105,20 @@ class SyncActionsHandlerThread:
             Gets the first element of the queue
         """
         with sessionMaker.session_scope_threaded() as session:
-            sync_action = session.query(SyncActionsQueue).with_for_update(skip_locked=True).first()
-            # Can use sort in sql if needed here
-            if sync_action:
-                try:
-                    self.process_sync_actions(session, sync_action)
-                    session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
-                except Exception as e:
-                    logger.critical('Error executing SynAction {}'.format(sync_action.sync_event.id))
-                    sync_action.sync_event.status = 'failed'
-                    sync_action.sync_event.execution_log = traceback.format_exc()
-                    sync_action.sync_event.description = str(e)
-                    session.add(sync_action.sync_event)
-                    logger.info('Deleting queue element'.format(sync_action.id))
-                    session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
+            try:
+                sync_action = session.query(SyncActionsQueue).with_for_update(skip_locked = True).first()
+                # Can use sort in sql if needed here
+                if sync_action:
+                    try:
+                        self.process_sync_actions(session, sync_action)
+                        session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
+                    except Exception as e:
+                        logger.critical('Error executing SynAction {}'.format(sync_action.sync_event.id))
+                        sync_action.sync_event.status = 'failed'
+                        sync_action.sync_event.execution_log = traceback.format_exc()
+                        sync_action.sync_event.description = str(e)
+                        session.add(sync_action.sync_event)
+                        logger.info('Deleting queue element'.format(sync_action.id))
+                        session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
+            except:
+                session.rollback()

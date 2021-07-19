@@ -229,7 +229,8 @@ def file_update_core(
             session=session,
             project=project,
             directory=source_directory,
-            metadata_proposed=metadata_proposed
+            metadata_proposed=metadata_proposed,
+            member = member
         )
 
         file_list = file_browser_instance.file_view_core(

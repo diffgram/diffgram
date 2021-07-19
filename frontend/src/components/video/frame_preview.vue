@@ -81,6 +81,7 @@ export default Vue.extend({
 </script>
 <template>
   <div
+    v-if="visible"
     class="frame-preview"
     :style="{bottom: mouse_y_px, left: mouse_x_px}"
   >
