@@ -1873,8 +1873,8 @@ class Process_Media():
 
         if response.status_code != 200:
             self.input.status = "failed"
-            logger.error("Exceeded retry limit, no valid response")
-            self.input.status_text = "Exceeded retry limit, no valid response"
+            logger.error("Exceeded retry limit, no valid response ({}) from {} Response: {}".format(response.status_code, self.input.url, str(response.text)))
+            self.input.status_text = "Exceeded retry limit, no valid response ({}) from {} Response: {}".format(response.status_code, self.input.url, str(response.text))
             self.log['error']['status_text'] = self.input.status_text
             return
 

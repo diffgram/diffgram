@@ -51,7 +51,7 @@ describe('Annotate Files Tests', () => {
           .wait(2000)
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
-          .get('[data-cy="ghost_instance_dont_show_again"]').click({force: true});
+          .get('[data-cy="ghost_instance_ok"]').click({force: true});
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
           // expect(window.AnnotationCore.instance_list[0].x_min).to.equal(true);
