@@ -35,8 +35,8 @@ describe('Annotate Files Tests', () => {
           .mousedowncanvas(120, 120)
           .wait(500)
           .mouseupcanvas()
-
-          .wait(5000)
+          .get('[data-cy=save_button]').click({force: true})
+          .wait(10000)
           .log(window.AnnotationCore)
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
         });
@@ -50,8 +50,8 @@ describe('Annotate Files Tests', () => {
           .wait(700)
           .wait(2000)
           .get('[data-cy="back_1_frame"]').click({force: true})
-          .wait(2000)
-
+          .wait(8000)
+          .get('[data-cy="ghost_instance_ok"]').click({force: true});
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
           // expect(window.AnnotationCore.instance_list[0].x_min).to.equal(true);
@@ -65,19 +65,20 @@ describe('Annotate Files Tests', () => {
           // Select Element
 
           cy.get('[data-cy="edit_toggle"]').click({force: true})
-          cy.get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
-          cy.wait(2000)
-          cy.mousedowncanvas(85, 50);
-          cy.mouseupcanvas()
-          cy.wait(2000)
-          cy.dragcanvas(85, 85, 140, 140);
-          cy.wait(5000)
+          .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
+          .wait(2000)
+          .mousedowncanvas(85, 50)
+          .mouseupcanvas()
+          .wait(2000)
+          .dragcanvas(85, 85, 140, 140)
+          .get('[data-cy=save_button]').click({force: true})
+          .wait(10000)
 
-          cy.get('[data-cy="forward_1_frame"]').click({force: true})
-          cy.wait(2000)
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .wait(2000)
 
-          cy.get('[data-cy="back_1_frame"]').click({force: true})
-          cy.wait(2000)
+          .get('[data-cy="back_1_frame"]').click({force: true})
+          .wait(2000)
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
 
@@ -88,13 +89,12 @@ describe('Annotate Files Tests', () => {
     })
     context('It show ghost instances', () =>{
       it('Shows Ghost Instances', () => {
-        cy.wait(5000)
+        cy.wait(2000)
           .get('[data-cy="edit_toggle"]').click({force: true})
           .wait(1000)
           .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(5000)
+          .wait(4000)
           .window().then(window => {
-            cy.wait(2000)
             expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
           });
