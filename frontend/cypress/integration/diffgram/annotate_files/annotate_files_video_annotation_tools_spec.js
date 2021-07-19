@@ -36,7 +36,7 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .get('[data-cy=save_button]').click({force: true})
-          .wait(5000)
+          .wait(10000)
           .log(window.AnnotationCore)
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
         });
@@ -50,7 +50,7 @@ describe('Annotate Files Tests', () => {
           .wait(700)
           .wait(2000)
           .get('[data-cy="back_1_frame"]').click({force: true})
-          .wait(2000)
+          .wait(8000)
 
 
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
@@ -72,7 +72,7 @@ describe('Annotate Files Tests', () => {
           .wait(2000)
           .dragcanvas(85, 85, 140, 140)
           .get('[data-cy=save_button]').click({force: true})
-          .wait(5000)
+          .wait(10000)
 
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .wait(2000)
