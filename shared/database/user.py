@@ -150,13 +150,13 @@ class User(Base):
     signup_how_many_data_labelers = Column(String())
 
     def get_profile_image_url(self):
-        if self.profile_image_expiry is None or self.profile_image_expiry <= time.time():
+        if (self.profile_image_expiry is None or self.profile_image_expiry <= time.time()) and self.profile_image_blob:
             self.profile_image_url = data_tools.build_secure_url(blob_name = self.profile_image_blob)
             self.profile_image_thumb_url = data_tools.build_secure_url(blob_name = self.profile_image_thumb_blob)
         return self.profile_image_url
 
     def get_profile_image_thumb_url(self):
-        if self.profile_image_expiry is None or self.profile_image_expiry <= time.time():
+        if (self.profile_image_expiry is None or self.profile_image_expiry <= time.time()) and self.profile_image_blob:
             self.profile_image_url = data_tools.build_secure_url(blob_name = self.profile_image_blob)
             self.profile_image_thumb_url = data_tools.build_secure_url(blob_name = self.profile_image_thumb_blob)
         return self.profile_image_thumb_url
@@ -166,10 +166,6 @@ class User(Base):
         project_current = None
         if self.project_current:
             project_current = self.project_current.serialize()
-
-        if self.profile_image_expiry is None or self.profile_image_expiry <= time.time():
-            self.profile_image_url = data_tools.build_secure_url(blob_name = self.profile_image_blob)
-            self.profile_image_thumb_url = data_tools.build_secure_url(blob_name = self.profile_image_thumb_blob)
 
         return {
             'current_project_string_id': self.current_project_string_id,
