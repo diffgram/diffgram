@@ -1,14 +1,16 @@
 # OPENCORE - ADD
-from methods.regular.regular_api import *
 import boto3
+import traceback
+import threading
+import io
+import requests
 
+from methods.regular.regular_api import *
 from shared.helpers import sessionMaker
 from shared.database.project import Project
 from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from methods.input import packet
-import threading
-import io
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
@@ -363,12 +365,46 @@ class S3Connector(Connector):
             )
             return {'result': True}
 
+    def validate_s3_connection_read_write(self, bucket_name):
+        test_file_path = 'diffgram_test_file.txt'
+        log = regular_log.default()
+        try:
+            self.connection_client.put_object(Body = 'This is a diffgram test file',
+                              Bucket = bucket_name,
+                              Key = test_file_path,
+                              ContentType = 'text/plain')
+
+        except Exception as e:
+            log['error']['s3_write_perms'] = 'Error Connecting to S3: Please check you have write permissions on the S3 bucket.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        try:
+            signed_url = self.connection_client.generate_presigned_url('get_object',
+                                                       Params = {'Bucket': bucket_name, 'Key': test_file_path},
+                                                       ExpiresIn = 3600 * 24 * 6)
+            resp = requests.get(signed_url)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+        except:
+            log['error']['s3_write_perms'] = 'Error Connecting to S3: Please check you have read permissions on the S3 bucket.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        return True, log
+
     def test_connection(self):
         auth_result = self.connect()
         if 'log' in auth_result:
             return auth_result
         # Test fecthing buckets
         result_buckets = self.__list_buckets({})
+        bucket_names = result_buckets['result']
+        if len(bucket_names) > 0:
+            validation_result, log = self.validate_s3_connection_read_write(bucket_names[0])
+            if len(log['error'].keys()) > 0:
+                return {'log': log}
+
+
         if 'log' in result_buckets:
             return result_buckets
         return result_buckets

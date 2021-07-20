@@ -1,4 +1,11 @@
 # OPENCORE - ADD
+import threading
+import io
+import datetime
+import mimetypes
+import requests
+import traceback
+
 from methods.regular.regular_api import *
 from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
 from azure.storage.blob._models import BlobSasPermissions
@@ -8,14 +15,11 @@ from shared.database.project import Project
 from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from methods.input import packet
-import threading
-import io
-import datetime
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
 from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
-import mimetypes
+
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -379,12 +383,63 @@ class AzureConnector(Connector):
             )
             return {'result': True}
 
+    def validate_azure_connection_read_write(self, bucket_name):
+        test_file_path = 'diffgram_test_file.txt'
+        log = regular_log.default()
+        try:
+            blob_client = self.connection_client.get_blob_client(container = bucket_name, blob = test_file_path)
+            my_content_settings = ContentSettings(content_type = 'text/plain')
+            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
+        except Exception as e:
+            log['error']['gcp_write_perms'] = 'Error Connecting to Azure: Please check you have write permissions on the Azure container.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        try:
+            shared_access_signature = BlobSharedAccessSignature(
+                account_name = self.connection_client.account_name,
+                account_key = self.connection_client.credential.account_key
+            )
+            expiration_offset = 40368000
+            added_seconds = datetime.timedelta(0, expiration_offset)
+            expiry_time = datetime.datetime.utcnow() + added_seconds
+            filename = test_file_path.split("/")[-1]
+            sas = shared_access_signature.generate_blob(
+                container_name = bucket_name,
+                blob_name = test_file_path,
+                start = datetime.datetime.utcnow(),
+                expiry = expiry_time,
+                permission = BlobSasPermissions(read = True),
+                content_disposition = 'attachment; filename=' + filename,
+            )
+            sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+                self.connection_client.account_name,
+                bucket_name,
+                test_file_path,
+                sas
+            )
+            resp = requests.get(sas_url)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+        except:
+            log['error']['gcp_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        return True, log
+
+
     def test_connection(self):
         auth_result = self.connect()
         if 'log' in auth_result:
             return auth_result
         # Test fecthing buckets
         result_buckets = self.__list_buckets({})
+        bucket_names = result_buckets['result']
+        if len(bucket_names) > 0:
+            validation_result, log = self.validate_azure_connection_read_write(bucket_names[0])
+            if len(log['error'].keys()) > 0:
+                return {'log': log}
+
         if 'log' in result_buckets:
             return result_buckets
         return result_buckets
