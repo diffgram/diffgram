@@ -13,6 +13,9 @@ from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
 import json
 import datetime
+from google.oauth2 import service_account
+
+
 
 try:
     from sqlalchemy import create_engine
@@ -177,10 +180,8 @@ class DiffgramInstallTool:
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
             file = open(account_path, mode = 'r')
-            credentials_dict = json.load(file)
-            project_id = credentials_dict['project_id']
-            client = storage.Client(project_id)
-            client = client.from_service_account_json(account_path)
+            credentials = service_account.Credentials.from_service_account_file(account_path)
+            client = storage.Client(credentials = credentials)
             bucket = client.get_bucket(bucket_name)
             print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To GCP Account')
         except Exception as e:
