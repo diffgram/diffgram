@@ -88,7 +88,9 @@
                           primary>
               </v-checkbox>
             </td>
-
+            <td>
+              {{ props.item.id }}
+            </td>
             <td>
               <div v-if="props.item.created_date">
                 {{props.item.created_date}}
@@ -282,6 +284,12 @@
           share_type: "project",
 
           headers: [
+            {
+              text: "ID",
+              align: 'left',
+              sortable: false,
+              value: 'id'
+            },
             {
               text: "Created Date",
               align: 'left',
