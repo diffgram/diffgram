@@ -511,11 +511,12 @@
 
     <!-- Want to be careful if statements show up here otherwise a bunch of empty space -->
 
-    <v-card-subtitle v-if="selected.length != 0 && file_view_mode != 'task'">
+    <v-card-subtitle v-if="selected.length != 0 && file_view_mode != 'task'" class="pa-0">
 
-      <v-layout>
-        <div class="pr-2 pl-2">
+      <v-layout class="d-flex flex-row justify-start align-center pa-0">
+        <div class="pr-2 pl-2 ma-0">
           <v-chip   color="blue"
+                    small
                     text-color="white"
                     >{{all_selected_count}}</v-chip>
             Selected
@@ -523,6 +524,7 @@
 
         <v-checkbox :label="'Select all ' + metadata_previous.file_count + ' results'"
                     v-model="select_from_metadata"
+
                     @change="select_all"
                     >
         </v-checkbox>
@@ -576,14 +578,14 @@
 
               <v-card xs4
                       md1
-                      elevation="1"
-                      class="pa-2 ma-2"
+                      elevation="0"
+                      class="pa-0 ma-2"
                       v-for="(item, index) in file_list"
                       :key="index"
-                      style="display: flex; flex-wrap: wrap"
+                      style="display: flex; flex-wrap: wrap; max-width: 100px; max-height: 100px"
               >
-                <a @click="change_file_request(item)">
-                  <div v-if="current_file && item.id == current_file.id">
+                <a @click="change_file_request(item)" style="position: relative">
+                  <div v-if="current_file && item.id == current_file.id" style="position: absolute; top: -10px; right: -18px; z-index: 99999">
 
                     <!-- Badge thing actually seems to make it worse here -->
                     <!--
@@ -593,7 +595,7 @@
                     -->
                     <tooltip_icon
                       tooltip_message="Current File"
-                      icon="check"
+                      icon="mdi-check-circle"
                       color="primary">
                     </tooltip_icon>
 
