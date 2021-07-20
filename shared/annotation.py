@@ -1566,7 +1566,7 @@ class Annotation_Update():
         filtered_points = []
         for index, point in enumerate(self.instance.points['points']):
 
-            if not isinstance(point, dict) or not point[x] or not point[y]:
+            if not isinstance(point, dict) or point[x] is None or point[y] is None:
                 continue
 
             filtered_points.append(
@@ -1597,7 +1597,6 @@ class Annotation_Update():
                 return False
 
         self.instance.points['points'] = filtered_points
-
         return True
 
     def build_existing_hash_list(self):

@@ -823,7 +823,7 @@
                 return
               }
               for (const point of value) {
-                if ((!point.x || isNaN(point.x)) || (!point.y || isNaN(point.y))) {
+                if ((point.x == undefined || isNaN(point.x)) || (point.y === undefined || isNaN(point.y))) {
                   this.error_polygon_instance['points'] = 'Points should have an array of X,Y values objects({x: number, y: number})'
                   this.error_polygon_instance['row_number'] = i
                   this.error_polygon_instance['data'] = JSON.stringify(value);
