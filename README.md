@@ -23,6 +23,33 @@ If you see any missing features, bugs etc please report them ASAP to [diffgram/i
 [More on Understanding Diffgram High Level](https://diffgram.readme.io/docs/help-im-new-what-is-diffgram-exactly)
 
 
+# Quickstart
+
+[Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
+
+### Diffgram Dev Installer Quickstart
+Requires Docker and Docker Compose
+```
+git clone https://github.com/diffgram/diffgram.git
+cd diffgram
+pip install -r requirements.txt
+python install.py
+# Follow the installer instruction and 
+# After install:  View the Web UI at: http://localhost:8085
+```
+Read also our [Docker compose commands cheatseet](https://diffgram.readme.io/docs/open-core-docker-install-cheatsheet)
+### Cloud
+- [Google GCP Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
+- [Azure AKS Kubernetes Install Guide](https://medium.com/diffgram/tutorial-installing-diffgram-on-azure-aks-b9447685e271)
+- [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
+- [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
+
+### Other Getting Started Docs:
+- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
+- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
+- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
+
+
 #  Features
 First, the Full Platform is Open Source. There is no trick where it "sort of works"
 but you need to pay for a SaaS service to really use it.
@@ -80,31 +107,6 @@ It's a database for your training data, both metadata and access of raw BLOB dat
 ## Tested and Stable Core
 Fully integrated automatic test suite, with comprehensive [End to End](https://medium.com/diffgram/implementing-a-ci-system-with-e2e-testing-using-cypress-percy-and-circleci-246b50be466c) tests and many unit tests. 
 
-
-# Quickstart
-
-[Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
-
-### Diffgram Dev Installer Quickstart
-Requires Docker and Docker Compose
-```
-git clone https://github.com/diffgram/diffgram.git
-cd diffgram
-pip install -r requirements.txt
-python install.py
-# Follow the installer instruction and 
-# After install:  View the Web UI at: http://localhost:8085
-```
-### Cloud
-- [Google GCP Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
-- [Azure AKS Kubernetes Install Guide](https://medium.com/diffgram/tutorial-installing-diffgram-on-azure-aks-b9447685e271)
-- [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
-- [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
-
-### Other Getting Started Docs:
-- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
-- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
-- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
 
 # Benefits
 1. Flexible deploy and many integrations - run Diffgram anywhere in the way you want.
