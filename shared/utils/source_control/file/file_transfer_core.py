@@ -161,7 +161,16 @@ def file_transfer_core(
         # TODO consider how this effects committed
         # Is it safe to just "update" it this way?
         # SHould this be a built in method of WorkingDirFileLink
-
+        new_link = WorkingDirFileLink.file_link(
+            session=session,
+            working_dir_id=destination_directory.id,
+            file_id=file.id)
+        if new_link is not None:
+            log["error"]['file_link'] = 'File link of file: {} and Destination workingdir: {}. Already Exists'.format(
+                source_directory.id,
+                file.id
+            )
+            return log
         link.working_dir_id = destination_directory.id
         session.add(link)
 

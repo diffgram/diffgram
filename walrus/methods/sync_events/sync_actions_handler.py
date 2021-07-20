@@ -105,9 +105,13 @@ class SyncActionsHandlerThread:
             Gets the first element of the queue
         """
         with sessionMaker.session_scope_threaded() as session:
+
+            sync_action = session.query(SyncActionsQueue).with_for_update(skip_locked = True).first()
+            # Can use sort in sql if needed here
+            sync_action_id = None
+            if sync_action:
+                sync_action_id = int(sync_action.id)
             try:
-                sync_action = session.query(SyncActionsQueue).with_for_update(skip_locked = True).first()
-                # Can use sort in sql if needed here
                 if sync_action:
                     try:
                         self.process_sync_actions(session, sync_action)
@@ -120,5 +124,16 @@ class SyncActionsHandlerThread:
                         session.add(sync_action.sync_event)
                         logger.info('Deleting queue element'.format(sync_action.id))
                         session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
-            except:
-                session.rollback()
+            except Exception as e:
+                # Fallback if session is corrupted.
+                if sync_action_id is not None:
+                    with sessionMaker.session_scope_threaded() as session_error:
+                        sync_action = session_error.query(SyncActionsQueue).filter(
+                            SyncActionsQueue.id == sync_action_id
+                        ).first()
+                        sync_action.sync_event.status = 'failed'
+                        sync_action.sync_event.execution_log = traceback.format_exc()
+                        sync_action.sync_event.description = str(e)
+                        session_error.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
+                        session_error.add(sync_action.sync_event)
+                logger.critical('Unhandled Error in except clause Sync Action ID: {}'.format(sync_action_id))
