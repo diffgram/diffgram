@@ -46,10 +46,10 @@
 
 <v-img v-if="item.image && item.image.url_signed_thumb"
       :gradient="show_selected_return_gradient(item)"
-      class="image_clickable"
+      :class="{image_clickable: true, selected_box: this.show_selected(item)}"
       :src="item.image.url_signed_thumb"
-      width="100%"
-      height="100%"
+      width="100px"
+      height="100px"
       max-height="100px"
       max-width="100px"
        position="center"
@@ -59,10 +59,10 @@
 
 <v-img v-if="item.type=='video' && item.video.preview_image_url_thumb"
       :gradient="show_selected_return_gradient(item)"
-      class="image_clickable"
+      :class="{image_clickable: true, selected_box: selected}"
       :src="item.video.preview_image_url_thumb"
-      width="100%"
-      height="100%"
+      width="100px"
+      height="100px"
       max-height="100px"
       max-width="100px"
       position="center"
@@ -143,3 +143,9 @@ export default Vue.extend( {
 }
 
 ) </script>
+
+<style>
+  .selected_box{
+    border: 3px solid #2196f3;
+  }
+</style>
