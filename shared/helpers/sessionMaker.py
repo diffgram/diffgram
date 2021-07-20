@@ -25,10 +25,14 @@ from sqlalchemy import event as sqlalchemy_event
 
 if settings.DIFFGRAM_SYSTEM_MODE == "production":
     engine = create_engine(settings.DATABASE_URL,
-                           pool_size=10, max_overflow=2, echo=False)
+                           pool_size=settings.DATABASE_CONNECTION_POOL_SIZE,
+                           max_overflow=2,
+                           echo=False)
 
 if settings.DIFFGRAM_SYSTEM_MODE in ["sandbox", "staging", "testing", "testing_e2e"]:
-    engine = create_engine(settings.DATABASE_URL, pool_size=10, max_overflow=2)
+    engine = create_engine(settings.DATABASE_URL,
+                           pool_size=settings.DATABASE_CONNECTION_POOL_SIZE,
+                           max_overflow=2)
 
 # see http://docs.sqlalchemy.org/en/latest/core/pooling.html
 # Each worker will use up to pool size + max_overflow it would appear
