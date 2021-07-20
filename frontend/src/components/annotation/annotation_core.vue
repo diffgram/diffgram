@@ -695,6 +695,7 @@
       ref="instance_template_creation_dialog"
     ></instance_template_creation_dialog>
     <v-snackbar v-model="snackbar_warning"
+                v-if="snackbar_warning"
                 top
                 :timeout="5000"
                 color="warning">
@@ -707,6 +708,7 @@
     </v-snackbar>
 
     <v-snackbar v-model="snackbar_success"
+                v-if="snackbar_success"
                 top
                 :timeout="2000"
                 color="success">

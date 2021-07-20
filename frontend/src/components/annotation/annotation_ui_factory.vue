@@ -40,7 +40,7 @@
 
 
     </div>
-    <v-snackbar  color="secondary" dark v-model="show_snackbar">
+    <v-snackbar  v-if="show_snackbar" color="secondary" dark v-model="show_snackbar">
       {{snackbar_message}}
       <template v-slot:action="{ attrs }">
         <v-btn
