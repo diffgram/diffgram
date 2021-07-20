@@ -7,6 +7,8 @@ import time
 import boto3
 import traceback
 import requests
+from google.cloud import storage
+import json
 
 try:
     from sqlalchemy import create_engine
@@ -66,12 +68,13 @@ class DiffgramInstallTool:
     def set_gcp_credentials(self):
         is_valid = False
         # Ask For Service Account
-        service_account_path = bcolors.inputcolor(
-            'Please provide the Full Path of your GCP service account JSON file: ')
         while not is_valid:
+            f = None
+            service_account_path = bcolors.inputcolor(
+                'Please provide the Full Path of your GCP service account JSON file: ')
             try:
                 if not service_account_path.endswith('.json'):
-                    bcolors.printcolor('Path must be a JSON file', bcolors.WARNING)
+                    bcolors.printcolor('ERROR: Path must be a JSON file', bcolors.WARNING)
                     is_valid = False
                     continue
                 f = open(service_account_path)
@@ -83,13 +86,75 @@ class DiffgramInstallTool:
                     "Invalid path, make sure your are writing the full path to your GCP credentials JSON file",
                     bcolors.FAIL)
             finally:
-                f.close()
+                if f:
+                    f.close()
         # Ask for bucket name
         bucket_name = bcolors.inputcolor('Please provide the GCP Storage Bucket Name [Default is diffgram-storage]: ')
         if bucket_name == '':
             self.bucket_name = 'diffgram-storage'
         else:
             self.bucket_name = bucket_name
+
+    def validate_gcp_connection(self):
+        account_path = self.gcp_credentials_path
+        bucket_name = self.bucket_name
+        test_file_path = 'diffgram_test_file.txt'
+        client = None
+        bucket = None
+        bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
+        try:
+            file = open(account_path, mode = 'r')
+            credentials_dict = json.load(file)
+            project_id = credentials_dict['project_id']
+            client = storage.Client(project_id)
+            client = client.from_service_account_json(account_path)
+            bucket = client.get_bucket(bucket_name)
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To GCP Account')
+        except Exception as e:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To GCP Account')
+            bcolors.printcolor('Error Connecting to GCP: Please check you entered valid credentials.', bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            blob = bucket.blob(test_file_path)
+            blob.upload_from_string('This is a diffgram test file', content_type = 'text/plain')
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+        except:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            bcolors.printcolor('Error Connecting to GCP: Please check you have write permissions on the GCP bucket.',
+                               bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            expiration_offset = 40368000
+            expiration_time = int(time.time() + expiration_offset)
+            bucket.blob(test_file_path)
+
+            filename = test_file_path.split("/")[-1]
+            url_signed = blob.generate_signed_url(
+                expiration = expiration_time,
+                response_disposition = 'attachment; filename=' + filename
+            )
+            resp = requests.get(url_signed)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+        except:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            bcolors.printcolor('Error Connecting to GCP: Please check you have read permissions on the GCP bucket.',
+                               bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        bcolors.printcolor('Connection to GCP Succesful!', bcolors.OKGREEN)
+        return True
 
     def validate_s3_connection(self):
         access_id = self.s3_access_id
@@ -102,8 +167,8 @@ class DiffgramInstallTool:
             client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret)
             print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To S3 Account')
         except Exception as e:
-            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
-            bcolors.printcolor('Error Connecting to S3: Please check you entered valid credentials.', bcolors.WARNING)
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
+            bcolors.printcolor('Error Connecting to S3: Please check you entered valid credentials.', bcolors.FAIL)
             print('Details: {}'.format(traceback.format_exc()))
             bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
             return False
@@ -115,9 +180,9 @@ class DiffgramInstallTool:
                               ContentType = 'text/plain')
             print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
         except:
-            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
             bcolors.printcolor('Error Connecting to S3: Please check you have write permissions on the S3 bucket.',
-                               bcolors.WARNING)
+                               bcolors.FAIL)
             print('Details: {}'.format(traceback.format_exc()))
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
@@ -315,6 +380,8 @@ class DiffgramInstallTool:
 
         if self.static_storage_provider == 'gcp':
             self.set_gcp_credentials()
+            if not self.validate_gcp_connection():
+                return
         elif self.static_storage_provider == 'aws':
             self.set_s3_credentials()
             if not self.validate_s3_connection():
