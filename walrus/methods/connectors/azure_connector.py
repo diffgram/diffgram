@@ -391,7 +391,7 @@ class AzureConnector(Connector):
             my_content_settings = ContentSettings(content_type = 'text/plain')
             blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
         except Exception as e:
-            log['error']['gcp_write_perms'] = 'Error Connecting to Azure: Please check you have write permissions on the Azure container.'
+            log['error']['azure_write_perms'] = 'Error Connecting to Azure: Please check you have write permissions on the Azure container.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         try:
@@ -422,7 +422,7 @@ class AzureConnector(Connector):
                 raise Exception(
                     'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
         except:
-            log['error']['gcp_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
+            log['error']['azure_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         return True, log
