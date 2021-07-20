@@ -8,7 +8,11 @@ import boto3
 import traceback
 import requests
 from google.cloud import storage
+from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
+from azure.storage.blob._models import BlobSasPermissions
+from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
 import json
+import datetime
 
 try:
     from sqlalchemy import create_engine
@@ -95,6 +99,75 @@ class DiffgramInstallTool:
         else:
             self.bucket_name = bucket_name
 
+    def validate_azure_connection(self):
+        connection_string = self.azure_connection_string
+        bucket_name = self.bucket_name
+        test_file_path = 'diffgram_test_file.txt'
+        client = None
+        bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
+        try:
+            client = BlobServiceClient.from_connection_string(connection_string)
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To Azure Account')
+        except Exception as e:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To Azure Account')
+            bcolors.printcolor('Error Connecting to Azure: Please check you entered valid credentials.', bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            blob_client = client.get_blob_client(container = bucket_name, blob = test_file_path)
+            my_content_settings = ContentSettings(content_type = 'text/plain')
+            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+        except:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            bcolors.printcolor('Error Connecting to Azure: Please check you have write permissions on the Azure container.',
+                               bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            shared_access_signature = BlobSharedAccessSignature(
+                account_name = client.account_name,
+                account_key = client.credential.account_key
+            )
+            expiration_offset = 40368000
+            added_seconds = datetime.timedelta(0, expiration_offset)
+            expiry_time = datetime.datetime.utcnow() + added_seconds
+            filename = test_file_path.split("/")[-1]
+            sas = shared_access_signature.generate_blob(
+                container_name = bucket_name,
+                blob_name = test_file_path,
+                start = datetime.datetime.utcnow(),
+                expiry = expiry_time,
+                permission = BlobSasPermissions(read = True),
+                content_disposition = 'attachment; filename=' + filename,
+            )
+            sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+                client.account_name,
+                bucket_name,
+                test_file_path,
+                sas
+            )
+            resp = requests.get(sas_url)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+        except:
+            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            bcolors.printcolor('Error Connecting to Azure: Please check you have read permissions on the Azure container.',
+                               bcolors.FAIL)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        bcolors.printcolor('Connection to Azure Successful!', bcolors.OKGREEN)
+        return True
+
     def validate_gcp_connection(self):
         account_path = self.gcp_credentials_path
         bucket_name = self.bucket_name
@@ -153,7 +226,7 @@ class DiffgramInstallTool:
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
-        bcolors.printcolor('Connection to GCP Succesful!', bcolors.OKGREEN)
+        bcolors.printcolor('Connection to GCP Successful!', bcolors.OKGREEN)
         return True
 
     def validate_s3_connection(self):
@@ -205,7 +278,7 @@ class DiffgramInstallTool:
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
-        bcolors.printcolor('Connection to S3 Succesful!', bcolors.OKGREEN)
+        bcolors.printcolor('Connection to S3 Successful!', bcolors.OKGREEN)
         return True
 
     def set_s3_credentials(self):
@@ -388,6 +461,8 @@ class DiffgramInstallTool:
                 return
         elif self.static_storage_provider == 'azure':
             self.set_azure_credentials()
+            if not self.validate_azure_connection():
+                return
 
         self.set_diffgram_version()
         self.database_config()
