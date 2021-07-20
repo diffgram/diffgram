@@ -4,11 +4,14 @@ import random
 import string
 import base64
 import time
+import boto3
+import traceback
+import requests
 
 try:
     from sqlalchemy import create_engine
 except Exception as e:
-    raise(e)
+    raise (e)
     print('Error: Some dependencies are missing on the Diffgram Installer.')
     print('Please try running: "pip3 install -r requirements.txt"')
     print('And try again.')
@@ -40,6 +43,7 @@ class bcolors:
         val = input(color + string + '\033[0m')
         return val
 
+
 class DiffgramInstallTool:
     static_storage_provider = None
     bucket_name = None
@@ -62,7 +66,8 @@ class DiffgramInstallTool:
     def set_gcp_credentials(self):
         is_valid = False
         # Ask For Service Account
-        service_account_path = bcolors.inputcolor('Please provide the Full Path of your GCP service account JSON file: ')
+        service_account_path = bcolors.inputcolor(
+            'Please provide the Full Path of your GCP service account JSON file: ')
         while not is_valid:
             try:
                 if not service_account_path.endswith('.json'):
@@ -74,7 +79,9 @@ class DiffgramInstallTool:
                 self.gcp_credentials_path = service_account_path
                 is_valid = True
             except IOError:
-                bcolors.printcolor("Invalid path, make sure your are writing the full path to your GCP credentials JSON file", bcolors.FAIL)
+                bcolors.printcolor(
+                    "Invalid path, make sure your are writing the full path to your GCP credentials JSON file",
+                    bcolors.FAIL)
             finally:
                 f.close()
         # Ask for bucket name
@@ -84,7 +91,60 @@ class DiffgramInstallTool:
         else:
             self.bucket_name = bucket_name
 
+    def validate_s3_connection(self):
+        access_id = self.s3_access_id
+        access_secret = self.s3_access_secret
+        bucket_name = self.bucket_name
+        test_file_path = 'diffgram_test_file.txt'
+        client = None
+        bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
+        try:
+            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret)
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To S3 Account')
+        except Exception as e:
+            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
+            bcolors.printcolor('Error Connecting to S3: Please check you entered valid credentials.', bcolors.WARNING)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            client.put_object(Body = 'This is a diffgram test file',
+                              Bucket = bucket_name,
+                              Key = test_file_path,
+                              ContentType = 'text/plain')
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+        except:
+            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            bcolors.printcolor('Error Connecting to S3: Please check you have write permissions on the S3 bucket.',
+                               bcolors.WARNING)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        try:
+            signed_url = client.generate_presigned_url('get_object',
+                                                       Params = {'Bucket': bucket_name, 'Key': test_file_path},
+                                                       ExpiresIn = 3600 * 24 * 6)
+            resp = requests.get(signed_url)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+
+            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+        except:
+            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            bcolors.printcolor('Error Connecting to S3: Please check you have read permissions on the S3 bucket.',
+                               bcolors.WARNING)
+            print('Details: {}'.format(traceback.format_exc()))
+            bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
+            return False
+        time.sleep(0.5)
+        bcolors.printcolor('Connection to S3 Succesful!', bcolors.OKGREEN)
+        return True
+
     def set_s3_credentials(self):
+
         # Ask For Access Key ID
         is_valid = False
         while not is_valid:
@@ -197,7 +257,8 @@ class DiffgramInstallTool:
             self.diffgram_version = version
 
     def database_config(self):
-        local_database = bcolors.inputcolor('Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
+        local_database = bcolors.inputcolor(
+            'Do you want to use the local database? Y/N [Press Enter to use Local DB]: ')
         local_database = local_database.lower()
         if local_database == 'y' or local_database == '':
             self.local_database = True
@@ -206,7 +267,8 @@ class DiffgramInstallTool:
             valid = False
             while not valid:
                 database_url = bcolors.inputcolor(
-                    '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ', bcolors.OKBLUE)
+                    '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ',
+                    bcolors.OKBLUE)
 
                 bcolors.printcolor('Testing DB Connection...', bcolors.WARNING)
                 try:
@@ -219,7 +281,9 @@ class DiffgramInstallTool:
                     bcolors.printcolor('✓ DB connection succesful!', bcolors.OKGREEN)
                     time.sleep(2)
                 except Exception as e:
-                    bcolors.printcolor('Connection test failed: Please check that your DB URL has the correct values and try again.', bcolors.FAIL)
+                    bcolors.printcolor(
+                        'Connection test failed: Please check that your DB URL has the correct values and try again.',
+                        bcolors.FAIL)
                     bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
                     valid = False
 
@@ -253,6 +317,8 @@ class DiffgramInstallTool:
             self.set_gcp_credentials()
         elif self.static_storage_provider == 'aws':
             self.set_s3_credentials()
+            if not self.validate_s3_connection():
+                return
         elif self.static_storage_provider == 'azure':
             self.set_azure_credentials()
 

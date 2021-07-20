@@ -1,1 +1,2 @@
 sqlalchemy==1.3.23
+boto3==1.18.1
