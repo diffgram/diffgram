@@ -11,6 +11,7 @@ from shared.data_tools_core import Data_tools
 
 data_tools = Data_tools().data_tools
 
+
 @routes.route('/api/v1/project/<string:project_string_id>/input-batch/<int:batch_id>/append-data',
               methods = ['POST'])
 @Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
@@ -46,6 +47,16 @@ def append_to_batch_api(project_string_id, batch_id):
 
         return jsonify(input_batch = batch_data), 200
 
+
+def save_pre_labeled_data_to_db():
+    """
+        Gets the prelabeled data from the cloud URL and sets it in the
+        corresponding DB row.
+        
+    :return:
+    """
+
+
 def append_to_batch_core(session, log, batch_id, member, project, request):
     result = None
     batch = InputBatch.get_by_id(session = session, id = batch_id)
@@ -61,7 +72,7 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
 
     file = request.files['file']
     # secure_filename makes sure the filename isn't unsafe to save
-
+    raise Exception('Random error')
     content_range = request.headers.get('Content-Range')
     content_range_index = int(request.headers.get('Content-Range-Index'))
     total_chunks = int(request.headers.get('Content-Range-Total-Chunks'))
@@ -72,7 +83,6 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
         chunk_start = int(new_range.split('-')[0])
         chunk_end = int(chunks.split('-')[1])
         temp_dir_path = '/tmp/batches/{}_batch_payload.json'.format(batch.id)
-        print('temp_dir_path', temp_dir_path)
         if chunk_start == 0:
             session.add(batch)
             url = data_tools.create_resumable_upload_session(
@@ -80,7 +90,6 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
                 content_type = 'application/json',
                 input = None
             )
-            print('ULR IS', url)
             batch.data_temp_dir = url
             session.add(batch)
             stream = file.stream.read()
@@ -124,6 +133,10 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
             batch.pre_labeled_data = None
             session.add(batch)
             result = batch.get_pre_labeled_data_cloud_url()
+            t = threading.Thread(
+                target = save_pre_labeled_data_to_db(),
+                args = ((opts,)))
+            t.start()
     else:
         log['error']['content_range'] = 'Invalid content range header.'
         return False, log
