@@ -46,7 +46,6 @@ class TestS3Connector(testing_setup.DiffgramBaseTestCase):
             config_data=config_data,
         )
         self.s3conn.connect()
-        self.s3conn.test_connection()
 
     def test_packet_endpoint_refactor(self):
         packet_data = {
