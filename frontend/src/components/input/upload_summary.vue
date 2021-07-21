@@ -67,8 +67,8 @@
     </v-layout>
   </v-container>
 
-  <v-container fluid v-else class="align-center justify-start">
-    <h1 class="pa-10 black--text">Preparing your data
+  <v-container fluid v-else class="align-center justify-center">
+    <h1 class="pa-10 black--text text-center">Preparing your data
       <v-progress-circular indeterminate></v-progress-circular>
     </h1>
   </v-container>
@@ -133,6 +133,7 @@
       async mounted() {
         this.preparing_payload = true;
         await this.$nextTick();
+        await new Promise(resolve => setTimeout(resolve, 500));
         this.compute_attached_instance_per_file();
         this.summarized_file_list = this.file_list_for_summary();
         this.preparing_payload = false;
