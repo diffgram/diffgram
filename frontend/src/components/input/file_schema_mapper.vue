@@ -12,6 +12,9 @@
             small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing
       </v-btn>
     </div>
+    <div class="d-flex align-center justify-center" v-if="load_file_names">
+      <h1>Validating File ID's... <v-progress-circular indeterminate></v-progress-circular></h1>
+    </div>
     <div class="d-flex align-center justify-center" v-if="load_file_ids">
       <h1>Validating File ID's... <v-progress-circular indeterminate></v-progress-circular></h1>
     </div>
@@ -393,6 +396,7 @@
           missing_labels: [],
           errors_file_schema: undefined,
           load_file_ids: false,
+          load_file_names: false,
           success_missing_labels: false,
           wizard_height: '800px',
           load_label_names: false,
@@ -443,14 +447,21 @@
         open_labels: function () {
           window.open(`/project/${this.$props.project_string_id}/labels`, '_blank');
         },
-        validate_file_names: function () {
+        validate_file_names: async function () {
           const file_name_list = [];
+          await this.$nextTick();
+          this.load_file_names = true;
+          await this.$nextTick();
+          for(let i = 0; i < 9999999999; i++){
+            let x = 75 * 5;
+          }
           for (const instance of this.$props.pre_labeled_data) {
             const file_name = _.get(instance, this.$props.diffgram_schema_mapping.file_name);
             if (typeof file_name === 'number') {
               this.errors_file_schema = {};
               this.errors_file_schema[this.$props.diffgram_schema_mapping.file_name] = `File name should be a string not a number.`;
               this.errors_file_schema['wrong_data'] = file_name;
+              this.load_file_names = false;
               return false
             } else {
               if (!file_name_list.includes(file_name)) {
@@ -465,10 +476,11 @@
               this.errors_file_schema['file_name'] = `File ${file_name} does not exists in the uploaded data.
                Please make sure to upload the file name: ${file_name}`;
               this.errors_file_schema['wrong_data'] = file_name;
+              this.load_file_names = false;
               return false
             }
           }
-
+          this.load_file_names = false;
           return true;
         },
         previous_step: async function (current_number) {
@@ -528,7 +540,7 @@
             valid = await this.validate_label_names();
           } else if (current_number === 3) {
             if (this.$props.upload_mode === 'new') {
-              valid = this.validate_file_names();
+              valid = await this.validate_file_names();
 
             } else if (this.$props.upload_mode === 'update') {
               valid = await this.validate_file_id_list_for_update();
