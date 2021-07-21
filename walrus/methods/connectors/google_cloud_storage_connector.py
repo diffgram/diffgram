@@ -1,8 +1,13 @@
 # OPENCORE - ADD
+import requests
+import time
+import threading
+import logging
+import traceback
+
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from google.cloud import storage
 from google.oauth2 import service_account
-import time
 from shared.helpers import sessionMaker
 from methods.input import packet
 from pathlib import Path
@@ -11,11 +16,10 @@ from shared.regular import regular_log
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
 from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
-import threading
 from shared.database.project import Project
 from shared.database.event.event import Event
 from shared.database.auth.member import Member
-import logging
+
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -446,13 +450,52 @@ class GoogleCloudStorageConnector(Connector):
     def get_meta_data(self):
         raise NotImplementedError
 
+    def validate_gcp_connection_read_write(self, bucket_name):
+        test_file_path = 'diffgram_test_file.txt'
+        log = regular_log.default()
+        try:
+            bucket = self.connection_client.get_bucket(bucket_name)
+            blob = bucket.blob(test_file_path)
+            blob.upload_from_string('This is a diffgram test file', content_type = 'text/plain')
+        except Exception as e:
+            log['error']['gcp_write_perms'] = 'Error Connecting to GCP: Please check you have write permissions on the GCP bucket.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        try:
+            expiration_offset = 40368000
+            expiration_time = int(time.time() + expiration_offset)
+            bucket.blob(test_file_path)
+
+            filename = test_file_path.split("/")[-1]
+            url_signed = blob.generate_signed_url(
+                expiration = expiration_time,
+                response_disposition = 'attachment; filename=' + filename
+            )
+            resp = requests.get(url_signed)
+            if resp.status_code != 200:
+                raise Exception(
+                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+        except:
+            log['error']['gcp_write_perms'] = 'Error Connecting to GCP: Please check you have read permissions on the GCP bucket.'
+            log['error']['details'] = traceback.format_exc()
+            return False, log
+        return True, log
+
     def test_connection(self):
         auth_result = self.connect()
         if 'log' in auth_result:
             return auth_result
         # Test fecthing buckets
         result_buckets = self.__list_buckets({})
+        bucket_names = result_buckets.get('result')
 
         if 'log' in result_buckets:
             return result_buckets
+
+        if bucket_names and  len(bucket_names) > 0:
+            validation_result, log = self.validate_gcp_connection_read_write(bucket_names[0])
+            if len(log['error'].keys()) > 0:
+                return {'log': log}
+
+
         return result_buckets

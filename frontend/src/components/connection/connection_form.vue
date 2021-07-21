@@ -93,14 +93,7 @@
         <v-skeleton-loader :loading="loading_save || loading_test" :width="form_width" :height="form_height"
                            type="list-item">
 
-          <v-container v-if="may_edit == true" class="pa-0">
-
-            <!--        <v-alert type="success"-->
-            <!--                 v-model="success_loading_existing"-->
-            <!--                 dismissible>-->
-            <!--          Loaded Existing Info-->
-            <!--        </v-alert>-->
-
+          <v-container v-if="may_edit" class="pa-0">
             <v-alert type="success"
                      v-model="success_saved"
                      dismissible>
@@ -113,14 +106,14 @@
               Connection Test Successful!
             </v-alert>
 
-            <v_error_multiple :error="error">
-            </v_error_multiple>
             <connection_docs_suggest :error="error"
                                      :integration_name="connection.integration_name"></connection_docs_suggest>
 
           </v-container>
         </v-skeleton-loader>
 
+        <v_error_multiple :error="error">
+        </v_error_multiple>
 
         <v-container fluid>
           <!-- base_class -->
@@ -324,6 +317,7 @@
 
             },
             'microsoft_azure': {
+              name: true,
               private_secret: true,
               private_secret_label: 'Connection String',
             },
