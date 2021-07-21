@@ -94,6 +94,8 @@ class InputBatch(Base):
             'time_completed': self.time_completed,
             'time_created': self.time_created,
             'time_updated': self.time_updated,
+            'download_status_pre_labeled_data': self.download_status_pre_labeled_data,
+            'download_log_pre_labeled_data': self.download_log_pre_labeled_data,
         }
 
     def check_for_completion_and_complete(self, session):

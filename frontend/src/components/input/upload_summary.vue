@@ -1,9 +1,10 @@
 <template>
   <v-container fluid v-if="!preparing_payload">
-    <h1 class="pa-10 black--text">Confirm the Upload</h1>
     <v_error_multiple :error="batch_error">
     </v_error_multiple>
-    <v-layout class="d-flex column justify-center">
+    <v-layout class="d-flex column justify-center" v-if="!loading_create_batch && !downloading_batch_pre_labels">
+      <h1 class="pa-10 black--text">Confirm the Upload</h1>
+
       <h2 class="ma-8 black--text" v-if="upload_mode === 'new'">You are about to upload {{file_list.length}} file(s):
         to Dataset:
         <v-icon>mdi-folder</v-icon>
@@ -65,6 +66,16 @@
         </v-btn>
       </v-container>
     </v-layout>
+    <v-container fluid class="align-center justify-center" v-if="loading_create_batch">
+      <h1 class="pa-10 black--text text-center"> [1/2] Creating Upload Batch...
+        <v-progress-circular indeterminate></v-progress-circular>
+      </h1>
+    </v-container>
+    <v-container fluid class="align-center justify-center" v-if="downloading_batch_pre_labels">
+      <h1 class="pa-10 black--text text-center"> [2/2] Creating Batch Prelabeled Data...
+        <v-progress-circular indeterminate></v-progress-circular>
+      </h1>
+    </v-container>
   </v-container>
 
   <v-container fluid v-else class="align-center justify-center">
@@ -111,6 +122,8 @@
         return {
           input_batch: null,
           preparing_payload: false,
+          loading_create_batch: false,
+          downloading_batch_pre_labels: false,
           loading: false,
           file_list_update: [],
           batch_error: [],
@@ -235,9 +248,9 @@
 
         create_batch: async function (labels_payload) {
           try {
-
-            const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
-            // const chunk_size_bytes = 256 * 1024 // 256KB;
+            this.loading_create_batch = true;
+            // const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
+            const chunk_size_bytes = 256 * 1024 // 256KB;
             const str = JSON.stringify(labels_payload);
             const bytes = new TextEncoder().encode(str);
             const blob = new Blob([bytes], {
@@ -252,6 +265,7 @@
               if (response.status === 200) {
                 this.input_batch = response.data.input_batch;
                 this.$emit('created_batch', this.input_batch)
+                this.loading_create_batch = false
                 return true
               }
             } else {
@@ -262,7 +276,47 @@
                 const result = await this.chunked_batch_data_upload(this.input_batch.id, blob, chunk_size_bytes);
                 if(result){
                   // Wait for pre labeled data download
-                  
+                  this.loading_create_batch = false
+                  this.downloading_batch_pre_labels = true;
+                  let download_pending = true;
+                  let num_request = 0;
+                  while(download_pending){
+                    console.log('DOWNLOAD', download_pending, num_request)
+                    try{
+                      const response = await axios.post(
+                        `/api/v1/project/${this.$props.project_string_id}/input-batch/${this.input_batch.id}`, {}
+                      );
+
+                      if(response.data.input_batch.download_status_pre_labeled_data === 'success'){
+                        console.log('success', download_pending, num_request)
+                        download_pending = false;
+                      }
+                      else if(response.data.input_batch.download_status_pre_labeled_data === 'failed'){
+                        this.batch_error = {};
+                        this.batch_error.creation_failed = 'Prelabels creation failed.';
+                        download_pending = false;
+                        console.log('timeout_pre_labels', download_pending, num_request)
+                        return false
+                      }
+                      if(num_request > 4800){
+                        this.batch_error = {};
+                        this.batch_error.timeout_pre_labels = 'Timed out waiting for prelabels creation.';
+                        download_pending = false;
+                        console.log('timeout_pre_labels', download_pending, num_request)
+                        return false
+                      }
+                      num_request += 1;
+                      await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
+                    catch (e) {
+                      console.error(e);
+                      this.batch_error = this.$route_api_errors(e);
+                      download_pending = false;
+                      return false
+
+                    }
+                  }
+
                   this.$emit('created_batch', this.input_batch);
                   return true
                 }
@@ -272,6 +326,8 @@
 
           } catch (e) {
             console.error(e)
+            this.loading_create_batch = false
+            this.downloading_batch_pre_labels = false
             this.batch_error = this.$route_api_errors(e);
           } finally {
 
