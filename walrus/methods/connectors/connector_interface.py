@@ -134,7 +134,7 @@ def test_connection_api():
             return jsonify(connector), 400
 
         connection_result = connector.test_connection()
-        if 'log' in connection_result:
+        if "log" in connection_result and len(connection_result["log"]["error"].keys()) >= 1:
             return jsonify(connection_result), 400
         log['success'] = True
         return jsonify(connection_result), 200
