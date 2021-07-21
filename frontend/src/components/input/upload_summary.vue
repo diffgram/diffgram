@@ -236,8 +236,8 @@
         create_batch: async function (labels_payload) {
           try {
 
-            // const chunk_size_bytes = 5 * 1024 * 1024; // 5 mb
-            const chunk_size_bytes = 256 * 1024 // 256KB;
+            const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
+            // const chunk_size_bytes = 256 * 1024 // 256KB;
             const str = JSON.stringify(labels_payload);
             const bytes = new TextEncoder().encode(str);
             const blob = new Blob([bytes], {
@@ -261,6 +261,8 @@
 
                 const result = await this.chunked_batch_data_upload(this.input_batch.id, blob, chunk_size_bytes);
                 if(result){
+                  // Wait for pre labeled data download
+                  
                   this.$emit('created_batch', this.input_batch);
                   return true
                 }

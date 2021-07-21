@@ -452,9 +452,6 @@
             const file_name_list = [];
             this.load_file_names = true;
             await new Promise(resolve => setTimeout(resolve, 500));
-            for(let i =0; i< 999999999; i++){
-              let x =7*8
-            }
             for (const instance of this.$props.pre_labeled_data) {
               const file_name = _.get(instance, this.$props.diffgram_schema_mapping.file_name);
               if (typeof file_name === 'number') {
@@ -708,6 +705,7 @@
 
           } catch (e) {
             console.error(e);
+            this.errors_file_schema = this.$route_api_errors(e);
             this.valid_labels = false;
             this.load_label_names = false;
           } finally {
