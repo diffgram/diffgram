@@ -35,6 +35,10 @@ class InputBatch(Base):
 
     pre_labeled_data = Column(MutableDict.as_mutable(JSONEncodedDict))
 
+    download_status_pre_labeled_data = Column(String)
+
+    download_log_pre_labeled_data = Column(JSONEncodedDict)
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 

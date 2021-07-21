@@ -1,4 +1,6 @@
 # OPENCORE - ADD
+import json
+
 try:
     from methods.regular.regular_api import *
 except:
@@ -8,6 +10,7 @@ import os
 import tempfile
 from werkzeug.utils import secure_filename
 from shared.data_tools_core import Data_tools
+import traceback
 
 data_tools = Data_tools().data_tools
 
@@ -57,7 +60,24 @@ def save_pre_labeled_data_to_db(batch_id):
     """
     with sessionMaker.session_scope_threaded() as session:
         batch = InputBatch.get_by_id(session, batch_id)
-        
+        logger.info('Batch ID {} pre labeled data download started.'.format(batch_id))
+        try:
+            if batch.data_temp_dir:
+                batch.download_status_pre_labeled_data = 'downloading'
+                session.add(batch)
+                session.commit()
+
+                json_str = data_tools.get_string_from_blob(batch.data_temp_dir)
+
+                json_data = json.loads(json_str)
+                batch.pre_labeled_data = json_data
+                batch.download_status_pre_labeled_data = 'success'
+                session.add(batch)
+                logger.info('Batch ID {} pre labeled data download success.'.format(batch_id))
+
+        except Exception as e:
+            batch.download_status_pre_labeled_data = 'failed'
+            logger.error('Batch ID {} pre labeled data download failed. {}'.format(batch_id, traceback.format_exc()))
 
 
 def append_to_batch_core(session, log, batch_id, member, project, request):
@@ -75,7 +95,6 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
 
     file = request.files['file']
     # secure_filename makes sure the filename isn't unsafe to save
-    raise Exception('Random error')
     content_range = request.headers.get('Content-Range')
     content_range_index = int(request.headers.get('Content-Range-Index'))
     total_chunks = int(request.headers.get('Content-Range-Total-Chunks'))
@@ -137,10 +156,7 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
             session.add(batch)
             session.commit()
             result = batch.get_pre_labeled_data_cloud_url()
-            t = threading.Thread(
-                target = save_pre_labeled_data_to_db(batch.id),
-                args = ((opts,)))
-            t.start()
+            save_pre_labeled_data_to_db(batch.id)
     else:
         log['error']['content_range'] = 'Invalid content range header.'
         return False, log
