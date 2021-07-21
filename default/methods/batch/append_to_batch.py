@@ -48,13 +48,16 @@ def append_to_batch_api(project_string_id, batch_id):
         return jsonify(input_batch = batch_data), 200
 
 
-def save_pre_labeled_data_to_db():
+def save_pre_labeled_data_to_db(batch_id):
     """
         Gets the prelabeled data from the cloud URL and sets it in the
         corresponding DB row.
-        
+
     :return:
     """
+    with sessionMaker.session_scope_threaded() as session:
+        batch = InputBatch.get_by_id(session, batch_id)
+        
 
 
 def append_to_batch_core(session, log, batch_id, member, project, request):
@@ -132,9 +135,10 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
             batch.data_temp_dir = temp_dir_path
             batch.pre_labeled_data = None
             session.add(batch)
+            session.commit()
             result = batch.get_pre_labeled_data_cloud_url()
             t = threading.Thread(
-                target = save_pre_labeled_data_to_db(),
+                target = save_pre_labeled_data_to_db(batch.id),
                 args = ((opts,)))
             t.start()
     else:
