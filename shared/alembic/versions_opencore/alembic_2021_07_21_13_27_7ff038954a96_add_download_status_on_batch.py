@@ -7,6 +7,7 @@ Create Date: 2021-07-21 13:27:49.097582
 """
 from alembic import op
 import sqlalchemy as sa
+from shared.database.core import MutableDict, JSONEncodedDict
 
 
 # revision identifiers, used by Alembic.
@@ -17,8 +18,10 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.add_column('input_batch', sa.Column('download_status_pre_labeled_data', sa.String))
+    op.add_column('input_batch', sa.Column('download_log_pre_labeled_data', MutableDict.as_mutable(JSONEncodedDict)))
 
 
 def downgrade():
-    pass
+    op.drop_column('input_batch', 'download_status_pre_labeled_data')
+    op.drop_column('input_batch', 'download_log_pre_labeled_data')

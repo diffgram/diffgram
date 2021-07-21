@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 import json
-
+import threading
 try:
     from methods.regular.regular_api import *
 except:
@@ -156,7 +156,10 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
             session.add(batch)
             session.commit()
             result = batch.get_pre_labeled_data_cloud_url()
-            save_pre_labeled_data_to_db(batch.id)
+            t = threading.Thread(
+                target = save_pre_labeled_data_to_db,
+                args = ((batch.id,)))
+            t.start()
     else:
         log['error']['content_range'] = 'Invalid content range header.'
         return False, log
