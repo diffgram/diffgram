@@ -59,7 +59,7 @@
 
 <v-img v-if="item.type=='video' && item.video.preview_image_url_thumb"
       :gradient="show_selected_return_gradient(item)"
-      :class="{image_clickable: true, selected_box: selected}"
+      :class="{image_clickable: true, selected_box: this.show_selected(item)}"
       :src="item.video.preview_image_url_thumb"
       width="100px"
       height="100px"
