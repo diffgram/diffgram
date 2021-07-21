@@ -291,7 +291,6 @@ class S3Connector(Connector):
     def __list_buckets(self, opts):
         response = self.connection_client.list_buckets()
         result = []
-
         for bucket in response['Buckets']:
             result.append(bucket['Name'])
         return {'result': result}
@@ -398,15 +397,17 @@ class S3Connector(Connector):
             return auth_result
         # Test fecthing buckets
         result_buckets = self.__list_buckets({})
-        bucket_names = result_buckets['result']
-        if len(bucket_names) > 0:
+        bucket_names = result_buckets.get('result')
+
+        if 'log' in result_buckets:
+            return result_buckets
+
+        if bucket_names and len(bucket_names) > 0:
             validation_result, log = self.validate_s3_connection_read_write(bucket_names[0])
             if len(log['error'].keys()) > 0:
                 return {'log': log}
 
 
-        if 'log' in result_buckets:
-            return result_buckets
         return result_buckets
 
     @with_connection
