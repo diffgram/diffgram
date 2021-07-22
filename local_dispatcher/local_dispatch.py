@@ -58,6 +58,7 @@ def route_same_host(path):
         error = {
             'error': {
                 'service': host_reached,
+                'host': host,
                 'message': 'Service is unreachable. Please check the connection to the {} service.'.format(
                     host_reached)
             }
@@ -74,6 +75,7 @@ def route_same_host(path):
 def route_multi_host(path):
     # Default host
     host = 'http://default:8080/'
+    host_reached = 'default'
     logging.warning('MULTI HOST {}'.format(path))
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = '{}?{}'.format(path, urllib.parse.unquote(url_parsed.query))
@@ -81,11 +83,12 @@ def route_multi_host(path):
 
     logging.warning('MULTI path_with_params {}'.format(path_with_params))
     if path[: 10] == "api/walrus":
+        host_reached = 'walrus'
         host = 'http://walrus:8082/'
 
     # JS local dev server
     if path[:3] != "api":
-        logging.warning('FRONTENDDD')
+        host_reached = 'frontend'
         host = 'http://frontend:80/'
         resp = requests.request(
             method = request.method,
@@ -103,14 +106,24 @@ def route_multi_host(path):
         return response
 
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
-    resp = requests.request(
-        method = request.method,
-        url = host + path_with_params,
-        headers = {key: value for (key, value) in request.headers if key != 'Host'},
-        data = request.get_data(),
-        cookies = request.cookies,
-        allow_redirects = False)
-
+    try:
+        resp = requests.request(
+            method = request.method,
+            url = host + path_with_params,
+            headers = {key: value for (key, value) in request.headers if key != 'Host'},
+            data = request.get_data(),
+            cookies = request.cookies,
+            allow_redirects = False)
+    except requests.exceptions.ConnectionError:
+        error = {
+            'error': {
+                'service': host_reached,
+                'host': host,
+                'message': 'Service is unreachable. Please check the connection to the {} service.'.format(
+                    host_reached)
+            }
+        }
+        return jsonify(error), 500
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
                if name.lower() not in excluded_headers]
