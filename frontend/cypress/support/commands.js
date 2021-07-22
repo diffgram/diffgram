@@ -104,18 +104,6 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
           clientY: real_from_y,
           force: true
         })
-        .trigger('mouseover', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_from_x,
-          clientY: real_from_y,
-          force: true
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_from_x,
-          clientY: real_from_y,
-          force: true
-        })
         .trigger('mousemove', {
           eventConstructor: 'MouseEvent',
           clientX: real_from_x,
@@ -133,8 +121,18 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
           eventConstructor: 'MouseEvent',
           clientX: real_to_x,
           clientY: real_to_y,
-          movementX: movementX,
-          movementY: movementY,
+          force: true
+        })
+        .trigger('mousemove', {
+          eventConstructor: 'MouseEvent',
+          clientX: real_to_x,
+          clientY: real_to_y,
+          force: true
+        })
+        .trigger('mousemove', {
+          eventConstructor: 'MouseEvent',
+          clientX: real_to_x,
+          clientY: real_to_y,
           force: true
         })
         .trigger('mouseup', {
