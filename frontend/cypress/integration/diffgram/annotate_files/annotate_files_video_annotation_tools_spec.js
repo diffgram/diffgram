@@ -36,6 +36,9 @@ describe('Annotate Files Tests', () => {
           .mousedowncanvas(120, 120)
           .wait(500)
           .mouseupcanvas()
+          .wait(1000)
+          .get('[data-cy=ghost_instance_ok]').click({force: true})
+          .wait(1000)
           .get('[data-cy=save_button]').click({force: true})
           .wait('@save_instances').should(({request, response}) => {
             expect(request.method).to.equal('POST')
