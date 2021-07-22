@@ -57,6 +57,7 @@ describe('Annotate Files Tests', () => {
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .wait(2000)
           .get('[data-cy=ghost_instance_ok]').click({force: true})
+          .wait(2000)
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
 
@@ -76,10 +77,12 @@ describe('Annotate Files Tests', () => {
           cy.get('[data-cy="edit_toggle"]').click({force: true})
           .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
           .wait(2000)
-          .mousedowncanvas(85, 50)
+          .mousedowncanvas(85, 85)
+          .wait(500)
           .mouseupcanvas()
           .wait(2000)
           .dragcanvas(85, 85, 140, 140)
+          .wait(500)
           .get('[data-cy=save_button]').click({force: true})
           .wait('@save_instances').should(({request, response}) => {
             expect(request.method).to.equal('POST')
