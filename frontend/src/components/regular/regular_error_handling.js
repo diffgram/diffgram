@@ -4,7 +4,7 @@
  *
  *
  *
- 
+
 this.error = this.$route_api_errors(error)
 
 
@@ -18,12 +18,12 @@ Guide
 
 (in API call)
 1) reset error
-this.error = {}  
+this.error = {}
 
 2) do api call
 3) run regular error and pass the result to this.error
 
-.catch(error => {       
+.catch(error => {
       this.error = this.$route_api_errors(error)
     })
 
@@ -38,12 +38,19 @@ in data() in JS
  error: {},
 
 
- * 
- * 
+ *
+ *
 **/
-
+import store from '../../store';
 export function route_errors (error) {
-  
+  console.log('AAAAA', error);
+  if(error && error.message && error.message === 'Network Error'){
+    return {
+      'network_error': 'Please check your internet connection and that Diffgram services are up.',
+      'message': 'Contact us if the error persists.'
+    }
+    store.commit('set_connection_error', error);
+  }
   if (error && error.response) {
 
     if (error.response.status == 400) {
@@ -87,8 +94,14 @@ export function route_errors (error) {
 
     if (error.response.status == 500) {
 
-     return { server : "Please try again later. Contact us if this persists."}
-
+      let result = { server : "Please try again later. Contact us if this persists."}
+      if (error.response.data) {
+        result = {
+          ...error.response.data,
+          ...result
+        }
+      }
+      return result
     }
   }
 }
