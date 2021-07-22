@@ -279,7 +279,6 @@ class GoogleCloudStorageConnector(Connector):
                         continue
                     result = []
                     # TODO: check Input() table for duplicate file?
-                    print('aaaaa', opts)
                     created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                           session=session,
                                                           media_url=signed_url,
