@@ -37,7 +37,7 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          .get('[data-cy=ghost_instance_ok]').click({force: true})
+
           .wait(1000)
           .get('[data-cy=save_button]').click({force: true})
           .wait('@save_instances').should(({request, response}) => {
@@ -55,8 +55,8 @@ describe('Annotate Files Tests', () => {
         cy.window().then(window => {
           cy.wait(1000)
           .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(700)
           .wait(2000)
+          .get('[data-cy=ghost_instance_ok]').click({force: true})
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
 
