@@ -21,7 +21,8 @@ describe('Annotate Files Tests', () => {
 
     context('It Can Draw Boxes And Keep buffer dict references', () => {
       it('Draws a box on Video', () => {
-
+        let url = '/api/project/*/file/*/annotation/update'
+        cy.intercept(url).as('save_instances')
         cy.window().then(window => {
           cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
           .select_label()
@@ -36,7 +37,11 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .get('[data-cy=save_button]').click({force: true})
-          .wait(10000)
+          .wait('@save_instances').should(({request, response}) => {
+            expect(request.method).to.equal('POST')
+            expect(response.statusCode, 'response status').to.eq(200)
+
+          })
           .log(window.AnnotationCore)
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
         });
@@ -60,7 +65,8 @@ describe('Annotate Files Tests', () => {
       })
 
       it('Moves Box and change frames', () => {
-
+        let url = '/api/project/*/file/*/annotation/update'
+        cy.intercept(url).as('save_instances')
         cy.window().then(window => {
           // Select Element
 
@@ -72,15 +78,18 @@ describe('Annotate Files Tests', () => {
           .wait(2000)
           .dragcanvas(85, 85, 140, 140)
           .get('[data-cy=save_button]').click({force: true})
-          .wait(10000)
+          .wait('@save_instances').should(({request, response}) => {
+            expect(request.method).to.equal('POST')
+            expect(response.statusCode, 'response status').to.eq(200)
 
+          })
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .wait(2000)
 
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(2000)
-
           expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
+
 
         });
 
