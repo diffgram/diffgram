@@ -14,8 +14,8 @@
       </v_footer>
 
     </v-app>
-    <v-snackbar color="error" v-model="network_error ? true : false">
-      Network error: Please Check your Connection to the Services, or contact us if this persists.
+    <v-snackbar color="warning" timeout="5000" v-model="network_error" v-if="!!network_error">
+     <strong> Network error: Please Check your Connection to the Services, or contact us if this persists.</strong>
     </v-snackbar>
   </div>
 </template>

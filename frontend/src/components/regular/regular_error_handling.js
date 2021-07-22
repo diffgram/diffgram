@@ -45,11 +45,12 @@ import store from '../../store';
 export function route_errors (error) {
   console.log('AAAAA', error);
   if(error && error.message && error.message === 'Network Error'){
+    store.commit('set_connection_error', error);
     return {
       'network_error': 'Please check your internet connection and that Diffgram services are up.',
       'message': 'Contact us if the error persists.'
     }
-    store.commit('set_connection_error', error);
+
   }
   if (error && error.response) {
 
