@@ -13,6 +13,7 @@ app = Flask('Diffgram',
             static_folder="./dist/static",
             template_folder="./dist")
 
+app.app_context()
 sslify = SSLify(app, subdomains=True)
 
 
@@ -55,7 +56,11 @@ from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_co
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
 from methods.data_mocking.generate_data import generate_data
+
 from methods import routes as routes_blueprint
+
+with app.app_context():
+    from methods.error_handlers.error_handlers import *
 
 app.register_blueprint(routes_blueprint)
 

@@ -96,7 +96,7 @@ export function route_errors (error) {
     if (error.response.status == 500) {
 
       let result = { server : "Please try again later. Contact us if this persists."}
-      if (error.response.data) {
+      if (error.response.data && typeof error.response.data === 'object') {
         result = {
           ...error.response.data,
           ...result

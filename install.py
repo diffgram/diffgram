@@ -366,6 +366,7 @@ class DiffgramInstallTool:
         env_file += 'SECRET_KEY={}\n'.format(create_random_string(18))
         env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8080/')
         env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
+        env_file += 'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={}\n'.format(True)
 
         if self.local_database:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
