@@ -4,11 +4,14 @@ from flask import redirect
 import requests
 from flask import request
 from flask import Response
+from flask import jsonify
 import urllib.parse
 import logging
+
 logger = logging.getLogger()
 import os
 from env_adapter import EnvAdapter
+
 env_adapter = EnvAdapter()
 
 SAME_HOST = os.getenv('SAME_HOST', True)
@@ -21,37 +24,49 @@ if SAME_HOST:
                 static_folder = "../frontend/dist/static")
 else:
     # In this context the dispatcher is on a separate container and does not have access to static folder.
-    app = Flask(__name__, static_url_path='/dispatcher-static-files')
+    app = Flask(__name__, static_url_path = '/dispatcher-static-files')
 app.debug = True
 
 
 def route_same_host(path):
     # Default host
     host = 'http://127.0.0.1:8080/'
-
+    host_reached = 'default'
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = '{}?{}'.format(path, urllib.parse.unquote(url_parsed.query))
     # Walrus
     if path[: 10] == "api/walrus":
+        host_reached = 'walrus'
         host = 'http://127.0.0.1:8082/'
 
     # JS local dev server
     if path[: 3] != "api" or path[: 6] == "static":
+        host_reached = 'frontend'
         return requests.get('http://localhost:8081/{}'.format(path_with_params)).text
 
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
-    resp = requests.request(
-        method = request.method,
-        url = host + path_with_params,
-        headers = {key: value for (key, value) in request.headers if key != 'Host'},
-        data = request.get_data(),
-        cookies = request.cookies,
-        allow_redirects = False)
+
+    try:
+        resp = requests.request(
+            method = request.method,
+            url = host + path_with_params,
+            headers = {key: value for (key, value) in request.headers if key != 'Host'},
+            data = request.get_data(),
+            cookies = request.cookies,
+            allow_redirects = False)
+    except requests.exceptions.ConnectionError:
+        error = {
+            'error': {
+                'service': host_reached,
+                'message': 'Service is unreachable. Please check the connection to the {} service.'.format(
+                    host_reached)
+            }
+        }
+        return jsonify(error), 500
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
                if name.lower() not in excluded_headers]
-
     response = Response(resp.content, resp.status_code, headers)
     return response
 
