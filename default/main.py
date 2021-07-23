@@ -50,6 +50,10 @@ do_routes_importing()
 from methods import routes as routes_blueprint
 
 app.register_blueprint(routes_blueprint)
+
+with app.app_context():
+    from shared.error_handlers.error_handlers import *
+
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024    # 50 Mb limit
 
