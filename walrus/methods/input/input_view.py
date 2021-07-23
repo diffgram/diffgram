@@ -86,7 +86,6 @@ def input_list_web(project_string_id):
 
 		project = Project.get(session, project_string_id)		
 		### MAIN
-		
 		input_list = build_input_list(
 			session = session,
 			project = project,

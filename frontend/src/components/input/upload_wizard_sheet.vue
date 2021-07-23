@@ -561,8 +561,21 @@
 
           if (file.type === 'application/json') {
             this.pre_labels_file_type = 'json';
+            // Check max file size allowed
+            const max_allowed_size = 800 * 1024 * 1024 // 800MB;
+            const bytes = new TextEncoder().encode(text_data);
+            const blob = new Blob([bytes], {
+              type: "application/json;charset=utf-8"
+            });
+            const total_size = blob.size;
+            if(total_size >= max_allowed_size){
+              throw new Error('Annotations JSON Size limit is 800MB. Please use the SDK if you wish to process larger payloads.')
+            }
+
+
             const parsed_data = JSON.parse(text_data);
             Object.freeze(parsed_data);
+
             this.pre_labeled_data = parsed_data
             const pre_label_keys = this.extract_pre_label_key_list(this.pre_labeled_data);
             this.pre_label_key_list = [...pre_label_keys];
@@ -630,7 +643,7 @@
             this.el = 4;
           } catch (error) {
             this.error_file_uploads = {}
-            this.error_file_uploads['annotations_file'] = `Error on file ${file.name}: ${error.toString()}`;
+            this.error_file_uploads['annotations_file'] = `${file.name}: ${error.toString()}`;
             console.error(error);
           }
           this.$refs.new_or_update_upload_screen.loading_annotations = false;
