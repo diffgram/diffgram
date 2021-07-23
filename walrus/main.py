@@ -13,6 +13,7 @@ app = Flask('Diffgram',
             static_folder="./dist/static",
             template_folder="./dist")
 
+app.app_context()
 sslify = SSLify(app, subdomains=True)
 
 
