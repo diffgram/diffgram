@@ -360,9 +360,11 @@ describe('Annotate Files Tests', () => {
       })
 
       it('Correcly Moves a Cuboid', () => {
-        // TODO: FOR SOME REASON THIS TEST IS NOT WORKING WHEN RUNNING CYPRESS HEADLESS. CHECK LATER
-        cy.dragcanvas(160, 160, 135, 135);
-        cy.wait(1000)
+        cy.get('[data-cy="ok_autoborder"]').click({force: true})
+        .mousedowncanvas(180, 180)
+        .mouseupcanvas()
+        .dragcanvas(180, 180, 225, 225)
+        .wait(1000)
 
       })
 
