@@ -22,7 +22,7 @@
         and then clicking another point to automatically border the polygon.
       </v-card-text>
       <v-card-actions>
-        <v-btn @click="show_menu = false" small color="success">Ok</v-btn>
+        <v-btn @click="show_menu = false" small color="success" data-cy="ok_autoborder">Ok</v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>
