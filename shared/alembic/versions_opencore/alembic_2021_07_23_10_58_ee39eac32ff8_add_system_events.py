@@ -17,20 +17,20 @@ depends_on = None
 
 
 def upgrade():
-    video = op.create_table('system_events',
-                            sa.Column('id', sa.Integer(), nullable = False),
-                            sa.Column('kind', sa.String()),
-                            sa.Column('description', sa.String()),
-                            sa.Column('install_fingerprint', sa.String()),
-                            sa.Column('previous_version', sa.String()),
-                            sa.Column('diffgram_version', sa.String()),
-                            sa.Column('host_os', sa.String()),
-                            sa.Column('storage_backend', sa.String()),
-                            sa.Column('service_name', sa.String()),
-                            sa.Column('startup_time', sa.DateTime, default = None, nullable = True),
-                            sa.Column('shut_down_time', sa.DateTime, default = None, nullable = True),
-                            sa.Column('created_date', sa.DateTime, default = datetime.datetime.utcnow),
-                            )
+    op.create_table('system_events',
+                    sa.Column('id', sa.Integer(), nullable = False),
+                    sa.Column('kind', sa.String()),
+                    sa.Column('description', sa.String()),
+                    sa.Column('install_fingerprint', sa.String()),
+                    sa.Column('previous_version', sa.String()),
+                    sa.Column('diffgram_version', sa.String()),
+                    sa.Column('host_os', sa.String()),
+                    sa.Column('storage_backend', sa.String()),
+                    sa.Column('service_name', sa.String()),
+                    sa.Column('startup_time', sa.DateTime, default = None, nullable = True),
+                    sa.Column('shut_down_time', sa.DateTime, default = None, nullable = True),
+                    sa.Column('created_date', sa.DateTime, default = datetime.datetime.utcnow),
+                    )
 
     op.add_column('event', sa.Column('install_fingerprint', sa.String))
     op.add_column('event', sa.Column('diffgram_version', sa.String))
