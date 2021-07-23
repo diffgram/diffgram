@@ -390,6 +390,24 @@ const error = {
   }
 }
 
+const network = {
+
+  state: {
+    network_error: null
+  },
+  getters:{
+    get_network_error: state => state.network_error,
+  },
+  mutations: {
+    set_connection_error(state, error) {
+      state.network_error =error;
+    },
+    clear_connection_error(state) {
+      state.network_error = null;
+    },
+  }
+}
+
 
 const alert = {
 
@@ -611,6 +629,7 @@ const my_store = new Vuex.Store({
     org: org,
     alert: alert,
     error: error,
+    network: network,
     builder_or_trainer: builder_or_trainer,
     auth: auth,
     user: user_module,

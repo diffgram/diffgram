@@ -23,6 +23,7 @@ describe('Login Flow tests', function () {
       'builder_or_trainer',
       'error',
       'job',
+      'network',
       'labels',
       'media',
       'input',

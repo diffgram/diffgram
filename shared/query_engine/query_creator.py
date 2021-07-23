@@ -46,7 +46,6 @@ class QueryCreator:
             # If the query is correct we try the interactive parser to see next possible tokens of valid query.
             interactive = self.parser.parse_interactive(query_string)
             interactive.exhaust_lexer()
-            print('AAAAA', interactive.accepts())
             suggestions = [x for x in interactive.accepts() if x != '$END']
             suggest_type = 'boolean_operator'
             return suggestions, suggest_type
@@ -55,7 +54,6 @@ class QueryCreator:
                 if chars_exception.char == '.':
                     last_token = chars_exception.state.value_stack[len(chars_exception.state.value_stack) - 1]
                     suggestions = []
-                    print('LAST TOKEN', last_token, chars_exception.state.value_stack)
                     num_nested = len(last_token.value.split('.'))
                     if last_token.type == 'COMPARE_OP':
                         suggestions.append('$number')
