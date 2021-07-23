@@ -14,7 +14,9 @@ from azure.storage.blob._shared_access_signature import BlobSharedAccessSignatur
 import json
 import datetime
 from google.oauth2 import service_account
-
+import hashlib
+import uuid
+import requests
 
 
 try:
@@ -334,6 +336,14 @@ class DiffgramInstallTool:
         else:
             self.bucket_name = bucket_name
 
+    def gen_install_finger_print(self):
+        # Installation Fingeprint
+
+        mac_addr = hex(uuid.getnode()).encode('utf-8')
+        hash_object = hashlib.md5(mac_addr)
+        fingerprint = hash_object.hexdigest()
+        return fingerprint
+
     def populate_env(self):
         env_file = ''
         bcolors.printcolor('Generating Environment Variables file...', bcolors.OKBLUE)
@@ -365,8 +375,12 @@ class DiffgramInstallTool:
         env_file += 'INTER_SERVICE_SECRET={}\n'.format(create_random_string(10))
         env_file += 'SECRET_KEY={}\n'.format(create_random_string(18))
         env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8080/')
-        env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
+
         env_file += 'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={}\n'.format(True)
+
+        install_fingerprint = self.gen_install_finger_print()
+        env_file += 'DIFFGRAM_INSTALL_FINGERPRINT={}\n'.format(install_fingerprint)
+        env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
 
         if self.local_database:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
@@ -392,7 +406,9 @@ class DiffgramInstallTool:
     def set_diffgram_version(self):
         version = bcolors.inputcolor('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
         if version == "":
-            self.diffgram_version = 'latest'
+            response = requests.get("https://api.github.com/repos/diffgram/diffgram/releases/latest")
+            latest_release = response.json()['tag_name']
+            self.diffgram_version = latest_release
         else:
             self.diffgram_version = version
 
