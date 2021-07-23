@@ -92,6 +92,10 @@ class Event(Base):
     # WIP idea from call for tracking flow, maybe as soon as enqueued / passed off to other tracking or something
     # action_flow_requests_enqueued = Column()
 
+    install_fingerprint = Column(String)
+
+    diffgram_version = Column(String)
+
     # We don't need an "update" since this is meant to be a static record??
     time_created = Column(DateTime, default=datetime.datetime.utcnow)
 
