@@ -35,13 +35,14 @@ class SystemEvents(Base):
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
     @staticmethod
-    def system_startup_events_check(session):
+    def system_startup_events_check(session, service_name):
         """
             Checks multiple system settings changes and logs them if any changes detected.
         :param session:
         :return:
         """
-        raise NotImplementedError
+        # Record Startup Time
+
 
 
     @staticmethod
@@ -62,4 +63,20 @@ class SystemEvents(Base):
         :param session:
         :return:
         """
+        raise NotImplementedError
+
+    @staticmethod
+    def new(session,
+            kind=None,
+            description=None,
+            install_fingerprint=None,
+            previous_version=None,
+            diffgram_version=None,
+            host_os=None,
+            storage_backend=None,
+            service_name=None,
+            startup_time=None,
+            shut_down_time=None,
+            created_date=None):
+
         raise NotImplementedError
