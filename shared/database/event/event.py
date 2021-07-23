@@ -308,7 +308,9 @@ class Event(Base):
         """
 
         try:
-            result = requests.post(settings.EVENTHUB_URL, json=self.serialize())
+            event_data = self.serialize()
+            event_data['event_type'] = 'user'
+            result = requests.post(settings.EVENTHUB_URL, json=event_data)
             if result.status_code == 200:
                 logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
             else:

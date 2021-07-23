@@ -1,6 +1,10 @@
 # OPENCORE - ADD
+import analytics
+import requests
+
 from shared.database.common import *
 from shared.shared_logger import get_shared_logger
+
 logger = get_shared_logger()
 
 
@@ -65,6 +69,73 @@ class SystemEvents(Base):
         """
         raise NotImplementedError
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'kind': self.kind,
+            'description': self.description,
+            'install_fingerprint': self.install_fingerprint,
+            'previous_version': self.previous_version,
+            'diffgram_version': self.diffgram_version,
+            'host_os': self.host_os,
+            'storage_backend': self.storage_backend,
+            'service_name': self.service_name,
+            'startup_time': self.startup_time.strftime('%Y-%m-%d') if self.startup_time else None,
+            'shut_down_time': self.shut_down_time.strftime('%Y-%m-%d') if self.shut_down_time else None,
+            'created_date': self.created_date.strftime('%Y-%m-%d') if self.created_date else None,
+        }
+    def send_to_segment(self):
+        """
+            Sending system actions to segment. Here each user will be a install
+            fingerprint to identify system events per Diffgram installation.
+        :return:
+        """
+        props = {
+            'description': self.description,
+            'host_os': self.host_os,
+            'diffgram_version': self.diffgram_version,
+            'service_name': self.service_name,
+            'storage_backend': self.storage_backend,
+            'created_at': self.created_date,
+            'install_fingerprint': self.install_fingerprint,
+        }
+        try:
+            analytics.track(
+                user_id=self.install_fingerprint,
+                event=self.kind,
+                properties=props,
+                context={
+                    'os': self.host_os,
+                    'app': {
+                        'name': self.service_name,
+                        'version': self.diffgram_version,
+                        'build': self.diffgram_version,
+                    }
+                }
+            )
+        except Exception as e:
+            print(e)
+            pass
+
+    def send_to_eventhub(self):
+        """
+            Sends the current event to Diffgram's EventHub for anonymous data tracking.
+        :return:
+        """
+
+        try:
+            event_data = self.serialize()
+            event_data['event_type'] = 'system'
+            result = requests.post(settings.EVENTHUB_URL, json=event_data)
+            if result.status_code == 200:
+                logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
+            else:
+                #print(result, result.text)
+                logger.error(
+                    "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
+        except Exception as e:
+            logger.error("Exception sending {} to Diffgram Eventhub: ".format(str(e)))
+
     @staticmethod
     def new(session,
             kind=None,
@@ -77,6 +148,27 @@ class SystemEvents(Base):
             service_name=None,
             startup_time=None,
             shut_down_time=None,
-            created_date=None):
+            created_date=None,
+            add_to_session=True,
+            flush_session=True):
 
-        raise NotImplementedError
+        event = SystemEvents(
+            kind=kind,
+            description=description,
+            install_fingerprint=install_fingerprint,
+            previous_version=previous_version,
+            diffgram_version=diffgram_version,
+            host_os=host_os,
+            storage_backend=storage_backend,
+            service_name=service_name,
+            startup_time=startup_time,
+            shut_down_time=shut_down_time,
+            created_date=created_date,
+        )
+        if add_to_session:
+            session.add(event)
+        if flush_session:
+            session.flush()
+
+        event.send_to_segment()
+        event.send_to_eventhub()
