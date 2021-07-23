@@ -168,8 +168,8 @@ frame_queue_lock = threading.Lock()
 video_queue_lock = threading.Lock()
 threads = []
 
-video_threads = 1
-frame_threads = int(video_threads * 8)
+video_threads = settings.PROCESS_MEDIA_NUM_VIDEO_THREADS
+frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
 
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
