@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 import os
+import platform
 import random
 import string
 import base64
 import time
 import boto3
 import traceback
-import requests
-from google.cloud import storage
-from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
-from azure.storage.blob._models import BlobSasPermissions
-from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
-import json
-import datetime
-from google.oauth2 import service_account
 import hashlib
 import uuid
 import requests
+import datetime
+
+from google.cloud import storage
+from azure.storage.blob import BlobServiceClient, ContentSettings
+from azure.storage.blob._models import BlobSasPermissions
+from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
+from google.oauth2 import service_account
 
 
 try:
@@ -344,6 +344,14 @@ class DiffgramInstallTool:
         fingerprint = hash_object.hexdigest()
         return fingerprint
 
+    def get_system_os(self):
+        os_name = os.name.lower()
+        system = platform.system().lower()
+        release = platform.release().lower()
+
+        os_data = '{} {} {}'.format(os_name, system, release)
+        return os_data
+
     def populate_env(self):
         env_file = ''
         bcolors.printcolor('Generating Environment Variables file...', bcolors.OKBLUE)
@@ -381,6 +389,7 @@ class DiffgramInstallTool:
         install_fingerprint = self.gen_install_finger_print()
         env_file += 'DIFFGRAM_INSTALL_FINGERPRINT={}\n'.format(install_fingerprint)
         env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
+        env_file += 'DIFFGRAM_HOST_OS={}\n'.format(self.get_system_os())
 
         if self.local_database:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')

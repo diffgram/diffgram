@@ -123,6 +123,9 @@ limiter.init_app(app) # so we don't have to import app varible into limiter file
 from shared.data_tools_core import Data_tools
 data_tools = Data_tools().data_tools
 
+from shared.database.system_events.system_events import SystemEvents
+
+SystemEvents.system_startup_events_check('default_service')
 print("Startup in", time.time() - start_time)
 
 # Debug

@@ -30,6 +30,7 @@ def upgrade():
                     sa.Column('startup_time', sa.DateTime, default = None, nullable = True),
                     sa.Column('shut_down_time', sa.DateTime, default = None, nullable = True),
                     sa.Column('created_date', sa.DateTime, default = datetime.datetime.utcnow),
+                    sa.PrimaryKeyConstraint('id')
                     )
 
     op.add_column('event', sa.Column('install_fingerprint', sa.String))
