@@ -328,6 +328,8 @@ def create_job(job_data, session):
         rel.working_dir_id = dir.id
         session.add(rel)
     regular_methods.commit_with_rollback(session)
+    session.add(job)
+    session.commit()
     return job
 
 

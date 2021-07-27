@@ -6,10 +6,7 @@ import threading
 
 @routes.route('/api/v1/project/<string:project_string_id>/job/resync',
               methods = ['POST'])
-@General_permissions.grant_permission_for(
-    Roles = ['normal_user'],
-    apis_user_list = ["builder_or_trainer"])
-@Project_permissions.user_has_project(["admin", "Editor"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
 def job_resync_api(project_string_id):
     """
         Checks for any missing files on the job's datasets
@@ -70,19 +67,18 @@ def job_resync_core(session,
         return False, log
 
     t = threading.Thread(
-        target = __threaded_job_resync,
+        target = threaded_job_resync,
         args = ((task_template_id, member.id)))
     t.start()
 
     return result, log
 
 
-def __threaded_job_resync(task_template_id, member_id):
+def threaded_job_resync(task_template_id, member_id):
     with sessionMaker.session_scope_threaded() as session:
         log = regular_log.default()
         member = Member.get_by_id(session = session, member_id = member_id)
         task_template = Job.get_by_id(session = session, job_id = task_template_id)
-        print('MEMBER ID', member, member.id)
         attached_dirs = task_template.get_attached_dirs(session = session, sync_types = ['sync'])
         task_list = task_template.task_list(session = session)
         file_ids = [t.file_id for t in task_list]
@@ -113,5 +109,6 @@ def __threaded_job_resync(task_template_id, member_id):
                     )
                     task_template.update_file_count_statistic(session = session)
                     missing_files.append(file)
-        logger.info('Resyncing on Job {} Success. {} Missing files synced'.format(task_template_id, len(missing_files)))
-    return True
+
+    logger.info('Resyncing on Job {} Success. {} Missing files synced'.format(task_template_id, len(missing_files)))
+    return missing_files
