@@ -106,7 +106,7 @@ class DataToolsAzure:
                     blocks.append(BlobBlock(block_id = block))
                 blob_client.commit_block_list(blocks)
             elif not input and batch:
-                for block in input.upload_azure_block_list['upload_azure_block_list']:
+                for block in batch.upload_azure_block_list['upload_azure_block_list']:
                     blocks.append(BlobBlock(block_id = block))
                 blob_client.commit_block_list(blocks)
         return True
@@ -232,7 +232,11 @@ class DataToolsAzure:
         """
             blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
         """
-        raise NotImplementedError
+        blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
+                                                                blob = blob_name)
+        download_stream = blob_client.download_blob()
+
+        return download_stream.content_as_text()
 
     def rebuild_secure_urls_image(self, session, image):
         """
