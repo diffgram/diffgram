@@ -17,7 +17,7 @@ Diffgram replaces as many as 9 of your existing tools with one single applicatio
 6. [Stream to Training - Coming Soon](#Stream-to-Training-Coming-Soon)
 7. [Explore](#Explore)
 8. [Debug](#Debug)
-9. [Secure & Private](#Secure-Private)
+9. [Secure and Private](#Secure-and-Private)
 
 Diffgram is Open Source and Client Installed. **[Quickstart](#Quickstart)**
 
@@ -141,11 +141,13 @@ thousands of subdivided [task sets](https://diffgram.readme.io/docs/tasks-introd
 to existing partially annotated sets.
 
 ## Annotation
-Fully featured annotation tool for images and video to create, update, and maintain high quality training datasets.
+Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
 * [Quality Image and Video Annotation.](https://diffgram.com/software)
 * [Semantic Segmentation Focus](https://diffgram.com/segmentation) Autobordering, turbo mode and more
 * [Video Annotation](https://diffgram.com/video) High resolution, high frame rate, multiple sequences.
+
 Schema (Ontology): Diffgram supports all popular [attributes](https://diffgram.readme.io/docs/attributes-1) and spatial types including *[Custom Spatial types](https://diffgram.readme.io/docs/custom-spatial-templates-user-defined-shapes)*.
+(Best Data Annotation for AI/ML)
 
 ## Annotation Automation
 Run models instantly with [Javascript](https://diffgram.readme.io/docs/userscripts-overview) or make API calls to any language of your choice.
@@ -176,7 +178,7 @@ create the highest quality models. Because these features are fully integrated w
 * Curate data and send for labeling with one click
 * Automatic error highlighting (Coming Soon)
 
-## Secure & Private
+## Secure and Private
 * Runs on your local system or cloud. Less lag, more secure, more control. [Security and Privacy](https://diffgram.com/secure)
 * Enforce PII & RBAC automatically across life-cycle of
  training data from ingest to dataset to model predictions and back again (Coming Soon)
