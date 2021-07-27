@@ -13,6 +13,7 @@ env_adapter = EnvAdapter()
 try:
     from shared.settings.secrets import *
 except Exception as e:
+    print('Error loading secrets: ')
     print(e)
 
 
