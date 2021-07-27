@@ -249,8 +249,8 @@
         create_batch: async function (labels_payload) {
           try {
             this.loading_create_batch = true;
-            // const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
-            const chunk_size_bytes = 256 * 1024 // 256KB;
+            const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
+            // const chunk_size_bytes = 256 * 1024 // 256KB;
             const str = JSON.stringify(labels_payload);
             const bytes = new TextEncoder().encode(str);
             const blob = new Blob([bytes], {
@@ -365,6 +365,9 @@
               value = file.file_id;
             }
             file_instances = pre_labeled_dict[value.toString()]
+            if(file_instances == undefined){
+              file_instances = []
+            }
             file.uuid = uuid;
             result[file.uuid] = {instance_list: [], frame_packet_map: {}, file_id: file.file_id};
             if (file.name) {
