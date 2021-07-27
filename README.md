@@ -9,7 +9,7 @@ a single application.
 
 # What is Diffgram?
 Diffgram replaces as many as 9 of your existing tools with one single application.
-1. [Ingest 2.0](#Ingest-2.0)
+1. [Ingest](#Ingest)
 2. [Store](#Store)
 3. [Workflow](#Workflow)
 4. [Annotation](#Annotation)
@@ -115,7 +115,7 @@ This is an ACTIVE project. We are very open to feedback and encourage you to cre
 ## User Friendly
 * NEW Streamlined Annotation UI suitable both from "First Time" Subject Matter Experts, and powerful options for Professional Full Time Annotators
 
-## Ingest 2.0
+## Ingest
 Ingest prediction data without a software engineer.
 
 * [NEW Import Wizard](https://medium.com/diffgram/now-anyone-can-turn-spreadsheets-into-editable-pre-labels-more-saving-hundreds-of-hours-of-bbc756ec7b49) saves you hours having to map your data (pre-labels, QA, debug etc.).
