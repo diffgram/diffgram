@@ -17,15 +17,15 @@ class JobDirectorySyncManager:
     log: any
     job: any = None
     directory: any = None
-    file: File = None       # WIP maybe more clear to do this, although there are cases with multiple files...
+    file: File = None  # WIP maybe more clear to do this, although there are cases with multiple files...
 
     def __add_file_into_job(
-            self,
-            file: File,
-            incoming_directory: WorkingDir,
-            job: Job =None, 
-            create_tasks: bool = False, 
-            sync_event_manager=None):
+        self,
+        file: File,
+        incoming_directory: WorkingDir,
+        job: Job = None,
+        create_tasks: bool = False,
+        sync_event_manager = None):
         """
             Given a file, add the link to the job directory and create a task if create_tasks=True.
         :param session:
@@ -42,13 +42,13 @@ class JobDirectorySyncManager:
             job_obj = job
 
         result, log = WorkingDirFileLink.file_link_update(
-            session=self.session,
-            add_or_remove='add',
-            incoming_directory=incoming_directory,
-            directory=job_obj.directory,
-            file_id=file.id,
-            job=job_obj,
-            log=self.log
+            session = self.session,
+            add_or_remove = 'add',
+            incoming_directory = incoming_directory,
+            directory = job_obj.directory,
+            file_id = file.id,
+            job = job_obj,
+            log = self.log
         )
         logger.debug('File {} added to job {}'.format(file.id, job_obj.id))
 
@@ -56,11 +56,11 @@ class JobDirectorySyncManager:
             log['info']['create_tasks flag'] = "create_tasks is False"
             return True, log
 
-
         valid_status_to_create_tasks = ['active', 'in_review', 'complete']
         if job_obj.status not in valid_status_to_create_tasks:
             log['info']['job status'] = "not in " + str(valid_status_to_create_tasks)
-            logger.debug('Job status not active, skipping. Statuses must be one of {}'.format( str(valid_status_to_create_tasks)))
+            logger.debug(
+                'Job status not active, skipping. Statuses must be one of {}'.format(str(valid_status_to_create_tasks)))
             return True, log
 
         logger.debug('Creating task...')
@@ -68,7 +68,7 @@ class JobDirectorySyncManager:
             job = job_obj,
             file = file)
         if potential_existing_task is None:
-            task = self.create_task_from_file(file, job=job_obj, incoming_directory=incoming_directory)
+            task = self.create_task_from_file(file, job = job_obj, incoming_directory = incoming_directory)
             task.is_root = True
             logger.debug('New task created. {}'.format(task.id))
         else:
@@ -85,11 +85,10 @@ class JobDirectorySyncManager:
 
         return True, log
 
-
     def __check_if_task_exists(
-            self,
-            job: Job,
-            file: File):
+        self,
+        job: Job,
+        file: File):
         task = Task.get_by_job_and_file(
             session = self.session,
             job = job,
@@ -99,12 +98,12 @@ class JobDirectorySyncManager:
         return task
 
     def __sync_all_jobs_from_dir(
-            self, 
-            file: File, 
-            file_link_dir: WorkingDir, 
-            directory_for_job_sync: WorkingDir, 
-            create_tasks=False,
-            member=None):
+        self,
+        file: File,
+        file_link_dir: WorkingDir,
+        directory_for_job_sync: WorkingDir,
+        create_tasks = False,
+        member = None):
         """
             Inner function. Gets all job ids from the directory given in the param directory_for_job_sync
             and calls function for creating a new task on each job with the given file.
@@ -125,39 +124,39 @@ class JobDirectorySyncManager:
             class_to_return = Job,
             working_dir_id = directory_for_job_sync.id,
             sync_type = 'sync'
-            )
+        )
         for job in job_list:
             sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-                session=self.session,
-                dataset_source_id=directory_for_job_sync,
-                dataset_destination=None,
-                description='Sync file from dataset {} to job {} and create task'.format(
+                session = self.session,
+                dataset_source_id = directory_for_job_sync,
+                dataset_destination = None,
+                description = 'Sync file from dataset {} to job {} and create task'.format(
                     directory_for_job_sync.nickname,
                     job.name
                 ),
-                file=file,
-                job=job,
-                input_id=file.input_id,
-                project=job.project,
-                event_effect_type='create_task',
-                event_trigger_type='file_added',
-                status='init',
-                member_created=member
+                file = file,
+                job = job,
+                input_id = file.input_id,
+                project = job.project,
+                event_effect_type = 'create_task',
+                event_trigger_type = 'file_added',
+                status = 'init',
+                member_created = member
             )
 
             self.__add_file_into_job(
-                file, 
-                file_link_dir, 
-                job=job, 
-                create_tasks=create_tasks,
-                sync_event_manager=sync_event_manager)
+                file,
+                file_link_dir,
+                job = job,
+                create_tasks = create_tasks,
+                sync_event_manager = sync_event_manager)
 
             if len(self.log['error'].keys()) > 1:
                 return False, self.log
-            job.update_file_count_statistic(session=self.session)
+            job.update_file_count_statistic(session = self.session)
         return True, self.log
 
-    def remove_directory_from_all_attached_jobs(self, soft_delete=True):
+    def remove_directory_from_all_attached_jobs(self, soft_delete = True):
         """
             Removes the given directory (self.directory) from all the jobs it is attached to that are in 'sync' mode.
         :return:
@@ -177,7 +176,7 @@ class JobDirectorySyncManager:
             self.directory.id)
         return True, self.log
 
-    def remove_job_from_all_dirs(self, soft_delete=True):
+    def remove_job_from_all_dirs(self, soft_delete = True):
         """
             Removes the job from all the directories it had been attached by clearing all
             the JobWorking dirs relations with the given job ID.
@@ -196,7 +195,7 @@ class JobDirectorySyncManager:
             )
         return True, self.log
 
-    def create_task_from_file(self, file, job=None, incoming_directory=None):
+    def create_task_from_file(self, file, job = None, incoming_directory = None):
 
         job_obj = self.job
         if job is not None:
@@ -204,15 +203,15 @@ class JobDirectorySyncManager:
             job_obj = job
         if job_obj.file_handling == "isolate":
             new_file = File.copy_file_from_existing(
-                session=self.session,
-                working_dir=job_obj.directory,
-                existing_file=file,
-                copy_instance_list=False,
-                add_link=False,
-                remove_link=False,
-                orginal_directory_id=job_obj.completion_directory_id,
-                deep_copy=True,
-                ann_is_complete_reset=True
+                session = self.session,
+                working_dir = job_obj.directory,
+                existing_file = file,
+                copy_instance_list = False,
+                add_link = False,
+                remove_link = False,
+                orginal_directory_id = job_obj.completion_directory_id,
+                deep_copy = True,
+                ann_is_complete_reset = True
             )
         else:  # assume use existing
             new_file = file
@@ -224,10 +223,10 @@ class JobDirectorySyncManager:
             new_file.id,
             job_obj.guide_default_id,
             job_obj.label_dict,
-            file_original_id=file.id,
-            kind='human',
-            task_type='draw',
-            incoming_directory=incoming_directory
+            file_original_id = file.id,
+            kind = 'human',
+            task_type = 'draw',
+            incoming_directory = incoming_directory
         )
         # Set job as not completed.
         job_obj.status = 'active'
@@ -235,7 +234,7 @@ class JobDirectorySyncManager:
         self.session.add(task)
         return task
 
-    def add_file_to_all_jobs(self, file, source_dir=None, create_tasks=False, member=None):
+    def add_file_to_all_jobs(self, file, source_dir = None, create_tasks = False, member = None):
         """
             Adds file to all the attached jobs on the managed directory (self.directory). An optional source_dir
             parameter is provided in case the file is being moved or copied from another directory and the file link
@@ -252,20 +251,20 @@ class JobDirectorySyncManager:
             file_link_directory = source_dir
 
         self.__sync_all_jobs_from_dir(
-            file=file,
-            file_link_dir=file_link_directory,
-            directory_for_job_sync=self.directory,
-            create_tasks=create_tasks,
-            member=member
+            file = file,
+            file_link_dir = file_link_directory,
+            directory_for_job_sync = self.directory,
+            create_tasks = create_tasks,
+            member = member
         )
 
     def create_file_links_for_attached_dirs(self,
-                                            sync_only=False,
-                                            create_tasks=False,
-                                            file_to_link=None,
-                                            file_to_link_dataset=None,
-                                            related_input=None,
-                                            member=None):
+                                            sync_only = False,
+                                            create_tasks = False,
+                                            file_to_link = None,
+                                            file_to_link_dataset = None,
+                                            related_input = None,
+                                            member = None):
         """
             Called once before launch. This function will check all directories
             in JobWorkingDir table
@@ -283,10 +282,10 @@ class JobDirectorySyncManager:
 
         # Now create a file link for all the files on all the directories on the job and attach them.
         if sync_only:
-            directory_list = self.job.get_attached_dirs(session=self.session)
+            directory_list = self.job.get_attached_dirs(session = self.session)
 
         else:
-            directory_list = self.job.get_attached_dirs(session=self.session, sync_types=['sync', 'select_once'])
+            directory_list = self.job.get_attached_dirs(session = self.session, sync_types = ['sync', 'select_once'])
         if len(directory_list) == 0:
             self.log['info']['attached_directories_list'] = 'No directories attached.'
             return directory_list
@@ -296,46 +295,46 @@ class JobDirectorySyncManager:
                 if self.job.instance_type in ['text_tokens']:
                     files = WorkingDirFileLink.file_list(
                         self.session,
-                        working_dir_id=directory.id,
-                        root_files_only=True,  # TODO do we need to get child files too?
-                        limit=None,
-                        type='text'
+                        working_dir_id = directory.id,
+                        root_files_only = True,  # TODO do we need to get child files too?
+                        limit = None,
+                        type = 'text'
                     )
                 else:
                     files = WorkingDirFileLink.file_list(
                         self.session,
-                        working_dir_id=directory.id,
-                        root_files_only=True,  # TODO do we need to get child files too?
-                        limit=None,
+                        working_dir_id = directory.id,
+                        root_files_only = True,  # TODO do we need to get child files too?
+                        limit = None,
                     )
                 for file in files:
                     logger.debug('Single file sync event with file: {} and folder {}'.format(
                         directory,
                         file))
                     sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-                        session=self.session,
-                        dataset_source_id=directory.id,
-                        dataset_destination=None,
-                        description='Sync file {} from dataset {} to job {} and create task'.format(
+                        session = self.session,
+                        dataset_source_id = directory.id,
+                        dataset_destination = None,
+                        description = 'Sync file {} from dataset {} to job {} and create task'.format(
                             file.original_filename,
                             directory.nickname,
                             self.job.name
                         ),
-                        file=file,
-                        job=self.job,
-                        input=related_input,
-                        project=self.job.project,
-                        event_effect_type='create_task',
-                        event_trigger_type='file_added',
-                        status='init',
-                        member_created=member
+                        file = file,
+                        job = self.job,
+                        input = related_input,
+                        project = self.job.project,
+                        event_effect_type = 'create_task',
+                        event_trigger_type = 'file_added',
+                        status = 'init',
+                        member_created = member
                     )
                     logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
                     result, log = self.__add_file_into_job(
                         file,
                         directory,
-                        create_tasks=create_tasks,
-                        sync_event_manager=sync_event_manager
+                        create_tasks = create_tasks,
+                        sync_event_manager = sync_event_manager
                     )
                     if result is not True:
                         log['error']['sync_file_dirs'] = 'Error syncing dirs for file id: {}'.format(file.id)
@@ -345,33 +344,33 @@ class JobDirectorySyncManager:
             logger.debug(
                 'Single file sync event with file: {} and folder {}'.format(file_to_link_dataset.id, file_to_link.id))
             sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-                session=self.session,
-                dataset_source_id=file_to_link_dataset.id,
-                dataset_destination=None,
-                description='Sync file {} from dataset {} to job {} and create task'.format(
+                session = self.session,
+                dataset_source_id = file_to_link_dataset.id,
+                dataset_destination = None,
+                description = 'Sync file {} from dataset {} to job {} and create task'.format(
                     file_to_link.original_filename,
                     file_to_link_dataset.nickname,
                     self.job.name
                 ),
-                file=file_to_link,
-                job=self.job,
-                input=related_input,
-                project=self.job.project,
-                event_effect_type='create_task',
-                event_trigger_type='file_added',
-                status='init',
-                member_created=member
+                file = file_to_link,
+                job = self.job,
+                input = related_input,
+                project = self.job.project,
+                event_effect_type = 'create_task',
+                event_trigger_type = 'file_added',
+                status = 'init',
+                member_created = member
             )
             logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
             result, log = self.__add_file_into_job(
                 file_to_link,
                 file_to_link_dataset,
-                create_tasks=create_tasks,
-                sync_event_manager=sync_event_manager,
+                create_tasks = create_tasks,
+                sync_event_manager = sync_event_manager,
             )
             if result is not True:
                 log['error']['sync_file_dirs'] = 'Error syncing dirs for file id: {}'.format(file_to_link.id)
             if len(log['error'].keys()) > 1:
                 return False, log
-        self.job.update_file_count_statistic(session=self.session)
+        self.job.update_file_count_statistic(session = self.session)
         return True, self.log

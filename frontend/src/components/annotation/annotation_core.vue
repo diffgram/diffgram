@@ -1342,8 +1342,7 @@ export default Vue.extend( {
       let delta_y = this.mouse_position.y - this.mouse_down_position.y
       delta_x = parseInt(delta_x)
       delta_y = parseInt(delta_y)
-      console.log('MOUSE COMPUTED', this.mouse_position, this.mouse_down_position);
-      console.log('MOUSE DELTA', delta_x, delta_y);
+
       return {
         delta_x : delta_x,
         delta_y : delta_y
@@ -4317,11 +4316,7 @@ export default Vue.extend( {
         this.original_edit_instance = {...instance};
         this.original_edit_instance_index = i;
       }
-      console.log('MOVE BOX LITERAL POINTS', this.mouse_down_delta_event.x, this.mouse_down_delta_event.y)
-      console.log('x_min', instance.x_min)
-      console.log('x_max', instance.x_max)
-      console.log('y_min', instance.y_min)
-      console.log('y_max', instance.y_max)
+
       if (this.box_edit_point_hover == "x_min_y_min") {
         instance.x_min = x_new
         instance.y_min = y_new
@@ -4566,7 +4561,6 @@ export default Vue.extend( {
         window.focus()
       }
       */
-      console.log('AMOUSEMOVEEE')
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
       if (this.ctrl_key == true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY)
