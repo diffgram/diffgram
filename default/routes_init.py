@@ -15,6 +15,7 @@ def do_routes_importing():
     from methods.task.task.task_by_id import task_by_id_api
 
     from methods.task.task_template.job_pin import job_pin_api
+    from methods.task.task_template.job_resync import job_resync_api
 
     from methods.task.task.task_list import task_list_api
     from methods.task.task.task_update import task_update_api

@@ -70,7 +70,7 @@ def log_request_info():
 		out['path'] = request.path	# Because may not log in line with normal path printing.
 		logger.info(out)
 	except Exception as e:
-		print("Failed to log ", e)
+		print("[Default] Warning: Failed to log request payload. Request is not in JSON ", e)
 
 
 @app.before_request

@@ -353,9 +353,10 @@ class Event(Base):
     def track_user(
             event,
             email=None):
-
         # Validate an event exists.
         if event is None:
+            return
+        if event.member_id is None:
             return
         # CAREFUL using MEMBER id NOT user id.
         props = {
@@ -379,7 +380,7 @@ class Event(Base):
                 }
             )
         except Exception as e:
-            print(e)
+            logger.error('Error tracking user: {}'.format(e))
             pass
 
     @staticmethod
