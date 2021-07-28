@@ -6,6 +6,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from packaging import version
 import traceback
+
 logger = get_shared_logger()
 
 
@@ -97,7 +98,7 @@ class SystemEvents(Base):
 
         if latest_recorded_version_event is None:
             # Initial upgrade
-            SystemEvents.new(
+            system_event = SystemEvents.new(
                 session = session,
                 kind = 'version_upgrade',
                 description = 'Diffgram System startup for {} service'.format(service_name),
@@ -111,6 +112,7 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
+            return system_event
 
         else:
             # Determine if current version in env variable is greater than last recorded version.
@@ -118,7 +120,7 @@ class SystemEvents(Base):
             version_to_check = settings.DIFFGRAM_VERSION_TAG
             if version.parse(version_to_check) > version.parse(recorded_version):
                 logger.info('New version detected: [{}]'.format(version_to_check))
-                SystemEvents.new(
+                system_event = SystemEvents.new(
                     session = session,
                     kind = 'version_upgrade',
                     description = 'Diffgram System startup for {} service'.format(service_name),
@@ -132,9 +134,10 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
+                return system_event
             elif version_to_check < recorded_version:
                 logger.info('Downgrade version detected: [{}]'.format(version_to_check))
-                SystemEvents.new(
+                system_event = SystemEvents.new(
                     session = session,
                     kind = 'version_downgrade',
                     description = 'Diffgram System startup for {} service'.format(service_name),
@@ -148,9 +151,10 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
+                return system_event
             else:
                 # On equal versions, we do nothing.
-                pass
+                return None
 
     @staticmethod
     def check_os_change(session, service_name):
@@ -166,10 +170,12 @@ class SystemEvents(Base):
 
         if latest_recorded_version_event is not None:
             if latest_recorded_version_event.host_os != settings.DIFFGRAM_HOST_OS:
-                SystemEvents.new(
+                system_event = SystemEvents.new(
                     session = session,
                     kind = 'os_change',
-                    description = 'OS Init for {} service from {} to {}'.format(service_name, latest_recorded_version_event.host_os, settings.DIFFGRAM_HOST_OS),
+                    description = 'OS Init for {} service from {} to {}'.format(service_name,
+                                                                                latest_recorded_version_event.host_os,
+                                                                                settings.DIFFGRAM_HOST_OS),
                     install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                     previous_version = None,
                     diffgram_version = settings.DIFFGRAM_VERSION_TAG,
@@ -180,8 +186,9 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
+                return system_event
         else:
-            SystemEvents.new(
+            system_event = SystemEvents.new(
                 session = session,
                 kind = 'os_change',
                 description = 'OS Change for {} service'.format(service_name),
@@ -195,6 +202,7 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
+            return system_event
 
     def serialize(self):
         return {
@@ -241,6 +249,7 @@ class SystemEvents(Base):
                     }
                 }
             )
+            return True
         except Exception as e:
             logger.error('Error sending event to segment: {}'.format(str(e)))
             logger.error(traceback.format_exc())
@@ -258,6 +267,7 @@ class SystemEvents(Base):
             result = requests.post(settings.EVENTHUB_URL, json = event_data)
             if result.status_code == 200:
                 logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
+                return True
             else:
                 # print(result, result.text)
                 logger.error(
@@ -301,3 +311,4 @@ class SystemEvents(Base):
 
         event.send_to_segment()
         event.send_to_eventhub()
+        return event

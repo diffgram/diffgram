@@ -13,3 +13,5 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
         result = SystemEvents.system_startup_events_check(self.service_name)
         if not result:
             raise Exception('System Startup Check Failed.')
+
+
