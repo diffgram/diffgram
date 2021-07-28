@@ -46,7 +46,6 @@ class SystemEvents(Base):
         :param session:
         :return:
         """
-        print('XXXX')
         with session_scope() as session:
             # Record Startup Time
             SystemEvents.new(
@@ -63,8 +62,8 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
-            print('AAAAA')
             SystemEvents.check_version_upgrade(session = session, service_name = service_name)
+            SystemEvents.check_os_change(session = session, service_name = service_name)
 
     @staticmethod
     def check_version_upgrade(session, service_name):
@@ -138,14 +137,48 @@ class SystemEvents(Base):
 
 
     @staticmethod
-    def check_os_change(session):
+    def check_os_change(session, service_name):
         """
             Checks the current version in the system and generates an event
             if version has changed.
         :param session:
         :return:
         """
-        raise NotImplementedError
+        latest_recorded_version_event = session.query(
+            SystemEvents.kind == 'os_change'
+        ).order_by('created_date').first()
+
+        if latest_recorded_version_event is not None:
+            if latest_recorded_version_event.host_os != settings.DIFFGRAM_HOST_OS:
+                SystemEvents.new(
+                    session = session,
+                    kind = 'os_change',
+                    description = 'OS Change for {} service'.format(service_name),
+                    install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
+                    previous_version = None,
+                    diffgram_version = settings.DIFFGRAM_VERSION_TAG,
+                    host_os = settings.DIFFGRAM_HOST_OS,
+                    storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+                    service_name = service_name,
+                    startup_time = None,
+                    shut_down_time = None,
+                    created_date = datetime.datetime.utcnow()
+                )
+        else:
+            SystemEvents.new(
+                session = session,
+                kind = 'os_change',
+                description = 'OS Change for {} service'.format(service_name),
+                install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
+                previous_version = None,
+                diffgram_version = settings.DIFFGRAM_VERSION_TAG,
+                host_os = settings.DIFFGRAM_HOST_OS,
+                storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+                service_name = service_name,
+                startup_time = None,
+                shut_down_time = None,
+                created_date = datetime.datetime.utcnow()
+            )
 
     def serialize(self):
         return {
