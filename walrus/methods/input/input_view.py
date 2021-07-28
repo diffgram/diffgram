@@ -238,7 +238,6 @@ def check_for_interrupted_uploads(
 			continue
 		
 		time_delta: datetime = datetime.datetime.utcnow() - input.time_updated
-		#print(time_delta.seconds)
 
 		allowed_seconds_to_send = 60 * 60	# 60 seconds * 60, 60 minutes
 

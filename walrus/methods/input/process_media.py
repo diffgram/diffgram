@@ -496,8 +496,7 @@ class Process_Media():
             # careful we expect keys available here ie
             # log['error']['status_text']
             if len(self.log["error"].keys()) >= 1:
-                print(self.log['error'])
-                logger.error(self.log['error'])
+                logger.error('Error downloading media: {}'.format(str(self.log['error'])))
                 return False
 
         if self.input.media_type == "video":
@@ -899,6 +898,7 @@ class Process_Media():
     def update_jobs_with_attached_dirs(self):
         # From the file directory, get all related jobs.
 
+        return
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
         if self.input.media_type not in ['image', 'video']:
