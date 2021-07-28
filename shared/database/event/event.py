@@ -114,8 +114,11 @@ class Event(Base):
             'member_id': self.member_id,
             'report_template_data': self.report_template_data,
             'report_data': self.report_data,
-            'time_created': self.time_created.strftime('%Y-%m-%d')
-
+            'time_created': self.time_created.strftime('%Y-%m-%d'),
+            'install_fingerprint': self.install_fingerprint,
+            'diffgram_version': settings.DIFFGRAM_VERSION_TAG,
+            'host_os': settings.DIFFGRAM_HOST_OS,
+            'storage_backend': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
         }
 
     def serialize_for_visit_history(self):

@@ -5,7 +5,7 @@ from shared.helpers.sessionMaker import session_scope
 from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from packaging import version
-
+import traceback
 logger = get_shared_logger()
 
 
@@ -46,9 +46,22 @@ class SystemEvents(Base):
         :param session:
         :return:
         """
-        if settings.DIFFGRAM_VERSION_TAG is None:
-            logger.error('DIFFGRAM_VERSION_TAG is not Set as an ENV variable. Please set it to current version or run install script again.')
+        if settings.DIFFGRAM_INSTALL_FINGERPRINT is None:
+            logger.error(
+                'DIFFGRAM_INSTALL_FINGERPRINT is not Set as an ENV variable. \n'
+                'Please set it by running install.py script again. Value will be stored in .env file.')
             return False
+        if settings.DIFFGRAM_VERSION_TAG is None:
+            logger.error(
+                'DIFFGRAM_VERSION_TAG is not Set as an ENV variable. \n'
+                'Please set it by running install.py script again. Value will be stored in .env file.')
+            return False
+        if settings.DIFFGRAM_HOST_OS is None:
+            logger.error(
+                'DIFFGRAM_HOST_OS is not Set as an ENV variable. \n'
+                'Please set it by running install.py script again. Value will be stored in .env file.')
+            return False
+
         with session_scope() as session:
             # Record Startup Time
             SystemEvents.new(
@@ -68,6 +81,7 @@ class SystemEvents(Base):
             SystemEvents.check_version_upgrade(session = session, service_name = service_name)
             SystemEvents.check_os_change(session = session, service_name = service_name)
             return True
+
     @staticmethod
     def check_version_upgrade(session, service_name):
         """
@@ -102,8 +116,7 @@ class SystemEvents(Base):
             # Determine if current version in env variable is greater than last recorded version.
             recorded_version = latest_recorded_version_event.diffgram_version
             version_to_check = settings.DIFFGRAM_VERSION_TAG
-            print('VERSIONS', version_to_check, recorded_version)
-            if version.parse(version_to_check) > recorded_version:
+            if version.parse(version_to_check) > version.parse(recorded_version):
                 logger.info('New version detected: [{}]'.format(version_to_check))
                 SystemEvents.new(
                     session = session,
@@ -139,7 +152,6 @@ class SystemEvents(Base):
                 # On equal versions, we do nothing.
                 pass
 
-
     @staticmethod
     def check_os_change(session, service_name):
         """
@@ -157,7 +169,7 @@ class SystemEvents(Base):
                 SystemEvents.new(
                     session = session,
                     kind = 'os_change',
-                    description = 'OS Change for {} service'.format(service_name),
+                    description = 'OS Init for {} service from {} to {}'.format(service_name, latest_recorded_version_event.host_os, settings.DIFFGRAM_HOST_OS),
                     install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                     previous_version = None,
                     diffgram_version = settings.DIFFGRAM_VERSION_TAG,
@@ -215,7 +227,6 @@ class SystemEvents(Base):
             'created_at': self.created_date,
             'install_fingerprint': self.install_fingerprint,
         }
-        print('AAA', self.install_fingerprint, self.kind)
         try:
             analytics.track(
                 user_id = self.install_fingerprint,
@@ -231,7 +242,8 @@ class SystemEvents(Base):
                 }
             )
         except Exception as e:
-            print(e)
+            logger.error('Error sending event to segment: {}'.format(str(e)))
+            logger.error(traceback.format_exc())
             pass
 
     def send_to_eventhub(self):
