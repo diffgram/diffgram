@@ -55,9 +55,9 @@ describe('Annotate Files Tests', () => {
         cy.window().then(window => {
           cy.wait(1000)
           .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(2000)
+          .wait(7000)
           .get('[data-cy=ghost_instance_ok]').click({force: true})
-          .wait(2000)
+          .wait(7000)
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
 
@@ -71,16 +71,16 @@ describe('Annotate Files Tests', () => {
       it('Shows Ghost Instances', () => {
         cy.wait(2000)
           .get('[data-cy="edit_toggle"]').click({force: true})
-          .wait(1000)
+          .wait(5000)
           .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(4000)
+          .wait(7000)
           .get('[data-cy=ghost_instance_ok]').click({force: true})
 
           .window().then(window => {
             expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
           })
-          .wait(4000)
+          .wait(7000)
           .get('[data-cy="back_1_frame"]').click({force: true})
 
       })
@@ -96,7 +96,7 @@ describe('Annotate Files Tests', () => {
         cy.wait(2000)
         cy.dragcanvas(100, 100, 200, 200)
 
-        cy.wait(1000)
+        cy.wait(2500)
         cy.get('[data-cy=save_button]').click({force: true})
           .wait('@save_instances').should(({request, response}) => {
             expect(request.method).to.equal('POST')
@@ -104,9 +104,9 @@ describe('Annotate Files Tests', () => {
 
           })
           .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(2000)
+          .wait(7000)
           .get('[data-cy="back_1_frame"]').click({force: true})
-          .wait(2000)
+          .wait(7000)
           .window().then(window => {
 
             expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
