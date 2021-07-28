@@ -168,8 +168,8 @@ frame_queue_lock = threading.Lock()
 video_queue_lock = threading.Lock()
 threads = []
 
-video_threads = 1
-frame_threads = int(video_threads * 8)
+video_threads = settings.PROCESS_MEDIA_NUM_VIDEO_THREADS
+frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
 
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
@@ -897,7 +897,6 @@ class Process_Media():
 
     def update_jobs_with_attached_dirs(self):
         # From the file directory, get all related jobs.
-        
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
         if self.input.media_type not in ['image', 'video']:

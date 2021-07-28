@@ -361,6 +361,8 @@ class Event(Base):
             return
         if event.member_id is None:
             return
+        if email is None:
+            return
         # CAREFUL using MEMBER id NOT user id.
         props = {
             'description': event.description,
