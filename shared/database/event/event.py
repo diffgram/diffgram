@@ -119,6 +119,7 @@ class Event(Base):
             'diffgram_version': settings.DIFFGRAM_VERSION_TAG,
             'host_os': settings.DIFFGRAM_HOST_OS,
             'storage_backend': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+            'service_name': settings.DIFFGRAM_SERVICE_NAME,
         }
 
     def serialize_for_visit_history(self):

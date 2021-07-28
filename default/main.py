@@ -125,7 +125,9 @@ data_tools = Data_tools().data_tools
 
 from methods.startup.system_startup_check import DefaultServiceSystemStartupChecker
 
+settings.DIFFGRAM_SERVICE_NAME = 'default_service'
 startup_checker = DefaultServiceSystemStartupChecker()
+
 startup_checker.execute_startup_checks()
 print("Startup in", time.time() - start_time)
 

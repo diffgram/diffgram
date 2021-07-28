@@ -103,7 +103,7 @@ from methods.startup.system_startup_checker import WalrusServiceSystemStartupChe
 from methods.connectors.datasaur_connector import DatasaurSyncManager
 limiter.init_app(app)
 
-
+settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
 startup_checker = WalrusServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
 
