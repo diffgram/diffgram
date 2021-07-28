@@ -897,8 +897,6 @@ class Process_Media():
 
     def update_jobs_with_attached_dirs(self):
         # From the file directory, get all related jobs.
-
-        return
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
         if self.input.media_type not in ['image', 'video']:
