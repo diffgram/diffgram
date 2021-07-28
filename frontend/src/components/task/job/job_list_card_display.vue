@@ -11,12 +11,12 @@
               style="position: relative"
               class="ma-4 d-flex flex-column "
               elevation="1"
-              >
+      >
 
         <div style="position: absolute;
                   top: 0;
                   right: 0"
-                  class="text-right pa-2">
+             class="text-right pa-2">
           <tooltip_button
             tooltip_message="Pin"
             v-if="!job.is_pinned"
@@ -45,8 +45,8 @@
         </div>
 
         <v-card-title
-              @click="job_detail_page_route_by_status(job)"
-              style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
+          @click="job_detail_page_route_by_status(job)"
+          style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
           <span>
           {{job.name | truncate(40)}}
           </span>
@@ -122,11 +122,11 @@
             <v-row class="pl-4">
               <!-- Copy and paste from job list but changed to job-->
               <div  style="max-width: 200px" class="d-flex flex-wrap"
-                   v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
+                    v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
                 <div class="dir d-flex align-center  justify-center ml-1"
                      v-for="dir in job.attached_directories_dict.attached_directories_list"
                      v-bind:key="dir.id"
-                     >
+                >
                   <v-icon color="primary">mdi-folder</v-icon>
                   <p class="ma-0">{{ dir.nickname }}</p>
                 </div>
@@ -134,7 +134,7 @@
               </div>
 
               <div  style="max-width: 200px" class="d-flex flex-wrap"
-                   v-if="job && job.completion_directory">
+                    v-if="job && job.completion_directory">
                 <div class="dir d-flex align-center  justify-center"
                      v-if="job.completion_directory.nickname">
                   <v-icon color="primary">mdi-folder</v-icon>
@@ -155,7 +155,7 @@
                   :view_only_mode="true"
                   :label_file_list_prop="job.label_dict.label_file_list_serialized"
                   :load_selected_id_list="job.label_dict.label_file_list"
-                                    >
+                >
                 </label_select_only>
 
               </v-col>
@@ -166,7 +166,7 @@
                           position: absolute;
                           bottom: 0;
                           right: 0"
-                        >
+        >
 
           <v-container class="pa-0">
             <v-row dense style="border-top: 2px solid #e6e6e6">
@@ -174,7 +174,50 @@
               <div class="pl-2 pt-1">
 
               </div>
+              <tooltip_button datacy='resync_button'
+                              tooltip_message="Resync Missing Files"
+                              icon="mdi-refresh"
+                              color="primary"
+                              :icon_style="true"
+                              @click="confirm_resync_dialog_open = true">
+              </tooltip_button>
+              <v-dialog
+                v-model="confirm_resync_dialog_open"
+                max-width="450"
+              >
+                <v-card>
+                  <v-card-title class="text-h5">
+                    Are you sure you want to sync all files?
+                  </v-card-title>
 
+                  <v-card-text>
+                    This will create tasks for any missing or pending files in the directories attached to this job.
+                    This can take several minutes.
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn
+                      color="red darken-1"
+                      text
+                      @click="confirm_resync_dialog_open = false"
+                    >
+
+                      Cancel
+
+                    </v-btn>
+                    <v-btn
+                      color="green darken-1"
+                      text
+                      :loading="loading_resync_job"
+                      @click="resync_job(job)"
+                    >
+                      Resync All Files From Job
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
               <tooltip_button datacy='view_button'
                               tooltip_message="View"
                               icon="mdi-eye"
@@ -218,6 +261,10 @@
 
       <job_pipelines_dialog ref="job_pipelines_dialog" :job="selected_job"></job_pipelines_dialog>
     </v-container>
+    <v-snackbar v-model="show_resync_snackbar" timeout="5000" color="success" shaped >
+      Job Resyncing, missing tasks are being created.
+    </v-snackbar>
+
   </div>
 
 </template>
@@ -252,7 +299,10 @@
       data() {
         return {
           selected_job: undefined,
-          pin_loading: false
+          pin_loading: false,
+          confirm_resync_dialog_open: false,
+          show_resync_snackbar: false,
+          loading_resync_job: false,
         }
       },
       mounted: function () {
@@ -312,6 +362,23 @@
         }
       },
       methods: {
+        resync_job: async function(job){
+          try {
+            this.loading_resync_job = true;
+            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/job/resync`, {
+              'task_template_id': job.id,
+              'project_string_id': this.$props.project_string_id
+            })
+            if (response.data.resync_result) {
+              this.show_resync_snackbar = true;
+            }
+          } catch (error) {
+            console.error(error)
+          }
+          finally{
+            this.loading_resync_job = false;
+          }
+        },
         job_detail_page_route_by_status(job) {
           this.$router.push("/job/" + job.id)
           if (job.status == "draft") {
