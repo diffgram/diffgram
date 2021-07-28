@@ -123,7 +123,7 @@ limiter.init_app(app) # so we don't have to import app varible into limiter file
 from shared.data_tools_core import Data_tools
 data_tools = Data_tools().data_tools
 
-from methods.startup.system_startup_check import DefaultServiceSystemStartupChecker
+from methods.startup.system_startup_checker import DefaultServiceSystemStartupChecker
 
 settings.DIFFGRAM_SERVICE_NAME = 'default_service'
 startup_checker = DefaultServiceSystemStartupChecker()

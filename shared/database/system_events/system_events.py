@@ -226,6 +226,12 @@ class SystemEvents(Base):
             fingerprint to identify system events per Diffgram installation.
         :return:
         """
+        if not self.install_fingerprint:
+            return
+        if not self.kind:
+            return
+        if not settings._ANALYTICS_WRITE_KEY:
+            return
         props = {
             'description': self.description,
             'host_os': self.host_os,

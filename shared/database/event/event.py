@@ -364,6 +364,8 @@ class Event(Base):
             return
         if email is None:
             return
+        if not settings._ANALYTICS_WRITE_KEY:
+            return
         # CAREFUL using MEMBER id NOT user id.
         props = {
             'description': event.description,
