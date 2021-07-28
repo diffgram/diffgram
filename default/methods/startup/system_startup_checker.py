@@ -14,4 +14,4 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
         if not result:
             raise Exception('System Startup Check Failed.')
 
-
+        return result
