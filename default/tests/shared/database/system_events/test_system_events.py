@@ -7,7 +7,7 @@ import analytics
 import requests
 
 
-class TestModel(testing_setup.DiffgramBaseTestCase):
+class TestSystemEvents(testing_setup.DiffgramBaseTestCase):
     """
 
     """
@@ -15,7 +15,7 @@ class TestModel(testing_setup.DiffgramBaseTestCase):
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestModel, self).setUp()
+        super(TestSystemEvents, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
