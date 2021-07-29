@@ -14,6 +14,7 @@ import random
 import string
 from shared.database.sync_events.sync_event import SyncEvent
 from shared.database.task.job.job import Job
+from shared.database.system_events.system_events import SystemEvents
 from shared.database.task.job.job_launch import JobLaunchQueue, JobLaunch
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.database.connection.connection import Connection
@@ -247,6 +248,25 @@ def create_connection(connection_data, session):
     return connection
 
 
+def new_system_event(system_event_data, session):
+    system_event = SystemEvents(
+        kind = system_event_data.get('kind'),
+        description = system_event_data.get('description'),
+        install_fingerprint = system_event_data.get('install_fingerprint'),
+        previous_version = system_event_data.get('previous_version'),
+        diffgram_version = system_event_data.get('diffgram_version'),
+        host_os = system_event_data.get('host_os'),
+        storage_backend = system_event_data.get('storage_backend'),
+        service_name = system_event_data.get('service_name'),
+        startup_time = system_event_data.get('startup_time'),
+        shut_down_time = system_event_data.get('shut_down_time'),
+        created_date = system_event_data.get('created_date'),
+    )
+    session.add(system_event)
+    session.commit()
+    return system_event
+
+
 def create_job(job_data, session):
     """
         The function will create a Job object for testing purposes. You can supply you own
@@ -334,7 +354,7 @@ def create_job(job_data, session):
 
 
 def create_label(label_data, session):
-    existing_label =Label.get_by_name(session = session, label_name = label_data.get('name'))
+    existing_label = Label.get_by_name(session = session, label_name = label_data.get('name'))
     if existing_label:
         return existing_label
     label = Label()

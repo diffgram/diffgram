@@ -92,6 +92,10 @@ class Event(Base):
     # WIP idea from call for tracking flow, maybe as soon as enqueued / passed off to other tracking or something
     # action_flow_requests_enqueued = Column()
 
+    install_fingerprint = Column(String)
+
+    diffgram_version = Column(String)
+
     # We don't need an "update" since this is meant to be a static record??
     time_created = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -110,8 +114,12 @@ class Event(Base):
             'member_id': self.member_id,
             'report_template_data': self.report_template_data,
             'report_data': self.report_data,
-            'time_created': self.time_created.strftime('%Y-%m-%d')
-
+            'time_created': self.time_created.strftime('%Y-%m-%d'),
+            'install_fingerprint': self.install_fingerprint,
+            'diffgram_version': settings.DIFFGRAM_VERSION_TAG,
+            'host_os': settings.DIFFGRAM_HOST_OS,
+            'storage_backend': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+            'service_name': settings.DIFFGRAM_SERVICE_NAME,
         }
 
     def serialize_for_visit_history(self):
@@ -304,7 +312,9 @@ class Event(Base):
         """
 
         try:
-            result = requests.post(settings.EVENTHUB_URL, json=self.serialize())
+            event_data = self.serialize()
+            event_data['event_type'] = 'user'
+            result = requests.post(settings.EVENTHUB_URL, json=event_data)
             if result.status_code == 200:
                 logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
             else:
@@ -353,6 +363,8 @@ class Event(Base):
         if event.member_id is None:
             return
         if email is None:
+            return
+        if not settings._ANALYTICS_WRITE_KEY:
             return
         # CAREFUL using MEMBER id NOT user id.
         props = {

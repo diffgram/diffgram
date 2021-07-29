@@ -61,3 +61,4 @@ from shared.database.batch.batch import InputBatch
 from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.userscript.userscript import UserScript
+from shared.database.system_events.system_events import SystemEvents
