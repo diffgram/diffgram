@@ -64,6 +64,7 @@
 <!--        <v-icon>mdi-filter</v-icon>-->
 <!--      </v-btn>-->
     </v-toolbar>
+
     <v-layout class="mr-5 ml-5 d-flex flex-column">
       <v_error_multiple :error="query_error"></v_error_multiple>
 
@@ -94,17 +95,18 @@
       </v-menu>
 
     </v-layout>
+    <v-progress-circular class="text-center align-center justify-center ma-auto" indeterminate v-if="loading"></v-progress-circular>
     <v-layout id="infinite-list"
               fluid
               class="files-container d-flex justify-start"
               data-cy="file_review_container"
               :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
 
-      <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
+
       <file_preview
         class="file-preview"
-        v-else-if="this.file_list && this.file_list.length > 0"
-        v-for="(file, index) in this.file_list"
+        v-if="file_list && file_list.length > 0"
+        v-for="(file, index) in file_list"
         :base_model_run="base_model_run"
         :compare_to_model_run_list="compare_to_model_run_list"
         :key="file.id"
@@ -118,10 +120,12 @@
         <h1 class="text-center">There are no files available</h1>
         <v-icon class="text-center" size="86">mdi-text-box-search-outline</v-icon>
       </v-container>
-      <v-progress-linear indeterminate v-if="infinite_scroll_loading"></v-progress-linear>
+
 
     </v-layout>
-
+    <v-snackbar indeterminate v-if="infinite_scroll_loading">.
+      Loading...<v-progress-circular indeterminate></v-progress-circular>
+    </v-snackbar>
   </v-layout>
 </template>
 
@@ -157,7 +161,7 @@
 
         this.selected_dir = this.$props.directory;
       }
-      this.fetch_file_list();
+      this.fetch_file_list(true);
       this.fetch_model_run_list();
       // Detect when scrolled to bottom.
       const listElm = document.querySelector('#infinite-list');
@@ -182,6 +186,7 @@
         query_error: undefined,
         show_ground_truth: true,
         infinite_scroll_loading: false,
+        loading_models: false,
         query_menu_open: false,
         selected_dir: undefined,
         base_model_run: undefined,
@@ -242,6 +247,7 @@
         }
         else{
           this.infinite_scroll_loading = true;
+          alert('infinite_scroll_loading')
         }
         try{
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
@@ -286,7 +292,7 @@
         }
       },
       fetch_model_run_list: async function(){
-        this.loading = true
+        this.loading_models = true
         try{
           const response = await axios.post(
             `/api/v1/project/${this.$props.project_string_id}/model-runs/list`,
@@ -300,7 +306,7 @@
           console.error(error);
         }
         finally {
-          this.loading = false;
+          this.loading_models = false;
         }
 
       },

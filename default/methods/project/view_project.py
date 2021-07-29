@@ -31,7 +31,7 @@ def project_view(project_string_id):
 
 			# TODO move this into Project class?
 			if project.is_public is True:
-				project_serialized = project.serialize_public()
+				project_serialized = project.serialize_public(session)
 			else:
 				project_serialized = project.serialize()
 			###

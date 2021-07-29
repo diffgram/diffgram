@@ -200,7 +200,13 @@ export default Vue.extend({
       }
       //console.debug(list)
       return list
-    }
+    },
+    computed_project_string_id: function () {
+      if (this.$props.project_string_id) {
+        return this.$props.project_string_id;
+      }
+      return this.$store.state.project.current.project_string_id;
+    },
   },
 
   watch: {
@@ -218,7 +224,7 @@ export default Vue.extend({
 
       try {
         const result = await axios.post(
-          `/api/v1/project/${this.$props.project_string_id}`+
+          `/api/v1/project/${this.computed_project_string_id}`+
           `/userscript/list`, {
 
           'date_from': this.date ? this.date.from : undefined,

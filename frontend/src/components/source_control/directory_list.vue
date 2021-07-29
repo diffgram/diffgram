@@ -275,6 +275,9 @@
         if (!this.internal_directory_list) {
           this.internal_directory_list = this.$store.state.project.current.directory_list
         }
+        if(!this.internal_directory_list){
+          return []
+        }
         let list = this.internal_directory_list.slice() // note slice, not reference
 
         if (this.directory_blacklist){
