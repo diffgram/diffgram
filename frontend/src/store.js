@@ -621,7 +621,7 @@ const video = {
   }
 }
 
-const modulesToOmit = ['public_project']
+const modulesToOmit = ['public_project', 'network']
 const my_store = new Vuex.Store({
   modules: {
     attribute: attribute,
@@ -650,12 +650,11 @@ const my_store = new Vuex.Store({
 
     reducer: (state) => {
       let reducer = Object.assign({}, state)
-      for(const key in Object.keys(reducer)){
-        if(modulesToOmit.includes('key')){
-          delete reducer.key;
+      for(const key of Object.keys(reducer)){
+        if(modulesToOmit.includes(key)){
+          delete reducer[key];
         }
       }
-
 
       return (reducer)
     }
