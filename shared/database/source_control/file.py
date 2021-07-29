@@ -367,7 +367,6 @@ class File(Base, Caching):
                     frame_packet_map[frame.frame_number] = [serialized_instance]
                 else:
                     frame_packet_map[frame.frame_number].append(serialized_instance)
-        print('fr', frame_packet_map)
         return frame_packet_map
 
     # Placeholders from old code
