@@ -127,7 +127,7 @@
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
-        if(!this.$store.getters.is_on_public_project){
+        if(!this.$store.getters.is_on_public_project || this.$store.state.user.current.is_super_admin == true){
 
           if (this.$props.task_id_prop) {
             this.add_visit_history_event('task');

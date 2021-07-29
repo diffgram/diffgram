@@ -122,7 +122,7 @@ export const user_module = {
 export const public_project = {
   state: {
     project:{
-
+      project_string_id: undefined
     }
   },
   mutations:{
