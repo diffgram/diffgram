@@ -110,8 +110,7 @@ class TestSystemEvents(testing_setup.DiffgramBaseTestCase):
         )
         with patch.object(analytics, 'track') as mock_1:
             result = system_event.send_to_segment()
-            self.assertTrue(result)
-            mock_1.asser_called_once()
+            self.assertIsNone(result)
 
     def test_send_to_eventhub(self):
         event_data = {
