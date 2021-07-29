@@ -247,7 +247,6 @@
         }
         else{
           this.infinite_scroll_loading = true;
-          alert('infinite_scroll_loading')
         }
         try{
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +

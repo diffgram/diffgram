@@ -27,7 +27,7 @@
       </div>
 
         <file_manager_sheet
-          v-if="!loading_project"
+          v-show="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
@@ -109,14 +109,12 @@
           if(from.name === 'task_annotation' && to.name === 'studio'){
             this.fetch_project_file_list();
             this.task = null;
-            alert('AAA')
             this.$refs.file_manager_sheet.display_file_manager_sheet();
 
           }
           if(from.name === 'studio' && to.name === 'task_annotation'){
             this.current_file = null;
             this.fetch_single_task(this.$props.task_id_prop);
-            alert('BBB')
             this.$refs.file_manager_sheet.hide_file_manager_sheet()
           }
           this.get_model_runs_from_query(to.query);
@@ -219,7 +217,6 @@
 
         },
         request_file_change: function(direction, file){
-          alert('CCC')
           this.$refs.file_manager_sheet.request_change_file(direction, file);
         },
 
@@ -241,7 +238,6 @@
             if (!this.computed_project_string_id) {
               return
             }
-            console.log('aaaaaaaaaaaaaaaaa fetch lavbellls', this.computed_project_string_id)
             var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
             const response = await axios.get(url, {});
             this.labels_list_from_project = response.data.labels_out
@@ -256,15 +252,12 @@
         fetch_project_file_list: async function(){
           this.loading = true;
           if(this.$route.query.file){
-            alert('DD')
             this.current_file = await this.$refs.file_manager_sheet.get_media(true, this.$route.query.file);
           }
           else{
-            alert('EE')
             this.current_file = await this.$refs.file_manager_sheet.get_media();
           }
           this.loading = false;
-          alert('FF')
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
 
@@ -272,7 +265,6 @@
           this.loading = true;
           this.current_file = await this.$refs.file_manager_sheet.get_media();
           this.loading = false;
-          alert('GG')
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
 
@@ -296,7 +288,6 @@
 
               // TODO what parts of this can be merged with
               // builder traner mode below
-              alert('hhh')
               this.$refs.file_manager_sheet.set_file_list([response.data.task.file])
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
@@ -328,7 +319,6 @@
                 history.pushState({}, '', `/task/${response.data.task.id}`);
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
                 // In the task context we reset the file list on media core to keep only the current task's file.
-                alert('hhh')
                 this.$refs.file_manager_sheet.set_file_list([this.task.file]);
 
                 this.task= response.data.task;
@@ -368,7 +358,6 @@
             if (response.data['none_found'] == true) {
               this.none_found = true
             } else {
-              console.log('RESPONSE PROJECT', response.data)
               this.$store.commit('set_project_name', response.data['project']['name'])
               this.$store.commit('set_project', response.data['project'])
 
@@ -397,7 +386,6 @@
         },
 
         set_file_list: function(new_file_list){
-          alert('iii')
           this.$refs.file_manager_sheet.set_file_list(new_file_list)
         },
 

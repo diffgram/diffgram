@@ -422,7 +422,6 @@
           return this.$store.state.project.current.last_patched_directory
         },
         (new_val, old_val) => {
-          //console.log('patch', new_val, old_val)
             this.patch(new_val)
 
           }
@@ -436,7 +435,6 @@
             x => {return x.id === new_directory.id});
 
         if (!directory_in_existing) {
-          //console.log("directory NOT existing", directory_in_existing)
           this.internal_directory_list.splice(0, 0, new_directory)
         }
       },
@@ -462,8 +460,6 @@
             return this.$store.state.project.current_directory   // we assume this the key 'current_directory' will exist here
           },
           (new_val, old_val) => {
-            //console.log('wachhhhhhhhh', new_val, old_val)
-
             // No update required case:
             if (!new_val ||
               !this.current_directory ||
@@ -475,7 +471,6 @@
             this.current_directory = new_val
             if (this.$props.update_from_state) {
               this.change_directory()
-              // console.log("[current_dir_watcher], Updated new/old", new_val, old_val)
             }
 
           }

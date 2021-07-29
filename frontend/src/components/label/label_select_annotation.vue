@@ -257,7 +257,6 @@
 
           var url = null
           this.label_refresh_loading = true
-          console.log('TOLBARR LABELS', this.computed_project_string_id)
           url = '/api/project/' + this.computed_project_string_id
             + '/labels/refresh'
 
