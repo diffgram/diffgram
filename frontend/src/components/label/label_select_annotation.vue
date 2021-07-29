@@ -102,7 +102,7 @@
 
         <template v-slot:no-data>
           No Labels Templates Created.
-          <v-btn color="primary" small @click="$router.push(`/project/${project_string_id}/labels`)">Create Label Templates</v-btn>
+          <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">Create Label Templates</v-btn>
         </template>
       </v-select>
 
@@ -192,6 +192,13 @@
           }
           return this.label_list.slice(0, this.$props.limit)
         },
+        computed_project_string_id: function () {
+          if (this.$props.project_string_id) {
+            return this.$props.project_string_id;
+          }
+          return this.$store.state.project.current.project_string_id;
+        },
+
 
       },
       data() {
@@ -250,8 +257,7 @@
 
           var url = null
           this.label_refresh_loading = true
-
-          url = '/api/project/' + this.$store.state.project.current.project_string_id
+          url = '/api/project/' + this.computed_project_string_id
             + '/labels/refresh'
 
           axios.get(url, {})

@@ -347,10 +347,10 @@ class Instance(Base):
     label map / other stuff there.
     """
 
-    def serialize_with_member_data(self):
+    def serialize_with_member_data(self, session):
         result = self.serialize()
         if self.member_created and self.member_created.user:
-            result['member_created'] = self.member_created.user.serialize_public()
+            result['member_created'] = self.member_created.user.serialize_public(session)
         return result
 
     def serialize(self):
