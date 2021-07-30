@@ -431,7 +431,8 @@ class File(Base, Caching):
         instance_list = session.query(Instance).filter(
             Instance.file_id == self.id,
             Instance.soft_delete == False
-        )
+        ).all()
+
         if self.type in ['image', 'text']:
             return {
                 'id': self.id,
