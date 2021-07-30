@@ -255,7 +255,7 @@
         },
         'upload_mode': {
           default: null
-        }
+        },
 
       },
 
@@ -527,8 +527,18 @@
         },
         create_input_for_update: async function(file_data, file_key){
           const file = file_data[file_key]
+          let file_id = undefined;
+          let file_name = undefined;
+          if(typeof file.file_id === "number"){
+            file_id = file.file_id
+          }
+          else if(typeof file.file_id === "string"){
+            file_name = file.file_id;
+          }
           const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
-            file_id: file.file_id,
+            file_id: file_id,
+            file_name: file_name,
+            directory_id: this.current_directory.directory_id,
             instance_list: file.instance_list,
             frame_packet_map: file.frame_packet_map,
             mode: 'update',

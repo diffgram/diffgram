@@ -78,7 +78,9 @@ def enqueue_packet(project_string_id,
     # print(diffgram_input.frame_packet_map)
 
     session.add(diffgram_input)
+    print('FILE ID FLUSH', file_id)
     session.flush()
+
     if batch_id and extract_labels_from_batch:
         upload_tools = Upload(session = session, project = project, request = None)
         upload_tools.extract_instance_list_from_batch(input = diffgram_input,
@@ -136,38 +138,55 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
     valid_id = False
     valid_media_url = False
     valid_file_name = False
-    media_url = input['media'].get('url', None)
-    media_type = input['media'].get('type', None)
+    if input.get('media'):
+        media_url = input['media'].get('url', None)
+        media_type = input['media'].get('type', None)
+    else:
+        media_url = None
+        media_type = None
     project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
     file_id = None
-    if input['file_id'] is None:
+    if input.get('file_id') is None:
         # Validate Media URL Case
         if media_url is None:
+            log['error'] = {}
             log["error"]["media_url"] = "url in media dict not supplied"
         else:
             if media_type is None:
                 valid_media_url = False
+                log['error'] = {}
                 log["error"]["media_type"] = "type in media dict not supplied ['image', 'video']"
+            else:
+                valid_media_url = True
 
-            if input['video_split_duration']:
-                valid_media_url = False
+            if input.get('video_split_duration'):
                 if input['video_split_duration'] > 180 or input['video_split_duration'] < 2:
+                    valid_media_url = False
                     log["error"]["video_split_duration"] = "Duration must be between 2 and 180 seconds."
 
-        # Validate File name + directory
-        file_name = input['original_filename']
-        directory_id = input['directory_id']
-        if file_name is not None and directory_id is not None:
-            file = File.get_by_name_and_directory(
-                session = session,
-                file_name = file_name,
-                directory_id = directory_id,
-            )
-            if file is not None and file.project_id == project.id:
-                valid_file_name = True
-                file_id = file.id
+        if not valid_media_url:
+            # Validate File name + directory
+            file_name = input.get('file_name')
+            directory_id = input.get('directory_id')
+            if file_name is not None and directory_id is not None:
+                file = File.get_by_name_and_directory(
+                    session = session,
+                    file_name = file_name,
+                    directory_id = directory_id,
+                )
+                if file is not None and file.project_id == project.id:
+                    valid_file_name = True
+                    file_id = file.id
+                else:
+                    log['error'] = {}
+                    log['error']['file_name'] = 'Please check that filename exists in given project and directory.'
             else:
-                log['error']['file_name'] = 'Please check that filename exists in given project and directory.'
+                if directory_id is None:
+                    log['error'] = {}
+                    log['error']['directory_id'] = 'Provide directory_id along with file_name'
+                if file_name is None:
+                    log['error'] = {}
+                    log['error']['file_name'] = 'Provide file_name along with directory_id'
     else:
         valid_id = True
         file_id = input['file_id']
@@ -203,6 +222,7 @@ def input_packet(project_string_id):
 
     spec_list = [{'job_id': None},
                  {'file_id': None},
+                 {'file_name': None},
                  {'mode': None},
                  {'directory_id': None},
                  {'batch_id': None},
@@ -264,8 +284,11 @@ def input_packet(project_string_id):
             input = input,
             project_string_id = project_string_id,
             log = log)
+        print('packet', input)
+        print('RESULTTTTT VLIDATE', file_id)
         if not valid_file_data:
             return jsonify(log = log), 400
+        log = regular_log.default()
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,

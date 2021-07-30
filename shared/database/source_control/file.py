@@ -1003,7 +1003,7 @@ class File(Base, Caching):
     @staticmethod
     def get_by_name_and_directory(session, directory_id, file_name):
         from shared.database.source_control.working_dir import WorkingDirFileLink
-
+        print('FILEE', file_name, directory_id)
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
 

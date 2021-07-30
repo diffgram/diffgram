@@ -1,6 +1,6 @@
 from walrus.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from walrus.methods.input import packet
+from methods.input import packet
 from unittest.mock import patch
 from shared.regular import regular_log
 
@@ -46,7 +46,9 @@ class TestPacket(testing_setup.DiffgramBaseTestCase):
 
         # Case of Media URL
         input_data = {
-            'media_url': 'test_url'
+            'media': {
+                'url': 'test_url'
+            }
         }
         result, log, file_id = packet.validate_file_data_for_input_packet(
             session = self.session,
@@ -57,27 +59,58 @@ class TestPacket(testing_setup.DiffgramBaseTestCase):
         self.assertFalse(result)
         self.assertEqual(len(log['error'].keys()), 1)
         self.assertEqual(file_id, None)
-        input_data['media_type'] = 'test'
+
+        input_data['media']['type'] = 'image'
+        log = regular_log.default()
         result, log, file_id = packet.validate_file_data_for_input_packet(
             session = self.session,
             project_string_id = self.project.project_string_id,
             input = input_data,
             log = log
         )
+
         self.assertTrue(result)
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertEqual(file_id, None)
 
         # Case of Filename + Directory
+
+        file2 = data_mocking.create_file({'project_id': self.project.id, 'original_filename': 'test1.jpg'}, self.session)
+        directory = data_mocking.create_directory({
+            'project': self.project,
+            'user': self.project_data['users'][0],
+            'files': [file2]
+        }, self.session)
         input_data = {
-            'media_url': 'test_url'
+            'file_name': 'test1.jpg',
+            'directory_id': directory.id
+
         }
+        log = regular_log.default()
         result, log, file_id = packet.validate_file_data_for_input_packet(
             session = self.session,
             project_string_id = self.project.project_string_id,
             input = input_data,
             log = log
         )
+
+        self.assertTrue(result)
+        self.assertEqual(len(log['error'].keys()), 0)
+        self.assertEqual(file_id, file2.id)
+
+        input_data = {
+            'file_name': 'test1111.jpg',
+            'directory_id': directory.id
+
+        }
+        log = regular_log.default()
+        result, log, file_id = packet.validate_file_data_for_input_packet(
+            session = self.session,
+            project_string_id = self.project.project_string_id,
+            input = input_data,
+            log = log
+        )
+        print('log', log)
         self.assertFalse(result)
         self.assertEqual(len(log['error'].keys()), 1)
         self.assertEqual(file_id, None)

@@ -165,6 +165,7 @@
             @file_removed="file_removed"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
+            :current_directory="current_directory"
             :upload_mode="upload_mode"
             :batch="batch"
             :error_file_uploads="error_file_uploads"
