@@ -268,6 +268,7 @@
 
         <userscript
             v-show="!userscript_minimized"
+            :project_string_id_prop="project_string_id"
             :create_instance="event_create_instance"
             :current_userscript_prop="get_userscript()"
             :userscript_select_disabled="userscript_select_disabled()"

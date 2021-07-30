@@ -72,12 +72,12 @@ def instance_history_core(
 
     if instance_child.root_id is None:  # We can still return itself
         log['info']['root_id'] = 'Instance has no root ID'
-        return [instance_child.serialize_with_member_data()], log
+        return [instance_child.serialize_with_member_data(session)], log
 
     history_list = Instance.get_child_instance_history(
         session = session, 
         root_id = instance_child.root_id)
     
-    history_serialized = [instance.serialize_with_member_data() for instance in history_list]
+    history_serialized = [instance.serialize_with_member_data(session) for instance in history_list]
 
     return history_serialized, log

@@ -230,12 +230,12 @@ class User(Base):
             'username': self.username
         }
 
-    def serialize_public(self):
+    def serialize_public(self, session):
         # Careful, **PUBLIC** info
         project_list = []
         for project in self.projects:
             if project.is_public is True:
-                project_list.append(project.serialize_public())
+                project_list.append(project.serialize_public(session))
 
         user = {
             'first_name': self.first_name,
