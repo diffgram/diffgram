@@ -399,7 +399,7 @@ class Project(Base, Caching):
 
     # TODO why is this called serialize_public?
     # Was supposed to be relation to "public" as privacy setting but isn't clear
-    def serialize_public(self):
+    def serialize_public(self, session):
 
         user_primary = None
         if self.user_primary:
@@ -414,6 +414,10 @@ class Project(Base, Caching):
             'readme': self.readme,
             'user_primary': user_primary,
             'is_public': self.is_public,
+            'directory_list': self.get_with_cache(
+                cache_key = 'directory_list',
+                cache_miss_function = self.regenerate_directory_list_cache,
+                session = session),
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
 

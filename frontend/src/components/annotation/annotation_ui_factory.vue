@@ -27,7 +27,7 @@
       </div>
 
         <file_manager_sheet
-          v-if="!loading_project"
+          v-show="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
@@ -122,7 +122,7 @@
         }
       },
       created() {
-        this.get_labels_from_project();
+
 
         if (this.$route.query.view_only) {
           this.view_only = true;
@@ -144,6 +144,7 @@
       },
       async mounted() {
         await this.get_project();
+        await this.get_labels_from_project();
         this.get_model_runs_from_query(this.$route.query);
         if (this.$route.query.view_only) {
           this.view_only = true;
@@ -228,29 +229,23 @@
           this.get_model_runs_from_query(model_runs_data);
         },
 
-        get_labels_from_project: function () {
-
-          if (this.labels_list_from_project &&
-            this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
-            return
+        get_labels_from_project: async function () {
+          try{
+            if (this.labels_list_from_project &&
+              this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+              return
+            }
+            if (!this.computed_project_string_id) {
+              return
+            }
+            var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
+            const response = await axios.get(url, {});
+            this.labels_list_from_project = response.data.labels_out
+            this.label_file_colour_map_from_project = response.data.label_file_colour_map
           }
-
-          if (!this.computed_project_string_id) {
-            return
+          catch(e){
+            console.error(e)
           }
-
-          var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
-          this.label_refresh_loading = true
-
-          axios.get(url, {})
-            .then(response => {
-
-              this.labels_list_from_project = response.data.labels_out
-              this.label_file_colour_map_from_project = response.data.label_file_colour_map
-            })
-            .catch(error => {
-            console.error(error);
-          });
 
         },
 
@@ -263,7 +258,6 @@
             this.current_file = await this.$refs.file_manager_sheet.get_media();
           }
           this.loading = false;
-
           this.$refs.file_manager_sheet.display_file_manager_sheet()
         },
 
@@ -294,7 +288,6 @@
 
               // TODO what parts of this can be merged with
               // builder traner mode below
-
               this.$refs.file_manager_sheet.set_file_list([response.data.task.file])
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
