@@ -28,6 +28,7 @@
 
         <file_manager_sheet
           v-show="!loading_project"
+          :show_sheet="!loading_project"
           ref="file_manager_sheet"
           :project_string_id="computed_project_string_id"
           :task="task"
@@ -90,7 +91,7 @@
           show_snackbar: false,
           snackbar_message: '',
           loading: false,
-          loading_project: false,
+          loading_project: true,
           task: null,
           current_file: null,
           request_save: false,
@@ -151,13 +152,13 @@
         }
 
         if (this.$props.task_id_prop) {
-          this.fetch_single_task(this.$props.task_id_prop);
+          await this.fetch_single_task(this.$props.task_id_prop);
         }
         else if (this.$props.file_id_prop) {
-          this.fetch_single_file();
+          await this.fetch_single_file();
         }
         else{
-          this.fetch_project_file_list();
+          await this.fetch_project_file_list();
         }
       },
       computed: {
