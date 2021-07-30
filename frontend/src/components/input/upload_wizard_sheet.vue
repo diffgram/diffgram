@@ -180,6 +180,7 @@
             :pre_label_key_list="pre_label_key_list"
             :upload_mode="upload_mode"
             :included_instance_types="included_instance_types"
+            :current_directory="current_directory"
             :supported_video_files="supported_video_files"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             :file_list_to_upload="file_list_to_upload"

@@ -144,6 +144,7 @@ def input_packet(project_string_id):
     spec_list = [{'job_id': None},
                  {'file_id': None},
                  {'mode': None},
+                 {'directory_id': None},
                  {'batch_id': None},
                  {"media": {
                      'default': {},
@@ -173,20 +174,36 @@ def input_packet(project_string_id):
     media_url = input['media'].get('url', None)
     media_type = input['media'].get('type', None)
 
+    # Validation here goes like this:
+    # We expect either a file_id, a [media_url and media_type] or a [file_name and directory_id]
+    valid_id = False
+    valid_media_url = False
+    valid_file_name = False
     if input['file_id'] is None:
         if media_url is None:
-            log["error"]["media"] = "url in media dict not supplied"
-            return jsonify(log=log), 400
+            log["error"]["media_url"] = "url in media dict not supplied"
+        else:
+            valid_media_url = True
+            if media_type is None:
+                log["error"]["media_type"] = "type in media dict not supplied ['image', 'video']"
 
-        if media_type is None:
-            log["error"]["media"] = "type in media dict not supplied ['image', 'video']"
-            return jsonify(log=log), 400
+            if input['video_split_duration']:
+                if input['video_split_duration'] > 180 or input['video_split_duration'] < 2:
+                    log["error"]["video_split_duration"] = "Duration must be between 2 and 180 seconds."
+                    return jsonify(log=log), 400
 
-        if input['video_split_duration']:
-            if input['video_split_duration'] > 180 or input['video_split_duration'] < 2:
-                log["error"]["video_split_duration"] = "Duration must be between 2 and 180 seconds."
-                return jsonify(log=log), 400
+        file_name = input['original_filename']
+        directory_id = input['directory_id']
+        if file_name is not None and directory_id is not None:
+            file = File.get_by_name_and_directory()
+    else:
+        valid_id = True
 
+    if not valid_id and not valid_media_url and not valid_file_name:
+        return jsonify(log = log), 400
+
+    # If we have at least one valid file type clear other errors.
+    log['error'] = {}
     # Optional
     job_id = untrusted_input.get('job_id', None)
     mode = untrusted_input.get('mode', None)
