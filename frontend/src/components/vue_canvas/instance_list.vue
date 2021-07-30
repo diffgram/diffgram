@@ -347,8 +347,7 @@
           let strokeColor = undefined;
           let fillColor = undefined;
           let lineWidth = undefined;
-
-
+          
           if (instance.fan_made == true) {
             ctx.setLineDash([3])
           } else {
@@ -381,7 +380,13 @@
             let b = 255
 
             // TODO can we move this somewhere else, ie as part of each component?
-            if (this.colour.rgba) {
+            if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
+              // Use the internal instance color instead of colour map if available.
+              r = instance.label_file.colour.rgba.r
+              g = instance.label_file.colour.rgba.g
+              b = instance.label_file.colour.rgba.b
+            }
+            else if (this.colour.rgba) {
               r = this.colour.rgba.r
               g = this.colour.rgba.g
               b = this.colour.rgba.b
@@ -409,7 +414,13 @@
               strokeColor = "#FFD700"
             }
             if (this.mode == 'default') {
-              strokeColor = this.colour.hex
+              if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
+                strokeColor = instance.label_file.colour.hex;
+              }
+              else{
+                strokeColor = this.colour.hex
+              }
+
             }
             if(instance.override_color && !instance.selected){
               fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
@@ -423,7 +434,6 @@
             if (instance.selected == true) {
               strokeColor = "blue"
             }
-
             if(this.instance_select_for_issue && !this.view_issue_mode){
               if(instance.selected){
                 strokeColor = "green"
@@ -441,6 +451,7 @@
               }
             }
           }
+
           ctx.strokeStyle = strokeColor;
           ctx.fillStyle = fillColor;
           ctx.lineWidth = lineWidth;
