@@ -39,7 +39,7 @@ describe('Annotate Files Tests', () => {
           .wait(1000)
 
           .wait(7000)
-          .wait('@save_instances').should(({request, response}) => {
+          .wait('@save_instances', {timeout: 60000}).should(({request, response}) => {
             expect(request.method).to.equal('POST')
             expect(response.statusCode, 'response status').to.eq(200)
 
