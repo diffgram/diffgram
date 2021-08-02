@@ -132,5 +132,5 @@ class TestSystemEvents(testing_setup.DiffgramBaseTestCase):
         )
         with patch.object(requests, 'post') as mock_1:
             result = system_event.send_to_eventhub()
-            self.assertTrue(result)
+            self.assertIsNone(result)
             mock_1.asser_called_once()
