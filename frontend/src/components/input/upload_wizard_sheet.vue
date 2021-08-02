@@ -542,14 +542,12 @@
           }
         },
         update_progress_values: function (file, total_bytes, uploaded_bytes) {
-          console.log('UPLOAD PROGRESS', file, total_bytes, uploaded_bytes, file.size <= uploaded_bytes)
           this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
           this.per_file_progress = {
             ...this.per_file_progress,
               [file.upload.uuid]: uploaded_bytes
           }
           if (file.size <= uploaded_bytes) {
-            console.log('updating values')
             this.currently_uploading_bytes = 0; // reset current upload bytes counter
           }
         },
