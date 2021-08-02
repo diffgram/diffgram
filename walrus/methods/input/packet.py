@@ -284,8 +284,6 @@ def input_packet(project_string_id):
             input = input,
             project_string_id = project_string_id,
             log = log)
-        print('packet', input)
-        print('RESULTTTTT VLIDATE', file_id)
         if not valid_file_data:
             return jsonify(log = log), 400
         log = regular_log.default()

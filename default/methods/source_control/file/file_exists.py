@@ -74,13 +74,11 @@ def file_list_exists_core(session,
                                                               project.id,
                                                               file_id_list,
                                                               directory_id=directory_id)
-        print('FILE LIST DB', file_list_db)
         db_id_dict = {}
         for f in file_list_db:
             db_id_dict[f.id] = True
             db_id_dict[f.original_filename] = True
         result['exists'] = True
-        print('FILE db_id_dict db_id_dict', db_id_dict)
     except Exception as e:
         log['error']['file_list'] = str(e)
         return False, log
