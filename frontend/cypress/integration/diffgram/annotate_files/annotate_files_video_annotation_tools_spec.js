@@ -38,9 +38,8 @@ describe('Annotate Files Tests', () => {
           .mouseupcanvas()
           .wait(1000)
 
-          .wait(1000)
-          .get('[data-cy=save_button]').click({force: true})
-          .wait('@save_instances').should(({request, response}) => {
+          .wait(7000)
+          .wait('@save_instances', {timeout: 60000}).should(({request, response}) => {
             expect(request.method).to.equal('POST')
             expect(response.statusCode, 'response status').to.eq(200)
 

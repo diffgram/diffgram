@@ -1623,10 +1623,8 @@ class Annotation_Update():
         Use cross reference list for constant time operation here
 
         """
-        print('existing', self.instance_list_existing)
         if self.instance_list_existing is None:
             return
-        print('hash_list', self.hash_list)
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]

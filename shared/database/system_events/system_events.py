@@ -230,7 +230,7 @@ class SystemEvents(Base):
             return
         if not self.kind:
             return
-        if not settings._ANALYTICS_WRITE_KEY:
+        if not settings._ANALYTICS_WRITE_KEY or settings.DIFFGRAM_SYSTEM_MODE == 'testing':
             return
         props = {
             'description': self.description,
@@ -275,7 +275,7 @@ class SystemEvents(Base):
                 logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
                 return True
             else:
-                # print(result, result.text)
+                print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
         except Exception as e:

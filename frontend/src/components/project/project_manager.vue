@@ -278,7 +278,12 @@ export default Vue.extend( {
 
 
     change_project(item) {
-
+      if(item.is_public){
+        this.$store.commit('set_current_public_project', item);
+      }
+      else{
+        this.$store.commit('set_current_public_project', {});
+      }
       this.$store.commit('set_project', item)
 
       this.$router.push({ path: '/home/dashboard'})

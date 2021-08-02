@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div >
     <v-bottom-sheet :retain-focus="false"
                     hide-overlay
                     class="media-core-container"
@@ -77,7 +77,9 @@
 
             <v-tabs-items v-model="tab" class="d-flex flex-column">
               <v-tab-item>
-                <v_media_core :project_string_id="project_string_id"
+                <v_media_core
+                              v-if="show_sheet"
+                              :project_string_id="project_string_id"
                               file_view_mode="annotation"
                               :task="task"
                               :full_screen="full_screen"
@@ -93,7 +95,9 @@
                 </v_media_core>
               </v-tab-item>
               <v-tab-item>
-                <dataset_explorer :project_string_id="project_string_id"
+                <dataset_explorer
+                                  v-if="show_sheet"
+                                  :project_string_id="project_string_id"
                                   :full_screen="full_screen"
                                   :directory="$store.state.project.current_directory"
                                   @view_detail="change_file_and_close"
@@ -139,6 +143,7 @@
       'view_only',
       'file_id_prop',
       'job_id',
+      'show_sheet',
 
     ],
     components:{
