@@ -65,7 +65,7 @@ class TestFileExists(testing_setup.DiffgramBaseTestCase):
         )
         data = response.json
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(data.get('exists'))
+        self.assertTrue(data.get('result').get('exists'))
 
         request_data = {
             'file_id_list': [file1.id, file2.id, file3.id, file_diff.id]
@@ -85,4 +85,4 @@ class TestFileExists(testing_setup.DiffgramBaseTestCase):
         )
         data = response.json
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(data.get('exists'))
+        self.assertFalse(data.get('result').get('exists'))

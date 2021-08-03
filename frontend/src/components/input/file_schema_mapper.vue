@@ -2,10 +2,12 @@
   <v-container fluid :style="`position: relative; height: ${wizard_height}`">
 
     <div class="d-flex align-center">
-      <v_error_multiple :error="errors_file_schema">
+      <v_error_multiple :error="errors_file_schema" >
       </v_error_multiple>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
-      <v-btn small v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_file_schema.label_names" color="secondary"
+      <v-btn small
+             v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_file_schema.label_names"
+             color="secondary"
              @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Labels
       </v-btn>
       <v-btn :loading="loading" class="ml-6" v-if="errors_file_schema && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_file_schema.label_names" color="primary"
@@ -143,10 +145,10 @@
           <div key="4" v-if="current_question === 3 && upload_mode === 'update'"
                class="d-flex justify-start align-center">
             <div class="d-flex flex-column justify-start">
-              <h1 class="pa-2 black--text">{{current_question}}) Diffgram File ID:</h1>
+              <h1 class="pa-2 black--text">{{current_question}}) Diffgram File ID or File Name:</h1>
               <h3 style="font-size: 12px" class="primary--text text--lighten-3"><strong>
                 ** The value of this key must
-                match with an existing Diffgram File ID.
+                match with an existing Diffgram File ID, or an existing filename in the dataset.
               </strong>
               </h3>
 
@@ -380,6 +382,9 @@
         },
         'previously_completed_questions': {
           default: 0
+        },
+        'current_directory': {
+          default: undefined
         }
       },
       data() {
@@ -765,31 +770,29 @@
             if (this.upload_mode !== 'update') {
               return true
             }
-            const file_id_list = []
+
+            const file_id_or_name_list = []
             const file_id_obj = {};
             this.load_file_ids = true;
             for(const inst of this.$props.pre_labeled_data){
               const file_id = _.get(inst, this.diffgram_schema_mapping.file_id);
               if(!file_id_obj[file_id]){
-                file_id_list.push(file_id)
+                file_id_or_name_list.push(file_id)
                 file_id_obj[file_id] = true;
               }
             }
-            for (const id of file_id_list) {
-              if (isNaN(id)) {
-                this.errors_file_schema['file_ids'] = 'File IDs must be numbers.'
-                this.load_file_ids = false;
-                return false;
-              }
-            }
+
             const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/exists`, {
-              file_id_list: file_id_list
+              file_id_list: file_id_or_name_list,
+              directory_id: this.$props.current_directory ? this.$props.current_directory.directory_id : undefined
             });
 
             if (response.status === 200) {
-              if (!response.data.exists) {
+              if (!response.data.result.exists) {
                 this.load_file_ids = false;
+                this.errors_file_schema = {}
                 this.errors_file_schema['file_ids'] = 'Invalid file IDs on this JSON file. Please check that all files IDs exists on this project.'
+                this.errors_file_schema['missing'] = response.data.result.missing_files
                 return false;
               } else {
                 this.load_file_ids = false;

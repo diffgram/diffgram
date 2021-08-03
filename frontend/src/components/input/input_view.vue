@@ -741,7 +741,6 @@
           this.error = {}
           this.error_video = null
           try {
-            console.log('beforee')
             const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
               + '/input/view/list', {
               limit: this.metadata_limit,

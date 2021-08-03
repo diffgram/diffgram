@@ -190,7 +190,7 @@ def create_file(file_data, session):
     file = File(
         project_id = file_data.get('project_id'),
         job_id = file_data.get('job_id'),
-        original_filename = get_random_string(6),
+        original_filename = file_data.get('original_filename', get_random_string(6)),
         type = file_data.get('type', 'image'),
         state = file_data.get('state', 'added'),
         frame_number = file_data.get('frame_number'),
