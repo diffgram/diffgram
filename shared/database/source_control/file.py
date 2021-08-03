@@ -189,10 +189,52 @@ class File(Base, Caching):
                                         foreign_keys=[default_external_map_id])
 
     __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name='unique_frame_number_video'),)
+
     @staticmethod
-    def get_files_in_project_id_list(session, project_id, id_list):
-        file_list_db = session.query(File).filter(File.id.in_(id_list), File.project_id == project_id).all()
-        return file_list_db
+    def get_files_in_project_id_name_list(session, project_id, id_or_name_list, directory_id = None):
+        """
+            Gets the files by the given list of ID's or original_filenames.
+            Assumption on id_or_name_list is that any number will be
+            considered and ID and any string a filename.
+        :param session:
+        :param project_id:
+        :param id_or_name_list:
+        :param directory_id:
+        :return:
+        """
+        # Split into names and ID's
+        id_list = []
+        name_list = []
+        for val in id_or_name_list:
+            if type(val) == str:
+                name_list.append(val)
+            elif type(val) == int:
+                id_list.append(val)
+        print('name_list', name_list)
+        print('id_list', id_list)
+        if directory_id is not None:
+            print('dir case')
+            file_list_id_db = session.query(File)\
+                .join(working_dir_database_models.WorkingDirFileLink,
+                      working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
+                .filter(File.id.in_(id_list),
+                        File.project_id == project_id,
+                        working_dir_database_models.WorkingDirFileLink.working_dir_id == directory_id).all()
+            file_list_name_db = session.query(File)\
+                .join(working_dir_database_models.WorkingDirFileLink,
+                      working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
+                .filter(File.original_filename.in_(name_list),
+                        File.project_id == project_id,
+                        working_dir_database_models.WorkingDirFileLink.working_dir_id == directory_id).all()
+            return set(file_list_name_db + file_list_id_db)
+        else:
+            file_list_id_db = session.query(File)\
+                .filter(File.id.in_(id_list),
+                        File.project_id == project_id).all()
+            file_list_name_db = session.query(File)\
+                .filter(File.original_filename.in_(name_list),
+                        File.project_id == project_id).all()
+        return set(file_list_id_db + file_list_name_db)
 
 
     @staticmethod
@@ -956,6 +998,18 @@ class File(Base, Caching):
                 directory_id=directory_id,
                 file_id=file_id)
 
+        return file
+
+    @staticmethod
+    def get_by_name_and_directory(session, directory_id, file_name):
+        from shared.database.source_control.working_dir import WorkingDirFileLink
+        print('FILEE', file_name, directory_id)
+        working_dir_sub_query = session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
+
+        file = session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id,
+            File.original_filename == file_name).first()
         return file
 
     @staticmethod

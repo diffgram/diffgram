@@ -165,6 +165,7 @@
             @file_removed="file_removed"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
+            :current_directory="current_directory"
             :upload_mode="upload_mode"
             :batch="batch"
             :error_file_uploads="error_file_uploads"
@@ -180,6 +181,7 @@
             :pre_label_key_list="pre_label_key_list"
             :upload_mode="upload_mode"
             :included_instance_types="included_instance_types"
+            :current_directory="current_directory"
             :supported_video_files="supported_video_files"
             :diffgram_schema_mapping="diffgram_schema_mapping"
             :file_list_to_upload="file_list_to_upload"
@@ -540,14 +542,12 @@
           }
         },
         update_progress_values: function (file, total_bytes, uploaded_bytes) {
-          console.log('UPLOAD PROGRESS', file, total_bytes, uploaded_bytes, file.size <= uploaded_bytes)
           this.currently_uploading_bytes = uploaded_bytes; // write totalBytes to dropzoneCurrentUpload
           this.per_file_progress = {
             ...this.per_file_progress,
               [file.upload.uuid]: uploaded_bytes
           }
           if (file.size <= uploaded_bytes) {
-            console.log('updating values')
             this.currently_uploading_bytes = 0; // reset current upload bytes counter
           }
         },

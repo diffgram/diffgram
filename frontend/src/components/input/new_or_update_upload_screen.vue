@@ -255,6 +255,9 @@
         },
         'upload_mode': {
           default: null
+        },
+        'current_directory':{
+          default: null
         }
 
       },
@@ -265,7 +268,6 @@
           file_list_to_upload: [],
           error: {},
           sync_job_list: [],
-          current_directory: undefined,
           with_prelabeled: undefined,
           connection_upload_error: undefined,
           total_files_update: 0,
@@ -527,8 +529,18 @@
         },
         create_input_for_update: async function(file_data, file_key){
           const file = file_data[file_key]
+          let file_id = undefined;
+          let file_name = undefined;
+          if(typeof file.file_id === "number"){
+            file_id = file.file_id
+          }
+          else if(typeof file.file_id === "string"){
+            file_name = file.file_id;
+          }
           const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
-            file_id: file.file_id,
+            file_id: file_id,
+            file_name: file_name,
+            directory_id: this.$props.current_directory.directory_id,
             instance_list: file.instance_list,
             frame_packet_map: file.frame_packet_map,
             mode: 'update',
