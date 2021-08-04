@@ -53,6 +53,14 @@ One single Application with all the features you require.
 Enterprise Questions? Please [contact us](https://diffgram.com/contact).
 
 
+# Support & Community
+1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
+2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
+3. Forum (Coming Soon)
+
+Security issues: Do not create a public issue. Email security@diffgram.com with the details.
+[Docs](https://diffgram.readme.io/docs)
+
 # Quickstart
 
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
@@ -199,14 +207,6 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 * [Videos](https://www.youtube.com/channel/UC4ZVmvMA6oa3Lwaq6Si17pg/videos)
 * [Cookbook (Advanced)](https://diffgram.readme.io/docs/cookbook)
 
-
-# Support & Community
-1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
-2. Chat On Slack (Coming soon)
-3. Forum (Coming Soon)
-
-Security issues: Do not create a public issue. Email security@diffgram.com with the details.
-[Docs](https://diffgram.readme.io/docs)
 
 # Vision
 1. Application: Support all popular media types for raw data; all popular schema, label, and attribute needs; and all annotation assist speed up approaches
