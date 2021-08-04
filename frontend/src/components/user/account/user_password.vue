@@ -17,7 +17,7 @@
           </v-alert>
 
           <v-text-field :append-icon="password_hide ? 'visibility' : 'visibility_off'"
-                        :append-icon-cb="() => (password_hide = !password_hide)"
+                        @click:append="() => (password_hide = !password_hide)"
                         :type="password_hide ? 'password' : 'text'"
                         label="Password"
                         data-cy="password1"
@@ -27,7 +27,7 @@
           </v-text-field>
 
           <v-text-field :append-icon="password_hide_check ? 'visibility' : 'visibility_off'"
-                        :append-icon-cb="() => (password_hide_check = !password_hide_check)"
+                        @click:append="() => (password_hide_check = !password_hide_check)"
                         :type="password_hide_check ? 'password' : 'text'"
                         label="Retype Password"
                         validate-on-blur
