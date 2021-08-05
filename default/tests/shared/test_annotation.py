@@ -64,7 +64,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
 
-        self.assertIsNone(result)
+        self.assertTrue(result)
 
         # Now test case with validations
         ann_update = Annotation_Update(

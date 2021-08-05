@@ -371,7 +371,7 @@ class Annotation_Update():
 
     def __check_all_instances_available_in_new_instance_list(self):
         if not self.do_init_existing_instances:
-            return
+            return True
         new_id_list = []
         for inst in self.instance_list_new:
             if inst.get('id'):
