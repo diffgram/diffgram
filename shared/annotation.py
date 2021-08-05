@@ -370,13 +370,15 @@ class Annotation_Update():
         return self.new_added_instances
 
     def __check_all_instances_available_in_new_instance_list(self):
-        if not self.init_existing_instances:
+        if not self.do_init_existing_instances:
             return
         new_id_list = []
         for inst in self.instance_list_new:
             if inst.get('id'):
                 new_id_list.append(inst.get('id'))
 
+        print('NEW ID LIST', new_id_list)
+        print('instance_list_existing', self.instance_list_existing)
         ids_not_included = []
         for instance in self.instance_list_existing:
             if instance.id not in new_id_list:
@@ -388,6 +390,7 @@ class Annotation_Update():
                 ids_not_included
             )
             self.log['error']['information'] = 'Please try reloading page or check your network connection.'
+            self.log['error']['missing_ids'] =  ids_not_included
             return False
         return True
 
