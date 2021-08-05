@@ -96,3 +96,27 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertTrue('missing_ids' in ann_update.log['error'])
         self.assertTrue(instance2.id in ann_update.log['error']['missing_ids'])
         self.assertTrue(instance3.id in ann_update.log['error']['missing_ids'])
+
+
+        # Now test case with validations and a wrong payload and some existing deleted instances
+        instance4 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'soft_delete': True},
+            self.session
+        )
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = new_list_payload_wrong,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
+
+        self.assertFalse(result)
+        self.assertTrue(len(ann_update.log['error'].keys()) > 0)
+        self.assertTrue('new_instance_list_missing_ids' in ann_update.log['error'])
+        self.assertTrue('information' in ann_update.log['error'])
+        self.assertTrue('missing_ids' in ann_update.log['error'])
+        self.assertTrue(instance2.id in ann_update.log['error']['missing_ids'])
+        self.assertTrue(instance3.id in ann_update.log['error']['missing_ids'])
+        self.assertTrue(instance4.id not in ann_update.log['error']['missing_ids'])
