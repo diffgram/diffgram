@@ -475,9 +475,7 @@
 
                     <div v-for="key in Object.keys(props.item.retry_log)">
 
-                      <h4> {{key}} </h4>
-                      <v_error_multiple :error="props.item.retry_log[key]['info']">
-                      </v_error_multiple>
+                      <h4> {{key}} <span><strong>{{props.item.retry_log[key]['info']}}</strong></span></h4>
 
                     </div>
                   </div>
@@ -780,10 +778,6 @@
 
             }
           } catch (error) {
-            console.log('aaaaaa', error.config)
-            console.log('aaaaaa', error.response)
-            console.log('aaaaaa', error.isAxiosError)
-            console.log('aaaaaa', error.toJSON())
             this.error = this.$route_api_errors(error)
             console.error(error)
           } finally {
