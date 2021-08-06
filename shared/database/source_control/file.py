@@ -179,6 +179,9 @@ class File(Base, Caching):
     # For semantic segmentation,
     mask_joint_blob_name = Column(String())
 
+    # Warning: do not edit the cache manually. Especially for the instance list,
+    # the recommended way of updating instances is by callin Annotation_Update().main and then
+    # setting the cache to dirty with set_cache_key_dirty()
     cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
                         default={})
 
@@ -504,6 +507,7 @@ class File(Base, Caching):
     # generally use WorkingDirFileLink.file_list()
     # Becuase we need to cross reference datasets
 
+    @staticmethod
     def get_by_id(session, file_id):
         return session.query(File).filter(File.id == file_id).first()
 

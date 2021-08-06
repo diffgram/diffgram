@@ -63,7 +63,12 @@
                type="info">
         {{task_error.task_request}}
       </v-alert>
-
+      <div fluid v-if="display_refresh_cache_button">
+        <v-btn color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
+          <v-icon>mdi-refresh</v-icon>
+          Regenerate File Cache
+        </v-btn>
+      </div>
       <v_error_multiple :error="save_error">
       </v_error_multiple>
 
@@ -932,6 +937,8 @@ export default Vue.extend( {
 
       selected_instance_for_history: undefined,
       show_instance_history: false,
+      regenerate_file_cache_loading: false,
+      display_refresh_cache_button: false,
       get_instances_loading: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
@@ -1786,7 +1793,17 @@ export default Vue.extend( {
 
       return roi_canvas
     },
+    regenerate_file_cache: async function(){
+      this.regenerate_file_cache_loading = true;
+      if(this.video_mode){
 
+      }
+      else{
+
+      }
+
+      const response = await axios.post()
+    },
     get_new_canvas: function () {
       this.html_image.crossOrigin = "Anonymous";
 
@@ -6459,6 +6476,11 @@ export default Vue.extend( {
         }
       } catch (error) {
         this.save_loading = false
+        if(error.response.data &&
+          error.response.data.log &&
+          error.response.data.log.error && error.response.data.log.error.missing_ids){
+          this.display_refresh_cache_button = true;
+        }
 
         this.save_error = this.$route_api_errors(error)
         console.debug(error);

@@ -43,7 +43,6 @@ in data() in JS
 **/
 import store from '../../store';
 export function route_errors (error) {
-  console.log('AAAAA', error);
   if(error && error.message && error.message === 'Network Error'){
     store.commit('set_connection_error', error);
     return {
