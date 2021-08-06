@@ -369,6 +369,34 @@ class Annotation_Update():
 
         return self.new_added_instances
 
+    def __check_all_instances_available_in_new_instance_list(self):
+        if not self.do_init_existing_instances:
+            return True
+        new_id_list = []
+        for inst in self.instance_list_new:
+            if inst.get('id'):
+                new_id_list.append(inst.get('id'))
+
+        print('NEW ID LIST', new_id_list)
+        print('instance_list_existing', self.instance_list_existing)
+        ids_not_included = []
+        for instance in self.instance_list_existing:
+            # We don't check for soft_deleted instances
+            if instance.soft_delete:
+                continue
+            if instance.id not in new_id_list:
+                ids_not_included.append(instance.id)
+
+        if len(ids_not_included) > 0:
+            logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
+            self.log['error']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
+                ids_not_included
+            )
+            self.log['error']['information'] = 'Please try reloading page or check your network connection.'
+            self.log['error']['missing_ids'] =  ids_not_included
+            return False
+        return True
+
     def annotation_update_main(self):
 
         """
@@ -380,6 +408,14 @@ class Annotation_Update():
         if not self.instance_list_new and not self.clean_instances:
             return self.return_orginal_file_type()
         logger.debug('Bulding existing hash list...')
+
+        payload_includes_all_instances = self.__check_all_instances_available_in_new_instance_list()
+
+        if not payload_includes_all_instances:
+            logger.error('Error updating annotation {}'.format(str(self.log)))
+            logger.error('Instance list is: {}'.format(self.instance_list_new))
+            return self.return_orginal_file_type()
+
         self.build_existing_hash_list()
 
         ### Main work
