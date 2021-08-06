@@ -392,8 +392,10 @@ class Annotation_Update():
             self.log['error']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
                 ids_not_included
             )
-            self.log['error']['information'] = 'Please try reloading page or check your network connection.'
-            self.log['error']['missing_ids'] =  ids_not_included
+            self.log['error']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+                                               'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
+                                               'Please contact use if this persists.'
+            self.log['error']['missing_ids'] = ids_not_included
             return False
         return True
 

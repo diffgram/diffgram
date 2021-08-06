@@ -63,17 +63,18 @@
                type="info">
         {{task_error.task_request}}
       </v-alert>
-      <div fluid v-if="display_refresh_cache_button">
-        <v-btn color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
-          <v-icon>mdi-refresh</v-icon>
-          Regenerate File Cache
-        </v-btn>
-      </div>
+
       <v_error_multiple :error="save_error">
       </v_error_multiple>
-
+      <div fluid v-if="display_refresh_cache_button">
+        <v-btn small color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
+          <v-icon>mdi-refresh</v-icon>
+          Refresh File Data
+        </v-btn>
+      </div>
       <v_error_multiple :error="error">
       </v_error_multiple>
+
 
       <v_error_multiple :error="instance_buffer_error">
       </v_error_multiple>
@@ -1795,14 +1796,23 @@ export default Vue.extend( {
     },
     regenerate_file_cache: async function(){
       this.regenerate_file_cache_loading = true;
-      if(this.video_mode){
-
+      let frame_number = this.current_frame;
+      let file_id = undefined;
+      if(this.$props.task){
+        file_id = this.$props.task.file_id;
       }
       else{
-
+        file_id = this.$props.file.id;
       }
-
-      const response = await axios.post()
+      const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/${file_id}/regenerate-cache`,
+        {
+          frame_number: frame_number
+        }
+      );
+      if(response.status === 200){
+        this.has_changed = false;
+        location.reload();
+      }
     },
     get_new_canvas: function () {
       this.html_image.crossOrigin = "Anonymous";
@@ -6480,6 +6490,7 @@ export default Vue.extend( {
           error.response.data.log &&
           error.response.data.log.error && error.response.data.log.error.missing_ids){
           this.display_refresh_cache_button = true;
+          clearInterval(this.interval_autosave);
         }
 
         this.save_error = this.$route_api_errors(error)
