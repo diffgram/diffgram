@@ -377,14 +377,14 @@ class Annotation_Update():
             if inst.get('id'):
                 new_id_list.append(inst.get('id'))
 
-        print('NEW ID LIST', new_id_list)
-        print('instance_list_existing', self.instance_list_existing)
         ids_not_included = []
         for instance in self.instance_list_existing:
             # We don't check for soft_deleted instances
             if instance.soft_delete:
                 continue
             if instance.id not in new_id_list:
+                instance.hash_instance()
+                self.session.add(instance)
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
