@@ -398,6 +398,9 @@ def view_file_list_web_route(project_string_id, username):
         output_file_list = file_browser_instance.file_view_core(
             mode = "serialize")
 
+        if len(file_browser_instance.log['error'].keys()) > 0:
+            return file_browser_instance.log['error'], 400
+
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
 
@@ -420,6 +423,7 @@ class File_Browser():
         self.project = project
         self.directory = directory
         self.member = member
+        self.log = regular_log.default()
 
         self.metadata_proposed = metadata_proposed
         self.default_metadata()
@@ -501,6 +505,11 @@ class File_Browser():
             return False, query_creator.log, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
+        from shared.helpers.performance import explain
+        print('RESULTSS', )
+        explain = self.session.execute(explain(sql_alchemy_query)).fetchall()
+        for x in explain:
+            print(x)
         if sql_alchemy_query:
             count = sql_alchemy_query.count()
             if limit is not None:
@@ -509,9 +518,6 @@ class File_Browser():
             if offset:
                 sql_alchemy_query = sql_alchemy_query.offset(offset)
             file_list = sql_alchemy_query.all()
-            print(
-                'filelist', file_list, count
-            )
         else:
             count = None
             return False, execution_log, count
@@ -529,14 +535,13 @@ class File_Browser():
         """
         output_file_list = []
         limit_counter = 0
-
         file_count = 0  # File count includes ones we don't actually query
         # outside of limits...
 
         if self.metadata['file_view_mode'] is None or \
-            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base"]:
-            return "Invalid file_view_mode", False
-
+            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base", 'ids_only']:
+            self.log['error']['file_view_mode'] = 'Invalid file_view_mode "{}"'.format(self.metadata['file_view_mode'])
+            return None
         ignore_id_list = None
 
         # For creating / viewing Jobs
@@ -652,7 +657,9 @@ class File_Browser():
 
             working_dir_file_list = query.all()
 
+
         self.metadata['total_pages'] = math.ceil(float(file_count) / float(self.metadata['limit']))
+        print(self.metadata, 'okokokokok')
         if self.metadata['page'] >= self.metadata['total_pages']:
             self.metadata['next_page'] = None
             self.metadata['prev_page'] = self.metadata['page'] - 1
@@ -667,6 +674,9 @@ class File_Browser():
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':
                     file_serialized = file.serialize_with_annotations(self.session)
+
+                if self.metadata['file_view_mode'] == 'ids_only':
+                    file_serialized = file.id
 
                 elif self.metadata['file_view_mode'] == 'base':
                     file_serialized = file.serialize_base_file()

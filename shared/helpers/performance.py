@@ -7,8 +7,7 @@ import contextlib
 import inspect
 
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.sql.expression import Executable, ClauseElement
-from sqlalchemy.sql.roles import CoerceTextStatementRole
+from sqlalchemy.sql.expression import Executable, ClauseElement, _literal_as_text
 
 
 def timeit(method):
@@ -50,9 +49,9 @@ def profiled(to_file=None):
 
 
 # https://github.com/sqlalchemy/sqlalchemy/wiki/Query-Plan-SQL-construct
-class explain(Executable, CoerceTextStatementRole, ClauseElement):
+class explain(Executable, ClauseElement):
     def __init__(self, stmt, analyze=False):
-        self.statement = stmt
+        self.statement = _literal_as_text(stmt)
         self.analyze = analyze
 
 
