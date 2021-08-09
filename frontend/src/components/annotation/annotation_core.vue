@@ -66,9 +66,15 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
-
+      <div fluid v-if="display_refresh_cache_button">
+        <v-btn small color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
+          <v-icon>mdi-refresh</v-icon>
+          Refresh File Data
+        </v-btn>
+      </div>
       <v_error_multiple :error="error">
       </v_error_multiple>
+
 
       <v_error_multiple :error="instance_buffer_error">
       </v_error_multiple>
@@ -932,6 +938,8 @@ export default Vue.extend( {
 
       selected_instance_for_history: undefined,
       show_instance_history: false,
+      regenerate_file_cache_loading: false,
+      display_refresh_cache_button: false,
       get_instances_loading: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
@@ -1786,7 +1794,26 @@ export default Vue.extend( {
 
       return roi_canvas
     },
-
+    regenerate_file_cache: async function(){
+      this.regenerate_file_cache_loading = true;
+      let frame_number = this.current_frame;
+      let file_id = undefined;
+      if(this.$props.task){
+        file_id = this.$props.task.file_id;
+      }
+      else{
+        file_id = this.$props.file.id;
+      }
+      const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/${file_id}/regenerate-cache`,
+        {
+          frame_number: frame_number
+        }
+      );
+      if(response.status === 200){
+        this.has_changed = false;
+        location.reload();
+      }
+    },
     get_new_canvas: function () {
       this.html_image.crossOrigin = "Anonymous";
 
@@ -6459,6 +6486,12 @@ export default Vue.extend( {
         }
       } catch (error) {
         this.save_loading = false
+        if(error.response.data &&
+          error.response.data.log &&
+          error.response.data.log.error && error.response.data.log.error.missing_ids){
+          this.display_refresh_cache_button = true;
+          clearInterval(this.interval_autosave);
+        }
 
         this.save_error = this.$route_api_errors(error)
         console.debug(error);

@@ -377,14 +377,14 @@ class Annotation_Update():
             if inst.get('id'):
                 new_id_list.append(inst.get('id'))
 
-        print('NEW ID LIST', new_id_list)
-        print('instance_list_existing', self.instance_list_existing)
         ids_not_included = []
         for instance in self.instance_list_existing:
             # We don't check for soft_deleted instances
             if instance.soft_delete:
                 continue
             if instance.id not in new_id_list:
+                instance.hash_instance()
+                self.session.add(instance)
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
@@ -392,8 +392,10 @@ class Annotation_Update():
             self.log['error']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
                 ids_not_included
             )
-            self.log['error']['information'] = 'Please try reloading page or check your network connection.'
-            self.log['error']['missing_ids'] =  ids_not_included
+            self.log['error']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+                                               'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
+                                               'Please contact use if this persists.'
+            self.log['error']['missing_ids'] = ids_not_included
             return False
         return True
 
