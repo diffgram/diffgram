@@ -509,6 +509,9 @@ class File_Browser():
             if offset:
                 sql_alchemy_query = sql_alchemy_query.offset(offset)
             file_list = sql_alchemy_query.all()
+            print(
+                'filelist', file_list, count
+            )
         else:
             count = None
             return False, execution_log, count

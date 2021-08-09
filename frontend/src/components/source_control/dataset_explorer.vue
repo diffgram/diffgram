@@ -89,6 +89,7 @@
         <query_suggestion_menu
           ref="query_suggestions"
           @update_query="update_query"
+          @close="close_suggestion_menu"
           @execute_query="execute_query"
           :project_string_id="project_string_id"
           :query="query" ></query_suggestion_menu>
@@ -229,6 +230,9 @@
         this.query_menu_open = false;
         this.query = query_str;
         await this.fetch_file_list()
+      },
+      close_suggestion_menu: async function(query_str){
+        this.query_menu_open = false;
       },
       load_more_files: async function(){
         this.metadata.page += 1;
