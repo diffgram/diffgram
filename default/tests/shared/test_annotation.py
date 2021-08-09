@@ -37,17 +37,18 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
     def test__check_all_instances_available_in_new_instance_list(self):
         file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         instance1 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id},
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
             self.session
         )
         instance2 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id},
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
             self.session
         )
 
         instance3 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id},
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
             self.session
         )
         old_payload = [instance1, instance2, instance3]
@@ -100,7 +101,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         # Now test case with validations and a wrong payload and some existing deleted instances
         instance4 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'soft_delete': True},
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'soft_delete': True, 'label_file_id': label_file.id},
             self.session
         )
         ann_update = Annotation_Update(
