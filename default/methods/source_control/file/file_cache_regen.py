@@ -89,7 +89,7 @@ def cache_regeneration_core(session, project, file_id, frame_number, log):
 
     if file.type == 'video':
         # Check that frame number exists
-        if not frame_number:
+        if frame_number is None:
             log['error']['frame_number'] = 'File {}: provide frame number.'.format(file_id)
             return result, log
         else:
