@@ -1799,12 +1799,16 @@ export default Vue.extend( {
       let frame_number = this.current_frame;
       let file_id = undefined;
       if(this.$props.task){
-        file_id = this.$props.task.file_id;
+        file_id = this.$props.task.file.id;
       }
       else{
         file_id = this.$props.file.id;
       }
-      const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/file/${file_id}/regenerate-cache`,
+      let project_string = this.$props.project_string_id;
+      if(!project_string){
+        project_string = this.$store.state.project.current.project_string_id;
+      }
+      const response = await axios.post(`/api/v1/project/${project_string}/file/${file_id}/regenerate-cache`,
         {
           frame_number: frame_number
         }
