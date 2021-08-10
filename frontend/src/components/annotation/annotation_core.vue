@@ -410,6 +410,7 @@
             <!-- Current file -->
             <canvas_instance_list :ord="3"
                                   :instance_list="instance_list"
+                                  :default_instance_opacity="default_instance_opacity"
                                   :vertex_size="label_settings.vertex_size"
                                   :cuboid_corner_move_point="cuboid_corner_move_point"
                                   :video_mode="video_mode"
@@ -470,6 +471,7 @@
             <canvas_instance_list v-if="gold_standard_file"
                                   :ord="4"
                                   :vertex_size="label_settings.vertex_size"
+                                  :default_instance_opacity="default_instance_opacity"
                                   :cuboid_corner_move_point="cuboid_corner_move_point"
                                   :mode="'gold_standard'"
                                   :instance_list="gold_standard_file.instance_list"
@@ -926,6 +928,7 @@ export default Vue.extend( {
     return {
 
       ghost_instance_hover_index: null,
+      default_instance_opacity: 0.25,
       model_run_list: null,
       ghost_instance_hover_type: null,
       ghost_instance_list: [],
@@ -6034,6 +6037,18 @@ export default Vue.extend( {
           this.shift_frame_via_store(-1)
         }
       }
+
+      if (event.keyCode === 84) { // shift + t
+        if (this.shift_key) {
+          if(this.default_instance_opacity === 1){
+            this.default_instance_opacity = 0.25;
+          }
+          else{
+            this.default_instance_opacity = 1;
+          }
+        }
+      }
+
       if (event.keyCode === 39 || event.key === "d") { // right arrow
         if (this.shift_key) {
           this.change_file("next");
