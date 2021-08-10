@@ -369,8 +369,10 @@ def build_video_packet(file, session):
 
     # Context of making it easier to inspect and download media
     mp4_video_signed_url = file.video.file_signed_url
-    if mp4_video_signed_url:
-        mp4_video_signed_url += ".mp4"
+
+    if settings.DIFFGRAM_STATIC_STORAGE_PROVIDER == 'gcp':
+        if mp4_video_signed_url:
+            mp4_video_signed_url += ".mp4"
 
     video_dict = {
         'width': file.video.width,
