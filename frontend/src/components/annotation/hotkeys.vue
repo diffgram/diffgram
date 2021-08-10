@@ -11,6 +11,7 @@
   <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
 
   <p> <kbd>W</kbd> Toggle Label Menu </p>
+  <p> <kbd>H</kbd> Hide/Show All Instances in File. </p>
   <p> <kbd>G</kbd> Toggle Ghost Instances </p>
   <p> <kbd>1 - 9</kbd> Change label </p>
 
@@ -61,7 +62,7 @@ export default Vue.extend( {
   components: {
   },
   props: {
-   
+
   },
   data() {
     return {

@@ -5967,6 +5967,10 @@ export default Vue.extend( {
         this.ctrl_key = false
       }
 
+      if (event.keyCode === 72) { // h key
+        this.show_annotations = !this.show_annotations;
+      }
+
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return
       }
