@@ -6315,7 +6315,7 @@ export default Vue.extend( {
       this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
     },
 
-    add_ids_to_new_instances_and_delete_old: function(response){
+    add_ids_to_new_instances_and_delete_old: function(response, request_video_data){
       /*
       * This function is used in the context of AnnotationUpdate.
       * The new created/deleted instances are merged without loss of the current
@@ -6326,9 +6326,13 @@ export default Vue.extend( {
       // Add instance ID's to the newly created instances
       const new_added_instances = response.data.added_instances;
       const new_deleted_instances = response.data.deleted_instances;
+      let instance_list = this.instance_list;
+      if(request_video_data && request_video_data.current_frame != this.current_frame){
+        instance_list = this.instance_buffer_dict[request_video_data.current_frame]
+      }
 
-      for(let i = 0;  i < this.instance_list.length; i++){
-        const current_instance = this.instance_list[i]
+      for(let i = 0;  i < instance_list.length; i++){
+        const current_instance = instance_list[i]
         if(!current_instance.id){
           // Case of a new instance added
           const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
@@ -6350,7 +6354,7 @@ export default Vue.extend( {
             current_instance.root_id =  new_instance[0].root_id;
             current_instance.previous_id =  new_instance[0].previous_id;
             current_instance.version =  new_instance[0].version;
-            this.instance_list.splice(i, 1, current_instance)
+            instance_list.splice(i, 1, current_instance)
 
           }
         }
@@ -6447,7 +6451,7 @@ export default Vue.extend( {
            */
 
         this.save_count += 1;
-        this.add_ids_to_new_instances_and_delete_old(response);
+        this.add_ids_to_new_instances_and_delete_old(response, video_data);
 
         this.has_changed = false
         this.check_if_pending_created_instance();
