@@ -55,7 +55,7 @@
             <v-card-text>
               <v-container>
                 <h2>Labels & Instances</h2>
-                <v-checkbox label="Additionally Group Files By Label" v-model="report_template.group_by_labels"></v-checkbox>
+                <v-checkbox  @change="has_changes = true" label="Additionally Group Files By Label" v-model="report_template.group_by_labels"></v-checkbox>
               </v-container>
             </v-card-text>
           </v-card>
@@ -931,18 +931,31 @@ export default Vue.extend( {
     },
 
     fillData() {
-      this.datacollection = {
-        labels: this.labels,
-        datasets: [
-          {
-            // Label that shows on header
-            label: this.report_template.base_class_string,
-            data: this.values,
-            backgroundColor: this.color
-          },
+      if(this.report_template.group_by_labels){
+        this.datacollection = {datasets: [], labels: this.labels}
+        for(const elm in this.labels){
+          const dataset = {
+            label: elm
+          }
+          this.datacollection.datasets.push(dataset)
+        }
 
-        ]
       }
+      else{
+        this.datacollection = {
+          labels: this.labels,
+          datasets: [
+            {
+              // Label that shows on header
+              label: this.report_template.base_class_string,
+              data: this.values,
+              backgroundColor: this.color
+            },
+
+          ]
+        }
+      }
+
     },
 
   save_and_run_report: function () {
@@ -991,6 +1004,7 @@ export default Vue.extend( {
 
       this.labels = stats.labels
       this.values = stats.values
+      this.second_grouping = stats.second_grouping
       this.count = stats.count
 
       this.fillData()

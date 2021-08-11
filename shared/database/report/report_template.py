@@ -132,6 +132,7 @@ class ReportTemplate(Base):
             'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S'),
             'time_updated': time_updated,
             'base_class_string': self.base_class_string,
+            'group_by_labels': self.group_by_labels,
             'group_by': self.group_by,
             'period': self.period,
             'date_period_unit': self.date_period_unit,

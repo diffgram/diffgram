@@ -88,6 +88,20 @@ report_spec_list = [
     }
     },
 
+    {"group_by_labels": {
+        'default': False,
+        'kind': bool,
+        'required': False
+    }
+    },
+
+    {"job_id": {
+        'default': None,
+        'kind': int,
+        'required': False
+    }
+    },
+
     {"archived": {
         'default': False,
         'kind': bool,
@@ -477,15 +491,17 @@ class Report_Runner():
             self.query = self.query.group_by(self.base_class.task_id)
 
         elif self.report_template.group_by == 'file':
-            self.query = self.query.group_by(self.base_class.file_id)
+
+            if self.report_template.group_by_labels:
+                self.query = self.query.group_by(self.base_class.file_id, self.base_class.label_file_id)
+            else:
+                self.query = self.query.group_by(self.base_class.file_id)
 
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
-
+        print('AAA', self.results)
         stats = self.format_for_external(self.results)
-        print('STATS1', stats)
         stats_serialized = self.serialize_stats(stats)
-        print('STATS', stats_serialized)
         Event.new(
             kind = "report_run",
             session = self.session,
@@ -662,7 +678,6 @@ class Report_Runner():
 
             Assume this covers archive flag case for example along with other stuff
         """
-
         if self.report_template.diffgram_wide_default is True or \
             metadata.get('diffgram_wide_default') is True:  # init case?
 
@@ -688,7 +703,7 @@ class Report_Runner():
         # Assumes permissions handled by project scope
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
-        self.report_template.group_by_labels = metadata.get('group_by_labels')
+        self.report_template.group_by_labels = metadata.get('group_by_labels', False)
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
 
@@ -925,8 +940,11 @@ class Report_Runner():
         return query
 
     def group_by_file(self):
-        query = self.session.query(self.base_class.file_id,
-                                   func.count(self.base_class.id))
+        if self.report_template.group_by_labels:
+            query = self.session.query(self.base_class.file_id, self.base_class.label_file_id, func.count(self.base_class.id))
+        else:
+            query = self.session.query(self.base_class.file_id, func.count(self.base_class.id))
+
         return query
 
     def group_by_task(self):
@@ -989,13 +1007,16 @@ class Report_Runner():
         print('stats_list_by_period', stats_list_by_period)
         if report_template is None:
             report_template = self.report_template
-
+        second_grouping = None
+        print('view_type', self.report_template.view_type)
         if self.report_template.view_type == "count":
 
             if len(stats_list_by_period) == 0:
                 return 0
-
-            labels, values = zip(*stats_list_by_period)
+            if self.report_template.group_by_labels:
+                labels, second_grouping, values = zip(*stats_list_by_period)
+            else:
+                labels, values = zip(*stats_list_by_period)
             return sum(values)
 
         # TODO stronger handling if
@@ -1005,18 +1026,23 @@ class Report_Runner():
         if report_template.group_by and stats_list_by_period:
             # fill missing days is sorta designed
             # for "day" period?
-            if report_template.group_by == 'date' and \
-                report_template.date_period_unit == 'day':
+            if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
                 with_missing_dates = Stats.fill_missing_dates(
                     date_from = self.date_from,
                     date_to = self.date_to,
                     list_by_period = stats_list_by_period)
 
-                labels, values = zip(*with_missing_dates)
+                if self.report_template.group_by_labels:
+                    labels, second_grouping, values = zip(*with_missing_dates)
+                else:
+                    labels, values = zip(*with_missing_dates)
 
             else:
-                labels, values = zip(*stats_list_by_period)
+                if self.report_template.group_by_labels:
+                    labels, second_grouping, values = zip(*stats_list_by_period)
+                else:
+                    labels, values = zip(*stats_list_by_period)
 
             # Front end now handles for user case
             if report_template.group_by in ['label']:
@@ -1032,9 +1058,7 @@ class Report_Runner():
 
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
 
-            return {'labels': labels,
-                    'values': values,
-                    'count': count}
+            return {'labels': labels, 'values': values, 'count': count, 'second_grouping': second_grouping}
 
     def report_template_list(
         self,
@@ -1174,6 +1198,7 @@ def report_save_api():
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
+    print(input, 'aaaaaaaaaaaaaaaaaaaa')
     with sessionMaker.session_scope() as session:
 
         report_runner = Report_Runner(
