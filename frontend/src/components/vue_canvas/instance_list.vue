@@ -423,6 +423,9 @@
               else{
                 strokeColor = this.colour.hex
               }
+              if(this.$props.default_instance_opacity === 1){
+                strokeColor = "#FFFFFF"
+              }
 
             }
             if(instance.override_color && !instance.selected){
