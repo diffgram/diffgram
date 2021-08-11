@@ -107,7 +107,7 @@ report_spec_list = [
         'default': 'date',
         'kind': str,
         'required': False,
-        'valid_values_list': ['date', 'label', 'user', 'task', None],
+        'valid_values_list': ['date', 'label', 'user', 'task', None, 'file'],
     }
     },
     {"directory_id_list": {
@@ -405,6 +405,7 @@ class Report_Runner():
         # if view_type == "count":
         #	return self.query.count()
         # else:
+        print('AAA', self.query)
         return self.query.all()
 
     def apply_permission_scope_to_query(self):
@@ -418,6 +419,7 @@ class Report_Runner():
         """
 
         if self.scope == "project":
+            print('aaa', self.project.id)
             self.query = self.query.filter(
                 self.base_class.project_id == self.project.id)
 
@@ -474,11 +476,16 @@ class Report_Runner():
         elif self.report_template.group_by == 'task':
             self.query = self.query.group_by(self.base_class.task_id)
 
+        elif self.report_template.group_by == 'file':
+            self.query = self.query.group_by(self.base_class.file_id)
+
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
 
         stats = self.format_for_external(self.results)
+        print('STATS1', stats)
         stats_serialized = self.serialize_stats(stats)
+        print('STATS', stats_serialized)
         Event.new(
             kind = "report_run",
             session = self.session,
@@ -510,7 +517,7 @@ class Report_Runner():
         )
         if len(self.log["error"].keys()) >= 1:
             return
-        print(self.metadata, '123123')
+
         self.update_report_template(metadata = self.metadata)
 
         if len(self.log["error"].keys()) >= 1:
@@ -625,16 +632,18 @@ class Report_Runner():
 
         # TODO: Add suport or remove from UI the task filter when base class is Instance
         if self.base_class_string in ['instance']:
-            logger.warning('No filter supported for job_id. base_class_string is {}'.format(self.base_class_string))
-            return
-
-        self.query = self.query.filter(self.base_class.job_id == job_id)
+            tasks_in_job = self.session.query(Task).filter(Task.job_id == job_id).all()
+            task_id_list = [x.id for x in tasks_in_job]
+            self.query = self.query.filter(self.base_class.task_id.in_(task_id_list))
+        else:
+            self.query = self.query.filter(self.base_class.job_id == job_id)
 
     def filter_by_label_file_id_list(self, label_file_id_list: list):
         """
         label_file_id_list: List of ints ids
         """
 
+        print('label_file_id_list',label_file_id_list)
         self.query = self.query.filter(
             self.base_class.label_file_id.in_(label_file_id_list))
 
@@ -679,6 +688,7 @@ class Report_Runner():
         # Assumes permissions handled by project scope
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
+        self.report_template.group_by_labels = metadata.get('group_by_labels')
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
 
@@ -886,7 +896,8 @@ class Report_Runner():
             'date': self.group_by_date,
             'label': self.group_by_label,
             'user': self.group_by_user,
-            'task': self.group_by_task
+            'task': self.group_by_task,
+            'file': self.group_by_file
         }
         return group_by_dict.get(group_by)
 
@@ -911,6 +922,11 @@ class Report_Runner():
         Yes this must use an id it look like for group by
         """
         query = self.session.query(self.label_file_id, func.count(self.base_class.id))
+        return query
+
+    def group_by_file(self):
+        query = self.session.query(self.base_class.file_id,
+                                   func.count(self.base_class.id))
         return query
 
     def group_by_task(self):
@@ -970,6 +986,7 @@ class Report_Runner():
         We set report_template from self if it's None...
 
         """
+        print('stats_list_by_period', stats_list_by_period)
         if report_template is None:
             report_template = self.report_template
 

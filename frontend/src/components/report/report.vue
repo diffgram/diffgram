@@ -40,6 +40,26 @@
                         color="primary">
         </tooltip_button>
 
+        <tooltip_button tooltip_message="More Filters & Configs"
+                        @click="open_extra_filters_dialog"
+                        icon="mdi-filter"
+                        :disabled="!['instance'].includes(report_template.base_class_string)"
+                        :text_style="true"
+                        :large="true"
+                        color="primary">
+        </tooltip_button>
+        <v-dialog v-model="show_filters_dialog"
+                  width="800">
+          <v-card>
+            <v-card-title>More Filters:</v-card-title>
+            <v-card-text>
+              <v-container>
+                <h2>Labels & Instances</h2>
+                <v-checkbox label="Additionally Group Files By Label" v-model="report_template.group_by_labels"></v-checkbox>
+              </v-container>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
         <!--
          Hide while WIP
 
@@ -259,7 +279,7 @@
             <div style="min-width: 200px" class="pa-4">
               <job_select v-model="job"
                           :disabled="loading ||
-                            !['file', 'task'].includes(report_template.base_class_string)"
+                            !['file', 'task', 'instance'].includes(report_template.base_class_string)"
                           @change="has_changes = true"
                           :select_this_id="job_select_this_id"
                           >
@@ -554,6 +574,7 @@ export default Vue.extend( {
         'scope': 'project',
         'view_type': 'chart',
         'diffgram_wide_default': false,
+        'group_by_labels': false,
         'id': null,
         'view_sub_type': 'line'
       },
@@ -650,7 +671,12 @@ export default Vue.extend( {
          'name': 'task',
          'icon': 'mdi-flash-circle',
          'color': 'purple'
-        }
+        },
+        {'display_name': 'File (Frame)',
+          'name': 'file',
+          'icon': 'mdi-file',
+          'color': 'orange'
+        },
       ],
 
       scope_icon_list : [
@@ -781,6 +807,7 @@ export default Vue.extend( {
 
       count: null,
 
+      show_filters_dialog: false,
       loading: false,
       error: {},
       result: null,
@@ -893,6 +920,9 @@ export default Vue.extend( {
 
   },
   methods: {
+    open_extra_filters_dialog: function(){
+      this.show_filters_dialog = true;
+    },
     reset_chart_data() {
       this.labels = []
       this.values = []
