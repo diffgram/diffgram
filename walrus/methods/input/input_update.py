@@ -314,6 +314,9 @@ class Update_Input():
 
         historical_limit: int = time.time() - (60 * 60 * 24)
         exempt_statuses = ['success', 'failed', 'init', 'retrying']
+        
+        # Dont retry update files since it can cause duplicate files or instances.
+        exempt_modes = ['update', 'update_existing', 'copy_file', 'flow']
 
         self.input_list = self.session.query(Input).with_for_update(
             skip_locked = True).filter(
@@ -321,6 +324,7 @@ class Update_Input():
             Input.processing_deferred == False,
             Input.retry_count < 3,
             Input.status.notin_(exempt_statuses),
+            Input.mode.notin_(exempt_modes),
             normal_max_updated_since_time > Input.time_updated,
             Input.time_last_attempted > historical_limit
         ).limit(10).all()
