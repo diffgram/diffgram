@@ -63,7 +63,7 @@ class Annotation_Update():
     directory = None
     external_map: ExternalMap = None
     external_map_action: str = None
-
+    new_instance_dict_hash: dict = field(default_factory = lambda: {}) # Keep a hash of all
     do_create_new_file = False
     new_file = None
     frame_number = None
@@ -396,6 +396,18 @@ class Annotation_Update():
             self.log['error']['missing_ids'] = ids_not_included
             return False
         return True
+
+    def append_new_instance_list_hash(self, instance):
+
+        if instance.soft_delete is False:
+            self.new_instance_dict_hash[instance.hash] = instance
+            return True
+        return False
+
+    def order_new_instances_by_date(self):
+
+        self.instance_list_new = self.instance_list_new.sort(key=lambda item:item.get('client_created_time'), reverse=True)
+        return self.instance_list_new
 
     def annotation_update_main(self):
 
@@ -1421,6 +1433,18 @@ class Annotation_Update():
         """
         is_new_instance = True
 
+        # if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
+        #     # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
+        #     # We only want to keep one of them.
+        #     is_new_instance = False
+        #     # The instance_dict hash will always have the newest instance (sorted by created_time)
+        #     existing_instance = self.new_instance_dict_hash[self.instance.hash]
+        #     self.instance = existing_instance
+        #     return is_new_instance
+
+        # Add the instance hash if the instance is soft_delete False
+        self.append_new_instance_list_hash(self.instance)
+
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
         if self.existing_instance_index is not None:
@@ -1441,6 +1465,7 @@ class Annotation_Update():
 
             # In this case instance is NOT a new instance, because hash already exists.
             return is_new_instance
+
 
         # TODO maybe look at pulling this into it's own function
 

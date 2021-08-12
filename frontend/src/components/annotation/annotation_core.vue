@@ -334,7 +334,7 @@
 
       -->
 
-        <div  id="canvas_wrapper" style="position: relative;"
+        <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
 
               @mousemove="mouse_move"
               @mousedown="mouse_down"
