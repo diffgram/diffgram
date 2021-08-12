@@ -383,8 +383,6 @@ class Annotation_Update():
             if instance.soft_delete:
                 continue
             if instance.id not in new_id_list:
-                instance.hash_instance()
-                self.session.add(instance)
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
