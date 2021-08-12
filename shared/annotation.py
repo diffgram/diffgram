@@ -1239,8 +1239,12 @@ class Annotation_Update():
         Assumes it's running after determine_if_new_instance_and_update_current()
         since that updates self.instance if it exists
         """
-        # Prevent from adding the same instance ID 2 times.
+        # Prevent from adding the same instances with ID None (cases where list has the same instance twice)
+        # And both instances have the same hash and no ID.
+        if self.instance.id is None:
+            return
         serialized_data = self.instance.serialize_with_label()
+        print('SERIALIZED INSTANCE', serialized_data)
         self.instance_list_kept_serialized.append(serialized_data)
 
     def instance_count_updates(self):
@@ -1432,18 +1436,19 @@ class Annotation_Update():
 
         """
         is_new_instance = True
-
-        # if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
-        #     # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
-        #     # We only want to keep one of them.
-        #     is_new_instance = False
-        #     # The instance_dict hash will always have the newest instance (sorted by created_time)
-        #     existing_instance = self.new_instance_dict_hash[self.instance.hash]
-        #     self.instance = existing_instance
-        #     return is_new_instance
-
-        # Add the instance hash if the instance is soft_delete False
-        self.append_new_instance_list_hash(self.instance)
+        print('testin', self.instance, self.instance.id, self.instance.hash, self.instance.label_file_id)
+        if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
+            # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
+            # We only want to keep one of them.
+            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
+            is_new_instance = False
+            # The instance_dict hash will always have the newest instance (sorted by created_time)
+            existing_instance = self.new_instance_dict_hash[self.instance.hash]
+            self.instance = existing_instance
+            return is_new_instance
+        else:
+            # Add the instance hash if the instance is soft_delete False
+            self.append_new_instance_list_hash(self.instance)
 
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)

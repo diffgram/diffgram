@@ -36,6 +36,13 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_update_cache_single_instance_in_list_context(self):
+        """
+            Test that the instance gets serialized correctly and that if the instance has no ID
+            the function does not serializer anything.
+        :return:
+        """
+        return
     def test_append_new_instance_list_hash(self):
         file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
         frame = data_mocking.create_file(

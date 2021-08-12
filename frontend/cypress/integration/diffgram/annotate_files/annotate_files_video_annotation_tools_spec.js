@@ -119,10 +119,8 @@ describe('Annotate Files Tests', () => {
 
     context('It Disables Pasting Multiple Instances and triggering cache error', () => {
       it('Can Copy and paste instances cross frames without breaking cache', () => {
-        let url = '/api/project/*/file/*/annotation/update'
-          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-          // Move 5 frames
-          .get('[data-cy="forward_1_frame"]').click({force: true})
+
+        cy.get('[data-cy="forward_1_frame"]').click({force: true})
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .get('[data-cy="forward_1_frame"]').click({force: true})
@@ -150,36 +148,58 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          // Copy and pase on next frame Paste
-          .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
-          .wait(2000)
-          .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(2000)
-          .get(`#canvas_wrapper`).type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .wait(10000)
-          // Select uppermost box
-          .mousedowncanvas(90, 90)
-          .wait(500)
-          .mouseupcanvas()
-          // Move box
-          .wait(2000)
-          .dragcanvas(90, 90, 200, 200)
-          .wait(2000)
-          .mousedowncanvas(200, 200)
-          .wait(500)
-          .mouseupcanvas()
-          .wait(2000)
-          // Paste instances again
-          .get(`#canvas_wrapper`).type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .type('{ctrl} + v',{force: true})
-          .wait(5000)
-          .get('[data-cy=save_button]').click({force: true})
+        cy.window().then(window => {
+          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+            // Move 5 frames
+
+            // Copy and paste on next frame Paste
+            .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
+            .wait(2000)
+            .then(()=>{
+              cy.get('[data-cy="forward_1_frame"]').click({force: true})
+                .wait(2000).then(() =>{
+                  let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.has_changed = true;
+                  cy.get('[data-cy=save_button]').click({force: true})
+                    .wait(10000)
+                    // Select uppermost box
+                    .mousedowncanvas(90, 90)
+                    .wait(500)
+                    .mouseupcanvas()
+                    .wait(2000).then(() => {
+                      // Paste instances again
+                      instance_dup = {...instance_dup, x_min: 140, y_min: 140, y_max: 180, x_max: 180}
+                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+
+                      cy.wait(5000).then(() =>{
+                        let url = '/api/project/*/file/*/annotation/update';
+                        cy.intercept(url).as('save_instances')
+                        window.AnnotationCore.has_changed = true;
+                        cy.get('[data-cy=save_button]').click({force: true})
+                        .wait('@save_instances').should(({request, response}) => {
+                          expect(request.method).to.equal('POST')
+                          expect(response.statusCode, 'response status').to.eq(200)
+
+                        })
+                      })
+
+                  })
+            })
+
+
+          })
+
+
+
+        });
+
       })
 
 
