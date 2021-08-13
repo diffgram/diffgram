@@ -88,14 +88,12 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         with patch.object(instance1, 'serialize_with_label') as mock_1:
 
             ann_update.instance = instance1
-            print('aaaaa', ann_update.instance.id)
             ann_update.update_cache_single_instance_in_list_context()
             mock_1.assert_called_once()
 
         with patch.object(instance2, 'serialize_with_label') as mock_1:
             instance2.id = None
             ann_update.instance = instance2
-            print('aaaaa', ann_update.instance.id)
             ann_update.update_cache_single_instance_in_list_context()
             self.assertEqual(mock_1.call_count, 0)
 
@@ -186,7 +184,18 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'label_file_id': label_file.id,
             'type': 'box'
         }
-        inst_list = [inst1, inst2, inst3]
+        inst4 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'client_created_time': None,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        inst_list = [inst1, inst2, inst3, inst4]
         ann_update = Annotation_Update(
             session = self.session,
             project = self.project,
@@ -202,6 +211,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(ann_update.instance_list_new[0], inst3)
         self.assertEqual(ann_update.instance_list_new[1], inst2)
         self.assertEqual(ann_update.instance_list_new[2], inst1)
+        self.assertEqual(ann_update.instance_list_new[3], inst4)
 
 
     def test_special__removing_duplicate_instances_in_new_instance_list(self):

@@ -405,7 +405,7 @@ class Annotation_Update():
         return False
 
     def order_new_instances_by_date(self):
-        self.instance_list_new.sort(key=lambda item: (item is None, item), reverse=True)
+        self.instance_list_new.sort(key=lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')), reverse=True)
         return self.instance_list_new
 
     def annotation_update_main(self):
