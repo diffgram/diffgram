@@ -860,7 +860,8 @@ export default Vue.extend( {
 
       // handle duplicate keys (things that already exist
       // in report_template)
-      if (this.job) {   // is clearable (in which case it returns null instead of object)
+      console.log('SETTING JOB', this.job)
+      if (this.job && this.job.id) {   // is clearable (in which case it returns null instead of object)
         this.report_template.job_id = this.job.id
       } else {
         this.report_template.job_id = null
@@ -915,7 +916,8 @@ export default Vue.extend( {
     // this.get_report(this.report_template_id)
 
     if (this.report_template_id != "new") {
-      this.run_report(this.report_template_id)
+      this.run_report(this.report_template_id);
+
     }
 
   },
@@ -1123,7 +1125,7 @@ export default Vue.extend( {
      * and we may want a concrete report to save it, and update it.
      *
      */
-
+    console.log('UDPATEING', report_template.job_id)
     this.job_select_this_id = report_template.job_id
     // avoid circular updates, since we expect job component to reupdate
     // report template from this id
