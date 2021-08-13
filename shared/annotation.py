@@ -63,7 +63,7 @@ class Annotation_Update():
     directory = None
     external_map: ExternalMap = None
     external_map_action: str = None
-
+    new_instance_dict_hash: dict = field(default_factory = lambda: {}) # Keep a hash of all
     do_create_new_file = False
     new_file = None
     frame_number = None
@@ -383,8 +383,6 @@ class Annotation_Update():
             if instance.soft_delete:
                 continue
             if instance.id not in new_id_list:
-                instance.hash_instance()
-                self.session.add(instance)
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
@@ -399,6 +397,17 @@ class Annotation_Update():
             return False
         return True
 
+    def append_new_instance_list_hash(self, instance):
+
+        if instance.soft_delete is False:
+            self.new_instance_dict_hash[instance.hash] = instance
+            return True
+        return False
+
+    def order_new_instances_by_date(self):
+        self.instance_list_new.sort(key=lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')), reverse=True)
+        return self.instance_list_new
+
     def annotation_update_main(self):
 
         """
@@ -411,6 +420,7 @@ class Annotation_Update():
             return self.return_orginal_file_type()
         logger.debug('Bulding existing hash list...')
 
+        self.instance_list_new = self.order_new_instances_by_date()
         payload_includes_all_instances = self.__check_all_instances_available_in_new_instance_list()
 
         if not payload_includes_all_instances:
@@ -1229,7 +1239,10 @@ class Annotation_Update():
         Assumes it's running after determine_if_new_instance_and_update_current()
         since that updates self.instance if it exists
         """
-        # Prevent from adding the same instance ID 2 times.
+        # Prevent from adding the same instances with ID None (cases where list has the same instance twice)
+        # And both instances have the same hash and no ID.
+        if self.instance.id is None:
+            return
         serialized_data = self.instance.serialize_with_label()
         self.instance_list_kept_serialized.append(serialized_data)
 
@@ -1422,6 +1435,18 @@ class Annotation_Update():
 
         """
         is_new_instance = True
+        if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
+            # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
+            # We only want to keep one of them.
+            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
+            is_new_instance = False
+            # The instance_dict hash will always have the newest instance (sorted by created_time)
+            existing_instance = self.new_instance_dict_hash[self.instance.hash]
+            self.instance = existing_instance
+            return is_new_instance
+        else:
+            # Add the instance hash if the instance is soft_delete False
+            self.append_new_instance_list_hash(self.instance)
 
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
@@ -1443,6 +1468,7 @@ class Annotation_Update():
 
             # In this case instance is NOT a new instance, because hash already exists.
             return is_new_instance
+
 
         # TODO maybe look at pulling this into it's own function
 
