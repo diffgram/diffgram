@@ -19,7 +19,6 @@ from shared.database.batch.batch import InputBatch
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("300 per day")
 def api_file_cache_regen(project_string_id, file_id):
     """
     For limits for this, this route may be used for single files (not just lists)
