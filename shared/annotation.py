@@ -420,6 +420,7 @@ class Annotation_Update():
             return self.return_orginal_file_type()
         logger.debug('Bulding existing hash list...')
 
+        self.instance_list_new = self.order_new_instances_by_date()
         payload_includes_all_instances = self.__check_all_instances_available_in_new_instance_list()
 
         if not payload_includes_all_instances:
