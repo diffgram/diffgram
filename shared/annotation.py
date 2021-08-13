@@ -405,8 +405,7 @@ class Annotation_Update():
         return False
 
     def order_new_instances_by_date(self):
-
-        self.instance_list_new = self.instance_list_new.sort(key=lambda item:item.get('client_created_time'), reverse=True)
+        self.instance_list_new.sort(key=lambda item: item.get('client_created_time'), reverse=True)
         return self.instance_list_new
 
     def annotation_update_main(self):
@@ -1244,7 +1243,6 @@ class Annotation_Update():
         if self.instance.id is None:
             return
         serialized_data = self.instance.serialize_with_label()
-        print('SERIALIZED INSTANCE', serialized_data)
         self.instance_list_kept_serialized.append(serialized_data)
 
     def instance_count_updates(self):
@@ -1436,7 +1434,6 @@ class Annotation_Update():
 
         """
         is_new_instance = True
-        print('testin', self.instance, self.instance.id, self.instance.hash, self.instance.label_file_id)
         if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
             # We only want to keep one of them.

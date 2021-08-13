@@ -4,7 +4,7 @@ from shared.tests.test_utils import common_actions, data_mocking
 from base64 import b64encode
 from shared.annotation import Annotation_Update
 import uuid
-
+from unittest.mock import patch
 
 class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
     """
@@ -42,7 +42,63 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             the function does not serializer anything.
         :return:
         """
-        return
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        # 2 Exactly equal instances
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'soft_delete': True, 'label_file_id': label_file.id},
+            self.session
+        )
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        inst = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        instance_data = [
+            inst.copy(),
+            inst.copy()
+        ]
+        video_data = {
+            'video_mode': True,
+            'video_file_id': file1.id,
+            'current_frame': frame.frame_number
+        }
+
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = instance_data,
+            file = file1,
+            do_init_existing_instances = True
+        )
+
+        with patch.object(instance1, 'serialize_with_label') as mock_1:
+
+            ann_update.instance = instance1
+            print('aaaaa', ann_update.instance.id)
+            ann_update.update_cache_single_instance_in_list_context()
+            mock_1.assert_called_once()
+
+        with patch.object(instance2, 'serialize_with_label') as mock_1:
+            instance2.id = None
+            ann_update.instance = instance2
+            print('aaaaa', ann_update.instance.id)
+            ann_update.update_cache_single_instance_in_list_context()
+            self.assertEqual(mock_1.call_count, 0)
+
     def test_append_new_instance_list_hash(self):
         file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
         frame = data_mocking.create_file(
@@ -91,6 +147,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         self.assertTrue(result)
         self.assertFalse(result2)
+
     def test_order_new_instance_list_by_date(self):
         file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
         frame = data_mocking.create_file(
@@ -113,7 +170,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'y_min': 1,
             'x_max': 18,
             'y_max': 18,
-            'client_created_time': datetime.datetime(2020, 1, 1),
+            'client_created_time': datetime.datetime(2020, 1, 2),
             'soft_delete': False,
             'label_file_id': label_file.id,
             'type': 'box'
@@ -124,14 +181,28 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'y_min': 1,
             'x_max': 18,
             'y_max': 18,
-            'client_created_time': datetime.datetime(2020, 1, 1),
+            'client_created_time': datetime.datetime(2020, 1, 3),
             'soft_delete': False,
             'label_file_id': label_file.id,
             'type': 'box'
         }
+        inst_list = [inst1, inst2, inst3]
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = None,
+            instance_list_new = inst_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.instance_list_new = inst_list
+        print('orders', ann_update.instance_list_new)
+        ann_update.order_new_instances_by_date()
 
-    def test_build_new_instances_hashes(self):
-        return
+        self.assertEqual(ann_update.instance_list_new[0], inst3)
+        self.assertEqual(ann_update.instance_list_new[1], inst2)
+        self.assertEqual(ann_update.instance_list_new[2], inst1)
+
 
     def test_special__removing_duplicate_instances_in_new_instance_list(self):
         """

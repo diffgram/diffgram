@@ -6365,7 +6365,6 @@ export default Vue.extend( {
 
     save: async function (and_complete=false) {
       this.save_error = {}
-
       if (this.$props.view_only_mode == true) {
         return
       }
@@ -6379,13 +6378,13 @@ export default Vue.extend( {
       if (this.any_loading == true) {
         return
       }
-
+      this.save_loading = true
       this.instance_list_cache = this.instance_list.slice()
       let current_frame_cache = this.current_frame
       let current_video_file_id_cache = this.current_video_file_id
       let video_mode_cache = this.video_mode
 
-      this.save_loading = true
+
 
       // a video file can now be
       // saved from file id + frame, so the current file
