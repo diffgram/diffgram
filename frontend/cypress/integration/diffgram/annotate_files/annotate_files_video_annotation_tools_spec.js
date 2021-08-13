@@ -126,6 +126,7 @@ describe('Annotate Files Tests', () => {
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="edit_toggle"]').click({force: true})
           .select_label()
           .wait(2000)
           // Draw a box
