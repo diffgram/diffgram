@@ -6267,6 +6267,7 @@ export default Vue.extend( {
         points: points,
         nodes: nodes,
         edges: edges,
+        version: undefined,
         attribute_groups: {...instance_to_copy.attribute_groups}
       };
 
