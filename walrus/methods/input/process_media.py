@@ -1536,10 +1536,15 @@ class Process_Media():
                 'current_frame': self.frame_number  # TODO Consider this from input for better consistency
             }
 
-        file = File.get_by_id(self.session, file_id)  # For video, expects it to be parent video file, not a frame
+
         allowed_model_id_list = self.__get_allowed_model_ids()
         allowed_model_runs_id_list = self.__get_allowed_model_run_ids()
         try:
+            file = File.get_by_id(self.session,
+                                  file_id,
+                                  with_for_update = True,
+                                  nowait = True)  # For video, expects it to be parent video file, not a frame
+
             annotation_update = Annotation_Update(
                 session=self.session,
                 file=file,

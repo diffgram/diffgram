@@ -561,6 +561,7 @@
                   :current_video="current_video"
                   :video_mode="video_mode"
                   :player_height="'80px'"
+                  :parent_save="this.detect_is_ok_to_save"
                   :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
                   @pause="video_playing = false"
@@ -2435,9 +2436,9 @@ export default Vue.extend( {
       this.interval_autosave = setInterval(this.detect_is_ok_to_save, 15*1000);
     },
 
-    detect_is_ok_to_save: function() {
+    detect_is_ok_to_save: async function() {
       if (this.has_changed) {
-        this.save();
+        await this.save();
       }
     },
 
@@ -6268,6 +6269,10 @@ export default Vue.extend( {
         nodes: nodes,
         edges: edges,
         version: undefined,
+        root_id: undefined,
+        previous_id: undefined,
+        next_id: undefined,
+        creation_ref_id: undefined,
         attribute_groups: {...instance_to_copy.attribute_groups}
       };
 
@@ -6362,6 +6367,9 @@ export default Vue.extend( {
 
       }
 
+
+      const current_frontend_instances = instance_list.map(id => id);
+
     },
 
     save: async function (and_complete=false) {
@@ -6453,10 +6461,10 @@ export default Vue.extend( {
         this.save_count += 1;
         this.add_ids_to_new_instances_and_delete_old(response, video_data);
 
-        this.has_changed = false
+
         this.check_if_pending_created_instance();
         this.$emit('save_response_callback', true)
-        this.save_loading = false
+
         if(this.instance_buffer_metadata[this.current_frame]){
           this.instance_buffer_metadata[this.current_frame].pending_save = false;
         }
@@ -6496,7 +6504,8 @@ export default Vue.extend( {
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
-
+        this.save_loading = false
+        this.has_changed = false
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true
