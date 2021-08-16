@@ -27,6 +27,7 @@ from shared.database.video.video import Video
 from shared.database.video.sequence import Sequence
 from shared.database.external.external import ExternalMap
 from shared.shared_logger import get_shared_logger
+import traceback
 
 logger = get_shared_logger()
 
@@ -544,7 +545,10 @@ class Annotation_Update():
             self.file = File.get_frame_from_video(
                 session = self.session,
                 video_parent_file_id = self.video_parent_file.id,
-                frame_number = self.frame_number)
+                frame_number = self.frame_number,
+                with_for_update = True,
+                nowait = True
+            )
 
             if self.file:
                 return
@@ -578,7 +582,8 @@ class Annotation_Update():
         self.instance_list_existing = Instance.list(session = self.session,
                                                     file_id = self.file.id,
                                                     limit = None,
-                                                    exclude_removed = False)
+                                                    exclude_removed = False,
+                                                    with_for_update = True)
         for instance in self.instance_list_existing:
             self.instance_list_existing_dict[instance.id] = instance
 
@@ -1740,7 +1745,8 @@ def task_annotation_update(
     task_id: int,
     input,
     untrusted_input,
-    task = None):
+    task = None,
+    log = regular_log.default()):
     # In context of already having the {task} object,
     # ie for newly created stuff... (to prevent race conditions)
     if not task:
@@ -1756,11 +1762,18 @@ def task_annotation_update(
 
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
-
+    try:
+        file = File.get_by_id(session = session, file_id = task.file_id, with_for_update = True, nowait = True)
+    except Exception as e:
+        trace = traceback.format_exc()
+        logger.error('File {} is Locked'.format(task.file_id))
+        logger.error(trace)
+        log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
+        return False, None
     annotation_update = Annotation_Update(
         session = session,
         task = task,
-        file = task.file,
+        file = file,
         project = project,
         instance_list_new = instance_list_new,
         video_data = input['video_data'],
@@ -1819,7 +1832,8 @@ def task_exam_stats(task,
 def annotation_update_web(
     session,
     project_string_id,
-    file_id):
+    file_id,
+    log = regular_log.default()):
     data = request.get_json(force = True)  # Force = true if not set as application/json'
 
     if file_id is None: return "error file_id is None", 400
@@ -1829,11 +1843,19 @@ def annotation_update_web(
 
     project = Project.get(session, project_string_id)
     user = User.get(session)
-
-    file = File.get_by_id_and_project(
-        session = session,
-        project_id = project.id,
-        file_id = file_id)
+    try:
+        file = File.get_by_id_and_project(
+            session = session,
+            project_id = project.id,
+            file_id = file_id,
+            with_for_update = True,
+            nowait = True)
+    except Exception as e:
+        trace = traceback.format_exc()
+        logger.error('File {} is Locked'.format(file_id))
+        logger.error(trace)
+        log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
+        return False, None
 
     # If file permission error make sure it's sending image_file
     # and not video file.

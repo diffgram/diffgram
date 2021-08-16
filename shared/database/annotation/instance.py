@@ -205,7 +205,8 @@ class Instance(Base):
         return_kind = "objects",
         date_to = None,
         date_from = None,
-        frame_number = None
+        frame_number = None,
+        with_for_update = False
     ):
         """
 
@@ -220,7 +221,8 @@ class Instance(Base):
 
         # Base Query
         query = session.query(Instance)
-
+        if with_for_update:
+            query = query.with_for_update()
         if file_id:
             query = query.filter(Instance.file_id == file_id)
 
