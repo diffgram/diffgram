@@ -6270,6 +6270,8 @@ export default Vue.extend( {
         edges: edges,
         version: undefined,
         root_id: undefined,
+        previous_id: undefined,
+        next_id: undefined,
         attribute_groups: {...instance_to_copy.attribute_groups}
       };
 
@@ -6363,6 +6365,7 @@ export default Vue.extend( {
         }
 
       }
+
 
       const current_frontend_instances = instance_list.map(id => id);
 
