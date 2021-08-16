@@ -6272,6 +6272,7 @@ export default Vue.extend( {
         root_id: undefined,
         previous_id: undefined,
         next_id: undefined,
+        creation_ref_id: undefined,
         attribute_groups: {...instance_to_copy.attribute_groups}
       };
 
