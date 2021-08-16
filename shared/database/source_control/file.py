@@ -957,7 +957,10 @@ class File(Base, Caching):
                             user_id,
                             project_string_id,
                             file_id,
-                            directory_id=None):
+                            directory_id=None,
+                            with_for_update = False,
+                            nowait = False,
+                            skip_locked = False):
         """
 
         Even if we trust the directory (ie from project default),
@@ -981,9 +984,14 @@ class File(Base, Caching):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
 
-        file = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id,
-            File.id == file_id).first()
+        if with_for_update:
+            file = session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.id == file_id).first()
+        else:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.id == file_id).first()
 
         # end_time = time.time()
         # print("File access time", end_time - start_time)
