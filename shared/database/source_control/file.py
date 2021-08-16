@@ -240,21 +240,30 @@ class File(Base, Caching):
         return set(file_list_id_db + file_list_name_db)
 
 
+
     @staticmethod
     def get_frame_from_video(
             session,
             video_parent_file_id: int,
-            frame_number: int
+            frame_number: int,
+            with_for_update: bool = False,
+            nowait = False,
+            skip_locked = False
     ):
         """
         Prefer this as static method
         as we may want to call it even if don't have parent file?
         In which case would need to check permissions ie through project?
         """
+        if with_for_update:
+            return session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(
+                File.video_parent_file_id == video_parent_file_id,
+                File.frame_number == frame_number).first()
 
-        return session.query(File).filter(
-            File.video_parent_file_id == video_parent_file_id,
-            File.frame_number == frame_number).first()
+        else:
+            return session.query(File).filter(
+                File.video_parent_file_id == video_parent_file_id,
+                File.frame_number == frame_number).first()
 
 
     @staticmethod
@@ -508,8 +517,12 @@ class File(Base, Caching):
     # Becuase we need to cross reference datasets
 
     @staticmethod
-    def get_by_id(session, file_id):
-        return session.query(File).filter(File.id == file_id).first()
+    def get_by_id(session, file_id, with_for_update = False, nowait=False, skip_locked = False):
+        if with_for_update:
+            return session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(File.id == file_id).first()
+
+        else:
+            return session.query(File).filter(File.id == file_id).first()
 
 
     def get_by_id_list(session, file_id_list):
@@ -981,7 +994,10 @@ class File(Base, Caching):
             session,
             project_id: int,
             file_id: int,
-            directory_id=None):
+            directory_id=None,
+            with_for_update = False,
+            nowait = False,
+            skip_locked = False):
         """
         Security models is that if the file matches the project
         (assumes that project_id is trusted), then the file has
@@ -990,9 +1006,15 @@ class File(Base, Caching):
         As a migration if directory_default_id is included
         will use project default directory...
         """
-        file = session.query(File).filter(
-            File.project_id == project_id,
-            File.id == file_id).first()
+        if with_for_update:
+            file = session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(
+                File.project_id == project_id,
+                File.id == file_id).first()
+
+        else:
+            file = session.query(File).filter(
+                File.project_id == project_id,
+                File.id == file_id).first()
 
         # Migration
         if not file and directory_id:
@@ -1000,14 +1022,16 @@ class File(Base, Caching):
             return File.get_by_id_and_directory_untrusted(
                 session=session,
                 directory_id=directory_id,
-                file_id=file_id)
+                file_id=file_id,
+                with_for_update = with_for_update,
+                nowait = nowait,
+                skip_locked = skip_locked)
 
         return file
 
     @staticmethod
     def get_by_name_and_directory(session, directory_id, file_name):
         from shared.database.source_control.working_dir import WorkingDirFileLink
-        print('FILEE', file_name, directory_id)
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
 
@@ -1017,7 +1041,12 @@ class File(Base, Caching):
         return file
 
     @staticmethod
-    def get_by_id_and_directory_untrusted(session, directory_id, file_id):
+    def get_by_id_and_directory_untrusted(session,
+                                          directory_id,
+                                          file_id,
+                                          with_for_update = False,
+                                          nowait = False,
+                                          skip_locked = False):
         # TODO clarify the untrusted part
         # Checks that the file is in the directory / "Pulls" file from there
         # Permissions cascade from project -> directory
@@ -1026,9 +1055,15 @@ class File(Base, Caching):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
 
-        file = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id,
-            File.id == file_id).first()
+        if with_for_update:
+            file = session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.id == file_id).first()
+
+        else:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.id == file_id).first()
 
         # end_time = time.time()
         # print("File access time", end_time - start_time)

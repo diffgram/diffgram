@@ -544,7 +544,9 @@ class Annotation_Update():
             self.file = File.get_frame_from_video(
                 session = self.session,
                 video_parent_file_id = self.video_parent_file.id,
-                frame_number = self.frame_number)
+                frame_number = self.frame_number,
+                with_for_update = True
+            )
 
             if self.file:
                 return
@@ -1758,10 +1760,11 @@ def task_annotation_update(
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
 
+    file = File.get_by_id(session = session, file_id = task.file_id, with_for_update = True)
     annotation_update = Annotation_Update(
         session = session,
         task = task,
-        file = task.file,
+        file = file,
         project = project,
         instance_list_new = instance_list_new,
         video_data = input['video_data'],
@@ -1834,7 +1837,8 @@ def annotation_update_web(
     file = File.get_by_id_and_project(
         session = session,
         project_id = project.id,
-        file_id = file_id)
+        file_id = file_id,
+        with_for_update = True)
 
     # If file permission error make sure it's sending image_file
     # and not video file.
