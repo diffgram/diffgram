@@ -578,7 +578,8 @@ class Annotation_Update():
         self.instance_list_existing = Instance.list(session = self.session,
                                                     file_id = self.file.id,
                                                     limit = None,
-                                                    exclude_removed = False)
+                                                    exclude_removed = False,
+                                                    with_for_update = True)
         for instance in self.instance_list_existing:
             self.instance_list_existing_dict[instance.id] = instance
 

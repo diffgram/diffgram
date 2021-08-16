@@ -626,7 +626,7 @@ import userscript_sources_selector from './userscript_sources_selector.vue'
       update_userscript_with_servercall: async function(){
 
         //console.debug(this.userscript_literal)
-        if (!this.userscript_literal) { return }
+        if (!this.userscript_literal || !this.userscript_literal.id) { return }
 
         this.loading = true;
         this.error = {}
