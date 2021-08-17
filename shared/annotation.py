@@ -568,10 +568,9 @@ class Annotation_Update():
     def detect_and_remove_collisions(self, instance_list):
         result = []
         hashes_dict = {}
-        new_instance_list = []
         for inst in instance_list:
             if inst.soft_delete is True:
-                new_instance_list.append(inst)
+                result.append(inst)
                 continue
 
             if hashes_dict.get(inst.hash):
