@@ -565,6 +565,28 @@ class Annotation_Update():
             )
             self.is_new_file = True
 
+    def detect_and_remove_collisions(self, instance_list):
+        result = []
+        hashes_dict = {}
+        new_instance_list = []
+        for inst in instance_list:
+            if inst.soft_delete is True:
+                new_instance_list.append(inst)
+                continue
+
+            if hashes_dict.get(inst.hash):
+                # Collision detected, we keep the newest instance by created time.
+                if hashes_dict.get(inst.hash).created_time < inst.created_time:
+                    hashes_dict[inst.hash] = inst
+            else:
+                hashes_dict[inst.hash] = inst
+
+        for hash, inst in hashes_dict.items():
+            result.append(inst)
+
+        result.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
+        return result
+
     def init_existing_instances(self):
 
         if self.is_new_file is True:
@@ -582,8 +604,10 @@ class Annotation_Update():
         self.instance_list_existing = Instance.list(session = self.session,
                                                     file_id = self.file.id,
                                                     limit = None,
+                                                    sort_by = 'created_time',
                                                     exclude_removed = False,
                                                     with_for_update = True)
+        self.instance_list_existing = self.detect_and_remove_collisions(self.instance_list_existing)
         for instance in self.instance_list_existing:
             self.instance_list_existing_dict[instance.id] = instance
 
@@ -1196,7 +1220,7 @@ class Annotation_Update():
         if hash_instances:
             self.instance.hash_instance()
 
-        is_new_instance = self.determine_if_new_instance_and_update_current()
+        is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
 
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
@@ -1406,7 +1430,7 @@ class Annotation_Update():
                                              str(self.instance.y_min) + " > y_max" + str(self.instance.y_max)
                 return False
 
-    def determine_if_new_instance_and_update_current(self):
+    def determine_if_new_instance_and_update_current(self, old_id = None):
         """
         Key point here is that the first pass through the list,
         we don't know which ones to delete
@@ -1445,8 +1469,24 @@ class Annotation_Update():
             # We only want to keep one of them.
             logger.warning('Got duplicated hash {}'.format(self.instance.hash))
             is_new_instance = False
+            if old_id is not None:
+                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
+                if old_instance.soft_delete is False:
+                    old_instance.soft_delete = True
+                    # We rehash since at this point the soft_delete changes the hash.
+                    old_instance.hash_instance()
+                    self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
+            if existing_instance.id is not None and self.instance.id is not None:
+                message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
+                    self.instance.id,
+                    existing_instance.id
+                )
+                logger.error(message)
+                self.log['error']['duplicate_instances'] = message
+                return False
+
             self.instance = existing_instance
             return is_new_instance
         else:
@@ -1464,6 +1504,7 @@ class Annotation_Update():
             # here we update current instance to existing instance,
             # that way it should be exactly consistent from caching perspective, ie for id
             existing_instance = self.instance_list_existing[self.existing_instance_index]
+
             self.instance = existing_instance
             try:
                 self.hash_list.remove(self.instance.hash)

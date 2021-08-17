@@ -206,7 +206,8 @@ class Instance(Base):
         date_to = None,
         date_from = None,
         frame_number = None,
-        with_for_update = False
+        with_for_update = False,
+        sort_by = None
     ):
         """
 
@@ -257,6 +258,9 @@ class Instance(Base):
         if limit:
             query = query.limit(limit)
 
+        if sort_by is not None:
+            if sort_by == 'created_time':
+                query = query.order_by(Instance.created_time.desc())
         if return_kind == "query":
             return query
 
