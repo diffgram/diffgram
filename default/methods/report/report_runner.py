@@ -499,7 +499,6 @@ class Report_Runner():
 
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
-        print('AAA', self.results)
         stats = self.format_for_external(self.results)
         stats_serialized = self.serialize_stats(stats)
         Event.new(
@@ -602,8 +601,15 @@ class Report_Runner():
         else:
             self.log['error']['base_class_string'] = "base_class_string is None"
 
+    def __filter_soft_delte_instances(self):
+
+        self.query = self.query.filter(self.base_class.soft_delete == False)
+
     def apply_concrete_filters(self):
 
+        if self.base_class == Instance:
+            self.__filter_soft_delte_instances()
+            
         if self.report_template.task_id:
             self.query = self.__filter_by_task(
                 query = self.query,
@@ -942,6 +948,7 @@ class Report_Runner():
     def group_by_file(self):
         if self.report_template.group_by_labels:
             query = self.session.query(self.base_class.file_id, self.base_class.label_file_id, func.count(self.base_class.id))
+            query = query.filter()
         else:
             query = self.session.query(self.base_class.file_id, func.count(self.base_class.id))
 
@@ -1007,8 +1014,15 @@ class Report_Runner():
         print('stats_list_by_period', stats_list_by_period)
         if report_template is None:
             report_template = self.report_template
+
         second_grouping = None
-        print('view_type', self.report_template.view_type)
+        label_colour_map = None
+        label_names_map = None
+        if self.report_template.group_by_labels:
+            # Get colour map for bars colors
+            label_colour_map = self.project.directory_default.label_file_colour_map
+
+
         if self.report_template.view_type == "count":
 
             if len(stats_list_by_period) == 0:
@@ -1035,12 +1049,22 @@ class Report_Runner():
 
                 if self.report_template.group_by_labels:
                     labels, second_grouping, values = zip(*with_missing_dates)
+                    label_file_ids = set(second_grouping)
+                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
+                    label_names_map = {}
+                    for label_file in labels_files:
+                        label_names_map[label_file.id] = label_file.label.name
                 else:
                     labels, values = zip(*with_missing_dates)
 
             else:
                 if self.report_template.group_by_labels:
                     labels, second_grouping, values = zip(*stats_list_by_period)
+                    label_file_ids = set(second_grouping)
+                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
+                    label_names_map = {}
+                    for label_file in labels_files:
+                        label_names_map[label_file.id] = label_file.label.name
                 else:
                     labels, values = zip(*stats_list_by_period)
 
@@ -1056,9 +1080,15 @@ class Report_Runner():
             # like [2000, 456, 123]
             count = sum(values)
 
+
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
 
-            return {'labels': labels, 'values': values, 'count': count, 'second_grouping': second_grouping}
+            return {'labels': labels,
+                    'values': values,
+                    'count': count,
+                    'label_colour_map': label_colour_map,
+                    'label_names_map': label_names_map,
+                    'second_grouping': second_grouping}
 
     def report_template_list(
         self,
