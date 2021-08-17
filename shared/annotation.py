@@ -584,6 +584,7 @@ class Annotation_Update():
                 # So this one is just to be deleted and not added to results.
                 logger.warning('Collision detected on {} instance id: {}'.format(inst.hash, inst.id))
                 inst.soft_delete = True
+                inst.action_type = "from_collision"
                 self.session.add(inst)
 
         return result
