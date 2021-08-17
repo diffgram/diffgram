@@ -570,12 +570,16 @@ class Annotation_Update():
         hashes_dict = {}
         instance_list.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
         for inst in instance_list:
+            # Rehash instances in case of hash mismatching current state.
+            inst.hash_instance()
+            self.session.add(inst)
             if inst.soft_delete is True:
                 result.append(inst)
                 continue
 
             if hashes_dict.get(inst.hash):
                 # Collision detected, we keep the newest instance by created time.
+                logger.warning('Collision detected on {} instance id: {}'.format(inst.hash, inst.id))
                 hashes_dict.get(inst.hash).soft_delete = True
                 self.session.add(hashes_dict.get(inst.hash))
                 hashes_dict[inst.hash] = inst
