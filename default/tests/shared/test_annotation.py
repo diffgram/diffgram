@@ -36,6 +36,46 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_detect_and_remove_collisions(self):
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5}, self.session)
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance1.hash_instance()
+        instance2.hash_instance()
+        instance3.hash_instance()
+        video_data = {
+            'video_mode': True,
+            'video_file_id': file1.id,
+            'current_frame': frame.frame_number
+        }
+        inst_list = [instance1, instance2, instance3]
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [],
+            file = file1,
+            do_init_existing_instances = True
+        )
+        result = ann_update.detect_and_remove_collisions(inst_list)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], instance3)
+
+
     def test_update_cache_single_instance_in_list_context(self):
         """
             Test that the instance gets serialized correctly and that if the instance has no ID
@@ -270,14 +310,17 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             self.session
         )
         instance2 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            {'x_min': 2, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
             self.session
         )
 
         instance3 = data_mocking.create_instance(
-            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            {'x_min': 3, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
             self.session
         )
+        instance1.hash_instance()
+        instance2.hash_instance()
+        instance3.hash_instance()
         old_payload = [instance1, instance2, instance3]
         new_list_payload = [x.serialize_with_label() for x in old_payload]
         new_list_payload_wrong = [instance1.serialize_with_label()]
@@ -315,7 +358,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
-
+        print('AAAAAA', ann_update.log)
         self.assertFalse(result)
         self.assertTrue(len(ann_update.log['error'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['error'])
