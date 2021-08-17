@@ -1431,6 +1431,37 @@ class Annotation_Update():
                                              str(self.instance.y_min) + " > y_max" + str(self.instance.y_max)
                 return False
 
+
+    def detect_special_duplicate_data_cases_from_existing_ids(self, old_id):
+
+        if self.instance.soft_delete is True and not self.new_instance_dict_hash.get(self.instance.hash):
+            self.append_new_instance_list_hash(self.instance)   # tracking for special cases
+            return True
+        else:
+            # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
+            # We only want to keep one of them.
+            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
+            if old_id is not None:
+                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
+                if old_instance.soft_delete is False:
+                    old_instance.soft_delete = True
+                    # We rehash since at this point the soft_delete changes the hash.
+                    old_instance.hash_instance()
+                    self.session.add(old_instance)
+            # The instance_dict hash will always have the newest instance (sorted by created_time)
+            existing_instance = self.new_instance_dict_hash[self.instance.hash]
+            if existing_instance.id is not None and self.instance.id is not None:
+                message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
+                    self.instance.id,
+                    existing_instance.id
+                )
+                logger.error(message)
+                self.log['error']['duplicate_instances'] = message
+                return False
+
+            self.instance = existing_instance
+            return False
+
     def determine_if_new_instance_and_update_current(self, old_id = None):
         """
         Key point here is that the first pass through the list,
@@ -1465,34 +1496,9 @@ class Annotation_Update():
 
         """
         is_new_instance = True
-        if self.instance.soft_delete is False and self.new_instance_dict_hash.get(self.instance.hash) is not None:
-            # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
-            # We only want to keep one of them.
-            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
-            is_new_instance = False
-            if old_id is not None:
-                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
-                if old_instance.soft_delete is False:
-                    old_instance.soft_delete = True
-                    # We rehash since at this point the soft_delete changes the hash.
-                    old_instance.hash_instance()
-                    self.session.add(old_instance)
-            # The instance_dict hash will always have the newest instance (sorted by created_time)
-            existing_instance = self.new_instance_dict_hash[self.instance.hash]
-            if existing_instance.id is not None and self.instance.id is not None:
-                message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
-                    self.instance.id,
-                    existing_instance.id
-                )
-                logger.error(message)
-                self.log['error']['duplicate_instances'] = message
-                return False
 
-            self.instance = existing_instance
-            return is_new_instance
-        else:
-            # Add the instance hash if the instance is soft_delete False
-            self.append_new_instance_list_hash(self.instance)
+        special_case_result = self.detect_special_duplicate_data_cases_from_existing_ids(old_id)
+        if special_case_result is False: return False
 
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
