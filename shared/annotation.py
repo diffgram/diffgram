@@ -568,6 +568,7 @@ class Annotation_Update():
     def detect_and_remove_collisions(self, instance_list):
         result = []
         hashes_dict = {}
+        instance_list.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
         for inst in instance_list:
             if inst.soft_delete is True:
                 result.append(inst)
@@ -575,21 +576,16 @@ class Annotation_Update():
 
             if hashes_dict.get(inst.hash):
                 # Collision detected, we keep the newest instance by created time.
-                if hashes_dict.get(inst.hash).created_time < inst.created_time:
-                    hashes_dict.get(inst.hash).soft_delete = True
-                    self.session.add(hashes_dict.get(inst.hash))
-                    hashes_dict[inst.hash] = inst
-                else:
-                    inst.soft_delete = True
-                    self.session.add(inst)
-
+                hashes_dict.get(inst.hash).soft_delete = True
+                self.session.add(inst)
+                hashes_dict[inst.hash] = inst
             else:
                 hashes_dict[inst.hash] = inst
 
         for hash, inst in hashes_dict.items():
             result.append(inst)
 
-        result.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
+            result.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
         return result
 
     def init_existing_instances(self):
