@@ -99,6 +99,14 @@ def cache_regeneration_core(session, project, file_id, frame_number, log):
             if not file:
                 log['error']['frame_number'] = 'Frame {} does not exists.'.format(frame_number)
                 return result, log
+
+    instance_list_existing = Instance.list(session = session,
+                                            file_id = file.id,
+                                            limit = None)
+    for instance in instance_list_existing:
+        instance.hash_instance()
+        session.add(instance)
+
     # Invalidate cache
     file.set_cache_key_dirty('instance_list')
     # Regenerate Cache
@@ -107,4 +115,5 @@ def cache_regeneration_core(session, project, file_id, frame_number, log):
         cache_miss_function = file.serialize_instance_list_only,
         session = session)
     result['regenerated'] = True
+
     return result, log

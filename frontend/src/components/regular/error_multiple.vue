@@ -4,7 +4,7 @@
 
     <v-alert v-if="Object.keys(error).length"
              v-model="show"
-             type="error"
+             :type="type"
              :width="width"
              :height="height"
              :dense="dense"
@@ -76,6 +76,9 @@ import Vue from "vue"; export default Vue.extend( {
     'dense': {
       default: false
     },
+    'type':{
+      default: 'error'
+    }
   },
   data() {
     return {
