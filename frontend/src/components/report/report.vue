@@ -525,7 +525,7 @@
 import axios from 'axios';
 import label_select_only from '../label/label_select_only.vue'
 import tooltip_button from '../regular/tooltip_button.vue'
-
+import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
 export default Vue.extend( {
@@ -1133,20 +1133,21 @@ export default Vue.extend( {
 
 
   },
-  standard_format_csv: function(){
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += 'Label,Value \r\n';
-    // Add Content from this.stats
-    for (let i=0; i< this.stats.labels.length; i++){
-      csvContent += `${String(this.stats.labels[i]).replace(/,/g, "")},${this.stats.values[i]}\r\n`
-    }
-    return csvContent
-  },
+
   download_csv: function(){
 
 
+
+    const csv_formatter = new CSVReportFormatter(
+      this.labels,
+      this.values,
+      this.second_grouping,
+      this.label_names_map,
+      this.report_template
+    )
+    let csvContent = csv_formatter.get_csv_data()
+    console.log('AAAA', csvContent)
     // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
-    let csvContent = this.standard_format_csv();
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
