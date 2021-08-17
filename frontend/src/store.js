@@ -605,7 +605,7 @@ const clipboard = {
   },
   mutations: {
     set_clipboard(state, data) {
-      state.current = data
+      state.clipboard_data = data
     },
     clear_clipboard(state, data) {
       state.clipboard_data = data
@@ -663,6 +663,7 @@ const my_store = new Vuex.Store({
     job: job,
     connection: connection,
     input: input,
+    clipboard: clipboard,
     public_project: public_project
   },
   plugins: [createPersistedState({

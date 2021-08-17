@@ -6168,8 +6168,10 @@ export default Vue.extend( {
         return instance
       }
     },
-    add_pasted_instance_to_instance_list: function(instance_clipboard){
+    add_pasted_instance_to_instance_list: function(instance_clipboard, next_frames){
       let on_new_frame = false;
+      console.log('instance_clipboard', instance_clipboard, this.current_frame, instance_clipboard.original_frame_number, next_frames)
+      console.log('wwwww', instance_clipboard.original_frame_number != this.current_frame)
       if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
         on_new_frame = true;
       }
@@ -6243,15 +6245,20 @@ export default Vue.extend( {
       }
     },
     paste_instance: function(next_frames = undefined, instance_hover_index = undefined){
-      let instance_clipboard = this.$store.get();
-      if(!this.instance_clipboard && instance_hover_index == undefined){return}
+
+
+      const clipboard = this.clipboard;
+      console.log('VUEX CLIPBOARD', clipboard);
+      if(!clipboard && instance_hover_index == undefined){return}
       if(instance_hover_index != undefined){
         this.copy_instance(false, instance_hover_index)
       }
       // We need to duplicate on each paste to avoid double ID's on the instance list.
+      for(const instance_clipboard of this.clipboard){
+        let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
+        this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames)
+      }
 
-      this.instance_clipboard = this.duplicate_instance(this.instance_clipboard);
-      this.add_pasted_instance_to_instance_list(this.instance_clipboard)
 
 
     },
