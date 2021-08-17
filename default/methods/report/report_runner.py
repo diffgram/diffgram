@@ -601,14 +601,14 @@ class Report_Runner():
         else:
             self.log['error']['base_class_string'] = "base_class_string is None"
 
-    def __filter_soft_delte_instances(self):
+    def __filter_soft_delete_instances(self):
 
         self.query = self.query.filter(self.base_class.soft_delete == False)
 
     def apply_concrete_filters(self):
 
         if self.base_class == Instance:
-            self.__filter_soft_delte_instances()
+            self.__filter_soft_delete_instances()
             
         if self.report_template.task_id:
             self.query = self.__filter_by_task(
