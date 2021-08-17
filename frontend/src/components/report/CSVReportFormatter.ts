@@ -50,10 +50,8 @@ export class CSVReportFormatter{
     for(let file_id of Object.keys(file_label_map)){
       let row = `${file_id},`;
       let labels_count = label_names.map(elm => 0);
-      console.log('AAAA', file_label_map[file_id])
       for(let label_file_id of Object.keys(file_label_map[file_id])){
         let index = label_names.indexOf(this.label_names_map[label_file_id]);
-        console.log('AAAA', label_names, label_file_id, index)
         labels_count[index] = file_label_map[file_id][label_file_id]
       }
 

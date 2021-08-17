@@ -66,7 +66,7 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
-      <v_error_multiple :error="save_warning" type="warning">
+      <v_error_multiple :error="save_warning" type="warning" data-cy="save_warning">
       </v_error_multiple>
       <div fluid v-if="display_refresh_cache_button">
         <v-btn small color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
