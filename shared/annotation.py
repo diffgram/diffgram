@@ -577,7 +577,13 @@ class Annotation_Update():
             if hashes_dict.get(inst.hash):
                 # Collision detected, we keep the newest instance by created time.
                 if hashes_dict.get(inst.hash).created_time < inst.created_time:
+                    hashes_dict.get(inst.hash).soft_delete = True
+                    self.session.add(hashes_dict.get(inst.hash))
                     hashes_dict[inst.hash] = inst
+                else:
+                    inst.soft_delete = True
+                    self.session.add(inst)
+
             else:
                 hashes_dict[inst.hash] = inst
 
