@@ -434,6 +434,9 @@ export default Vue.extend( {
       },
       'user_nav_width_for_frame_previews':{
         default: true
+      },
+      'parent_save':{
+        default: undefined
       }
     },
   components: {
@@ -692,12 +695,11 @@ export default Vue.extend( {
        *    data ownership in vue components. like logically video should be a seperate thing
        *    but the channel between video and annotation core is not great
        */
-
-      this.$emit('request_save')
-
-      if (this.has_changed == true) {
-        await this.sleep(200) // give it a chance to save / fire off thing
+      if(!this.$props.parent_save){
+        return
       }
+
+      await this.$props.parent_save()
 
       return true
 

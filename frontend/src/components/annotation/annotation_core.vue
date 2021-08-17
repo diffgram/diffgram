@@ -66,6 +66,8 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
+      <v_error_multiple :error="save_warning" type="warning">
+      </v_error_multiple>
       <div fluid v-if="display_refresh_cache_button">
         <v-btn small color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
           <v-icon>mdi-refresh</v-icon>
@@ -334,7 +336,7 @@
 
       -->
 
-        <div  id="canvas_wrapper" style="position: relative;"
+        <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
 
               @mousemove="mouse_move"
               @mousedown="mouse_down"
@@ -561,6 +563,7 @@
                   :current_video="current_video"
                   :video_mode="video_mode"
                   :player_height="'80px'"
+                  :parent_save="this.detect_is_ok_to_save"
                   :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
                   @pause="video_playing = false"
@@ -1009,6 +1012,7 @@ export default Vue.extend( {
 
 
       lock_point_hover_change: false,
+      save_warning: {},
 
       magic_nav_spacer: 40,
 
@@ -2435,9 +2439,9 @@ export default Vue.extend( {
       this.interval_autosave = setInterval(this.detect_is_ok_to_save, 15*1000);
     },
 
-    detect_is_ok_to_save: function() {
+    detect_is_ok_to_save: async function() {
       if (this.has_changed) {
-        this.save();
+        await this.save();
       }
     },
 
@@ -6267,6 +6271,11 @@ export default Vue.extend( {
         points: points,
         nodes: nodes,
         edges: edges,
+        version: undefined,
+        root_id: undefined,
+        previous_id: undefined,
+        next_id: undefined,
+        creation_ref_id: undefined,
         attribute_groups: {...instance_to_copy.attribute_groups}
       };
 
@@ -6361,11 +6370,80 @@ export default Vue.extend( {
 
       }
 
-    },
 
+      const current_frontend_instances = instance_list.map(id => id);
+
+    },
+    stringHashCode: function(str){
+      let hash = 0
+      for (let i = 0; i < str.length; ++i)
+        hash = Math.imul(31, hash) + str.charCodeAt(i)
+
+      return hash | 0
+    },
+    has_duplicate_instances: function(instance_list){
+
+      const hashes = {};
+      const dup_ids = [];
+      const dup_indexes = [];
+      for(let i = 0; i < instance_list.length; i++){
+        const inst = instance_list[i];
+        if(inst.soft_delete){
+          continue;
+        }
+        const inst_hash = JSON.stringify({
+          type: inst.type,
+          x_min: inst.x_min,
+          y_min: inst.y_min,
+          y_max: inst.y_max,
+          x_max: inst.x_max,
+          p1: inst.p1,
+          p2: inst.p2,
+          cp: inst.cp,
+          center_x: inst.center_x,
+          center_y: inst.center_y,
+          angle: inst.angle,
+          width: inst.width,
+          height: inst.height,
+          start_char: inst.start_char,
+          end_char: inst.end_char,
+          start_token: inst.start_token,
+          end_token: inst.end_token,
+          start_sentence: inst.start_sentence,
+          end_sentence: inst.end_sentence,
+          sentence: inst.sentence,
+          label_file_id: inst.label_file_id,
+          number: inst.number,
+          rating: inst.rating,
+          points: inst.points,
+          front_face: inst.front_face,
+          rear_face: inst.rear_face,
+          soft_delete: inst.soft_delete,
+          attribute_groups: inst.attribute_groups,
+          machine_made: inst.machine_made,
+          sequence_id: inst.sequence_id,
+          pause_object: inst.pause_object
+        })
+        if(hashes[inst_hash]){
+          dup_ids.push(inst.id ? inst.id : 'New Instance')
+          dup_ids.push(hashes[inst_hash][0].id ? hashes[inst_hash][0].id : 'New Instance')
+
+          dup_indexes.push(i)
+          dup_indexes.push(hashes[inst_hash][1])
+          return [true, dup_ids, dup_indexes];
+
+        }
+        else{
+          hashes[inst_hash] = [inst, i]
+        }
+
+      }
+      return [false, dup_ids, dup_indexes];
+
+    },
     save: async function (and_complete=false) {
       this.save_error = {}
-
+      this.save_warning = {}
       if (this.$props.view_only_mode == true) {
         return
       }
@@ -6379,13 +6457,25 @@ export default Vue.extend( {
       if (this.any_loading == true) {
         return
       }
+      this.save_loading = true
+      let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
+      if(has_duplicate_instances){
+        this.save_warning = {
+          duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
+        }
+        for(const idx of dup_indexes){
+          this.$refs.instance_detail_list.toggle_instance_focus(idx, undefined);
+        }
+        this.save_loading = false;
 
+        return
+      }
       this.instance_list_cache = this.instance_list.slice()
       let current_frame_cache = this.current_frame
       let current_video_file_id_cache = this.current_video_file_id
       let video_mode_cache = this.video_mode
 
-      this.save_loading = true
+
 
       // a video file can now be
       // saved from file id + frame, so the current file
@@ -6422,6 +6512,7 @@ export default Vue.extend( {
           current_frame: current_frame_cache
         }
       }
+
       try {
         const response = await axios.post(url, {
           instance_list: this.instance_list_cache,
@@ -6453,10 +6544,10 @@ export default Vue.extend( {
         this.save_count += 1;
         this.add_ids_to_new_instances_and_delete_old(response, video_data);
 
-        this.has_changed = false
+
         this.check_if_pending_created_instance();
         this.$emit('save_response_callback', true)
-        this.save_loading = false
+
         if(this.instance_buffer_metadata[this.current_frame]){
           this.instance_buffer_metadata[this.current_frame].pending_save = false;
         }
@@ -6496,7 +6587,8 @@ export default Vue.extend( {
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
-
+        this.save_loading = false
+        this.has_changed = false
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true

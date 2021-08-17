@@ -27,6 +27,7 @@ from shared.database.video.video import Video
 from shared.database.video.sequence import Sequence
 from shared.database.external.external import ExternalMap
 from shared.shared_logger import get_shared_logger
+import traceback
 
 logger = get_shared_logger()
 
@@ -63,7 +64,7 @@ class Annotation_Update():
     directory = None
     external_map: ExternalMap = None
     external_map_action: str = None
-
+    new_instance_dict_hash: dict = field(default_factory = lambda: {}) # Keep a hash of all
     do_create_new_file = False
     new_file = None
     frame_number = None
@@ -383,8 +384,6 @@ class Annotation_Update():
             if instance.soft_delete:
                 continue
             if instance.id not in new_id_list:
-                instance.hash_instance()
-                self.session.add(instance)
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
@@ -399,6 +398,17 @@ class Annotation_Update():
             return False
         return True
 
+    def append_new_instance_list_hash(self, instance):
+
+        if instance.soft_delete is False:
+            self.new_instance_dict_hash[instance.hash] = instance
+            return True
+        return False
+
+    def order_new_instances_by_date(self):
+        self.instance_list_new.sort(key=lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')), reverse=True)
+        return self.instance_list_new
+
     def annotation_update_main(self):
 
         """
@@ -411,6 +421,7 @@ class Annotation_Update():
             return self.return_orginal_file_type()
         logger.debug('Bulding existing hash list...')
 
+        self.instance_list_new = self.order_new_instances_by_date()
         payload_includes_all_instances = self.__check_all_instances_available_in_new_instance_list()
 
         if not payload_includes_all_instances:
@@ -534,7 +545,10 @@ class Annotation_Update():
             self.file = File.get_frame_from_video(
                 session = self.session,
                 video_parent_file_id = self.video_parent_file.id,
-                frame_number = self.frame_number)
+                frame_number = self.frame_number,
+                with_for_update = True,
+                nowait = True
+            )
 
             if self.file:
                 return
@@ -550,6 +564,30 @@ class Annotation_Update():
                 task = self.task
             )
             self.is_new_file = True
+
+    def detect_and_remove_collisions(self, instance_list):
+        result = []
+        hashes_dict = {}
+        instance_list.sort(key = lambda item: (item.created_time is not None, item.created_time), reverse = True)
+
+        for inst in instance_list:
+
+            if inst.soft_delete is True:
+                result.append(inst)
+                continue
+
+            if hashes_dict.get(inst.hash) is None:
+                result.append(inst)
+                hashes_dict[inst.hash] = True
+            else:
+                # Collision detected, we keep the newest instance by created time (which was order sorted).
+                # So this one is just to be deleted and not added to results.
+                logger.warning('Collision detected on {} instance id: {}'.format(inst.hash, inst.id))
+                inst.soft_delete = True
+                inst.action_type = "from_collision"
+                self.session.add(inst)
+
+        return result
 
     def init_existing_instances(self):
 
@@ -568,7 +606,10 @@ class Annotation_Update():
         self.instance_list_existing = Instance.list(session = self.session,
                                                     file_id = self.file.id,
                                                     limit = None,
-                                                    exclude_removed = False)
+                                                    sort_by = 'created_time',
+                                                    exclude_removed = False,
+                                                    with_for_update = True)
+        self.instance_list_existing = self.detect_and_remove_collisions(self.instance_list_existing)
         for instance in self.instance_list_existing:
             self.instance_list_existing_dict[instance.id] = instance
 
@@ -1181,7 +1222,7 @@ class Annotation_Update():
         if hash_instances:
             self.instance.hash_instance()
 
-        is_new_instance = self.determine_if_new_instance_and_update_current()
+        is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
 
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
@@ -1229,7 +1270,10 @@ class Annotation_Update():
         Assumes it's running after determine_if_new_instance_and_update_current()
         since that updates self.instance if it exists
         """
-        # Prevent from adding the same instance ID 2 times.
+        # Prevent from adding the same instances with ID None (cases where list has the same instance twice)
+        # And both instances have the same hash and no ID.
+        if self.instance.id is None:
+            return
         serialized_data = self.instance.serialize_with_label()
         self.instance_list_kept_serialized.append(serialized_data)
 
@@ -1388,7 +1432,38 @@ class Annotation_Update():
                                              str(self.instance.y_min) + " > y_max" + str(self.instance.y_max)
                 return False
 
-    def determine_if_new_instance_and_update_current(self):
+
+    def detect_special_duplicate_data_cases_from_existing_ids(self, old_id):
+
+        if self.instance.soft_delete is True or not self.new_instance_dict_hash.get(self.instance.hash):
+            self.append_new_instance_list_hash(self.instance)   # tracking for special cases
+            return True
+        else:
+            # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
+            # We only want to keep one of them.
+            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
+            if old_id is not None:
+                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
+                if old_instance.soft_delete is False:
+                    old_instance.soft_delete = True
+                    # We rehash since at this point the soft_delete changes the hash.
+                    old_instance.hash_instance()
+                    self.session.add(old_instance)
+            # The instance_dict hash will always have the newest instance (sorted by created_time)
+            existing_instance = self.new_instance_dict_hash[self.instance.hash]
+            if existing_instance.id is not None and self.instance.id is not None:
+                message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
+                    self.instance.id,
+                    existing_instance.id
+                )
+                logger.error(message)
+                self.log['error']['duplicate_instances'] = message
+                return False
+
+            self.instance = existing_instance
+            return False
+
+    def determine_if_new_instance_and_update_current(self, old_id = None):
         """
         Key point here is that the first pass through the list,
         we don't know which ones to delete
@@ -1423,6 +1498,9 @@ class Annotation_Update():
         """
         is_new_instance = True
 
+        special_case_result = self.detect_special_duplicate_data_cases_from_existing_ids(old_id)
+        if special_case_result is False: return False
+
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
         if self.existing_instance_index is not None:
@@ -1434,6 +1512,7 @@ class Annotation_Update():
             # here we update current instance to existing instance,
             # that way it should be exactly consistent from caching perspective, ie for id
             existing_instance = self.instance_list_existing[self.existing_instance_index]
+
             self.instance = existing_instance
             try:
                 self.hash_list.remove(self.instance.hash)
@@ -1443,6 +1522,7 @@ class Annotation_Update():
 
             # In this case instance is NOT a new instance, because hash already exists.
             return is_new_instance
+
 
         # TODO maybe look at pulling this into it's own function
 
@@ -1714,7 +1794,8 @@ def task_annotation_update(
     task_id: int,
     input,
     untrusted_input,
-    task = None):
+    task = None,
+    log = regular_log.default()):
     # In context of already having the {task} object,
     # ie for newly created stuff... (to prevent race conditions)
     if not task:
@@ -1730,11 +1811,18 @@ def task_annotation_update(
 
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
-
+    try:
+        file = File.get_by_id(session = session, file_id = task.file_id, with_for_update = True, nowait = True)
+    except Exception as e:
+        trace = traceback.format_exc()
+        logger.error('File {} is Locked'.format(task.file_id))
+        logger.error(trace)
+        log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
+        return False, None
     annotation_update = Annotation_Update(
         session = session,
         task = task,
-        file = task.file,
+        file = file,
         project = project,
         instance_list_new = instance_list_new,
         video_data = input['video_data'],
@@ -1793,7 +1881,8 @@ def task_exam_stats(task,
 def annotation_update_web(
     session,
     project_string_id,
-    file_id):
+    file_id,
+    log = regular_log.default()):
     data = request.get_json(force = True)  # Force = true if not set as application/json'
 
     if file_id is None: return "error file_id is None", 400
@@ -1803,11 +1892,19 @@ def annotation_update_web(
 
     project = Project.get(session, project_string_id)
     user = User.get(session)
-
-    file = File.get_by_id_and_project(
-        session = session,
-        project_id = project.id,
-        file_id = file_id)
+    try:
+        file = File.get_by_id_and_project(
+            session = session,
+            project_id = project.id,
+            file_id = file_id,
+            with_for_update = True,
+            nowait = True)
+    except Exception as e:
+        trace = traceback.format_exc()
+        logger.error('File {} is Locked'.format(file_id))
+        logger.error(trace)
+        log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
+        return False, None
 
     # If file permission error make sure it's sending image_file
     # and not video file.
