@@ -769,7 +769,8 @@ import { cloneDeep } from 'lodash';
 import { KeypointInstance } from '../vue_canvas/instances/KeypointInstance';
 import userscript from './userscript/userscript.vue';
 import toolbar from './toolbar.vue'
-
+import { sha256 } from 'js-sha256';
+import stringify  from 'json-stable-stringify';
 import PropType from 'vue'
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
@@ -4175,7 +4176,74 @@ export default Vue.extend( {
       this.ghost_clear_hover_index()
     }
   },
-
+  calculate_min_max_points: function(instance){
+    if(['polygon', 'point'].includes(instance.type)){
+      instance.x_min = Math.min(...instance.points.map(p => p.x))
+      instance.y_min = Math.min(...instance.points.map(p => p.y))
+      instance.x_max = Math.max(...instance.points.map(p => p.x))
+      instance.y_max = Math.max(...instance.points.map(p => p.y))
+    }
+    else if(['cuboid'].includes(instance.type)){
+      instance.x_min = Math.min(
+        instance.front_face['top_right']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.front_face['top_left']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.rear_face['top_right']['x'],
+        instance.rear_face['bot_right']['x'],
+        instance.rear_face['top_left']['x'],
+        instance.rear_face['bot_right']['x'],
+      )
+      instance.x_max = Math.max(
+        instance.front_face['top_right']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.front_face['top_left']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.rear_face['top_right']['x'],
+        instance.rear_face['bot_right']['x'],
+        instance.rear_face['top_left']['x'],
+        instance.rear_face['bot_right']['x'],
+      )
+      instance.y_min = Math.min(
+        instance.front_face['top_right']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.front_face['top_left']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.rear_face['top_right']['y'],
+        instance.rear_face['bot_right']['y'],
+        instance.rear_face['top_left']['y'],
+        instance.rear_face['bot_right']['y'],
+      )
+      instance.y_max = Math.max(
+        instance.front_face['top_right']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.front_face['top_left']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.rear_face['top_right']['y'],
+        instance.rear_face['bot_right']['y'],
+        instance.rear_face['top_left']['y'],
+        instance.rear_face['bot_right']['y'],
+      )
+    }
+    else if(['ellipse'].includes(instance.type)){
+      instance.x_min = instance.center_x - instance.width;
+      instance.y_min = instance.center_y - instance.height;
+      instance.x_max = instance.center_x + instance.width
+      instance.y_max = instance.center_y + instance.height
+    }
+    else if(['curve'].includes(instance.type)){
+      instance.x_min = Math.min(instance.p1.x, instance.p2.x)
+      instance.x_max = Math.max(instance.p1.x, instance.p2.x)
+      instance.y_min = Math.min(instance.p1.y, instance.p2.y)
+      instance.y_max = Math.max(instance.p1.y, instance.p2.y)
+    }
+    else if(['keypoints'].includes(instance.type)){
+      instance.x_min = Math.min(...instance.nodes.map(p => p.x))
+      instance.y_min = Math.min(...instance.nodes.map(p => p.y))
+      instance.x_max = Math.max(...instance.nodes.map(p => p.x))
+      instance.t_max = Math.max(...instance.nodes.map(p => p.y))
+    }
+  },
   move_something: function (event) {
 
       /*
@@ -4227,7 +4295,7 @@ export default Vue.extend( {
     }
 
     if (box_did_move || polygon_did_move || cuboid_did_move || ellipse_did_move || curve_did_move || polygon_dragged || key_points_did_move) {
-
+      this.calculate_min_max_points(this.instance_list[this.instance_hover_index]);
       this.set_instance_human_edited(this.instance_list[this.instance_hover_index])
       this.has_changed = true;
     }
@@ -6274,9 +6342,10 @@ export default Vue.extend( {
         version: undefined,
         root_id: undefined,
         previous_id: undefined,
+        action_type: undefined,
         next_id: undefined,
         creation_ref_id: undefined,
-        attribute_groups: {...instance_to_copy.attribute_groups}
+        attribute_groups: instance_to_copy.attribute_groups ? {...instance_to_copy.attribute_groups} : null
       };
 
       if(result.type === 'cuboid'){
@@ -6374,12 +6443,8 @@ export default Vue.extend( {
       const current_frontend_instances = instance_list.map(id => id);
 
     },
-    stringHashCode: function(str){
-      let hash = 0
-      for (let i = 0; i < str.length; ++i)
-        hash = Math.imul(31, hash) + str.charCodeAt(i)
-
-      return hash | 0
+    hash_string: function(str){
+      return sha256(str)
     },
     has_duplicate_instances: function(instance_list){
 
@@ -6391,7 +6456,7 @@ export default Vue.extend( {
         if(inst.soft_delete){
           continue;
         }
-        const inst_hash = JSON.stringify({
+        const inst_data = {
           type: inst.type,
           x_min: inst.x_min,
           y_min: inst.y_min,
@@ -6415,15 +6480,20 @@ export default Vue.extend( {
           label_file_id: inst.label_file_id,
           number: inst.number,
           rating: inst.rating,
-          points: inst.points,
-          front_face: inst.front_face,
-          rear_face: inst.rear_face,
+          points: inst.points.map(point => {return {...point}}),
+          front_face: {...inst.front_face},
+          rear_face: {...inst.rear_face},
           soft_delete: inst.soft_delete,
-          attribute_groups: inst.attribute_groups,
+          attribute_groups: {...inst.attribute_groups},
           machine_made: inst.machine_made,
           sequence_id: inst.sequence_id,
           pause_object: inst.pause_object
-        })
+        }
+        console.log('beffff', inst_data);
+        // We want a nested stringify with sorted keys. Builtin JS does not guarantee sort on nested objs.
+        const inst_hash_data = stringify(inst_data)
+        let inst_hash = this.hash_string(inst_hash_data)
+        console.log('AAA', inst_hash, inst.id, inst_hash_data);
         if(hashes[inst_hash]){
           dup_ids.push(inst.id ? inst.id : 'New Instance')
           dup_ids.push(hashes[inst_hash][0].id ? hashes[inst_hash][0].id : 'New Instance')
