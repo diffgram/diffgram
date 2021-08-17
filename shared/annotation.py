@@ -1434,7 +1434,7 @@ class Annotation_Update():
 
     def detect_special_duplicate_data_cases_from_existing_ids(self, old_id):
 
-        if self.instance.soft_delete is True and not self.new_instance_dict_hash.get(self.instance.hash):
+        if self.instance.soft_delete is True or not self.new_instance_dict_hash.get(self.instance.hash):
             self.append_new_instance_list_hash(self.instance)   # tracking for special cases
             return True
         else:
