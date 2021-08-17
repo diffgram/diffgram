@@ -594,6 +594,25 @@ const builder_or_trainer = {
   }
 }
 
+const clipboard = {
+  state: {
+    clipboard_data: undefined,
+  },
+  getters:{
+    get_clipboard: state => {
+      return state.clipboard_data;
+    }
+  },
+  mutations: {
+    set_clipboard(state, data) {
+      state.current = data
+    },
+    clear_clipboard(state, data) {
+      state.clipboard_data = data
+    }
+  }
+}
+
 const video = {
   state: {
     current: {},

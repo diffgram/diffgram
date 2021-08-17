@@ -1280,8 +1280,9 @@ export default Vue.extend( {
     }
   },
   computed: {
-
-
+    clipboard: function() {
+      return this.$store.getters.get_clipboard
+    },
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -6167,40 +6168,34 @@ export default Vue.extend( {
         return instance
       }
     },
-    paste_instance: function(next_frames = undefined, instance_hover_index = undefined){
-      if(!this.instance_clipboard && instance_hover_index == undefined){return}
-      if(instance_hover_index != undefined){
-        this.copy_instance(false, instance_hover_index)
-      }
-      // We need to duplicate on each paste to avoid double ID's on the instance list.
-      this.instance_clipboard = this.duplicate_instance(this.instance_clipboard);
+    add_pasted_instance_to_instance_list: function(instance_clipboard){
       let on_new_frame = false;
-      if(this.instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
+      if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
         on_new_frame = true;
       }
-      if(this.instance_clipboard.type === 'point' && !on_new_frame){
+      if(instance_clipboard.type === 'point' && !on_new_frame){
         this.instance_clipboard.points[0].x += 50
         this.instance_clipboard.points[0].y += 50
       }
-      else if(this.instance_clipboard.type === 'box' && !on_new_frame){
+      else if(instance_clipboard.type === 'box' && !on_new_frame){
         this.instance_clipboard.x_min += 50
         this.instance_clipboard.x_max += 50
         this.instance_clipboard.y_min += 50
         this.instance_clipboard.y_max += 50
       }
-      else if((this.instance_clipboard.type === 'line' || this.instance_clipboard.type === 'polygon') && !on_new_frame){
+      else if((instance_clipboard.type === 'line' || instance_clipboard.type === 'polygon') && !on_new_frame){
         for(const point of this.instance_clipboard.points){
           point.x += 50;
           point.y += 50;
         }
       }
-      else if((this.instance_clipboard.type === 'keypoints') && !on_new_frame){
+      else if((instance_clipboard.type === 'keypoints') && !on_new_frame){
         for(const node of this.instance_clipboard.nodes){
           node.x += 50;
           node.y += 50;
         }
       }
-      else if(this.instance_clipboard.type === 'cuboid'  && !on_new_frame){
+      else if(instance_clipboard.type === 'cuboid'  && !on_new_frame){
         for(let key in this.instance_clipboard.front_face){
           if(['width', 'height'].includes(key)){continue}
           this.instance_clipboard.front_face[key].x += 85
@@ -6209,11 +6204,11 @@ export default Vue.extend( {
           this.instance_clipboard.rear_face[key].y += 85
         }
       }
-      else if(this.instance_clipboard.type === 'ellipse'  && !on_new_frame){
+      else if(instance_clipboard.type === 'ellipse'  && !on_new_frame){
         this.instance_clipboard.center_y += 50
         this.instance_clipboard.center_x += 50
       }
-      else if(this.instance_clipboard.type === 'curve'  && !on_new_frame){
+      else if(instance_clipboard.type === 'curve'  && !on_new_frame){
         this.instance_clipboard.p1.x += 50
         this.instance_clipboard.p1.y += 50
         this.instance_clipboard.p2.x += 50
@@ -6225,7 +6220,7 @@ export default Vue.extend( {
         instance.selected = false;
       }
 
-      let pasted_instance = this.initialize_instance(this.instance_clipboard);
+      let pasted_instance = this.initialize_instance(instance_clipboard);
 
       if(next_frames != undefined){
         let next_frames_to_add = parseInt(next_frames, 10);
@@ -6246,6 +6241,18 @@ export default Vue.extend( {
         // Auto select on label view detail for inmediate attribute edition.
         this.create_instance_events()
       }
+    },
+    paste_instance: function(next_frames = undefined, instance_hover_index = undefined){
+      let instance_clipboard = this.$store.get();
+      if(!this.instance_clipboard && instance_hover_index == undefined){return}
+      if(instance_hover_index != undefined){
+        this.copy_instance(false, instance_hover_index)
+      }
+      // We need to duplicate on each paste to avoid double ID's on the instance list.
+
+      this.instance_clipboard = this.duplicate_instance(this.instance_clipboard);
+      this.add_pasted_instance_to_instance_list(this.instance_clipboard)
+
 
     },
     on_context_menu_copy_instance: function(instance_index){
@@ -6302,14 +6309,26 @@ export default Vue.extend( {
     },
     copy_instance: function(hotkey_triggered = false, instance_index = undefined){
       if(this.draw_mode){return}
-      if(!this.selected_instance && instance_index == undefined){return}
 
-      if(this.hotkey_triggered && !this.selected_instance){ return }
 
-      const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
-      this.instance_clipboard = this.duplicate_instance(instance_to_copy);
-      this.instance_clipboard.selected = true;
-      this.instance_clipboard.original_frame_number = this.current_frame;
+
+      if(!this.label_settings.allow_multiple_instance_select){
+        if(!this.selected_instance && instance_index == undefined){return}
+        if(this.hotkey_triggered && !this.selected_instance){ return }
+        const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
+        this.instance_clipboard = this.duplicate_instance(instance_to_copy);
+        this.instance_clipboard.selected = true;
+        this.instance_clipboard.original_frame_number = this.current_frame;
+        this.$store.commit('set_clipboard',[this.instance_clipboard])
+      }
+      else{
+        alert('Copy paste not implements for multiple instnaces.')
+        // TODO implement flag limit conditions for multi selects.
+        if(!this.selected_instance && instance_index == undefined){return}
+
+
+      }
+
 
 
 
