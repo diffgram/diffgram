@@ -6171,50 +6171,51 @@ export default Vue.extend( {
     add_pasted_instance_to_instance_list: function(instance_clipboard, next_frames){
       let on_new_frame = false;
       console.log('instance_clipboard', instance_clipboard, this.current_frame, instance_clipboard.original_frame_number, next_frames)
-      console.log('wwwww', instance_clipboard.original_frame_number != this.current_frame)
+      console.log('wwwww', instance_clipboard.original_frame_number != this.current_frame, this.current_frame || next_frames != undefined)
       if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
         on_new_frame = true;
       }
+      console.log('ONN NEW FRAME0', on_new_frame)
       if(instance_clipboard.type === 'point' && !on_new_frame){
-        this.instance_clipboard.points[0].x += 50
-        this.instance_clipboard.points[0].y += 50
+        instance_clipboard.points[0].x += 50
+        instance_clipboard.points[0].y += 50
       }
       else if(instance_clipboard.type === 'box' && !on_new_frame){
-        this.instance_clipboard.x_min += 50
-        this.instance_clipboard.x_max += 50
-        this.instance_clipboard.y_min += 50
-        this.instance_clipboard.y_max += 50
+        instance_clipboard.x_min += 50
+        instance_clipboard.x_max += 50
+        instance_clipboard.y_min += 50
+        instance_clipboard.y_max += 50
       }
       else if((instance_clipboard.type === 'line' || instance_clipboard.type === 'polygon') && !on_new_frame){
-        for(const point of this.instance_clipboard.points){
+        for(const point of instance_clipboard.points){
           point.x += 50;
           point.y += 50;
         }
       }
       else if((instance_clipboard.type === 'keypoints') && !on_new_frame){
-        for(const node of this.instance_clipboard.nodes){
+        for(const node of instance_clipboard.nodes){
           node.x += 50;
           node.y += 50;
         }
       }
       else if(instance_clipboard.type === 'cuboid'  && !on_new_frame){
-        for(let key in this.instance_clipboard.front_face){
+        for(let key in instance_clipboard.front_face){
           if(['width', 'height'].includes(key)){continue}
-          this.instance_clipboard.front_face[key].x += 85
-          this.instance_clipboard.front_face[key].y += 85
-          this.instance_clipboard.rear_face[key].x += 85
-          this.instance_clipboard.rear_face[key].y += 85
+          instance_clipboard.front_face[key].x += 85
+          instance_clipboard.front_face[key].y += 85
+          instance_clipboard.rear_face[key].x += 85
+          instance_clipboard.rear_face[key].y += 85
         }
       }
       else if(instance_clipboard.type === 'ellipse'  && !on_new_frame){
-        this.instance_clipboard.center_y += 50
-        this.instance_clipboard.center_x += 50
+        instance_clipboard.center_y += 50
+        instance_clipboard.center_x += 50
       }
       else if(instance_clipboard.type === 'curve'  && !on_new_frame){
-        this.instance_clipboard.p1.x += 50
-        this.instance_clipboard.p1.y += 50
-        this.instance_clipboard.p2.x += 50
-        this.instance_clipboard.p2.y += 50
+        instance_clipboard.p1.x += 50
+        instance_clipboard.p1.y += 50
+        instance_clipboard.p2.x += 50
+        instance_clipboard.p2.y += 50
 
       }
       // Deselect instances.
@@ -6258,6 +6259,7 @@ export default Vue.extend( {
         let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
         this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames)
       }
+      this.$store.commit('set_clipboard', clipboard);
 
 
 
