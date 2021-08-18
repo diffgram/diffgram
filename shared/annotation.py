@@ -1189,7 +1189,6 @@ class Annotation_Update():
             'center_y': center_y,
             'angle': angle,
             'width': width,
-            'width': width,
             'height': height,
             'cp': cp,
             'p1': p1,
