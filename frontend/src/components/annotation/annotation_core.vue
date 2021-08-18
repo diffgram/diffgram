@@ -737,7 +737,7 @@
 
 <script lang="ts">
 // @ts-nocheck
-
+import moment from 'moment'
 import axios from 'axios';
 import Vue from 'vue';
 import instance_detail_list_view from './instance_detail_list_view'
@@ -6531,27 +6531,18 @@ export default Vue.extend( {
       }
       this.save_loading = true
       let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
-      let dup_instance_list = dup_index.map(i => ({...instance_list[i], original_index: i}))
+      let dup_instance_list = dup_indexes.map(i => ({...this.instance_list[i], original_index: i}))
       dup_instance_list.sort(function(a,b){
-        if(a.client_created_time > b.client_created_time){
-          return 1
-        }
-        else if(a.client_created_time < b.client_created_time){
-          return -1
-        }
-        else{
-          return 0
-        }
+        return moment(b.client_created_time, 'YYYY-MM-DD HH:mm') - moment(a.client_created_time, 'YYYY-MM-DD HH:mm');
       })
-      console.log('dup inst lisstt', dup_instance_list)
       if(has_duplicate_instances){
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
         }
 
-        for(const idx of dup_indexes){
-          this.$refs.instance_detail_list.toggle_instance_focus(idx, undefined);
-        }
+        // We want to focus the most recent instance, if we focus the older one we can produce an error.
+        this.$refs.instance_detail_list.toggle_instance_focus(dup_instance_list[0].original_index, undefined);
+
         this.save_loading = false;
 
         return
