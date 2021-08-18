@@ -1134,7 +1134,6 @@ class Annotation_Update():
         if version is None:
             version = 0
         version += 1
-        print('PAYLOAD ID IS', id)
         instance_attrs = {
             'file_id': self.file.id if self.file else None,
             'project_id': self.file.project_id if self.file else None,
@@ -1225,7 +1224,6 @@ class Annotation_Update():
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
-        print('IS NEW INSTANCEE', is_new_instance, self.instance, id)
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
         except Exception as e:
@@ -1447,14 +1445,12 @@ class Annotation_Update():
             if old_id is not None:
                 old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
                 if old_instance.soft_delete is False:
-                    print('SOFT DELETING', old_id)
                     old_instance.soft_delete = True
                     # We rehash since at this point the soft_delete changes the hash.
                     old_instance.hash_instance()
                     self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
-            print('existing instance iis', existing_instance.id)
             if existing_instance.id is not None and self.instance.id is not None:
                 message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
                     self.instance.id,
@@ -1514,7 +1510,6 @@ class Annotation_Update():
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
         if self.existing_instance_index is not None:
-            print('NOT NEW INSTANCEEEE', self.instance.hash)
             is_new_instance = False
             # the current self.instance is the newly created one,
             # which is created so we can get hash that's the same.
@@ -1524,7 +1519,6 @@ class Annotation_Update():
             existing_instance = self.instance_list_existing[self.existing_instance_index]
 
             self.instance = existing_instance
-            print('NOT NEW INSTANCEEEE. existing_instance', existing_instance.id, existing_instance.hash, self.hash_list)
             try:
                 self.hash_list.remove(self.instance.hash)
             # logger.info("Removed str(self.instance.hash))
@@ -1539,7 +1533,6 @@ class Annotation_Update():
 
         # Only add instance to session if it's new.
         # Keep a separate record of the newly added instances.
-        print('IS NEW INSANCE, existing insance is', self.instance.id, self.instance.hash, self.hash_list)
         self.session.add(self.instance)
         self.session.flush()
         if self.file:
@@ -1755,10 +1748,8 @@ class Annotation_Update():
         if self.instance_list_existing is None:
             return
         for remaining_hash in self.hash_list:
-            print('Checking hash', remaining_hash)
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]
-            print('Checking hash', instance.id)
             prior_hash = instance.hash
 
             instance.soft_delete = True
