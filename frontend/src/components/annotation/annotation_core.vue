@@ -6491,11 +6491,10 @@ export default Vue.extend( {
           sequence_id: inst.sequence_id,
           pause_object: inst.pause_object
         }
-        console.log('beffff', inst_data);
+
         // We want a nested stringify with sorted keys. Builtin JS does not guarantee sort on nested objs.
         const inst_hash_data = stringify(inst_data)
         let inst_hash = this.hash_string(inst_hash_data)
-        console.log('AAA', inst_hash, inst.id, inst_hash_data);
         if(hashes[inst_hash]){
           dup_ids.push(inst.id ? inst.id : 'New Instance')
           dup_ids.push(hashes[inst_hash][0].id ? hashes[inst_hash][0].id : 'New Instance')
