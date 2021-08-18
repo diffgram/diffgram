@@ -339,7 +339,6 @@ class Instance(Base):
             self.rear_face,
             self.soft_delete,
             self.attribute_groups,
-            self.root_id,
             self.machine_made,
             self.sequence_id,
             self.pause_object
