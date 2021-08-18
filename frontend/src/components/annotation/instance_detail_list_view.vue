@@ -1,6 +1,13 @@
 <template>
   <div v-cloak>
-
+    <v-alert type="success"
+             class="ma-0"
+             :value="focus_mode">
+      In focus mode.
+      <v-btn @click="show_all()">
+        Exit
+      </v-btn>
+    </v-alert>
       <v-layout row >
         <v-flex >
           <v-card :color="header_colour">
@@ -443,13 +450,7 @@
 
 
 
-          <v-alert type="success"
-              :value="focus_mode">
-            In focus mode.
-            <v-btn @click="show_all()">
-              Exit
-            </v-btn>
-          </v-alert>
+
 
 
 
