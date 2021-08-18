@@ -88,6 +88,20 @@ report_spec_list = [
     }
     },
 
+    {"group_by_labels": {
+        'default': False,
+        'kind': bool,
+        'required': False
+    }
+    },
+
+    {"job_id": {
+        'default': None,
+        'kind': int,
+        'required': False
+    }
+    },
+
     {"archived": {
         'default': False,
         'kind': bool,
@@ -107,7 +121,7 @@ report_spec_list = [
         'default': 'date',
         'kind': str,
         'required': False,
-        'valid_values_list': ['date', 'label', 'user', 'task', None],
+        'valid_values_list': ['date', 'label', 'user', 'task', None, 'file'],
     }
     },
     {"directory_id_list": {
@@ -405,6 +419,7 @@ class Report_Runner():
         # if view_type == "count":
         #	return self.query.count()
         # else:
+        print('AAA', self.query)
         return self.query.all()
 
     def apply_permission_scope_to_query(self):
@@ -418,6 +433,7 @@ class Report_Runner():
         """
 
         if self.scope == "project":
+            print('aaa', self.project.id)
             self.query = self.query.filter(
                 self.base_class.project_id == self.project.id)
 
@@ -474,9 +490,15 @@ class Report_Runner():
         elif self.report_template.group_by == 'task':
             self.query = self.query.group_by(self.base_class.task_id)
 
+        elif self.report_template.group_by == 'file':
+
+            if self.report_template.group_by_labels:
+                self.query = self.query.group_by(self.base_class.file_id, self.base_class.label_file_id)
+            else:
+                self.query = self.query.group_by(self.base_class.file_id)
+
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
-
         stats = self.format_for_external(self.results)
         stats_serialized = self.serialize_stats(stats)
         Event.new(
@@ -510,7 +532,7 @@ class Report_Runner():
         )
         if len(self.log["error"].keys()) >= 1:
             return
-        print(self.metadata, '123123')
+
         self.update_report_template(metadata = self.metadata)
 
         if len(self.log["error"].keys()) >= 1:
@@ -579,8 +601,15 @@ class Report_Runner():
         else:
             self.log['error']['base_class_string'] = "base_class_string is None"
 
+    def __filter_soft_delete_instances(self):
+
+        self.query = self.query.filter(self.base_class.soft_delete == False)
+
     def apply_concrete_filters(self):
 
+        if self.base_class == Instance:
+            self.__filter_soft_delete_instances()
+            
         if self.report_template.task_id:
             self.query = self.__filter_by_task(
                 query = self.query,
@@ -625,16 +654,18 @@ class Report_Runner():
 
         # TODO: Add suport or remove from UI the task filter when base class is Instance
         if self.base_class_string in ['instance']:
-            logger.warning('No filter supported for job_id. base_class_string is {}'.format(self.base_class_string))
-            return
-
-        self.query = self.query.filter(self.base_class.job_id == job_id)
+            tasks_in_job = self.session.query(Task).filter(Task.job_id == job_id).all()
+            task_id_list = [x.id for x in tasks_in_job]
+            self.query = self.query.filter(self.base_class.task_id.in_(task_id_list))
+        else:
+            self.query = self.query.filter(self.base_class.job_id == job_id)
 
     def filter_by_label_file_id_list(self, label_file_id_list: list):
         """
         label_file_id_list: List of ints ids
         """
 
+        print('label_file_id_list',label_file_id_list)
         self.query = self.query.filter(
             self.base_class.label_file_id.in_(label_file_id_list))
 
@@ -653,7 +684,6 @@ class Report_Runner():
 
             Assume this covers archive flag case for example along with other stuff
         """
-
         if self.report_template.diffgram_wide_default is True or \
             metadata.get('diffgram_wide_default') is True:  # init case?
 
@@ -679,6 +709,7 @@ class Report_Runner():
         # Assumes permissions handled by project scope
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
+        self.report_template.group_by_labels = metadata.get('group_by_labels', False)
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
 
@@ -886,7 +917,8 @@ class Report_Runner():
             'date': self.group_by_date,
             'label': self.group_by_label,
             'user': self.group_by_user,
-            'task': self.group_by_task
+            'task': self.group_by_task,
+            'file': self.group_by_file
         }
         return group_by_dict.get(group_by)
 
@@ -911,6 +943,15 @@ class Report_Runner():
         Yes this must use an id it look like for group by
         """
         query = self.session.query(self.label_file_id, func.count(self.base_class.id))
+        return query
+
+    def group_by_file(self):
+        if self.report_template.group_by_labels:
+            query = self.session.query(self.base_class.file_id, self.base_class.label_file_id, func.count(self.base_class.id))
+            query = query.filter()
+        else:
+            query = self.session.query(self.base_class.file_id, func.count(self.base_class.id))
+
         return query
 
     def group_by_task(self):
@@ -970,15 +1011,26 @@ class Report_Runner():
         We set report_template from self if it's None...
 
         """
+        print('stats_list_by_period', stats_list_by_period)
         if report_template is None:
             report_template = self.report_template
+
+        second_grouping = None
+        label_colour_map = None
+        label_names_map = None
+        if self.report_template.group_by_labels:
+            # Get colour map for bars colors
+            label_colour_map = self.project.directory_default.label_file_colour_map
+
 
         if self.report_template.view_type == "count":
 
             if len(stats_list_by_period) == 0:
                 return 0
-
-            labels, values = zip(*stats_list_by_period)
+            if self.report_template.group_by_labels:
+                labels, second_grouping, values = zip(*stats_list_by_period)
+            else:
+                labels, values = zip(*stats_list_by_period)
             return sum(values)
 
         # TODO stronger handling if
@@ -988,18 +1040,33 @@ class Report_Runner():
         if report_template.group_by and stats_list_by_period:
             # fill missing days is sorta designed
             # for "day" period?
-            if report_template.group_by == 'date' and \
-                report_template.date_period_unit == 'day':
+            if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
                 with_missing_dates = Stats.fill_missing_dates(
                     date_from = self.date_from,
                     date_to = self.date_to,
                     list_by_period = stats_list_by_period)
 
-                labels, values = zip(*with_missing_dates)
+                if self.report_template.group_by_labels:
+                    labels, second_grouping, values = zip(*with_missing_dates)
+                    label_file_ids = set(second_grouping)
+                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
+                    label_names_map = {}
+                    for label_file in labels_files:
+                        label_names_map[label_file.id] = label_file.label.name
+                else:
+                    labels, values = zip(*with_missing_dates)
 
             else:
-                labels, values = zip(*stats_list_by_period)
+                if self.report_template.group_by_labels:
+                    labels, second_grouping, values = zip(*stats_list_by_period)
+                    label_file_ids = set(second_grouping)
+                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
+                    label_names_map = {}
+                    for label_file in labels_files:
+                        label_names_map[label_file.id] = label_file.label.name
+                else:
+                    labels, values = zip(*stats_list_by_period)
 
             # Front end now handles for user case
             if report_template.group_by in ['label']:
@@ -1013,11 +1080,15 @@ class Report_Runner():
             # like [2000, 456, 123]
             count = sum(values)
 
+
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
 
             return {'labels': labels,
                     'values': values,
-                    'count': count}
+                    'count': count,
+                    'label_colour_map': label_colour_map,
+                    'label_names_map': label_names_map,
+                    'second_grouping': second_grouping}
 
     def report_template_list(
         self,
@@ -1157,6 +1228,7 @@ def report_save_api():
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
+    print(input, 'aaaaaaaaaaaaaaaaaaaa')
     with sessionMaker.session_scope() as session:
 
         report_runner = Report_Runner(
