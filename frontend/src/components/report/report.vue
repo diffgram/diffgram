@@ -40,6 +40,26 @@
                         color="primary">
         </tooltip_button>
 
+        <tooltip_button tooltip_message="More Filters & Configs"
+                        @click="open_extra_filters_dialog"
+                        icon="mdi-filter"
+                        :disabled="!['instance'].includes(report_template.base_class_string)"
+                        :text_style="true"
+                        :large="true"
+                        color="primary">
+        </tooltip_button>
+        <v-dialog v-model="show_filters_dialog"
+                  width="800">
+          <v-card>
+            <v-card-title>More Filters:</v-card-title>
+            <v-card-text>
+              <v-container>
+                <h2>Labels & Instances</h2>
+                <v-checkbox  @change="has_changes = true" label="Additionally Group Files By Label" v-model="report_template.group_by_labels"></v-checkbox>
+              </v-container>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
         <!--
          Hide while WIP
 
@@ -259,8 +279,8 @@
             <div style="min-width: 200px" class="pa-4">
               <job_select v-model="job"
                           :disabled="loading ||
-                            !['file', 'task'].includes(report_template.base_class_string)"
-                          @change="has_changes = true"
+                            !['file', 'task', 'instance'].includes(report_template.base_class_string)"
+                          @change="set_job"
                           :select_this_id="job_select_this_id"
                           >
 
@@ -323,9 +343,12 @@
 
 </main_menu>
 
-
 <v_error_multiple :error="error">
 </v_error_multiple>
+  <v_error_multiple :error="report_warning" type="warning">
+  </v_error_multiple>
+
+
 
 <v-alert  type="info"
           v-if="!loading && values.length == 0 && count ==0"
@@ -502,7 +525,7 @@
 import axios from 'axios';
 import label_select_only from '../label/label_select_only.vue'
 import tooltip_button from '../regular/tooltip_button.vue'
-
+import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
 export default Vue.extend( {
@@ -554,6 +577,7 @@ export default Vue.extend( {
         'scope': 'project',
         'view_type': 'chart',
         'diffgram_wide_default': false,
+        'group_by_labels': false,
         'id': null,
         'view_sub_type': 'line'
       },
@@ -650,7 +674,12 @@ export default Vue.extend( {
          'name': 'task',
          'icon': 'mdi-flash-circle',
          'color': 'purple'
-        }
+        },
+        {'display_name': 'File (Frame)',
+          'name': 'file',
+          'icon': 'mdi-file',
+          'color': 'orange'
+        },
       ],
 
       scope_icon_list : [
@@ -705,6 +734,7 @@ export default Vue.extend( {
 
       options: {
         responsive: true,
+        grouped: true,
         maintainAspectRatio: false,
         scales: {
           xAxes: [{
@@ -781,8 +811,13 @@ export default Vue.extend( {
 
       count: null,
 
+      show_filters_dialog: false,
+      label_colour_map: null,
+      label_names_map: null,
+      second_grouping: null,
       loading: false,
       error: {},
+      report_warning: {},
       result: null,
 
       auth: {
@@ -833,7 +868,7 @@ export default Vue.extend( {
 
       // handle duplicate keys (things that already exist
       // in report_template)
-      if (this.job) {   // is clearable (in which case it returns null instead of object)
+      if (this.job && this.job.id) {   // is clearable (in which case it returns null instead of object)
         this.report_template.job_id = this.job.id
       } else {
         this.report_template.job_id = null
@@ -888,31 +923,76 @@ export default Vue.extend( {
     // this.get_report(this.report_template_id)
 
     if (this.report_template_id != "new") {
-      this.run_report(this.report_template_id)
+      this.run_report(this.report_template_id);
+
     }
 
   },
   methods: {
+    set_job: function(job){
+      this.job = job;
+      this.has_changes = true
+    },
+    open_extra_filters_dialog: function(){
+      this.show_filters_dialog = true;
+    },
     reset_chart_data() {
-      this.labels = []
-      this.values = []
+      this.labels = [];
+      this.values = [];
+      this.second_grouping = [];
+      this.label_colour_map = null;
+      this.label_names_map = null;
       this.fillData()
 
     },
-
-    fillData() {
-      this.datacollection = {
-        labels: this.labels,
-        datasets: [
-          {
-            // Label that shows on header
-            label: this.report_template.base_class_string,
-            data: this.values,
-            backgroundColor: this.color
-          },
-
-        ]
+    fill_grouped_by_label_chart_data(){
+      const created_datasets = [];
+      this.report_warning = {};
+      let unique_labels = [...new Set(this.labels)];
+      if(unique_labels.length > 20){
+        this.datacollection = {}
+        this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
+        this.report_warning['csv'] = 'Please download CSV for complete data report.'
+        unique_labels = unique_labels.splice(0, 20);
       }
+      this.datacollection = {datasets: [], labels: unique_labels}
+      for(let i = 0; i < this.second_grouping.length; i++){
+        const current = this.second_grouping[i];
+        const label_name = this.label_names_map[current];
+        if(!created_datasets.map(ds => ds.label).includes(label_name)){
+          created_datasets.push({
+            label: this.label_names_map[current],
+            backgroundColor: this.label_colour_map[current].hex,
+            data: []
+          })
+        }
+        // Add Value
+        const dataset = created_datasets.find(dset => dset.label === this.label_names_map[current]);
+        dataset.data[unique_labels.indexOf(this.labels[i])] = this.values[i]
+
+      }
+      this.datacollection.datasets = created_datasets
+      return created_datasets
+    },
+    fillData() {
+      if(this.report_template.group_by_labels){
+        this.fill_grouped_by_label_chart_data();
+      }
+      else{
+        this.datacollection = {
+          labels: this.labels,
+          datasets: [
+            {
+              // Label that shows on header
+              label: this.report_template.base_class_string,
+              data: this.values,
+              backgroundColor: this.color
+            },
+
+          ]
+        }
+      }
+
     },
 
   save_and_run_report: function () {
@@ -939,7 +1019,6 @@ export default Vue.extend( {
 
     if (this.report_template.group_by == 'user') {
         for (const [i, member_id] of this.stats.labels.entries()) {
-          console.log(member_id)
           let member = this.$store.state.project.current.member_list.find(x=> {
             return x.member_id == member_id})
 
@@ -961,6 +1040,9 @@ export default Vue.extend( {
 
       this.labels = stats.labels
       this.values = stats.values
+      this.second_grouping = stats.second_grouping
+      this.label_names_map = stats.label_names_map
+      this.label_colour_map = stats.label_colour_map
       this.count = stats.count
 
       this.fillData()
@@ -974,11 +1056,10 @@ export default Vue.extend( {
   run_report: function (report_template_id) {
 
     if (!report_template_id) {
-      console.log("Error no report_template_id")
+      console.error("Error no report_template_id")
       return
     }
 
-    this.reset_chart_data()
     this.count = null
 
     this.success_run = false
@@ -991,13 +1072,11 @@ export default Vue.extend( {
 
     }).then(response => {
 
-      //console.log(response)
-
       // careful need to grab this too to update other report concepts
       // and this should happen before load stats so colors are all good
       this.update_local_data_from_remote_report_template(
         response.data.report_template)
-
+      this.reset_chart_data()
       this.load_stats(response.data.stats)
 
       this.success_run = true
@@ -1054,18 +1133,21 @@ export default Vue.extend( {
 
 
   },
+
   download_csv: function(){
 
 
+
+    const csv_formatter = new CSVReportFormatter(
+      this.labels,
+      this.values,
+      this.second_grouping,
+      this.label_names_map,
+      this.report_template
+    )
+    let csvContent = csv_formatter.get_csv_data()
+    console.log('AAAA', csvContent)
     // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
-
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += 'Label,Value \r\n';
-
-    // Add Content from this.stats
-    for (let i=0; i< this.stats.labels.length; i++){
-      csvContent += `${String(this.stats.labels[i]).replace(/,/g, "")},${this.stats.values[i]}\r\n`
-    }
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -1079,7 +1161,6 @@ export default Vue.extend( {
      * and we may want a concrete report to save it, and update it.
      *
      */
-
     this.job_select_this_id = report_template.job_id
     // avoid circular updates, since we expect job component to reupdate
     // report template from this id
