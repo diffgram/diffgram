@@ -1676,8 +1676,7 @@ export default Vue.extend( {
         }
 
       }
-
-      return {
+      let instance_data = {
         x_min: x_min,
         y_min: y_min,
         center_x: this.instance_type === 'ellipse' ? x_min : undefined,
@@ -1701,11 +1700,14 @@ export default Vue.extend( {
         label_file_id: this.current_label_file_id,
         selected: 'false',
         number: number,
+        machine_made: false,
         type: this.instance_type,
         points: this.current_polygon_point_list,
         sequence_id: sequence_id,
         soft_delete: false    // default for new instances
       }
+      this.calculate_min_max_points(instance_data)
+      return instance_data;
     },
 
     current_label_file_id: function () {
@@ -6529,10 +6531,24 @@ export default Vue.extend( {
       }
       this.save_loading = true
       let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
+      let dup_instance_list = dup_index.map(i => ({...instance_list[i], original_index: i}))
+      dup_instance_list.sort(function(a,b){
+        if(a.client_created_time > b.client_created_time){
+          return 1
+        }
+        else if(a.client_created_time < b.client_created_time){
+          return -1
+        }
+        else{
+          return 0
+        }
+      })
+      console.log('dup inst lisstt', dup_instance_list)
       if(has_duplicate_instances){
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
         }
+
         for(const idx of dup_indexes){
           this.$refs.instance_detail_list.toggle_instance_focus(idx, undefined);
         }
