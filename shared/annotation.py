@@ -388,14 +388,27 @@ class Annotation_Update():
 
         if len(ids_not_included) > 0:
             logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
-            self.log['error']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
+            self.log['warning'] = {}
+            self.log['warning']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
                 ids_not_included
             )
-            self.log['error']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+            self.log['warning']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
                                                'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
                                                'Please contact use if this persists.'
-            self.log['error']['missing_ids'] = ids_not_included
-            return False
+            self.log['warning']['missing_ids'] = ids_not_included
+            self.log['warning']['instance_list_new'] = self.instance_list_new
+            self.log['warning']['instance_list_existing_ids'] = [x.id for x in self.instance_list_existing]
+            # TODO: Temporarly removing this hard block since it's causing lots of user experience issue during annotation process
+            # We record this a an event and revisit it in the future
+            Event.new(
+                session = self.session,
+                project_id = self.project_id,
+                kind = "missing_ids_in_new_instance_list_error",
+                member_id = self.member.id if self.member else None,
+                error_log=self.log,
+                success = False)
+            # Do not return an error state for now, we are recording the event.
+            # return False
         return True
 
     def append_new_instance_list_hash(self, instance):
@@ -1223,7 +1236,6 @@ class Annotation_Update():
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
-
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
         except Exception as e:
@@ -1461,6 +1473,12 @@ class Annotation_Update():
                 return False
 
             self.instance = existing_instance
+            try:
+                self.hash_list.remove(self.instance.hash)
+            # logger.info("Removed str(self.instance.hash))
+            except:
+                self.log['info']['hash_list'] = "No instance to remove."
+
             return False
 
     def determine_if_new_instance_and_update_current(self, old_id = None):
@@ -1504,7 +1522,6 @@ class Annotation_Update():
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
         if self.existing_instance_index is not None:
-
             is_new_instance = False
             # the current self.instance is the newly created one,
             # which is created so we can get hash that's the same.
@@ -1528,7 +1545,6 @@ class Annotation_Update():
 
         # Only add instance to session if it's new.
         # Keep a separate record of the newly added instances.
-
         self.session.add(self.instance)
         self.session.flush()
         if self.file:
@@ -1746,7 +1762,6 @@ class Annotation_Update():
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]
-
             prior_hash = instance.hash
 
             instance.soft_delete = True
