@@ -170,6 +170,7 @@ describe('Annotate Files Tests', () => {
                     .get('[data-cy=save_warning]').should('be.visible')
 
               })
+                .wait(7000)
 
           })
 
