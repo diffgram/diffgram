@@ -546,6 +546,10 @@ class Annotation_Update():
 
         # For now there is no extra init needed if it's an image
         if self.file.type == "image":
+            self.file = File.get_by_id(session = self.session,
+                                       file_id = self.file.id,
+                                       with_for_update = True,
+                                       nowait = True)
             return
 
         if self.file.type == "video":
@@ -1829,7 +1833,8 @@ def task_annotation_update(
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
     try:
-        file = File.get_by_id(session = session, file_id = task.file_id, with_for_update = True, nowait = True)
+        file = File.get_by_id(session = session, file_id = task.file_id)
+
     except Exception as e:
         trace = traceback.format_exc()
         logger.error('File {} is Locked'.format(task.file_id))
