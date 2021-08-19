@@ -403,6 +403,8 @@ class Annotation_Update():
             Event.new(
                 session = self.session,
                 project_id = self.project_id,
+                file_id = self.file.id if self.file else None,
+                task_id = self.task.id if self.task else None,
                 kind = "missing_ids_in_new_instance_list_error",
                 member_id = self.member.id if self.member else None,
                 error_log=self.log,
