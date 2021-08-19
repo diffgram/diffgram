@@ -13,7 +13,7 @@
 
           <toolbar :height="50"
                    :command_manager="command_manager"
-                   :save_loading="save_loading"
+                   :save_loading="this.video_mode ? this.save_loading_frame[this.current_frame] : this.save_loading_image"
                    :annotations_loading="annotations_loading"
                    :loading="loading"
                    :view_only_mode="view_only_mode"
@@ -1089,7 +1089,8 @@ export default Vue.extend( {
       },
 
       annotations_loading: false,
-      save_loading: false,
+      save_loading_image: false,
+      save_loading_frame: {},
       minimize_issues_sidepanel: false,
 
       source_control_menu: false,
@@ -1281,8 +1282,6 @@ export default Vue.extend( {
     }
   },
   computed: {
-
-
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -1779,7 +1778,30 @@ export default Vue.extend( {
   },
 
   methods: {
-
+    get_save_loading: function(frame_number){
+      console.log('get save loading', frame_number, this.save_loading_frame);
+      if(this.video_mode){
+        if(!this.save_loading_frame[frame_number]){
+          return false
+        }
+        else{
+          return true;
+        }
+      }
+      else{
+        return this.save_loading_image;
+      }
+    },
+    set_save_loading(value, frame){
+      console.log('SET SAVE', value, frame, this.video_mode)
+      if(this.video_mode){
+        this.save_loading_frame[frame] = value;
+      }
+      else{
+        this.save_loading_image = value;
+      }
+      this.$forceUpdate();
+    },
     // userscript (to be placed in class once context figured)
     set_instance_human_edited: function(instance){
       instance.change_source = 'ui_diffgram_frontend'
@@ -1883,7 +1905,14 @@ export default Vue.extend( {
       this.selected_instance_for_history = undefined;
     },
     warn_user_unload: function(e){
-      if(this.has_changed){
+      let pending_changes_frames = false;
+      for(let key of Object.keys(this.instance_buffer_metadata)){
+        if(this.instance_buffer_metadata[key].pending_save){
+          pending_changes_frames = true
+          break;
+        }
+      }
+      if(this.has_changed || pending_changes_frames){
         // Cancel the event
         e.preventDefault()
         // Chrome requires returnValue to be set
@@ -5958,7 +5987,13 @@ export default Vue.extend( {
        */
 
       this.save_error = {}
-      this.save_loading = true
+
+      let current_frame = undefined;
+      if(this.video_mode){
+        current_frame = parseInt(this.current_frame, 10);
+      }
+
+      this.set_save_loading(true, current_frame)
 
       axios.post('/api/v1/task/update',
         {
@@ -5967,7 +6002,7 @@ export default Vue.extend( {
         })
         .then(response => {
 
-           this.save_loading = false
+          this.set_save_loading(false, current_frame)
           if (mode == 'toggle_deferred') {
 
             this.snackbar_success = true
@@ -5983,7 +6018,7 @@ export default Vue.extend( {
 
         }).catch(error => {
 
-          this.save_loading = false
+          this.set_save_loading(false, current_frame)
           if (error.response.status == 400) {
             this.save_error = error.response.data.log.error
           }
@@ -6404,13 +6439,13 @@ export default Vue.extend( {
       * and then adding the original instance keys on top of the new one.
       * */
       // Add instance ID's to the newly created instances
+
       const new_added_instances = response.data.added_instances;
       const new_deleted_instances = response.data.deleted_instances;
       let instance_list = this.instance_list;
-      if(request_video_data && request_video_data.current_frame != this.current_frame){
+      if(this.video_mode){
         instance_list = this.instance_buffer_dict[request_video_data.current_frame]
       }
-
       for(let i = 0;  i < instance_list.length; i++){
         const current_instance = instance_list[i]
         if(!current_instance.id){
@@ -6421,7 +6456,7 @@ export default Vue.extend( {
             current_instance.id = new_instance[0].id;
             current_instance.root_id =  new_instance[0].root_id;
             current_instance.version =  new_instance[0].version;
-            this.instance_list.splice(i, 1, current_instance)
+            instance_list.splice(i, 1, current_instance)
 
           }
         }
@@ -6518,8 +6553,11 @@ export default Vue.extend( {
       if (this.$props.view_only_mode == true) {
         return
       }
-
-      if(this.save_loading == true){
+      let current_frame = undefined;
+      if(this.video_mode){
+        current_frame = parseInt(this.current_frame, 10)
+      }
+      if(this.get_save_loading(current_frame) == true){
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
 
@@ -6528,7 +6566,8 @@ export default Vue.extend( {
       if (this.any_loading == true) {
         return
       }
-      this.save_loading = true
+
+      this.set_save_loading(true, current_frame);
       let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
       let dup_instance_list = dup_indexes.map(i => ({...this.instance_list[i], original_index: i}))
       dup_instance_list.sort(function(a,b){
@@ -6542,7 +6581,7 @@ export default Vue.extend( {
         // We want to focus the most recent instance, if we focus the older one we can produce an error.
         this.$refs.instance_detail_list.toggle_instance_focus(dup_instance_list[0].original_index, undefined);
 
-        this.save_loading = false;
+        this.set_save_loading(false, current_frame);
 
         return
       }
@@ -6663,7 +6702,7 @@ export default Vue.extend( {
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
-        this.save_loading = false
+        this.set_save_loading(false, current_frame);
         this.has_changed = false
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
@@ -6680,7 +6719,7 @@ export default Vue.extend( {
 
         }
       } catch (error) {
-        this.save_loading = false
+        this.set_save_loading(false, current_frame);
         if(error.response.data &&
           error.response.data.log &&
           error.response.data.log.error && error.response.data.log.error.missing_ids){
