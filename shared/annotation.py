@@ -1918,9 +1918,7 @@ def annotation_update_web(
         file = File.get_by_id_and_project(
             session = session,
             project_id = project.id,
-            file_id = file_id,
-            with_for_update = True,
-            nowait = True)
+            file_id = file_id)
     except Exception as e:
         trace = traceback.format_exc()
         logger.error('File {} is Locked'.format(file_id))
