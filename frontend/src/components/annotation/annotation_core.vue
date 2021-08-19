@@ -6249,17 +6249,18 @@ export default Vue.extend( {
 
 
       const clipboard = this.clipboard;
-      console.log('VUEX CLIPBOARD', clipboard);
       if(!clipboard && instance_hover_index == undefined){return}
       if(instance_hover_index != undefined){
         this.copy_instance(false, instance_hover_index)
       }
       // We need to duplicate on each paste to avoid double ID's on the instance list.
-      for(const instance_clipboard of this.clipboard){
+      const new_clipboard_instance_list = [];
+      for(const instance_clipboard of this.clipboard.instance_list){
         let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
         this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames)
+        new_clipboard_instance_list.push(instance_clipboard_dup)
       }
-      this.$store.commit('set_clipboard', clipboard);
+      this.set_clipboard(new_clipboard_instance_list)
 
 
 
@@ -6316,6 +6317,15 @@ export default Vue.extend( {
       result = this.initialize_instance(result);
       return result
     },
+    set_clipboard: function(instance_list){
+      if(this.$props.file && this.$props.file.id){
+        file_id = this.$props.file.id
+      }
+      if(this.$props.task && this.$props.task.file && this.$props.task.file.id){
+        file_id = this.$props.task.file.id;
+      }
+      this.$store.commit('set_clipboard',{instance_list: instance_list, file_id: file_id})
+    },
     copy_instance: function(hotkey_triggered = false, instance_index = undefined){
       if(this.draw_mode){return}
 
@@ -6328,7 +6338,8 @@ export default Vue.extend( {
         this.instance_clipboard = this.duplicate_instance(instance_to_copy);
         this.instance_clipboard.selected = true;
         this.instance_clipboard.original_frame_number = this.current_frame;
-        this.$store.commit('set_clipboard',[this.instance_clipboard])
+        this.set_clipboard([this.instance_clipboard]);
+
       }
       else{
         alert('Copy paste not implements for multiple instnaces.')
