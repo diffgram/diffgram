@@ -113,6 +113,74 @@ describe('Annotate Files Tests', () => {
 
       })
 
+
+
+    })
+
+    context('It Disables Pasting Multiple Instances and triggering cache error', () => {
+      it('Can Copy and paste instances cross frames without breaking cache', () => {
+
+        cy.get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="forward_1_frame"]').click({force: true})
+          .get('[data-cy="edit_toggle"]').click({force: true})
+          .select_label()
+          .wait(2000)
+          // Draw a box
+          .mousedowncanvas(75, 75)
+          .wait(500)
+
+          .mouseupcanvas()
+          .wait(1000)
+
+          .mousedowncanvas(160, 160)
+          .wait(500)
+          .mouseupcanvas()
+          .wait(1000)
+
+          .wait(7000)
+          .get('[data-cy="edit_toggle"]').click({force: true})
+          .wait(2000)
+          // Select uppermost box
+          .mousedowncanvas(90, 90)
+          .wait(500)
+          .mouseupcanvas()
+          .wait(1000)
+        cy.window().then(window => {
+          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+            // Move 5 frames
+
+            // Copy and paste on next frame Paste
+            .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
+            .wait(2000)
+            .then(()=>{
+              cy.get('[data-cy="forward_1_frame"]').click({force: true})
+                .wait(2000).then(() =>{
+                  let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                  window.AnnotationCore.has_changed = true;
+                  cy.get('[data-cy=save_button]').click({force: true})
+                    .wait(2000)
+                    .get('[data-cy=save_warning]').should('be.visible')
+
+              })
+                .wait(7000)
+
+          })
+
+
+
+        });
+
+      })
+
+
     })
   })
 

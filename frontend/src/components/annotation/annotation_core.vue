@@ -13,7 +13,7 @@
 
           <toolbar :height="50"
                    :command_manager="command_manager"
-                   :save_loading="save_loading"
+                   :save_loading="this.video_mode ? this.save_loading_frame[this.current_frame] : this.save_loading_image"
                    :annotations_loading="annotations_loading"
                    :loading="loading"
                    :view_only_mode="view_only_mode"
@@ -66,9 +66,17 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
-
+      <v_error_multiple :error="save_warning" type="warning" data-cy="save_warning">
+      </v_error_multiple>
+      <div fluid v-if="display_refresh_cache_button">
+        <v-btn small color="warning" @click="regenerate_file_cache" :loading="regenerate_file_cache_loading">
+          <v-icon>mdi-refresh</v-icon>
+          Refresh File Data
+        </v-btn>
+      </div>
       <v_error_multiple :error="error">
       </v_error_multiple>
+
 
       <v_error_multiple :error="instance_buffer_error">
       </v_error_multiple>
@@ -328,7 +336,7 @@
 
       -->
 
-        <div  id="canvas_wrapper" style="position: relative;"
+        <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
 
               @mousemove="mouse_move"
               @mousedown="mouse_down"
@@ -404,6 +412,7 @@
             <!-- Current file -->
             <canvas_instance_list :ord="3"
                                   :instance_list="instance_list"
+                                  :default_instance_opacity="default_instance_opacity"
                                   :vertex_size="label_settings.vertex_size"
                                   :cuboid_corner_move_point="cuboid_corner_move_point"
                                   :video_mode="video_mode"
@@ -464,6 +473,7 @@
             <canvas_instance_list v-if="gold_standard_file"
                                   :ord="4"
                                   :vertex_size="label_settings.vertex_size"
+                                  :default_instance_opacity="default_instance_opacity"
                                   :cuboid_corner_move_point="cuboid_corner_move_point"
                                   :mode="'gold_standard'"
                                   :instance_list="gold_standard_file.instance_list"
@@ -553,6 +563,7 @@
                   :current_video="current_video"
                   :video_mode="video_mode"
                   :player_height="'80px'"
+                  :parent_save="this.detect_is_ok_to_save"
                   :video_primary_id="'video_primary'"
                   @playing="video_playing = true"
                   @pause="video_playing = false"
@@ -726,7 +737,7 @@
 
 <script lang="ts">
 // @ts-nocheck
-
+import moment from 'moment'
 import axios from 'axios';
 import Vue from 'vue';
 import instance_detail_list_view from './instance_detail_list_view'
@@ -758,7 +769,8 @@ import { cloneDeep } from 'lodash';
 import { KeypointInstance } from '../vue_canvas/instances/KeypointInstance';
 import userscript from './userscript/userscript.vue';
 import toolbar from './toolbar.vue'
-
+import { sha256 } from 'js-sha256';
+import stringify  from 'json-stable-stringify';
 import PropType from 'vue'
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
@@ -920,6 +932,7 @@ export default Vue.extend( {
     return {
 
       ghost_instance_hover_index: null,
+      default_instance_opacity: 0.25,
       model_run_list: null,
       ghost_instance_hover_type: null,
       ghost_instance_list: [],
@@ -932,6 +945,8 @@ export default Vue.extend( {
 
       selected_instance_for_history: undefined,
       show_instance_history: false,
+      regenerate_file_cache_loading: false,
+      display_refresh_cache_button: false,
       get_instances_loading: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
@@ -998,6 +1013,7 @@ export default Vue.extend( {
 
 
       lock_point_hover_change: false,
+      save_warning: {},
 
       magic_nav_spacer: 40,
 
@@ -1073,7 +1089,8 @@ export default Vue.extend( {
       },
 
       annotations_loading: false,
-      save_loading: false,
+      save_loading_image: false,
+      save_loading_frame: {},
       minimize_issues_sidepanel: false,
 
       source_control_menu: false,
@@ -1265,8 +1282,6 @@ export default Vue.extend( {
     }
   },
   computed: {
-
-
     instance_template_dict: function(){
       let result = {};
       for(let i = 0; i < this.instance_template_list.length; i++){
@@ -1660,8 +1675,7 @@ export default Vue.extend( {
         }
 
       }
-
-      return {
+      let instance_data = {
         x_min: x_min,
         y_min: y_min,
         center_x: this.instance_type === 'ellipse' ? x_min : undefined,
@@ -1685,11 +1699,14 @@ export default Vue.extend( {
         label_file_id: this.current_label_file_id,
         selected: 'false',
         number: number,
+        machine_made: false,
         type: this.instance_type,
         points: this.current_polygon_point_list,
         sequence_id: sequence_id,
         soft_delete: false    // default for new instances
       }
+      this.calculate_min_max_points(instance_data)
+      return instance_data;
     },
 
     current_label_file_id: function () {
@@ -1761,7 +1778,30 @@ export default Vue.extend( {
   },
 
   methods: {
-
+    get_save_loading: function(frame_number){
+      console.log('get save loading', frame_number, this.save_loading_frame);
+      if(this.video_mode){
+        if(!this.save_loading_frame[frame_number]){
+          return false
+        }
+        else{
+          return true;
+        }
+      }
+      else{
+        return this.save_loading_image;
+      }
+    },
+    set_save_loading(value, frame){
+      console.log('SET SAVE', value, frame, this.video_mode)
+      if(this.video_mode){
+        this.save_loading_frame[frame] = value;
+      }
+      else{
+        this.save_loading_image = value;
+      }
+      this.$forceUpdate();
+    },
     // userscript (to be placed in class once context figured)
     set_instance_human_edited: function(instance){
       instance.change_source = 'ui_diffgram_frontend'
@@ -1786,7 +1826,30 @@ export default Vue.extend( {
 
       return roi_canvas
     },
-
+    regenerate_file_cache: async function(){
+      this.regenerate_file_cache_loading = true;
+      let frame_number = this.current_frame;
+      let file_id = undefined;
+      if(this.$props.task){
+        file_id = this.$props.task.file.id;
+      }
+      else{
+        file_id = this.$props.file.id;
+      }
+      let project_string = this.$props.project_string_id;
+      if(!project_string){
+        project_string = this.$store.state.project.current.project_string_id;
+      }
+      const response = await axios.post(`/api/v1/project/${project_string}/file/${file_id}/regenerate-cache`,
+        {
+          frame_number: frame_number
+        }
+      );
+      if(response.status === 200){
+        this.has_changed = false;
+        location.reload();
+      }
+    },
     get_new_canvas: function () {
       this.html_image.crossOrigin = "Anonymous";
 
@@ -1842,7 +1905,14 @@ export default Vue.extend( {
       this.selected_instance_for_history = undefined;
     },
     warn_user_unload: function(e){
-      if(this.has_changed){
+      let pending_changes_frames = false;
+      for(let key of Object.keys(this.instance_buffer_metadata)){
+        if(this.instance_buffer_metadata[key].pending_save){
+          pending_changes_frames = true
+          break;
+        }
+      }
+      if(this.has_changed || pending_changes_frames){
         // Cancel the event
         e.preventDefault()
         // Chrome requires returnValue to be set
@@ -2401,9 +2471,9 @@ export default Vue.extend( {
       this.interval_autosave = setInterval(this.detect_is_ok_to_save, 15*1000);
     },
 
-    detect_is_ok_to_save: function() {
+    detect_is_ok_to_save: async function() {
       if (this.has_changed) {
-        this.save();
+        await this.save();
       }
     },
 
@@ -4137,7 +4207,74 @@ export default Vue.extend( {
       this.ghost_clear_hover_index()
     }
   },
-
+  calculate_min_max_points: function(instance){
+    if(['polygon', 'point'].includes(instance.type)){
+      instance.x_min = Math.min(...instance.points.map(p => p.x))
+      instance.y_min = Math.min(...instance.points.map(p => p.y))
+      instance.x_max = Math.max(...instance.points.map(p => p.x))
+      instance.y_max = Math.max(...instance.points.map(p => p.y))
+    }
+    else if(['cuboid'].includes(instance.type)){
+      instance.x_min = Math.min(
+        instance.front_face['top_right']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.front_face['top_left']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.rear_face['top_right']['x'],
+        instance.rear_face['bot_right']['x'],
+        instance.rear_face['top_left']['x'],
+        instance.rear_face['bot_right']['x'],
+      )
+      instance.x_max = Math.max(
+        instance.front_face['top_right']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.front_face['top_left']['x'],
+        instance.front_face['bot_right']['x'],
+        instance.rear_face['top_right']['x'],
+        instance.rear_face['bot_right']['x'],
+        instance.rear_face['top_left']['x'],
+        instance.rear_face['bot_right']['x'],
+      )
+      instance.y_min = Math.min(
+        instance.front_face['top_right']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.front_face['top_left']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.rear_face['top_right']['y'],
+        instance.rear_face['bot_right']['y'],
+        instance.rear_face['top_left']['y'],
+        instance.rear_face['bot_right']['y'],
+      )
+      instance.y_max = Math.max(
+        instance.front_face['top_right']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.front_face['top_left']['y'],
+        instance.front_face['bot_right']['y'],
+        instance.rear_face['top_right']['y'],
+        instance.rear_face['bot_right']['y'],
+        instance.rear_face['top_left']['y'],
+        instance.rear_face['bot_right']['y'],
+      )
+    }
+    else if(['ellipse'].includes(instance.type)){
+      instance.x_min = instance.center_x - instance.width;
+      instance.y_min = instance.center_y - instance.height;
+      instance.x_max = instance.center_x + instance.width
+      instance.y_max = instance.center_y + instance.height
+    }
+    else if(['curve'].includes(instance.type)){
+      instance.x_min = Math.min(instance.p1.x, instance.p2.x)
+      instance.x_max = Math.max(instance.p1.x, instance.p2.x)
+      instance.y_min = Math.min(instance.p1.y, instance.p2.y)
+      instance.y_max = Math.max(instance.p1.y, instance.p2.y)
+    }
+    else if(['keypoints'].includes(instance.type)){
+      instance.x_min = Math.min(...instance.nodes.map(p => p.x))
+      instance.y_min = Math.min(...instance.nodes.map(p => p.y))
+      instance.x_max = Math.max(...instance.nodes.map(p => p.x))
+      instance.t_max = Math.max(...instance.nodes.map(p => p.y))
+    }
+  },
   move_something: function (event) {
 
       /*
@@ -4189,7 +4326,7 @@ export default Vue.extend( {
     }
 
     if (box_did_move || polygon_did_move || cuboid_did_move || ellipse_did_move || curve_did_move || polygon_dragged || key_points_did_move) {
-
+      this.calculate_min_max_points(this.instance_list[this.instance_hover_index]);
       this.set_instance_human_edited(this.instance_list[this.instance_hover_index])
       this.has_changed = true;
     }
@@ -5850,7 +5987,13 @@ export default Vue.extend( {
        */
 
       this.save_error = {}
-      this.save_loading = true
+
+      let current_frame = undefined;
+      if(this.video_mode){
+        current_frame = parseInt(this.current_frame, 10);
+      }
+
+      this.set_save_loading(true, current_frame)
 
       axios.post('/api/v1/task/update',
         {
@@ -5859,7 +6002,7 @@ export default Vue.extend( {
         })
         .then(response => {
 
-           this.save_loading = false
+          this.set_save_loading(false, current_frame)
           if (mode == 'toggle_deferred') {
 
             this.snackbar_success = true
@@ -5875,7 +6018,7 @@ export default Vue.extend( {
 
         }).catch(error => {
 
-          this.save_loading = false
+          this.set_save_loading(false, current_frame)
           if (error.response.status == 400) {
             this.save_error = error.response.data.log.error
           }
@@ -5934,6 +6077,10 @@ export default Vue.extend( {
       }
       if (event.keyCode === ctrlKey) { // ctrlKey
         this.ctrl_key = false
+      }
+
+      if (event.keyCode === 72) { // h key
+        this.show_annotations = !this.show_annotations;
       }
 
       if (this.$store.state.user.is_typing_or_menu_open == true) {
@@ -5999,6 +6146,18 @@ export default Vue.extend( {
           this.shift_frame_via_store(-1)
         }
       }
+
+      if (event.keyCode === 84) { // shift + t
+        if (this.shift_key) {
+          if(this.default_instance_opacity === 1){
+            this.default_instance_opacity = 0.25;
+          }
+          else{
+            this.default_instance_opacity = 1;
+          }
+        }
+      }
+
       if (event.keyCode === 39 || event.key === "d") { // right arrow
         if (this.shift_key) {
           this.change_file("next");
@@ -6217,7 +6376,13 @@ export default Vue.extend( {
         points: points,
         nodes: nodes,
         edges: edges,
-        attribute_groups: {...instance_to_copy.attribute_groups}
+        version: undefined,
+        root_id: undefined,
+        previous_id: undefined,
+        action_type: undefined,
+        next_id: undefined,
+        creation_ref_id: undefined,
+        attribute_groups: instance_to_copy.attribute_groups ? {...instance_to_copy.attribute_groups} : null
       };
 
       if(result.type === 'cuboid'){
@@ -6265,7 +6430,7 @@ export default Vue.extend( {
       this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
     },
 
-    add_ids_to_new_instances_and_delete_old: function(response){
+    add_ids_to_new_instances_and_delete_old: function(response, request_video_data){
       /*
       * This function is used in the context of AnnotationUpdate.
       * The new created/deleted instances are merged without loss of the current
@@ -6274,11 +6439,15 @@ export default Vue.extend( {
       * and then adding the original instance keys on top of the new one.
       * */
       // Add instance ID's to the newly created instances
+
       const new_added_instances = response.data.added_instances;
       const new_deleted_instances = response.data.deleted_instances;
-
-      for(let i = 0;  i < this.instance_list.length; i++){
-        const current_instance = this.instance_list[i]
+      let instance_list = this.instance_list;
+      if(this.video_mode){
+        instance_list = this.instance_buffer_dict[request_video_data.current_frame]
+      }
+      for(let i = 0;  i < instance_list.length; i++){
+        const current_instance = instance_list[i]
         if(!current_instance.id){
           // Case of a new instance added
           const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
@@ -6287,7 +6456,7 @@ export default Vue.extend( {
             current_instance.id = new_instance[0].id;
             current_instance.root_id =  new_instance[0].root_id;
             current_instance.version =  new_instance[0].version;
-            this.instance_list.splice(i, 1, current_instance)
+            instance_list.splice(i, 1, current_instance)
 
           }
         }
@@ -6300,23 +6469,95 @@ export default Vue.extend( {
             current_instance.root_id =  new_instance[0].root_id;
             current_instance.previous_id =  new_instance[0].previous_id;
             current_instance.version =  new_instance[0].version;
-            this.instance_list.splice(i, 1, current_instance)
+            instance_list.splice(i, 1, current_instance)
 
           }
         }
 
       }
 
-    },
 
+      const current_frontend_instances = instance_list.map(id => id);
+
+    },
+    hash_string: function(str){
+      return sha256(str)
+    },
+    has_duplicate_instances: function(instance_list){
+
+      const hashes = {};
+      const dup_ids = [];
+      const dup_indexes = [];
+      for(let i = 0; i < instance_list.length; i++){
+        const inst = instance_list[i];
+        if(inst.soft_delete){
+          continue;
+        }
+        const inst_data = {
+          type: inst.type,
+          x_min: inst.x_min,
+          y_min: inst.y_min,
+          y_max: inst.y_max,
+          x_max: inst.x_max,
+          p1: inst.p1,
+          p2: inst.p2,
+          cp: inst.cp,
+          center_x: inst.center_x,
+          center_y: inst.center_y,
+          angle: inst.angle,
+          width: inst.width,
+          height: inst.height,
+          start_char: inst.start_char,
+          end_char: inst.end_char,
+          start_token: inst.start_token,
+          end_token: inst.end_token,
+          start_sentence: inst.start_sentence,
+          end_sentence: inst.end_sentence,
+          sentence: inst.sentence,
+          label_file_id: inst.label_file_id,
+          number: inst.number,
+          rating: inst.rating,
+          points: inst.points.map(point => {return {...point}}),
+          front_face: {...inst.front_face},
+          rear_face: {...inst.rear_face},
+          soft_delete: inst.soft_delete,
+          attribute_groups: {...inst.attribute_groups},
+          machine_made: inst.machine_made,
+          sequence_id: inst.sequence_id,
+          pause_object: inst.pause_object
+        }
+
+        // We want a nested stringify with sorted keys. Builtin JS does not guarantee sort on nested objs.
+        const inst_hash_data = stringify(inst_data)
+        let inst_hash = this.hash_string(inst_hash_data)
+        if(hashes[inst_hash]){
+          dup_ids.push(inst.id ? inst.id : 'New Instance')
+          dup_ids.push(hashes[inst_hash][0].id ? hashes[inst_hash][0].id : 'New Instance')
+
+          dup_indexes.push(i)
+          dup_indexes.push(hashes[inst_hash][1])
+          return [true, dup_ids, dup_indexes];
+
+        }
+        else{
+          hashes[inst_hash] = [inst, i]
+        }
+
+      }
+      return [false, dup_ids, dup_indexes];
+
+    },
     save: async function (and_complete=false) {
       this.save_error = {}
-
+      this.save_warning = {}
       if (this.$props.view_only_mode == true) {
         return
       }
-
-      if(this.save_loading == true){
+      let current_frame = undefined;
+      if(this.video_mode){
+        current_frame = parseInt(this.current_frame, 10)
+      }
+      if(this.get_save_loading(current_frame) == true){
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
 
@@ -6326,12 +6567,30 @@ export default Vue.extend( {
         return
       }
 
+      this.set_save_loading(true, current_frame);
+      let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
+      let dup_instance_list = dup_indexes.map(i => ({...this.instance_list[i], original_index: i}))
+      dup_instance_list.sort(function(a,b){
+        return moment(b.client_created_time, 'YYYY-MM-DD HH:mm') - moment(a.client_created_time, 'YYYY-MM-DD HH:mm');
+      })
+      if(has_duplicate_instances){
+        this.save_warning = {
+          duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
+        }
+
+        // We want to focus the most recent instance, if we focus the older one we can produce an error.
+        this.$refs.instance_detail_list.toggle_instance_focus(dup_instance_list[0].original_index, undefined);
+
+        this.set_save_loading(false, current_frame);
+
+        return
+      }
       this.instance_list_cache = this.instance_list.slice()
       let current_frame_cache = this.current_frame
       let current_video_file_id_cache = this.current_video_file_id
       let video_mode_cache = this.video_mode
 
-      this.save_loading = true
+
 
       // a video file can now be
       // saved from file id + frame, so the current file
@@ -6368,6 +6627,7 @@ export default Vue.extend( {
           current_frame: current_frame_cache
         }
       }
+
       try {
         const response = await axios.post(url, {
           instance_list: this.instance_list_cache,
@@ -6397,12 +6657,12 @@ export default Vue.extend( {
            */
 
         this.save_count += 1;
-        this.add_ids_to_new_instances_and_delete_old(response);
+        this.add_ids_to_new_instances_and_delete_old(response, video_data);
 
-        this.has_changed = false
+
         this.check_if_pending_created_instance();
         this.$emit('save_response_callback', true)
-        this.save_loading = false
+
         if(this.instance_buffer_metadata[this.current_frame]){
           this.instance_buffer_metadata[this.current_frame].pending_save = false;
         }
@@ -6442,7 +6702,8 @@ export default Vue.extend( {
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
-
+        this.set_save_loading(false, current_frame);
+        this.has_changed = false
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true
@@ -6458,7 +6719,13 @@ export default Vue.extend( {
 
         }
       } catch (error) {
-        this.save_loading = false
+        this.set_save_loading(false, current_frame);
+        if(error.response.data &&
+          error.response.data.log &&
+          error.response.data.log.error && error.response.data.log.error.missing_ids){
+          this.display_refresh_cache_button = true;
+          clearInterval(this.interval_autosave);
+        }
 
         this.save_error = this.$route_api_errors(error)
         console.debug(error);

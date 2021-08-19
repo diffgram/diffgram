@@ -62,6 +62,10 @@
           type: Boolean,
           default: true
           // if True will run checks for hover, otherwise false to save computation
+        },
+        "default_instance_opacity":{
+          type: Number,
+          default: 0.25
         }
       },
 
@@ -345,9 +349,9 @@
           // TODO test this better, and also try to move other colors stuff here...
 
           let strokeColor = undefined;
-          let fillColor = undefined;
+          let fillColor = this.$props.default_instance_opacity;
           let lineWidth = undefined;
-          
+
           if (instance.fan_made == true) {
             ctx.setLineDash([3])
           } else {
@@ -364,13 +368,13 @@
           // start Change type
           if (instance.change_type != undefined) {
             if (instance.change_type == "added") {
-              fillColor = "rgba(" + 0 + "," + 255 + "," + 0 + ", .25)";
+              fillColor = "rgba(" + 0 + "," + 255 + "," + 0 + `, ${this.$props.default_instance_opacity})`;
             }
             else if (instance.change_type == "unchanged") {
-              fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + ", .25)";
+              fillColor = "rgba(" + 255 + "," + 255 + "," + 255 + `, ${this.$props.default_instance_opacity})`;
             }
             else if (instance.change_type == "deleted") {
-              fillColor = "rgba(" + 255 + "," + 0 + "," + 0 + ", .25)";
+              fillColor = "rgba(" + 255 + "," + 0 + "," + 0 + `, ${this.$props.default_instance_opacity})`;
             }
           }
           else {
@@ -391,8 +395,7 @@
               g = this.colour.rgba.g
               b = this.colour.rgba.b
             }
-
-            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1)";
+            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `, ${this.$props.default_instance_opacity})`;
           }
 
           if (instance.change_type != undefined) {
@@ -419,6 +422,9 @@
               }
               else{
                 strokeColor = this.colour.hex
+              }
+              if(this.$props.default_instance_opacity === 1){
+                strokeColor = "#FFFFFF"
               }
 
             }
@@ -455,6 +461,7 @@
           ctx.strokeStyle = strokeColor;
           ctx.fillStyle = fillColor;
           ctx.lineWidth = lineWidth;
+
           return {
             strokeColor: strokeColor,
             fillColor: fillColor,
@@ -740,7 +747,7 @@
           if (points.length >= 1) {
 
             this.draw_label(ctx, points[0].x, points[0].y, instance)
-            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.20)";
+            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `,${this.$props.default_instance_opacity})`;
             ctx.moveTo(points[0].x, points[0].y)
 
           }
@@ -761,11 +768,11 @@
           // We may want these selection values to be user definable
           // Context of wanting a lower value when selected is so the person can still see the raw image
           // AND the overall coverage is still visible. Especially relevant if spatial_line is 0.
-          if (instance.selected != "undefined" && instance.selected == true) {
+          if (instance.selected != "undefined" && instance.selected == true && this.$props.default_instance_opacity != 1) {
             ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
           }
 
-          if (this.instance_hover_index == i) {
+          if (this.instance_hover_index == i && this.$props.default_instance_opacity != 1) {
             ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
           }
 
@@ -1316,7 +1323,7 @@
           this.draw_label(ctx, instance.x_min, instance.y_min, instance)
 
           // start Focus instance feature
-          var opacity = .1
+          var opacity =  this.$props.default_instance_opacity;
 
           /*
           // TODO this is confusing if we are just focusing one instance a time

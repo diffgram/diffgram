@@ -205,7 +205,9 @@ class Instance(Base):
         return_kind = "objects",
         date_to = None,
         date_from = None,
-        frame_number = None
+        frame_number = None,
+        with_for_update = False,
+        sort_by = None
     ):
         """
 
@@ -220,7 +222,8 @@ class Instance(Base):
 
         # Base Query
         query = session.query(Instance)
-
+        if with_for_update:
+            query = query.with_for_update()
         if file_id:
             query = query.filter(Instance.file_id == file_id)
 
@@ -255,6 +258,9 @@ class Instance(Base):
         if limit:
             query = query.limit(limit)
 
+        if sort_by is not None:
+            if sort_by == 'created_time':
+                query = query.order_by(Instance.created_time.desc())
         if return_kind == "query":
             return query
 

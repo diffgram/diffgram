@@ -1,6 +1,13 @@
 <template>
   <div v-cloak>
-
+    <v-alert type="success"
+             class="ma-0"
+             :value="focus_mode">
+      In focus mode.
+      <v-btn @click="show_all()">
+        Exit
+      </v-btn>
+    </v-alert>
       <v-layout row >
         <v-flex >
           <v-card :color="header_colour">
@@ -49,7 +56,12 @@
               differently...
                -->
             <v-divider class="mt-4"></v-divider>
-            <h3>Instances: </h3>
+            <h3>
+              Instances:
+              <v-chip v-if="$store.state.user.current.is_super_admin == true" x-small>
+              {{instance_list_count}}
+              </v-chip>
+            </h3>
             <v-expansion-panels accordion flat v-model="panels">
               <v-expansion-panel v-for="grouped_list in filtered_instance_set">
                 <v-expansion-panel-header  ripple v-if="grouped_list.model_run">
@@ -438,13 +450,7 @@
 
 
 
-          <v-alert type="success"
-              :value="focus_mode">
-            In focus mode.
-            <v-btn @click="show_all()">
-              Exit
-            </v-btn>
-          </v-alert>
+
 
 
 
@@ -627,6 +633,19 @@ import Vue from "vue";
         else{
           return false;
         }
+      },
+      instance_list_count: function(){
+        let count = 0;
+        for(const group of this.filtered_instance_set){
+          if(this.label_settings.show_removed_instances){
+            count += group.instance_list.length;
+          }
+          else{
+            count += group.instance_list.filter(inst => inst.soft_delete === false).length;
+          }
+
+        }
+        return count
       },
       filtered_instance_set: function(){
         const instance_list = this.instance_list.map((inst, i) => ({

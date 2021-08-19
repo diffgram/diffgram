@@ -419,7 +419,7 @@ def create_instance(instance_data, session):
         fan_made = instance_data.get('fan_made'),
         verified = instance_data.get('verified'),
         occluded = instance_data.get('occluded'),
-        soft_delete = instance_data.get('soft_delete'),
+        soft_delete = instance_data.get('soft_delete', False),
         label_file_id = instance_data.get('label_file_id'),
         file_id = instance_data.get('file_id'),
         points = instance_data.get('points'),
