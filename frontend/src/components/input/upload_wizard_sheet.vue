@@ -106,6 +106,20 @@
                 </a>
               </strong></p>
             </div>
+            <div class="d-flex flex-column mt-12 justify-center align-center">
+              <h2 class="mb-4 primary--text lighten-2">
+                <v-icon>mdi-database-check-outline</v-icon>
+                Do you have a Diffgram Export File?
+              </h2>
+              <v-btn
+                color="primary"
+                x-large
+                data-cy="upload_new_data"
+                @click="set_upload_mode('new')"
+              >
+                Upload From Diffgram Export JSON
+              </v-btn>
+            </div>
           </div>
         </v-stepper-content>
         <v-stepper-content step="2" style="height: 100%">
