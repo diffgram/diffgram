@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!upload_source" class="d-flex justify-center flex-column">
+  <div v-if="!upload_source && upload_mode != 'from_diffgram_export'" class="d-flex justify-center flex-column">
     <h1 class="text-center">
       <v-icon x-large color="primary">mdi-upload</v-icon>
       Where do you want to upload your files from?
@@ -132,7 +132,8 @@
                   </connector_import_renderer>
                 </v-col>
               </v-row>
-              <v-row v-if="upload_source === 'local'">
+              <v-row v-if="upload_source === 'local' || upload_mode === 'from_diffgram_export'">
+                <h2 class="mb-5" v-if="upload_mode === 'from_diffgram_export'">Drag & Drop or Click to Upload the Diffgram Export Json</h2>
                 <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
                               data-cy="vue-dropzone"
                               style="min-height: 350px"

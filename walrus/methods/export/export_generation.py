@@ -327,7 +327,7 @@ def build_attribute_groups_reference(
     group_list_serialized = []
 
     for group in group_list:
-        group_list_serialized.append(group.serialize_for_export())
+        group_list_serialized.append(group.serialize_with_attributes(session))
 
     return group_list_serialized
 

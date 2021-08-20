@@ -112,12 +112,11 @@
                 Do you have a Diffgram Export File?
               </h2>
               <v-btn
-                color="primary"
-                x-large
+                color="secondary lighten-1"
                 data-cy="upload_new_data"
-                @click="set_upload_mode('new')"
+                @click="set_upload_mode('from_diffgram_export')"
               >
-                Upload From Diffgram Export JSON
+                Upload New From Diffgram Export JSON
               </v-btn>
             </div>
           </div>
@@ -262,6 +261,7 @@
 </template>
 
 <script lang="ts">
+  import DiffgramExportFileIngestor from './DiffgramExportFileIngestor';
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
   import file_schema_mapper from './file_schema_mapper'
@@ -366,6 +366,7 @@
       dropzone_total_file_size: 0,
       currently_uploading_bytes: 0,
       upload_in_progress: false,
+      diffgram_export_ingestor: null,
       valid_labels: false,
       pre_labeled_data: null,
       file_list_to_upload: [],
@@ -631,7 +632,8 @@
 
             if (response.status === 200) {
               const text_data = response.data.data;
-              this.load_annotation_from_local(file, text_data);
+              return text_data
+
             }
 
           } catch (error) {
@@ -640,6 +642,9 @@
             console.error(error);
           }
         },
+        load_diffgram_export_file: function(text_data, file){
+          this.diffgram_export_ingestor = new DiffgramExportFileIngestor(text_data, file);
+        },
         load_annotations_file: async function () {
           const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           this.$refs.new_or_update_upload_screen.loading_annotations = true;
@@ -647,9 +652,22 @@
           try {
             if (file.source === 'local') {
               const text_data = await file.text();
-              await this.load_annotation_from_local(file, text_data);
+              if(this.upload_mode === 'from_diffgram_export'){
+                await this.load_diffgram_export_file(text_data, file);
+              }
+              else{
+                await this.load_annotation_from_local(file, text_data);
+              }
+
             } else if (file.source === 'connection') {
-              await this.load_annotations_from_connection(file);
+              const text_data = await this.load_annotations_from_connection(file);
+              if(this.upload_mode === 'from_diffgram_export'){
+                await this.load_diffgram_export_file(text_data, file);
+              }
+              else{
+                this.load_annotation_from_local(file, text_data);
+              }
+
             } else {
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
             }
