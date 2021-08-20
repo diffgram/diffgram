@@ -161,7 +161,7 @@
               <template v-slot:body="{ items }">
                 <tbody>
                 <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
-                  <td>
+                  <td style="max-width: 300px">
                     <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
@@ -174,15 +174,30 @@
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
-
                 </tr>
-                <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
-                  <td>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Raw Media')">
+                  <td style="max-width: 300px">
                     <p class="ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
                     <p class="ma-0"><strong>
                       <v-icon>mdi-file</v-icon>
+                      {{file.data_type}}</strong></p>
+                  </td>
+                  <td>
+                    <v-btn color="error" icon @click="remove_file(file)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </td>
+
+                </tr>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Diffgram Export')">
+                  <td style="max-width: 300px">
+                    <p class="ma-0"><strong>{{ file.name }}</strong></p>
+                  </td>
+                  <td>
+                    <p class="ma-0"><strong>
+                      <v-icon color="success">mdi-file-export</v-icon>
                       {{file.data_type}}</strong></p>
                   </td>
                   <td>
@@ -344,6 +359,10 @@
                   file.data_type = 'Annotations';
                 } else {
                   file.data_type = 'Raw Media';
+                }
+                console.log('aaaa', file.type, this.upload_mode)
+                if(file.type === 'application/json' && $vm.upload_mode === 'from_diffgram_export'){
+                  file.data_type = 'Diffgram Export';
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
@@ -599,6 +618,7 @@
           //   this.with_prelabeled = true;
           // }
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
+          const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
           if(this.with_prelabeled && annotationFile.length === 0){
             this.error = {}
             this.error.pre_labeled_data = 'Please upload your pre labeled data on a JSON or CSV file to continue.'
@@ -622,14 +642,29 @@
               this.error.media_files = 'Please upload at least one media file to continue.'
               return
             }
+          } else if (this.$props.upload_mode === 'from_diffgram_export') {
+            if (export_files.length === 0) {
+              this.error = {}
+              this.error.media_files = 'Please upload at least one media file to continue.'
+              return
+            }
+            if (export_files.length > 1) {
+              this.error = {}
+              this.error.media_files = 'Only 1 export file supported at a time. Please remove the others'
+              return
+            }
           }
-          if (annotationFile.length === 0) {
+          if (annotationFile.length === 0 && this.upload_mode === 'update') {
             // No Annotations Case, jump to last step
             this.$emit('change_step_no_annotations')
             this.$emit('complete_question', 17)
 
-          } else {
-            // No Annotations Case, jump to last step
+          }
+          else if(export_files.length > 0 && this.upload_mode === 'from_diffgram_export'){
+            this.$emit('change_step_export')
+            this.$emit('complete_question', 5)
+          }
+          else {
             this.$emit('change_step_annotations')
             this.$emit('complete_question', 5)
           }

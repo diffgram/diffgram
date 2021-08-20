@@ -170,6 +170,7 @@
             @upload_in_progress="show_upload_progress_screen"
             @change_step_no_annotations="el = 6"
             @change_step_annotations="load_annotations_file"
+            @change_step_export="load_export_file"
             @progress_updated="update_progress_values"
             @update_is_actively_sending="update_is_actively_sending"
             @reset_total_files_size="reset_total_files_size"
@@ -642,31 +643,45 @@
             console.error(error);
           }
         },
-        load_diffgram_export_file: function(text_data, file){
-          this.diffgram_export_ingestor = new DiffgramExportFileIngestor(text_data, file);
+        build_diffgram_export_ingestor: function(text_data, file){
+          try{
+            let export_data = JSON.parse(text_data);
+            this.diffgram_export_ingestor = new DiffgramExportFileIngestor(export_data, file);
+            return this.diffgram_export_ingestor
+
+          }
+          catch(error) {
+            this.error_file_uploads = {};
+            this.error_file_uploads['export_file'] = error.toString();
+            return false;
+
+          }
+
+        },
+        load_export_file: async function(){
+          let export_file_list = this.file_list_to_upload.filter(f => f.data_type ===  'Diffgram Export');
+          let file = export_file_list[0];
+          if(export_file_list.length > 1){
+            throw new Error('Just 1 Export Upload at a Time is supported.');
+          }
+          const text_data = await file.text();
+          let diffgram_export_ingestor = await this.build_diffgram_export_ingestor(text_data, file);
+          if(!diffgram_export_ingestor){
+            return
+          }
+          this.el = 4;
         },
         load_annotations_file: async function () {
-          const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
+          let file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           this.$refs.new_or_update_upload_screen.loading_annotations = true;
 
           try {
             if (file.source === 'local') {
               const text_data = await file.text();
-              if(this.upload_mode === 'from_diffgram_export'){
-                await this.load_diffgram_export_file(text_data, file);
-              }
-              else{
-                await this.load_annotation_from_local(file, text_data);
-              }
-
+              await this.load_annotation_from_local(file, text_data);
             } else if (file.source === 'connection') {
               const text_data = await this.load_annotations_from_connection(file);
-              if(this.upload_mode === 'from_diffgram_export'){
-                await this.load_diffgram_export_file(text_data, file);
-              }
-              else{
-                this.load_annotation_from_local(file, text_data);
-              }
+              this.load_annotation_from_local(file, text_data);
 
             } else {
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
@@ -675,7 +690,7 @@
             this.el = 4;
           } catch (error) {
             this.error_file_uploads = {}
-            this.error_file_uploads['annotations_file'] = `${file.name}: ${error.toString()}`;
+            this.error_file_uploads['annotations_file'] = `${file ? file.name : undefined}: ${error.toString()}`;
             console.error(error);
           }
           this.$refs.new_or_update_upload_screen.loading_annotations = false;

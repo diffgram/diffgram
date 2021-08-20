@@ -416,7 +416,8 @@ def build_video_packet(file, session):
         'id': file.id,
         'original_filename': file.original_filename,
         'created_time': str(file.created_time),
-        'ann_is_complete': file.ann_is_complete
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
         # note str() otherwise get "non serializeable"
 
     },
@@ -432,8 +433,12 @@ def build_image_packet(
     Generic method to generate a dict of information given a file
     """
 
+    file.image.regenerate_url(project=file.project, session=session)
+
     image_dict = {'width': file.image.width,
                   'height': file.image.height,
+                  'image_signed_expiry': file.image.url_signed_expiry,
+                  'image_signed_url': file.image.url_signed,
                   'original_filename': file.image.original_filename}
 
     instance_dict_list = []
@@ -469,7 +474,11 @@ def build_image_packet(
                 instance_dict_list.append(out)
 
     return {'file': {
-        'id': file.id
+        'id': file.id,
+        'original_filename': file.original_filename,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
     },
         'image': image_dict,
         'instance_list': instance_dict_list}

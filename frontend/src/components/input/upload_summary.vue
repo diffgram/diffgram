@@ -163,7 +163,7 @@
             } else {
               return []
             }
-          } else if (this.$props.upload_mode === 'new') {
+          } else if (this.$props.upload_mode === 'new' || this.$props.upload_mode === 'from_diffgram_export') {
             return this.$props.file_list
           }
         },
@@ -517,8 +517,6 @@
                   throw new Error(`${file.type} is not a supported file format.`)
                 }
               }
-
-
             }
           }
           return result;
