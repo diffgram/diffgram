@@ -191,6 +191,7 @@
 
         <v-stepper-content step="4">
           <file_schema_mapper
+            v-if="['new', 'update'].includes(upload_mode)"
             :project_string_id="project_string_id"
             :pre_label_key_list="pre_label_key_list"
             :upload_mode="upload_mode"
@@ -206,6 +207,14 @@
             @set_included_instance_types="included_instance_types = $event"
             :previously_completed_questions="5"
           ></file_schema_mapper>
+          <diffgram_export_validator
+            v-if="['from_diffgram_export'].includes(upload_mode)"
+            :project_string_id="project_string_id"
+            :diffgram_export_ingestor="diffgram_export_ingestor"
+            :upload_mode="upload_mode"
+            @change_step_wizard="check_errors_and_go_to_step(6)"
+            ref="diffgram_export_validator"
+          ></diffgram_export_validator>
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -267,6 +276,7 @@
   import new_or_update_upload_screen from './new_or_update_upload_screen'
   import file_schema_mapper from './file_schema_mapper'
   import instance_schema_mapper from './instance_schema_mapper'
+  import diffgram_export_validator from './diffgram_export_validator'
   import upload_summary from './upload_summary'
   import upload_progress from './upload_progress'
   import axios from 'axios';
@@ -389,6 +399,7 @@
         upload_summary,
         file_schema_mapper,
         instance_schema_mapper,
+        diffgram_export_validator,
         new_or_update_upload_screen,
         upload_progress
       },
@@ -669,6 +680,7 @@
           if(!diffgram_export_ingestor){
             return
           }
+          this.$refs.diffgram_export_validator.validate_export_metadata();
           this.el = 4;
         },
         load_annotations_file: async function () {

@@ -415,6 +415,7 @@ def build_video_packet(file, session):
     return {'file': {
         'id': file.id,
         'original_filename': file.original_filename,
+        'blob_url': mp4_video_signed_url,
         'created_time': str(file.created_time),
         'ann_is_complete': file.ann_is_complete,
         'type': file.type
@@ -476,6 +477,7 @@ def build_image_packet(
     return {'file': {
         'id': file.id,
         'original_filename': file.original_filename,
+        'blob_url': file.image.url_signed,
         'created_time': str(file.created_time),
         'ann_is_complete': file.ann_is_complete,
         'type': file.type
