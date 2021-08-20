@@ -6,7 +6,7 @@
       </v_error_multiple>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
       <v-btn small
-             v-if="errors_export_data && Object.keys(errors_file_schema).length > 0 && !valid_labels && errors_export_data.label_names"
+             v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names"
              color="secondary"
              @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Labels
       </v-btn>
@@ -38,19 +38,19 @@
           <h3 class="mr-6">2. Validating File Names & Blobs: </h3>
           <v-progress-circular indeterminate v-if="file_names_state === 'loading'"></v-progress-circular>
           <v-icon v-else-if="file_names_state === 'success'" color="success">mdi-check</v-icon>
-          <v-icon v-else-if="file_names_state === 'error'" color="error0">mdi-alert-circle</v-icon>
+          <v-icon v-else-if="file_names_state === 'error'" color="error">mdi-alert-circle</v-icon>
         </div>
         <div class="d-flex justify-start mb-4">
           <h3 class="mr-6">3. Validating Labels: </h3>
           <v-progress-circular indeterminate v-if="label_names_state === 'loading'"></v-progress-circular>
           <v-icon v-else-if="label_names_state === 'success'" color="success">mdi-check</v-icon>
-          <v-icon v-else-if="label_names_state === 'error'" color="error0">mdi-alert-circle</v-icon>
+          <v-icon v-else-if="label_names_state === 'error'" color="error">mdi-alert-circle</v-icon>
         </div>
         <div class="d-flex justify-start mb-4">
           <h3 class="mr-6">4. Validating Instances: </h3>
           <v-progress-circular indeterminate v-if="instances_data_state === 'loading'"></v-progress-circular>
           <v-icon v-else-if="instances_data_state === 'success'" color="success">mdi-check</v-icon>
-          <v-icon v-else-if="instances_data_state === 'error'" color="error0">mdi-alert-circle</v-icon>
+          <v-icon v-else-if="instances_data_state === 'error'" color="error">mdi-alert-circle</v-icon>
         </div>
       </v-container>
     </v-layout>
@@ -81,7 +81,7 @@
   import axios from 'axios';
   import Vue from "vue";
   import _ from "lodash";
-  import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from '../../utils/colorUtils'
+  import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../utils/colorUtils'
 
 
   export default Vue.extend({
@@ -157,6 +157,7 @@
           }
           catch (error) {
             console.error(error);
+            this.errors_export_data = {}
             this.export_meta_data_state = 'error';
             this.errors_export_data['meta_data'] = error.toString();
           }
@@ -177,11 +178,14 @@
             try{
               const file_name_list = this.diffgram_export_ingestor.get_file_names();
               const file_blob_list = this.diffgram_export_ingestor.get_blob_list();
-
+              this.file_names_state = 'success'
+              this.validate_label_names();
             }
             catch (error) {
               console.error(error);
-
+              this.errors_export_data = {};
+              this.file_names_state = 'error';
+              this.errors_export_data['files_data'] = error.toString();
             }
 
           }
@@ -209,19 +213,6 @@
           // Nothing to validate for now.
           return true
         },
-        validate_metadata: function(){
-          for (const instance of this.$props.pre_labeled_data) {
-            const metadata = _.get(instance, this.$props.diffgram_schema_mapping.file_metadata);
-            if (typeof metadata !== 'object') {
-              this.errors_file_schema = {};
-              this.errors_file_schema[this.$props.diffgram_schema_mapping.file_name] = `File name should be a an object.`;
-              this.errors_file_schema['wrong_data'] = metadata;
-              return false
-            } else {
-              return true
-            }
-          }
-        },
         next_step: async function (current_number, validate_data = true) {
 
         },
@@ -233,7 +224,7 @@
             return
           }
           for(const label_name of this.missing_labels){
-            const random_color_hex = this.get_random_color();
+            const random_color_hex = get_random_color();
             const rgba = HexToRGBA(random_color_hex);
             const hsv = HexToHSVA(random_color_hex);
             const hsl = HSVAtoHSLA(random_color_hex);
@@ -276,9 +267,10 @@
 
 
         },
+
         validate_label_names: async function () {
           try {
-            this.load_label_names = true
+            this.label_names_state = 'loading';
             this.valid_labels = false;
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
             if (response.status === 200) {
@@ -286,41 +278,27 @@
               const label_names = labels.map(elm => elm.label.name)
               this.missing_labels = [];
               // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
-              const new_prelabeled_data = JSON.parse(JSON.stringify(this.$props.pre_labeled_data));
-              for (const instance of new_prelabeled_data) {
-                let label_name = _.get(instance, this.diffgram_schema_mapping.name)
+              const export_label_names_list = this.diffgram_export_ingestor.get_label_names();
+              for (const label_name of export_label_names_list) {
                 if (!label_names.includes(label_name)) {
-
-                  this.errors_file_schema = {}
-                  this.errors_file_schema['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
-                  this.show_labels_link = false;
+                  this.errors_export_data = {}
+                  this.label_names_state = 'error'
+                  this.errors_export_data['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
                   this.valid_labels = false;
                   this.load_label_names = false;
                   if(!this.missing_labels.includes(label_name)){
                     this.missing_labels.push(label_name)
                   }
-
-                } else {
-                  const label = labels.find(l => l.label.name === label_name);
-                  instance.label_file_id = label.id;
                 }
               }
-              this.$emit('set_prelabeled_data', new_prelabeled_data)
-
-              if(this.missing_labels.length > 0){
-                this.load_label_names = false;
-                return false
-              }
-              this.valid_labels = true;
-              this.load_label_names = false;
-              return true
             }
 
           } catch (e) {
             console.error(e);
-            this.errors_file_schema = this.$route_api_errors(e);
+            this.errors_export_data = this.$route_api_errors(e);
             this.valid_labels = false;
             this.load_label_names = false;
+            this.label_names_state = 'error'
           } finally {
 
           }
@@ -333,16 +311,16 @@
             const file_name = _.get(instance, this.diffgram_schema_mapping.file_name);
             const related_file = this.file_list_to_upload.find(f => f.name === file_name);
             if (!related_file) {
-              this.errors_file_schema['file_name'] = `No file named: ${file_name}`;
-              this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
+              this.errors_export_data['file_name'] = `No file named: ${file_name}`;
+              this.errors_export_data['wrong_data'] = JSON.stringify(instance);
               return false
             }
             if (this.supported_video_files.includes(related_file.type)) {
               let frame_number = _.get(instance, this.diffgram_schema_mapping.frame_number)
               if (frame_number == undefined) {
-                this.errors_file_schema = {}
-                this.errors_file_schema['frame_number'] = `Provide frame numbers.`
-                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+                this.errors_export_data = {}
+                this.errors_export_data['frame_number'] = `Provide frame numbers.`
+                this.errors_export_data['wrong_data'] = JSON.stringify(instance)
                 return false
               }
             }
@@ -357,16 +335,16 @@
             const file_name = _.get(instance, this.diffgram_schema_mapping.file_name);
             const related_file = this.file_list_to_upload.find(f => f.name === file_name);
             if (!related_file) {
-              this.errors_file_schema['file_name'] = `No file named: ${file_name}`;
-              this.errors_file_schema['wrong_data'] = JSON.stringify(instance);
+              this.errors_export_data['file_name'] = `No file named: ${file_name}`;
+              this.errors_export_data['wrong_data'] = JSON.stringify(instance);
               return false
             }
             if (this.supported_video_files.includes(related_file.type)) {
               const seq_number = _.get(instance, this.diffgram_schema_mapping.number);
               if (seq_number == undefined) {
-                this.errors_file_schema = {}
-                this.errors_file_schema['sequence_numbers'] = `Provide Sequence numbers.`
-                this.errors_file_schema['wrong_data'] = JSON.stringify(instance)
+                this.errors_export_data = {}
+                this.errors_export_data['sequence_numbers'] = `Provide Sequence numbers.`
+                this.errors_export_data['wrong_data'] = JSON.stringify(instance)
                 return false
               }
             }
@@ -374,7 +352,7 @@
           return true
         },
         get_included_instance_types: function () {
-          this.errors_file_schema = {};
+          this.errors_export_data = {};
           for (const key of Object.keys(this.included_instance_types)) {
             this.$props.included_instance_types[key] = false;
           }
@@ -384,14 +362,14 @@
               if (this.allowed_instance_types.includes(instance_type)) {
                 this.included_instance_types[instance_type] = true;
               } else {
-                this.errors_file_schema = {};
-                this.errors_file_schema[instance_type] = `Invalid instance type "${instance_type}"`;
+                this.errors_export_data = {};
+                this.errors_export_data[instance_type] = `Invalid instance type "${instance_type}"`;
                 return false;
               }
 
             } else {
-              this.errors_file_schema = {};
-              this.errors_file_schema['instance_type_field'] = `The select field should not be empty.`;
+              this.errors_export_data = {};
+              this.errors_export_data['instance_type_field'] = `The select field should not be empty.`;
               return false;
             }
           }

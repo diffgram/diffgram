@@ -434,7 +434,7 @@ def build_image_packet(
     Generic method to generate a dict of information given a file
     """
 
-    file.image.regenerate_url(project=file.project, session=session)
+    file.image.regenerate_url(session=session)
 
     image_dict = {'width': file.image.width,
                   'height': file.image.height,
@@ -494,7 +494,12 @@ def build_text_packet(
     Generic method to generate a dict of information given a file
     """
 
-    image_dict = {'original_filename': file.text_file.original_filename}
+    file.text_file.regenerate_url()
+    text_dict = {
+        'original_filename': file.text_file.original_filename,
+        'image_signed_expiry': file.image.url_signed_expiry,
+        'image_signed_url': file.image.url_signed,
+    }
 
     instance_dict_list = []
 
@@ -529,9 +534,14 @@ def build_text_packet(
                 instance_dict_list.append(out)
 
     return {'file': {
-        'id': file.id
+        'id': file.id,
+        'original_filename': file.original_filename,
+        'blob_url': file.text_file.url_signed,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
     },
-        'image': image_dict,
+        'text': text_dict,
         'instance_list': instance_dict_list}
 
 

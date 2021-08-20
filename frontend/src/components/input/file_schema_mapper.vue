@@ -349,7 +349,7 @@
   import axios from 'axios';
   import Vue from "vue";
   import _ from "lodash";
-  import {HexToHSVA, HexToRGBA, HSVAtoHSLA} from '../../utils/colorUtils'
+  import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../utils/colorUtils'
 
 
   export default Vue.extend({
@@ -613,10 +613,6 @@
           this.$emit('complete_question', this.current_question + this.$props.previously_completed_questions)
           this.loading = false;
         },
-        get_random_color: function(){
-          const color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-          return color
-        },
         create_missing_labels: async function(){
           this.loading = true
           this.success_missing_labels = false
@@ -625,7 +621,7 @@
             return
           }
           for(const label_name of this.missing_labels){
-            const random_color_hex = this.get_random_color();
+            const random_color_hex = get_random_color();
             const rgba = HexToRGBA(random_color_hex);
             const hsv = HexToHSVA(random_color_hex);
             const hsl = HSVAtoHSLA(random_color_hex);

@@ -11,6 +11,18 @@ export default class DiffgramExportFileIngestor{
     this.file = file
     this.validate_export_obj();
   }
+  public get_label_names(){
+    const export_obj = this.export_raw_obj;
+    const result = [];
+    if(!export_obj.label_map){
+      throw new Error('Export data has no key "labels_map". Please provide this key in the JSON file.')
+    }
+    for(const key of Object.keys(export_obj.label_map)){
+      let label_name = export_obj.label_map[key]
+      result.push(label_name)
+    }
+    return result;
+  }
   public get_file_names(){
     const export_obj = this.export_raw_obj;
     const result = [];
@@ -19,8 +31,8 @@ export default class DiffgramExportFileIngestor{
         continue
       }
       let file_data = export_obj[key];
-      if(!file_data.original_filename){
-        throw new Error(`File key ${file_data} has no original_filename. Please check this key exists in the export.`)
+      if(!file_data.file || !file_data.file.original_filename){
+        throw new Error(`File key ${key} has no "file.original_filename". Please check this key exists in the export.`)
       }
       result.push(file_data.original_filename)
 
@@ -36,10 +48,10 @@ export default class DiffgramExportFileIngestor{
         continue
       }
       let file_data = export_obj[key];
-      if(!file_data.original_filename){
-        throw new Error(`File key ${file_data} has no original_filename. Please check this key exists in the export.`)
+      if(!file_data.file || !file_data.file.blob_url){
+        throw new Error(`File key ${key} has no blob. Please check this file has the key "file.blob_url" in the export.`)
       }
-      result.push(file_data.original_filename)
+      result.push(file_data.file.blob_url)
 
     }
     return result;
@@ -47,6 +59,7 @@ export default class DiffgramExportFileIngestor{
 
   public check_export_meta_data(){
     // Check existence of metadata fields
+    const result = [];
     const export_obj = this.export_raw_obj;
     for(const key of this.metadata_keys){
       if(!export_obj[key]){

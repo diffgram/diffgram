@@ -24,6 +24,10 @@ function padEnd(str, length) {
   return str + char.repeat(Math.max(0, length - str.length));
 }
 
+export function get_random_color(){
+  const color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+  return color
+}
 
 function chunk(str) {
   var size = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
