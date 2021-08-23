@@ -9,7 +9,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.database.video.sequence import Sequence
 
 from shared.data_tools_core import Data_tools
-
+import traceback
 from methods.export.export_utils import generate_file_name_from_export
 
 
@@ -52,7 +52,7 @@ def new_external_export(
 
     """
 
-    print("[Export processor] Started")
+    logger.info("[Export processor] Started")
     result = False
     start_time = time.time()
 
@@ -131,14 +131,15 @@ def new_external_export(
             yaml_data = yaml.dump(annotations, default_flow_style=False)
             data_tools.upload_from_string(export.yaml_blob_name, yaml_data, content_type='text/yaml', bucket_type = 'ml')
         except Exception as exception:
-            print("[Export, YAML]", exception)
-            logger.debug("[Export, YAML]", exception)
+            trace_data = traceback.format_exc()
+            logger.error("[Export, YAML] {}".format(str(exception)))
+            logger.error(trace_data)
 
         json_data = json.dumps(annotations)
         data_tools.upload_from_string(export.json_blob_name, json_data, content_type = 'text/json', bucket_type = 'ml')
 
     end_time = time.time()
-    print("[Export processor] ran in", end_time - start_time)
+    logger.info("[Export processor] ran in {}".format(end_time - start_time))
 
     Event.new(
         kind="export_generation",
@@ -149,7 +150,7 @@ def new_external_export(
         run_time=end_time - start_time
     )
 
-    return True
+    return True, annotations
 
 
 def annotation_export_core(
@@ -276,11 +277,9 @@ def annotation_export_core(
         # TODO
         # so I guess the "new" yaml one can do it "on demand"
         # if you substitute version for working directory?
-
         for index, file in enumerate(file_list):
 
             # Image URL?
-
             packet = build_packet(
                 file=file,
                 session=session,
@@ -301,7 +300,7 @@ def annotation_export_core(
 
             if index % 10 == 0:
                 # TODO would need to commit the session for this to be useful right?
-                print("Percent done", export.percent_complete)
+                logger.info("Percent done {}".format(export.percent_complete))
                 try_to_commit(session=session)  # push update
 
     export.status = "complete"
@@ -449,7 +448,6 @@ def build_image_packet(
         instance_list = Instance.list(
             session=session,
             file_id=file.id)
-
         for instance in instance_list:
             instance_dict_list.append(build_instance(instance))
 
@@ -458,8 +456,6 @@ def build_image_packet(
         # sets BUT then it would make the below a little different
         # TODO review this
         #
-
-        # print(file.id, file.root_id)
 
         result, instance_dict = file_difference(
             session=session,
@@ -517,8 +513,6 @@ def build_text_packet(
         # sets BUT then it would make the below a little different
         # TODO review this
         #
-
-        # print(file.id, file.root_id)
 
         result, instance_dict = file_difference(
             session=session,
