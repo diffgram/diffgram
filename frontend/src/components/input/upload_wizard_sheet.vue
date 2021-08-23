@@ -113,7 +113,7 @@
               </h2>
               <v-btn
                 color="secondary lighten-1"
-                data-cy="upload_new_data"
+                data-cy="from_diffgram_export"
                 @click="set_upload_mode('from_diffgram_export')"
               >
                 Upload New From Diffgram Export JSON
