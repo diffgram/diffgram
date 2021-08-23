@@ -17,6 +17,7 @@ exports.HSVAtoHex = HSVAtoHex;
 exports.parseHex = parseHex;
 exports.parseGradient = parseGradient;
 exports.RGBtoInt = RGBtoInt;
+exports.get_random_color = get_random_color;
 
 
 function padEnd(str, length) {
@@ -24,7 +25,7 @@ function padEnd(str, length) {
   return str + char.repeat(Math.max(0, length - str.length));
 }
 
-export function get_random_color(){
+function get_random_color(){
   const color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
   return color
 }

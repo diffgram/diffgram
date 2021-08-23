@@ -617,6 +617,7 @@
           this.loading = true
           this.success_missing_labels = false
           this.error = {}
+
           if(!this.missing_labels){
             return
           }

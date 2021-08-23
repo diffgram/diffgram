@@ -571,6 +571,7 @@ def build_instance(instance, include_label=False):
         'label_file_id': instance.label_file_id,    # for images
         'frame_number': instance.frame_number,
         'global_frame_number': instance.global_frame_number,
+        'number': instance.number,
         'x_min': instance.x_min,
         'y_min': instance.y_min,
         'x_max': instance.x_max,
@@ -598,6 +599,8 @@ def build_instance(instance, include_label=False):
     if instance.type == 'ellipse':
         out['center_x'] = instance.center_x
         out['center_y'] = instance.center_y
+        out['width'] = instance.width
+        out['height'] = instance.height
 
     if instance.type == 'text_token':
         out['start_char'] = instance.start_char

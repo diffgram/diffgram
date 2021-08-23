@@ -116,6 +116,9 @@
         },
         'upload_mode': {
           default: null
+        },
+        'diffgram_export_ingestor':{
+          default: null
         }
       },
       data() {
@@ -163,8 +166,11 @@
             } else {
               return []
             }
-          } else if (this.$props.upload_mode === 'new' || this.$props.upload_mode === 'from_diffgram_export') {
+          } else if (this.$props.upload_mode === 'new') {
             return this.$props.file_list
+          }
+          else if(this.$props.upload_mode === 'from_difgram_export'){
+            return this.$props.diffgram_export_ingestor.get_instance_count_per_file();
           }
         },
         files_to_update_list: function () {

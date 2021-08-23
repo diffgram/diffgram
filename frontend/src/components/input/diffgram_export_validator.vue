@@ -2,8 +2,11 @@
   <v-container fluid :style="`position: relative; height: ${wizard_height}`">
 
     <div class="d-flex align-center">
+
       <v_error_multiple :error="errors_export_data" >
+
       </v_error_multiple>
+
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
       <v-btn small
              v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names"
@@ -13,8 +16,17 @@
       <v-btn :loading="loading" class="ml-6" v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names" color="primary"
             small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing
       </v-btn>
-    </div>
 
+
+    </div>
+    <v-btn class="ml-5"
+           @click="retry_all_checks"
+           color="primary"
+           small
+           v-if="errors_export_data && Object.keys(errors_export_data).length > 0">
+      <v-icon>mdi-refresh</v-icon>
+      Recheck all Tests
+    </v-btn>
     <v-layout class="d-flex flex-column justify-center align-center pa-10">
 
       <v-container v-if="diffgram_export_ingestor" class="d-flex flex-column pa-0" style="height: 500px">
@@ -53,6 +65,7 @@
           <v-icon v-else-if="instances_data_state === 'error'" color="error">mdi-alert-circle</v-icon>
         </div>
       </v-container>
+      <v-alert type="success" v-if="all_checks_passed" >All Checks Passed! Continue to next step. </v-alert>
     </v-layout>
     <v-layout class="d-flex justify-space-between">
       <v-btn x-large
@@ -60,16 +73,16 @@
              :disabled="current_question === 1"
              class="primary lighten-4 ma-8"
              style="justify-self: start; position: absolute; left: 0; bottom: 0"
-             @click="previous_step(current_question)">
+             @click="go_to_wizard_step(3)">
         Back
       </v-btn>
       <v-btn x-large
              style="justify-self: end; position: absolute; right: 0; bottom: 0"
-             :disabled="export_validated"
+             :disabled="!all_checks_passed"
              :loading="loading"
              data-cy="continue_file_mapping"
              class="primary ma-8"
-             @click="next_step(current_question)">
+             @click="go_to_wizard_step(6)">
         Continue
       </v-btn>
     </v-layout>
@@ -85,7 +98,7 @@
 
 
   export default Vue.extend({
-      name: 'file_schema_mapper',
+      name: 'diffgram_export_validator',
       components: {},
       props: {
         'project_string_id': {
@@ -128,6 +141,15 @@
         }
       },
       computed: {
+        all_checks_passed: function(){
+          let state_keys = ['export_meta_data_state', 'file_names_state', 'label_names_state', 'instances_data_state'];
+          for(let key of state_keys){
+            if(this[key] != 'success'){
+              return false
+            }
+          }
+          return true;
+        }
       },
       watch: {},
       mounted() {
@@ -147,8 +169,19 @@
 
       },
       methods: {
+        go_to_wizard_step: function(num){
+          this.$emit('go_to_wizard_step', num)
+        },
+        retry_all_checks: function(){
+            this.file_names_state = 'pending';
+            this.label_names_state = 'pending';
+            this.instances_data_state = 'pending';
+            this.export_meta_data_state = 'loading';
+            this.validate_export_metadata();
+        },
         validate_export_metadata: async function(){
           this.export_meta_data_state = 'loading'
+          this.errors_export_data = {};
           await new Promise(resolve => setTimeout(resolve, 1500));
           try{
             this.diffgram_export_ingestor.check_export_meta_data();
@@ -169,6 +202,21 @@
         },
         open_labels: function () {
           window.open(`/project/${this.$props.project_string_id}/labels`, '_blank');
+        },
+        validate_instance_data: function(){
+          this.instances_data_state = 'loading'
+          try{
+            this.diffgram_export_ingestor.validate_instances();
+            this.instances_data_state = 'success'
+          }
+          catch (e) {
+            console.error(e);
+            this.errors_export_data = {};
+            this.instances_data_state = 'error';
+            this.errors_export_data['instance_validation'] = e.toString();
+            this.errors_export_data['instance_validation'] = e.toString();
+          }
+
         },
         validate_file_names: async function () {
           try{
@@ -213,13 +261,12 @@
           // Nothing to validate for now.
           return true
         },
-        next_step: async function (current_number, validate_data = true) {
-
-        },
         create_missing_labels: async function(){
           this.loading = true
           this.success_missing_labels = false
           this.error = {}
+          this.errors_export_data = {}
+          console.log('creating for', this.missing_labels)
           if(!this.missing_labels){
             return
           }
@@ -245,8 +292,8 @@
               this.new_label_name = null
 
               // only if success?
-              this.$store.commit('init_label_refresh')
-              this.$emit('label_created', response.data.label)
+              this.$store.commit('init_label_refresh');
+              this.$emit('label_created', response.data.label);
 
             } catch (error) {
               this.loading = false
@@ -263,7 +310,7 @@
           this.success_missing_labels = true;
           this.loading = false
           this.missing_labels = [];
-
+          this.retry_all_checks();
 
 
         },
@@ -291,89 +338,23 @@
                   }
                 }
               }
+              if(this.missing_labels.length === 0){
+                this.label_names_state = 'success';
+                this.validate_instance_data()
+              }
             }
 
           } catch (e) {
             console.error(e);
+            this.errors_export_data = {};
             this.errors_export_data = this.$route_api_errors(e);
+            this.errors_export_data['error'] = e.toString();
             this.valid_labels = false;
             this.load_label_names = false;
             this.label_names_state = 'error'
           } finally {
 
           }
-        },
-        validate_frames: function () {
-          if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {
-            return true
-          }
-          for (const instance of this.$props.pre_labeled_data) {
-            const file_name = _.get(instance, this.diffgram_schema_mapping.file_name);
-            const related_file = this.file_list_to_upload.find(f => f.name === file_name);
-            if (!related_file) {
-              this.errors_export_data['file_name'] = `No file named: ${file_name}`;
-              this.errors_export_data['wrong_data'] = JSON.stringify(instance);
-              return false
-            }
-            if (this.supported_video_files.includes(related_file.type)) {
-              let frame_number = _.get(instance, this.diffgram_schema_mapping.frame_number)
-              if (frame_number == undefined) {
-                this.errors_export_data = {}
-                this.errors_export_data['frame_number'] = `Provide frame numbers.`
-                this.errors_export_data['wrong_data'] = JSON.stringify(instance)
-                return false
-              }
-            }
-          }
-          return true
-        },
-        validate_sequences() {
-          if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {
-            return true
-          }
-          for (const instance of this.$props.pre_labeled_data) {
-            const file_name = _.get(instance, this.diffgram_schema_mapping.file_name);
-            const related_file = this.file_list_to_upload.find(f => f.name === file_name);
-            if (!related_file) {
-              this.errors_export_data['file_name'] = `No file named: ${file_name}`;
-              this.errors_export_data['wrong_data'] = JSON.stringify(instance);
-              return false
-            }
-            if (this.supported_video_files.includes(related_file.type)) {
-              const seq_number = _.get(instance, this.diffgram_schema_mapping.number);
-              if (seq_number == undefined) {
-                this.errors_export_data = {}
-                this.errors_export_data['sequence_numbers'] = `Provide Sequence numbers.`
-                this.errors_export_data['wrong_data'] = JSON.stringify(instance)
-                return false
-              }
-            }
-          }
-          return true
-        },
-        get_included_instance_types: function () {
-          this.errors_export_data = {};
-          for (const key of Object.keys(this.included_instance_types)) {
-            this.$props.included_instance_types[key] = false;
-          }
-          for (const elm of this.$props.pre_labeled_data) {
-            const instance_type = _.get(elm, this.diffgram_schema_mapping.instance_type)
-            if (instance_type) {
-              if (this.allowed_instance_types.includes(instance_type)) {
-                this.included_instance_types[instance_type] = true;
-              } else {
-                this.errors_export_data = {};
-                this.errors_export_data[instance_type] = `Invalid instance type "${instance_type}"`;
-                return false;
-              }
-
-            } else {
-              this.errors_export_data = {};
-              this.errors_export_data['instance_type_field'] = `The select field should not be empty.`;
-              return false;
-            }
-          }
-          return true
         },
       }
     }

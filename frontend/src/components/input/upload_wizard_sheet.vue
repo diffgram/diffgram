@@ -212,7 +212,7 @@
             :project_string_id="project_string_id"
             :diffgram_export_ingestor="diffgram_export_ingestor"
             :upload_mode="upload_mode"
-            @change_step_wizard="check_errors_and_go_to_step(6)"
+            @go_to_wizard_step="check_errors_and_go_to_step($event)"
             ref="diffgram_export_validator"
           ></diffgram_export_validator>
         </v-stepper-content>
@@ -240,6 +240,7 @@
             v-if="!upload_in_progress && file_list_to_upload && el=== '6'"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :upload_mode="upload_mode"
+            :diffgram_export_ingestor="diffgram_export_ingestor"
             :project_string_id="project_string_id"
             :total_instance_count="pre_labeled_data ? pre_labeled_data.length : null"
             :pre_labeled_data="pre_labeled_data"
