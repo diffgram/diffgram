@@ -360,7 +360,6 @@
                 } else {
                   file.data_type = 'Raw Media';
                 }
-                console.log('aaaa', file.type, this.upload_mode)
                 if(file.type === 'application/json' && $vm.upload_mode === 'from_diffgram_export'){
                   file.data_type = 'Diffgram Export';
                 }
@@ -575,8 +574,50 @@
             return data
           }
         },
+        create_input_for_export_data: async function(file_data, file_key){
+          const file = file_data[file_key]
+          const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
+            file_name: file.name,
+            directory_id: this.$props.current_directory.directory_id,
+            mode: 'from_url',
+            media:{
+              type: file.type,
+              url: file.url
+            },
+            instance_list: file.instance_list,
+            frame_packet_map: file.frame_packet_map,
+            batch_id: this.$props.batch.id,
+            original_filename: file.name,
+            project_string_id: this.$props.project_string_id,
+            extract_labels_from_batch: true
+          });
+          if (data.status === 200 && !data.data.error) {
+            this.$emit('error_update_files', undefined);
+            this.processed_files += 1;
+            this.update_progress_percentage((this.processed_files * 1.0 / this.total_files_update) * 100);
+            return data
+          }
+        },
+        upload_export: async function(file_data){
+          const limit = pLimit(10); // 10 Max concurrent request.
+          try {
+            this.processed_files = 0;
+            this.total_files_update = Object.keys(file_data).length;
+            const file_keys = Object.keys(file_data);
+            const promises = file_keys.map(file_key => {
+              return limit(() => this.create_input_for_export_data(file_data, file_key))
+            });
+            const result = await Promise.all(promises);
+            return result
+
+          } catch (error) {
+            this.file_update_error = this.$route_api_errors(error);
+            this.$emit('file_update_error', this.file_update_error)
+            console.error(error);
+          }
+        },
         update_files: async function (file_data) {
-          const limit = pLimit(3); // 10 Max concurrent request.
+          const limit = pLimit(10); // 10 Max concurrent request.
           try {
             this.processed_files = 0;
             this.total_files_update = Object.keys(file_data).length;
@@ -607,7 +648,14 @@
             await this.upload_connection_raw_media(connection_file_list);
             this.is_actively_sending = false
             this.$emit('update_is_actively_sending', this.is_actively_sending)
-          } else {
+          }
+          else if(this.$props.upload_mode === 'from_diffgram_export'){
+            await this.upload_export(file_list);
+            this.is_actively_sending = false
+            this.$emit('update_is_actively_sending', this.is_actively_sending)
+
+          }
+          else {
             throw new Error('Invalid upload mode.')
           }
 

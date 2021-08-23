@@ -322,6 +322,10 @@
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
             if (response.status === 200) {
               const labels = response.data.labels_out;
+              const label_map = {};
+              for(let label of labels){
+                label_map[label.label.name] = label.id;
+              }
               const label_names = labels.map(elm => elm.label.name)
               this.missing_labels = [];
               // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
@@ -340,6 +344,7 @@
               }
               if(this.missing_labels.length === 0){
                 this.label_names_state = 'success';
+                this.diffgram_export_ingestor.set_new_label_map(label_map)
                 this.validate_instance_data()
               }
             }

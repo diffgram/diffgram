@@ -72,6 +72,7 @@ class Annotation_Update():
     is_new_file = False  # defaults to False, ie for images?
     video_parent_file = None
     clean_instances: bool = False
+    force_lock: bool = True
     sequence = None
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
@@ -546,10 +547,11 @@ class Annotation_Update():
 
         # For now there is no extra init needed if it's an image
         if self.file.type == "image":
-            self.file = File.get_by_id(session = self.session,
-                                       file_id = self.file.id,
-                                       with_for_update = True,
-                                       nowait = True)
+            if self.force_lock:
+                self.file = File.get_by_id(session = self.session,
+                                           file_id = self.file.id,
+                                           with_for_update = True,
+                                           nowait = True)
             return
 
         if self.file.type == "video":
