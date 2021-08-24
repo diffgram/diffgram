@@ -27,6 +27,7 @@ from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
+from shared.database.export import Export
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -380,6 +381,35 @@ def create_label_file(label_file_data, session):
     session.add(label_file)
     regular_methods.commit_with_rollback(session)
     return label_file
+
+
+def create_export(export_data, session):
+    export = Export(
+        type = export_data.get('type'),
+        kind = export_data.get('kind'),
+        archived = export_data.get('archived'),
+        masks = export_data.get('masks'),
+        source = export_data.get('source'),
+        status = export_data.get('status'),
+        status_text = export_data.get('status_text'),
+        percent_complete = export_data.get('percent_complete'),
+        file_comparison_mode = export_data.get('file_comparison_mode'),
+        file_list_length = export_data.get('file_list_length'),
+        description = export_data.get('description'),
+        working_dir_id = export_data.get('working_dir_id'),
+        project_id = export_data.get('project_id'),
+        user_id = export_data.get('user_id'),
+        job_id = export_data.get('job_id'),
+        task_id = export_data.get('task_id'),
+        yaml_blob_name = export_data.get('yaml_blob_name'),
+        json_blob_name = export_data.get('json_blob_name'),
+        tf_records_blob_name = export_data.get('tf_records_blob_name'),
+        ann_is_complete = export_data.get('ann_is_complete'),
+
+    )
+    session.add(export)
+    regular_methods.commit_with_rollback(session)
+    return export
 
 
 def create_discussion_comment(discussion_comment_data, session):

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!upload_source" class="d-flex justify-center flex-column">
+  <div v-if="!upload_source && upload_mode != 'from_diffgram_export'" class="d-flex justify-center flex-column">
     <h1 class="text-center">
       <v-icon x-large color="primary">mdi-upload</v-icon>
       Where do you want to upload your files from?
@@ -132,7 +132,8 @@
                   </connector_import_renderer>
                 </v-col>
               </v-row>
-              <v-row v-if="upload_source === 'local'">
+              <v-row v-if="upload_source === 'local' || upload_mode === 'from_diffgram_export'">
+                <h2 class="mb-5" v-if="upload_mode === 'from_diffgram_export'">Drag & Drop or Click to Upload the Diffgram Export Json</h2>
                 <vue-dropzone class="mb-12 d-flex align-center justify-center" ref="myVueDropzone" id="dropzone"
                               data-cy="vue-dropzone"
                               style="min-height: 350px"
@@ -160,7 +161,7 @@
               <template v-slot:body="{ items }">
                 <tbody>
                 <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Annotations')">
-                  <td>
+                  <td style="max-width: 300px">
                     <p class="secondary--text ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
@@ -173,15 +174,30 @@
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
-
                 </tr>
-                <tr v-for="file in file_list_to_upload.filter(f => f.data_type !== 'Annotations')">
-                  <td>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Raw Media')">
+                  <td style="max-width: 300px">
                     <p class="ma-0"><strong>{{ file.name }}</strong></p>
                   </td>
                   <td>
                     <p class="ma-0"><strong>
                       <v-icon>mdi-file</v-icon>
+                      {{file.data_type}}</strong></p>
+                  </td>
+                  <td>
+                    <v-btn color="error" icon @click="remove_file(file)">
+                      <v-icon>mdi-delete</v-icon>
+                    </v-btn>
+                  </td>
+
+                </tr>
+                <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Diffgram Export')">
+                  <td style="max-width: 300px">
+                    <p class="ma-0"><strong>{{ file.name }}</strong></p>
+                  </td>
+                  <td>
+                    <p class="ma-0"><strong>
+                      <v-icon color="success">mdi-file-export</v-icon>
                       {{file.data_type}}</strong></p>
                   </td>
                   <td>
@@ -343,6 +359,9 @@
                   file.data_type = 'Annotations';
                 } else {
                   file.data_type = 'Raw Media';
+                }
+                if(file.type === 'application/json' && $vm.upload_mode === 'from_diffgram_export'){
+                  file.data_type = 'Diffgram Export';
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
@@ -555,8 +574,50 @@
             return data
           }
         },
+        create_input_for_export_data: async function(file_data, file_key){
+          const file = file_data[file_key]
+          const data = await axios.post(`/api/walrus/v1/project/${this.$props.project_string_id}/input/packet`, {
+            file_name: file.name,
+            directory_id: this.$props.current_directory.directory_id,
+            mode: 'from_url',
+            media:{
+              type: file.type,
+              url: file.url
+            },
+            instance_list: file.instance_list,
+            frame_packet_map: file.frame_packet_map,
+            batch_id: this.$props.batch.id,
+            original_filename: file.name,
+            project_string_id: this.$props.project_string_id,
+            extract_labels_from_batch: true
+          });
+          if (data.status === 200 && !data.data.error) {
+            this.$emit('error_update_files', undefined);
+            this.processed_files += 1;
+            this.update_progress_percentage((this.processed_files * 1.0 / this.total_files_update) * 100);
+            return data
+          }
+        },
+        upload_export: async function(file_data){
+          const limit = pLimit(10); // 10 Max concurrent request.
+          try {
+            this.processed_files = 0;
+            this.total_files_update = Object.keys(file_data).length;
+            const file_keys = Object.keys(file_data);
+            const promises = file_keys.map(file_key => {
+              return limit(() => this.create_input_for_export_data(file_data, file_key))
+            });
+            const result = await Promise.all(promises);
+            return result
+
+          } catch (error) {
+            this.file_update_error = this.$route_api_errors(error);
+            this.$emit('file_update_error', this.file_update_error)
+            console.error(error);
+          }
+        },
         update_files: async function (file_data) {
-          const limit = pLimit(3); // 10 Max concurrent request.
+          const limit = pLimit(10); // 10 Max concurrent request.
           try {
             this.processed_files = 0;
             this.total_files_update = Object.keys(file_data).length;
@@ -587,7 +648,14 @@
             await this.upload_connection_raw_media(connection_file_list);
             this.is_actively_sending = false
             this.$emit('update_is_actively_sending', this.is_actively_sending)
-          } else {
+          }
+          else if(this.$props.upload_mode === 'from_diffgram_export'){
+            await this.upload_export(file_list);
+            this.is_actively_sending = false
+            this.$emit('update_is_actively_sending', this.is_actively_sending)
+
+          }
+          else {
             throw new Error('Invalid upload mode.')
           }
 
@@ -598,6 +666,7 @@
           //   this.with_prelabeled = true;
           // }
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
+          const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
           if(this.with_prelabeled && annotationFile.length === 0){
             this.error = {}
             this.error.pre_labeled_data = 'Please upload your pre labeled data on a JSON or CSV file to continue.'
@@ -621,14 +690,29 @@
               this.error.media_files = 'Please upload at least one media file to continue.'
               return
             }
+          } else if (this.$props.upload_mode === 'from_diffgram_export') {
+            if (export_files.length === 0) {
+              this.error = {}
+              this.error.media_files = 'Please upload at least one media file to continue.'
+              return
+            }
+            if (export_files.length > 1) {
+              this.error = {}
+              this.error.media_files = 'Only 1 export file supported at a time. Please remove the others'
+              return
+            }
           }
-          if (annotationFile.length === 0) {
+          if (annotationFile.length === 0 && this.upload_mode === 'new') {
             // No Annotations Case, jump to last step
             this.$emit('change_step_no_annotations')
             this.$emit('complete_question', 17)
 
-          } else {
-            // No Annotations Case, jump to last step
+          }
+          else if(export_files.length > 0 && this.upload_mode === 'from_diffgram_export'){
+            this.$emit('change_step_export')
+            this.$emit('complete_question', 5)
+          }
+          else if(annotationFile.length > 0 && ['new', 'update'].includes(this.upload_mode)) {
             this.$emit('change_step_annotations')
             this.$emit('complete_question', 5)
           }

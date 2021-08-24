@@ -48,7 +48,7 @@ from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
 import numpy as np
-
+import os
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
@@ -1516,8 +1516,10 @@ class Process_Media():
         if not instance_list:
             return
 
+        file = None
         if self.input.media_type in ['image', 'text']:
             file_id = self.input.file.id
+            file = self.input.file
             video_data = None
 
             if self.input.task_id:
@@ -1527,8 +1529,9 @@ class Process_Media():
             # video files are handled by __update_parent_video_at_last_frame()
             should_complete_task = self.input.task_action == 'complete_task'
 
-        if self.input.media_type == 'frame':
+        elif self.input.media_type == 'frame':
             file_id = self.input.parent_file_id
+            file = File.get_by_id(self.session, file_id)
 
             video_data = {
                 'video_mode': True,
@@ -1536,12 +1539,14 @@ class Process_Media():
                 'current_frame': self.frame_number  # TODO Consider this from input for better consistency
             }
 
+        else:
+            logger.error('Invalid media type {}'.format(self.input.media_type))
+            return
+
 
         allowed_model_id_list = self.__get_allowed_model_ids()
         allowed_model_runs_id_list = self.__get_allowed_model_run_ids()
         try:
-            file = File.get_by_id(self.session, file_id)  # For video, expects it to be parent video file, not a frame
-
             annotation_update = Annotation_Update(
                 session=self.session,
                 file=file,
@@ -1555,7 +1560,8 @@ class Process_Media():
                 external_map_action=self.input.external_map_action,
                 do_update_sequences=False,
                 allowed_model_id_list = allowed_model_id_list,
-                allowed_model_run_id_list = allowed_model_runs_id_list
+                allowed_model_run_id_list = allowed_model_runs_id_list,
+                force_lock = False
             )
             # This returns original file type which would be different
             new_file = annotation_update.main()
@@ -1805,12 +1811,21 @@ class Process_Media():
         to our path? When we are retrying is this something to condition
         on?
         """
-        # In our storage already
-        if self.input.raw_data_blob_path:
-            self.download_from_cloud_storage_to_file()
+        try:
+            # In our storage already
+            if self.input.raw_data_blob_path:
+                self.download_from_cloud_storage_to_file()
 
-        elif self.input.url:
-            self.download_from_url()
+            elif self.input.url:
+                self.download_from_url()
+        except Exception as e:
+            trace_data = traceback.format_exc()
+            logger.error('Error downloading media')
+            logger.error(trace_data)
+            self.log['download_media'] = str(e)
+            self.log['trace'] = trace_data
+            self.input.status = "failed"
+            self.input.status_text = "Error downloading media."
 
         logger.info(str(self.input.id) + " InputID Probably Downloaded")
 
@@ -1848,7 +1863,6 @@ class Process_Media():
 
     def download_from_url(self):
         # https://diffgram.com/docs/download_from_url-process-media
-
         if self.input.url[0: 4] != "http":
             self.input.status = "failed"
             self.input.status_text = "Invalid url (Did not start with http)"
@@ -1856,10 +1870,8 @@ class Process_Media():
 
             logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)) )
             return
-
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
-                self.input.url)
-
+                self.input.url, input_original_filename = self.input.original_filename)
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
         if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
@@ -2077,7 +2089,7 @@ class Process_Media():
 
 
 # Get Media name and Extension from the URL
-def get_file_name_and_extension(url):
+def get_file_name_and_extension(url, input_original_filename = None):
     """
     This assumes that the URL is in the format of
     https: ... a/b/c/filename.extension?otherstuff
@@ -2127,7 +2139,11 @@ def get_file_name_and_extension(url):
             extension = "." + extension
 
     file_name = secure_filename(file_name)
-    return file_name, extension
+    if input_original_filename is not None:
+        filename, file_extension = os.path.splitext(input_original_filename)
+        return filename, file_extension
+    else:
+        return file_name, extension
 
 
 def clean_up_temp_dir(path):

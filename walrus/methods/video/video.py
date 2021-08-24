@@ -109,6 +109,7 @@ class New_video():
         """
 
         try:
+
             clip = moviepy_editor.VideoFileClip(video_file_name)
             input.status = "loaded_video"
             input.time_loaded_video = datetime.datetime.utcnow()
