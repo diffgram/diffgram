@@ -306,19 +306,28 @@ export default class DiffgramExportFileIngestor {
   public get_payload_for_batch_creation() {
     const result = [];
     const export_obj = this.export_raw_obj;
+    const file_names = {};
     for (const key of Object.keys(export_obj)) {
       if (this.metadata_keys.includes(key)) {
         continue
       }
       let file = export_obj[key];
       const uuid = uuidv4();
+      let file_name = file.file.original_filename;
+      if(file_names[file_name]){
+        file_names[file_name] += 1
+        file_name = `(${file_names[file_name]})${file_name}`
+      }
+      else{
+        file_names[file_name] = 1
+      }
       result[uuid] = {
         instance_list: [],
         frame_packet_map: {},
         file_id: file.file_id,
         url: file.file.blob_url,
         type: file.file.type,
-        name: file.file.original_filename
+        name: file_name
       };
       if (file.file.type === 'image') {
         let instance_list = this.build_instance_list_for_input_payload(file);
@@ -336,15 +345,23 @@ export default class DiffgramExportFileIngestor {
   public get_instance_count_per_file() {
     const result = [];
     const export_obj = this.export_raw_obj;
-
+    const file_names = {};
     for (const key of Object.keys(export_obj)) {
       if (this.metadata_keys.includes(key)) {
         continue
       }
       let file = export_obj[key];
+      let file_name = file.file.original_filename;
+      if(file_names[file_name]){
+        file_names[file_name] += 1
+        file_name = `(${file_names[file_name]})${file_name}`
+      }
+      else{
+        file_names[file_name] = 1
+      }
       let file_data = {
-        name: file.file.original_filename,
-        file_id: file.file.original_filename,
+        name: file_name,
+        file_id: file_name,
         box_instances: [],
         point_instances: [],
         polygon_instances: [],
