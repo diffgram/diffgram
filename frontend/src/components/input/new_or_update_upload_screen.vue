@@ -702,7 +702,7 @@
               return
             }
           }
-          if (annotationFile.length === 0 && this.upload_mode === 'update') {
+          if (annotationFile.length === 0 && this.upload_mode === 'new') {
             // No Annotations Case, jump to last step
             this.$emit('change_step_no_annotations')
             this.$emit('complete_question', 17)
@@ -712,7 +712,7 @@
             this.$emit('change_step_export')
             this.$emit('complete_question', 5)
           }
-          else {
+          else if(annotationFile.length > 0 && ['new', 'update'].includes(this.upload_mode)) {
             this.$emit('change_step_annotations')
             this.$emit('complete_question', 5)
           }
