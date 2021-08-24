@@ -164,11 +164,13 @@ describe('Annotate Files Tests', () => {
                 window.AnnotationCore.instance_list.push({...instance_dup, id: null});
                 window.AnnotationCore.instance_list.push({...instance_dup, id: null});
                 window.AnnotationCore.has_changed = true;
-                cy.get('[data-cy=save_button]').click({force: true})
-                  .wait(7000)
-                  .get('[data-cy=save_warning]').should('be.visible')
+
             })
-              .wait(7000)
+            .wait(5000)
+            .get('[data-cy=save_button]').click({force: true})
+            .wait(5000)
+            .get('[data-cy=save_warning]').should('be.visible')
+            .wait(7000)
         });
 
       })
