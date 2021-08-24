@@ -149,33 +149,26 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-        cy.window().then(window => {
-          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+          .window().then(window => {
+            cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
             // Move 5 frames
 
             // Copy and paste on next frame Paste
             .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
             .wait(2000)
-            .then(()=>{
-              cy.get('[data-cy="forward_1_frame"]').click({force: true})
-                .wait(2000).then(() =>{
-                  let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.has_changed = true;
-                  cy.get('[data-cy=save_button]').click({force: true})
-                    .wait(2000)
-                    .get('[data-cy=save_warning]').should('be.visible')
-
-              })
-                .wait(7000)
-
-          })
-
-
-
+            .get('[data-cy="forward_1_frame"]').click({force: true})
+            .wait(2000).then(() =>{
+                let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.has_changed = true;
+                cy.get('[data-cy=save_button]').click({force: true})
+                  .wait(7000)
+                  .get('[data-cy=save_warning]').should('be.visible')
+            })
+              .wait(7000)
         });
 
       })
