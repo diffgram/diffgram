@@ -116,6 +116,9 @@
         },
         'upload_mode': {
           default: null
+        },
+        'diffgram_export_ingestor':{
+          default: null
         }
       },
       data() {
@@ -149,6 +152,7 @@
         await new Promise(resolve => setTimeout(resolve, 500));
         this.compute_attached_instance_per_file();
         this.summarized_file_list = this.file_list_for_summary();
+        console.log('FILE LIST SUMMARY', this.summarized_file_list)
         this.preparing_payload = false;
       },
 
@@ -165,6 +169,9 @@
             }
           } else if (this.$props.upload_mode === 'new') {
             return this.$props.file_list
+          }
+          else if(this.$props.upload_mode === 'from_diffgram_export'){
+            return this.$props.diffgram_export_ingestor.get_instance_count_per_file();
           }
         },
         files_to_update_list: function () {
@@ -190,11 +197,20 @@
           } else if (this.upload_mode === 'update') {
             this.$emit('upload_raw_media', labels_payload);
           }
+          else if(this.upload_mode === 'from_diffgram_export'){
+            this.$emit('upload_raw_media', labels_payload);
+          }
 
         },
         attach_batch_to_files: function (batch) {
-          for (const file of this.$props.file_list) {
-            file.input_batch_id = batch.id
+          if(this.$props.upload_mode === 'from_diffgram_export'){
+            this.$props.diffgram_export_ingestor.add_batch_to_export_data(batch)
+          }
+          else{
+            for (const file of this.$props.file_list) {
+              file.input_batch_id = batch.id
+            }
+
           }
 
         },
@@ -259,8 +275,9 @@
             const total_size = blob.size;
 
             if (total_size < chunk_size_bytes){
+              console.log('AAAAA', labels_payload)
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
-                pre_labeled_data: labels_payload
+                pre_labeled_data: {...labels_payload}
               });
               if (response.status === 200) {
                 this.input_batch = response.data.input_batch;
@@ -281,7 +298,6 @@
                   let download_pending = true;
                   let num_request = 0;
                   while(download_pending){
-                    console.log('DOWNLOAD', download_pending, num_request)
                     try{
                       const response = await axios.post(
                         `/api/v1/project/${this.$props.project_string_id}/input-batch/${this.input_batch.id}`, {}
@@ -517,19 +533,25 @@
                   throw new Error(`${file.type} is not a supported file format.`)
                 }
               }
-
-
             }
           }
           return result;
         },
         start_upload: async function () {
           this.loading = true;
-          const labels_payload = this.prepare_pre_labeled_data_payload(
-            this.$props.pre_labeled_data,
-            this.$props.diffgram_schema_mapping,
-            this.file_list_for_summary()
-          )
+          let labels_payload = undefined;
+          if(this.$props.upload_mode === 'from_diffgram_export'){
+            labels_payload = this.$props.diffgram_export_ingestor.get_payload_for_batch_creation();
+            console.log('labels payloadd', labels_payload)
+          }
+          else{
+             labels_payload = this.prepare_pre_labeled_data_payload(
+              this.$props.pre_labeled_data,
+              this.$props.diffgram_schema_mapping,
+              this.file_list_for_summary()
+            )
+          }
+
           const result = await this.create_batch(labels_payload)
           if(!result){
             throw Error('Error creating input batch')
