@@ -1,8 +1,8 @@
 """Add Labelfile index for instances
 
-Revision ID: f75d238e6529
-Revises: 3e67f31e1a08
-Create Date: 2021-08-09 15:33:51.933934
+Revision ID: 715370463da5
+Revises: ce2ecfac6416
+Create Date: 2021-08-25 10:40:18.465499
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f75d238e6529'
-down_revision = '3e67f31e1a08'
+revision = '715370463da5'
+down_revision = 'ce2ecfac6416'
 branch_labels = None
 depends_on = None
 
