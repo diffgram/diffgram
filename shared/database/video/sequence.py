@@ -138,7 +138,8 @@ class Sequence(Base):
             'number': self.number,
             'keyframe_list': self.keyframe_list,
             'single_frame': self.single_frame,
-            'instance_preview': self.build_instance_preview_dict(session = session)
+            # 'instance_preview': self.build_instance_preview_dict(session = session)
+            'instance_preview': None
         }
 
     # Label id only
