@@ -28,7 +28,7 @@
                           :set_current_dir_on_change="false"
                           :view_only_mode="false"
                           :show_update="false"
-                          :set_from_id="directory.directory_id">
+                          :set_from_id="current_dir_id">
         </v_directory_list>
       </div>
       <div class="d-flex align-center align-content-center">
@@ -162,6 +162,15 @@
 
         this.selected_dir = this.$props.directory;
       }
+      if(this.$props.directory){
+        this.current_dir_id = this.$props.directory.directory_id;
+      }
+      if(this.$route.query.directory_id){
+        this.current_dir_id = this.$route.query.directory_id;
+      }
+      if(this.$route.query.query){
+        this.query = this.$route.query.query;
+      }
       this.fetch_file_list(true);
       this.fetch_model_run_list();
       // Detect when scrolled to bottom.
@@ -185,6 +194,7 @@
         loading: false,
         query: undefined,
         query_error: undefined,
+        current_dir_id: null,
         show_ground_truth: true,
         infinite_scroll_loading: false,
         loading_models: false,
