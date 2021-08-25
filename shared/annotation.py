@@ -1674,7 +1674,7 @@ class Annotation_Update():
         ).first()
         if sequence and sequence.keyframe_list:
             frame_list = sequence.keyframe_list.get('frame_number_list')
-            if len(frame_list) > 100:
+            if frame_list and len(frame_list) > 100:
                 logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
                 return
 
