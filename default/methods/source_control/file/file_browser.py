@@ -505,11 +505,7 @@ class File_Browser():
             return False, query_creator.log, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
-        from shared.helpers.performance import explain
-        print('RESULTSS', )
-        explain = self.session.execute(explain(sql_alchemy_query)).fetchall()
-        for x in explain:
-            print(x)
+
         if sql_alchemy_query:
             count = sql_alchemy_query.count()
             if limit is not None:
@@ -659,7 +655,6 @@ class File_Browser():
 
 
         self.metadata['total_pages'] = math.ceil(float(file_count) / float(self.metadata['limit']))
-        print(self.metadata, 'okokokokok')
         if self.metadata['page'] >= self.metadata['total_pages']:
             self.metadata['next_page'] = None
             self.metadata['prev_page'] = self.metadata['page'] - 1

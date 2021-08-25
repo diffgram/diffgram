@@ -237,7 +237,6 @@
       global_instance_list: function(){
         // This instance list can either be the image instance list of the video instance list at current frame.
         if(this.$props.file.image){
-          console.log('global_instance_list', this.$props.instance_list)
           return this.$props.instance_list;
         }
         if(this.$props.file.video){
