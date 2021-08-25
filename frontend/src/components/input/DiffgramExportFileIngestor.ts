@@ -4,7 +4,6 @@ export default class DiffgramExportFileIngestor {
   public export_raw_obj: any = null;
   public file: any = null;
   public new_label_map: any = null;
-  public new_label_map: any = null;
   private export_ingestor_version: string = '1.0' // This is the ingestor for format v1.0
   public metadata_keys: string[] = ['readme', 'label_map', 'export_info', 'attribute_groups_reference']
 

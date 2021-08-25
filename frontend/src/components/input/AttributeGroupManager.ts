@@ -19,7 +19,10 @@ export default class AttributeGroupManager {
   }
 
   public check_attribute_list_equal(attr_obj_1, attr_obj_2){
-    
+
+    const list1 = attr_obj_1.attribute_template_list;
+    const list2 = attr_obj_2.attribute_template_list;
+
   }
 
   public attributes_groups_are_equal(attr_obj_1, attr_obj_2) {
