@@ -1669,6 +1669,16 @@ class Annotation_Update():
         and then serializing and returning that list.
         Because it's now updating in the deleted contexts
         """
+        print('getting sequence')
+        sequence = self.session.query(Sequence).filter(
+            Sequence.id == instance.sequence_id
+        ).first()
+        print('aaaaa', sequence, sequence.keyframe_list)
+        if sequence and sequence.keyframe_list:
+            frame_list = sequence.keyframe_list.get('frame_number_list')
+            if len(frame_list) > 100:
+                logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
+                return
 
         # For "Human" updates only
         if update_existing_only is False:
