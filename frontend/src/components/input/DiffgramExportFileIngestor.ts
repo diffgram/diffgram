@@ -14,17 +14,38 @@ export default class DiffgramExportFileIngestor {
     this.file = file
     this.validate_export_obj();
   }
-  public get_label_file_id(name){
-    for(let key of Object.keys(this.export_raw_obj.label_map)){
-      if(this.export_raw_obj.label_map[key] === name){
+
+  public substitute_label_file_ids_on_attributes(label_file_list_new) {
+    if(!label_file_list_new){
+      return
+    }
+    for (let attribute_group of this.export_raw_obj.attribute_groups_reference) {
+      let label_file_list = attribute_group.label_file_list;
+      if(!label_file_list){
+        continue
+      }
+      for(let label_file of label_file_list){
+        for(let label_file_2 of label_file_list_new){
+          if(label_file.label.name === label_file_2.label.name){
+            label_file.id = label_file_2.id
+          }
+        }
+      }
+    }
+  }
+
+  public get_label_file_id(name) {
+    for (let key of Object.keys(this.export_raw_obj.label_map)) {
+      if (this.export_raw_obj.label_map[key] === name) {
         return key
       }
     }
   }
 
-  public get_color_map(id){
+  public get_color_map(id) {
     return this.export_raw_obj.label_colour_map[id];
   }
+
   public get_label_names() {
     const export_obj = this.export_raw_obj;
     const result = [];
@@ -267,11 +288,11 @@ export default class DiffgramExportFileIngestor {
 
   private build_instance_list_for_input_payload(file) {
     const result = [];
-    if(!this.new_label_map){
+    if (!this.new_label_map) {
       throw new Error('new_label_map not set. Please set the value to the current project label_file ids mapping.')
     }
     let instance_list = file.instance_list;
-    for(let instance of instance_list){
+    for (let instance of instance_list) {
       let label_name = this.export_raw_obj.label_map[instance.label_file_id];
       let label_file_id_new = this.new_label_map[label_name];
       result.push({
@@ -282,27 +303,28 @@ export default class DiffgramExportFileIngestor {
     }
     return result
   }
-  public set_new_label_map(label_map){
+
+  public set_new_label_map(label_map) {
     this.new_label_map = label_map;
   }
+
   private build_frame_packet_map_for_input_payload(file) {
     const result = {};
-    if(!this.new_label_map){
+    if (!this.new_label_map) {
       throw new Error('new_label_map not set. Please set the value to the current project label_file ids mapping.')
     }
-    for(let sequence of file.sequence_list){
-      for(let instance of sequence.instance_list){
+    for (let sequence of file.sequence_list) {
+      for (let instance of sequence.instance_list) {
         let label_name = this.export_raw_obj.label_map[instance.label_file_id];
         let label_file_id_new = this.new_label_map[label_name]
 
-        if(result[instance.frame_number]){
+        if (result[instance.frame_number]) {
           result[instance.frame_number].push({
             ...instance,
             label_file_id: label_file_id_new,
             name: label_name
           })
-        }
-        else{
+        } else {
           result[instance.frame_number] = [{
             ...instance,
             label_file_id: label_file_id_new,
@@ -325,11 +347,10 @@ export default class DiffgramExportFileIngestor {
       let file = export_obj[key];
       const uuid = uuidv4();
       let file_name = file.file.original_filename;
-      if(file_names[file_name]){
+      if (file_names[file_name]) {
         file_names[file_name] += 1
         file_name = `(${file_names[file_name]})${file_name}`
-      }
-      else{
+      } else {
         file_names[file_name] = 1
       }
       result[uuid] = {
@@ -363,11 +384,10 @@ export default class DiffgramExportFileIngestor {
       }
       let file = export_obj[key];
       let file_name = file.file.original_filename;
-      if(file_names[file_name]){
+      if (file_names[file_name]) {
         file_names[file_name] += 1
         file_name = `(${file_names[file_name]})${file_name}`
-      }
-      else{
+      } else {
         file_names[file_name] = 1
       }
       let file_data = {
@@ -404,7 +424,7 @@ export default class DiffgramExportFileIngestor {
     return result;
   }
 
-  public add_batch_to_export_data(batch){
+  public add_batch_to_export_data(batch) {
     const export_obj = this.export_raw_obj;
     for (const key of Object.keys(export_obj)) {
       if (this.metadata_keys.includes(key)) {
@@ -414,83 +434,97 @@ export default class DiffgramExportFileIngestor {
     }
   }
 
-  public reset_attribute_mapping(){
+  public reset_attribute_mapping() {
     this.attribute_new_id_mapping = {};
   }
 
-  public add_new_attr_id_mapping(old_id, new_id){
+  public add_new_attr_id_mapping(old_id, new_id) {
     this.attribute_new_id_mapping[old_id] = {
       attribute_group_id: new_id,
       attributes_mapping: {}
     }
   }
-  public map_attribute_options(attribute_export, attribute_existing){
-    if(!attribute_export.attribute_template_list || !attribute_existing.attribute_template_list){
+
+  public map_attribute_options(attribute_export, attribute_existing) {
+    if (!attribute_export.attribute_template_list || !attribute_existing.attribute_template_list) {
       return
     }
-    for(let attr_export_option of attribute_export.attribute_template_list){
-      for(let attr_existing_option of attribute_existing.attribute_template_list){
-        if(attr_export_option.name === attr_existing_option.name){
+    for (let attr_export_option of attribute_export.attribute_template_list) {
+      for (let attr_existing_option of attribute_existing.attribute_template_list) {
+        if (attr_export_option.name === attr_existing_option.name) {
           this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.id] = attr_existing_option.id
         }
       }
     }
   }
-  public has_missing_attributes(existing_attributes_groups){
+
+  public has_missing_attributes(existing_attributes_groups) {
     let export_attributes = this.export_raw_obj.attribute_groups_reference;
     let attributes_manager = new AttributeGroupManager();
     const missing_attributes = [];
-    console.log('EXPORT', export_attributes)
-    console.log('existing_attributes_groups', existing_attributes_groups)
-    for(let attr_group_export of export_attributes){
+
+    for (let attr_group_export of export_attributes) {
       let exists = false;
-      for(let attr_group_existing of existing_attributes_groups){
+      for (let attr_group_existing of existing_attributes_groups) {
         let equal = attributes_manager.attributes_groups_are_equal(attr_group_export, attr_group_existing);
-        if(equal){
+        if (equal) {
           exists = true;
           this.add_new_attr_id_mapping(attr_group_export.id, attr_group_existing.id)
           this.map_attribute_options(attr_group_export, attr_group_existing);
           break;
         }
       }
-      if(!exists){
+      if (!exists) {
         missing_attributes.push(attr_group_export)
       }
     }
     return [missing_attributes.length > 0, missing_attributes]
   }
 
-  private update_instance_attribute_groups(instance){
-    if(!instance.attribute_groups){
+  private update_instance_attribute_groups(instance) {
+    if (!instance.attribute_groups) {
       return
     }
     let new_attribute_group = {};
-    for(let key of Object.keys(instance.attribute_groups)){
-      new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = {
-        ...instance.attribute_groups[key]
+
+    for (let key_str of Object.keys(instance.attribute_groups)) {
+      let key = parseInt(key_str, 10)
+      let mapping = this.attribute_new_id_mapping[key];
+      if(!mapping){
+        // The only case were a mapping would not be found is if the ID is from an archived attribute.
+        continue
+      }
+      if(typeof instance.attribute_groups[key] === 'object'){
+        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = {
+          ...instance.attribute_groups[key]
+        }
+      }
+      else{
+        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = instance.attribute_groups[key]
       }
 
+
       // Change attribute options IDs (for select, radio buttons, multiple selects)
-      if(typeof new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] === 'object'){
+      if (typeof new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] === 'object') {
         let old_id = new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id
-        if(old_id){
+        if (old_id) {
           new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id =
             this.attribute_new_id_mapping[key].attributes_mapping[old_id];
         }
       }
 
-      instance.attribute_groups[key] = new_attribute_group
     }
+    instance.attribute_groups = new_attribute_group
   }
 
-  private update_image_attributes(file){
+  private update_image_attributes(file) {
     let instance_list = file.instance_list;
-    for(let instance of instance_list){
+    for (let instance of instance_list) {
       this.update_instance_attribute_groups(instance)
     }
   }
 
-  private update_video_attributes(file){
+  private update_video_attributes(file) {
     let sequence_list = file.sequence_list;
     for (const sequence of sequence_list) {
       for (const instance of sequence.instance_list) {
@@ -499,20 +533,19 @@ export default class DiffgramExportFileIngestor {
     }
   }
 
-  public update_attribute_ids(){
+  public update_attribute_ids() {
     const export_obj = this.export_raw_obj;
+
     for (const key of Object.keys(export_obj)) {
       if (this.metadata_keys.includes(key)) {
         continue
       }
       let file = export_obj[key];
-      if(file.file.type === 'image'){
+      if (file.file.type === 'image') {
         this.update_image_attributes(file)
-      }
-      else if (file.file.type === 'video'){
+      } else if (file.file.type === 'video') {
         this.update_video_attributes(file)
-      }
-      else{
+      } else {
         throw new Error(`Invalid file type for attributes id mapping ${file.file.type}`)
       }
     }

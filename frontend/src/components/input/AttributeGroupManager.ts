@@ -55,59 +55,50 @@ export default class AttributeGroupManager {
 
   }
 
+
   public attributes_groups_are_equal(attr_obj_1, attr_obj_2) {
     /*
     * Returns true if attributes match on all aspects except ID.
     * Useful in context of export uploads.
     * */
-    console.log('COMPARING', attr_obj_1, attr_obj_2)
     // Check names are equal.
     if (attr_obj_1.name !== attr_obj_2.name) {
-      console.log('NAME NOT EQUAL', attr_obj_1)
       return false
     }
     // Check kind is equal.
     if (attr_obj_2.kind !== attr_obj_2.kind) {
-      console.log('kind NOT EQUAL', attr_obj_1)
       return false
     }
     // Check prompt is equal.
     if (attr_obj_1.prompt !== attr_obj_2.prompt) {
-      console.log('prompt NOT EQUAL', attr_obj_1)
       return false
     }
 
     // Check labels
     if(!this.are_label_list_equal(attr_obj_1.label_file_list, attr_obj_2.label_file_list)){
-      console.log('are_label_list_equal NOT EQUAL', attr_obj_1)
       return false
     }
 
     if(!this.are_attribute_lists_equal(attr_obj_1, attr_obj_2)){
-      console.log('are_attribute_lists_equal NOT EQUAL', attr_obj_1)
       return false
     }
 
     // Check default value
     if(attr_obj_1.default_value !== attr_obj_2.default_value){
-      console.log('default_value NOT EQUAL', attr_obj_1)
       return false
     }
     // Check default id
     if(attr_obj_1.default_id !== attr_obj_2.default_id){
-      console.log('default_id NOT EQUAL', attr_obj_1)
       return false
     }
 
     // Check min_value
     if(attr_obj_1.min_value !== attr_obj_2.min_value){
-      console.log('min_value NOT EQUAL', attr_obj_1)
       return false
     }
 
     // Check default id
     if(attr_obj_1.max_value !== attr_obj_2.max_value){
-      console.log('max_value NOT EQUAL', attr_obj_1)
       return false
     }
 

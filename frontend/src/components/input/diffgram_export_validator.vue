@@ -156,6 +156,7 @@
           success_missing_labels: false,
           missing_attributes: null,
           created_attribute_groups: null,
+          existing_label_file_list: null,
           success_missing_attributes: false,
           wizard_height: '800px',
           valid_labels: false,
@@ -168,7 +169,7 @@
       },
       computed: {
         all_checks_passed: function(){
-          let state_keys = ['export_meta_data_state', 'file_names_state', 'label_names_state', 'instances_data_state'];
+          let state_keys = ['export_meta_data_state', 'file_names_state', 'label_names_state', 'instances_data_state', 'attributes_data_state'];
           for(let key of state_keys){
             if(this[key] != 'success'){
               return false
@@ -203,6 +204,7 @@
             this.label_names_state = 'pending';
             this.instances_data_state = 'pending';
             this.export_meta_data_state = 'loading';
+            this.attributes_data_state = 'pending';
             this.validate_export_metadata();
         },
         validate_export_metadata: async function(){
@@ -295,16 +297,12 @@
           this.success_missing_labels = false
           this.error = {}
           this.errors_export_data = {}
-          console.log('creating for', this.missing_labels)
           if(!this.missing_labels){
             return
           }
           for(const label_name of this.missing_labels){
             let label_file_id = this.diffgram_export_ingestor.get_label_file_id(label_name)
             let color = this.diffgram_export_ingestor.get_color_map(label_file_id)
-            console.log('label_file_id IS', label_file_id)
-            console.log('label_name IS', label_name)
-            console.log('COLOR IS', color)
             const color_obj = color
             try {
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
@@ -346,6 +344,7 @@
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
             if (response.status === 200) {
               const labels = response.data.labels_out;
+              this.existing_label_file_list = labels;
               const label_map = {};
               for(let label of labels){
                 label_map[label.label.name] = label.id;
@@ -391,6 +390,7 @@
               `/api/v1/project/${this.project_string_id}/attribute/template/list`,
               {
                 group_id: this.attribute_template_group_id,
+                with_labels: true,
                 mode: 'from_project'
 
               });
@@ -413,7 +413,8 @@
             this.created_attribute_groups = [];
             this.errors_export_data = {};
             this.success_missing_attributes = false;
-            this.loading_attributes_creation = true
+            this.loading_attributes_creation = true;
+            this.diffgram_export_ingestor.substitute_label_file_ids_on_attributes(this.existing_label_file_list)
             for(let attr_group of this.missing_attributes){
               const response = await axios.post(`/api/v1/project/${this.project_string_id}/attribute/group/new`,{})
               if(response.status === 200){
@@ -465,7 +466,8 @@
 
               }
             }
-            this.success_missing_attributes = true
+            this.success_missing_attributes = true;
+            this.retry_all_checks();
           }
           catch (e) {
             console.error(e);
@@ -478,22 +480,28 @@
 
         },
         validate_attribute_groups: async function(){
-          this.instances_data_state = 'loading'
-          this.diffgram_export_ingestor.reset_attribute_mapping()
-          this.existing_attribute_group_list = await this.fetch_attribute_group_list();
-          let [has_missing_attributes, missing_attributes] = this.diffgram_export_ingestor.has_missing_attributes(this.existing_attribute_group_list);
-          if(has_missing_attributes){
-            this.errors_export_data = {};
-            this.errors_export_data['attributes'] = `Missing Attributes: There are ${missing_attributes.length} missing attributes. Click create to create them automatically.`
-            this.valid_attributes = false;
-            this.missing_attributes = missing_attributes;
+          try{
+            this.attributes_data_state = 'loading'
+            this.diffgram_export_ingestor.reset_attribute_mapping()
+            this.existing_attribute_group_list = await this.fetch_attribute_group_list();
+            let [has_missing_attributes, missing_attributes] = this.diffgram_export_ingestor.has_missing_attributes(this.existing_attribute_group_list);
+            if(has_missing_attributes){
+              this.errors_export_data = {};
+              this.errors_export_data['attributes'] = `Missing Attributes: There are ${missing_attributes.length} missing attributes. Click create to create them automatically.`
+              this.valid_attributes = false;
+              this.missing_attributes = missing_attributes;
+            }
+            else{
+              this.diffgram_export_ingestor.update_attribute_ids()
+              this.attributes_data_state = 'success';
+            }
           }
-          else{
-            console.log('BEFORE')
-            console.log({...this.diffgram_export_ingestor.export_raw_obj})
-            this.diffgram_export_ingestor.update_attribute_ids()
-            console.log('AFTER')
-            console.log({...this.diffgram_export_ingestor.export_raw_obj})
+          catch (e) {
+            console.error(e);
+            this.errors_export_data = {};
+            this.attributes_data_state = 'error'
+            this.errors_export_data['attributes_validation'] = e.toString()
+            this.valid_attributes = false;
           }
         }
       }
