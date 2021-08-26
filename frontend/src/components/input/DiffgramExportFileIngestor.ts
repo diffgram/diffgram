@@ -14,7 +14,17 @@ export default class DiffgramExportFileIngestor {
     this.file = file
     this.validate_export_obj();
   }
+  public get_label_file_id(name){
+    for(let key of Object.keys(this.export_raw_obj.label_map)){
+      if(this.export_raw_obj.label_map[key] === name){
+        return key
+      }
+    }
+  }
 
+  public get_color_map(id){
+    return this.export_raw_obj.label_colour_map[id];
+  }
   public get_label_names() {
     const export_obj = this.export_raw_obj;
     const result = [];

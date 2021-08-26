@@ -275,7 +275,7 @@ def annotation_export_core(
         annotations['readme'] = export.serialize_readme()
 
         annotations['label_map'] = export_label_map
-        annotations['label_colour_map'] = build_label_colour_map(export_label_map)
+        annotations['label_colour_map'] = build_label_colour_map(session, export_label_map)
 
         # TODO maybe, would like "annotations"
         # To be one layer "deeper" in terms of nesting.

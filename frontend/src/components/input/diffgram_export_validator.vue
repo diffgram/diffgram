@@ -300,17 +300,12 @@
             return
           }
           for(const label_name of this.missing_labels){
-            const random_color_hex = get_random_color();
-            const rgba = HexToRGBA(random_color_hex);
-            const hsv = HexToHSVA(random_color_hex);
-            const hsl = HSVAtoHSLA(random_color_hex);
-            const color_obj ={
-              rgba,
-              hsv,
-              hsl,
-              hex: random_color_hex,
-              a: 1
-            }
+            let label_file_id = this.diffgram_export_ingestor.get_label_file_id(label_name)
+            let color = this.diffgram_export_ingestor.get_color_map(label_file_id)
+            console.log('label_file_id IS', label_file_id)
+            console.log('label_name IS', label_name)
+            console.log('COLOR IS', color)
+            const color_obj = color
             try {
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
