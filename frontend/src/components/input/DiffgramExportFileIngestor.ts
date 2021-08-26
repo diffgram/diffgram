@@ -1,11 +1,13 @@
 import {v4 as uuidv4} from 'uuid'
+import AttributeGroupManager from "./AttributeGroupManager";
 
 export default class DiffgramExportFileIngestor {
   public export_raw_obj: any = null;
   public file: any = null;
   public new_label_map: any = null;
+  public attribute_new_id_mapping: object = {};
   private export_ingestor_version: string = '1.0' // This is the ingestor for format v1.0
-  public metadata_keys: string[] = ['readme', 'label_map', 'export_info', 'attribute_groups_reference']
+  public metadata_keys: string[] = ['readme', 'label_map', 'export_info', 'attribute_groups_reference', 'label_colour_map']
 
   public constructor(export_raw_obj, file) {
     this.export_raw_obj = export_raw_obj
@@ -400,6 +402,111 @@ export default class DiffgramExportFileIngestor {
       }
       export_obj[key].batch_id = batch.id
     }
+  }
+
+  public reset_attribute_mapping(){
+    this.attribute_new_id_mapping = {};
+  }
+
+  public add_new_attr_id_mapping(old_id, new_id){
+    this.attribute_new_id_mapping[old_id] = {
+      attribute_group_id: new_id,
+      attributes_mapping: {}
+    }
+  }
+  public map_attribute_options(attribute_export, attribute_existing){
+    if(!attribute_export.attribute_template_list || !attribute_existing.attribute_template_list){
+      return
+    }
+    for(let attr_export_option of attribute_export.attribute_template_list){
+      for(let attr_existing_option of attribute_existing.attribute_template_list){
+        if(attr_export_option.name === attr_existing_option.name){
+          this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.id] = attr_existing_option.id
+        }
+      }
+    }
+  }
+  public has_missing_attributes(existing_attributes_groups){
+    let export_attributes = this.export_raw_obj.attribute_groups_reference;
+    let attributes_manager = new AttributeGroupManager();
+    const missing_attributes = [];
+    console.log('EXPORT', export_attributes)
+    console.log('existing_attributes_groups', existing_attributes_groups)
+    for(let attr_group_export of export_attributes){
+      let exists = false;
+      for(let attr_group_existing of existing_attributes_groups){
+        let equal = attributes_manager.attributes_groups_are_equal(attr_group_export, attr_group_existing);
+        if(equal){
+          exists = true;
+          this.add_new_attr_id_mapping(attr_group_export.id, attr_group_existing.id)
+          this.map_attribute_options(attr_group_export, attr_group_existing);
+          break;
+        }
+      }
+      if(!exists){
+        missing_attributes.push(attr_group_export)
+      }
+    }
+    return [missing_attributes.length > 0, missing_attributes]
+  }
+
+  private update_instance_attribute_groups(instance){
+    if(!instance.attribute_groups){
+      return
+    }
+    let new_attribute_group = {};
+    for(let key of Object.keys(instance.attribute_groups)){
+      new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = {
+        ...instance.attribute_groups[key]
+      }
+
+      // Change attribute options IDs (for select, radio buttons, multiple selects)
+      if(typeof new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] === 'object'){
+        let old_id = new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id
+        if(old_id){
+          new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id =
+            this.attribute_new_id_mapping[key].attributes_mapping[old_id];
+        }
+      }
+
+      instance.attribute_groups[key] = new_attribute_group
+    }
+  }
+
+  private update_image_attributes(file){
+    let instance_list = file.instance_list;
+    for(let instance of instance_list){
+      this.update_instance_attribute_groups(instance)
+    }
+  }
+
+  private update_video_attributes(file){
+    let sequence_list = file.sequence_list;
+    for (const sequence of sequence_list) {
+      for (const instance of sequence.instance_list) {
+        this.update_instance_attribute_groups(instance)
+      }
+    }
+  }
+
+  public update_attribute_ids(){
+    const export_obj = this.export_raw_obj;
+    for (const key of Object.keys(export_obj)) {
+      if (this.metadata_keys.includes(key)) {
+        continue
+      }
+      let file = export_obj[key];
+      if(file.file.type === 'image'){
+        this.update_image_attributes(file)
+      }
+      else if (file.file.type === 'video'){
+        this.update_video_attributes(file)
+      }
+      else{
+        throw new Error(`Invalid file type for attributes id mapping ${file.file.type}`)
+      }
+    }
+
   }
 
 }
