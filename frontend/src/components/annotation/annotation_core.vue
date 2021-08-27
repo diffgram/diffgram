@@ -147,9 +147,8 @@
       v-if="show_snackbar_paste"
       v-model="show_snackbar_paste"
       :multi-line="true"
-      :timeout="5000"
     >
-      Instance Pasted on Frames ahead.
+      {{snackbar_paste_message}}
 
       <template v-slot:action="{ attrs }">
         <v-btn
@@ -932,6 +931,7 @@ export default Vue.extend( {
   data() {
     return {
 
+      snackbar_paste_message: '',
       ghost_instance_hover_index: null,
       default_instance_opacity: 0.25,
       model_run_list: null,
@@ -1780,7 +1780,6 @@ export default Vue.extend( {
 
   methods: {
     get_save_loading: function(frame_number){
-      console.log('get save loading', frame_number, this.save_loading_frame);
       if(this.video_mode){
         if(!this.save_loading_frame[frame_number]){
           return false
@@ -1794,7 +1793,6 @@ export default Vue.extend( {
       }
     },
     set_save_loading(value, frame){
-      console.log('SET SAVE', value, frame, this.video_mode)
       if(this.video_mode){
         this.save_loading_frame[frame] = value;
       }
@@ -6251,8 +6249,13 @@ export default Vue.extend( {
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
     },
+    show_loading_paste: function(){
+      this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Pasting Instances Please Wait....';
+    },
     show_success_paste: function(){
       this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
     },
     initialize_instance: function(instance){
       // TODO: add other instance types as they are migrated to classes.
@@ -6274,7 +6277,7 @@ export default Vue.extend( {
       }
     },
     save_multiple_frames: async function(frames_list){
-      const limit = pLimit(15); // 15 Max concurrent request.
+      const limit = pLimit(25); // 25 Max concurrent request.
       try {
         let processed_files = 0;
         const promises = frames_list.map(frame_number => {
@@ -6289,7 +6292,7 @@ export default Vue.extend( {
         console.error(error);
       }
     },
-    paste_instance: function(next_frames = undefined, instance_hover_index = undefined){
+    paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
       if(!this.instance_clipboard && instance_hover_index == undefined){return}
       if(instance_hover_index != undefined){
         this.copy_instance(false, instance_hover_index)
@@ -6363,7 +6366,8 @@ export default Vue.extend( {
           frames_to_save.push(i);
         }
         this.create_instance_events()
-        this.save_multiple_frames(frames_to_save);
+        this.show_loading_paste()
+        await this.save_multiple_frames(frames_to_save);
         this.show_success_paste()
       }
       else{
