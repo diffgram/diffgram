@@ -1294,8 +1294,15 @@ class Annotation_Update():
         # And both instances have the same hash and no ID.
         if self.instance.id is None:
             return
-        serialized_data = self.instance.serialize_with_label()
-        self.instance_list_kept_serialized.append(serialized_data)
+        serialized_ids = []
+
+        for inst in self.instance_list_kept_serialized:
+            if inst.get('id'):
+                serialized_ids.append(inst.get('id'))
+
+        if self.instance.id not in serialized_ids:
+            serialized_data = self.instance.serialize_with_label()
+            self.instance_list_kept_serialized.append(serialized_data)
 
     def instance_count_updates(self):
         if self.file is None:
@@ -1462,13 +1469,13 @@ class Annotation_Update():
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
             # We only want to keep one of them.
             logger.warning('Got duplicated hash {}'.format(self.instance.hash))
-            # if old_id is not None:
-            #     old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
-            #     if old_instance.soft_delete is False:
-            #         old_instance.soft_delete = True
-            #         # We rehash since at this point the soft_delete changes the hash.
-            #         old_instance.hash_instance()
-            #         self.session.add(old_instance)
+            if old_id is not None:
+                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
+                if old_instance.soft_delete is False:
+                    old_instance.soft_delete = True
+                    # We rehash since at this point the soft_delete changes the hash.
+                    old_instance.hash_instance()
+                    self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
             if existing_instance.id is not None and self.instance.id is not None:
