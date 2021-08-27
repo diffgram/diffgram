@@ -6586,7 +6586,6 @@ export default Vue.extend( {
         return
       }
       this.instance_list_cache = this.instance_list.slice()
-      let current_frame_cache = current_frame;
       let current_video_file_id_cache = this.current_video_file_id
       let video_mode_cache = this.video_mode
 
@@ -6624,7 +6623,7 @@ export default Vue.extend( {
         var video_data = {
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
-          current_frame: current_frame_cache
+          current_frame: current_frame
         }
       }
 
