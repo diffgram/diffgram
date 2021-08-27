@@ -6,15 +6,25 @@
       <v_error_multiple :error="errors_export_data" >
 
       </v_error_multiple>
-
+      <v-progress-circular indeterminate v-if="loading_attributes_creation || loading_labels_creation"></v-progress-circular>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
+      <v-alert dismissible type="success" v-if="success_missing_attributes">Attributes created successfully.</v-alert>
       <v-btn small
              v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names"
              color="secondary"
              @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Labels
       </v-btn>
-      <v-btn :loading="loading" class="ml-6" v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names" color="primary"
-            small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing
+      <v-btn :loading="loading_labels_creation" class="ml-6" v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_labels && errors_export_data.label_names" color="primary"
+            small @click="create_missing_labels"><v-icon>mdi-plus</v-icon>Create Missing Labels
+      </v-btn>
+
+      <v-btn small
+             v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_attributes && errors_export_data.attributes"
+             color="secondary"
+             @click="open_labels"><v-icon>mdi-brush</v-icon> Go To Attributes
+      </v-btn>
+      <v-btn :loading="loading_attributes_creation" class="ml-6" v-if="errors_export_data && Object.keys(errors_export_data).length > 0 && !valid_attributes && errors_export_data.attributes" color="primary"
+             small @click="create_missing_attributes"><v-icon>mdi-plus</v-icon>Create Missing Attributes
       </v-btn>
 
 
@@ -64,6 +74,12 @@
           <v-icon v-else-if="instances_data_state === 'success'" color="success">mdi-check</v-icon>
           <v-icon v-else-if="instances_data_state === 'error'" color="error">mdi-alert-circle</v-icon>
         </div>
+        <div class="d-flex justify-start mb-4">
+          <h3 class="mr-6">5. Validating Attributes: </h3>
+          <v-progress-circular indeterminate v-if="attributes_data_state === 'loading'"></v-progress-circular>
+          <v-icon v-else-if="attributes_data_state === 'success'" color="success">mdi-check</v-icon>
+          <v-icon v-else-if="attributes_data_state === 'error'" color="error">mdi-alert-circle</v-icon>
+        </div>
       </v-container>
       <v-alert type="success" v-if="all_checks_passed" >All Checks Passed! Continue to next step. </v-alert>
     </v-layout>
@@ -95,6 +111,7 @@
   import Vue from "vue";
   import _ from "lodash";
   import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../utils/colorUtils'
+  import DiffgramExportFileIngestor from "./DiffgramExportFileIngestor";
 
 
   export default Vue.extend({
@@ -111,6 +128,7 @@
           default: 'new'
         },
         'diffgram_export_ingestor': {
+          type: DiffgramExportFileIngestor,
           default: null
         }
       },
@@ -127,22 +145,31 @@
           current_question: 0,
           missing_labels: [],
           errors_export_data: undefined,
-          validation_stages: ['export_metadata', 'file_names', 'label_names', 'instances_data'],
+          validation_stages: ['export_metadata', 'file_names', 'label_names', 'instances_data', 'attributes_data'],
           current_validation: 'export_meta_data',
           export_meta_data_state: 'loading',
           file_names_state: 'pending',
           label_names_state: 'pending',
           instances_data_state: 'pending',
+          attributes_data_state: 'pending',
           export_validated: false,
           success_missing_labels: false,
+          missing_attributes: null,
+          created_attribute_groups: null,
+          existing_label_file_list: null,
+          success_missing_attributes: false,
           wizard_height: '800px',
           valid_labels: false,
+          existing_attribute_group_list: false,
+          valid_attributes: false,
+          loading_attributes_creation: false,
           loading: false,
+          loading_labels_creation: false,
         }
       },
       computed: {
         all_checks_passed: function(){
-          let state_keys = ['export_meta_data_state', 'file_names_state', 'label_names_state', 'instances_data_state'];
+          let state_keys = ['export_meta_data_state', 'file_names_state', 'label_names_state', 'instances_data_state', 'attributes_data_state'];
           for(let key of state_keys){
             if(this[key] != 'success'){
               return false
@@ -177,6 +204,7 @@
             this.label_names_state = 'pending';
             this.instances_data_state = 'pending';
             this.export_meta_data_state = 'loading';
+            this.attributes_data_state = 'pending';
             this.validate_export_metadata();
         },
         validate_export_metadata: async function(){
@@ -206,8 +234,11 @@
         validate_instance_data: function(){
           this.instances_data_state = 'loading'
           try{
+
             this.diffgram_export_ingestor.validate_instances();
+
             this.instances_data_state = 'success'
+            this.validate_attribute_groups();
           }
           catch (e) {
             console.error(e);
@@ -262,26 +293,17 @@
           return true
         },
         create_missing_labels: async function(){
-          this.loading = true
+          this.loading_labels_creation = true
           this.success_missing_labels = false
           this.error = {}
           this.errors_export_data = {}
-          console.log('creating for', this.missing_labels)
           if(!this.missing_labels){
             return
           }
           for(const label_name of this.missing_labels){
-            const random_color_hex = get_random_color();
-            const rgba = HexToRGBA(random_color_hex);
-            const hsv = HexToHSVA(random_color_hex);
-            const hsl = HSVAtoHSLA(random_color_hex);
-            const color_obj ={
-              rgba,
-              hsv,
-              hsl,
-              hex: random_color_hex,
-              a: 1
-            }
+            let label_file_id = this.diffgram_export_ingestor.get_label_file_id(label_name)
+            let color = this.diffgram_export_ingestor.get_color_map(label_file_id)
+            const color_obj = color
             try {
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
@@ -296,7 +318,7 @@
               this.$emit('label_created', response.data.label);
 
             } catch (error) {
-              this.loading = false
+              this.loading_labels_creation = false
 
               if (error) {
                 if (error.response.status == 400) {
@@ -308,7 +330,7 @@
             }
           }
           this.success_missing_labels = true;
-          this.loading = false
+          this.loading_labels_creation = false
           this.missing_labels = [];
           this.retry_all_checks();
 
@@ -322,6 +344,7 @@
             const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
             if (response.status === 200) {
               const labels = response.data.labels_out;
+              this.existing_label_file_list = labels;
               const label_map = {};
               for(let label of labels){
                 label_map[label.label.name] = label.id;
@@ -361,6 +384,126 @@
 
           }
         },
+        fetch_attribute_group_list: async function(){
+          try{
+            const response = await axios.post(
+              `/api/v1/project/${this.project_string_id}/attribute/template/list`,
+              {
+                group_id: this.attribute_template_group_id,
+                with_labels: true,
+                mode: 'from_project'
+
+              });
+
+
+            return  response.data.attribute_group_list;
+          }
+          catch (e) {
+            console.error(e);
+            this.errors_export_data = {};
+            this.errors_export_data = this.$route_api_errors(e);
+            this.instances_data_state = 'error'
+          }
+        },
+        create_missing_attributes: async function(){
+          if(!this.missing_attributes){
+            return
+          }
+          try{
+            this.created_attribute_groups = [];
+            this.errors_export_data = {};
+            this.success_missing_attributes = false;
+            this.loading_attributes_creation = true;
+            this.diffgram_export_ingestor.substitute_label_file_ids_on_attributes(this.existing_label_file_list)
+            for(let attr_group of this.missing_attributes){
+              const response = await axios.post(`/api/v1/project/${this.project_string_id}/attribute/group/new`,{})
+              if(response.status === 200){
+                let new_group = response.data.attribute_template_group;
+                new_group.name = attr_group.name
+                new_group.prompt = attr_group.prompt
+                new_group.label_file_list = attr_group.label_file_list
+                new_group.kind = attr_group.kind
+                new_group.default_id = attr_group.default_id
+                new_group.default_value = attr_group.default_value
+                new_group.min_value = attr_group.min_value
+                new_group.max_value = attr_group.max_value
+
+                const response_update = await axios.post(`/api/v1/project/${this.project_string_id }/attribute/group/update`,
+                  {
+                    ...new_group,
+                    group_id: new_group.id,
+                    mode: 'UPDATE'
+                  }
+                )
+                if(response_update.status === 200){
+                  this.diffgram_export_ingestor.add_new_attr_id_mapping(attr_group.id, new_group.id);
+                  if(attr_group.attribute_template_list){
+                    new_group.attribute_template_list = []
+                    for(const attribute of attr_group.attribute_template_list){
+                      const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                        {
+                          attribute:{
+                            ...attribute,
+                            id: null,
+                            group_id: new_group.id
+                          },
+                          mode: 'NEW'
+                        }
+                      )
+                      if(response_attributes.status === 200){
+                        new_group.attribute_template_list.push(response_attributes.data.attribute_template)
+                      }
+                    }
+                    this.diffgram_export_ingestor.map_attribute_options(attr_group, new_group);
+                  }
+
+
+                  this.created_attribute_groups.push(new_group)
+                  this.$store.commit('attribute_refresh_group_list')
+
+                }
+
+
+              }
+            }
+            this.success_missing_attributes = true;
+            this.retry_all_checks();
+          }
+          catch (e) {
+            console.error(e);
+            this.errors_export_data = {};
+            this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
+            this.valid_attributes = false;
+
+          }
+          this.loading_attributes_creation = false;
+
+        },
+        validate_attribute_groups: async function(){
+          try{
+            this.attributes_data_state = 'loading'
+            this.diffgram_export_ingestor.reset_attribute_mapping()
+            this.existing_attribute_group_list = await this.fetch_attribute_group_list();
+            let [has_missing_attributes, missing_attributes] = this.diffgram_export_ingestor.has_missing_attributes(this.existing_attribute_group_list);
+            if(has_missing_attributes){
+              this.errors_export_data = {};
+              this.errors_export_data['attributes'] = `Missing Attributes: There are ${missing_attributes.length} missing attributes. Click create to create them automatically.`
+              this.valid_attributes = false;
+              this.missing_attributes = missing_attributes;
+            }
+            else{
+              this.diffgram_export_ingestor.update_attribute_ids()
+              this.attributes_data_state = 'success';
+            }
+          }
+          catch (e) {
+            console.error(e);
+            this.errors_export_data = {};
+            this.attributes_data_state = 'error'
+            this.errors_export_data['attributes_validation'] = e.toString()
+            this.valid_attributes = false;
+          }
+        }
       }
     }
   ) </script>
