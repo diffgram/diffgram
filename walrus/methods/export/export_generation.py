@@ -153,6 +153,17 @@ def new_external_export(
     return True, annotations
 
 
+def build_label_colour_map(session, label_map):
+    result = {}
+    if not label_map:
+        return result
+
+    for key, val in label_map.items():
+        file = File.get_by_id(session, file_id = key)
+        result[key] = file.colour
+    return result
+
+
 def annotation_export_core(
         session,
         project,
@@ -264,6 +275,7 @@ def annotation_export_core(
         annotations['readme'] = export.serialize_readme()
 
         annotations['label_map'] = export_label_map
+        annotations['label_colour_map'] = build_label_colour_map(session, export_label_map)
 
         # TODO maybe, would like "annotations"
         # To be one layer "deeper" in terms of nesting.
@@ -326,7 +338,7 @@ def build_attribute_groups_reference(
     group_list_serialized = []
 
     for group in group_list:
-        group_list_serialized.append(group.serialize_with_attributes(session))
+        group_list_serialized.append(group.serialize_with_attributes_and_labels(session))
 
     return group_list_serialized
 

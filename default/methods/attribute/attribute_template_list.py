@@ -5,52 +5,56 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
-			  '/attribute/template/list', 
-			  methods=['POST'])
+              '/attribute/template/list',
+              methods = ['POST'])
 @Project_permissions.user_has_project(
-	Roles = ["admin", "Editor", "Viewer"],
-	apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-def api_attribute_template_list(project_string_id):  
-	"""
-	
-	"""
+    Roles = ["admin", "Editor", "Viewer"],
+    apis_user_list = ['api_enabled_builder', 'security_email_verified'])
+def api_attribute_template_list(project_string_id):
+    """
 
-	spec_list = [ 
-		{'group_id' : None},
-		{'mode' : None}]
+    """
 
-	log, input, untrusted_input = regular_input.master(request=request,
-													   spec_list=spec_list)
-	if len(log["error"].keys()) >= 1:
-		return jsonify(log=log), 400
-	
-	with sessionMaker.session_scope() as session:
+    spec_list = [
+        {'group_id': None},
+        {'mode': None},
+        {'with_labels': None}]
 
-		user = User.get(session = session)
-		project = Project.get(session, project_string_id)
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log = log), 400
 
-		# TODO better handling if mode is invalid...
-		if input['mode'] != "from_project":
-			log['error']['mode'] = "Invalid mode"
-			return jsonify(log=log), 400
+    with sessionMaker.session_scope() as session:
 
-		group_list = Attribute_Template_Group.list(
-			session = session,
-			group_id = input['group_id'],
-			mode = input['mode'],
-			project_id = project.id,
-			return_kind = "objects"
-			)
+        user = User.get(session = session)
+        project = Project.get(session, project_string_id)
 
-		group_list_serialized = []
+        # TODO better handling if mode is invalid...
+        if input['mode'] != "from_project":
+            log['error']['mode'] = "Invalid mode"
+            return jsonify(log = log), 400
 
-		for group in group_list:
-			group_list_serialized.append(group.serialize_with_attributes(
-				session = session))
+        group_list = Attribute_Template_Group.list(
+            session = session,
+            group_id = input['group_id'],
+            mode = input['mode'],
+            project_id = project.id,
+            return_kind = "objects"
+        )
 
-		log['success'] = True
+        group_list_serialized = []
 
-		out = jsonify(  
-			attribute_group_list = group_list_serialized,
-			log = log)
-		return out, 200
+        for group in group_list:
+            if input['with_labels'] is True:
+                group_list_serialized.append(group.serialize_with_attributes_and_labels(session = session))
+
+            else:
+                group_list_serialized.append(group.serialize_with_attributes(session = session))
+
+        log['success'] = True
+
+        out = jsonify(
+            attribute_group_list = group_list_serialized,
+            log = log)
+        return out, 200
