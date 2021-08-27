@@ -108,6 +108,46 @@ describe('Annotate Files Tests', () => {
       })
     })
 
+    // context('It Correctly saves in parellel all frames when pasting to multiple frames', () => {
+    //   it('Correctly raises an instance_list integrity error.', () => {
+    //     cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
+    //
+    //
+    //     // Draw 1 boxes
+    //     const boxes = [
+    //       {
+    //         min_x: 88,
+    //         min_y: 88,
+    //         max_x: 166,
+    //         max_y: 166,
+    //       },
+    //     ]
+    //     for (let box of boxes) {
+    //       cy.mousedowncanvas(box.min_x, box.min_x);
+    //       cy.wait(500)
+    //
+    //       cy.mouseupcanvas();
+    //       cy.wait(1000)
+    //
+    //       cy.mousedowncanvas(box.max_x, box.max_x);
+    //       cy.wait(500)
+    //       cy.mouseupcanvas();
+    //
+    //       cy.wait(2000)
+    //     }
+    //
+    //
+    //     cy.get('[data-cy="save_button"]').click({force: true})
+    //     cy.wait('@annotation_update')
+    //       .should(({request, response}) => {
+    //         expect(request.method).to.equal('POST')
+    //         // it is a good practice to add assertion messages
+    //         // as the 2nd argument to expect()
+    //         expect(response.statusCode, 'response status').to.eq(200)
+    //       })
+    //
+    //   });
+    // })
   })
 
 })
