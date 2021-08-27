@@ -53,6 +53,7 @@ class Annotation_Update():
     external_auth: bool = False
     do_update_sequences: bool = True
     previous_next_instance_map: dict = field(default_factory = lambda: {})
+    serialized_ids_map: dict = field(default_factory = lambda: {})
     creating_for_instance_template: bool = False
 
     # Keeps a Record of the new instances that were created after the update process finish
@@ -1294,15 +1295,11 @@ class Annotation_Update():
         # And both instances have the same hash and no ID.
         if self.instance.id is None:
             return
-        serialized_ids = []
 
-        for inst in self.instance_list_kept_serialized:
-            if inst.get('id'):
-                serialized_ids.append(inst.get('id'))
-
-        if self.instance.id not in serialized_ids:
+        if not self.serialized_ids_map.get(self.instance.id):
             serialized_data = self.instance.serialize_with_label()
             self.instance_list_kept_serialized.append(serialized_data)
+            self.serialized_ids_map[self.instance.id] = True
 
     def instance_count_updates(self):
         if self.file is None:
