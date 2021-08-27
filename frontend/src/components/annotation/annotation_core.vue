@@ -66,6 +66,8 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
+      <v_error_multiple :error="save_multiple_frames_error">
+      </v_error_multiple>
       <v_error_multiple :error="save_warning" type="warning" data-cy="save_warning">
       </v_error_multiple>
       <div fluid v-if="display_refresh_cache_button">
@@ -1055,6 +1057,7 @@ export default Vue.extend( {
       save_count: 0,
 
       save_error: {},
+      save_multiple_frames_error: {},
       error: {},
       instance_buffer_error: {},
 
@@ -6279,7 +6282,7 @@ export default Vue.extend( {
     save_multiple_frames: async function(frames_list){
       const limit = pLimit(25); // 25 Max concurrent request.
       try {
-        let processed_files = 0;
+        this.save_multiple_frames_error = {};
         const promises = frames_list.map(frame_number => {
           return limit(() => this.save(false, frame_number, this.instance_buffer_dict[frame_number]))
         });
@@ -6287,8 +6290,7 @@ export default Vue.extend( {
         return result
 
       } catch (error) {
-        this.file_update_error = this.$route_api_errors(error);
-        this.$emit('file_update_error', this.file_update_error)
+        this.save_multiple_frames_error = this.$route_api_errors(error);
         console.error(error);
       }
     },
