@@ -185,13 +185,12 @@ jobs:
     # Run tests.
     #      - run:  python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py & yarn --cwd frontend/ run cypress run --record --headed --browser chrome
 
-
     - name: 'UI Tests - Chrome'
       uses: cypress-io/github-action@v2
       with:
         # we have already installed all dependencies above
         install: false
-        start: python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py
+        start: python3 default/main.py, python3 walrus/main.py, python3 local_dispatcher/local_dispatch.py
         wait-on: http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
         wait-on-timeout: 120
         browser: chrome
