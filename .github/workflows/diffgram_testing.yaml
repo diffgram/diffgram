@@ -170,7 +170,7 @@ jobs:
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
     # Frontend Dependencies
     - run: yarn --cwd frontend/ install
-    - run: yarn --cwd frontend/ run cypress install
+#    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
     # Populate DB
     - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
@@ -189,7 +189,7 @@ jobs:
       uses: cypress-io/github-action@v2
       with:
         # we have already installed all dependencies above
-        install: false
+        install: true
         start: 'yarn --cwd frontend/ run dev, python3 default/main.py, python3 walrus/main.py, python3 local_dispatcher/local_dispatch.py'
         wait-on: 'http://localhost:8081, http://localhost:8082, http://localhost:8085'
         wait-on-timeout: 40
