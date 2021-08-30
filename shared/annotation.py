@@ -1245,7 +1245,6 @@ class Annotation_Update():
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
-        print('update instance', is_new_instance)
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
         except Exception as e:
