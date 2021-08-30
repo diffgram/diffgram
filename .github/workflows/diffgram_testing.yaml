@@ -177,9 +177,9 @@ jobs:
     # Start Servers
 #    - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
     # Test connections
-    - run: sleep 10
+#    - run: sleep 10
     #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
-    - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8081
+#    - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8081
     #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8082
     #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8085
     # Run tests.
