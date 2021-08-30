@@ -2319,12 +2319,18 @@ export default Vue.extend( {
     },
     redo: function(){
       if(!this.command_manager ){return}
-      this.command_manager.redo();
+      let redone = this.command_manager.redo();
+      if(redone){
+        this.has_changed = true
+      }
       this.update_canvas();
     },
     undo: function(){
       if(!this.command_manager ){return}
-      this.command_manager.undo();
+      let undone = this.command_manager.undo();
+      if(undone){
+        this.has_changed = true
+      }
       this.update_canvas();
       },
     set_loading_sequences: function(loading_sequences){
@@ -2564,7 +2570,8 @@ export default Vue.extend( {
 
         // sequence related, design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
         if (instance.label_file_id != this.current_lable_file_id) {
-          this.save()
+          // this.save()
+          this.has_changed = true;
           this.request_clear_sequence_list_cache = Date.now()
         }
       }
@@ -3327,7 +3334,7 @@ export default Vue.extend( {
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
 
-    push_instance_to_instance_list_and_buffer: function(
+    push_instance_to_instance_list_and_buffer: async function(
         instance = undefined,
         frame_number = undefined) {
 
@@ -3351,7 +3358,12 @@ export default Vue.extend( {
       this.has_changed = true;
 
       if (this.video_mode == true) {
-        this.save()
+        let was_saved = await this.save();
+        console.log('wassaved', was_saved)
+        if(!was_saved){
+          // If instance was not saved, because of concurrent saves. We still set it to pending
+          this.has_changed = true;
+        }
       }
       // polygon point thing applies to a few different types
       // so for now just run it
@@ -6763,6 +6775,8 @@ export default Vue.extend( {
 
 
         }
+        this.check_if_pending_created_instance();
+        return true
       } catch (error) {
         console.error(error);
         this.set_save_loading(false, current_frame);
@@ -6776,6 +6790,7 @@ export default Vue.extend( {
         this.save_error = this.$route_api_errors(error)
         console.debug(error);
         //this.logout()
+        return false
       }
     },
     complete_task() {

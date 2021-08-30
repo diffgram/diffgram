@@ -37,10 +37,104 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_overlap_existing_instances(self):
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        inst1 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        inst2 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 5,
+            'y_min': 5,
+            'x_max': 55,
+            'y_max': 55,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        video_data = {
+            'video_mode': True,
+            'video_file_id': file1.id,
+            'current_frame': frame.frame_number
+        }
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [inst1, inst2],
+            file = file1,
+            do_init_existing_instances = True
+        )
+        updated_file = ann_update.annotation_update_main()
+        updated_frame_file = File.get_by_id(self.session, frame.id)
+
+        new_instance_list = updated_frame_file.cache_dict['instance_list']
+        deleted_instances = ann_update.new_deleted_instances
+        added_instances = ann_update.new_added_instances
+        self.assertEqual(len(added_instances), 2)
+        self.assertEqual(len(new_instance_list), 2)
+        self.assertEqual(len(deleted_instances), 0)
+
+        self.assertEqual(new_instance_list[0]['x_min'], inst1['x_min'])
+        self.assertEqual(new_instance_list[0]['y_min'], inst1['y_min'])
+        self.assertEqual(new_instance_list[0]['x_max'], inst1['x_max'])
+        self.assertEqual(new_instance_list[0]['y_max'], inst1['y_max'])
+        self.assertFalse(new_instance_list[0]['soft_delete'])
+        self.assertIsNotNone(new_instance_list[0]['id'])
+
+        self.assertEqual(new_instance_list[1]['x_min'], inst2['x_min'])
+        self.assertEqual(new_instance_list[1]['y_min'], inst2['y_min'])
+        self.assertEqual(new_instance_list[1]['x_max'], inst2['x_max'])
+        self.assertEqual(new_instance_list[1]['y_max'], inst2['y_max'])
+        self.assertFalse(new_instance_list[1]['soft_delete'])
+        self.assertIsNotNone(new_instance_list[0]['id'])
+
+        # 2. Now place one instance on top of the other one
+        inst1['id'] = new_instance_list[0]['id']
+        inst2['id'] = new_instance_list[1]['id']
+        inst2['x_min'] = inst1['x_min']
+        inst2['x_max'] = inst1['x_max']
+        inst2['y_min'] = inst1['y_min']
+        inst2['y_max'] = inst1['y_max']
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [inst1, inst2],
+            file = file1,
+            do_init_existing_instances = True
+        )
+        updated_file = ann_update.annotation_update_main()
+        updated_frame_file = File.get_by_id(self.session, frame.id)
+
+        new_instance_list = updated_frame_file.cache_dict['instance_list']
+        deleted_instances = ann_update.new_deleted_instances
+        added_instances = ann_update.new_added_instances
+        for x in new_instance_list:
+            print('aaa', x)
+        self.assertEqual(len(added_instances), 0)
+        self.assertEqual(len(new_instance_list), 2)
+        self.assertEqual(len(deleted_instances), 1)
+        self.assertTrue(new_instance_list[1]['soft_delete'])
+        self.assertIsNotNone(new_instance_list[0]['id'])
+
     def test_update_move_and_undo_case(self):
         """
-We create an instance, move it, save it, undo it and redoit and save again
-Expect:File cache should have the newest instance as this was the latests version of it
+            We create an instance, move it, save it, undo it, save it and redoit and save again
+            Expect:File cache should have the newest instance as this was the latests version of it
         :return:
         """
         label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
@@ -129,9 +223,10 @@ Expect:File cache should have the newest instance as this was the latests versio
         self.assertEqual(new_instance_list[0]['y_max'], inst1['y_max'])
         self.assertFalse(new_instance_list[0]['soft_delete'])
         self.assertNotEqual(new_instance_list[0]['id'], old_id)
+        moved_id = int(new_instance_list[0]['id'])
         # 3. Undo the instance
         inst_undone = {
-            'id': new_instance_list[0]['id'],
+            'id': moved_id,
             'creation_ref_id': str(uuid.uuid4()),
             'x_min': 10,
             'y_min': 10,
@@ -184,6 +279,66 @@ Expect:File cache should have the newest instance as this was the latests versio
         self.assertEqual(new_instance_list[1]['x_max'], inst1['x_max'])
         self.assertEqual(new_instance_list[1]['y_max'], inst1['y_max'])
         self.assertFalse(new_instance_list[1]['soft_delete'])
+        self.assertNotEqual(new_instance_list[1]['id'], old_id)
+        newest_id = int(new_instance_list[1]['id'])
+        deleted_id = int(new_instance_list[0]['id'])
+        # 4. Redo the instance
+        inst_redone = {
+            'id': deleted_id,
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 10,
+            'y_min': 10,
+            'x_max': 28,
+            'y_max': 28,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        inst1 = {
+            'id': newest_id,
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': True,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [inst_redone, inst1],
+            file = file1,
+            do_init_existing_instances = True
+        )
+        updated_file = ann_update.annotation_update_main()
+        updated_frame_file = File.get_by_id(self.session, frame.id)
+
+        new_instance_list = updated_frame_file.cache_dict['instance_list']
+        deleted_instances = ann_update.new_deleted_instances
+        added_instances = ann_update.new_added_instances
+
+        self.assertEqual(len(added_instances), 2)
+        self.assertEqual(len(new_instance_list), 2)
+        self.assertEqual(len(deleted_instances), 2)
+        self.assertEqual(deleted_instances[0],  newest_id)
+        self.assertEqual(deleted_instances[1],  deleted_id)
+        self.assertEqual(new_instance_list[0]['x_min'], inst_redone['x_min'])
+        self.assertEqual(new_instance_list[0]['y_min'], inst_redone['y_min'])
+        self.assertEqual(new_instance_list[0]['x_max'], inst_redone['x_max'])
+        self.assertEqual(new_instance_list[0]['y_max'], inst_redone['y_max'])
+        self.assertNotEqual(inst_redone['id'], new_instance_list[0]['id'])
+        self.assertNotEqual(new_instance_list[0]['id'], deleted_id)
+        self.assertFalse(new_instance_list[0]['soft_delete'])
+
+        self.assertEqual(new_instance_list[1]['x_min'], inst1['x_min'])
+        self.assertEqual(new_instance_list[1]['y_min'], inst1['y_min'])
+        self.assertEqual(new_instance_list[1]['x_max'], inst1['x_max'])
+        self.assertEqual(new_instance_list[1]['y_max'], inst1['y_max'])
+        self.assertTrue(new_instance_list[1]['soft_delete'])
+        self.assertNotEqual(new_instance_list[1]['id'], newest_id)
 
     def test_update_on_duplicate_instance_undo_case(self):
         """

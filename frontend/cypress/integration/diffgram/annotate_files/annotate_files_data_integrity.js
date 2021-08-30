@@ -124,19 +124,19 @@ describe('Annotate Files Tests', () => {
         ]
         for (let box of boxes) {
           cy.mousedowncanvas(box.min_x, box.min_x);
-          cy.wait(500)
+          .wait(500)
 
-          cy.mouseupcanvas();
-          cy.wait(1000)
+          .mouseupcanvas()
+          .wait(1000)
 
-          cy.mousedowncanvas(box.max_x, box.max_x);
-          cy.wait(500)
-          cy.mouseupcanvas();
+          .mousedowncanvas(box.max_x, box.max_x);
+          .wait(500)
+          .mouseupcanvas()
 
-          cy.wait(2000)
+          .wait(2000)
         }
-
-        cy.get('[data-cy="edit_toggle"]').click({force: true})
+        cy.wait(7000)
+          .get('[data-cy="edit_toggle"]').click({force: true})
           .mousedowncanvas(90, 90)
           .wait(500)
           .mouseupcanvas()
