@@ -434,6 +434,8 @@ class File_Browser():
             self.metadata_proposed = {}
 
         server_side_limit = 1000  # Clarify this is limit of results returned PER PAGE , user can go to next page to see more results
+        if self.metadata_proposed['file_view_mode'] == 'ids_only':
+            server_side_limit = 25000
         annotation_status_settings = None
         machine_made_setting = None
         filter_media_type = None

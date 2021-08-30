@@ -6484,7 +6484,9 @@ export default Vue.extend( {
       return sha256(str)
     },
     has_duplicate_instances: function(instance_list){
-
+      if(!instance_list){
+        return
+      }
       const hashes = {};
       const dup_ids = [];
       const dup_indexes = [];
@@ -6517,7 +6519,7 @@ export default Vue.extend( {
           label_file_id: inst.label_file_id,
           number: inst.number,
           rating: inst.rating,
-          points: inst.points.map(point => {return {...point}}),
+          points: inst.points ? inst.points.map(point => {return {...point}}) : inst.points,
           front_face: {...inst.front_face},
           rear_face: {...inst.rear_face},
           soft_delete: inst.soft_delete,
