@@ -198,7 +198,7 @@ jobs:
         parallel: true
         group: 'UI - Chrome'
         spec: frontend/cypress/integration/diffgram/*
-        project: .frontend/
+        working-directory: frontend
       env:
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         # Recommended: pass the GitHub token lets this action correctly
