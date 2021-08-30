@@ -38,6 +38,11 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
     def test_overlap_existing_instances(self):
+        """
+        2 instances with ids are in different position and then one is placed on the exact position as the other one
+        Expect: new overlapped instance is soft deleted and original instance is preserved in cache.
+        :return:
+        """
         label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
         file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
         frame = data_mocking.create_file(
@@ -125,11 +130,22 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         added_instances = ann_update.new_added_instances
         for x in new_instance_list:
             print('aaa', x)
+
+        print(inst1['id'], 'id')
+        print(inst2['id'], 'id')
+        print('deleted_instances', deleted_instances)
         self.assertEqual(len(added_instances), 0)
-        self.assertEqual(len(new_instance_list), 2)
+        self.assertEqual(len(new_instance_list), 1)
         self.assertEqual(len(deleted_instances), 1)
-        self.assertTrue(new_instance_list[1]['soft_delete'])
+        self.assertEqual(deleted_instances[0], inst2['id'])
+        self.assertFalse(new_instance_list[0]['soft_delete'])
         self.assertIsNotNone(new_instance_list[0]['id'])
+        self.assertEqual(new_instance_list[0]['id'], inst1['id'])
+        self.assertNotEqual(new_instance_list[0]['id'], inst2['id'])
+        updated_inst1 = Instance.get_by_id(self.session, instance_id = inst1['id'])
+        updated_inst2 = Instance.get_by_id(self.session, instance_id = inst2['id'])
+        self.assertFalse(updated_inst1.soft_delete)
+        self.assertTrue(updated_inst2.soft_delete)
 
     def test_update_move_and_undo_case(self):
         """
@@ -323,8 +339,8 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(added_instances), 2)
         self.assertEqual(len(new_instance_list), 2)
         self.assertEqual(len(deleted_instances), 2)
-        self.assertEqual(deleted_instances[0],  newest_id)
-        self.assertEqual(deleted_instances[1],  deleted_id)
+        self.assertEqual(deleted_instances[0], newest_id)
+        self.assertEqual(deleted_instances[1], deleted_id)
         self.assertEqual(new_instance_list[0]['x_min'], inst_redone['x_min'])
         self.assertEqual(new_instance_list[0]['y_min'], inst_redone['y_min'])
         self.assertEqual(new_instance_list[0]['x_max'], inst_redone['x_max'])
