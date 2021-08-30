@@ -53,6 +53,7 @@ class Annotation_Update():
     external_auth: bool = False
     do_update_sequences: bool = True
     previous_next_instance_map: dict = field(default_factory = lambda: {})
+    serialized_ids_map: dict = field(default_factory = lambda: {})
     creating_for_instance_template: bool = False
 
     # Keeps a Record of the new instances that were created after the update process finish
@@ -60,6 +61,8 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+
+    duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
 
     directory = None
     external_map: ExternalMap = None
@@ -516,8 +519,7 @@ class Annotation_Update():
         """
         if not self.file:
             return
-        # for x in self.instance_list_kept_serialized:
-        #	print(x['id'], x['soft_delete'])
+
         self.file.set_cache_by_key(
             cache_key = 'instance_list',
             value = self.instance_list_kept_serialized
@@ -1294,8 +1296,11 @@ class Annotation_Update():
         # And both instances have the same hash and no ID.
         if self.instance.id is None:
             return
-        serialized_data = self.instance.serialize_with_label()
-        self.instance_list_kept_serialized.append(serialized_data)
+
+        if not self.serialized_ids_map.get(self.instance.id):
+            serialized_data = self.instance.serialize_with_label()
+            self.instance_list_kept_serialized.append(serialized_data)
+            self.serialized_ids_map[self.instance.id] = True
 
     def instance_count_updates(self):
         if self.file is None:
@@ -1462,14 +1467,8 @@ class Annotation_Update():
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
             # We only want to keep one of them.
             logger.warning('Got duplicated hash {}'.format(self.instance.hash))
-            if old_id is not None:
-                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
-                if old_instance.soft_delete is False:
-                    old_instance.soft_delete = True
-                    # We rehash since at this point the soft_delete changes the hash.
-                    old_instance.hash_instance()
-                    self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
+            self.duplicate_hash_new_instance_list.append(self.instance)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
             if existing_instance.id is not None and self.instance.id is not None:
                 message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(

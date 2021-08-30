@@ -66,6 +66,8 @@
 
       <v_error_multiple :error="save_error">
       </v_error_multiple>
+      <v_error_multiple :error="save_multiple_frames_error">
+      </v_error_multiple>
       <v_error_multiple :error="save_warning" type="warning" data-cy="save_warning">
       </v_error_multiple>
       <div fluid v-if="display_refresh_cache_button">
@@ -147,9 +149,8 @@
       v-if="show_snackbar_paste"
       v-model="show_snackbar_paste"
       :multi-line="true"
-      :timeout="5000"
     >
-      Instance Pasted on Frames ahead.
+      {{snackbar_paste_message}}
 
       <template v-slot:action="{ attrs }">
         <v-btn
@@ -774,6 +775,7 @@ import stringify  from 'json-stable-stringify';
 import PropType from 'vue'
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
+import pLimit from 'p-limit';
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -931,6 +933,7 @@ export default Vue.extend( {
   data() {
     return {
 
+      snackbar_paste_message: '',
       ghost_instance_hover_index: null,
       default_instance_opacity: 0.25,
       model_run_list: null,
@@ -1054,6 +1057,7 @@ export default Vue.extend( {
       save_count: 0,
 
       save_error: {},
+      save_multiple_frames_error: {},
       error: {},
       instance_buffer_error: {},
 
@@ -1779,7 +1783,6 @@ export default Vue.extend( {
 
   methods: {
     get_save_loading: function(frame_number){
-      console.log('get save loading', frame_number, this.save_loading_frame);
       if(this.video_mode){
         if(!this.save_loading_frame[frame_number]){
           return false
@@ -1793,7 +1796,6 @@ export default Vue.extend( {
       }
     },
     set_save_loading(value, frame){
-      console.log('SET SAVE', value, frame, this.video_mode)
       if(this.video_mode){
         this.save_loading_frame[frame] = value;
       }
@@ -2317,12 +2319,18 @@ export default Vue.extend( {
     },
     redo: function(){
       if(!this.command_manager ){return}
-      this.command_manager.redo();
+      let redone = this.command_manager.redo();
+      if(redone){
+        this.has_changed = true
+      }
       this.update_canvas();
     },
     undo: function(){
       if(!this.command_manager ){return}
-      this.command_manager.undo();
+      let undone = this.command_manager.undo();
+      if(undone){
+        this.has_changed = true
+      }
       this.update_canvas();
       },
     set_loading_sequences: function(loading_sequences){
@@ -2562,7 +2570,8 @@ export default Vue.extend( {
 
         // sequence related, design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
         if (instance.label_file_id != this.current_lable_file_id) {
-          this.save()
+          // this.save()
+          this.has_changed = true;
           this.request_clear_sequence_list_cache = Date.now()
         }
       }
@@ -3325,7 +3334,7 @@ export default Vue.extend( {
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
 
-    push_instance_to_instance_list_and_buffer: function(
+    push_instance_to_instance_list_and_buffer: async function(
         instance = undefined,
         frame_number = undefined) {
 
@@ -3349,7 +3358,12 @@ export default Vue.extend( {
       this.has_changed = true;
 
       if (this.video_mode == true) {
-        this.save()
+        let was_saved = await this.save();
+        console.log('wassaved', was_saved)
+        if(!was_saved){
+          // If instance was not saved, because of concurrent saves. We still set it to pending
+          this.has_changed = true;
+        }
       }
       // polygon point thing applies to a few different types
       // so for now just run it
@@ -6250,8 +6264,13 @@ export default Vue.extend( {
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
     },
+    show_loading_paste: function(){
+      this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Pasting Instances Please Wait....';
+    },
     show_success_paste: function(){
       this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
     },
     initialize_instance: function(instance){
       // TODO: add other instance types as they are migrated to classes.
@@ -6272,7 +6291,22 @@ export default Vue.extend( {
         return instance
       }
     },
-    paste_instance: function(next_frames = undefined, instance_hover_index = undefined){
+    save_multiple_frames: async function(frames_list){
+      const limit = pLimit(25); // 25 Max concurrent request.
+      try {
+        this.save_multiple_frames_error = {};
+        const promises = frames_list.map(frame_number => {
+          return limit(() => this.save(false, frame_number, this.instance_buffer_dict[frame_number]))
+        });
+        const result = await Promise.all(promises);
+        return result
+
+      } catch (error) {
+        this.save_multiple_frames_error = this.$route_api_errors(error);
+        console.error(error);
+      }
+    },
+    paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
       if(!this.instance_clipboard && instance_hover_index == undefined){return}
       if(instance_hover_index != undefined){
         this.copy_instance(false, instance_hover_index)
@@ -6334,6 +6368,7 @@ export default Vue.extend( {
 
       if(next_frames != undefined){
         let next_frames_to_add = parseInt(next_frames, 10);
+        const frames_to_save = [];
         for(let i = this.current_frame + 1; i <= (this.current_frame + next_frames_to_add); i++){
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
@@ -6342,8 +6377,11 @@ export default Vue.extend( {
 
           // Set the last argument to true, to prevent to push to the instance_list here.
           this.add_instance_to_frame_buffer(new_frame_instance, i);
+          frames_to_save.push(i);
         }
         this.create_instance_events()
+        this.show_loading_paste()
+        await this.save_multiple_frames(frames_to_save);
         this.show_success_paste()
       }
       else{
@@ -6547,15 +6585,28 @@ export default Vue.extend( {
       return [false, dup_ids, dup_indexes];
 
     },
-    save: async function (and_complete=false) {
+    save: async function (and_complete=false, frame_number_param = undefined, instance_list_param = undefined) {
       this.save_error = {}
       this.save_warning = {}
       if (this.$props.view_only_mode == true) {
         return
       }
       let current_frame = undefined;
+      let instance_list = this.instance_list;
       if(this.video_mode){
-        current_frame = parseInt(this.current_frame, 10)
+        if(frame_number_param == undefined){
+          current_frame = parseInt(this.current_frame, 10)
+        }
+        else{
+          current_frame = parseInt(frame_number_param, 10)
+        }
+
+        if(instance_list_param != undefined){
+          instance_list = instance_list_param;
+
+        }
+
+
       }
       if(this.get_save_loading(current_frame) == true){
         // If we have new instances created while saving. We might still need to save them after the first
@@ -6568,8 +6619,8 @@ export default Vue.extend( {
       }
 
       this.set_save_loading(true, current_frame);
-      let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(this.instance_list)
-      let dup_instance_list = dup_indexes.map(i => ({...this.instance_list[i], original_index: i}))
+      let [has_duplicate_instances, dup_ids, dup_indexes] = this.has_duplicate_instances(instance_list)
+      let dup_instance_list = dup_indexes.map(i => ({...instance_list[i], original_index: i}))
       dup_instance_list.sort(function(a,b){
         return moment(b.client_created_time, 'YYYY-MM-DD HH:mm') - moment(a.client_created_time, 'YYYY-MM-DD HH:mm');
       })
@@ -6585,10 +6636,10 @@ export default Vue.extend( {
 
         return
       }
-      this.instance_list_cache = this.instance_list.slice()
-      let current_frame_cache = this.current_frame
-      let current_video_file_id_cache = this.current_video_file_id
-      let video_mode_cache = this.video_mode
+      this.instance_list_cache = instance_list.slice();
+      let current_frame_cache = this.current_frame;
+      let current_video_file_id_cache = this.current_video_file_id;
+      let video_mode_cache = this.video_mode;
 
 
 
@@ -6624,7 +6675,7 @@ export default Vue.extend( {
         var video_data = {
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
-          current_frame: current_frame_cache
+          current_frame: current_frame
         }
       }
 
@@ -6679,17 +6730,23 @@ export default Vue.extend( {
             // Because: new color thing based on sequence id but seq id not assigned till response
             // not good code. just placeholder in current constraints until we can figure out something better.
             // ie maybe whole instance should be getting replaced
-            let instance_index = this.instance_list.findIndex(
+            let instance_list_request_frame = this.instance_list;
+            if(this.video_mode){
+              // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
+              // Because it could have potentially changed during save.
+              instance_list_request_frame = this.instance_buffer_dict[video_data.current_frame]
+            }
+            let instance_index = instance_list_request_frame.findIndex(
                 x => x.label_file_id == response.data.sequence.label_file_id &&
                   x.number == response.data.sequence.number)
             // just in case so we don't overwrite
             // maybe don't need this, but going to look at other options in the future there too
             // doesn't cover buffer case?
             if(instance_index
-              &&  this.instance_list[instance_index]
-              && this.instance_list[instance_index].sequence_id == undefined
-              && this.instance_list[instance_index].label_file_id == response.data.sequence.label_file_id) {
-              this.instance_list[instance_index].sequence_id = response.data.sequence.id
+              &&  instance_list_request_frame[instance_index]
+              && instance_list_request_frame[instance_index].sequence_id == undefined
+              && instance_list_request_frame[instance_index].label_file_id == response.data.sequence.label_file_id) {
+              instance_list_request_frame[instance_index].sequence_id = response.data.sequence.id
             }
             /// end temp sequence thing
           }
@@ -6718,7 +6775,10 @@ export default Vue.extend( {
 
 
         }
+        this.check_if_pending_created_instance();
+        return true
       } catch (error) {
+        console.error(error);
         this.set_save_loading(false, current_frame);
         if(error.response.data &&
           error.response.data.log &&
@@ -6730,6 +6790,7 @@ export default Vue.extend( {
         this.save_error = this.$route_api_errors(error)
         console.debug(error);
         //this.logout()
+        return false
       }
     },
     complete_task() {
