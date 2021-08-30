@@ -123,13 +123,13 @@ describe('Annotate Files Tests', () => {
           },
         ]
         for (let box of boxes) {
-          cy.mousedowncanvas(box.min_x, box.min_x);
+          cy.mousedowncanvas(box.min_x, box.min_x)
           .wait(500)
 
           .mouseupcanvas()
           .wait(1000)
 
-          .mousedowncanvas(box.max_x, box.max_x);
+          .mousedowncanvas(box.max_x, box.max_x)
           .wait(500)
           .mouseupcanvas()
 
