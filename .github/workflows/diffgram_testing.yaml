@@ -201,7 +201,6 @@ jobs:
         record: true
         parallel: true
         group: 'UI - Chrome'
-        spec: frontend/cypress/integration/diffgram/*
         working-directory: frontend
       env:
         # Recommended: pass the GitHub token lets this action correctly
