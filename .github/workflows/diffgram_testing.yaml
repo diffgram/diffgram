@@ -192,7 +192,7 @@ jobs:
         # we have already installed all dependencies above
         install: false
         start: python3 default/main.py & python3 walrus/main.py & python3 local_dispatcher/local_dispatch.py
-        wait-on: http://localhost:8000,http://localhost:8081,http://localhost:8082,http://localhost:8085
+        wait-on: http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
         wait-on-timeout: 120
         browser: chrome
         record: true
