@@ -175,7 +175,7 @@ jobs:
     # Populate DB
     - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
     # Start Servers
-    - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
+#    - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
     # Test connections
     - run: sleep 10
     #      - run: curl -4 --max-time 180 --retry 20 --retry-delay 10 --retry-max-time 10 --retry-connrefused http://0.0.0.0:8080
@@ -191,7 +191,7 @@ jobs:
         # we have already installed all dependencies above
         install: false
         start: python3 default/main.py, python3 walrus/main.py, python3 local_dispatcher/local_dispatch.py
-        wait-on: http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
+        wait-on: yarn --cwd frontend/ run dev, http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
         wait-on-timeout: 120
         browser: chrome
         record: true
