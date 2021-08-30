@@ -62,6 +62,8 @@ class Annotation_Update():
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
 
+    duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
+
     directory = None
     external_map: ExternalMap = None
     external_map_action: str = None
@@ -1474,6 +1476,7 @@ class Annotation_Update():
             #         old_instance.hash_instance()
             #         self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
+            self.duplicate_hash_new_instance_list.append(self.instance)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
             if existing_instance.id is not None and self.instance.id is not None:
                 message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(

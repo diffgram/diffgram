@@ -37,6 +37,58 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_duplicate_instance_update_existing_false(self):
+        """
+        We send duplicate instances with update_existing = False.
+        Expect: Just one of the instances should be saved.
+        :return:
+        """
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        inst1 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        inst2 = inst1.copy()
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        video_data = {
+            'video_mode': True,
+            'video_file_id': file1.id,
+            'current_frame': frame.frame_number
+        }
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [inst1, inst2],
+            file = file1,
+            do_init_existing_instances = False
+        )
+        updated_file = ann_update.annotation_update_main()
+        updated_frame_file = File.get_by_id(self.session, frame.id)
+
+        new_instance_list = updated_frame_file.cache_dict['instance_list']
+        deleted_instances = ann_update.new_deleted_instances
+        added_instances = ann_update.new_added_instances
+        self.assertEqual(len(added_instances), 1)
+        self.assertEqual(len(new_instance_list), 1)
+        self.assertEqual(len(ann_update.duplicate_hash_new_instance_list), 1)
+        self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].x_min, inst1['x_min'])
+        self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].x_max, inst1['x_max'])
+        self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_min, inst1['y_min'])
+        self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_max, inst1['y_max'])
+        self.assertEqual(len(deleted_instances), 0)
+
+
     def test_overlap_existing_instances(self):
         """
         2 instances with ids are in different position and then one is placed on the exact position as the other one
