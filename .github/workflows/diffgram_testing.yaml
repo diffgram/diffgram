@@ -190,8 +190,8 @@ jobs:
       with:
         # we have already installed all dependencies above
         install: false
-        start: python3 default/main.py, python3 walrus/main.py, python3 local_dispatcher/local_dispatch.py
-        wait-on: yarn --cwd frontend/ run dev, http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
+        start: yarn --cwd frontend/ run dev, python3 default/main.py, python3 walrus/main.py, python3 local_dispatcher/local_dispatch.py
+        wait-on: http://localhost:8080,http://localhost:8081,http://localhost:8082,http://localhost:8085
         wait-on-timeout: 120
         browser: chrome
         record: true
