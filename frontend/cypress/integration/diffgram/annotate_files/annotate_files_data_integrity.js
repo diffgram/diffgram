@@ -116,10 +116,10 @@ describe('Annotate Files Tests', () => {
         // Draw 1 boxes
         const boxes = [
           {
-            min_x: 88,
-            min_y: 88,
-            max_x: 166,
-            max_y: 166,
+            min_x: 140,
+            min_y: 140,
+            max_x: 300,
+            max_y: 300,
           },
         ]
         for (let box of boxes) {
@@ -137,16 +137,16 @@ describe('Annotate Files Tests', () => {
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
-          .mousedowncanvas(110, 110)
+          .mousedowncanvas(160, 160)
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          .rightclickdowncanvas(110, 110)
+          .rightclickdowncanvas(160, 160)
           .wait(1000)
           .get('[data-cy=copy_instance]').should('exist')
           .get('[data-cy=copy_instance]').click({force: true})
           .wait(1000)
-          .rightclickdowncanvas(110, 110)
+          .rightclickdowncanvas(160, 160)
           .get('[data-cy=show_menu_paste_next_frames]').click({force: true})
           .wait(500)
           .get('[data-cy=paste_frame_count').type('{backspace}5')
