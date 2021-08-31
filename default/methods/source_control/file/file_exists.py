@@ -9,7 +9,7 @@ from shared.database.discussion.discussion_comment import DiscussionComment
 
 @routes.route('/api/v1/project/<string:project_string_id>/file/exists',
               methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"], apis_user_list = ["api_enabled_builder"])
 def file_list_exists_api(project_string_id):
     """
         Given a file list, checks if the file list exists.
@@ -36,12 +36,14 @@ def file_list_exists_api(project_string_id):
 
         project = Project.get_by_string_id(session, project_string_id)
         user = User.get(session)
+        member = None
         if user:
             member = user.member
         else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
+            if request.authorization:
+                client_id = request.authorization.get('username', None)
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
 
         result, log = file_list_exists_core(
             session = session,

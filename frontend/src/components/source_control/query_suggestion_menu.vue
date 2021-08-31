@@ -69,6 +69,7 @@
       </v-container>
       <div class="d-flex justify-end">
 
+        <v-btn data-cy="close_query_menu_button" class="text-right" @click="execute_query">Close</v-btn>
         <v-btn data-cy="execute_query_button" color="success" class="text-right" @click="execute_query">Execute</v-btn>
       </div>
     </v-container>
@@ -129,6 +130,9 @@
       },
       execute_query: function(){
         this.$emit('execute_query', this.$props.query)
+      },
+      close: function(){
+        this.$emit('close');
       },
       update_query: function (value) {
         this.$emit('update_query', value)

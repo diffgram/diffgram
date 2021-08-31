@@ -33,6 +33,7 @@
           :project_string_id="computed_project_string_id"
           :task="task"
           :view_only="view_only"
+          :show_explorer_full_screen="show_explorer_full_screen"
           :file_id_prop="file_id_prop"
           :job_id="job_id"
           @change_file="change_file"
@@ -83,6 +84,9 @@
         'task_id_prop': {
           default: null
         },
+        'show_explorer_full_screen':{
+          default: false
+        }
 
       },
       data() {
