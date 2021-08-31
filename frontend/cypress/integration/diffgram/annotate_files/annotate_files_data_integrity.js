@@ -153,7 +153,7 @@ describe('Annotate Files Tests', () => {
           .get('[data-cy=paste_next_frames]').click({force: true})
           .wait(500)
           .wait(10000)
-          .get('@annotation_update.all').should('have.length', 6)
+          .get('@annotation_update.all').should('have.length.at.least', 5)
           .then((xhrs) => {
             expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
             expect(xhrs[1].response, 'request status').to.have.property('statusCode', 200)
