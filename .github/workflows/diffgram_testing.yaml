@@ -112,7 +112,7 @@ jobs:
         files: test-results/**/*.xml
 
   E2E-Tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Service containers to run with `container-job`
     strategy:
       fail-fast: false
