@@ -5748,7 +5748,37 @@
             await this.get_video_instance_buffer(play_after_success)
           }
         },
+        async get_instance_buffer_parallel(url_base, frame_start, frames_end){
+          const step_size = 5; // We will fetch 5 frames per call
+          const limit = pLimit(15); // 10 Max concurrent request.
+          const total_frames = frames_end - frame_start;
 
+          // Build frames start/end
+          const frames_tuples = [];
+          for(let i = frame_start; i < frames_end; i+= step_size + 1){
+            frames_tuples.push([i, i + step_size])
+          }
+          const promises = frames_tuples.map(frame_tuple => {
+            return limit(() => {
+              let new_url =`${url_base}/instance/buffer/start/${frame_tuple[0]}/end/${frame_tuple[1]}/list`
+              return axios.post(new_url, {
+                directory_id : this.$store.state.project.current_directory.directory_id
+              })
+            })
+          });
+
+          let all_responses = await Promise.all(promises);
+          let new_instance_buffer_dict = {};
+          for(const response of all_responses){
+            new_instance_buffer_dict = {
+              ...new_instance_buffer_dict,
+              ...response.data.instance_buffer_dict
+            }
+          }
+          return new_instance_buffer_dict
+
+
+        },
         async get_video_instance_buffer(play_after_success) {
           /*
        * Directly triggers getting buffer
@@ -5780,17 +5810,15 @@
             // careful it's the video file we want here
           }
 
-          url += '/instance/buffer' +
-            '/start/' + this.current_frame +
-            '/end/' + (this.current_frame + this.label_settings.instance_buffer_size) +
-            '/list'
           try{
-            const response = await axios.post(url, {
-              directory_id : this.$store.state.project.current_directory.directory_id
-            })
             // Get the buffer from the Server. Note that at this point it is not initialized.
             // We'll initialize class instances as per frame and not all at once for performance reasons.
-            this.instance_buffer_dict = response.data.instance_buffer_dict
+            this.instance_buffer_dict = await this.get_instance_buffer_parallel(
+              url,
+              this.current_frame,
+              this.current_frame + this.label_settings.instance_buffer_size
+            )
+
             this.instance_buffer_metadata = {};
             // Now set the current list from buffer
             if (this.instance_buffer_dict) {
