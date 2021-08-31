@@ -402,6 +402,8 @@ class New_video():
 
         input.project_id = self.project.id  # Avoids detached session issues for parallel processing
         input.mode = "update"
+        if parent_input.mode == 'update_with_existing':
+            input.mode = 'update_with_existing'
         input.parent_input_id = parent_input.id
         input.parent_file_id = parent_input.file.id  # Assume downstream process will use this to get frame
         input.frame_number = frame_number

@@ -80,7 +80,6 @@ def enqueue_packet(project_string_id,
     # print(diffgram_input.frame_packet_map)
 
     session.add(diffgram_input)
-    print('FILE ID FLUSH', file_id)
     session.flush()
 
     if batch_id and extract_labels_from_batch:
