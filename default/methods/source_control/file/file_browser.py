@@ -297,7 +297,7 @@ def get_instance_buffer(session, video_file_id, start, end):
     # Allow buffer to go back, ie go back 1 frame works.
     # Careful max here since otherwise it gets it for full video
 
-    start = max(0, start - 10)
+    start = max(0, start - 1)
 
     image_file_list = WorkingDirFileLink.image_file_list_from_video(
         session = session,
