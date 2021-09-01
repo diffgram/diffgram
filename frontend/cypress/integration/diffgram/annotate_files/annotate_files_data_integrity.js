@@ -60,7 +60,7 @@ describe('Annotate Files Tests', () => {
 
 
         cy.get('[data-cy="save_button"]').click({force: true})
-        cy.wait('@annotation_update')
+        cy.wait('@annotation_update', {timeout: 300000})
           .should(({request, response}) => {
             expect(request.method).to.equal('POST')
             // it is a good practice to add assertion messages
@@ -89,7 +89,7 @@ describe('Annotate Files Tests', () => {
 
           cy.wait(2000)
           cy.get('[data-cy="save_button"]').click({force: true})
-          cy.wait('@annotation_update')
+          cy.wait('@annotation_update', {timeout: 300000})
             .should(({request, response}) => {
               expect(request.method).to.equal('POST')
               // it is a good practice to add assertion messages
