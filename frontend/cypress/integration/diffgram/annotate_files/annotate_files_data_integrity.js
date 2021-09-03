@@ -60,7 +60,7 @@ describe('Annotate Files Tests', () => {
 
 
         cy.get('[data-cy="save_button"]').click({force: true})
-        cy.wait('@annotation_update')
+        cy.wait('@annotation_update', {timeout: 300000})
           .should(({request, response}) => {
             expect(request.method).to.equal('POST')
             // it is a good practice to add assertion messages
@@ -89,7 +89,7 @@ describe('Annotate Files Tests', () => {
 
           cy.wait(2000)
           cy.get('[data-cy="save_button"]').click({force: true})
-          cy.wait('@annotation_update')
+          cy.wait('@annotation_update', {timeout: 300000})
             .should(({request, response}) => {
               expect(request.method).to.equal('POST')
               // it is a good practice to add assertion messages
@@ -116,10 +116,10 @@ describe('Annotate Files Tests', () => {
         // Draw 1 boxes
         const boxes = [
           {
-            min_x: 88,
-            min_y: 88,
-            max_x: 166,
-            max_y: 166,
+            min_x: 140,
+            min_y: 140,
+            max_x: 300,
+            max_y: 300,
           },
         ]
         for (let box of boxes) {
@@ -137,23 +137,23 @@ describe('Annotate Files Tests', () => {
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
-          .mousedowncanvas(90, 90)
+          .mousedowncanvas(160, 160)
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          .rightclickdowncanvas(90, 90)
+          .rightclickdowncanvas(160, 160)
           .wait(1000)
           .get('[data-cy=copy_instance]').should('exist')
           .get('[data-cy=copy_instance]').click({force: true})
           .wait(1000)
-          .rightclickdowncanvas(90, 90)
+          .rightclickdowncanvas(160, 160)
           .get('[data-cy=show_menu_paste_next_frames]').click({force: true})
           .wait(500)
           .get('[data-cy=paste_frame_count').type('{backspace}5')
           .get('[data-cy=paste_next_frames]').click({force: true})
           .wait(500)
           .wait(10000)
-          .get('@annotation_update.all').should('have.length', 6)
+          .get('@annotation_update.all').should('have.length.at.least', 5)
           .then((xhrs) => {
             expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
             expect(xhrs[1].response, 'request status').to.have.property('statusCode', 200)
