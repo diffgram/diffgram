@@ -77,6 +77,7 @@ class Annotation_Update():
     clean_instances: bool = False
     force_lock: bool = True
     sequence = None
+    new_created_sequence_list: list = field(default_factory = lambda: [])
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
 
@@ -1680,13 +1681,15 @@ class Annotation_Update():
         # For "Human" updates only
         if update_existing_only is False:
 
-            self.sequence = Sequence.update(
+            self.sequence, is_new_sequence = Sequence.update(
                 session = self.session,
                 project = self.project,
                 video_mode = self.video_mode,
                 instance = instance,
                 video_file = self.video_parent_file
             )
+            if is_new_sequence:
+                self.new_created_sequence_list.append(self.sequence)
 
         else:
             # Eg for deleting when sequence is changed on existing instance

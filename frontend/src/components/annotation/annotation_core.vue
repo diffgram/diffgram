@@ -6772,6 +6772,7 @@
                 // just in case so we don't overwrite
                 // maybe don't need this, but going to look at other options in the future there too
                 // doesn't cover buffer case?
+                console.log('NEW SEQUENCE', instance_index, response.data.sequence)
                 if(instance_index
                   &&  instance_list_request_frame[instance_index]
                   && instance_list_request_frame[instance_index].sequence_id == undefined

@@ -377,6 +377,7 @@
 import axios from 'axios';
 import label_select_only from '../label/label_select_only.vue'
 import Vue from "vue";
+import pLimit from 'p-limit';
 
 export default Vue.extend( {
   name: 'sequence_list',
@@ -730,19 +731,30 @@ export default Vue.extend( {
       }
       let sequences_with_no_preview_images = []
       for(let sequence of this.sequence_list){
-        if(!sequence.instance_preview_cache){
+        if(!sequence.instance_preview || Object.keys(sequence.instance_preview).length === 0){
           sequences_with_no_preview_images.push(sequence)
         }
       }
       const limit = pLimit(10); // 10 Max concurrent request.
       const promises = sequences_with_no_preview_images.map(sequence => {
         return limit(() => {
-          let new_url =`/api/v1/`
+          let new_url =`/api/project/${this.project_string_id}/sequence/${sequence.id}/create-preview`
           return axios.post(new_url, {
             directory_id : this.$store.state.project.current_directory.directory_id
           })
         })
       });
+
+      let all_responses = await Promise.all(promises);
+      for(const response of all_responses){
+        let data = response.data;
+        console.log('RESPS', data)
+        let sequence = this.sequence_list.find(seq => seq.id === data.result.instance_preview.id);
+        if(sequence){
+          sequence.instance_preview = data.result.instance_preview;
+        }
+
+      }
     },
     get_sequence_list: async function () {
 

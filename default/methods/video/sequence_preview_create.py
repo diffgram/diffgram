@@ -34,5 +34,7 @@ def create_sequence_preview_core(session, log, project, sequence_id):
 
     # Build preview
     instance_preview = sequence.build_instance_preview_dict(session = session)
+    if instance_preview:
+        result['created'] = True
     result['instance_preview'] = instance_preview
     return result, log
