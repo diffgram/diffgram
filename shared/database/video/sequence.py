@@ -70,6 +70,13 @@ class Sequence(Base):
     cache_expiry = Column(Integer)
     archived = Column(Boolean, default = False)
 
+    @staticmethod
+    def get_by_id(session, sequence_id):
+        result = session.query(Sequence).filter(
+            Sequence.id == sequence_id
+        ).first()
+        return result
+
     def clone_sequence_with_no_instances(
         self,
         session,
@@ -188,6 +195,7 @@ class Sequence(Base):
         """
         if self.cache_expiry is None or \
             self.cache_expiry <= time.time():
+
             if session:
 
                 # This needs to be in advance in case no instance
@@ -206,6 +214,7 @@ class Sequence(Base):
                 self.cache_expiry = time.time() + 2591000
                 session.add(self)
 
+        print('cahceees', self.instance_preview_cache)
         return self.instance_preview_cache
 
     def get_preview_instance(self, session):
@@ -223,6 +232,7 @@ class Sequence(Base):
             Instance.sequence_id == self.id,
             Instance.soft_delete == False).order_by(Instance.id)
         instance = instance.first()
+
         """
         April 8, 2020
             1) We do regenerate here since otherwise always could be risk of instance not matching up.

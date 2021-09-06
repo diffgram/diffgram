@@ -724,7 +724,26 @@ export default Vue.extend( {
     },
 
     // (search tags) def get_sequence_list  sq
-
+    refresh_missing_preview_images: async function(){
+      if(!this.sequence_list){
+        return
+      }
+      let sequences_with_no_preview_images = []
+      for(let sequence of this.sequence_list){
+        if(!sequence.instance_preview_cache){
+          sequences_with_no_preview_images.push(sequence)
+        }
+      }
+      const limit = pLimit(10); // 10 Max concurrent request.
+      const promises = sequences_with_no_preview_images.map(sequence => {
+        return limit(() => {
+          let new_url =`/api/v1/`
+          return axios.post(new_url, {
+            directory_id : this.$store.state.project.current_directory.directory_id
+          })
+        })
+      });
+    },
     get_sequence_list: async function () {
 
       if (!this.label_file_id || !this.current_video_file_id) {
@@ -758,6 +777,9 @@ export default Vue.extend( {
         this.update_from_sequence_list_change(
           response.data.sequence_list,
           response.data.highest_sequence_number)
+
+        // No await since we don't want this block
+        this.refresh_missing_preview_images()
         this.loading = false
         this.$emit('loading_sequences', this.loading);
       }
