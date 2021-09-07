@@ -740,6 +740,7 @@ export default Vue.extend( {
         return limit(() => {
           let new_url =`/api/project/${this.project_string_id}/sequence/${sequence.id}/create-preview`
           return axios.post(new_url, {
+            sequence_id: sequence.id,
             directory_id : this.$store.state.project.current_directory.directory_id
           })
         })
@@ -748,13 +749,13 @@ export default Vue.extend( {
       let all_responses = await Promise.all(promises);
       for(const response of all_responses){
         let data = response.data;
-        console.log('RESPS', data)
-        let sequence = this.sequence_list.find(seq => seq.id === data.result.instance_preview.id);
+        const request_payload = JSON.parse(response.config.data)
+        let sequence = this.sequence_list.find(seq => seq.id === request_payload.sequence_id);
         if(sequence){
           sequence.instance_preview = data.result.instance_preview;
         }
-
       }
+      this.$forceUpdate();
     },
     get_sequence_list: async function () {
 
