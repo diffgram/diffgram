@@ -221,7 +221,7 @@ class Update_Input():
             self.log['info']['removed_copied_file_id'] = input.newly_copied_file.id
 
     def remove_associated_tasks(self, file):
-        tasks = self.session.query(
+        tasks = self.session.query(Task).filter(
             Task.file_id == file.id
         ).all()
         for task in tasks:
