@@ -6522,6 +6522,8 @@
                 current_instance.id = new_instance[0].id;
                 current_instance.root_id =  new_instance[0].root_id;
                 current_instance.version =  new_instance[0].version;
+                current_instance.sequence_id = new_instance[0].sequence_id;
+                current_instance.number = new_instance[0].number;
                 instance_list.splice(i, 1, current_instance)
 
               }
@@ -6535,6 +6537,8 @@
                 current_instance.root_id =  new_instance[0].root_id;
                 current_instance.previous_id =  new_instance[0].previous_id;
                 current_instance.version =  new_instance[0].version;
+                current_instance.sequence_id = new_instance[0].sequence_id;
+                current_instance.number = new_instance[0].number;
                 instance_list.splice(i, 1, current_instance)
 
               }
@@ -6614,6 +6618,12 @@
           }
           return [false, dup_ids, dup_indexes];
 
+        },
+        refresh_sequence_frame_list: function(instance_list, frame_number){
+
+          for(const instance of instance_list){
+            this.$refs.sequence_list.add_frame_number_to_sequence(instance.sequence_id, frame_number)
+          }
         },
         save: async function (and_complete=false, frame_number_param = undefined, instance_list_param = undefined) {
           this.save_error = {}
@@ -6752,37 +6762,44 @@
             }
 
             if (response.data.sequence) {
-              this.current_sequence_annotation_core_prop = response.data.sequence
-
-              if (response.data.sequence) {
-                this.current_sequence_annotation_core_prop = response.data.sequence
-
-                // Because: new color thing based on sequence id but seq id not assigned till response
-                // not good code. just placeholder in current constraints until we can figure out something better.
-                // ie maybe whole instance should be getting replaced
-                let instance_list_request_frame = this.instance_list;
-                if(this.video_mode){
-                  // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
-                  // Because it could have potentially changed during save.
-                  instance_list_request_frame = this.instance_buffer_dict[video_data.current_frame]
-                }
-                let instance_index = instance_list_request_frame.findIndex(
-                  x => x.label_file_id == response.data.sequence.label_file_id &&
-                    x.number == response.data.sequence.number)
-                // just in case so we don't overwrite
-                // maybe don't need this, but going to look at other options in the future there too
-                // doesn't cover buffer case?
-                console.log('NEW SEQUENCE', instance_index, response.data.sequence)
-                if(instance_index
-                  &&  instance_list_request_frame[instance_index]
-                  && instance_list_request_frame[instance_index].sequence_id == undefined
-                  && instance_list_request_frame[instance_index].label_file_id == response.data.sequence.label_file_id) {
-                  instance_list_request_frame[instance_index].sequence_id = response.data.sequence.id
-                }
-                /// end temp sequence thing
+              // Because: new color thing based on sequence id but seq id not assigned till response
+              // not good code. just placeholder in current constraints until we can figure out something better.
+              // ie maybe whole instance should be getting replaced
+              let instance_list_request_frame = this.instance_list;
+              if(this.video_mode){
+                // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
+                // Because it could have potentially changed during save.
+                instance_list_request_frame = this.instance_buffer_dict[video_data.current_frame]
               }
-              /// end temp sequence thing
+              let instance_index = instance_list_request_frame.findIndex(
+                x => x.label_file_id == response.data.sequence.label_file_id &&
+                  x.soft_delete === false &&
+                  x.number == response.data.sequence.number)
+              // just in case so we don't overwrite
+              // maybe don't need this, but going to look at other options in the future there too
+              // doesn't cover buffer case?
+              console.log('NEW SEQUENCE', instance_index, response.data.sequence)
+              if(instance_index
+                &&  instance_list_request_frame[instance_index]
+                && instance_list_request_frame[instance_index].sequence_id == undefined
+                && instance_list_request_frame[instance_index].label_file_id == response.data.sequence.label_file_id) {
+                console.log('SETTING SEQUENCE from', instance_list_request_frame[instance_index].sequence_id)
+                console.log('SETTING SEQUENCE to', response.data.sequence.id)
+                instance_list_request_frame[instance_index].sequence_id = response.data.sequence.id
+              }
+              // end of temp sequence thing
+
+              // Update any new created sequences
+              if(response.data.new_sequence_list){
+                for(let new_seq of response.data.new_sequence_list){
+                  this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
+                }
+              }
+              if(this.video_mode){
+                this.refresh_sequence_frame_list(instance_list_request_frame, video_data.current_frame);
+              }
             }
+
 
 
             /* When we save the file and go to next, we don't rely upon the

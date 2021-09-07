@@ -283,7 +283,7 @@ class Sequence(Base):
             Sequence.label_file_id == instance.label_file_id).first()
 
         if sequence:
-            logger.info("ID {}, number {}".format(sequence.id, sequence.number))
+            logger.debug("Update sequence ID {}, number {}".format(sequence.id, sequence.number))
             if add_to_session is True:
                 session.add(sequence)
 
@@ -345,7 +345,6 @@ class Sequence(Base):
             # print("instance number", instance.number)
 
             if instance.number is not None:
-
                 # in the new context the video file has already been
                 # checked too be valid
 

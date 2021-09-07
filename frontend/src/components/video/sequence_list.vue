@@ -573,13 +573,7 @@ export default Vue.extend( {
       } else {
         //creation context
 
-        this.sequence_list.push(new_sequence)
-
-        // prior we expected to this from the response
-        // same concept.
-        this.highest_sequence_number = new_sequence.number
-
-        this.may_auto_advance_sequence()
+        this.add_new_sequence_to_list(new_sequence)
       }
 
       this.emit_current_sequence()
@@ -648,7 +642,31 @@ export default Vue.extend( {
 
   },
   methods: {
+    add_frame_number_to_sequence(sequence_id, frame_number){
+      console.log('adding', sequence_id, frame_number)
+      if(frame_number == undefined){
+        return
+      }
+      let sequence = this.sequence_list.find(seq => seq.id === sequence_id);
+      if(sequence){
+        let existing_frames = sequence.keyframe_list.frame_number_list;
+        if(!existing_frames.includes(frame_number)){
+          existing_frames.push(frame_number);
+          existing_frames.sort(function(a, b) {
+            return a - b;
+          });
+        }
+      }
+    },
+    add_new_sequence_to_list: function(new_sequence){
+      this.sequence_list.push(new_sequence)
 
+      // prior we expected to this from the response
+      // same concept.
+      this.highest_sequence_number = new_sequence.number
+
+      this.may_auto_advance_sequence()
+    },
     clear_sequence_list_cache: function () {
       //console.log("clear_sequence_list_cache")
       this.cache_sequence_list = {}
