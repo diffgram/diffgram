@@ -1705,7 +1705,7 @@ class Annotation_Update():
                 instance = instance,
                 video_file = self.video_parent_file
             )
-            if update_existing_only is not None and not updated_sequence.archived:
+            if updated_sequence is not None and not updated_sequence.archived:
                 self.sequence = updated_sequence
             if is_new_sequence:
                 self.new_created_sequence_list.append(self.sequence)
