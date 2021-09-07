@@ -14,7 +14,7 @@ Diffgram replaces as many as 9 of your existing tools with one single applicatio
 3. [Workflow](#Workflow)
 4. [Annotation](#Annotation)
 5. [Annotation Automation](#Annotation-Automation)
-6. [Stream to Training - Coming Soon](#Stream-to-Training-Coming-Soon)
+6. [Stream to Training](#Stream-to-Training)
 7. [Explore](#Explore)
 8. [Debug](#Debug)
 9. [Secure and Private](#Secure-and-Private)
@@ -166,9 +166,14 @@ Run models instantly with [Javascript](https://diffgram.readme.io/docs/userscrip
 General purpose automation language, solve [any annotation automation](https://diffgram.readme.io/docs/userscripts-overview) challenge.
 Less annotation and automation costs.
 
-## Stream to Training - Coming Soon
+## Stream to Training
+* NEW - [Stream Training Data is Now Available](https://medium.com/diffgram/stream-training-data-to-your-models-with-diffgram-f0f25f6688c5).
+* [Colab Notebook Example](https://colab.research.google.com/drive/1mW9AXnx1Ywuz_f090x0NLJDxlniKygSk?authuser=1#scrollTo=dzoSS_W0EqgW) || [Docs](https://diffgram.readme.io/docs/datasets#data-streaming-concepts) 
+* [Pytorch](https://diffgram.readme.io/docs/sdk-dataset-to_tensorflow)
+||  [Tensorflow](https://diffgram.readme.io/docs/sdk-dataset-to_tensorflow)
+
 Easier and faster for data science. Less compute cost. More privacy controls. 
-Load streaming data from Diffgram directly into pytorch and tensorflow with one line (coming soon)
+Load streaming data from Diffgram directly into pytorch and tensorflow with one line (alpha release live!)
 
 ## Explore
 Skip downloading and unzipping massive datasets. Explore data instantly through the browser.  
