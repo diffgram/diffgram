@@ -3359,7 +3359,6 @@
 
           if (this.video_mode == true) {
             let was_saved = await this.save();
-            console.log('wassaved', was_saved)
             if(!was_saved){
               // If instance was not saved, because of concurrent saves. We still set it to pending
               this.has_changed = true;
@@ -6778,13 +6777,10 @@
               // just in case so we don't overwrite
               // maybe don't need this, but going to look at other options in the future there too
               // doesn't cover buffer case?
-              console.log('NEW SEQUENCE', instance_index, response.data.sequence)
               if(instance_index
                 &&  instance_list_request_frame[instance_index]
                 && instance_list_request_frame[instance_index].sequence_id == undefined
                 && instance_list_request_frame[instance_index].label_file_id == response.data.sequence.label_file_id) {
-                console.log('SETTING SEQUENCE from', instance_list_request_frame[instance_index].sequence_id)
-                console.log('SETTING SEQUENCE to', response.data.sequence.id)
                 instance_list_request_frame[instance_index].sequence_id = response.data.sequence.id
               }
               // end of temp sequence thing

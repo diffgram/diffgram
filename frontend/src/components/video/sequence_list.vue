@@ -643,7 +643,6 @@ export default Vue.extend( {
   },
   methods: {
     add_frame_number_to_sequence(sequence_id, frame_number){
-      console.log('adding', sequence_id, frame_number)
       if(frame_number == undefined){
         return
       }
