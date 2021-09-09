@@ -1,7 +1,7 @@
 <template>
   <div id="home" class="home-container">
 
-    <div v-if="$store.state.user.logged_in == true ">
+    <div v-if="$store.state.user.logged_in == true">
       <div v-if="!$store.state.builder_or_trainer.mode">
         <v-card>
 
@@ -123,7 +123,8 @@
         Project ID {{$store.state.project.current.id}}
       </div>
     </div>
-    <div v-else>
+
+    <div v-if="$store.state.user.logged_in != true">
       <v-container>
 
         <v-layout>
