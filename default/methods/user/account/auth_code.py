@@ -40,10 +40,11 @@ def new(session,
 	# TODO not clear on use of this type of filer, ie if using a code to send to multiple
 	# orgs...
 
-	existing_code = session.query(Signup_code).filter( Signup_code.email_sent_to == email_sent_to, 
-													   Signup_code.type == auth_code_type,
-													   Signup_code.is_available != False,
-														).first()
+	existing_code = session.query(Signup_code).filter( 
+        Signup_code.email_sent_to == email_sent_to, 
+		Signup_code.type == auth_code_type,
+		Signup_code.is_available != False,
+		).first()
 	if existing_code:
 		if existing_code.type == "magic_login":
 
