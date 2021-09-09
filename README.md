@@ -21,18 +21,20 @@ _________________
 ![](./github_assets/diffgram_high_level.PNG)
 
 Complete training data platform for machine learning delivered as
-a single application.
+a single application. 
+
+Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
 # What is Diffgram?
 Diffgram is multiple tools in one single application.
-1. [Ingest](#Ingest)
-2. [Store](#Store)
-3. [Workflow](#Workflow)
-4. [Annotation](#Annotation)
-5. [Annotation Automation](#Annotation-Automation)
-6. [Stream to Training](#Stream-to-Training)
-7. [Explore](#Explore)
-8. [Debug](#Debug)
+1. [Ingest](#Ingest) - Magic Wizard
+2. [Store](#Store) - Source of Truth for Training Data
+3. [Workflow](#Workflow) - Human Tasks
+4. [Annotation](#Annotation) - Image & Video Labeling. Audio, Text, 3D coming soon.
+5. [Annotation Automation](#Annotation-Automation) - Customizable
+6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
+7. [Explore](#Explore) - Query & Visually See Annotations
+8. [Debug](#Debug) - Compare Models & More
 9. [Secure and Private](#Secure-and-Private)
 
 Diffgram is Open Source and Client Installed. **[Quickstart](#Quickstart)**
@@ -41,6 +43,10 @@ Diffgram is Open Source and Client Installed. **[Quickstart](#Quickstart)**
 * [What problem does Diffgram solve?](#What-problem-does-Diffgram-solve)
 * [Why Diffgram?](#Why-Diffgram)
 * [What are Diffgram's competitive advantages?](#What-are-Diffgrams-competitive-advantages)
+* [Roadmap](#Roadmap)
+* [Features](#Features)
+* [Standard Features](#Standard-Features)
+* [Built for Extreme Scale](#Built-for-Extreme-Scale)
 
 ### Who is Diffgram for?
 Data Scientists, Project Admins, Software Engineers, 
@@ -55,7 +61,7 @@ costs for multiple applications all add up.
 
 ### Why Diffgram?
 Diffgram solves this by bringing all the functions of a complex 
-toolchain directly into one application. Replacing multiple tools 
+toolchain directly into one application. Providing multiple tools 
 with one single integrated application.
 
 ![](./github_assets/diffgram_solution.PNG)
@@ -82,7 +88,7 @@ Security issues: Do not create a public issue. Email security@diffgram.com with 
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
 ### Diffgram Dev Installer Quickstart
-Requires Docker and Docker Compose
+Install with Docker and Docker Compose
 ```
 git clone https://github.com/diffgram/diffgram.git
 cd diffgram
@@ -102,6 +108,12 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 [More on Understanding Diffgram High Level](https://diffgram.readme.io/docs/help-im-new-what-is-diffgram-exactly)
 
 ### Cloud
+![Roadmap](./github_assets/cloud_logos.PNG)
+
+Full support for Amazon AWS, Google Cloud, and Microsoft Azure.
+
+Run Diffgram on and access data from any of the clouds.
+
 - [Google GCP Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
 - [Azure AKS Kubernetes Install Guide](https://medium.com/diffgram/tutorial-installing-diffgram-on-azure-aks-b9447685e271)
 - [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
@@ -117,7 +129,7 @@ Diffgram is a drop in replacement for the following systems:
 Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex), 
 V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, HastyAI, Dataloop, Keymakr, ActiveLoop, DVC, Scale Nucleus.
 
-Directionally, Diffgram will replace Aquarium Learning and offer more active learning features.
+Please see the roadmap and talk with us if you see a missing feature.
 
 ### How much does this cost?
 If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
@@ -149,14 +161,47 @@ Diffgram Enterprise can help you scale every aspect of your training data.
 We welcome you to create issues, join our slack channel, and help shape our roadmap.
 Are you an Enterprise customer? Talk to us about priority implementations.
 
+
+## Built for Extreme Scale
+Diffgram has many great features no matter the volume of annotation. 
+Diffgram is unique in that we think about scale across all aspects of the system.
+
+Do *any* of these apply to you?
+* Models running in staging or production?
+* Are using pre-labels or interactive automations?
+* Need versioning?
+* Have expanding use cases or need better model performance?
+* Expanding your annotation team or needs? Have multiple teams accessing training data?
+* Using complex data types like video, 3D, multi-modal?
+
+These things all stack to make for 10, 100, 1000x+ increases in volumes of annotation needs.
+
+A *single* Diffgram install is capable of 100,000,000+ (100 Million+) annotations. We plan to scale it to support 10,000,000,000 (10 Billion+) *per install*
+in 2022. [More on Scale](https://diffgram.readme.io/docs/scale-store-any-scale-of-dataset-and-access-slices-instantly)
+
+Examples of things we think about for you that go beyond the literal numbers:
+* Is this cost effective at scale? If you need an automation to produce millions of instances, how can we do that in a way that approaches $0?
+* What does access time for data look like when the volume is 10x 100x 1000+x?
+* What does the annotator experience look like if the system is at max ingestion capacity?
+* How does a new team get data in and out of Diffgram in an easy standard process?
+* How can teams access data across Diffgram installations? How can we serve multiple team’s needs through one unified data model?
+
+If you need extreme scale - choose Diffgram.
+
+
 #  Features
 This is an ACTIVE project. We are very open to feedback and encourage you to create [Issues](https://github.com/diffgram/diffgram/issues) and help us grow!
 
 ## User Friendly
 * NEW Streamlined Annotation UI suitable both from "First Time" Subject Matter Experts, and powerful options for Professional Full Time Annotators
 
+## Standard Features
+* Many User Labeling - Designed for many users from Day 1.
+* Scale to Mega Projects with sophisticated organizational concepts.
+* Fully configurable - customize labels, attributes, and more.
+
 ## Ingest
-Ingest prediction data without a software engineer.
+Ingest prediction data without writing extra scripts.
 
 * [NEW Import Wizard](https://medium.com/diffgram/now-anyone-can-turn-spreadsheets-into-editable-pre-labels-more-saving-hundreds-of-hours-of-bbc756ec7b49) saves you hours having to map your data (pre-labels, QA, debug etc.).
 * [All-Cloud Integrated File Browser](https://www.youtube.com/watch?v=w7yiW5wpnMg&t=59s)
