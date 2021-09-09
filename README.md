@@ -26,7 +26,7 @@ a single application.
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
 # What is Diffgram?
-Diffgram is multiple tools in one single application.
+Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Wizard
 2. [Store](#Store) - Source of Truth for Training Data
 3. [Workflow](#Workflow) - Human Tasks
@@ -181,7 +181,7 @@ in 2022. [More on Scale](https://diffgram.readme.io/docs/scale-store-any-scale-o
 
 Examples of things we think about for you that go beyond the literal numbers:
 * Is this cost effective at scale? If you need an automation to produce millions of instances, how can we do that in a way that approaches $0?
-* What does access time for data look like when the volume is 10x 100x 1000+x?
+* What does access time for data look like when the volume is 10x 100x 1000x+?
 * What does the annotator experience look like if the system is at max ingestion capacity?
 * How does a new team get data in and out of Diffgram in an easy standard process?
 * How can teams access data across Diffgram installations? How can we serve multiple team’s needs through one unified data model?
