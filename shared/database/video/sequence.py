@@ -293,6 +293,7 @@ class Sequence(Base):
 
         return sequence
 
+    @staticmethod
     def update(
         session,
         project,
