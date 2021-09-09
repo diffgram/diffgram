@@ -46,10 +46,11 @@ def start_magic_login_api():
             return jsonify(log = log), 400
 
         ### MAIN
-        auth_result, message, auth = auth_code.new(session = session,
-                                                   user = user,
-                                                   email_sent_to = user.email,
-                                                   auth_code_type = "magic_login")
+        auth_result, message, auth = auth_code.new(
+            session = session,
+            user = user,
+            email_sent_to = user.email,
+            auth_code_type = "magic_login")
         ###
         # TODO use message var?
         if auth_result is False:
