@@ -8,7 +8,7 @@ Complete training data platform for machine learning delivered as
 a single application.
 
 # What is Diffgram?
-Diffgram replaces as many as 9 of your existing tools with one single application.
+Diffgram replaces multiple tools with one single application.
 1. [Ingest](#Ingest)
 2. [Store](#Store)
 3. [Workflow](#Workflow)
@@ -35,11 +35,11 @@ The current state of multiple tools is a huge pain.
 Integrating these complex toolchains, context switching, human training, 
 costs for multiple applications all add up. 
 
-![](./github_assets/diffgram_problem.PNG)
+![](./github_assets/what_problem_diffgram_2021_sept.PNG)
 
 ### Why Diffgram?
 Diffgram solves this by bringing all the functions of a complex 
-toolchain directly into one application. Replacing as many as 9 tools 
+toolchain directly into one application. Replacing multiple tools 
 with one single integrated application.
 
 ![](./github_assets/diffgram_solution.PNG)
@@ -99,23 +99,22 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 ### What is Diffgram a drop in replacement for?
 Diffgram is a drop in replacement for the following systems: 
 Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex), 
-V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, HastyAI, Dataloop, Keymakr.
+V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, HastyAI, Dataloop, Keymakr, ActiveLoop, DVC, Scale Nucleus.
 
-Directionally, Diffgram will replace Aquarium Learning, Scale Nucleus, DVC, ActiveLoop and more.
+Directionally, Diffgram will replace Aquarium Learning and offer more active learning features.
 
 ### How much does this cost?
-First, the Full Platform is Open Source. There is no trick where it "sort of works"
-but you need to pay for a SaaS service to really use it. This is the full core product.
+If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
+You can install Diffgram and use it with hundreds of thousands of annotations for free.
 
-### What limits are there on the free edition?
-If you have less then 20 people using it there are few intentional limits you are likely to bump into.
+If you desire additional support, feature prioritization, etc. we have packages available.
 
-If you have 20+ people using it we encourage you to consider [Enterprise Edition](https://diffgram.com/enterprise).
+### When do I need to upgrade?
+We charge based on capacity. If you have 20+ people then the first step is upgrading to [Enterprise Edition](https://diffgram.com/enterprise).
+This unlocks capacity, adds support and many other features.
 
-If you have 30+ people using for an extended period of time without upgrading 
-to Enterprise you may hit some limits. 
-We reserve the right to publish more assertive limits in future editions to encourage
-good enterprise citizens who are happy and using the software to support it via Enterprise.
+If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
+Diffgram Enterprise can help you scale every aspect of your training data.
 
 #  Features
 This is an ACTIVE project. We are very open to feedback and encourage you to create [Issues](https://github.com/diffgram/diffgram/issues) and help us grow!
