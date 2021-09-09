@@ -108,7 +108,7 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 [More on Understanding Diffgram High Level](https://diffgram.readme.io/docs/help-im-new-what-is-diffgram-exactly)
 
 ### Cloud
-![Roadmap](./github_assets/cloud_logos.PNG)
+![Cloud logos](./github_assets/cloud_logos.png)
 
 Full support for Amazon AWS, Google Cloud, and Microsoft Azure.
 
