@@ -116,6 +116,23 @@ This unlocks capacity, adds support and many other features.
 If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
 Diffgram Enterprise can help you scale every aspect of your training data.
 
+## Roadmap
+2021: 
+1. Interfaces 3D, Text, Audio
+
+2022: 
+1. Save on labeling costs by only labeling most relevant data. Active Learning.
+2. Save QA costs by using model to debug humans. Explore V2
+3. Save on labeling costs by using interactive automations. Userscripts V2
+4. Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
+
+2023:
+1. Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
+![Roadmap](./github_assets/roadmap.PNG)
+
+We welcome you to create issues, join our slack channel, and help shape our roadmap.
+Are you an Enterprise customer? Talk to us about priority implementations.
+
 #  Features
 This is an ACTIVE project. We are very open to feedback and encourage you to create [Issues](https://github.com/diffgram/diffgram/issues) and help us grow!
 
@@ -219,7 +236,7 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 4. Support modification of source code
 5. Run on any hardware, any cloud, and anywhere
 
-[Technical Direction](https://diffgram.readme.io/docs/direction)
+[Technical Direction - Long Term](https://diffgram.readme.io/docs/direction)
 
 
 # Speed Ups & AI
