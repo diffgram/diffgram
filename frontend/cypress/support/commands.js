@@ -312,23 +312,28 @@ Cypress.Commands.add('loginByForm', function (email, password) {
   let LOCAL_STORAGE_MEMORY = {};
 
   const getInitialStore = () => cy.window().its('app.$store')
-  if (getInitialStore.its('state.user.logged_in') == false) {
-    cy.wait(3000);
-    cy.get('[data-cy=email]')
-      .type(email)
-      .should('have.value', email)
-    cy.get('#show_pass').click();
-    cy.get('[data-cy=password]')
-      .type(password)
-      .should('have.value', password)
-    cy.get('[data-cy=login]').click();
-    cy.wait(3000);
-    Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-      localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-    });
-    const getStore = () => cy.window().its('app.$store')
-    getStore().its('state.user.logged_in').should('eq', true);
-  }
+
+  getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
+
+    if (user_logged_in == false) {
+      cy.wait(3000);
+      cy.get('[data-cy=email]')
+        .type(email)
+        .should('have.value', email)
+      cy.get('#show_pass').click();
+      cy.get('[data-cy=password]')
+        .type(password)
+        .should('have.value', password)
+      cy.get('[data-cy=login]').click();
+      cy.wait(3000);
+      Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+        localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+      });
+      const getStore = () => cy.window().its('app.$store')
+      getStore().its('state.user.logged_in').should('eq', true);
+    }
+
+  })
 });
 
 Cypress.Commands.add('gotToProject', function (project_string_id) {
