@@ -1,4 +1,20 @@
 
+![](./github_assets/DiffgramLogoVECTOR.svg)
+
+
+_________________
+
+[Docs](https://diffgram.readme.io/docs)
+•
+[Diffgram.com](https://diffgram.com/)
+•
+[Join Slack Community](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
+![](./github_assets/slack.PNG)
+•
+[Enterprise](https://diffgram.com/enterprise)
+•
+[Twitter](https://twitter.com/diffgram)
+
 
 # Training Data Platform in One Application
 
@@ -8,7 +24,7 @@ Complete training data platform for machine learning delivered as
 a single application.
 
 # What is Diffgram?
-Diffgram replaces multiple tools with one single application.
+Diffgram is multiple tools in one single application.
 1. [Ingest](#Ingest)
 2. [Store](#Store)
 3. [Workflow](#Workflow)
@@ -114,7 +130,7 @@ We charge based on capacity. If you have 20+ people then the first step is upgra
 This unlocks capacity, adds support and many other features.
 
 If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
-Diffgram Enterprise can help you scale every aspect of your training data.
+Diffgram Enterprise can help you scale every aspect of your training data. 
 
 ## Roadmap
 2021: 
