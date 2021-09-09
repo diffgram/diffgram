@@ -18,6 +18,9 @@
       },
       props: {
 
+        lidar_url: "https://storage.googleapis.com/diffgram-sandbox/testing/lidar_ascii_v5.pcd",
+        radar_url: "https://storage.googleapis.com/diffgram-sandbox/testing/radar_rear.pcd",
+
       },
       data() {
         return {
@@ -30,6 +33,7 @@
           const scene = new THREE.Scene();
           const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
           const renderer = new THREE.WebGLRenderer();
+          this.load_pcd();
           renderer.setSize( window.innerWidth, window.innerHeight );
           document.getElementById('3d-container').appendChild( renderer.domElement );
           const geometry = new THREE.BoxGeometry();
@@ -57,7 +61,9 @@
 
       },
       methods: {
+        load_pcd: function(){
 
+        }
 
       }
     }
