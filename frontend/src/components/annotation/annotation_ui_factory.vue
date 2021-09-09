@@ -2,7 +2,7 @@
   <div>
 
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="show_annotation_core == true">
+      <div v-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
           :project_string_id="computed_project_string_id"
           :model_run_id_list="model_run_id_list"
@@ -24,6 +24,15 @@
           ref="annotation_core"
         >
         </v_annotation_core>
+      </div>
+      <div v-else-if="annotation_interface === 'sensor_fusion'">
+        <sensor_fusion_editor
+          :project_string_id="computed_project_string_id"
+          :task="task"
+          :file="current_file"
+          ref="sensor_fusion_editor"
+        >
+        </sensor_fusion_editor>
       </div>
 
         <file_manager_sheet
@@ -64,12 +73,14 @@
   import axios from 'axios';
   import {create_event} from "../event/create_event";
   import file_manager_sheet from "../source_control/file_manager_sheet";
+  import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor';
   import Vue from "vue";
 
   export default Vue.extend({
       name: 'annotation_ui_factory',
       components:{
-        file_manager_sheet
+        file_manager_sheet,
+        sensor_fusion_editor,
       },
       props: {
         'project_string_id': {
@@ -182,8 +193,8 @@
           return this.$store.state.project.current.project_string_id;
         },
 
-        show_annotation_core: function(){
-          return true
+        annotation_interface: function(){
+          return 'sensor_fusion';
         },
 
         label_file_colour_map: function () {
