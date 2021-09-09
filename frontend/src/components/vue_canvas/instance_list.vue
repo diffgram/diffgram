@@ -366,7 +366,7 @@
             fillColor = "rgba(" + r + "," + g + "," + b + ", 1)";
           }
 
-          // start Change type
+          // Determine FILL COLOR
           if (instance.change_type != undefined) {
             if (instance.change_type == "added") {
               fillColor = "rgba(" + 0 + "," + 255 + "," + 0 + `, ${this.$props.default_instance_opacity})`;
@@ -385,21 +385,21 @@
             let b = 255
 
             // TODO can we move this somewhere else, ie as part of each component?
-            if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
-              // Use the internal instance color instead of colour map if available.
-
-              r = instance.label_file.colour.rgba.r
-              g = instance.label_file.colour.rgba.g
-              b = instance.label_file.colour.rgba.b
-
-            }
-            else if (this.colour.rgba) {
+            if(this.colour.rgba){
               r = this.colour.rgba.r
               g = this.colour.rgba.g
               b = this.colour.rgba.b
             }
+            else if (instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba) {
+              // Fallback: the internal instance color instead of colour map if available.
+              r = instance.label_file.colour.rgba.r
+              g = instance.label_file.colour.rgba.g
+              b = instance.label_file.colour.rgba.b
+            }
+            fillColor = "rgba(" + r + "," + g + "," + b + `, ${this.$props.default_instance_opacity})`;
           }
 
+          // Determine STROKE COLOR
           if (instance.change_type != undefined) {
             if (instance.change_type == "added") {
               strokeColor = "green";
@@ -419,15 +419,12 @@
               strokeColor = "#FFD700"
             }
             if (this.mode == 'default') {
-              if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
-                strokeColor = instance.label_file.colour.hex;
-                let r = instance.label_file.colour.rgba.r;
-                let g = instance.label_file.colour.rgba.g;
-                let b = instance.label_file.colour.rgba.b;
-                fillColor = "rgba(" + r + "," + g + "," + b + `, ${this.$props.default_instance_opacity})`;
-              }
-              else{
+              if(this.colour){
                 strokeColor = this.colour.hex
+              }
+              else if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
+                // Fallback for when this.colour is not available
+                strokeColor = instance.label_file.colour.hex;
               }
               if(this.$props.default_instance_opacity === 1){
                 strokeColor = "#FFFFFF"
@@ -1281,18 +1278,13 @@
 
         },
 
-        get_instance_colour(instance = undefined){
+        get_instance_colour(){
           let colour_result =  {
             rgba: {
               r: 255,
               g: 255,
               b: 255,
             }
-          }
-          if(instance && instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
-            colour_result.rgba.r = instance.label_file.colour.rgba.r
-            colour_result.rgba.g = instance.label_file.colour.rgba.g
-            colour_result.rgba.b = instance.label_file.colour.rgba.b
           }
           colour_result.rgba.r = this.colour.rgba.r
           colour_result.rgba.g = this.colour.rgba.g
@@ -1325,7 +1317,7 @@
         draw_box: function (instance, ctx, i) {
 
           // possible to refactor this into a "draw face" function?
-          const instance_colour = this.get_instance_colour(instance);
+          const instance_colour = this.get_instance_colour();
 
           let r = instance_colour.rgba.r
           let g = instance_colour.rgba.g
