@@ -371,10 +371,6 @@ class Sequence(Base):
                     sequence.keyframe_list['frame_number_list'].append(
                         instance.frame_number)
 
-                    result = sequence.regenerate_instance_thumb(
-                        session = session,
-                        instance = instance,
-                        video = video_file.video)
                     # it needs instance to do things like crop the image
                     is_new_sequence = True
                     session.add(sequence)
