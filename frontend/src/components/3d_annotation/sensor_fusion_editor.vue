@@ -51,7 +51,11 @@
       </v_error_multiple>
     </div>
     <div class="mt-4">
-      <canvas_3d></canvas_3d>
+      <canvas_3d
+        :allow_navigation="true"
+        :with_keyboard_controls="true">
+
+      </canvas_3d>
     </div>
   </div>
 

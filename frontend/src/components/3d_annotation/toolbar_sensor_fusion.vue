@@ -61,6 +61,7 @@
       <label_select_annotation
         :project_string_id="project_string_id"
         :label_file_list="label_list"
+        default_hot_keys="l"
         :label_file_colour_map="label_file_colour_map"
         @change="$emit('change_label_file', $event)"
         :loading="loading"
