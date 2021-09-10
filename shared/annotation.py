@@ -1291,9 +1291,10 @@ class Annotation_Update():
         if instance.sequence_id is None:
             return
         for i in range(0, len(self.instance_list_kept_serialized)):
-            current = self.instance_list_kept_serialized[i]
-            if current.get('id') == instance.id and instance.sequence_id:
-                current['sequence_id'] = instance.sequence_id
+            existing_serialized_instance = self.instance_list_kept_serialized[i]
+            if existing_serialized_instance.get('id') == instance.id:
+                existing_serialized_instance['sequence_id'] = instance.sequence_id
+
 
     def update_cache_single_instance_in_list_context(self):
         """
