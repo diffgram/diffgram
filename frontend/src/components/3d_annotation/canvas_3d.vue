@@ -11,6 +11,7 @@
   import * as THREE from "three";
   import SceneController3D from './SceneController3D';
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+  import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
   import FileLoader3DPointClouds from './FileLoader3DPointClouds';
 
   export default Vue.extend({
@@ -35,7 +36,8 @@
       },
       data() {
         return {
-          orbit_controls: null,
+          controls_transform: null,
+          controls_orbit: null,
           renderer: null,
           scene_controller: null,
           camera: null,
@@ -49,9 +51,9 @@
           const scene = new THREE.Scene();
           document.getElementById('3d-container').appendChild( this.renderer.domElement );
           this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-          this.configure_orbit_controls(this.camera, this.renderer.domElement);
+          this.configure_controls(this.camera, this.renderer.domElement);
 
-          this.scene_controller = new SceneController3D(scene, this.orbit_controls)
+          this.scene_controller = new SceneController3D(scene, this.controls_orbit)
 
           this.point_cloud_mesh = await this.load_pcd();
           this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -64,7 +66,8 @@
           this.camera.position.y = 10;
           window.addEventListener( 'resize', this.on_window_resize );
           let animate = () => {
-            this.orbit_controls.update();
+            this.controls_orbit.update();
+            this.controls_transform.update();
             requestAnimationFrame( animate );
             this.renderer.render( scene, this.camera );
           }
@@ -86,22 +89,23 @@
 
           this.renderer.setSize( window.innerWidth, window.innerHeight );
         },
-        configure_orbit_controls: function(camera, dom_element){
+        configure_controls: function(camera, dom_element){
           if(!this.$props.allow_navigation){
             return
           }
-          this.orbit_controls = new OrbitControls(camera, dom_element)
-          this.orbit_controls.listenToKeyEvents( window ); // optional
-          this.orbit_controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-          this.orbit_controls.dampingFactor = 0.09;
-          this.orbit_controls.screenSpacePanning = true;
+          this.controls_transform = new TransformControls(camera, dom_element)
+          this.controls_orbit = new OrbitControls(camera, dom_element)
+          this.controls_orbit.listenToKeyEvents( window ); // optional
+          this.controls_orbit.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+          this.controls_orbit.dampingFactor = 0.09;
+          this.controls_orbit.screenSpacePanning = true;
 
-          this.orbit_controls.minDistance = 0;
-          this.orbit_controls.maxDistance = 99999;
+          this.controls_orbit.minDistance = 0;
+          this.controls_orbit.maxDistance = 99999;
 
-          this.orbit_controls.maxPolarAngle = Math.PI/ 2;
+          this.controls_orbit.maxPolarAngle = Math.PI/ 2;
 
-          this.orbit_controls.keys = {
+          this.controls_orbit.keys = {
             LEFT: 'KeyA'  , //left arrow
             UP: 'KeyW', // up arrow
             RIGHT: 'KeyD', // right arrow
