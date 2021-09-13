@@ -377,6 +377,7 @@
 import axios from 'axios';
 import label_select_only from '../label/label_select_only.vue'
 import Vue from "vue";
+import pLimit from 'p-limit';
 
 export default Vue.extend( {
   name: 'sequence_list',
@@ -572,13 +573,7 @@ export default Vue.extend( {
       } else {
         //creation context
 
-        this.sequence_list.push(new_sequence)
-
-        // prior we expected to this from the response
-        // same concept.
-        this.highest_sequence_number = new_sequence.number
-
-        this.may_auto_advance_sequence()
+        this.add_new_sequence_to_list(new_sequence)
       }
 
       this.emit_current_sequence()
@@ -647,7 +642,30 @@ export default Vue.extend( {
 
   },
   methods: {
+    add_frame_number_to_sequence(sequence_id, frame_number){
+      if(frame_number == undefined){
+        return
+      }
+      let sequence = this.sequence_list.find(seq => seq.id === sequence_id);
+      if(sequence){
+        let existing_frames = sequence.keyframe_list.frame_number_list;
+        if(!existing_frames.includes(frame_number)){
+          existing_frames.push(frame_number);
+          existing_frames.sort(function(a, b) {
+            return a - b;
+          });
+        }
+      }
+    },
+    add_new_sequence_to_list: function(new_sequence){
+      this.sequence_list.push(new_sequence)
 
+      // prior we expected to this from the response
+      // same concept.
+      this.highest_sequence_number = new_sequence.number
+
+      this.may_auto_advance_sequence()
+    },
     clear_sequence_list_cache: function () {
       //console.log("clear_sequence_list_cache")
       this.cache_sequence_list = {}
@@ -724,7 +742,38 @@ export default Vue.extend( {
     },
 
     // (search tags) def get_sequence_list  sq
+    refresh_missing_preview_images: async function(){
+      if(!this.sequence_list){
+        return
+      }
+      let sequences_with_no_preview_images = []
+      for(let sequence of this.sequence_list){
+        if(!sequence.instance_preview || Object.keys(sequence.instance_preview).length === 0){
+          sequences_with_no_preview_images.push(sequence)
+        }
+      }
+      const limit = pLimit(10); // 10 Max concurrent request.
+      const promises = sequences_with_no_preview_images.map(sequence => {
+        return limit(() => {
+          let new_url =`/api/project/${this.project_string_id}/sequence/${sequence.id}/create-preview`
+          return axios.post(new_url, {
+            sequence_id: sequence.id,
+            directory_id : this.$store.state.project.current_directory.directory_id
+          })
+        })
+      });
 
+      let all_responses = await Promise.all(promises);
+      for(const response of all_responses){
+        let data = response.data;
+        const request_payload = JSON.parse(response.config.data)
+        let sequence = this.sequence_list.find(seq => seq.id === request_payload.sequence_id);
+        if(sequence){
+          sequence.instance_preview = data.result.instance_preview;
+        }
+      }
+      this.$forceUpdate();
+    },
     get_sequence_list: async function () {
 
       if (!this.label_file_id || !this.current_video_file_id) {
@@ -758,6 +807,9 @@ export default Vue.extend( {
         this.update_from_sequence_list_change(
           response.data.sequence_list,
           response.data.highest_sequence_number)
+
+        // No await since we don't want this block
+        this.refresh_missing_preview_images()
         this.loading = false
         this.$emit('loading_sequences', this.loading);
       }

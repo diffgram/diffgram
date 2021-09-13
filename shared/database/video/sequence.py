@@ -70,6 +70,13 @@ class Sequence(Base):
     cache_expiry = Column(Integer)
     archived = Column(Boolean, default = False)
 
+    @staticmethod
+    def get_by_id(session, sequence_id):
+        result = session.query(Sequence).filter(
+            Sequence.id == sequence_id
+        ).first()
+        return result
+
     def clone_sequence_with_no_instances(
         self,
         session,
@@ -138,8 +145,7 @@ class Sequence(Base):
             'number': self.number,
             'keyframe_list': self.keyframe_list,
             'single_frame': self.single_frame,
-            # 'instance_preview': self.build_instance_preview_dict(session = session)
-            'instance_preview': None
+            'instance_preview': self.instance_preview_cache
         }
 
     # Label id only
@@ -151,8 +157,7 @@ class Sequence(Base):
             'keyframe_list': self.keyframe_list,
             'single_frame': self.single_frame,
             'label_file_id': self.label_file_id,
-            # 'instance_preview': self.build_instance_preview_dict(session = session)
-            'instance_preview': None
+            'instance_preview': self.instance_preview_cache
         }
 
     def serialize_for_export(self):
@@ -188,6 +193,7 @@ class Sequence(Base):
         """
         if self.cache_expiry is None or \
             self.cache_expiry <= time.time():
+
             if session:
 
                 # This needs to be in advance in case no instance
@@ -196,7 +202,6 @@ class Sequence(Base):
                 # caution this needs to match what serialize_for_sequence_preview()
                 # creates. a TODO is to pass this to it so it can control it
                 instance = self.get_preview_instance(session = session)
-                logger.info("Getting Instance for preview: {}".format(str(instance.id)))
 
                 if instance:
                     logger.info("Rebuilding Instance {} Preview".format(instance.id))
@@ -205,7 +210,6 @@ class Sequence(Base):
                         session = session)
                 self.cache_expiry = time.time() + 2591000
                 session.add(self)
-
         return self.instance_preview_cache
 
     def get_preview_instance(self, session):
@@ -223,6 +227,7 @@ class Sequence(Base):
             Instance.sequence_id == self.id,
             Instance.soft_delete == False).order_by(Instance.id)
         instance = instance.first()
+
         """
         April 8, 2020
             1) We do regenerate here since otherwise always could be risk of instance not matching up.
@@ -278,7 +283,7 @@ class Sequence(Base):
             Sequence.label_file_id == instance.label_file_id).first()
 
         if sequence:
-            logger.info("ID {}, number {}".format(sequence.id, sequence.number))
+            logger.debug("Update sequence ID {}, number {}".format(sequence.id, sequence.number))
             if add_to_session is True:
                 session.add(sequence)
 
@@ -288,6 +293,7 @@ class Sequence(Base):
 
         return sequence
 
+    @staticmethod
     def update(
         session,
         project,
@@ -320,7 +326,7 @@ class Sequence(Base):
             return None
 
         sequence = None  # edge case, we usually expect to return sequence object
-
+        is_new_sequence = False
         # Default case, instance already had a sequence id
         logger.debug('Updating sequence for sequence id {}'.format(instance.sequence_id))
         if instance.sequence_id:
@@ -340,7 +346,6 @@ class Sequence(Base):
             # print("instance number", instance.number)
 
             if instance.number is not None:
-
                 # in the new context the video file has already been
                 # checked too be valid
 
@@ -366,12 +371,8 @@ class Sequence(Base):
                     sequence.keyframe_list['frame_number_list'].append(
                         instance.frame_number)
 
-                    result = sequence.regenerate_instance_thumb(
-                        session = session,
-                        instance = instance,
-                        video = video_file.video)
                     # it needs instance to do things like crop the image
-
+                    is_new_sequence = True
                     session.add(sequence)
                     session.flush()
 
@@ -381,7 +382,7 @@ class Sequence(Base):
 
                 session.add(instance)
 
-        return sequence
+        return sequence, is_new_sequence
 
     @staticmethod
     def new(number,

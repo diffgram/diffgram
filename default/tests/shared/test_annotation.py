@@ -37,6 +37,48 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_update_sequence_id_in_cache_list(self):
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        sequence = data_mocking.create_sequence({
+            'label_file_id': label_file.id,
+            'video_file_id': file1.id,
+            'cache_expiry': time.time() + 500000,
+            'number': 1,
+
+        }, self.session)
+        instance1 = data_mocking.create_instance(
+            {'creation_ref_id': str(uuid.uuid4()), 'x_min': 1, 'x_max': 18, 'y_min': 1, 'y_max': 18,
+             'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        video_data = {
+            'video_mode': True,
+            'video_file_id': file1.id,
+            'current_frame': frame.frame_number
+        }
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            video_data = video_data,
+            instance_list_new = [],
+            file = file1,
+            do_init_existing_instances = False
+        )
+        ann_update.instance_list_kept_serialized = [
+            instance1.serialize_with_label()
+        ]
+        self.assertEqual(ann_update.instance_list_kept_serialized[0]['sequence_id'], None)
+        instance1.sequence_id = sequence.id
+        ann_update.update_sequence_id_in_cache_list(instance1)
+
+        self.assertEqual(ann_update.instance_list_kept_serialized[0]['sequence_id'], sequence.id)
+
     def test_duplicate_instance_update_existing_false(self):
         """
         We send duplicate instances with update_existing = False.
