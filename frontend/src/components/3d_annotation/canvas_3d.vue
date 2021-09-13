@@ -12,6 +12,7 @@
   import SceneController3D from './SceneController3D';
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
   import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+  import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
   import FileLoader3DPointClouds from './FileLoader3DPointClouds';
 
   export default Vue.extend({
@@ -28,6 +29,7 @@
         },
         pcd_url: {
           default: "https://storage.googleapis.com/diffgram-sandbox/testing/lidar_ascii_v5.pcd"
+          // default: "https://diffgrampublic1.s3.amazonaws.com/Zaghetto.pcd"
         },
         radar_url: {
           default: "https://storage.googleapis.com/diffgram-sandbox/testing/radar_rear.pcd"
@@ -48,30 +50,27 @@
         if ( WEBGL.isWebGLAvailable() ) {
 
           this.renderer = new THREE.WebGLRenderer();
+          this.renderer.setPixelRatio( window.devicePixelRatio );
+          this.renderer.setSize( window.innerWidth, window.innerHeight );
+
           const scene = new THREE.Scene();
           document.getElementById('3d-container').appendChild( this.renderer.domElement );
           this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-          this.configure_controls(this.camera, this.renderer.domElement);
 
-          this.scene_controller = new SceneController3D(scene, this.controls_orbit)
+
+          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer)
+
+          this.configure_controls();
 
           this.point_cloud_mesh = await this.load_pcd();
-          this.renderer.setSize( window.innerWidth, window.innerHeight );
-
-          const axesHelper = new THREE.AxesHelper( 5 );
-          scene.add( axesHelper );
 
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
           this.camera.position.y = 10;
           window.addEventListener( 'resize', this.on_window_resize );
-          let animate = () => {
-            this.controls_orbit.update();
-            this.controls_transform.update();
-            requestAnimationFrame( animate );
-            this.renderer.render( scene, this.camera );
-          }
-          animate();
+          this.scene_controller.start_render();
+          let cuboid = new Cuboid3DInstance(this.scene_controller, 0, 30);
+          cuboid.draw_on_scene();
 
         } else {
           const warning = WEBGL.getWebGLErrorMessage();
@@ -89,28 +88,14 @@
 
           this.renderer.setSize( window.innerWidth, window.innerHeight );
         },
-        configure_controls: function(camera, dom_element){
+        configure_controls: function(){
           if(!this.$props.allow_navigation){
             return
           }
-          this.controls_transform = new TransformControls(camera, dom_element)
-          this.controls_orbit = new OrbitControls(camera, dom_element)
-          this.controls_orbit.listenToKeyEvents( window ); // optional
-          this.controls_orbit.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-          this.controls_orbit.dampingFactor = 0.09;
-          this.controls_orbit.screenSpacePanning = true;
 
-          this.controls_orbit.minDistance = 0;
-          this.controls_orbit.maxDistance = 99999;
+          this.scene_controller.add_orbit_controls();
+          this.scene_controller.add_transform_controls();
 
-          this.controls_orbit.maxPolarAngle = Math.PI/ 2;
-
-          this.controls_orbit.keys = {
-            LEFT: 'KeyA'  , //left arrow
-            UP: 'KeyW', // up arrow
-            RIGHT: 'KeyD', // right arrow
-            BOTTOM: 'KeyS' // down arrow
-          }
 
         },
         load_pcd: async function(){
