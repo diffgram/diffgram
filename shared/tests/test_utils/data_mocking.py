@@ -28,6 +28,7 @@ from shared.database.annotation.instance_template_relation import InstanceTempla
 from shared.database.video.video import Video
 from shared.database.image import Image
 from shared.database.export import Export
+from shared.database.video.sequence import Sequence
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -128,6 +129,23 @@ def create_event(event_data, session):
     session.add(event)
     regular_methods.commit_with_rollback(session)
     return event
+
+
+def create_sequence(sequence_data, session):
+    sequence = Sequence(
+        label_file_id = sequence_data.get('label_file_id'),
+        has_changes = sequence_data.get('has_changes'),
+        single_frame = sequence_data.get('single_frame'),
+        keyframe_list = sequence_data.get('keyframe_list'),
+        video_file_id = sequence_data.get('video_file_id'),
+        number = sequence_data.get('number'),
+        instance_preview_cache = sequence_data.get('instance_preview_cache'),
+        cache_expiry = sequence_data.get('cache_expiry'),
+        archived = sequence_data.get('archived'),
+    )
+    session.add(sequence)
+    regular_methods.commit_with_rollback(session)
+    return sequence
 
 
 def create_userscript(event_data, session):
