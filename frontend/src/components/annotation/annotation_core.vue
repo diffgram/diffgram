@@ -86,6 +86,34 @@
 
     </div>
     <v-snackbar
+      v-if="snackbar_merge_polygon"
+      v-model="snackbar_merge_polygon"
+      :multi-line="true"
+      :timeout="-1"
+    >
+      Please select the Polygons to merge with.
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="red"
+          text
+          v-bind="attrs"
+          @click="cancel_merge"
+        >
+         Cancel
+        </v-btn>
+        <v-btn
+          :disabled="instances_to_merge.length === 0"
+          color="success"
+          text
+          v-bind="attrs"
+          @click="merge_polygons"
+        >
+          Merge Polygons
+        </v-btn>
+      </template>
+    </v-snackbar>
+    <v-snackbar
       v-if="snackbar_issues"
       v-model="snackbar_issues"
       :multi-line="true"
@@ -544,6 +572,7 @@
                           @instance_update="instance_update($event)"
                           @share_dialog_open="open_share_dialog"
                           @open_issue_panel="open_issue_panel"
+                          @start_polygon_select_for_merge="start_polygon_select_for_merge"
                           @delete_polygon_point="polygon_delete_point"
                           @copy_instance="on_context_menu_copy_instance"
                           @paste_instance="paste_instance"
@@ -898,6 +927,22 @@
             this.snackbar_issues = false;
           }
         },
+        instance_select_for_merge(newval, oldval) {
+          if(newval){
+            this.update_canvas();
+            this.snackbar_merge_polygon = true;
+            this.draw_mode = false;
+            this.instances_to_merge = [];
+            this.label_settings.allow_multiple_instance_select = true;
+          }
+          else{
+            this.snackbar_merge_polygon = false;
+            this.label_settings.allow_multiple_instance_select = false;
+            this.instances_to_merge = [];
+            this.clear_selected();
+
+          }
+        },
         current_version_prop() {
           this.current_version = this.current_version_prop
           this.get_media()
@@ -941,6 +986,11 @@
           ghost_instance_list: [],
 
           show_default_navigation: true,
+          snackbar_merge_polygon: false,
+
+          parent_merge_instance: null,
+          parent_merge_instance_index: null,
+          instances_to_merge: [],
 
           userscript_minimized: true,
 
@@ -1372,6 +1422,9 @@
         instance_select_for_issue: function(){
           return this.$store.getters.get_instance_select_for_issue;
         },
+        instance_select_for_merge: function(){
+          return this.$store.getters.get_instance_select_for_merge;
+        },
         hovered_instance: function(){
           if(!this.instance_list){ return }
           if(this.instance_hover_index != undefined){ return }
@@ -1782,6 +1835,43 @@
       },
 
       methods: {
+        cancel_merge: function(){
+          this.$store.commit('set_instance_select_for_merge', false);
+        },
+        merge_polygons: function(){
+          let parent_instance = this.parent_merge_instance;
+          let instances_to_merge = this.instances_to_merge;
+          let has_multiple_figures = parent_instance.points.filter(p => p.figure_id != undefined).length > 0;
+          if(has_multiple_figures){
+
+          }
+          else{
+            // Add a figure ID for parent instance points
+            parent_instance.points = parent_instance.points.map(p => {
+              return {
+                ...p,
+                figure_id:  uuidv4()
+              }
+            })
+            // For instance to merge, delete it and add al points to parent instance with a new figure ID.
+            for(const instance of instances_to_merge){
+              let new_points = parent_instance.points.map(p => p);
+              for(const point of instance.points){
+                new_points.push({
+                  ...point,
+                  figure_id: uuidv4()
+                })
+              }
+
+              let instance_index = this.instance_list.indexOf(instance);
+              if(instance_index > -1){
+                this.delete_single_instance(instance_index);
+              }
+              parent_instance.points = new_points;
+
+            }
+          }
+        },
         get_save_loading: function(frame_number){
           if(this.video_mode){
             if(!this.save_loading_frame[frame_number]){
@@ -2369,6 +2459,16 @@
 
           }
         },
+        start_polygon_select_for_merge(merge_instance_index){
+          // Close context menu and set select instance mode
+          if(merge_instance_index == undefined){
+            return
+          }
+          this.parent_merge_instance = this.instance_list[merge_instance_index];
+          this.parent_merge_instance_index = merge_instance_index;
+          this.show_context_menu = false;
+          this.$store.commit('set_instance_select_for_merge', true);
+        },
         open_issue_panel(mouse_position){
           // This boolean controls if issues create/edit panel is shown or hidden.
           this.show_issue_panel = true;
@@ -2756,6 +2856,7 @@
           //console.debug("mounted")
           // Reset issue mode
           this.$store.commit('set_instance_select_for_issue', false);
+          this.$store.commit('set_instance_select_for_merge', false);
           this.$store.commit('set_view_issue_mode', false);
           this.$store.commit('set_user_is_typing_or_menu_open', false)
           this.add_event_listeners()
@@ -3428,6 +3529,7 @@
             return
           }
           if(this.instance_select_for_issue){return}
+          if(this.instance_select_for_merge){return}
           if(!this.instance_list){return}
           // avoid having a check for every point?
           let instance_index = this.instance_hover_index;
@@ -3786,9 +3888,43 @@
           if (!this.issues_list[this.issue_hover_index]) { return }
           if( this.draw_mode ){ return }
           if( this.view_issue_mode && this.instance_select_for_issue ){ return }
+          if( this.view_issue_mode && this.instance_select_for_merge ){ return }
           const issue = this.issues_list[this.issue_hover_index];
           this.open_view_edit_panel(issue);
         },
+
+        update_instances_to_merge: function(instance_to_select){
+          if(instance_to_select.selected){
+            this.instances_to_merge.push(instance_to_select)
+          }
+          else{
+            let index = this.instances_to_merge.indexOf(instance_to_select)
+            if (index > -1) {
+              this.instances_to_merge.splice(index, 1)
+            }
+
+          }
+
+        },
+        is_allowed_instance_to_merge: function(instance_to_select){
+          console.log('is allowded', instance_to_select)
+          if(this.parent_merge_instance.id === instance_to_select.id){
+            console.log('is allowded 111')
+            return false
+          }
+          if(this.parent_merge_instance.label_file_id !== instance_to_select.label_file_id){
+            console.log('is allowded 222')
+            return false
+          }
+
+          if(this.parent_merge_instance.type !== instance_to_select.type){
+            console.log('is allowded 333')
+            return false
+          }
+          console.log('trueee allowded')
+          return true
+        },
+
         select_something: function () {
 
           if (this.view_only_mode == true) { return }
@@ -3805,6 +3941,13 @@
             this.clear_selected()
           }
           const instance_to_select =  this.instance_list[this.instance_hover_index];
+          if(this.instance_select_for_merge){
+            // Allow only selection of polygon with the same label file ID.
+            if(!this.is_allowed_instance_to_merge(instance_to_select)){
+              return
+            }
+          }
+
           if(instance_to_select){
             instance_to_select.selected = !instance_to_select.selected;
             instance_to_select.status = 'updated';
@@ -3814,7 +3957,10 @@
               instance_to_select.box_edit_point_hover = this.box_edit_point_hover;
             }
           }
-
+          if(this.instance_select_for_merge){
+            // Allow only selection of polygon with the same label file ID.
+            this.update_instances_to_merge(instance_to_select)
+          }
 
 
         },
@@ -4298,6 +4444,7 @@
           if (this.draw_mode == true ) { return }
           if (this.$props.view_only_mode == true) { return }
           if (this.instance_select_for_issue == true) { return }
+          if (this.instance_select_for_merge == true) { return }
           if (this.view_issue_mode) { return }
           let cuboid_did_move = false;
           let ellipse_did_move = false;
@@ -6227,6 +6374,7 @@
           if (event.keyCode === 27) { // Esc
             if (this.$props.view_only_mode == true) { return }
             if(this.instance_select_for_issue || this.view_issue_mode){return}
+            if(this.instance_select_for_merge){return}
 
             this.draw_mode = !this.draw_mode
             this.edit_mode_toggle( this.draw_mode)

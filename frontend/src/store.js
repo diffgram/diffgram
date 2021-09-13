@@ -472,11 +472,13 @@ const annotation_state = {
     save: null,
     save_and_complete: null,
     instance_select_for_issue: false,
+    instance_select_for_merge: false,
     view_issue_mode: false,
 
   },
   getters:{
     get_instance_select_for_issue: state => state.instance_select_for_issue,
+    get_instance_select_for_merge: state => state.instance_select_for_merge,
     get_view_issue_mode: state => state.view_issue_mode
   },
   mutations: {
@@ -487,6 +489,7 @@ const annotation_state = {
     init_draw: state => state.draw = true,
     finish_draw: state => state.draw = false,
     set_instance_select_for_issue: (state, value) => state.instance_select_for_issue = value,
+    set_instance_select_for_merge: (state, value) => state.instance_select_for_merge = value,
     set_view_issue_mode: (state, value) => state.view_issue_mode = value,
 
     clear_annotation(state) {
