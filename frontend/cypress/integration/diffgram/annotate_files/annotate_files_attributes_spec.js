@@ -67,6 +67,8 @@ describe('Annotate Files Tests', () => {
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
         cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_select"]`).first().click({force: true})
@@ -126,7 +128,9 @@ describe('Annotate Files Tests', () => {
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_textfield"]`).first().click({force: true})
@@ -193,7 +197,9 @@ describe('Annotate Files Tests', () => {
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_multiple_select"]`).click({force: true});
@@ -259,7 +265,9 @@ describe('Annotate Files Tests', () => {
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_radio_${selectAttribute.options[2]}"]`).first().click({force: true})
