@@ -1843,12 +1843,37 @@
         cancel_merge: function(){
           this.$store.commit('set_instance_select_for_merge', false);
         },
+        delete_instances_and_add_to_merged_instance: function(parent_instance, instances_to_merge){
+          // For instance to merge, delete it and add al points to parent instance with a new figure ID.
+          for(const instance of instances_to_merge){
+            let figure_id = uuidv4();
+            let new_points = parent_instance.points.map(p => p);
+            for(const point of instance.points){
+              let new_figure_id = figure_id;
+              if(point.figure_id){
+                new_figure_id = point.figure_id;
+              }
+              new_points.push({
+                ...point,
+                figure_id: new_figure_id
+              })
+            }
+
+            let instance_index = this.instance_list.indexOf(instance);
+            if(instance_index > -1){
+              this.delete_single_instance(instance_index);
+            }
+            parent_instance.points = new_points;
+
+          }
+        },
         merge_polygons: function(){
           let parent_instance = this.parent_merge_instance;
           let instances_to_merge = this.instances_to_merge;
           let has_multiple_figures = parent_instance.points.filter(p => p.figure_id != undefined).length > 0;
           if(has_multiple_figures){
-
+            // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
+            this.delete_instances_and_add_to_merged_instance(parent_instance, instances_to_merge);
           }
           else{
             // Add a figure ID for parent instance points
@@ -1859,24 +1884,8 @@
                 figure_id:  figure_id
               }
             })
-            // For instance to merge, delete it and add al points to parent instance with a new figure ID.
-            for(const instance of instances_to_merge){
-              let figure_id = uuidv4();
-              let new_points = parent_instance.points.map(p => p);
-              for(const point of instance.points){
-                new_points.push({
-                  ...point,
-                  figure_id: figure_id
-                })
-              }
-
-              let instance_index = this.instance_list.indexOf(instance);
-              if(instance_index > -1){
-                this.delete_single_instance(instance_index);
-              }
-              parent_instance.points = new_points;
-
-            }
+            // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
+            this.delete_instances_and_add_to_merged_instance(parent_instance, instances_to_merge);
           }
           this.$store.commit('set_instance_select_for_merge', false);
         },
@@ -3789,6 +3798,7 @@
           else{
             instance.midpoint_hover = undefined;
           }
+          return midpoint_hover
         },
         detect_hover_polygon_midpoints: function(){
           // https://diffgram.teamwork.com/#/tasks/23511334
@@ -3801,10 +3811,12 @@
           // Check for hover on any middle point
           let midpoints_polygon = instance.midpoints_polygon;
           if(!Array.isArray(midpoints_polygon)){
-
             for(let figure_id of Object.keys(midpoints_polygon)){
               let figure_midpoints = midpoints_polygon[figure_id]
-              this.find_midpoint_index(instance, figure_midpoints)
+              let midpoint_hovered_point = this.find_midpoint_index(instance, figure_midpoints)
+              if(midpoint_hovered_point != undefined){
+                break
+              }
             }
           }
           else{
@@ -3894,9 +3906,10 @@
             if (result == true) {
               this.canvas_element.style.cursor = 'all-scroll'
               this.polygon_point_hover_index = parseInt(j)
-              break
+              return true
             }
           }
+          return false
         },
         detect_nearest_polygon_point: function () {
           /*
@@ -3942,7 +3955,10 @@
                 }
                 for(const figure_id of figures_list){
                   let points = instance.points.filter(p => p.figure_id === figure_id)
-                  this.check_polygon_intersection_on_points(instance, points)
+                  let intersects = this.check_polygon_intersection_on_points(instance, points);
+                  if (intersects){
+                    break
+                  }
                 }
               }
 
@@ -5566,12 +5582,23 @@
           if(this.hovered_figure_id){
             midpoints_polygon = instance.midpoints_polygon[this.hovered_figure_id]
           }
-
+          console.log('before', points)
+          if(midpoints_polygon[instance.midpoint_hover] == undefined){
+            return
+          }
           points.splice(instance.midpoint_hover + 1, 0, midpoints_polygon[instance.midpoint_hover])
           this.polygon_point_hover_index = instance.midpoint_hover + 1;
           this.polygon_point_click_index = instance.midpoint_hover + 1;
           this.polygon_click_index = this.selected_instance_index;
-          points[this.polygon_point_hover_index].selected = true;
+          console.log('polygon_point_hover_index', this.polygon_point_hover_index)
+
+          let hovered_point = points[this.polygon_point_hover_index];
+          console.log('hovered_point', hovered_point)
+          console.log('points after', points)
+          if(!hovered_point){
+            return
+          }
+          hovered_point.selected = true;
           this.lock_point_hover_change = true;
           instance.midpoint_hover = undefined;
           instance.selected = true;

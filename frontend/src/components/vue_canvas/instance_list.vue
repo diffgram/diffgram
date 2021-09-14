@@ -722,7 +722,7 @@
           if(figure_id){
             if(!instance.midpoints_polygon){
               instance.midpoints_polygon = {
-                figure_id: midpoints_polygon
+                [figure_id]: midpoints_polygon
               }
             }
             else{
