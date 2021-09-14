@@ -540,7 +540,7 @@
       <v-list-item
         link
         dense
-        data-cy="delete_instance"
+        data-cy="merge_polygon"
         v-if="instance_hover_index_locked != undefined && is_unmerged_instance(instance_hover_index_locked)"
         @click="on_click_merge_polygon"
       >
@@ -561,7 +561,7 @@
       <v-list-item
         link
         dense
-        data-cy="delete_instance"
+        data-cy="unmerge_polygon"
         v-if="instance_hover_index_locked != undefined && !is_unmerged_instance(instance_hover_index_locked)"
         @click="on_click_unmerge_polygon"
       >
