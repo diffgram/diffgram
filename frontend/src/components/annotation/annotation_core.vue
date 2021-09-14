@@ -455,7 +455,7 @@
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
-                                    @instance_hover_update="instance_hover_update($event[0], $event[1])"
+                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2])"
                                     @cuboid_face_hover_update="cuboid_face_hover_update"
                                     @issue_hover_update="issue_hover_update"
                                     :canvas_transform="canvas_transform"
@@ -489,7 +489,7 @@
                 :hidden_label_id_list="hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
-                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1])"
+                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1], $event[2])"
               >
               </ghost_instance_list_canvas>
 
@@ -566,13 +566,15 @@
                           :polygon_point_hover_index="polygon_point_hover_index"
                           :task="task"
                           :instance_hover_index="instance_hover_index"
+                          :hovered_figure_id="hovered_figure_id"
                           :instance_list="instance_list"
                           :sequence_list="sequence_list_local_copy"
                           :video_mode="video_mode"
                           @instance_update="instance_update($event)"
                           @share_dialog_open="open_share_dialog"
                           @open_issue_panel="open_issue_panel"
-                          @start_polygon_select_for_merge="start_polygon_select_for_merge"
+                          @on_click_polygon_unmerge="polygon_unmerge"
+                          @on_click_polygon_merge="start_polygon_select_for_merge"
                           @delete_polygon_point="polygon_delete_point"
                           @copy_instance="on_context_menu_copy_instance"
                           @paste_instance="paste_instance"
@@ -989,6 +991,7 @@
           snackbar_merge_polygon: false,
 
           parent_merge_instance: null,
+          hovered_figure_id: null,
           parent_merge_instance_index: null,
           instances_to_merge: [],
 
@@ -1305,9 +1308,11 @@
           instance_template_list: [],
           auto_border_polygon_p1: undefined,
           auto_border_polygon_p1_index: undefined,
+          auto_border_polygon_p1_figure: undefined,
           auto_border_polygon_p1_instance_index: undefined,
           auto_border_polygon_p2: undefined,
           auto_border_polygon_p2_index: undefined,
+          auto_border_polygon_p2_figure: undefined,
           auto_border_polygon_p2_instance_index: undefined,
           show_polygon_border_context_menu: false,
           has_changed: false,
@@ -1847,19 +1852,21 @@
           }
           else{
             // Add a figure ID for parent instance points
+            let figure_id = uuidv4();
             parent_instance.points = parent_instance.points.map(p => {
               return {
                 ...p,
-                figure_id:  uuidv4()
+                figure_id:  figure_id
               }
             })
             // For instance to merge, delete it and add al points to parent instance with a new figure ID.
             for(const instance of instances_to_merge){
+              let figure_id = uuidv4();
               let new_points = parent_instance.points.map(p => p);
               for(const point of instance.points){
                 new_points.push({
                   ...point,
-                  figure_id: uuidv4()
+                  figure_id: figure_id
                 })
               }
 
@@ -1871,6 +1878,7 @@
 
             }
           }
+          this.$store.commit('set_instance_select_for_merge', false);
         },
         get_save_loading: function(frame_number){
           if(this.video_mode){
@@ -1896,6 +1904,9 @@
         },
         // userscript (to be placed in class once context figured)
         set_instance_human_edited: function(instance){
+          if(!instance){
+            return
+          }
           instance.change_source = 'ui_diffgram_frontend'
           instance.machine_made = false;
         },
@@ -2458,6 +2469,26 @@
             }
 
           }
+        },
+        polygon_unmerge(unmerge_instance_index, figure_id){
+          let instance = this.instance_list[unmerge_instance_index];
+          // Remove All points from the polygon with the give figure id
+          let figure_points = instance.points.filter(p => p.figure_id == figure_id).map(p => ({...p, figure_id: undefined}))
+          instance.points = instance.points.filter(p => p.figure_id != figure_id)
+
+          // Check if only 1 figure remains, and delete figure id.
+          let figure_list = this.get_polygon_figures(instance)
+          if(figure_list.length === 1){
+            instance.points = instance.points.map(p => ({...p, figure_id: undefined}))
+          }
+
+          // Create the previously merged figure as a new instance.
+          let instance_to_unmerge = this.duplicate_instance(instance);
+          // Remove point and just leave the points in the figure
+          instance_to_unmerge.points = figure_points;
+          this.push_instance_to_instance_list_and_buffer(instance_to_unmerge, this.current_frame);
+          // Auto select on label view detail for inmediate attribute edition.
+          this.create_instance_events()
         },
         start_polygon_select_for_merge(merge_instance_index){
           // Close context menu and set select instance mode
@@ -3310,7 +3341,7 @@
           this.cuboid_face_hover = cuboid_face;
         },
 
-        ghost_instance_hover_update: function (index: Number, type : String) {
+        ghost_instance_hover_update: function (index: Number, type : String, figure_id: String) {
           //if (this.lock_point_hover_change == true) {return}
           if (index != null) {
             this.ghost_instance_hover_index = parseInt(index)
@@ -3323,7 +3354,7 @@
 
         },
 
-        instance_hover_update: function (index: Number, type : String) {
+        instance_hover_update: function (index: Number, type : String, figure_id: String) {
 
           if (this.lock_point_hover_change == true) {return}
           // important, we don't change the value if it's locked
@@ -3331,10 +3362,12 @@
 
           if (index != null) {
             this.instance_hover_index = parseInt(index)
+            this.hovered_figure_id = figure_id;
             this.instance_hover_type = type   // ie polygon, box, etc.
           }
           else{
             this.instance_hover_index = null;
+            this.hovered_figure_id = null;
             this.instance_hover_type = null;
           }
         },
@@ -3730,18 +3763,11 @@
           return false
 
         },
-        detect_hover_polygon_midpoints: function(){
-          // https://diffgram.teamwork.com/#/tasks/23511334
-
-          if(!this.selected_instance){return}
-          const instance = this.selected_instance
-          if(!instance.selected){return}
-          if (!instance.midpoints_polygon ) {return }
-
-          // Check for hover on any middle point
+        find_midpoint_index: function(instance, midpoints_polygon){
           let midpoint_hover = undefined;
           let count = 0;
-          for(const point of instance.midpoints_polygon){
+
+          for(const point of midpoints_polygon){
             // TODO use user set param here
             let result = this.point_is_intersecting_circle(
               this.mouse_position,
@@ -3757,11 +3783,34 @@
           }
           if(midpoint_hover != undefined){
             instance.midpoint_hover = midpoint_hover
+
             this.instance_list.splice(this.selected_instance_index, 1, instance);
           }
           else{
             instance.midpoint_hover = undefined;
           }
+        },
+        detect_hover_polygon_midpoints: function(){
+          // https://diffgram.teamwork.com/#/tasks/23511334
+
+          if(!this.selected_instance){return}
+          const instance = this.selected_instance
+          if(!instance.selected){return}
+          if (!instance.midpoints_polygon ) {return }
+
+          // Check for hover on any middle point
+          let midpoints_polygon = instance.midpoints_polygon;
+          if(!Array.isArray(midpoints_polygon)){
+
+            for(let figure_id of Object.keys(midpoints_polygon)){
+              let figure_midpoints = midpoints_polygon[figure_id]
+              this.find_midpoint_index(instance, figure_midpoints)
+            }
+          }
+          else{
+            this.find_midpoint_index(instance, midpoints_polygon)
+          }
+
 
         },
         detect_other_polygon_points: function(){
@@ -3838,7 +3887,17 @@
           }
 
         },
+        check_polygon_intersection_on_points: function(instance, points){
+          for (var j in points) {
+            let result = this.point_is_intersecting_circle(this.mouse_position, instance['points'][j])
 
+            if (result == true) {
+              this.canvas_element.style.cursor = 'all-scroll'
+              this.polygon_point_hover_index = parseInt(j)
+              break
+            }
+          }
+        },
         detect_nearest_polygon_point: function () {
           /*
          * Caution updates mouse cursor as side effect.
@@ -3865,20 +3924,28 @@
             var instance = this.instance_list[this.instance_hover_index]
           }
 
-          // April 1, 2020 not clera why needed selected here seems to work better without it
 
           if (instance != undefined) {
+            let has_figures = instance.points.filter(p => p.figure_id != undefined).length > 0;
             if (!this.hidden_label_id_list.includes(instance.label_file_id)) {
 
-              for (var j in instance['points']) {
-                let result = this.point_is_intersecting_circle(this.mouse_position, instance['points'][j])
-
-                if (result == true) {
-                  this.canvas_element.style.cursor = 'all-scroll'
-                  this.polygon_point_hover_index = parseInt(j)
-                  break
+              // Polygon might have multiple figures.
+              if(!has_figures){
+                this.check_polygon_intersection_on_points(instance, instance.points)
+              }
+              else{
+                let figures_list = [];
+                for(const p of instance.points){
+                  if(!figures_list.includes(p.figure_id)){
+                    figures_list.push(p.figure_id)
+                  }
+                }
+                for(const figure_id of figures_list){
+                  let points = instance.points.filter(p => p.figure_id === figure_id)
+                  this.check_polygon_intersection_on_points(instance, points)
                 }
               }
+
             }
           }
         },
@@ -3907,21 +3974,16 @@
 
         },
         is_allowed_instance_to_merge: function(instance_to_select){
-          console.log('is allowded', instance_to_select)
           if(this.parent_merge_instance.id === instance_to_select.id){
-            console.log('is allowded 111')
             return false
           }
           if(this.parent_merge_instance.label_file_id !== instance_to_select.label_file_id){
-            console.log('is allowded 222')
             return false
           }
 
           if(this.parent_merge_instance.type !== instance_to_select.type){
-            console.log('is allowded 333')
             return false
           }
-          console.log('trueee allowded')
           return true
         },
 
@@ -4325,13 +4387,25 @@
             };
             this.original_edit_instance_index = this.polygon_click_index;
           }
+          let points = instance.points;
+          if(this.hovered_figure_id){
+            points = instance.points.filter(p => p.figure_id === this.hovered_figure_id)
+          }
           let x_move = this.mouse_down_delta_event.x
           let y_move = this.mouse_down_delta_event.y
-          for(const point of instance.points){
+          for(const point of points){
             point.x += x_move
             point.y += y_move
           }
-          this.instance_list.splice(this.instance_hover_index, 1, instance);
+          if(!this.hovered_figure_id){
+            this.instance_list.splice(this.instance_hover_index, 1, instance);
+          }
+          else{
+            let rest_of_points = instance.points.filter(p => p.figure_id !== this.hovered_figure_id);
+            instance.points = points.concat(rest_of_points);
+            this.instance_list.splice(this.instance_hover_index, 1, instance);
+          }
+
           return true
         },
 
@@ -4367,6 +4441,9 @@
           }
         },
         calculate_min_max_points: function(instance){
+          if(!instance){
+            return
+          }
           if(['polygon', 'point'].includes(instance.type)){
             instance.x_min = Math.min(...instance.points.map(p => p.x))
             instance.y_min = Math.min(...instance.points.map(p => p.y))
@@ -4931,9 +5008,11 @@
           return current_point;
         },
         perform_auto_bordering: function(path_type){
-          const latest_point = this.current_polygon_point_list[this.current_polygon_point_list.length - 1];
           const auto_border_polygon = this.instance_list[this.auto_border_polygon_p2_instance_index];
-
+          let points = auto_border_polygon.points;
+          if(this.auto_border_polygon_p1_figure){
+            points = auto_border_polygon.points.filter(p => p.figure_id === this.auto_border_polygon_p1_figure)
+          }
 
           // Forward Path
           let current_index = this.auto_border_polygon_p1_index;
@@ -4944,7 +5023,7 @@
             if(current_index !== this.auto_border_polygon_p1_index){
               forward_index_list.push(current_index);
             }
-            if(current_index >= auto_border_polygon.points.length){
+            if(current_index >= points.length){
               current_index = 0;
               forward_count += 1;
               continue
@@ -4952,7 +5031,6 @@
             current_index += 1;
             forward_count += 1;
           }
-          console.debug('forward_index_list', forward_index_list)
 
           // Backwards path
           current_index = this.auto_border_polygon_p1_index;
@@ -4964,7 +5042,7 @@
               backward_index_list.push(current_index);
             }
             if(current_index < 0){
-              current_index = auto_border_polygon.points.length ;
+              current_index = points.length ;
               backward_count += 1;
               continue
             }
@@ -4976,40 +5054,42 @@
           if(path_type === 'long_path'){
             if(longest === 'forward'){
               for(const index of forward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                if(points[index] == undefined){continue}
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
             else{
               for(const index of backward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                if(points[index] == undefined){continue}
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
           }
           else{
             if(shortest === 'forward'){
               for(const index of forward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
+                if(points[index] == undefined){continue}
                 //console.debug('indexx2', index, auto_border_polygon.points[index]);
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
             else{
               for(const index of backward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
+                if(points[index] == undefined){continue}
                 //console.debug('indexx', index, auto_border_polygon.points[index]);
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
           }
 
-          this.current_polygon_point_list.push({...this.auto_border_polygon_p2})
+          this.current_polygon_point_list.push({...this.auto_border_polygon_p2, figure_id: undefined})
           this.auto_border_polygon_p1 = undefined;
           this.auto_border_polygon_p1_index = undefined;
+          this.auto_border_polygon_p1_figure = undefined;
           this.auto_border_polygon_p1_instance_index = undefined;
           this.auto_border_polygon_p2 = undefined;
           this.auto_border_polygon_p2_index = undefined;
+          this.auto_border_polygon_p2_figure = undefined;
           this.auto_border_polygon_p2_instance_index = undefined;
           this.show_polygon_border_context_menu = false;
 
@@ -5471,50 +5551,108 @@
           if(!this.is_actively_resizing){return}
 
           const instance = {...this.selected_instance};
+
+          if(!instance){return}
           if(instance.type !== 'polygon'){return}
           if(instance.midpoint_hover == undefined){return}
 
-          instance.points.splice(instance.midpoint_hover + 1, 0, instance.midpoints_polygon[instance.midpoint_hover])
+          let points = instance.points.map(p => ({...p}));
+          let rest_of_points = [];
+          if(this.hovered_figure_id){
+            points = instance.points.filter(p => p.figure_id === this.hovered_figure_id);
+            rest_of_points = instance.points.filter(p => p.figure_id !== this.hovered_figure_id)
+          }
+          let midpoints_polygon = instance.midpoints_polygon;
+          if(this.hovered_figure_id){
+            midpoints_polygon = instance.midpoints_polygon[this.hovered_figure_id]
+          }
+
+          points.splice(instance.midpoint_hover + 1, 0, midpoints_polygon[instance.midpoint_hover])
           this.polygon_point_hover_index = instance.midpoint_hover + 1;
           this.polygon_point_click_index = instance.midpoint_hover + 1;
           this.polygon_click_index = this.selected_instance_index;
-          instance.points[this.polygon_point_hover_index].selected = true;
+          points[this.polygon_point_hover_index].selected = true;
           this.lock_point_hover_change = true;
           instance.midpoint_hover = undefined;
           instance.selected = true;
+          if(this.hovered_figure_id){
+            instance.points = points.concat(rest_of_points);
+          }
+          else{
+            instance.points = points;
+          }
           this.instance_list.splice(this.selected_instance_index, 1, instance);
+        },
+        get_polygon_figures: function(polygon_instance){
+          let figure_list = [];
+          if(!polygon_instance || polygon_instance.type !== 'polygon'){
+            return []
+          }
+          for(const p of polygon_instance.points){
+            if(!p.figure_id){
+              continue
+            }
+            if(!figure_list.includes(p.figure_id)){
+              figure_list.push(p.figure_id)
+            }
+          }
+          return figure_list;
+        },
+        find_auto_border_point: function(polygon, points, instance_index){
+          let found_point = false;
+          let point_index = 0;
+          for (const point of points){
+            if(point.hovered_while_drawing){
+              if(!this.auto_border_polygon_p1){
+                this.auto_border_polygon_p1 = point;
+                this.auto_border_polygon_p1_index = point_index;
+                this.auto_border_polygon_p1_figure = point.figure_id;
+                this.auto_border_polygon_p1_instance_index = instance_index;
+                point.point_set_as_auto_border = true;
+                found_point = true;
+                this.show_snackbar_auto_border = true;
+                break;
+              }
+              else if(!this.auto_border_polygon_p2 && point != this.auto_border_polygon_p1 && instance_index === this.auto_border_polygon_p1_instance_index){
+                this.auto_border_polygon_p2 = point;
+                this.auto_border_polygon_p2_index = point_index;
+                this.auto_border_polygon_p2_figure = point.figure_id;
+                point.point_set_as_auto_border = true;
+                this.auto_border_polygon_p2_instance_index = instance_index;
+                this.show_snackbar_auto_border = false;
+                found_point = true;
+                break;
+              }
+            }
+            point_index += 1;
+          }
+          return found_point;
         },
         polygon_auto_border_mouse_down: function(){
           if(!this.draw_mode){return}
           if(!this.is_actively_drawing){return}
           if(!this.auto_border_polygon_p1 && this.auto_border_polygon_p2){return}
           let found_point = false;
-          for(let i =0;i < this.instance_list.length; i++){
-            const polygon = this.instance_list[i];
+          for(let instance_index =0; instance_index < this.instance_list.length; instance_index++){
+            const polygon = this.instance_list[instance_index];
             if(polygon.type !== 'polygon' || polygon.soft_delete){continue}
-            let point_index = 0;
-            for (const point of polygon.points){
-              if(point.hovered_while_drawing){
-                if(!this.auto_border_polygon_p1){
-                  this.auto_border_polygon_p1 = point;
-                  this.auto_border_polygon_p1_index = point_index;
-                  this.auto_border_polygon_p1_instance_index = i;
-                  point.point_set_as_auto_border = true;
+
+            let points = polygon.points;
+            let figure_list = this.get_polygon_figures(polygon);
+            if(figure_list === 0){
+              let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
+              if(autoborder_point_exists){
+                found_point = true;
+              }
+            }
+            else{
+              for(const figure_id of figure_list){
+                points = polygon.points.filter(p => p.figure_id === figure_id)
+                let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
+                if(autoborder_point_exists){
                   found_point = true;
-                  this.show_snackbar_auto_border = true;
-                  break;
-                }
-                else if(!this.auto_border_polygon_p2 && point != this.auto_border_polygon_p1 && i === this.auto_border_polygon_p1_instance_index){
-                  this.auto_border_polygon_p2 = point;
-                  this.auto_border_polygon_p2_index = point_index;
-                  point.point_set_as_auto_border = true;
-                  this.auto_border_polygon_p2_instance_index = i;
-                  this.show_snackbar_auto_border = false;
-                  found_point = true;
-                  break;
                 }
               }
-              point_index += 1;
             }
             if(found_point){
               break;
@@ -5670,7 +5808,7 @@
           this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
           this.mouse_down_position.request_time = Date.now()
           this.lock_polygon_corner();
-
+          this.polygon_mid_point_mouse_down()
 
 
 
@@ -5678,8 +5816,6 @@
         lock_polygon_corner: function(){
           this.polygon_point_click_index = this.polygon_point_hover_index
           this.polygon_click_index = this.instance_hover_index
-
-          this.polygon_mid_point_mouse_down()
 
         },
         get_instances_core: function (response) {
@@ -6431,9 +6567,11 @@
           this.current_polygon_point_list = []
           this.auto_border_polygon_p1 = undefined;
           this.auto_border_polygon_p1_index = undefined;
+          this.auto_border_polygon_p1_figure = undefined;
           this.auto_border_polygon_p1_instance_index = undefined;
           this.auto_border_polygon_p2 = undefined;
           this.auto_border_polygon_p2_index = undefined;
+          this.auto_border_polygon_p2_figure = undefined;
           this.auto_border_polygon_p2_instance_index = undefined;
           this.instance_template_draw_started = false;
           this.is_actively_drawing = false;

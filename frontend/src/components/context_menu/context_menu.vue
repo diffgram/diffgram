@@ -62,6 +62,10 @@
         type: Number,
         default: null,
       },
+      'hovered_figure_id':{
+        type: String,
+        default: null,
+      },
       'instance_list': {
         type: Array,
         default: null,
@@ -82,6 +86,7 @@
         top: '-1000px',
         left: '-1000px',
         instance_hover_index_locked: null,
+        hovered_figure_id_locked: null,
         polygon_point_hover_locked: null,
         instance_template_name: null,
         instance_index_to_paste: null,
@@ -138,6 +143,7 @@
           // lock mouse position on click only
           this.get_mouse_position();
           this.instance_hover_index_locked = this.instance_hover_index
+          this.hovered_figure_id_locked = this.hovered_figure_id;
           this.polygon_point_hover_locked = this.$props.polygon_point_hover_index
 
           // We want to free condition on null in template so "normalize" it here.
@@ -168,6 +174,30 @@
 
     },
     methods: {
+      is_unmerged_instance: function(instance_index){
+        if(instance_index == undefined){
+          return false
+        }
+        const instance = this.instance_list[instance_index];
+        if(instance.type !== 'polygon'){
+          return
+        }
+        const figure_list = [];
+        for(const p of instance.points){
+          if(!p.figure_id){
+            continue
+          }
+          if(!figure_list.includes(p.figure_id)){
+            figure_list.push(p)
+          }
+        }
+        if(figure_list.length === 0){
+          return true
+        }
+        else{
+          return false
+        }
+      },
       show_instance_history_panel: function () {
         this.$emit('open_instance_history_panel', this.instance_hover_index_locked);
       },
@@ -188,9 +218,14 @@
         this.instance_index_to_create_instance_template = hovered_instance_index;
         this.show_instance_template_menu = true
       },
+      on_click_unmerge_polygon: function(){
+        this.$emit('on_click_polygon_unmerge',
+          this.instance_hover_index_locked,
+          this.hovered_figure_id_locked);
+      },
       on_click_merge_polygon: function(){
         const hovered_instance_index = this.instance_hover_index_locked;
-        this.$emit('start_polygon_select_for_merge', hovered_instance_index);
+        this.$emit('on_click_polygon_merge', hovered_instance_index);
       },
       open_issue_panel() {
         this.$emit('open_issue_panel', this.locked_mouse_position);
@@ -507,13 +542,13 @@
         link
         dense
         data-cy="delete_instance"
-        v-if="instance_hover_index_locked != undefined"
+        v-if="instance_hover_index_locked != undefined && is_unmerged_instance(instance_hover_index_locked)"
         @click="on_click_merge_polygon"
       >
 
         <v-list-item-icon>
           <tooltip_icon
-            tooltip_message="Delete Instance"
+            tooltip_message="Merge Polygon"
             icon="mdi-merge"
             color="primary"
           />
@@ -521,6 +556,27 @@
         <v-list-item-content>
           <v-list-item-title class="pr-4">
             Merge With Existing Polygon
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item
+        link
+        dense
+        data-cy="delete_instance"
+        v-if="instance_hover_index_locked != undefined && !is_unmerged_instance(instance_hover_index_locked)"
+        @click="on_click_unmerge_polygon"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Unmerge Polygon"
+            icon="mdi-source-branch-remove"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Unmerge Polygon
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

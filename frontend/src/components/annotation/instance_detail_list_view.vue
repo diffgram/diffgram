@@ -377,7 +377,7 @@
                               <!-- Prob need to set this as a flag and move to application logic at this point -->
 
                               <v-btn v-if="render_mode != 'gold_standard'
-                            && task && task.task_type != 'review'
+                            && ((task && task.task_type != 'review') || current_file)
                             && !view_only_mode
                             && props.item.soft_delete != true"
                                      @click="instance_update('delete', props.item.instance_list_index, props.item.id)"
