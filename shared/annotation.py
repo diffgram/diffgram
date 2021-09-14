@@ -1744,7 +1744,10 @@ class Annotation_Update():
 
             filtered_points.append(
                 {"x": point[x],
-                 "y": point[y]})
+                 "y": point[y],
+                 "figure_id": point.get('figure_id')
+                }
+            )
 
             if point[x] <= self.instance.x_min: self.instance.x_min = point[x]
             if point[x] >= self.instance.x_max: self.instance.x_max = point[x]
