@@ -5582,7 +5582,7 @@
           if(this.hovered_figure_id){
             midpoints_polygon = instance.midpoints_polygon[this.hovered_figure_id]
           }
-          console.log('before', points)
+
           if(midpoints_polygon[instance.midpoint_hover] == undefined){
             return
           }
@@ -5590,11 +5590,8 @@
           this.polygon_point_hover_index = instance.midpoint_hover + 1;
           this.polygon_point_click_index = instance.midpoint_hover + 1;
           this.polygon_click_index = this.selected_instance_index;
-          console.log('polygon_point_hover_index', this.polygon_point_hover_index)
 
           let hovered_point = points[this.polygon_point_hover_index];
-          console.log('hovered_point', hovered_point)
-          console.log('points after', points)
           if(!hovered_point){
             return
           }

@@ -258,7 +258,6 @@
           mode: "change_sequence",
           sequence: event
         }
-        //console.log(instance_update)
         this.emit_update_and_hide_instance(instance_update)
 
       },
