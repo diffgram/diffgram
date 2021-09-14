@@ -106,6 +106,19 @@
                 </a>
               </strong></p>
             </div>
+            <div class="d-flex flex-column mt-12 justify-center align-center">
+              <h2 class="mb-4 primary--text lighten-2">
+                <v-icon>mdi-database-check-outline</v-icon>
+                Do you have a Diffgram Export File?
+              </h2>
+              <v-btn
+                color="secondary lighten-1"
+                data-cy="from_diffgram_export"
+                @click="set_upload_mode('from_diffgram_export')"
+              >
+                Upload New From Diffgram Export JSON
+              </v-btn>
+            </div>
           </div>
         </v-stepper-content>
         <v-stepper-content step="2" style="height: 100%">
@@ -157,6 +170,7 @@
             @upload_in_progress="show_upload_progress_screen"
             @change_step_no_annotations="el = 6"
             @change_step_annotations="load_annotations_file"
+            @change_step_export="load_export_file"
             @progress_updated="update_progress_values"
             @update_is_actively_sending="update_is_actively_sending"
             @reset_total_files_size="reset_total_files_size"
@@ -177,6 +191,7 @@
 
         <v-stepper-content step="4">
           <file_schema_mapper
+            v-if="['new', 'update'].includes(upload_mode)"
             :project_string_id="project_string_id"
             :pre_label_key_list="pre_label_key_list"
             :upload_mode="upload_mode"
@@ -192,6 +207,14 @@
             @set_included_instance_types="included_instance_types = $event"
             :previously_completed_questions="5"
           ></file_schema_mapper>
+          <diffgram_export_validator
+            v-if="['from_diffgram_export'].includes(upload_mode)"
+            :project_string_id="project_string_id"
+            :diffgram_export_ingestor="diffgram_export_ingestor"
+            :upload_mode="upload_mode"
+            @go_to_wizard_step="check_errors_and_go_to_step($event)"
+            ref="diffgram_export_validator"
+          ></diffgram_export_validator>
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -217,6 +240,7 @@
             v-if="!upload_in_progress && file_list_to_upload && el=== '6'"
             :file_list="file_list_to_upload.filter(f => f.data_type === 'Raw Media')"
             :upload_mode="upload_mode"
+            :diffgram_export_ingestor="diffgram_export_ingestor"
             :project_string_id="project_string_id"
             :total_instance_count="pre_labeled_data ? pre_labeled_data.length : null"
             :pre_labeled_data="pre_labeled_data"
@@ -248,10 +272,12 @@
 </template>
 
 <script lang="ts">
+  import DiffgramExportFileIngestor from './DiffgramExportFileIngestor';
   import input_view from './input_view'
   import new_or_update_upload_screen from './new_or_update_upload_screen'
   import file_schema_mapper from './file_schema_mapper'
   import instance_schema_mapper from './instance_schema_mapper'
+  import diffgram_export_validator from './diffgram_export_validator'
   import upload_summary from './upload_summary'
   import upload_progress from './upload_progress'
   import axios from 'axios';
@@ -352,6 +378,7 @@
       dropzone_total_file_size: 0,
       currently_uploading_bytes: 0,
       upload_in_progress: false,
+      diffgram_export_ingestor: null,
       valid_labels: false,
       pre_labeled_data: null,
       file_list_to_upload: [],
@@ -373,6 +400,7 @@
         upload_summary,
         file_schema_mapper,
         instance_schema_mapper,
+        diffgram_export_validator,
         new_or_update_upload_screen,
         upload_progress
       },
@@ -617,7 +645,8 @@
 
             if (response.status === 200) {
               const text_data = response.data.data;
-              this.load_annotation_from_local(file, text_data);
+              return text_data
+
             }
 
           } catch (error) {
@@ -626,8 +655,37 @@
             console.error(error);
           }
         },
+        build_diffgram_export_ingestor: function(text_data, file){
+          try{
+            let export_data = JSON.parse(text_data);
+            this.diffgram_export_ingestor = new DiffgramExportFileIngestor(export_data, file);
+            return this.diffgram_export_ingestor
+
+          }
+          catch(error) {
+            this.error_file_uploads = {};
+            this.error_file_uploads['export_file'] = error.toString();
+            return false;
+
+          }
+
+        },
+        load_export_file: async function(){
+          let export_file_list = this.file_list_to_upload.filter(f => f.data_type ===  'Diffgram Export');
+          let file = export_file_list[0];
+          if(export_file_list.length > 1){
+            throw new Error('Just 1 Export Upload at a Time is supported.');
+          }
+          const text_data = await file.text();
+          let diffgram_export_ingestor = await this.build_diffgram_export_ingestor(text_data, file);
+          if(!diffgram_export_ingestor){
+            return
+          }
+          this.$refs.diffgram_export_validator.validate_export_metadata();
+          this.el = 4;
+        },
         load_annotations_file: async function () {
-          const file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
+          let file = this.file_list_to_upload.filter(f => f.data_type === 'Annotations')[0];
           this.$refs.new_or_update_upload_screen.loading_annotations = true;
 
           try {
@@ -635,7 +693,9 @@
               const text_data = await file.text();
               await this.load_annotation_from_local(file, text_data);
             } else if (file.source === 'connection') {
-              await this.load_annotations_from_connection(file);
+              const text_data = await this.load_annotations_from_connection(file);
+              this.load_annotation_from_local(file, text_data);
+
             } else {
               throw new Error('Invalid source type from file. Must be: "connection" or "local" ');
             }
@@ -643,7 +703,7 @@
             this.el = 4;
           } catch (error) {
             this.error_file_uploads = {}
-            this.error_file_uploads['annotations_file'] = `${file.name}: ${error.toString()}`;
+            this.error_file_uploads['annotations_file'] = `${file ? file.name : undefined}: ${error.toString()}`;
             console.error(error);
           }
           this.$refs.new_or_update_upload_screen.loading_annotations = false;

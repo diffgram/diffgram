@@ -165,6 +165,21 @@ const routerOptions = [
     name: 'studio'
   },
   {
+    path: '/studio/annotate/:project_string_id/explorer',
+    alias: ['/project/:project_string_id'],
+    component: 'annotation/annotation_ui_factory',
+    props: (route) => ({
+      show_explorer_full_screen: true
+    }),
+    meta: {
+      requiresAuth: true,
+      available_on_public_project: true,
+      hide_default_menu: true,
+
+    },
+    name: 'studio'
+  },
+  {
     path: '/project/:project_string_id/settings',
     component: 'project/settings',
     props: true, meta: {requiresAuth: true},

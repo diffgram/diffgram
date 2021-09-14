@@ -6,7 +6,8 @@ import json
 from sqlalchemy.schema import Index
 from shared.database.model.model import Model
 from shared.database.model.model_run import ModelRun
-
+from shared.shared_logger import get_shared_logger
+logger = get_shared_logger()
 
 class Instance(Base):
     """
@@ -525,12 +526,14 @@ class Instance(Base):
                 self.preview_image_url_expiry <= time.time():
 
                 try:
-                    self.preview_image_url = data_tools.build_secure_url(path = self.preview_image_blob_dir)
+                    self.preview_image_url = data_tools.build_secure_url(self.preview_image_blob_dir)
                     self.preview_image_url_expiry = time.time() + 2591000
                     session.add(self)
                 except:
-                    print("serialize_for_sequence_preview build_secure_url failed, preview_image_blob_dir: ",
-                          self.preview_image_blob_dir)
+                    import traceback
+                    data = traceback.format_exc()
+                    logger.errror('Error generating preview')
+                    logger.error(data)
 
         return {
             'id': self.id,

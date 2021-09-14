@@ -14,6 +14,7 @@
        // this.chartData is created in the mixin.
       // and then it randomly gets called chart-data as the prop!!
       // seems pretty silly
+      console.log('CHART DATA', this.chartData)
       this.renderChart(this.chartData, this.options)
     }
   }

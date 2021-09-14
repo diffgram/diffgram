@@ -9,7 +9,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.database.video.sequence import Sequence
 
 from shared.data_tools_core import Data_tools
-
+import traceback
 from methods.export.export_utils import generate_file_name_from_export
 
 
@@ -52,7 +52,7 @@ def new_external_export(
 
     """
 
-    print("[Export processor] Started")
+    logger.info("[Export processor] Started")
     result = False
     start_time = time.time()
 
@@ -131,14 +131,15 @@ def new_external_export(
             yaml_data = yaml.dump(annotations, default_flow_style=False)
             data_tools.upload_from_string(export.yaml_blob_name, yaml_data, content_type='text/yaml', bucket_type = 'ml')
         except Exception as exception:
-            print("[Export, YAML]", exception)
-            logger.debug("[Export, YAML]", exception)
+            trace_data = traceback.format_exc()
+            logger.error("[Export, YAML] {}".format(str(exception)))
+            logger.error(trace_data)
 
         json_data = json.dumps(annotations)
         data_tools.upload_from_string(export.json_blob_name, json_data, content_type = 'text/json', bucket_type = 'ml')
 
     end_time = time.time()
-    print("[Export processor] ran in", end_time - start_time)
+    logger.info("[Export processor] ran in {}".format(end_time - start_time))
 
     Event.new(
         kind="export_generation",
@@ -149,7 +150,18 @@ def new_external_export(
         run_time=end_time - start_time
     )
 
-    return True
+    return True, annotations
+
+
+def build_label_colour_map(session, label_map):
+    result = {}
+    if not label_map:
+        return result
+
+    for key, val in label_map.items():
+        file = File.get_by_id(session, file_id = key)
+        result[key] = file.colour
+    return result
 
 
 def annotation_export_core(
@@ -263,6 +275,7 @@ def annotation_export_core(
         annotations['readme'] = export.serialize_readme()
 
         annotations['label_map'] = export_label_map
+        annotations['label_colour_map'] = build_label_colour_map(session, export_label_map)
 
         # TODO maybe, would like "annotations"
         # To be one layer "deeper" in terms of nesting.
@@ -276,11 +289,9 @@ def annotation_export_core(
         # TODO
         # so I guess the "new" yaml one can do it "on demand"
         # if you substitute version for working directory?
-
         for index, file in enumerate(file_list):
 
             # Image URL?
-
             packet = build_packet(
                 file=file,
                 session=session,
@@ -301,7 +312,7 @@ def annotation_export_core(
 
             if index % 10 == 0:
                 # TODO would need to commit the session for this to be useful right?
-                print("Percent done", export.percent_complete)
+                logger.info("Percent done {}".format(export.percent_complete))
                 try_to_commit(session=session)  # push update
 
     export.status = "complete"
@@ -327,7 +338,7 @@ def build_attribute_groups_reference(
     group_list_serialized = []
 
     for group in group_list:
-        group_list_serialized.append(group.serialize_for_export())
+        group_list_serialized.append(group.serialize_with_attributes_and_labels(session))
 
     return group_list_serialized
 
@@ -415,8 +426,10 @@ def build_video_packet(file, session):
     return {'file': {
         'id': file.id,
         'original_filename': file.original_filename,
+        'blob_url': mp4_video_signed_url,
         'created_time': str(file.created_time),
-        'ann_is_complete': file.ann_is_complete
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
         # note str() otherwise get "non serializeable"
 
     },
@@ -432,8 +445,12 @@ def build_image_packet(
     Generic method to generate a dict of information given a file
     """
 
+    file.image.regenerate_url(session=session)
+
     image_dict = {'width': file.image.width,
                   'height': file.image.height,
+                  'image_signed_expiry': file.image.url_signed_expiry,
+                  'image_signed_url': file.image.url_signed,
                   'original_filename': file.image.original_filename}
 
     instance_dict_list = []
@@ -443,7 +460,6 @@ def build_image_packet(
         instance_list = Instance.list(
             session=session,
             file_id=file.id)
-
         for instance in instance_list:
             instance_dict_list.append(build_instance(instance))
 
@@ -452,8 +468,6 @@ def build_image_packet(
         # sets BUT then it would make the below a little different
         # TODO review this
         #
-
-        # print(file.id, file.root_id)
 
         result, instance_dict = file_difference(
             session=session,
@@ -469,7 +483,12 @@ def build_image_packet(
                 instance_dict_list.append(out)
 
     return {'file': {
-        'id': file.id
+        'id': file.id,
+        'original_filename': file.original_filename,
+        'blob_url': file.image.url_signed,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
     },
         'image': image_dict,
         'instance_list': instance_dict_list}
@@ -483,7 +502,12 @@ def build_text_packet(
     Generic method to generate a dict of information given a file
     """
 
-    image_dict = {'original_filename': file.text_file.original_filename}
+    file.text_file.regenerate_url()
+    text_dict = {
+        'original_filename': file.text_file.original_filename,
+        'image_signed_expiry': file.image.url_signed_expiry,
+        'image_signed_url': file.image.url_signed,
+    }
 
     instance_dict_list = []
 
@@ -502,8 +526,6 @@ def build_text_packet(
         # TODO review this
         #
 
-        # print(file.id, file.root_id)
-
         result, instance_dict = file_difference(
             session=session,
             file_id_alpha=file.id,
@@ -518,9 +540,14 @@ def build_text_packet(
                 instance_dict_list.append(out)
 
     return {'file': {
-        'id': file.id
+        'id': file.id,
+        'original_filename': file.original_filename,
+        'blob_url': file.text_file.url_signed,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
     },
-        'image': image_dict,
+        'text': text_dict,
         'instance_list': instance_dict_list}
 
 
@@ -550,6 +577,7 @@ def build_instance(instance, include_label=False):
         'label_file_id': instance.label_file_id,    # for images
         'frame_number': instance.frame_number,
         'global_frame_number': instance.global_frame_number,
+        'number': instance.number,
         'x_min': instance.x_min,
         'y_min': instance.y_min,
         'x_max': instance.x_max,
@@ -577,6 +605,8 @@ def build_instance(instance, include_label=False):
     if instance.type == 'ellipse':
         out['center_x'] = instance.center_x
         out['center_y'] = instance.center_y
+        out['width'] = instance.width
+        out['height'] = instance.height
 
     if instance.type == 'text_token':
         out['start_char'] = instance.start_char

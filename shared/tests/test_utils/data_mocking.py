@@ -27,6 +27,8 @@ from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
+from shared.database.export import Export
+from shared.database.video.sequence import Sequence
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -127,6 +129,23 @@ def create_event(event_data, session):
     session.add(event)
     regular_methods.commit_with_rollback(session)
     return event
+
+
+def create_sequence(sequence_data, session):
+    sequence = Sequence(
+        label_file_id = sequence_data.get('label_file_id'),
+        has_changes = sequence_data.get('has_changes'),
+        single_frame = sequence_data.get('single_frame'),
+        keyframe_list = sequence_data.get('keyframe_list'),
+        video_file_id = sequence_data.get('video_file_id'),
+        number = sequence_data.get('number'),
+        instance_preview_cache = sequence_data.get('instance_preview_cache'),
+        cache_expiry = sequence_data.get('cache_expiry'),
+        archived = sequence_data.get('archived'),
+    )
+    session.add(sequence)
+    regular_methods.commit_with_rollback(session)
+    return sequence
 
 
 def create_userscript(event_data, session):
@@ -380,6 +399,35 @@ def create_label_file(label_file_data, session):
     session.add(label_file)
     regular_methods.commit_with_rollback(session)
     return label_file
+
+
+def create_export(export_data, session):
+    export = Export(
+        type = export_data.get('type'),
+        kind = export_data.get('kind'),
+        archived = export_data.get('archived'),
+        masks = export_data.get('masks'),
+        source = export_data.get('source'),
+        status = export_data.get('status'),
+        status_text = export_data.get('status_text'),
+        percent_complete = export_data.get('percent_complete'),
+        file_comparison_mode = export_data.get('file_comparison_mode'),
+        file_list_length = export_data.get('file_list_length'),
+        description = export_data.get('description'),
+        working_dir_id = export_data.get('working_dir_id'),
+        project_id = export_data.get('project_id'),
+        user_id = export_data.get('user_id'),
+        job_id = export_data.get('job_id'),
+        task_id = export_data.get('task_id'),
+        yaml_blob_name = export_data.get('yaml_blob_name'),
+        json_blob_name = export_data.get('json_blob_name'),
+        tf_records_blob_name = export_data.get('tf_records_blob_name'),
+        ann_is_complete = export_data.get('ann_is_complete'),
+
+    )
+    session.add(export)
+    regular_methods.commit_with_rollback(session)
+    return export
 
 
 def create_discussion_comment(discussion_comment_data, session):

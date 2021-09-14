@@ -149,56 +149,28 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-        cy.window().then(window => {
-          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+          .window().then(window => {
+            cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
             // Move 5 frames
 
             // Copy and paste on next frame Paste
             .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
             .wait(2000)
-            .then(()=>{
-              cy.get('[data-cy="forward_1_frame"]').click({force: true})
-                .wait(2000).then(() =>{
-                  let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                  window.AnnotationCore.has_changed = true;
-                  cy.get('[data-cy=save_button]').click({force: true})
-                    .wait(10000)
-                    // Select uppermost box
-                    .mousedowncanvas(90, 90)
-                    .wait(500)
-                    .mouseupcanvas()
-                    .wait(2000).then(() => {
-                      // Paste instances again
-                      instance_dup = {...instance_dup, x_min: 140, y_min: 140, y_max: 180, x_max: 180}
-                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                      window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+            .get('[data-cy="forward_1_frame"]').click({force: true})
+            .wait(2000).then(() =>{
+                let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.has_changed = true;
 
-                      cy.wait(5000).then(() =>{
-                        let url = '/api/project/*/file/*/annotation/update';
-                        cy.intercept(url).as('save_instances')
-                        window.AnnotationCore.has_changed = true;
-                        cy.get('[data-cy=save_button]').click({force: true})
-                        .wait('@save_instances').should(({request, response}) => {
-                          expect(request.method).to.equal('POST')
-                          expect(response.statusCode, 'response status').to.eq(200)
-
-                        })
-                      })
-
-                  })
             })
-
-
-          })
-
-
-
+            .wait(5000)
+            .get('[data-cy=save_button]').click({force: true})
+            .wait(5000)
+            .get('[data-cy=save_warning]').should('be.visible')
+            .wait(7000)
         });
 
       })

@@ -144,10 +144,16 @@
       'file_id_prop',
       'job_id',
       'show_sheet',
+      'show_explorer_full_screen',
 
     ],
     components:{
       dataset_explorer
+    },
+    mounted() {
+      if (this.$props.show_explorer_full_screen) {
+        this.tab = 1;
+      }
     },
     data: function () {
       return {

@@ -35,6 +35,7 @@ export class CommandManagerAnnotationCore {
     else if(this.command_index != undefined && this.command_index === 0){
       this.command_index = undefined;
     }
+    return true
   }
 
   redo(){
@@ -50,6 +51,7 @@ export class CommandManagerAnnotationCore {
       if(!command){return}
       command.execute();
     }
+    return true
   }
 
 }

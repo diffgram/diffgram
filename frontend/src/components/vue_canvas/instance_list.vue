@@ -317,6 +317,7 @@
           // not quite right place, but need to handle returning if false
           // This assumes we can get it from the 'master' list
           // eg if the label template color is changed... etc.
+
           if(this.label_file_colour_map){
             this.colour = this.label_file_colour_map[instance.label_file_id]
           }
@@ -349,7 +350,7 @@
           // TODO test this better, and also try to move other colors stuff here...
 
           let strokeColor = undefined;
-          let fillColor = this.$props.default_instance_opacity;
+          let fillColor = undefined;
           let lineWidth = undefined;
 
           if (instance.fan_made == true) {
@@ -365,7 +366,7 @@
             fillColor = "rgba(" + r + "," + g + "," + b + ", 1)";
           }
 
-          // start Change type
+          // Determine FILL COLOR
           if (instance.change_type != undefined) {
             if (instance.change_type == "added") {
               fillColor = "rgba(" + 0 + "," + 255 + "," + 0 + `, ${this.$props.default_instance_opacity})`;
@@ -384,20 +385,21 @@
             let b = 255
 
             // TODO can we move this somewhere else, ie as part of each component?
-            if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
-              // Use the internal instance color instead of colour map if available.
-              r = instance.label_file.colour.rgba.r
-              g = instance.label_file.colour.rgba.g
-              b = instance.label_file.colour.rgba.b
-            }
-            else if (this.colour.rgba) {
+            if(this.colour.rgba){
               r = this.colour.rgba.r
               g = this.colour.rgba.g
               b = this.colour.rgba.b
             }
-            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `, ${this.$props.default_instance_opacity})`;
+            else if (instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba) {
+              // Fallback: the internal instance color instead of colour map if available.
+              r = instance.label_file.colour.rgba.r
+              g = instance.label_file.colour.rgba.g
+              b = instance.label_file.colour.rgba.b
+            }
+            fillColor = "rgba(" + r + "," + g + "," + b + `, ${this.$props.default_instance_opacity})`;
           }
 
+          // Determine STROKE COLOR
           if (instance.change_type != undefined) {
             if (instance.change_type == "added") {
               strokeColor = "green";
@@ -417,11 +419,12 @@
               strokeColor = "#FFD700"
             }
             if (this.mode == 'default') {
-              if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
-                strokeColor = instance.label_file.colour.hex;
-              }
-              else{
+              if(this.colour){
                 strokeColor = this.colour.hex
+              }
+              else if(instance.label_file && instance.label_file.colour && instance.label_file.colour.rgba){
+                // Fallback for when this.colour is not available
+                strokeColor = instance.label_file.colour.hex;
               }
               if(this.$props.default_instance_opacity === 1){
                 strokeColor = "#FFFFFF"
@@ -1315,6 +1318,7 @@
 
           // possible to refactor this into a "draw face" function?
           const instance_colour = this.get_instance_colour();
+
           let r = instance_colour.rgba.r
           let g = instance_colour.rgba.g
           let b = instance_colour.rgba.b
@@ -1341,6 +1345,7 @@
           }
           if (this.mode == 'default') {
             ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + opacity + ")";
+
           }
 
           ctx.rect(

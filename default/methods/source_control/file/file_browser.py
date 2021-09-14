@@ -297,7 +297,7 @@ def get_instance_buffer(session, video_file_id, start, end):
     # Allow buffer to go back, ie go back 1 frame works.
     # Careful max here since otherwise it gets it for full video
 
-    start = max(0, start - 10)
+    start = max(0, start - 1)
 
     image_file_list = WorkingDirFileLink.image_file_list_from_video(
         session = session,
@@ -398,6 +398,9 @@ def view_file_list_web_route(project_string_id, username):
         output_file_list = file_browser_instance.file_view_core(
             mode = "serialize")
 
+        if len(file_browser_instance.log['error'].keys()) > 0:
+            return file_browser_instance.log['error'], 400
+
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
 
@@ -420,6 +423,7 @@ class File_Browser():
         self.project = project
         self.directory = directory
         self.member = member
+        self.log = regular_log.default()
 
         self.metadata_proposed = metadata_proposed
         self.default_metadata()
@@ -430,6 +434,8 @@ class File_Browser():
             self.metadata_proposed = {}
 
         server_side_limit = 1000  # Clarify this is limit of results returned PER PAGE , user can go to next page to see more results
+        if self.metadata_proposed['file_view_mode'] == 'ids_only':
+            server_side_limit = 25000
         annotation_status_settings = None
         machine_made_setting = None
         filter_media_type = None
@@ -501,6 +507,7 @@ class File_Browser():
             return False, query_creator.log, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
+
         if sql_alchemy_query:
             count = sql_alchemy_query.count()
             if limit is not None:
@@ -526,14 +533,13 @@ class File_Browser():
         """
         output_file_list = []
         limit_counter = 0
-
         file_count = 0  # File count includes ones we don't actually query
         # outside of limits...
 
         if self.metadata['file_view_mode'] is None or \
-            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base"]:
-            return "Invalid file_view_mode", False
-
+            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base", 'ids_only']:
+            self.log['error']['file_view_mode'] = 'Invalid file_view_mode "{}"'.format(self.metadata['file_view_mode'])
+            return None
         ignore_id_list = None
 
         # For creating / viewing Jobs
@@ -649,6 +655,7 @@ class File_Browser():
 
             working_dir_file_list = query.all()
 
+
         self.metadata['total_pages'] = math.ceil(float(file_count) / float(self.metadata['limit']))
         if self.metadata['page'] >= self.metadata['total_pages']:
             self.metadata['next_page'] = None
@@ -664,6 +671,9 @@ class File_Browser():
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':
                     file_serialized = file.serialize_with_annotations(self.session)
+
+                elif self.metadata['file_view_mode'] == 'ids_only':
+                    file_serialized = file.id
 
                 elif self.metadata['file_view_mode'] == 'base':
                     file_serialized = file.serialize_base_file()

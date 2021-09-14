@@ -12,7 +12,7 @@
       v-canvas:cb="onRendered"
       :id="canvas_id"
       :canvas_transform="canvas_transform"
-      :height="canvas_height_scaled "
+      :height="canvas_height_scaled"
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg

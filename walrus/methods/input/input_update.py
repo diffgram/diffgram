@@ -177,7 +177,7 @@ class Update_Input():
         if self.input.mode != "update":
             # Important. Context of updates not creating a new file, so not wanting to
             # remove original file.
-            self.remove_assoicated_file(self.input)
+            self.remove_associated_file(self.input)
 
         self.input.processing_deferred = True
 
@@ -211,7 +211,7 @@ class Update_Input():
 
         for input in self.input_list:
             input.archived = True
-            self.remove_assoicated_file(input)
+            self.remove_associated_file(input)
             self.remove_copied_file(input)
             self.session.add(input)
 
@@ -220,8 +220,15 @@ class Update_Input():
             input.newly_copied_file.state = "removed"
             self.log['info']['removed_copied_file_id'] = input.newly_copied_file.id
 
-    # "Files"
-    def remove_assoicated_file(self, input):
+    def remove_associated_tasks(self, file):
+        tasks = self.session.query(Task).filter(
+            Task.file_id == file.id
+        ).all()
+        for task in tasks:
+            task.status = 'archived'
+            self.session.add(task)
+
+    def remove_associated_file(self, input):
         """
         Take input as argument in context of trying to make these
         classes more modular, ie not "assuming" that input is in self.
@@ -229,6 +236,7 @@ class Update_Input():
 
         if input.file and input.mode != 'copy_file':
             input.file.state = "removed"
+            self.remove_associated_tasks(input.file)
             self.log['info']['prior_file_id'] = input.file.id
 
     def report_input_list_recent(

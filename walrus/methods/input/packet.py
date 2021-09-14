@@ -39,6 +39,7 @@ def enqueue_packet(project_string_id,
                    type = None,
                    task_action = None,
                    external_map_id = None,
+                   original_filename = None,
                    external_map_action = None,
                    enqueue_immediately = False,
                    mode = None,
@@ -60,6 +61,7 @@ def enqueue_packet(project_string_id,
     diffgram_input.add_link = add_link
     diffgram_input.copy_instance_list = copy_instance_list
     diffgram_input.external_map_id = external_map_id
+    diffgram_input.original_filename = original_filename
     diffgram_input.external_map_action = external_map_action
     diffgram_input.task_action = task_action
     diffgram_input.mode = mode
@@ -78,7 +80,6 @@ def enqueue_packet(project_string_id,
     # print(diffgram_input.frame_packet_map)
 
     session.add(diffgram_input)
-    print('FILE ID FLUSH', file_id)
     session.flush()
 
     if batch_id and extract_labels_from_batch:
@@ -225,6 +226,7 @@ def input_packet(project_string_id):
                  {'file_name': None},
                  {'mode': None},
                  {'directory_id': None},
+                 {'original_filename': None},
                  {'batch_id': None},
                  {"media": {
                      'default': {},
@@ -248,6 +250,10 @@ def input_packet(project_string_id):
     # Careful, getting this from headers...
     # TODO: Remove usage of directory ID in headers.
     directory_id = request.headers.get('directory_id', None)
+    if directory_id is None:
+        # Try to get it from payload
+        directory_id = input['directory_id']
+
     if directory_id is None and input['mode'] != 'update':
         log["error"]['directory'] = "'directory_id' not supplied"
         return jsonify(log = log), 400
@@ -295,6 +301,7 @@ def input_packet(project_string_id):
                                         file_id = file_id,
                                         directory_id = directory_id,
                                         instance_list = untrusted_input.get('instance_list', None),
+                                        original_filename = input.get('original_filename', None),
                                         video_split_duration = video_split_duration,
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),

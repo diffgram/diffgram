@@ -536,13 +536,10 @@ def interpolate_all_frames_using_task(task_id):
             task_id = task_id)
 
         log = regular_log.default_api_log()
-
         try:
-            file = File.get_by_id_untrusted(
-                project_string_id = task.project.project_string_id,
+            file = File.get_by_id(
+                session = session,
                 file_id = task.file.id,
-                with_for_update = True,
-                nowait = True
             )
         except Exception as e:
             trace = traceback.format_exc()

@@ -2,7 +2,8 @@
 <template>
   <div v-cloak>
 
-    <v-flex xs6 center>
+    <v-flex xs6 center
+            v-if="$store.state.user.logged_in != true">
 
       <v-card>
 
@@ -172,6 +173,30 @@
 
     </v-flex>
 
+    <div v-if="$store.state.user.logged_in == true
+         && show_logging_in_messsage == false">
+      <v-alert type="info">
+        Already Logged In.
+      </v-alert>
+    </div>
+
+    <div v-if="$store.state.user.logged_in == true
+         && show_logging_in_messsage == true">
+
+      <v-progress-linear
+        height="10"
+        indeterminate
+        absolute
+        top
+        color="secondary accent-4">
+      </v-progress-linear>
+
+      <v-alert type="info">
+        Logging in...
+      </v-alert>
+
+    </div>
+
   </div>
 </template>
 
@@ -199,6 +224,7 @@ import Vue from "vue"; export default Vue.extend( {
     email: null,
 
     mode: "magic_auth",
+    show_logging_in_messsage: false,
 
     error: {
       email: null,
@@ -231,8 +257,10 @@ import Vue from "vue"; export default Vue.extend( {
     window.addEventListener('keyup', this.keyboard_events);
 
     if (this.magic_auth) {
-      this.mode = "magic_auth_redeem"
-      this.login()
+      if (this.$store.state.user.logged_in != true) {
+        this.mode = "magic_auth_redeem"
+        this.login()
+      }
     }
 
   },
@@ -392,6 +420,9 @@ import Vue from "vue"; export default Vue.extend( {
 
     },
     do_login: function (response) {
+
+      this.show_logging_in_messsage = true
+
       this.$store.commit('log_in');
       //this.$store.commit('set_user_name', this.email)
 

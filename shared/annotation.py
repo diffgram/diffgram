@@ -53,6 +53,7 @@ class Annotation_Update():
     external_auth: bool = False
     do_update_sequences: bool = True
     previous_next_instance_map: dict = field(default_factory = lambda: {})
+    serialized_ids_map: dict = field(default_factory = lambda: {})
     creating_for_instance_template: bool = False
 
     # Keeps a Record of the new instances that were created after the update process finish
@@ -60,6 +61,8 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+
+    duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
 
     directory = None
     external_map: ExternalMap = None
@@ -72,7 +75,9 @@ class Annotation_Update():
     is_new_file = False  # defaults to False, ie for images?
     video_parent_file = None
     clean_instances: bool = False
+    force_lock: bool = True
     sequence = None
+    new_created_sequence_list: list = field(default_factory = lambda: [])
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
 
@@ -388,14 +393,29 @@ class Annotation_Update():
 
         if len(ids_not_included) > 0:
             logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
-            self.log['error']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
+            self.log['warning'] = {}
+            self.log['warning']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
                 ids_not_included
             )
-            self.log['error']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+            self.log['warning']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
                                                'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
                                                'Please contact use if this persists.'
-            self.log['error']['missing_ids'] = ids_not_included
-            return False
+            self.log['warning']['missing_ids'] = ids_not_included
+            self.log['warning']['instance_list_new'] = self.instance_list_new
+            self.log['warning']['instance_list_existing_ids'] = [x.id for x in self.instance_list_existing]
+            # TODO: Temporarly removing this hard block since it's causing lots of user experience issue during annotation process
+            # We record this a an event and revisit it in the future
+            Event.new(
+                session = self.session,
+                project_id = self.project_id,
+                file_id = self.file.id if self.file else None,
+                task_id = self.task.id if self.task else None,
+                kind = "missing_ids_in_new_instance_list_error",
+                member_id = self.member.id if self.member else None,
+                error_log=self.log,
+                success = False)
+            # Do not return an error state for now, we are recording the event.
+            # return False
         return True
 
     def append_new_instance_list_hash(self, instance):
@@ -500,8 +520,7 @@ class Annotation_Update():
         """
         if not self.file:
             return
-        # for x in self.instance_list_kept_serialized:
-        #	print(x['id'], x['soft_delete'])
+
         self.file.set_cache_by_key(
             cache_key = 'instance_list',
             value = self.instance_list_kept_serialized
@@ -531,6 +550,11 @@ class Annotation_Update():
 
         # For now there is no extra init needed if it's an image
         if self.file.type == "image":
+            if self.force_lock:
+                self.file = File.get_by_id(session = self.session,
+                                           file_id = self.file.id,
+                                           with_for_update = True,
+                                           nowait = True)
             return
 
         if self.file.type == "video":
@@ -1223,7 +1247,6 @@ class Annotation_Update():
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
-
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
         except Exception as e:
@@ -1257,6 +1280,22 @@ class Annotation_Update():
 
         self.sequence_update(instance = self.instance)
 
+    def update_sequence_id_in_cache_list(self, instance):
+        """
+            Updates the sequences ID in the cache list.
+        :param instance:
+        :return:
+        """
+        if instance.id is None:
+            return
+        if instance.sequence_id is None:
+            return
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            existing_serialized_instance = self.instance_list_kept_serialized[i]
+            if existing_serialized_instance.get('id') == instance.id:
+                existing_serialized_instance['sequence_id'] = instance.sequence_id
+
+
     def update_cache_single_instance_in_list_context(self):
         """
         CAUTION this assumes that instance_list_kept_serialized will exist etc
@@ -1274,8 +1313,11 @@ class Annotation_Update():
         # And both instances have the same hash and no ID.
         if self.instance.id is None:
             return
-        serialized_data = self.instance.serialize_with_label()
-        self.instance_list_kept_serialized.append(serialized_data)
+
+        if not self.serialized_ids_map.get(self.instance.id):
+            serialized_data = self.instance.serialize_with_label()
+            self.instance_list_kept_serialized.append(serialized_data)
+            self.serialized_ids_map[self.instance.id] = True
 
     def instance_count_updates(self):
         if self.file is None:
@@ -1442,14 +1484,8 @@ class Annotation_Update():
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
             # We only want to keep one of them.
             logger.warning('Got duplicated hash {}'.format(self.instance.hash))
-            if old_id is not None:
-                old_instance = Instance.get_by_id(session = self.session, instance_id = old_id)
-                if old_instance.soft_delete is False:
-                    old_instance.soft_delete = True
-                    # We rehash since at this point the soft_delete changes the hash.
-                    old_instance.hash_instance()
-                    self.session.add(old_instance)
             # The instance_dict hash will always have the newest instance (sorted by created_time)
+            self.duplicate_hash_new_instance_list.append(self.instance)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
             if existing_instance.id is not None and self.instance.id is not None:
                 message = 'Two instances with the same label on same position, please remove one. IDs: {}, {}'.format(
@@ -1461,6 +1497,12 @@ class Annotation_Update():
                 return False
 
             self.instance = existing_instance
+            try:
+                self.hash_list.remove(self.instance.hash)
+            # logger.info("Removed str(self.instance.hash))
+            except:
+                self.log['info']['hash_list'] = "No instance to remove."
+
             return False
 
     def determine_if_new_instance_and_update_current(self, old_id = None):
@@ -1504,7 +1546,6 @@ class Annotation_Update():
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
         # print('existing index', self.existing_instance_index)
         if self.existing_instance_index is not None:
-
             is_new_instance = False
             # the current self.instance is the newly created one,
             # which is created so we can get hash that's the same.
@@ -1528,7 +1569,6 @@ class Annotation_Update():
 
         # Only add instance to session if it's new.
         # Keep a separate record of the newly added instances.
-
         self.session.add(self.instance)
         self.session.flush()
         if self.file:
@@ -1645,18 +1685,32 @@ class Annotation_Update():
         and then serializing and returning that list.
         Because it's now updating in the deleted contexts
         """
+        # sequence = self.session.query(Sequence).filter(
+        #     Sequence.id == instance.sequence_id,
+        #     Sequence.archived == False
+        # ).first()
+
+        # if sequence and sequence.keyframe_list:
+        #     frame_list = sequence.keyframe_list.get('frame_number_list')
+        #     if frame_list and len(frame_list) > 100:
+        #         logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
+        #         return
 
         # For "Human" updates only
         if update_existing_only is False:
 
-            self.sequence = Sequence.update(
+            updated_sequence, is_new_sequence = Sequence.update(
                 session = self.session,
                 project = self.project,
                 video_mode = self.video_mode,
                 instance = instance,
                 video_file = self.video_parent_file
             )
-
+            if updated_sequence is not None and not updated_sequence.archived:
+                self.sequence = updated_sequence
+            if is_new_sequence:
+                self.new_created_sequence_list.append(self.sequence)
+            self.update_sequence_id_in_cache_list(instance = instance)
         else:
             # Eg for deleting when sequence is changed on existing instance
             sequence = Sequence.update_single_existing_sequence(
@@ -1664,6 +1718,7 @@ class Annotation_Update():
                 instance = instance,
                 video_file = self.video_parent_file
             )
+            self.update_sequence_id_in_cache_list(instance = instance)
 
     def check_polygon_points_and_build_bounds(self):
         """
@@ -1746,7 +1801,6 @@ class Annotation_Update():
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]
-
             prior_hash = instance.hash
 
             instance.soft_delete = True
@@ -1812,7 +1866,8 @@ def task_annotation_update(
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
     try:
-        file = File.get_by_id(session = session, file_id = task.file_id, with_for_update = True, nowait = True)
+        file = File.get_by_id(session = session, file_id = task.file_id)
+
     except Exception as e:
         trace = traceback.format_exc()
         logger.error('File {} is Locked'.format(task.file_id))
@@ -1896,9 +1951,7 @@ def annotation_update_web(
         file = File.get_by_id_and_project(
             session = session,
             project_id = project.id,
-            file_id = file_id,
-            with_for_update = True,
-            nowait = True)
+            file_id = file_id)
     except Exception as e:
         trace = traceback.format_exc()
         logger.error('File {} is Locked'.format(file_id))

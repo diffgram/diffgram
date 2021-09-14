@@ -355,6 +355,7 @@
       <v-list-item
         dense
         v-if="video_mode && (instance_hover_index_locked != null || instance_clipboard)"
+        data-cy="show_menu_paste_next_frames"
         @click="display_paste_menu"
       >
 
@@ -388,6 +389,7 @@
           <v-card-text>
             Paste instance to the next
             <v-text-field
+                data-cy="paste_frame_count"
                 v-model="num_frames"
                 @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
                 @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
@@ -398,7 +400,7 @@
           <v-card-actions>
             <v-btn @click="show_paste_menu = false,
                            $store.commit('set_user_is_typing_or_menu_open', false)">Close</v-btn>
-            <v-btn @click="emit_paste_to_next_frames" color="success">Paste</v-btn>
+            <v-btn data-cy="paste_next_frames" @click="emit_paste_to_next_frames" color="success">Paste</v-btn>
           </v-card-actions>
         </v-card>
       </v-menu>
