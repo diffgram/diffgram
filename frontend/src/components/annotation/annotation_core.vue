@@ -1993,6 +1993,7 @@
           let new_instance = {
             'type': 'global',
             // 'global_type': 'file',  // future expansion direction
+            'label_file_id': -1,
             'soft_delete' : false
             }
 
