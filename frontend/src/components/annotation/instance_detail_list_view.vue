@@ -11,30 +11,15 @@
       <v-layout row >
         <v-flex >
           <v-card :color="header_colour">
-            <v-card-title>
-
-          <div v-if="render_mode!='gold_standard'">Instances & Attributes
+          
             <v-chip v-if="current_instance
-                       && current_instance.id
-                       && $store.state.user.current.is_super_admin == true">
+                        && current_instance.id
+                        && $store.state.user.current.is_super_admin == true">
             ID: {{current_instance.id}}
             </v-chip>
-          </div>
-          <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
+    
+            <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
-            <v-spacer></v-spacer>
-
-
-            </v-card-title>
-
-            <v-card-subtitle>
-              <div v-if="video_mode == true">
-              In Frame
-              </div>
-              <div v-else>
-              In Image
-              </div>
-            </v-card-subtitle>
 
             <attribute_group_list
                 style="overflow-y:auto; max-height: 400px"
