@@ -47,7 +47,19 @@
                     >
             </attribute_group_list>
 
-
+             <!-- global_attribute_groups_list -->
+            <attribute_group_list
+                style="overflow-y:auto; max-height: 400px"
+                v-if="current_global_instance
+                      && global_attribute_groups_list
+                      && global_attribute_groups_list.length != 0"
+                :mode=" 'annotate' "
+                :view_only_mode="view_only_mode"
+                :attribute_group_list_prop = "global_attribute_groups_list"
+                :current_instance = "current_global_instance"
+                @attribute_change="attribute_change($event)"
+                    >
+            </attribute_group_list>
 
             <!-- overflow / scrolling
               context of not wanting to have to scroll main window
@@ -475,7 +487,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import rating_review from './rating_review'
 import attribute_group_list from '../attribute/attribute_group_list.vue';
 import label_select_only from '../label/label_select_only.vue'
@@ -508,7 +519,8 @@ import Vue from "vue";
       'external_requested_index', // number
       'trigger_refresh_current_instance',  // null or Date.now()  number,
       'current_file',
-      'global_attribute_groups_list'
+      'global_attribute_groups_list',
+      'current_global_instance'
 
     ],
     watch: {
