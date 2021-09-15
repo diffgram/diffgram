@@ -438,7 +438,7 @@ class Project(Base, Caching):
 
         for attribute_group in global_attribute_group_list:
             global_attribute_groups_serialized_list.append(
-                attribute_group.serialize())
+                attribute_group.serialize_with_attributes(session = session))
 
         return global_attribute_groups_serialized_list
 

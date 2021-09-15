@@ -602,6 +602,10 @@
            * here we can do that
            */
 
+          if (!this.group.attribute_template_list){
+            throw("Missing group.attribute_template_list. Check API.")
+          }
+
           for (let x of this.group.attribute_template_list) {
 
             let attribute = {}
