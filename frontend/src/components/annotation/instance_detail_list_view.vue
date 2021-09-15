@@ -14,11 +14,15 @@
             <v-card-title>
 
           <div v-if="render_mode!='gold_standard'">Instances & Attributes
-            <v-chip v-if="current_instance && current_instance.id">ID: {{current_instance.id}}</v-chip>
+            <v-chip v-if="current_instance
+                       && current_instance.id
+                       && $store.state.user.current.is_super_admin == true">
+            ID: {{current_instance.id}}
+            </v-chip>
           </div>
           <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
-              <v-spacer></v-spacer>
+            <v-spacer></v-spacer>
 
 
             </v-card-title>
@@ -43,6 +47,8 @@
                     >
             </attribute_group_list>
 
+
+
             <!-- overflow / scrolling
               context of not wanting to have to scroll main window
 
@@ -58,7 +64,7 @@
             <v-divider class="mt-4"></v-divider>
             <h3>
               Instances:
-              <v-chip v-if="$store.state.user.current.is_super_admin == true" x-small>
+              <v-chip x-small>
               {{instance_list_count}}
               </v-chip>
             </h3>
@@ -501,7 +507,8 @@ import Vue from "vue";
       'video_playing', // bool
       'external_requested_index', // number
       'trigger_refresh_current_instance',  // null or Date.now()  number,
-      'current_file'
+      'current_file',
+      'global_attribute_groups_list'
 
     ],
     watch: {
