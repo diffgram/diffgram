@@ -53,6 +53,10 @@ class Attribute_Template_Group(Base):
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
 
+    is_global = Column(Boolean, default = False)
+    global_type = Column(String(), default = 'file')        # Expansion direction eg for frame, series, etc.
+
+
     @staticmethod
     def new(session,
             project,
@@ -103,7 +107,9 @@ class Attribute_Template_Group(Base):
             'default_value': self.default_value,
             'min_value': self.min_value,
             'max_value': self.max_value,
-            'default_id': self.default_id
+            'default_id': self.default_id,
+            'is_global': self.is_global,
+            'global_type': self.global_type
         }
 
     def serialize_for_export(self):
@@ -122,6 +128,8 @@ class Attribute_Template_Group(Base):
             'default_id': self.default_id,
             'min_value': self.min_value,
             'max_value': self.max_value,
+            'is_global': self.is_global,
+            'global_type': self.global_type
         }
 
     def serialize_with_attributes_and_labels(self, session):
@@ -153,6 +161,21 @@ class Attribute_Template_Group(Base):
         group['attribute_template_list'] = attribute_template_list_serialized
 
         return group
+
+
+    @staticmethod
+    def get_is_globals(
+            session,
+            project_id,
+            is_global = True):
+
+        query = session.query(Attribute_Template_Group)
+
+        query = query.filter(Attribute_Template_Group.project_id == project_id)
+        query = query.filter(Attribute_Template_Group.is_global == is_global)
+
+        return query.all()
+
 
     @staticmethod
     def from_file_attribute_group_list_serialize(
@@ -196,12 +219,13 @@ class Attribute_Template_Group(Base):
     @staticmethod
     def list(session,
              group_id,
-             mode,
              project_id,
              archived = False,
              recursive = False,
              limit = 100,
-             return_kind = "objects"
+             return_kind = "objects",
+             is_root = None,
+             is_global = None
              ):
         """
 
@@ -209,22 +233,18 @@ class Attribute_Template_Group(Base):
 
         """
 
-        # Not clear yet why we would want this, since current
-        # Setup is to only call from root
-        # This is for future right now
-        if mode is None:
-            query = session.query(Attribute_Template_Group).filter(
-                Attribute_Template_Group.project_id == project_id,
-                Attribute_Template_Group.archived == archived,
-                Attribute_Template_Group.id == group_id)
-        #####
-
-        # Assume root only
-        if mode == "from_project":
-            query = session.query(Attribute_Template_Group).filter(
+        query = session.query(Attribute_Template_Group).filter(
                 Attribute_Template_Group.project_id == project_id,
                 Attribute_Template_Group.archived == archived)
-            query = query.filter(Attribute_Template_Group.is_root == True)
+
+        if group_id:
+            query = query.filter(Attribute_Template_Group.id == group_id)
+
+        if is_global:
+            query = query.filter(Attribute_Template_Group.is_global == is_global)
+
+        if is_root:
+            query = query.filter(Attribute_Template_Group.is_root == is_root)
 
         # Future
         if recursive == True:
