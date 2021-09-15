@@ -21,6 +21,51 @@
             <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
 
+          <!-- global_attribute_groups_list -->
+          <v-expansion-panels
+                v-model="openedGlobalPanel"
+                :accordion="true"
+                :inset="false"
+                :multiple="false"
+                :focusable="true"
+                :disabled="false"
+                :flat="false"
+                :hover="false"
+                :tile="true"
+              >
+                <v-expansion-panel>
+                  <v-expansion-panel-content>
+
+                    <!--
+                    <v-expansion-panel-header>
+                      <h3>
+                        <tooltip_icon
+                            tooltip_message="Globals"
+                            icon="mdi-earth"
+                            color="primary">
+                        </tooltip_icon>
+                       </h3>
+                    </v-expansion-panel-header>
+                    -->
+
+                    <attribute_group_list
+                        style="overflow-y:auto; max-height: 400px"
+                        v-if="current_global_instance
+                              && global_attribute_groups_list
+                              && global_attribute_groups_list.length != 0"
+                        :mode=" 'annotate' "
+                        :view_only_mode="view_only_mode"
+                        :attribute_group_list_prop = "global_attribute_groups_list"
+                        :current_instance = "current_global_instance"
+                        @attribute_change="global_attribute_change($event)"
+                        key="global_attribute_groups_list"
+                            >
+                    </attribute_group_list>
+                  </v-expansion-panel-content>
+
+                </v-expansion-panel>
+            </v-expansion-panels>
+
             <attribute_group_list
                 style="overflow-y:auto; max-height: 400px"
                 v-if="attribute_group_list_prop.length != 0"
@@ -29,20 +74,7 @@
                 :attribute_group_list_prop = "attribute_group_list_prop"
                 :current_instance = "current_instance"
                 @attribute_change="attribute_change($event)"
-                    >
-            </attribute_group_list>
-
-             <!-- global_attribute_groups_list -->
-            <attribute_group_list
-                style="overflow-y:auto; max-height: 400px"
-                v-if="current_global_instance
-                      && global_attribute_groups_list
-                      && global_attribute_groups_list.length != 0"
-                :mode=" 'annotate' "
-                :view_only_mode="view_only_mode"
-                :attribute_group_list_prop = "global_attribute_groups_list"
-                :current_instance = "current_global_instance"
-                @attribute_change="global_attribute_change($event)"
+                key="attribute_groups_list"
                     >
             </attribute_group_list>
 
@@ -59,12 +91,7 @@
               differently...
                -->
             <v-divider class="mt-4"></v-divider>
-            <h3>
-              Instances:
-              <v-chip x-small>
-              {{instance_list_count}}
-              </v-chip>
-            </h3>
+
             <v-expansion-panels accordion flat v-model="panels">
               <v-expansion-panel v-for="grouped_list in filtered_instance_set">
                 <v-expansion-panel-header  ripple v-if="grouped_list.model_run">
@@ -80,7 +107,9 @@
                   </div>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <v-data-table style="overflow-y:auto; max-height: 450px"
+                  <v-data-table v-if="grouped_list &&
+                                      grouped_list.instance_list.length > 0"
+                                style="overflow-y:auto; max-height: 450px"
                                 :headers="header"
                                 :items="grouped_list.instance_list"
                                 :search="search"
@@ -452,7 +481,9 @@
             </v-expansion-panels>
 
 
-
+              <v-chip x-small>
+              {{instance_list_count}}
+              </v-chip>
 
 
 
@@ -556,6 +587,7 @@ import Vue from "vue";
     data() {
       return {
 
+        openedGlobalPanel: 0,
         current_global_instance_index: 0, // hard coded until support multiple
 
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
@@ -632,6 +664,8 @@ import Vue from "vue";
     },
 
     computed: {
+
+
       anonymous_user_in_public_project: function(){
         if(this.$store.getters.is_on_public_project && !this.$store.state.user.logged_in){
           return true
