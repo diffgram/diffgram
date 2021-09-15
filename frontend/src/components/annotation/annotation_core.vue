@@ -213,6 +213,7 @@
                                       :label_settings = "label_settings"
                                       :label_list = "label_list"
                                       :global_attribute_groups_list="global_attribute_groups_list"
+                                      :current_global_instance="current_global_instance"
                                       :draw_mode = "draw_mode"
                                       :current_frame = "current_frame"
                                       :current_video_file_id = "current_video_file_id"
@@ -934,6 +935,9 @@
       // data()   comment is here for searching
       data() {
         return {
+
+          current_global_instance: null,
+          global_instance_list: [],
 
           snackbar_paste_message: '',
           ghost_instance_hover_index: null,
@@ -1972,6 +1976,30 @@
 
         },
 
+        get_and_set_global_instance: function () {
+          this.current_global_instance = this.get_global_instance()
+          console.log("current_global_instance", this.current_global_instance)
+        },
+
+        get_global_instance: function () {
+          if (this.global_instance_list.length >= 1){
+            return this.global_instance_list[0]
+          } else
+          return this.new_global_instance()
+        },
+
+        new_global_instance: function () {
+
+          let new_instance = {
+            'type': 'global',
+            // 'global_type': 'file',  // future expansion direction
+            'soft_delete' : false
+            }
+
+          return new_instance
+
+        },
+
         create_box: function(x_min, y_min, x_max, y_max, userscript_id=undefined){
 
           if (x_min == undefined
@@ -2235,7 +2263,9 @@
             // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
             // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
             let initialized_instance = this.initialize_instance(current_instance)
-            result.push(initialized_instance);
+            if (initialized_instance) {
+              result.push(initialized_instance);
+            }
           }
           return result;
         },
@@ -5541,15 +5571,17 @@
           // TODO improve to take dict instead of response
           // since may use in other contexts
           this.show_annotations = true
+          this.current_global_instance = null // reset
+          this.global_instance_list = []  // reset
 
           // Not sure if a "silent" null check is right here
           if (response.data['file_serialized']) {
             this.instance_list = this.create_instance_list_with_class_types(
               response.data['file_serialized']['instance_list']
             );
-
-
           }
+          this.get_and_set_global_instance()
+
           this.loading = false
 
           this.trigger_refresh_with_delay()
@@ -5909,6 +5941,7 @@
           this.instance_buffer_dict = {}
           this.instance_buffer_metadata = {}
           this.instance_list = []
+          this.global_instance_list = []
           if(this.video_mode){
             this.$refs.video_controllers.reset_cache();
           }
@@ -5960,7 +5993,6 @@
           this.reset_for_file_change_context()
 
           this.$addQueriesToLocation({'file': this.$props.file.id})
-
 
           await this.refresh_attributes_from_current_file(this.$props.file);
 
@@ -6316,7 +6348,11 @@
             initialized_instance.populate_from_instance_obj(instance);
             return initialized_instance
           }
-          else{
+          else if (instance.type === 'global') {
+            this.global_instance_list.push(instance)
+            return
+          }
+          else {
             return instance
           }
         },
