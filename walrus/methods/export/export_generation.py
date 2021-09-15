@@ -330,7 +330,6 @@ def build_attribute_groups_reference(
     group_list = Attribute_Template_Group.list(
         session=session,
         group_id=None,
-        mode="from_project",
         project_id=project.id,
         return_kind="objects"
     )

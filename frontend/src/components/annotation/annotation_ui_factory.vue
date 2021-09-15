@@ -16,6 +16,7 @@
           :view_only_mode="view_only"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
+          :global_attribute_groups_list="global_attribute_groups_list"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -105,7 +106,9 @@
 
           labels_list_from_project: null,
           model_run_color_list: null,
-          label_file_colour_map_from_project: null
+          label_file_colour_map_from_project: null,
+
+          global_attribute_groups_list: null
 
         }
       },
@@ -247,6 +250,7 @@
             const response = await axios.get(url, {});
             this.labels_list_from_project = response.data.labels_out
             this.label_file_colour_map_from_project = response.data.label_file_colour_map
+            this.global_attribute_groups_list = response.data.global_attribute_groups_list
           }
           catch(e){
             console.error(e)

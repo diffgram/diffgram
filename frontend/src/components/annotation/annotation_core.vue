@@ -212,6 +212,7 @@
                                       :view_only_mode="view_only_mode"
                                       :label_settings = "label_settings"
                                       :label_list = "label_list"
+                                      :global_attribute_groups_list="global_attribute_groups_list"
                                       :draw_mode = "draw_mode"
                                       :current_frame = "current_frame"
                                       :current_video_file_id = "current_video_file_id"
@@ -831,6 +832,7 @@
         },
         'label_file_colour_map': {},
         'label_list': {},
+        'global_attribute_groups_list': {},
         'task_mode_prop': {
           default: null
         },

@@ -283,9 +283,21 @@
               :mode=" 'multiple' "
               :attribute_group_id="group.id"
               @label_file="recieve_label_file($event)"
+              label_prompt="Show on these labels:"
             >
             </label_select_only>
           </v-col>
+
+            <!-- Globals -->
+          <div class="pt-0 ">
+            <v-checkbox
+              v-model="group.is_global"
+              label="Show as Global Assessment of the File."
+              :disabled="loading || view_only_mode"
+              @change="api_group_update('UPDATE')"
+            >
+            </v-checkbox>
+          </div>     
 
         </v-row>
 
@@ -362,6 +374,8 @@
           </v-col>
         </v-row>
 
+
+        <v-card-title> Attributes: </v-card-title>
 
         <v-layout>
 
@@ -927,6 +941,7 @@
               this.group.min_value = min_value;
             }
           }
+
           axios.post(
             '/api/v1/project/' + this.project_string_id +
             '/attribute/group/update',
@@ -940,7 +955,8 @@
               default_value: this.group.default_value,
               min_value: min_value,
               max_value: max_value,
-              mode: mode
+              mode: mode,
+              is_global: this.group.is_global
 
             }).then(response => {
 

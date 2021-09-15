@@ -7,6 +7,8 @@ from shared.database.source_control.working_dir import WorkingDir
 from shared.database.project_directory_list import Project_Directory_List
 from shared.database.event.event import Event
 from shared.database.report.report_dashboard import ReportDashboard
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+
 
 class Project(Base, Caching):
     """
@@ -420,6 +422,26 @@ class Project(Base, Caching):
                 session = session),
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
+
+    
+    def get_global_attributes(self, session):
+
+        global_attribute_group_list = Attribute_Template_Group.list(
+            session = session,
+            group_id = None,
+            project_id = self.id,
+            archived = False,
+            is_global = True
+            )
+
+        global_attribute_groups_serialized_list = []
+
+        for attribute_group in global_attribute_group_list:
+            global_attribute_groups_serialized_list.append(
+                attribute_group.serialize())
+
+        return global_attribute_groups_serialized_list
+
 
     def get_label_list(self, session, directory):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(

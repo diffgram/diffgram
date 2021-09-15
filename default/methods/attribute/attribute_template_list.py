@@ -38,7 +38,6 @@ def api_attribute_template_list(project_string_id):
         group_list = Attribute_Template_Group.list(
             session = session,
             group_id = input['group_id'],
-            mode = input['mode'],
             project_id = project.id,
             return_kind = "objects"
         )
