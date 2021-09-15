@@ -911,6 +911,9 @@ class Annotation_Update():
             # to certain instance types
             self.instance_proposed = instance_proposed
 
+            if self.instance_proposed.get('type') == 'global':
+                self.instance_proposed['label_file_id'] = -1    # to bypass check
+
             self.log, input = regular_input.input_check_many(
                 spec_list = self.per_instance_spec_list,
                 log = self.log,
