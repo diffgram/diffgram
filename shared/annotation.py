@@ -163,7 +163,7 @@ class Annotation_Update():
             'kind': str,
             'required': True,
             'valid_values_list': ['box', 'polygon', 'point', 'cuboid', 'tag', 'line', 'text_token', 'ellipse', 'curve',
-                                  'keypoints']
+                                  'keypoints', 'global']
         }
         },
         {'rating': {
@@ -661,15 +661,21 @@ class Annotation_Update():
 
         assert self.allowed_label_file_id_list is not None
 
+
     def validate_label_file_id(self):
         """
 
         """
+        if self.instance.type == "global":
+            self.instance.label_file_id = None  # Prevent spoofing label_file_ids by passing global as type
+            return True
+
         if self.instance.label_file_id in self.allowed_label_file_id_list:
             return True
         self.log['error']['valid_label_file'] = "Permission issue with " + \
                                                 str(self.instance.label_file_id) + " label_file_id."
         return False
+
 
     def init_video_input(self):
 
@@ -1222,13 +1228,7 @@ class Annotation_Update():
             logger.error('Error on instance creation {}'.format(self.log))
             return False
 
-        # After instance limits to make sure points are available.
-        deducted_x_min, deducted_y_min = self.get_min_coordinates_instance(self.instance)
-        deducted_x_max, deducted_y_max = self.get_max_coordinates_instance(self.instance)
-        self.instance.x_min = int(deducted_x_min)
-        self.instance.y_min = int(deducted_y_min)
-        self.instance.x_max = int(deducted_x_max)
-        self.instance.y_max = int(deducted_y_max)
+        self.deduct_spatial_coordinates()
 
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
@@ -1279,6 +1279,21 @@ class Annotation_Update():
         self.instance_count_updates()
 
         self.sequence_update(instance = self.instance)
+
+
+    def deduct_spatial_coordinates(self):
+
+        if self.instance.type == "global":
+            return
+
+        # After instance limits to make sure points are available.
+        deducted_x_min, deducted_y_min = self.get_min_coordinates_instance(self.instance)
+        deducted_x_max, deducted_y_max = self.get_max_coordinates_instance(self.instance)
+        self.instance.x_min = int(deducted_x_min)
+        self.instance.y_min = int(deducted_y_min)
+        self.instance.x_max = int(deducted_x_max)
+        self.instance.y_max = int(deducted_y_max)
+
 
     def update_sequence_id_in_cache_list(self, instance):
         """
