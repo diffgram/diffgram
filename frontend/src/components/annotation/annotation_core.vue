@@ -1230,7 +1230,6 @@
 
           instance_list: [],
           show_text_file_place_holder: false,
-          instance_list_cache: [],
 
           current_polygon_point_list: [],
 
@@ -1978,6 +1977,7 @@
 
         get_and_set_global_instance: function () {
           this.current_global_instance = this.get_global_instance()
+          this.global_instance_list.push(this.current_global_instance)
           console.log("current_global_instance", this.current_global_instance)
         },
 
@@ -2558,8 +2558,11 @@
           if (!update.list_type || update.list_type == "default") {
             var instance = this.instance_list[index]
           }
-          if (update.list_type == "gold_standard") {
+          else if (update.list_type == "gold_standard") {
             var instance = this.gold_standard_file.instance_list[index]
+          }
+          else if (update.list_type == "global") {
+            var instance = this.global_instance_list[index]
           }
 
           if (!instance) {
@@ -6662,7 +6665,12 @@
             this.$refs.sequence_list.add_frame_number_to_sequence(instance.sequence_id, frame_number)
           }
         },
-        save: async function (and_complete=false, frame_number_param = undefined, instance_list_param = undefined) {
+        save: async function (
+          and_complete=false,
+          frame_number_param = undefined,
+          instance_list_param = undefined)
+        {
+
           this.save_error = {}
           this.save_warning = {}
           if (this.$props.view_only_mode == true) {
@@ -6713,11 +6721,17 @@
 
             return
           }
-          this.instance_list_cache = instance_list.slice();
+          let instance_list_cache = instance_list.slice();
+
+          if (this.global_instance_list.length > 0) {
+            instance_list_cache = instance_list_cache.concat(
+                this.global_instance_list.slice())
+          }
+
+
           let current_frame_cache = this.current_frame;
           let current_video_file_id_cache = this.current_video_file_id;
           let video_mode_cache = this.video_mode;
-
 
 
           // a video file can now be
@@ -6758,7 +6772,7 @@
 
           try {
             const response = await axios.post(url, {
-              instance_list: this.instance_list_cache,
+              instance_list: instance_list_cache,
               and_complete: and_complete,
               directory_id: this.$store.state.project.current_directory.directory_id,
               gold_standard_file: this.gold_standard_file,    // .instance_list gets updated ie missing
