@@ -57,7 +57,7 @@
                 :view_only_mode="view_only_mode"
                 :attribute_group_list_prop = "global_attribute_groups_list"
                 :current_instance = "current_global_instance"
-                @attribute_change="attribute_change($event)"
+                @attribute_change="global_attribute_change($event)"
                     >
             </attribute_group_list>
 
@@ -571,6 +571,8 @@ import Vue from "vue";
     data() {
       return {
 
+        current_global_instance_index: 0, // hard coded until support multiple
+
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
 
         data_table_hover_index: -1,
@@ -915,6 +917,18 @@ import Vue from "vue";
               this.current_instance_index,
               this.current_instance.id,
               "default",
+              attribute
+          )
+
+      },
+
+      global_attribute_change: function (attribute) {
+
+        this.instance_update(
+             "attribute_change",
+              this.current_global_instance_index,
+              this.current_global_instance.id,
+              "global",
               attribute
           )
 
