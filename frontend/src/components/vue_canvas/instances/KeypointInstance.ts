@@ -133,6 +133,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private do_rotation_movement() {
     this.angle = this.get_angle_of_from_rotation_control_movement()
+    var pi = Math.PI;
+    let degrees = this.angle  * (180/pi);
+    console.log('ANGLEEE', this.angle, degrees)
     //console.log(this.angle)
   }
 
@@ -168,11 +171,18 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private get_scaled_x(x){
+  private get_scaled_x(point){
     //console.log(this.scale_width, this.reference_width, this.translate_x)
-
+    let x = point.x
     let t = this.get_t(this)
-    x = this.get_x_of_rotated_point(t, this, x)
+    let degrees = 45;
+    let angle =  degrees * (Math.PI/180)
+    // Origin is center of shape
+    let origin = {
+      x: (this.x_max + this.x_min) / 2,
+      y: (this.y_max + this.y_min) / 2,
+    }
+    x = this.get_rotated_point(origin, point, angle).x
 
     if(this.scale_width == undefined){return x }
     if(this.reference_width == undefined){return x}
@@ -180,10 +190,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.translate_x +  (this.scale_width / this.reference_width) * x
   }
 
-  private get_scaled_y(y){
-
+  private get_scaled_y(point){
+    let y = point.y;
     let t = this.get_t(this)
-    y = this.get_y_of_rotated_point(t, this, y)
+    let degrees = 45;
+    let angle =  degrees * (Math.PI/180)
+    let origin = {
+      x: (this.x_max + this.x_min) / 2,
+      y: (this.y_max + this.y_min) / 2,
+    }
+    y = this.get_rotated_point(origin, point, angle).y
 
     if(this.scale_height == undefined){return y}
     if(this.reference_height == undefined){return y}
@@ -198,25 +214,39 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let v = {x: this.center_x - x_top, y: this.center_y - y_top};
     let v_len = Math.sqrt( v.x ** 2 + v.y ** 2);
     let u = {x: v.x / v_len, y: v.y / v_len};
+    // return {
+    //   x: x_top - 80 * (u.x),  // The point along a line at a distance d (d=20) is => (x0, y0) + d*u
+    //   y: y_top - 80 * (u.y)
+    // }
     return {
-      x: x_top - 80 * (u.x),  // The point along a line at a distance d (d=20) is => (x0, y0) + d*u
-      y: y_top - 80 * (u.y)
+      x: this.center_x,
+      y: this.center_y + (this.height) - 20
     }
   }
 
-
+  private get_rotated_point(origin, point, angle){
+    // Move point to origin
+    let _px = point.x - origin.x
+    let _py = point.y - origin.y
+    // Rotate points
+    let qx = (Math.cos(angle) * _px) - (Math.sin(angle) * _py)
+    let qy = (Math.sin(angle) * _px) + (Math.cos(angle) * _py)
+    qx = origin.x + qx
+    qy = origin.y + qy
+    return {x: qx, y: qy}
+  }
   private get_x_of_rotated_point(t, instance, h, angle=undefined){
     let rot_angle = angle != undefined ? angle : instance.angle ;
     let a = instance.width;
     let b = instance.height;
     let x = h + a*Math.cos(t) * Math.cos(rot_angle) - b * Math.sin(t) * Math.sin(rot_angle)
-    return x
+
   }
 
   private get_t(instance) {
 
-    let a = instance.width
-    let b = instance.height
+    let a = instance.width;
+    let b = instance.height;
     let t = Math.atan(-(b) *  Math.tan(instance.angle))/ (a);
     return t
   }
@@ -319,8 +349,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let x = node.x
       let y = node.y
 
-      x = this.get_scaled_x(x)
-      y = this.get_scaled_y(y);
+      x = this.get_scaled_x(node)
+      y = this.get_scaled_y(node);
       //console.log(this)
 
       this.draw_point(x, y, i, ctx)
