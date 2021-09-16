@@ -555,6 +555,14 @@
               this.count_instance_in_ctx_paths +=1;
               this.instance_hover_type = instance.type;
             }
+            const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+
+            let rotate = instance.get_rotate_point()
+            this.draw_single_path_circle(
+                rotate.x,
+                rotate.y ,
+                radius + 4, ctx, 'blue', '4px')
+            if(this.is_mouse_in_path(ctx, i, instance)){ result = true}
           }
 
           // TODO we may want to add the edit circle things
