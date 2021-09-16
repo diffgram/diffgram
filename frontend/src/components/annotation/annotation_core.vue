@@ -4526,6 +4526,12 @@
             instance.x_max = Math.max(...instance.nodes.map(p => p.x))
             instance.y_max = Math.max(...instance.nodes.map(p => p.y))
           }
+
+          instance.x_min = parseInt(instance.x_min)
+          instance.y_min = parseInt(instance.y_min)
+          instance.x_max = parseInt(instance.x_max)
+          instance.y_max = parseInt(instance.y_max)
+
         },
         move_something: function (event) {
 
