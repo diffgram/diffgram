@@ -31,6 +31,7 @@ describe('Login Flow tests', function () {
       'org',
       'project',
       'user',
+      'clipboard',
       'video');
   })
 });
