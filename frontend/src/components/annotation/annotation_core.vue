@@ -6648,7 +6648,7 @@
             console.error(error);
           }
         },
-        add_pasted_instance_to_instance_list: function(instance_clipboard, next_frames, original_file_id){
+        add_pasted_instance_to_instance_list: async function(instance_clipboard, next_frames, original_file_id){
           let on_new_frame_or_file = false;
           if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
             on_new_frame_or_file = true;
@@ -6707,6 +6707,7 @@
           let pasted_instance = this.initialize_instance(instance_clipboard);
           if(next_frames != undefined){
             let next_frames_to_add = parseInt(next_frames, 10);
+            const frames_to_save = [];
             for(let i = this.current_frame + 1; i <= (this.current_frame + next_frames_to_add); i++){
               // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
               // It will move on all the other frames.
@@ -6714,8 +6715,11 @@
               new_frame_instance = this.initialize_instance(new_frame_instance);
               // Set the last argument to true, to prevent to push to the instance_list here.
               this.add_instance_to_frame_buffer(new_frame_instance, i);
+              frames_to_save.push(i);
             }
             this.create_instance_events()
+            this.show_loading_paste()
+            await this.save_multiple_frames(frames_to_save);
             this.show_success_paste()
           }
           else{
@@ -6723,6 +6727,7 @@
             // Auto select on label view detail for inmediate attribute edition.
             this.create_instance_events()
           }
+
         },
         paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
           const clipboard = this.clipboard;
@@ -6734,7 +6739,7 @@
           const new_clipboard_instance_list = [];
           for(const instance_clipboard of this.clipboard.instance_list){
             let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
-            this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames, this.clipboard.file_id)
+            await this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames, this.clipboard.file_id)
             new_clipboard_instance_list.push(instance_clipboard_dup)
           }
           this.set_clipboard(new_clipboard_instance_list)
