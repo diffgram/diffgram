@@ -1027,6 +1027,8 @@ class Annotation_Update():
             return 0, 0
         elif instance.type == 'keypoints':
             # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
+            if not instance.nodes['nodes'][0]['x'] or not instance.nodes['nodes'][0]['y']:
+                return 0, 0
             return min([p['x'] for p in instance.nodes['nodes']]), min([p['y'] for p in instance.nodes['nodes']])
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
@@ -1069,7 +1071,8 @@ class Annotation_Update():
             # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
             return 0, 0
         elif instance.type == 'keypoints':
-            # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
+            if not instance.nodes['nodes'][0]['x'] or not instance.nodes['nodes'][0]['y']:
+                return 0, 0
             return max([p['x'] for p in instance.nodes['nodes']]), max([p['y'] for p in instance.nodes['nodes']])
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
