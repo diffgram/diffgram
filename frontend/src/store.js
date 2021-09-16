@@ -95,6 +95,7 @@ export const user_module = {
     log_out({commit}) {
 
       commit('log_out')  // rename to clear_user when possible
+      commit('clear_clipboard')
       commit('clear_project')
       commit('clear_ai')
       commit('clear_annotation')
@@ -597,6 +598,25 @@ const builder_or_trainer = {
   }
 }
 
+const clipboard = {
+  state: {
+    clipboard_data: undefined,
+  },
+  getters:{
+    get_clipboard: state => {
+      return state.clipboard_data;
+    }
+  },
+  mutations: {
+    set_clipboard(state, data) {
+      state.clipboard_data = data
+    },
+    clear_clipboard(state) {
+      state.clipboard_data = undefined;
+    }
+  }
+}
+
 const video = {
   state: {
     current: {},
@@ -647,6 +667,7 @@ const my_store = new Vuex.Store({
     job: job,
     connection: connection,
     input: input,
+    clipboard: clipboard,
     public_project: public_project
   },
   plugins: [createPersistedState({
