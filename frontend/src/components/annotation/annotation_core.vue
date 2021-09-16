@@ -43,12 +43,14 @@
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
                    @replace_file="$emit('replace_file', $event)"
+                   @open_instance_template_dialog="open_instance_template_dialog()"
                    :full_file_loading="full_file_loading"
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
+                   :is_keypoint_template="is_keypoint_template"
           >
           </toolbar>
 
@@ -1891,6 +1893,7 @@
           }
           this.$store.commit('set_instance_select_for_merge', false);
         },
+
         get_save_loading: function(frame_number){
           if(this.video_mode){
             if(!this.save_loading_frame[frame_number]){
@@ -2287,9 +2290,11 @@
           this.snackbar_message = message;
           this.show_custom_snackbar = true
         },
+
         open_instance_template_dialog: function(){
           this.$refs.instance_template_creation_dialog.open();
         },
+
         trigger_instance_changed(){
           // Callback for when an instance is changed
           // This is a WIP that will be used for all the class Instance Types
@@ -4543,10 +4548,12 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.x_min = Math.min(...instance.nodes.map(p => p.x))
-            instance.y_min = Math.min(...instance.nodes.map(p => p.y))
-            instance.x_max = Math.max(...instance.nodes.map(p => p.x))
-            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
+            if (instance.nodes) {
+              instance.x_min = Math.min(...instance.nodes.map(p => p.x))
+              instance.y_min = Math.min(...instance.nodes.map(p => p.y))
+              instance.x_max = Math.max(...instance.nodes.map(p => p.x))
+              instance.y_max = Math.max(...instance.nodes.map(p => p.y))
+            }
           }
 
           instance.x_min = parseInt(instance.x_min)

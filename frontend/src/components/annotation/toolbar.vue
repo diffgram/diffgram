@@ -169,6 +169,17 @@
     </v-flex>
 
     <tooltip_button
+      tooltip_message="Edit Instance Template"
+      v-if="instance_template_selected && is_keypoint_template"
+      @click="$emit('open_instance_template_dialog')"
+      color="primary"
+      icon="mdi-vector-polyline-edit"
+      :icon_style="true"
+      :bottom="true"
+    >
+    </tooltip_button>
+
+    <tooltip_button
       v-if="instance_type == 'tag'"
       @click="$emit('new_tag_instance')"
       color="primary"
@@ -247,18 +258,6 @@
 
     <!-- Caution, the item-text here seems to define the return type to
             v-model, which we use for important things.-->
-    <div>
-      <tooltip_button
-        tooltip_message="Edit Instance Template"
-        v-if="instance_template_selected && is_keypoint_template"
-        @click="open_instance_template_dialog"
-        color="primary"
-        icon="mdi-vector-polyline-edit"
-        :icon_style="true"
-        :bottom="true"
-      >
-      </tooltip_button>
-    </div>
 
 
   <!--  without this div the order of the two buttons randomly swaps
@@ -843,7 +842,8 @@ export default Vue.extend( {
     'instance_type': {},
     'loading_instance_templates': {},
     'instance_type_list': {},
-    'view_issue_mode': {}
+    'view_issue_mode': {},
+    'is_keypoint_template': {}
   },
   data() {
     return {
