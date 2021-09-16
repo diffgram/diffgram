@@ -19,6 +19,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public num_hovered_paths: number = 0;
   public is_drawing_edge: boolean = false;
   public is_moving: boolean = false;
+  public is_rotating: boolean = false;
   public scale_width: number = undefined;
   public scale_height: number = undefined;
   public translate_x: number = undefined;
@@ -100,12 +101,37 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.start_dragging();
     }
     if(this.instance_rotate_control_mouse_hover == true){
-      this.do_rotation_movement()
+      this.is_rotating = true
     }
   }
 
+  public stop() {
+
+    if (this.instance_context.draw_mode
+    && this.template_creation_mode) {
+      this.add_node_to_instance();
+    }
+    else {
+      if(this.is_moving){
+        this.stop_moving();
+      }
+      if(this.node_hover_index != undefined){
+        this.select();
+      }
+
+      if(this.is_dragging_instance){
+        this.stop_dragging()
+      }
+
+      if(this.is_rotating == true) {
+        this.is_rotating = false
+      }
+
+    }
+
+  }
+
   private do_rotation_movement() {
-    console.log(this.instance_rotate_control_mouse_hover)
     this.angle = this.get_angle_of_rotated_keypoint()
     console.log(this.angle)
   }
@@ -124,6 +150,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.is_moving = false;
   }
   public move(){
+    if(this.is_rotating == true){
+      this.do_rotation_movement()
+      return true
+    }
     if (this.is_moving) {
       this.move_node(event)
       return true;
@@ -319,6 +349,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public stop_dragging(){
     this.is_dragging_instance = false;
+  }
+
+  public stop_rotating(){
+    this.is_rotating = false
   }
 
   public start_dragging(){
