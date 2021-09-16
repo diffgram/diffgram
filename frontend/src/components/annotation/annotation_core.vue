@@ -26,6 +26,12 @@
                    :label_list="label_list"
                    :draw_mode="draw_mode"
                    :label_file_colour_map="label_file_colour_map"
+                   :full_file_loading="full_file_loading"
+                   :instance_template_selected="instance_template_selected"
+                   :instance_type="instance_type"
+                   :loading_instance_templates="loading_instance_templates"
+                   :instance_type_list="instance_type_list"
+                   :view_issue_mode="view_issue_mode"
                    @label_settings_change="label_settings = $event, refresh = Date.now()"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -43,12 +49,8 @@
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
                    @replace_file="$emit('replace_file', $event)"
-                   :full_file_loading="full_file_loading"
-                   :instance_template_selected="instance_template_selected"
-                   :instance_type="instance_type"
-                   :loading_instance_templates="loading_instance_templates"
-                   :instance_type_list="instance_type_list"
-                   :view_issue_mode="view_issue_mode"
+                   @copy_all_instances="copy_all_instances"
+
           >
           </toolbar>
 
@@ -1341,6 +1343,9 @@
         }
       },
       computed: {
+        clipboard: function() {
+          return this.$store.getters.get_clipboard
+        },
         instance_template_dict: function(){
           let result = {};
           for(let i = 0; i < this.instance_template_list.length; i++){
@@ -6649,66 +6654,63 @@
             console.error(error);
           }
         },
-        paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
-          if(!this.instance_clipboard && instance_hover_index == undefined){return}
-          if(instance_hover_index != undefined){
-            this.copy_instance(false, instance_hover_index)
+        add_pasted_instance_to_instance_list: async function(instance_clipboard, next_frames, original_file_id){
+          let on_new_frame_or_file = false;
+          if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
+            on_new_frame_or_file = true;
           }
-          // We need to duplicate on each paste to avoid double ID's on the instance list.
-          this.instance_clipboard = this.duplicate_instance(this.instance_clipboard);
-          let on_new_frame = false;
-          if(this.instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
-            on_new_frame = true;
+          if(this.$props.file && this.$props.file.id != original_file_id){
+            on_new_frame_or_file = true;
           }
-          if(this.instance_clipboard.type === 'point' && !on_new_frame){
-            this.instance_clipboard.points[0].x += 50
-            this.instance_clipboard.points[0].y += 50
+          if(this.$props.task && this.$props.task.file.id != original_file_id){
+            on_new_frame_or_file = true;
           }
-          else if(this.instance_clipboard.type === 'box' && !on_new_frame){
-            this.instance_clipboard.x_min += 50
-            this.instance_clipboard.x_max += 50
-            this.instance_clipboard.y_min += 50
-            this.instance_clipboard.y_max += 50
+          if(instance_clipboard.type === 'point' && !on_new_frame_or_file){
+            instance_clipboard.points[0].x += 50
+            instance_clipboard.points[0].y += 50
           }
-          else if((this.instance_clipboard.type === 'line' || this.instance_clipboard.type === 'polygon') && !on_new_frame){
-            for(const point of this.instance_clipboard.points){
+          else if(instance_clipboard.type === 'box' && !on_new_frame_or_file){
+            instance_clipboard.x_min += 50
+            instance_clipboard.x_max += 50
+            instance_clipboard.y_min += 50
+            instance_clipboard.y_max += 50
+          }
+          else if((instance_clipboard.type === 'line' || instance_clipboard.type === 'polygon') && !on_new_frame_or_file){
+            for(const point of instance_clipboard.points){
               point.x += 50;
               point.y += 50;
             }
           }
-          else if((this.instance_clipboard.type === 'keypoints') && !on_new_frame){
-            for(const node of this.instance_clipboard.nodes){
+          else if((instance_clipboard.type === 'keypoints') && !on_new_frame_or_file){
+            for(const node of instance_clipboard.nodes){
               node.x += 50;
               node.y += 50;
             }
           }
-          else if(this.instance_clipboard.type === 'cuboid'  && !on_new_frame){
-            for(let key in this.instance_clipboard.front_face){
+          else if(instance_clipboard.type === 'cuboid'  && !on_new_frame_or_file){
+            for(let key in instance_clipboard.front_face){
               if(['width', 'height'].includes(key)){continue}
-              this.instance_clipboard.front_face[key].x += 85
-              this.instance_clipboard.front_face[key].y += 85
-              this.instance_clipboard.rear_face[key].x += 85
-              this.instance_clipboard.rear_face[key].y += 85
+              instance_clipboard.front_face[key].x += 85
+              instance_clipboard.front_face[key].y += 85
+              instance_clipboard.rear_face[key].x += 85
+              instance_clipboard.rear_face[key].y += 85
             }
           }
-          else if(this.instance_clipboard.type === 'ellipse'  && !on_new_frame){
-            this.instance_clipboard.center_y += 50
-            this.instance_clipboard.center_x += 50
+          else if(instance_clipboard.type === 'ellipse'  && !on_new_frame_or_file){
+            instance_clipboard.center_y += 50
+            instance_clipboard.center_x += 50
           }
-          else if(this.instance_clipboard.type === 'curve'  && !on_new_frame){
-            this.instance_clipboard.p1.x += 50
-            this.instance_clipboard.p1.y += 50
-            this.instance_clipboard.p2.x += 50
-            this.instance_clipboard.p2.y += 50
-
+          else if(instance_clipboard.type === 'curve'  && !on_new_frame_or_file){
+            instance_clipboard.p1.x += 50
+            instance_clipboard.p1.y += 50
+            instance_clipboard.p2.x += 50
+            instance_clipboard.p2.y += 50
           }
           // Deselect instances.
           for(const instance of this.instance_list){
             instance.selected = false;
           }
-
-          let pasted_instance = this.initialize_instance(this.instance_clipboard);
-
+          let pasted_instance = this.initialize_instance(instance_clipboard);
           if(next_frames != undefined){
             let next_frames_to_add = parseInt(next_frames, 10);
             const frames_to_save = [];
@@ -6717,7 +6719,6 @@
               // It will move on all the other frames.
               let new_frame_instance = this.duplicate_instance(pasted_instance);
               new_frame_instance = this.initialize_instance(new_frame_instance);
-
               // Set the last argument to true, to prevent to push to the instance_list here.
               this.add_instance_to_frame_buffer(new_frame_instance, i);
               frames_to_save.push(i);
@@ -6733,6 +6734,31 @@
             this.create_instance_events()
           }
 
+        },
+        paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
+          const clipboard = this.clipboard;
+          if(!clipboard && instance_hover_index == undefined){return}
+          if(instance_hover_index != undefined){
+            this.copy_instance(false, instance_hover_index)
+          }
+          // We need to duplicate on each paste to avoid double ID's on the instance list.
+          const new_clipboard_instance_list = [];
+          for(const instance_clipboard of this.clipboard.instance_list){
+            let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
+            await this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames, this.clipboard.file_id)
+            new_clipboard_instance_list.push(instance_clipboard_dup)
+          }
+          this.set_clipboard(new_clipboard_instance_list)
+        },
+        set_clipboard: function(instance_list){
+          let file_id = undefined;
+          if(this.$props.file && this.$props.file.id){
+            file_id = this.$props.file.id
+          }
+          if(this.$props.task && this.$props.task.file && this.$props.task.file.id){
+            file_id = this.$props.task.file.id;
+          }
+          this.$store.commit('set_clipboard',{instance_list: instance_list, file_id: file_id})
         },
         on_context_menu_copy_instance: function(instance_index){
           this.copy_instance(false, instance_index);
@@ -6787,19 +6813,37 @@
           result = this.initialize_instance(result);
           return result
         },
+        copy_all_instances: function(){
+          let new_instance_list = []
+          for(const instance of this.instance_list){
+            if(instance.soft_delete){
+              continue
+            }
+            let instance_clipboard = this.duplicate_instance(instance);
+            instance_clipboard.selected = false;
+            instance_clipboard.original_frame_number = this.current_frame;
+            new_instance_list.push(instance_clipboard)
+
+          }
+          this.set_clipboard(new_instance_list);
+          this.show_snackbar('All Instances copied into clipboard.')
+        },
         copy_instance: function(hotkey_triggered = false, instance_index = undefined){
           if(this.draw_mode){return}
-          if(!this.selected_instance && instance_index == undefined){return}
-
-          if(this.hotkey_triggered && !this.selected_instance){ return }
-
-          const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
-          this.instance_clipboard = this.duplicate_instance(instance_to_copy);
-          this.instance_clipboard.selected = true;
-          this.instance_clipboard.original_frame_number = this.current_frame;
-
-
-
+          if(!this.label_settings.allow_multiple_instance_select){
+            if(!this.selected_instance && instance_index == undefined){return}
+            if(this.hotkey_triggered && !this.selected_instance){ return }
+            const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
+            this.instance_clipboard = this.duplicate_instance(instance_to_copy);
+            this.instance_clipboard.selected = true;
+            this.instance_clipboard.original_frame_number = this.current_frame;
+            this.set_clipboard([this.instance_clipboard]);
+          }
+          else{
+            alert('Copy paste not implements for multiple instnaces.')
+            // TODO implement flag limit conditions for multi selects.
+            if(!this.selected_instance && instance_index == undefined){return}
+          }
         },
         update_draw_mode_on_instances: function(draw_mode){
           this.instance_context.draw_mode = draw_mode;
