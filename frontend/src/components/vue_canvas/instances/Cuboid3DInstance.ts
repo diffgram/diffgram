@@ -21,7 +21,7 @@ export default class Cuboid3DInstance extends Instance {
     texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
     const geometry = new THREE.BoxGeometry( 2, 2, 2 );
-    const material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshStandardMaterial({
       color: new THREE.Color('red'),
       opacity: 0.5,
       transparent: true,
