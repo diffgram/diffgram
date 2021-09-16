@@ -455,7 +455,7 @@
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
-                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2])"
+                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2], $event[3])"
                                     @cuboid_face_hover_update="cuboid_face_hover_update"
                                     @issue_hover_update="issue_hover_update"
                                     :canvas_transform="canvas_transform"
@@ -979,6 +979,8 @@
       // data()   comment is here for searching
       data() {
         return {
+
+          instance_rotate_control_mouse_hover: null,
 
           snackbar_paste_message: '',
           ghost_instance_hover_index: null,
@@ -3363,7 +3365,12 @@
 
         },
 
-        instance_hover_update: function (index: Number, type : String, figure_id: String) {
+        instance_hover_update: function (
+            index: Number,
+            type : String,
+            figure_id: String,
+            instance_rotate_control_mouse_hover: Boolean
+            ) {
 
           if (this.lock_point_hover_change == true) {return}
           // important, we don't change the value if it's locked
@@ -3373,11 +3380,13 @@
             this.instance_hover_index = parseInt(index)
             this.hovered_figure_id = figure_id;
             this.instance_hover_type = type   // ie polygon, box, etc.
+            this.instance_rotate_control_mouse_hover = instance_rotate_control_mouse_hover
           }
           else{
             this.instance_hover_index = null;
             this.hovered_figure_id = null;
             this.instance_hover_type = null;
+            this.instance_rotate_control_mouse_hover = null
           }
         },
 
@@ -3646,6 +3655,7 @@
           if(!result){
             this.ellipse_hovered_corner = undefined;
           }
+
           return result;
         },
 
@@ -3871,10 +3881,17 @@
 
             this.detect_issue_hover();
 
+            this.style_mouse_if_rotation()
 
 
           } else {
             this.canvas_element.style.cursor = 'default'
+          }
+        },
+
+        style_mouse_if_rotation: function () {
+          if(this.instance_rotate_control_mouse_hover == true) {
+            this.canvas_element.style.cursor = 'help'
           }
         },
         detect_issue_hover: function(){

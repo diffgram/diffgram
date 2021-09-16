@@ -28,6 +28,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public mouse_down_delta_event: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
+  private instance_rotate_control_mouse_hover: boolean = undefined
+
 
   public get_instance_data(): object {
     const result = super.get_instance_data();
@@ -97,6 +99,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.selected && this.is_bounding_box_hovered){
       this.start_dragging();
     }
+    if(this.instance_rotate_control_mouse_hover == true){
+      this.do_rotation_movement()
+    }
+  }
+
+  private do_rotation_movement() {
+    console.log(this.instance_rotate_control_mouse_hover)
+    this.angle = this.get_angle_of_rotated_keypoint()
+    console.log(this.angle)
   }
 
   private drag_instance(event): void{
@@ -178,16 +189,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return y
   }
 
-  private get_angle_of_rotated_keypoint (instance) {
+  private get_angle_of_rotated_keypoint () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
 
-    let a = instance.width;
-    let b = instance.height;
+    let a = this.width;
+    let b = this.height;
     let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-    let centered_x = this.get_x_of_rotated_point(t, instance, 0)
-    let centered_y = this.get_y_of_rotated_point(t, instance, 0)
+    let centered_x = this.get_x_of_rotated_point(t, this, 0)
+    let centered_y = this.get_y_of_rotated_point(t, this, 0)
     let A = {x: centered_x, y: centered_y}
-    let B = {x: instance.center_x, y: instance.center_y}
+    let B = {x: this.center_x, y: this.center_y}
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
     let BA = {x: A.x - B.x, y: A.y - B.y}
     let BC = {x: C.x - B.x, y: C.y - B.y}
@@ -209,7 +220,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         angle = (Math.PI /2)  + theta
       }
     }
-    console.log(angle)
+    //console.log(angle)
     return angle;
   }
 
@@ -217,14 +228,36 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private set_instance_color(){
 
   }
+
+  private draw_rotated_point(
+      ctx,
+      draw_single_path_circle,
+      is_mouse_in_path,
+      i,
+      radius): boolean {
+
+    this.instance_rotate_control_mouse_hover = null
+
+    let rotate_point = this.get_rotate_point()
+
+    draw_single_path_circle(
+        rotate_point.x,
+        rotate_point.y ,
+        radius + 4, ctx, 'blue', '4px')
+    if(is_mouse_in_path(ctx, i, this)){
+      this.instance_rotate_control_mouse_hover = true
+    }
+
+    return this.instance_rotate_control_mouse_hover
+  }
+
   public draw(ctx): void {
     this.ctx = ctx;
     this.num_hovered_paths = 0;
     let i = 0;
 
-    this.center_x = this.x_max - (this.width / 2)
-    this.center_y = this.y_max - (this.height / 2)
-    this.get_angle_of_rotated_keypoint(this)
+    this.center_x = parseInt(this.x_max - (this.width / 2))
+    this.center_y = parseInt(this.y_max - (this.height / 2))
 
     this.draw_instance_bounding_box(ctx)
 
@@ -271,8 +304,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.is_hovered = false;
       }
     }
-
-
   }
 
   private move_node(event): void {
