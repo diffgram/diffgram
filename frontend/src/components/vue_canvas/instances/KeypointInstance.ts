@@ -30,6 +30,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public initialized: boolean = false;
   public current_node_connection: any = [];
   private instance_rotate_control_mouse_hover: boolean = undefined
+  public angle: number = 0
 
 
   public get_instance_data(): object {
@@ -60,8 +61,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
-      node.x = this.get_scaled_x(node.x);
-      node.y = this.get_scaled_y(node.y);
+      node.x = this.get_scaled_x(node);
+      node.y = this.get_scaled_y(node);
     }
     this.scale_height = undefined;
     this.scale_width = undefined;
@@ -174,10 +175,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private get_scaled_x(point){
     //console.log(this.scale_width, this.reference_width, this.translate_x)
     let x = point.x
-    let t = this.get_t(this)
-    let degrees = 45;
-    let angle =  degrees * (Math.PI/180)
+    //let degrees = 90;
+    //let angle =  degrees * (Math.PI/180)
     // Origin is center of shape
+
+    let angle = this.angle
+
     let origin = {
       x: (this.x_max + this.x_min) / 2,
       y: (this.y_max + this.y_min) / 2,
@@ -192,13 +195,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private get_scaled_y(point){
     let y = point.y;
-    let t = this.get_t(this)
-    let degrees = 45;
-    let angle =  degrees * (Math.PI/180)
+    //let degrees = 90;
+    //let angle =  degrees * (Math.PI/180)
+    let angle = this.angle
+
     let origin = {
       x: (this.x_max + this.x_min) / 2,
       y: (this.y_max + this.y_min) / 2,
     }
+
     y = this.get_rotated_point(origin, point, angle).y
 
     if(this.scale_height == undefined){return y}
@@ -225,6 +230,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_rotated_point(origin, point, angle){
+    // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
     // Move point to origin
     let _px = point.x - origin.x
     let _py = point.y - origin.y
@@ -241,7 +247,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let a = instance.width;
     let b = instance.height;
     let x = h + a*Math.cos(t) * Math.cos(rot_angle) - b * Math.sin(t) * Math.sin(rot_angle)
-
+    return x
   }
 
   private get_t(instance) {
@@ -351,7 +357,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let y = node.y
 
       x = this.get_scaled_x(node)
-      y = this.get_scaled_y(node);
+      y = this.get_scaled_y(node)
       //console.log(this)
 
       this.draw_point(x, y, i, ctx)
@@ -506,10 +512,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let node1 = this.nodes.filter(n => n.id === edge.from)[0];
       let node2 = this.nodes.filter(n => n.id === edge.to)[0];
       if(node1 && node2){
-        let x1 = this.get_scaled_x(node1.x);
-        let x2 = this.get_scaled_x(node2.x);
-        let y1 = this.get_scaled_y(node1.y);
-        let y2 = this.get_scaled_y(node2.y);
+        let x1 = this.get_scaled_x(node1);
+        let x2 = this.get_scaled_x(node2);
+        let y1 = this.get_scaled_y(node1);
+        let y2 = this.get_scaled_y(node2);
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2)
         ctx.stroke()
