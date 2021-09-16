@@ -559,7 +559,7 @@
             }
             const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
 
-            this.instance_rotate_control_mouse_hover = instance.draw_rotated_point(
+            this.instance_rotate_control_mouse_hover = instance.draw_rotate_point(
               ctx,
               this.draw_single_path_circle,
               this.is_mouse_in_path,

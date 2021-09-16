@@ -57,6 +57,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.initialized = true;
     this.ctx = ctx;
   }
+
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
       node.x = this.get_scaled_x(node.x);
@@ -65,7 +66,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.scale_height = undefined;
     this.scale_width = undefined;
     this.translate_y = undefined;
-    this.translate_x = undefined;
     this.translate_x = undefined;
     this.reference_width = undefined;
     this.reference_height = undefined;
@@ -132,8 +132,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private do_rotation_movement() {
-    this.angle = this.get_angle_of_rotated_keypoint()
-    console.log(this.angle)
+    this.angle = this.get_angle_of_from_rotation_control_movement()
+    //console.log(this.angle)
   }
 
   private drag_instance(event): void{
@@ -169,10 +169,27 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_scaled_x(x){
+    //console.log(this.scale_width, this.reference_width, this.translate_x)
+
+    let t = this.get_t(this)
+    x = this.get_x_of_rotated_point(t, this, x)
+
     if(this.scale_width == undefined){return x }
     if(this.reference_width == undefined){return x}
     if(this.translate_x == undefined){return x}
     return this.translate_x +  (this.scale_width / this.reference_width) * x
+  }
+
+  private get_scaled_y(y){
+
+    let t = this.get_t(this)
+    y = this.get_y_of_rotated_point(t, this, y)
+
+    if(this.scale_height == undefined){return y}
+    if(this.reference_height == undefined){return y}
+    if(this.translate_y == undefined){return y}
+
+    return this.translate_y + (this.scale_height/ this.reference_height) * y
   }
 
   private get_rotate_point(){
@@ -187,12 +204,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private get_scaled_y(y){
-    if(this.scale_height == undefined){return y}
-    if(this.reference_height == undefined){return y}
-    if(this.translate_y == undefined){return y}
-    return this.translate_y + (this.scale_height/ this.reference_height) * y
-  }
 
   private get_x_of_rotated_point(t, instance, h, angle=undefined){
     let rot_angle = angle != undefined ? angle : instance.angle ;
@@ -219,7 +230,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return y
   }
 
-  private get_angle_of_rotated_keypoint () {
+  private get_angle_of_from_rotation_control_movement () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
 
     let a = this.width;
@@ -259,7 +270,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   }
 
-  private draw_rotated_point(
+  private draw_rotate_point(
       ctx,
       draw_single_path_circle,
       is_mouse_in_path,
@@ -286,6 +297,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.num_hovered_paths = 0;
     let i = 0;
 
+    // Not sure where we want to set this
+    this.width = this.x_max - this.x_min
+    this.height = this.y_max - this.y_min
+
     this.center_x = parseInt(this.x_max - (this.width / 2))
     this.center_y = parseInt(this.y_max - (this.height / 2))
 
@@ -306,17 +321,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       x = this.get_scaled_x(x)
       y = this.get_scaled_y(y);
-
-      // Not sure where we want to set this
-      this.width = this.x_max - this.x_min
-      this.height = this.y_max - this.y_min
-
-      this.angle = 0
       //console.log(this)
-
-      let t = this.get_t(this)
-      x = this.get_x_of_rotated_point(t, this, x)
-      y = this.get_y_of_rotated_point(t, this, y)
 
       this.draw_point(x, y, i, ctx)
       i += 1
