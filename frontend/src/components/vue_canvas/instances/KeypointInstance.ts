@@ -105,6 +105,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     for(let node of this.nodes){
       node.x += x_move;
       node.y += y_move;
+      node.x = parseInt(node.x)
+      node.y = parseInt(node.y)
     }
   }
   public stop_moving(){
