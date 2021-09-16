@@ -4154,38 +4154,9 @@
             instance.height += y_move;
             instance.width -= x_move;
           }
-
+         
           if(['rotate'].includes(this.ellipse_hovered_corner_key)){
-            // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-            let a = instance.width;
-            let b = instance.height;
-            let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-            let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
-            let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
-            let A = {x: centered_x, y: centered_y}
-            let B = {x: instance.center_x, y: instance.center_y}
-            let C = {x: this.mouse_position.x, y: this.mouse_position.y}
-            let BA = {x: A.x - B.x, y: A.y - B.y}
-            let BC = {x: C.x - B.x, y: C.y - B.y}
-            let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
-            let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
-            let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
-            let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
-            let angle = 0;
-            if(this.mouse_position.y < B.y){
-              angle = (Math.PI /2)  - theta
-            }
-            else{
-              if(theta <= (Math.PI/2) && theta > 0){
-                // First cuadrant.
-                angle = (Math.PI /2)  + theta
-              }
-              else if(theta > (Math.PI/2) && theta > 0){
-                // Second Cuadrant
-                angle = (Math.PI /2)  + theta
-              }
-            }
-            instance.angle = angle;
+            instance.angle = this.get_angle_of_rotated_ellipse(instance);
           }
 
           // Translation
@@ -4203,6 +4174,40 @@
           this.instance_list.splice(instance_index, 1, instance);
           return true
         },
+
+        get_angle_of_rotated_ellipse: function (instance) {
+          // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
+          let a = instance.width;
+          let b = instance.height;
+          let t = Math.atan(-(b) *  Math.tan(0))/ (a);
+          let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
+          let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
+          let A = {x: centered_x, y: centered_y}
+          let B = {x: instance.center_x, y: instance.center_y}
+          let C = {x: this.mouse_position.x, y: this.mouse_position.y}
+          let BA = {x: A.x - B.x, y: A.y - B.y}
+          let BC = {x: C.x - B.x, y: C.y - B.y}
+          let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
+          let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
+          let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+          let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
+          let angle = 0;
+          if(this.mouse_position.y < B.y){
+            angle = (Math.PI /2)  - theta
+          }
+          else{
+            if(theta <= (Math.PI/2) && theta > 0){
+              // First cuadrant.
+              angle = (Math.PI /2)  + theta
+            }
+            else if(theta > (Math.PI/2) && theta > 0){
+              // Second Cuadrant
+              angle = (Math.PI /2)  + theta
+            }
+          }
+          return angle;
+        },
+
         move_cuboid: function (event) {
 
           // Would prefer this to be part of general "move" something thing.
