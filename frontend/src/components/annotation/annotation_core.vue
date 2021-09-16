@@ -6820,7 +6820,7 @@
 
           }
           this.set_clipboard(new_instance_list);
-          this.show_snackbar('All files copied into clipboard.')
+          this.show_snackbar('All Instances copied into clipboard.')
         },
         copy_instance: function(hotkey_triggered = false, instance_index = undefined){
           if(this.draw_mode){return}
