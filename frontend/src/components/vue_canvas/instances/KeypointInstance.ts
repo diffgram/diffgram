@@ -134,6 +134,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.translate_x +  (this.scale_width / this.reference_width) * x
   }
 
+  private get_rotate_point(){
+    let x_top = this.x_max
+    let y_top = this.y_max
+    let v = {x: this.center_x - x_top, y: this.center_y - y_top};
+    let v_len = Math.sqrt( v.x ** 2 + v.y ** 2);
+    let u = {x: v.x / v_len, y: v.y / v_len};
+    return {
+      x: x_top - 80 * (u.x),  // The point along a line at a distance d (d=20) is => (x0, y0) + d*u
+      y: y_top - 80 * (u.y)
+    }
+  }
 
   private get_scaled_y(y){
     if(this.scale_height == undefined){return y}
@@ -141,6 +152,68 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.translate_y == undefined){return y}
     return this.translate_y + (this.scale_height/ this.reference_height) * y
   }
+
+  private get_x_of_rotated_point(t, instance, h, angle=undefined){
+    let rot_angle = angle != undefined ? angle : instance.angle ;
+    let a = instance.width;
+    let b = instance.height;
+    let x = h + a*Math.cos(t) * Math.cos(rot_angle) - b * Math.sin(t) * Math.sin(rot_angle)
+    return x
+  }
+
+  private get_t(instance) {
+
+    let a = instance.width
+    let b = instance.height
+    let t = Math.atan(-(b) *  Math.tan(instance.angle))/ (a);
+    return t
+  }
+
+
+  private get_y_of_rotated_point(t, instance, k, angle=undefined){
+    let rot_angle = angle != undefined ? angle : instance.angle ;
+    let a = instance.width;
+    let b = instance.height;
+    let y = k + b*Math.sin(t) * Math.cos(rot_angle) + a * Math.cos(t) * Math.sin(rot_angle)
+    return y
+  }
+
+  private get_angle_of_rotated_keypoint (instance) {
+    // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
+
+    let a = instance.width;
+    let b = instance.height;
+    let t = Math.atan(-(b) *  Math.tan(0))/ (a);
+    let centered_x = this.get_x_of_rotated_point(t, instance, 0)
+    let centered_y = this.get_y_of_rotated_point(t, instance, 0)
+    let A = {x: centered_x, y: centered_y}
+    let B = {x: instance.center_x, y: instance.center_y}
+    let C = {x: this.mouse_position.x, y: this.mouse_position.y}
+    let BA = {x: A.x - B.x, y: A.y - B.y}
+    let BC = {x: C.x - B.x, y: C.y - B.y}
+    let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
+    let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
+    let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+    let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
+    let angle = 0;
+    if(this.mouse_position.y < B.y){
+      angle = (Math.PI /2)  - theta
+    }
+    else{
+      if(theta <= (Math.PI/2) && theta > 0){
+        // First cuadrant.
+        angle = (Math.PI /2)  + theta
+      }
+      else if(theta > (Math.PI/2) && theta > 0){
+        // Second Cuadrant
+        angle = (Math.PI /2)  + theta
+      }
+    }
+    console.log(angle)
+    return angle;
+  }
+
+
   private set_instance_color(){
 
   }
@@ -148,6 +221,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.ctx = ctx;
     this.num_hovered_paths = 0;
     let i = 0;
+
+    this.center_x = this.x_max - (this.width / 2)
+    this.center_y = this.y_max - (this.height / 2)
+    this.get_angle_of_rotated_keypoint(this)
+
     this.draw_instance_bounding_box(ctx)
 
     // Draw current edge
@@ -156,11 +234,27 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_edges(ctx)
 
     for (let node of this.nodes) {
+      // order of operations
       ctx.lineWidth = 2;
       ctx.strokeStyle = this.strokeColor;
       ctx.fillStyle = this.fillColor;
-      let x = this.get_scaled_x(node.x);
-      let y = this.get_scaled_y(node.y);
+      let x = node.x
+      let y = node.y
+
+      x = this.get_scaled_x(x)
+      y = this.get_scaled_y(y);
+
+      // Not sure where we want to set this
+      this.width = this.x_max - this.x_min
+      this.height = this.y_max - this.y_min
+
+      this.angle = 0
+      //console.log(this)
+
+      let t = this.get_t(this)
+      x = this.get_x_of_rotated_point(t, this, x)
+      y = this.get_y_of_rotated_point(t, this, y)
+
       this.draw_point(x, y, i, ctx)
       i += 1
     }
