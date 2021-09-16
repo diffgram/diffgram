@@ -95,6 +95,7 @@ export const user_module = {
     log_out({commit}) {
 
       commit('log_out')  // rename to clear_user when possible
+      commit('clear_clipboard')
       commit('clear_project')
       commit('clear_ai')
       commit('clear_annotation')
@@ -610,8 +611,8 @@ const clipboard = {
     set_clipboard(state, data) {
       state.clipboard_data = data
     },
-    clear_clipboard(state, data) {
-      state.clipboard_data = data
+    clear_clipboard(state) {
+      state.clipboard_data = undefined;
     }
   }
 }
