@@ -231,6 +231,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     // Rotate points
     let qx = (Math.cos(angle) * _px) - (Math.sin(angle) * _py)
     let qy = (Math.sin(angle) * _px) + (Math.cos(angle) * _py)
+    // Move back to original position
     qx = origin.x + qx
     qy = origin.y + qy
     return {x: qx, y: qy}
