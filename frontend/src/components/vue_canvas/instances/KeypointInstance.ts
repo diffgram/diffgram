@@ -130,6 +130,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.start_dragging();
     }
     if(this.instance_rotate_control_mouse_hover == true){
+
       this.is_rotating = true
     }
   }
@@ -164,7 +165,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.angle = this.get_angle_of_from_rotation_control_movement()
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
-    //console.log('ANGLEEE', this.angle, degrees)
+
+    console.log('ANGLEEE', this.angle, degrees)
     //console.log(this.angle)
   }
 
@@ -269,14 +271,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let v = {x: this.center_x - x_top, y: this.center_y - y_top};
     let v_len = Math.sqrt( v.x ** 2 + v.y ** 2);
     let u = {x: v.x / v_len, y: v.y / v_len};
-    // return {
-    //   x: x_top - 80 * (u.x),  // The point along a line at a distance d (d=20) is => (x0, y0) + d*u
-    //   y: y_top - 80 * (u.y)
-    // }
-    return {
+    let center_point =  {
       x: this.center_x,
-      y: this.center_y + (this.height) - 20
+      y: this.center_y + (this.height)
     }
+    let rotated_center_point = this.get_rotated_point(center_point, this.angle);
+    return rotated_center_point
   }
 
   private get_rotated_point(
@@ -340,33 +340,43 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let t = Math.atan(-(b) *  Math.tan(0))/ (a);
 
     // origin
-    let centered_x = (this.x_max + this.x_min) / 2
-    let centered_y = (this.y_max + this.y_min) / 2
-    //let centered_x = this.get_x_of_rotated_point(t, this, 0)
-    //let centered_y = this.get_y_of_rotated_point(t, this, 0)
-    let A = {x: centered_x, y: centered_y}
+
+    // let centered_x = (this.x_max + this.x_min) / 2
+    // let centered_y = (this.y_max + this.y_min) / 2
+    let rotation_control_point = this.get_rotate_point_control_location();
+    let A = {x: rotation_control_point.x, y: rotation_control_point.y}
     let B = {x: this.center_x, y: this.center_y}
+    B = this.get_rotated_point(B, this.angle)
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
+
     let BA = {x: A.x - B.x, y: A.y - B.y}
     let BC = {x: C.x - B.x, y: C.y - B.y}
+    console.log('BA', BA)
+    console.log('BC', BC)
     let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
     let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
     let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+    console.log('BA_dot_BC', BA_dot_BC, 'BA_len', BA_len, 'BC_len', BC_len)
     let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
     let angle = 0;
+    console.log('anglee', this.mouse_position, theta)
     if(this.mouse_position.y < B.y){
       angle = (Math.PI /2)  - theta
     }
     else{
       if(theta <= (Math.PI/2) && theta > 0){
         // First cuadrant.
+        console.log('first')
         angle = (Math.PI /2)  + theta
       }
       else if(theta > (Math.PI/2) && theta > 0){
         // Second Cuadrant
+
+        console.log('second')
         angle = (Math.PI /2)  + theta
       }
     }
+
     //console.log(angle)
     return angle;
   }
@@ -392,6 +402,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         rotate_point.y ,
         radius + 4, ctx, 'blue', '4px')
     if(is_mouse_in_path(ctx, i, this)){
+
       this.instance_rotate_control_mouse_hover = true
     }
 
@@ -456,6 +467,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if(this.is_hovered){
         this.is_hovered = false;
       }
+    }
+    if(this.instance_rotate_control_mouse_hover){
+      this.ctx.canvas.style.cursor = 'all-scroll'
     }
   }
 
@@ -538,16 +552,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   private draw_instance_bounding_box(ctx){
     if(!this.selected){ return }
-
-    let min_x = Math.min(...this.nodes.map(n => n.x)) - this.vertex_size
-    let max_x = Math.max(...this.nodes.map(n => n.x)) + this.vertex_size
-    let min_y = Math.min(...this.nodes.map(n => n.y)) - this.vertex_size
-    let max_y = Math.max(...this.nodes.map(n => n.y)) + this.vertex_size
+    let rotated_nodes = this.nodes.map(node => this.get_rotated_point(node, this.angle))
+    let min_x = Math.min(...rotated_nodes.map(n => n.x)) - this.vertex_size
+    let max_x = Math.max(...rotated_nodes.map(n => n.x)) + this.vertex_size
+    let min_y = Math.min(...rotated_nodes.map(n => n.y)) - this.vertex_size
+    let max_y = Math.max(...rotated_nodes.map(n => n.y)) + this.vertex_size
     let width = Math.abs(max_x - min_x);
     let height = Math.abs(max_y - min_y);
 
     ctx.globalAlpha = 0.4;
     ctx.beginPath();
+
     ctx.rect(min_x, min_y, width + this.vertex_size, height + this.vertex_size);
     ctx.stroke()
     ctx.fill()
