@@ -401,7 +401,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       y = this.get_scaled_y(node)
       //console.log(this)
 
-      this.draw_point(x, y, i, ctx)
+      this.draw_point_and_set_node_hover_index(x, y, i, ctx)
       i += 1
     }
     if (this.num_hovered_paths === 0) {
@@ -500,7 +500,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.globalAlpha = 1;
   }
 
-  private draw_point(x, y, i, ctx): void {
+  private draw_point_and_set_node_hover_index(x, y, i, ctx): void {
     ctx.beginPath();
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
     if (this.is_mouse_in_path(ctx)) {
