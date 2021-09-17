@@ -541,7 +541,10 @@
         link
         dense
         data-cy="merge_polygon"
-        v-if="instance_hover_index_locked != undefined && is_unmerged_instance(instance_hover_index_locked)"
+        v-if="instance_hover_index_locked != undefined
+           && is_unmerged_instance(instance_hover_index_locked)
+           && selected_instance.type == 'polygon' // only polygon supported for now
+           "
         @click="on_click_merge_polygon"
       >
 
@@ -562,7 +565,10 @@
         link
         dense
         data-cy="unmerge_polygon"
-        v-if="instance_hover_index_locked != undefined && !is_unmerged_instance(instance_hover_index_locked)"
+        v-if="instance_hover_index_locked != undefined
+            && !is_unmerged_instance(instance_hover_index_locked)
+            && selected_instance.type == 'polygon' // only polygon supported for now
+             "
         @click="on_click_unmerge_polygon"
       >
 
@@ -591,7 +597,7 @@
       <v-list-item
         link
         dense
-        data-cy="delete_instance"
+        data-cy="delete_polygon_point"
         v-if="polygon_point_hover_locked"
         @click="on_click_delete_polygon_point"
       >
@@ -599,7 +605,7 @@
         <v-list-item-icon>
           <tooltip_icon
 
-            tooltip_message="Delete Instance"
+            tooltip_message="Delete"
             icon="mdi-vector-polyline-minus"
             color="primary"
           />
