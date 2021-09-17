@@ -140,14 +140,19 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     //console.log(this.angle)
   }
 
+  private move_single_node(node) {
+    const x_move = this.mouse_down_delta_event.x;
+    const y_move = this.mouse_down_delta_event.y;
+    node.x += x_move;
+    node.y += y_move;
+    node.x = parseInt(node.x)
+    node.y = parseInt(node.y)
+    return node
+  }
+
   private drag_instance(event): void{
-    let x_move = this.mouse_down_delta_event.x;
-    let y_move = this.mouse_down_delta_event.y;
     for(let node of this.nodes){
-      node.x += x_move;
-      node.y += y_move;
-      node.x = parseInt(node.x)
-      node.y = parseInt(node.y)
+      node = this.move_single_node(node)
     }
   }
   public stop_moving(){
@@ -169,6 +174,26 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     else{
       return false;
+    }
+  }
+
+  private move_node(event): void {
+    if (this.node_hover_index == undefined) {
+      return
+    }
+    let node = this.nodes[this.node_hover_index]
+    //console.log(node.x, node.y, this.mouse_position.x, this.mouse_position.y, node)
+    if (node) {
+
+      let origin = {
+        x: (this.x_max + this.x_min) / 2,
+        y: (this.y_max + this.y_min) / 2,
+      } 
+      node.x = this.get_rotated_point(origin, this.mouse_position, -this.angle).x
+      node.y = this.get_rotated_point(origin, this.mouse_position, -this.angle).y
+      console.log(node.x,node.y)
+
+      this.instance_updated_callback(this);
     }
   }
 
@@ -213,7 +238,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.translate_y + (this.scale_height/ this.reference_height) * y
   }
 
-  private get_rotate_point(){
+  private get_rotate_point_control_location(){
     let x_top = this.x_max
     let y_top = this.y_max
     let v = {x: this.center_x - x_top, y: this.center_y - y_top};
@@ -320,7 +345,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     this.instance_rotate_control_mouse_hover = null
 
-    let rotate_point = this.get_rotate_point()
+    let rotate_point = this.get_rotate_point_control_location()
 
     draw_single_path_circle(
         rotate_point.x,
@@ -382,18 +407,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private move_node(event): void {
-    if (this.node_hover_index == undefined) {
-      return
-    }
-    let node = this.nodes[this.node_hover_index]
-    if (node) {
-
-      node.x = this.mouse_position.x
-      node.y = this.mouse_position.y
-      this.instance_updated_callback(this);
-    }
-  }
 
   public stop_dragging(){
     this.is_dragging_instance = false;
