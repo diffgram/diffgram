@@ -187,12 +187,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     //console.log(node.x, node.y, this.mouse_position.x, this.mouse_position.y, node)
     if (node) {
 
-      let origin = {
-        x: (this.x_max + this.x_min) / 2,
-        y: (this.y_max + this.y_min) / 2,
-      } 
-      node.x = this.get_rotated_point(origin, this.mouse_position, -this.angle).x
-      node.y = this.get_rotated_point(origin, this.mouse_position, -this.angle).y
+      node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
+      node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
       console.log(node.x,node.y)
 
       this.instance_updated_callback(this);
@@ -214,14 +210,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     //let degrees = 90;
     //let angle =  degrees * (Math.PI/180)
     // Origin is center of shape
-
-    let angle = this.angle
-
-    let origin = {
-      x: (this.x_max + this.x_min) / 2,
-      y: (this.y_max + this.y_min) / 2,
-    }
-    x = this.get_rotated_point(origin, point, angle).x
+    x = this.get_rotated_point(point).x
 
     if(this.scale_width == undefined){return x }
     if(this.reference_width == undefined){return x}
@@ -233,14 +222,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let y = point.y;
     //let degrees = 90;
     //let angle =  degrees * (Math.PI/180)
-    let angle = this.angle
-
-    let origin = {
-      x: (this.x_max + this.x_min) / 2,
-      y: (this.y_max + this.y_min) / 2,
-    }
-
-    y = this.get_rotated_point(origin, point, angle).y
+    y = this.get_rotated_point(point).y
 
     if(this.scale_height == undefined){return y}
     if(this.reference_height == undefined){return y}
@@ -265,8 +247,23 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private get_rotated_point(origin, point, angle){
+  private get_rotated_point(
+      point,
+      angle = undefined,
+      origin = undefined){
+
     // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
+    if (angle === undefined){
+      angle = this.angle
+    }
+
+    if (origin === undefined) {
+      origin = {
+        x: (this.x_max + this.x_min) / 2,
+        y: (this.y_max + this.y_min) / 2,
+      }
+    }
+
     // Move point to origin
     let _px = point.x - origin.x
     let _py = point.y - origin.y
