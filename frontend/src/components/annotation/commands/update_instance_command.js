@@ -1,7 +1,7 @@
 export class UpdateInstanceCommand {
 
   _copyInstance(instance) {
-   if (instance.initialized != true) {   // legacy instances
+   if (instance.type != 'keypoints') {   // legacy instances
       const newInstance = {
         ...instance,
         points: [...instance.points.map(p => ({...p}))]
@@ -29,7 +29,7 @@ export class UpdateInstanceCommand {
       }
       return newInstance
     }
-    if (instance.initialized == true) {
+    if (instance.type == 'keypoints') {
       let newInstance = instance.get_instance_data()
       let initializedInstance = this.ann_core_ctx.initialize_instance(newInstance)
       return initializedInstance

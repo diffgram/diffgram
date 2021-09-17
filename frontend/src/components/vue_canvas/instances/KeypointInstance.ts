@@ -264,7 +264,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.translate_y + (this.scale_height/ this.reference_height) * y
   }
 
-  private get_rotate_point_control_location(){
+  private get_rotate_point_control_location(): {x: number, y: number}{
     // TODO
     let x_top = this.x_max
     let y_top = this.y_max
@@ -282,7 +282,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private get_rotated_point(
       point,
       angle = undefined,
-      origin = undefined){
+      origin = undefined): { x: number, y: number }{
 
     // https://stackoverflow.com/questions/2259476/rotating-a-point-about-another-point-2d
     if (angle === undefined){
@@ -343,6 +343,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     // let centered_x = (this.x_max + this.x_min) / 2
     // let centered_y = (this.y_max + this.y_min) / 2
+
     let rotation_control_point = this.get_rotate_point_control_location();
     let A = {x: rotation_control_point.x, y: rotation_control_point.y}
     let B = {x: this.center_x, y: this.center_y}
@@ -358,25 +359,25 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
     console.log('BA_dot_BC', BA_dot_BC, 'BA_len', BA_len, 'BC_len', BC_len)
     let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
-    let angle = 0;
-    console.log('anglee', this.mouse_position, theta)
+    let angle = this.angle;
+
     if(this.mouse_position.y < B.y){
-      angle = (Math.PI /2)  - theta
+      angle = theta
     }
     else{
       if(theta <= (Math.PI/2) && theta > 0){
         // First cuadrant.
         console.log('first')
-        angle = (Math.PI /2)  + theta
+        angle =  (Math.PI/2) + theta
       }
       else if(theta > (Math.PI/2) && theta > 0){
         // Second Cuadrant
 
         console.log('second')
-        angle = (Math.PI /2)  + theta
+        angle =  (Math.PI/2) -+theta
       }
     }
-
+    console.log('END', this.mouse_position, theta)
     //console.log(angle)
     return angle;
   }
