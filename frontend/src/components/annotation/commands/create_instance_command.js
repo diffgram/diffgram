@@ -6,27 +6,28 @@ export class CreateInstanceCommand {
         ...instance,
         points: [...instance.points.map(p => ({...p}))]
       };
-    }
-    if (instance.type === 'curve') {
-      newInstance.p1 = {...instance.p1}
-      newInstance.p2 = {...instance.p2}
-      newInstance.cp = {...instance.cp}
-    }
-    if (instance.type === 'cuboid') {
-      newInstance.rear_face = {
-        ...instance.rear_face,
-        top_right: {...instance.rear_face.top_right},
-        top_left: {...instance.rear_face.top_left},
-        bot_left: {...instance.rear_face.bot_left},
-        bot_right: {...instance.rear_face.bot_right},
+      if (instance.type === 'curve') {
+        newInstance.p1 = {...instance.p1}
+        newInstance.p2 = {...instance.p2}
+        newInstance.cp = {...instance.cp}
       }
-      newInstance.front_face = {
-        ...instance.front_face,
-        top_right: {...instance.front_face.top_right},
-        top_left: {...instance.front_face.top_left},
-        bot_left: {...instance.front_face.bot_left},
-        bot_right: {...instance.front_face.bot_right},
+      if (instance.type === 'cuboid') {
+        newInstance.rear_face = {
+          ...instance.rear_face,
+          top_right: {...instance.rear_face.top_right},
+          top_left: {...instance.rear_face.top_left},
+          bot_left: {...instance.rear_face.bot_left},
+          bot_right: {...instance.rear_face.bot_right},
+        }
+        newInstance.front_face = {
+          ...instance.front_face,
+          top_right: {...instance.front_face.top_right},
+          top_left: {...instance.front_face.top_left},
+          bot_left: {...instance.front_face.bot_left},
+          bot_right: {...instance.front_face.bot_right},
+        }
       }
+      return newInstance
     }
     if (instance.type == 'keypoints') {
       let newInstance = instance.get_instance_data()
@@ -34,7 +35,6 @@ export class CreateInstanceCommand {
       console.log(initializedInstance)
       return initializedInstance
     }
-    return newInstance
   }
 
   constructor(instance, ann_core_ctx) {
