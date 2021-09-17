@@ -61,6 +61,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
+      if (node.x < 300) {
+        node.left_or_right = 'left'
+      } else {
+        node.left_or_right = 'right'
+      }
       node.x = this.get_scaled_x(node);
       node.y = this.get_scaled_y(node);
     }
@@ -398,8 +403,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.strokeStyle = this.strokeColor;
         ctx.fillStyle = this.fillColor;
       }
+
       let x = node.x
       let y = node.y
+
+      if(node.left_or_right == 'left') {
+        let apples = this.draw_icon(ctx, x, y, 'alert')
+      }
+      //if(node.left_or_right=='right') {
+      //  this.draw_icon(ctx, x, y, 'alert')
+      //}
 
       x = this.get_scaled_x(node)
       y = this.get_scaled_y(node)
@@ -471,6 +484,28 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
+  private draw_icon(ctx, x, y, icon){
+    if(!ctx.material_icons_loaded){
+      console.log("did not load material icons")
+      return
+    }
+    const old_color = ctx.fillStyle;
+    const old_font = ctx.font
+    ctx.beginPath();
+    ctx.font = '24px material-icons';
+    ctx.fillStyle = 'rgb(255,175,0)';
+    const text_icon = icon;
+    const text = ctx.fillText(text_icon,
+      x - 20,
+      y + 20);
+    ctx.fillStyle = old_color;
+    ctx.font = old_font;
+    const measures = ctx.measureText(text_icon);
+    // Create an invisible box for click events.
+    //const region = {x: x - 24 , y: y - 24 , w: measures.width, h: 100};
+    //this.is_mouse_in_path_issue(ctx, region, i, issue)
+    return true
+  }
 
   private is_mouse_in_path(ctx) {
     if (ctx.isPointInPath(
