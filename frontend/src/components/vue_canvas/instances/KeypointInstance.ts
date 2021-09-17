@@ -392,8 +392,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     for (let node of this.nodes) {
       // order of operations
       ctx.lineWidth = 2;
-      ctx.strokeStyle = this.strokeColor;
-      ctx.fillStyle = this.fillColor;
+      if (node.occluded == true) {
+        ctx.fillStyle = 'gray'
+      } else {
+        ctx.strokeStyle = this.strokeColor;
+        ctx.fillStyle = this.fillColor;
+      }
       let x = node.x
       let y = node.y
 
@@ -460,7 +464,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.nodes.push({
         x: this.mouse_position.x,
         y: this.mouse_position.y,
-        id: uuidv4()
+        id: uuidv4(),
+        occluded: undefined,
+        left_or_right: undefined
       })
     }
   }
