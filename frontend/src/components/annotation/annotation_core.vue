@@ -4185,7 +4185,7 @@
             instance.height += y_move;
             instance.width -= x_move;
           }
-         
+
           if(['rotate'].includes(this.ellipse_hovered_corner_key)){
             instance.angle = this.get_angle_of_rotated_ellipse(instance);
           }
@@ -4566,6 +4566,18 @@
           instance.y_max = parseInt(instance.y_max)
 
         },
+        move_keypoints: function(){
+          let key_points_did_move = false;
+          let instance = this.instance_list[this.instance_hover_index];
+          if(instance && this.is_actively_resizing){
+            if(!this.original_edit_instance){
+              this.original_edit_instance = instance.duplicate_for_undo();
+              this.original_edit_instance_index = this.instance_hover_index;
+            }
+            key_points_did_move = instance.move();
+          }
+          return key_points_did_move
+        },
         move_something: function (event) {
 
           /*
@@ -4594,7 +4606,7 @@
           }
 
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.instance_list[this.instance_hover_index].move();
+            key_points_did_move = this.move_keypoints(event)
           }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
@@ -5021,12 +5033,6 @@
             }
           }
 
-          if (this.instance_hover_index &&
-              this.instance_list[this.instance_hover_index].type == "keypoints") {
-            this.original_edit_instance = this.instance_list[this.instance_hover_index]
-            this.original_edit_instance_index = this.instance_hover_index;
-          }
-
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
@@ -5288,7 +5294,6 @@
             this.original_edit_instance_index,
             this.original_edit_instance,
             this)
-
           this.command_manager.executeCommand(command);
           this.original_edit_instance = undefined;
           this.original_edit_instance_index = undefined;
@@ -5317,7 +5322,6 @@
         get_node_hover_index: function () {
           if (!this.instance_hover_index) { return }
           let instance = this.instance_list[this.instance_hover_index]
-          //console.log(instance.node_hover_index)
           if (!instance.node_hover_index) { return }
           return instance.node_hover_index
         },
@@ -5325,7 +5329,6 @@
         double_click_keypoint_special_action: function(){
           let node_hover_index = this.get_node_hover_index()
           if (node_hover_index == undefined) {return }
-          console.log(node_hover_index)
           let update = {
             index: this.instance_hover_index,
             node_hover_index: node_hover_index,
@@ -5373,7 +5376,7 @@
               this.bounding_box_mouse_up_edit()
               this.cuboid_mouse_up_edit();
               this.curve_mouse_up_edit();
-              //this.keypoint_mouse_up_edit()
+              this.keypoint_mouse_up_edit()
             }
           }
 

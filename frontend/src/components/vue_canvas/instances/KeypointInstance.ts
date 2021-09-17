@@ -59,6 +59,29 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.ctx = ctx;
   }
 
+  public duplicate_for_undo(){
+    /*
+    * This is used just in the context of undo. Duplicates the entire instance
+    * we reference ID version number. This is different from copy/paste as in this context
+    * we DO keep the version_id, root_id, creation_ref_id
+    * */
+    let duplicate_instance = new KeypointInstance(
+      this.mouse_position,
+      this.ctx,
+      this.instance_context,
+      this.on_instance_updated,
+      this.on_instance_selected,
+      this.on_instance_deselected,
+      this.mouse_down_delta_event
+    );
+    let instance_data_to_keep = {
+      ...this,
+      nodes: this.nodes.map(n => ({...n}) ),
+      edges: this.edges.map(e => ({...e}) ),
+    };
+    duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
+    return duplicate_instance
+  }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
       if (node.x < 300) {
@@ -240,7 +263,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_rotate_point_control_location(){
-    // TODO 
+    // TODO
     let x_top = this.x_max
     let y_top = this.y_max
     let v = {x: this.center_x - x_top, y: this.center_y - y_top};
@@ -451,7 +474,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public add_node_to_instance() {
     if (this.is_hovered) {
       if (this.current_node_connection.length === 1) {
-        //console.log('aaaa ad edgeee', this.node_hover_index, this.current_node_connection)
         if(this.node_hover_index == undefined){return}
         let node = this.nodes[this.node_hover_index];
         this.current_node_connection.push(node);
@@ -463,7 +485,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.current_node_connection = [];
         this.is_drawing_edge = false;
       } else if (this.current_node_connection.length === 0) {
-        //console.log('11aaaa ad edgeee', this.node_hover_index, this.current_node_connection)
         if(this.node_hover_index == undefined){return}
         let node = this.nodes[this.node_hover_index];
         this.current_node_connection.push(node);
@@ -486,7 +507,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private draw_icon(ctx, x, y, icon){
     if(!ctx.material_icons_loaded){
-      console.log("did not load material icons")
       return
     }
     const old_color = ctx.fillStyle;
