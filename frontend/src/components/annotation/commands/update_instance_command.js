@@ -1,10 +1,12 @@
 export class UpdateInstanceCommand {
 
   _copyInstance(instance) {
-    const newInstance = {
-      ...instance,
-      points: [...instance.points.map(p => ({...p}))]
-    };
+    if (instance.initialized != true) {   // legacy instances 
+      const newInstance = {
+        ...instance,
+        points: [...instance.points.map(p => ({...p}))]
+      };
+    }
     if (instance.type === 'curve') {
       newInstance.p1 = {...instance.p1}
       newInstance.p2 = {...instance.p2}
@@ -26,13 +28,19 @@ export class UpdateInstanceCommand {
         bot_right: {...instance.front_face.bot_right},
       }
     }
+    if (instance.initialized == true) {
+      let newInstance = instance.get_instance_data()
+      let initializedInstance = this.ann_core_ctx.initialize_instance(newInstance)
+      console.log(initializedInstance)
+      return initializedInstance
+    }
     return newInstance
   }
 
   constructor(instance, instance_index, old_instance, ann_core_ctx) {
+    this.ann_core_ctx = ann_core_ctx;
     this.old_instance = this._copyInstance(old_instance)
     this.instance = this._copyInstance(instance)
-    this.ann_core_ctx = ann_core_ctx;
     this.instance_index = instance_index;
   }
 

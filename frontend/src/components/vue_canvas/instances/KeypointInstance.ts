@@ -189,7 +189,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
       node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
-      console.log(node.x,node.y)
+      //console.log(node.x,node.y)
 
       this.instance_updated_callback(this);
     }
@@ -197,7 +197,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private calculate_min_max_points(){
     if (this.nodes) {
-      //get_rotated_point
+      //TODO handle for case where it's rotated and user pushes bounds (causes whole object to move)
       let x_node_rotated_list = [...this.nodes.map(p => p.x)]
       let y_node_rotated_list = [...this.nodes.map(p => p.y)]
       this.x_min = parseInt(Math.min(...x_node_rotated_list)) // careful math.min() expects destructured otherwised NaN

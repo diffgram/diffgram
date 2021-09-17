@@ -5017,6 +5017,12 @@
             }
           }
 
+          if (this.instance_hover_index &&
+              this.instance_list[this.instance_hover_index].type == "keypoints") {
+            this.original_edit_instance = this.instance_list[this.instance_hover_index]
+            this.original_edit_instance_index = this.instance_hover_index;
+          }
+
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
@@ -5268,6 +5274,21 @@
           this.original_edit_instance = undefined;
           this.original_edit_instance_index = undefined;
         },
+        keypoint_mouse_up_edit: function(){
+          if(!this.original_edit_instance){ return }
+          if(this.original_edit_instance.type != 'keypoints'){ return }
+          if(this.original_edit_instance_index == undefined){ return }
+
+          const command = new UpdateInstanceCommand(
+            this.instance_list[this.original_edit_instance_index],
+            this.original_edit_instance_index,
+            this.original_edit_instance,
+            this)
+
+          this.command_manager.executeCommand(command);
+          this.original_edit_instance = undefined;
+          this.original_edit_instance_index = undefined;
+        },
         polygon_delete_point: function(polygon_point_index){
           if(this.draw_mode){return}
           if(!this.selected_instance){return}
@@ -5325,6 +5346,7 @@
               this.bounding_box_mouse_up_edit()
               this.cuboid_mouse_up_edit();
               this.curve_mouse_up_edit();
+              //this.keypoint_mouse_up_edit()
             }
           }
 
@@ -5751,9 +5773,9 @@
               });
 
             }
-
-            // Push one to the buffer dict an the other one to the actual instance_list.
             this.push_instance_to_instance_list_and_buffer(new_instance, this.current_frame)
+            //const command = new CreateInstanceCommand(new_instance, this);
+            //this.command_manager.executeCommand(command);
 
           })
         },
