@@ -1,7 +1,7 @@
 export class CreateInstanceCommand {
 
   _copyInstance(instance) {
-   if (instance.initialized != true) {   // legacy instances 
+   if (instance.initialized != true) {   // legacy instances
       const newInstance = {
         ...instance,
         points: [...instance.points.map(p => ({...p}))]
@@ -32,7 +32,6 @@ export class CreateInstanceCommand {
     if (instance.type == 'keypoints') {
       let newInstance = instance.get_instance_data()
       let initializedInstance = this.ann_core_ctx.initialize_instance(newInstance)
-      console.log(initializedInstance)
       return initializedInstance
     }
   }
@@ -40,7 +39,6 @@ export class CreateInstanceCommand {
   constructor(instance, ann_core_ctx) {
     this.ann_core_ctx = ann_core_ctx;
     this.instance = this._copyInstance(instance);
-    console.log(this.instance)
     this.created_instance_index = undefined;
   }
 
