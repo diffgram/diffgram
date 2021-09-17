@@ -544,10 +544,18 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private draw_edges(ctx) {
     ctx.lineWidth = this.line_width;
     ctx.setLineDash([])
-    ctx.beginPath();
+
     for (let edge of this.edges) {
+
+      ctx.beginPath();
+      ctx.strokeStyle = this.strokeColor
+
       let node1 = this.nodes.filter(n => n.id === edge.from)[0];
       let node2 = this.nodes.filter(n => n.id === edge.to)[0];
+
+      if (node2.occluded == true) {
+        ctx.strokeStyle = 'gray'
+      }
       if(node1 && node2){
         let x1 = this.get_scaled_x(node1);
         let x2 = this.get_scaled_x(node2);
