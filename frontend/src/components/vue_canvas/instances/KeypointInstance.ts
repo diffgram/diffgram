@@ -340,32 +340,20 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let B = {x: this.center_x, y: this.center_y}
     B = this.get_rotated_point(B, this.angle)
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
-
+    let A_len = Math.sqrt((A.x ** 2) + (A.y ** 2))
+    let B_len = Math.sqrt((B.x ** 2) + (B.y ** 2))
+    let C_len = Math.sqrt((C.x ** 2) + (C.y ** 2))
     let BA = {x: A.x - B.x, y: A.y - B.y}
     let BC = {x: C.x - B.x, y: C.y - B.y}
 
     let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
     let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
     let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
-    let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
-    let angle = this.angle;
-
-    if(this.center_x < this.mouse_position.x && this.center_y > this.mouse_position.y){
-      // First quadrant (top right)
-      angle = (Math.PI) + theta
-    }
-    if(this.center_x > this.mouse_position.x && this.center_y > this.mouse_position.y){
-      // Second quadrant (top left)
-      angle = theta
-    }
-    if(this.center_x > this.mouse_position.x && this.center_y < this.mouse_position.y){
-      // Third quadrant (bottom left)
-      angle = theta
-    }
-    if(this.center_x < this.mouse_position.x && this.center_y < this.mouse_position.y){
-      // Fourth quadrant (bottom right)
-      angle = (Math.PI) + theta
-    }
+    // let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
+    let theta = -Math.atan2(BC.x, BC.y)
+    let cross_ac = A_len * C_len * Math.sin(this.angle);
+    let angle = 0;
+    angle += theta
     return angle;
   }
 
