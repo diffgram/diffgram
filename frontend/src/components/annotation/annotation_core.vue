@@ -5314,8 +5314,25 @@
           this.instance_list.splice(this.selected_instance_index, 1, this.selected_instance)
         },
 
+        get_node_hover_index: function () {
+          if (!this.instance_hover_index) { return }
+          let instance = this.instance_list[this.instance_hover_index]
+          //console.log(instance.node_hover_index)
+          if (!instance.node_hover_index) { return }
+          return instance.node_hover_index
+        },
+
         double_click_keypoint_special_action: function(){
-          console.log(this.instance_hover_index)
+          let node_hover_index = this.get_node_hover_index()
+          if (node_hover_index == undefined) {return }
+          console.log(node_hover_index)
+          let update = {
+            index: this.instance_hover_index,
+            node_hover_index: node_hover_index,
+            mode: "on_click_update_point_attribute"
+          }
+          this.instance_update(update)
+
         },
 
         double_click: function($event){
