@@ -197,10 +197,13 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private calculate_min_max_points(){
     if (this.nodes) {
-      this.x_min = parseInt(Math.min(...this.nodes.map(p => p.x)))
-      this.y_min = parseInt(Math.min(...this.nodes.map(p => p.y)))
-      this.x_max = parseInt(Math.max(...this.nodes.map(p => p.x)))
-      this.y_max = parseInt(Math.max(...this.nodes.map(p => p.y)))
+      //get_rotated_point
+      let x_node_rotated_list = [...this.nodes.map(p => p.x)]
+      let y_node_rotated_list = [...this.nodes.map(p => p.y)]
+      this.x_min = parseInt(Math.min(...x_node_rotated_list)) // careful math.min() expects destructured otherwised NaN
+      this.y_min = parseInt(Math.min(...y_node_rotated_list))
+      this.x_max = parseInt(Math.max(...x_node_rotated_list))
+      this.y_max = parseInt(Math.max(...y_node_rotated_list))
     }
   }
 
@@ -232,6 +235,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_rotate_point_control_location(){
+    // TODO 
     let x_top = this.x_max
     let y_top = this.y_max
     let v = {x: this.center_x - x_top, y: this.center_y - y_top};
