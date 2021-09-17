@@ -136,7 +136,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.angle = this.get_angle_of_from_rotation_control_movement()
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
-    console.log('ANGLEEE', this.angle, degrees)
+    //console.log('ANGLEEE', this.angle, degrees)
     //console.log(this.angle)
   }
 
@@ -273,8 +273,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let a = this.width;
     let b = this.height;
     let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-    let centered_x = this.get_x_of_rotated_point(t, this, 0)
-    let centered_y = this.get_y_of_rotated_point(t, this, 0)
+
+    // origin
+    let centered_x = (this.x_max + this.x_min) / 2
+    let centered_y = (this.y_max + this.y_min) / 2
+    //let centered_x = this.get_x_of_rotated_point(t, this, 0)
+    //let centered_y = this.get_y_of_rotated_point(t, this, 0)
     let A = {x: centered_x, y: centered_y}
     let B = {x: this.center_x, y: this.center_y}
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
@@ -384,11 +388,13 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     let node = this.nodes[this.node_hover_index]
     if (node) {
+
       node.x = this.mouse_position.x
       node.y = this.mouse_position.y
       this.instance_updated_callback(this);
     }
   }
+
   public stop_dragging(){
     this.is_dragging_instance = false;
   }
