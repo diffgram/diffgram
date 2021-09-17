@@ -335,15 +335,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private get_angle_of_from_rotation_control_movement () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
 
-    let a = this.width;
-    let b = this.height;
-    let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-
-    // origin
-
-    // let centered_x = (this.x_max + this.x_min) / 2
-    // let centered_y = (this.y_max + this.y_min) / 2
-
     let rotation_control_point = this.get_rotate_point_control_location();
     let A = {x: rotation_control_point.x, y: rotation_control_point.y}
     let B = {x: this.center_x, y: this.center_y}
@@ -352,33 +343,29 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     let BA = {x: A.x - B.x, y: A.y - B.y}
     let BC = {x: C.x - B.x, y: C.y - B.y}
-    console.log('BA', BA)
-    console.log('BC', BC)
+
     let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
     let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
     let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
-    console.log('BA_dot_BC', BA_dot_BC, 'BA_len', BA_len, 'BC_len', BC_len)
     let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
     let angle = this.angle;
 
-    if(this.mouse_position.y < B.y){
+    if(this.center_x < this.mouse_position.x && this.center_y > this.mouse_position.y){
+      // First quadrant (top right)
+      angle = (Math.PI) + theta
+    }
+    if(this.center_x > this.mouse_position.x && this.center_y > this.mouse_position.y){
+      // Second quadrant (top left)
       angle = theta
     }
-    else{
-      if(theta <= (Math.PI/2) && theta > 0){
-        // First cuadrant.
-        console.log('first')
-        angle =  (Math.PI/2) + theta
-      }
-      else if(theta > (Math.PI/2) && theta > 0){
-        // Second Cuadrant
-
-        console.log('second')
-        angle =  (Math.PI/2) -+theta
-      }
+    if(this.center_x > this.mouse_position.x && this.center_y < this.mouse_position.y){
+      // Third quadrant (bottom left)
+      angle = theta
     }
-    console.log('END', this.mouse_position, theta)
-    //console.log(angle)
+    if(this.center_x < this.mouse_position.x && this.center_y < this.mouse_position.y){
+      // Fourth quadrant (bottom right)
+      angle = (Math.PI) + theta
+    }
     return angle;
   }
 
