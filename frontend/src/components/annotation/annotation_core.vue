@@ -2691,6 +2691,10 @@
             instance.pause_object = true
           }
 
+          if (update.mode == 'on_click_update_point_attribute'){
+            instance.nodes[update.node_hover_index].occluded = true
+          }
+
           // instance update
           if (update.mode == "update_label") {
             // not 100% sure if we need both here
@@ -5309,9 +5313,15 @@
 
           this.instance_list.splice(this.selected_instance_index, 1, this.selected_instance)
         },
+
+        double_click_keypoint_special_action: function(){
+          console.log(this.instance_hover_index)
+        },
+
         double_click: function($event){
           this.mouse_position = this.mouse_transform($event, this.mouse_position)
           this.polygon_delete_point();
+          this.double_click_keypoint_special_action()
         },
 
         mouse_up: function () {
