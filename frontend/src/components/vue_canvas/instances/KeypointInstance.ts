@@ -160,10 +160,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public move(){
     if(this.is_rotating == true){
+      this.calculate_min_max_points()
       this.do_rotation_movement()
       return true
     }
     if (this.is_moving) {
+      this.calculate_min_max_points()
       this.move_node(event)
       return true;
     }
@@ -194,6 +196,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       console.log(node.x,node.y)
 
       this.instance_updated_callback(this);
+    }
+  }
+
+  private calculate_min_max_points(){
+    if (this.nodes) {
+      this.x_min = parseInt(Math.min(...this.nodes.map(p => p.x)))
+      this.y_min = parseInt(Math.min(...this.nodes.map(p => p.y)))
+      this.x_max = parseInt(Math.max(...this.nodes.map(p => p.x)))
+      this.y_max = parseInt(Math.max(...this.nodes.map(p => p.y)))
     }
   }
 
