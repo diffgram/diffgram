@@ -414,19 +414,17 @@ class Report_Runner():
     def execute_query(self,
                       view_type: str = None):
 
-        # apparently with group_by need to always do .all() here...
 
-        # if view_type == "count":
-        #	return self.query.count()
-        # else:
-        from shared.helpers.performance import explain
         q = self.query
-        print(q)
-        explain_result = self.session.execute(explain(q)).fetchall()
-        for x in explain_result:
-            print(x)
-        return q.all()
-
+        # Uncomment for performance debugging
+        # from shared.helpers.performance import explain
+        # print(q)
+        # explain_result = self.session.execute(explain(q)).fetchall()
+        # for x in explain_result:
+        #     print(x)
+        result = q.all()
+        return result
+    
     def apply_permission_scope_to_query(self):
         """
         Other stuff is in context of "does user have permission to run report"

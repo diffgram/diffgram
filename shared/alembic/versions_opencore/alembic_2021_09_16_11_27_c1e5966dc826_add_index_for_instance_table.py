@@ -20,9 +20,13 @@ def upgrade():
     op.create_index('index__task_id', 'instance', ['task_id'])
     op.create_index('index__created_time', 'instance', ['created_time'])
     op.create_index('index__task_id_label_file_id', 'instance', ['task_id', 'label_file_id'])
+    op.create_index('index_project_id_soft_delete', 'instance', ['project_id', 'soft_delete'])
+    op.create_index('index_project_id_created_time_soft_delete', 'instance', ['project_id', 'created_time', 'soft_delete'])
 
 
 def downgrade():
     op.drop_index('index__task_id', 'instance')
     op.drop_index('index__created_time', 'created_time')
     op.drop_index('index__task_id_label_file_id', 'instance')
+    op.drop_index('index_project_id_soft_delete', 'instance')
+    op.drop_index('index_project_id_created_time_soft_delete', 'instance')
