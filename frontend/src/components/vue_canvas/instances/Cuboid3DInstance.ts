@@ -23,7 +23,7 @@ export default class Cuboid3DInstance extends Instance {
     this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
     this.material = new THREE.MeshBasicMaterial({
       color: new THREE.Color('red'),
-      opacity: 0.5,
+      opacity: 0.7,
       transparent: true,
     });
 

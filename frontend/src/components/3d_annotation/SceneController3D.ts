@@ -5,25 +5,31 @@ import ObjectTransformControls from "./ObjectTransformControls";
 export default class SceneController3D{
   public scene: THREE.Scene;
   public controls_orbit: OrbitControls;
-  public controls_transform: TransformControls;
   public camera: OrbitControls;
   public renderer: THREE.WebGLRenderer;
   public controls_panning_speed: number;
   public object_transform_controls:  ObjectTransformControls;
   public mouse: THREE.Vector2;
-  public raycaster: THREE.Vector2;
+  public raycaster: THREE.Raycaster;
+  public axes_helper: THREE.AxesHelper;
+  public grid_helper: THREE.GridHelper;
+  public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
 
   public constructor(scene, camera, renderer, controls_panning_speed = 60) {
-    this.scene = scene
-    this.camera = camera
-    this.renderer = renderer
-    this.mouse = THREE.Vector2()
-    this.raycaster = THREE.Raycaster()
+    this.scene = scene;
+    this.camera = camera;
+    this.renderer = renderer;
+    this.mouse =  new THREE.Vector2();
+    this.raycaster = new THREE.Raycaster();
 
     this.controls_panning_speed = controls_panning_speed
     // Add grid and axis helper arrows
-    this.scene.add( new THREE.AxesHelper( 5 ) );
-    this.scene.add( new THREE.GridHelper( 1000, 1000, 0x888888, 0x444444 ) );
+    this.axes_helper = new THREE.AxesHelper(5);
+    this.axes_helper.name = 'axes_helper';
+    this.grid_helper = new THREE.GridHelper( 1000, 10, 0x888888, 0x444444 )
+    this.grid_helper.name = 'grid_helper';
+    this.scene.add(this.grid_helper);
+    this.scene.add(this.axes_helper);
 
   }
   public attach_mouse_events(){
@@ -52,20 +58,27 @@ export default class SceneController3D{
     }
 
     requestAnimationFrame( this.render.bind(this) );
-
+    this.check_for_raycaster_picks();
     this.renderer.render( this.scene, this.camera );
 
   }
 
+  public reset_materials(){
+    for(const child of this.scene.children){
+      if(child.material){
+        child.material.opacity = 0.7;
+      }
+    }
+  }
   public check_for_raycaster_picks(){
     // update the picking ray with the camera and mouse position
     this.raycaster.setFromCamera( this.mouse, this.camera );
 
     // calculate objects intersecting the picking ray
-    const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => obj.name !== 'point_cloud') );
+    const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
 
     for ( let i = 0; i < intersects.length; i ++ ) {
-      intersects[i].object.material.color.set( 0xff0000 );
+      intersects[i].object.material.opacity = 0.2;
     }
   }
   public add_orbit_controls(){

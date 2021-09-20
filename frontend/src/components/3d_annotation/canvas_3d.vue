@@ -74,7 +74,7 @@
           let cuboid = new Cuboid3DInstance(this.scene_controller, 0, 30);
           cuboid.draw_on_scene();
           if(cuboid.mesh){
-            this.scene_controller.attach_transform_controls_to_mesh(cuboid.mesh)
+            // this.scene_controller.attach_transform_controls_to_mesh(cuboid.mesh)
           }
 
         } else {

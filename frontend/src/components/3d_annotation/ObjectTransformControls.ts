@@ -27,18 +27,18 @@ export default class ObjectTransformControls {
         control.setScaleSnap( 0.25 );
         break;
 
-      case 87: // W
-        control.setMode( 'translate' );
-        break;
+      case 84: // W
+        if(control.mode === 'translate'){
+          control.setMode( 'rotate' );
+        }
+        else if(control.mode === 'rotate'){
+          control.setMode( 'scale' );
+        }
+        else{
+          control.setMode( 'translate' );
+        }
 
-      case 69: // E
-        control.setMode( 'rotate' );
         break;
-
-      case 82: // R
-        control.setMode( 'scale' );
-        break;
-
       case 187:
       case 107: // +, =, num+
         control.setSize( control.size + 0.1 );
