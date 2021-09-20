@@ -22,8 +22,8 @@ default_denied_message = "(Project Scope) No access."
 class Project_permissions():
 
 	def user_has_project(Roles,
-					     apis_project_list = [],
-					     apis_user_list=["security_email_verified"]):
+						 apis_project_list = [],
+						 apis_user_list=["security_email_verified"]):
 		"""
 		Defaults to forbidden if no match found
 
@@ -79,8 +79,15 @@ class Project_permissions():
 				raise Forbidden(default_denied_message + " [ First Sanity Checks ] project_string_id None, null, etc.")
 
 			if request.authorization is not None:
-
+	
 				basic_auth_denied_message = default_denied_message + " [Basic Auth Based] "
+
+				client_id = request.authorization.get('username', None)
+				if not client_id:
+					raise Forbidden(basic_auth_denied_message + " No username. (client_id)")
+				client_secret = request.authorization.get('password', None)
+				if not client_secret:
+					raise Forbidden(basic_auth_denied_message + " No password. (client_secret)")
 
 				result = API_Permissions.by_project(session = session,
 													project_string_id = project_string_id,
@@ -107,7 +114,7 @@ class Project_permissions():
 				apis_user_list = apis_user_list,
 				project_string_id = project_string_id,
 				Roles = Roles,
-                user_denied_message = user_denied_message)
+				user_denied_message = user_denied_message)
 
 			if result is True:
 				return True
@@ -115,13 +122,13 @@ class Project_permissions():
 				raise Forbidden(user_denied_message)
 
 
-    # Assumes in the context of a user - not basic auth
+	# Assumes in the context of a user - not basic auth
 	def check_permissions(Roles,
-					   	  project_string_id,
+						  project_string_id,
 						  session,
 						  apis_project_list = None,
-					      apis_user_list = None,
-                          user_denied_message = None):
+						  apis_user_list = None,
+						  user_denied_message = None):
 		"""
 
 		"""
