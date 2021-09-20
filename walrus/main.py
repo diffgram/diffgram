@@ -17,21 +17,6 @@ app.app_context()
 sslify = SSLify(app, subdomains=True)
 
 
-
-@app.errorhandler(500)
-def server_error(e):
-    logging.exception('An error occurred during a request.')
-
-    if app.debug == False:
-        return "Please try again later", 500
-
-    if app.debug == True:
-        return """
-		An internal error occurred: <pre>{}</pre>
-		See logs for full stacktrace.
-		""".format(e), 500
-
-
 # This is so all the ORM can map the shared modules
 # Appears to be needed even if not directly using them
 # Maybe a setting we can look into

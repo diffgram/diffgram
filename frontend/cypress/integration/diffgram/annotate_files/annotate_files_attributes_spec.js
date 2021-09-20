@@ -59,7 +59,7 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(5000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
@@ -121,7 +121,7 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
@@ -190,7 +190,7 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
@@ -258,7 +258,7 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
