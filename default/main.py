@@ -31,19 +31,6 @@ app = Flask('Diffgram',
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024    # 50 Mb limit
 sslify = SSLify(app, subdomains=True)  
 
-@app.errorhandler(500)
-def server_error(e):
-	logging.exception('An error occurred during a request.')
-
-	if app.debug == False:
-		return "Please try again later", 500
-
-	if app.debug == True:
-		return """
-		An internal error occurred: <pre>{}</pre>
-		See logs for full stacktrace.
-		""".format(e), 500
-
 from routes_init import do_routes_importing
 
 do_routes_importing()
