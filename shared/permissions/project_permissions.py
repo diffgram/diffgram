@@ -82,11 +82,13 @@ class Project_permissions():
 
 			if request.authorization is not None:
 
+				default_denied_message += " Basic Auth Based "
+
 				result = API_Permissions.by_project(session = session,
 													project_string_id = project_string_id,
 													Roles = Roles)
 				if result is not True:
-					raise Forbidden(default_denied_message + " API Permissions")
+					raise Forbidden(default_denied_message + "Failed API Permissions")
 
 				# At the moment auth doesn't actually
 				# get project as it has all results stored...
@@ -104,6 +106,8 @@ class Project_permissions():
 
 				return True
 		
+			default_denied_message += " User Based Permissions"
+
 			result = Project_permissions.check_permissions(
 				session = session,
 				apis_project_list = apis_project_list,
@@ -130,14 +134,14 @@ class Project_permissions():
 		"""
 		if project_string_id is None:	 
 			# TODO merge None checks from other thing up top here.
-			raise Forbidden("project_string_id is None")
+			raise Forbidden(default_denied_message + "project_string_id is None")
 
 		if 'allow_anonymous' in Roles:
 			return True
 		
 		project = Project.get(session, project_string_id)
 		if project is None:
-			raise Forbidden(default_denied_message)
+			raise Forbidden(default_denied_message + " Failed to Get Project ")
 
 		# Careful here! Just becuase a project is public
 		# Doesn't mean public is allowed acccess to all
@@ -151,7 +155,7 @@ class Project_permissions():
 
 		# TODO merge LoggedIn() with getUserID() similar internal logic
 		if LoggedIn() != True:
-			raise Forbidden(default_denied_message)
+			raise Forbidden(default_denied_message + " Failed LoggedIn ")
 
 		if 'allow_any_logged_in_user' in Roles:		# TODO not happy with this name, want more clarity on how this effects other permissions like apis / project etc.
 			return True
