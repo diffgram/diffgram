@@ -16,8 +16,6 @@ from shared.permissions.api_permissions import API_Permissions
 from shared.permissions.user_permissions import User_Permissions
 
 
-# In context of many permission
-# scopes this can help clarify
 default_denied_message = "(Project Scope) No access."
 
 
@@ -90,11 +88,6 @@ class Project_permissions():
 				if result is not True:
 					raise Forbidden(basic_auth_denied_message + "Failed API Permissions")
 
-				# At the moment auth doesn't actually
-				# get project as it has all results stored...
-				# not clear that we would need a None check here
-				# given its checked in auth?
-
 				project = Project.get(session, project_string_id)
 				if project is None:
 					raise Forbidden(basic_auth_denied_message + " Can't find project")
@@ -130,9 +123,6 @@ class Project_permissions():
 					      apis_user_list = None,
                           user_denied_message = None):
 		"""
-		TODO this could use better organization
-		ie project_string_id is None check could be here, but
-		we seem to do it an extra time on line 123
 
 		"""
 		if user_denied_message is None:
