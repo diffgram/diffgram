@@ -414,14 +414,17 @@ class Report_Runner():
     def execute_query(self,
                       view_type: str = None):
 
-        # apparently with group_by need to always do .all() here...
 
-        # if view_type == "count":
-        #	return self.query.count()
-        # else:
-        print('AAA', self.query)
-        return self.query.all()
-
+        q = self.query
+        # Uncomment for performance debugging
+        # from shared.helpers.performance import explain
+        # print(q)
+        # explain_result = self.session.execute(explain(q)).fetchall()
+        # for x in explain_result:
+        #     print(x)
+        result = q.all()
+        return result
+    
     def apply_permission_scope_to_query(self):
         """
         Other stuff is in context of "does user have permission to run report"
@@ -433,7 +436,6 @@ class Report_Runner():
         """
 
         if self.scope == "project":
-            print('aaa', self.project.id)
             self.query = self.query.filter(
                 self.base_class.project_id == self.project.id)
 
@@ -665,7 +667,6 @@ class Report_Runner():
         label_file_id_list: List of ints ids
         """
 
-        print('label_file_id_list',label_file_id_list)
         self.query = self.query.filter(
             self.base_class.label_file_id.in_(label_file_id_list))
 
@@ -1011,7 +1012,6 @@ class Report_Runner():
         We set report_template from self if it's None...
 
         """
-        print('stats_list_by_period', stats_list_by_period)
         if report_template is None:
             report_template = self.report_template
 
@@ -1228,7 +1228,6 @@ def report_save_api():
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
-    print(input, 'aaaaaaaaaaaaaaaaaaaa')
     with sessionMaker.session_scope() as session:
 
         report_runner = Report_Runner(
@@ -1254,7 +1253,7 @@ def report_save_api():
         else:
             report_runner.validate_report_permissions_scope(
                 scope = input['metadata'].get('scope'),
-                project_string_id = input['metadata'].get('project_string_id')
+                project_string_id = input['metadata'].get('project_string_id'),
             )
 
         report_runner.save()
