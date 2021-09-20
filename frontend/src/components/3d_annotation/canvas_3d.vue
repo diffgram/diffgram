@@ -60,6 +60,8 @@
 
           this.scene_controller = new SceneController3D(scene, this.camera, this.renderer)
 
+          this.scene_controller.attach_mouse_events();
+
           this.configure_controls();
 
           this.point_cloud_mesh = await this.load_pcd();
@@ -71,6 +73,9 @@
           this.scene_controller.start_render();
           let cuboid = new Cuboid3DInstance(this.scene_controller, 0, 30);
           cuboid.draw_on_scene();
+          if(cuboid.mesh){
+            this.scene_controller.attach_transform_controls_to_mesh(cuboid.mesh)
+          }
 
         } else {
           const warning = WEBGL.getWebGLErrorMessage();
@@ -78,7 +83,10 @@
 
         }
       },
-      computed: {
+      beforeDestroy() {
+        this.scene_controller.detach_mouse_events();
+      },
+    computed: {
 
       },
       methods: {

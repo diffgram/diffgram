@@ -16,6 +16,7 @@ export default class FileLoader3DPointClouds {
         (mesh) => {
           console.log('SUCCESS', mesh)
           mesh.material.color.set('white');
+          mesh.name = 'point_cloud'
           resolve(mesh)
         },
         (xhr) => {

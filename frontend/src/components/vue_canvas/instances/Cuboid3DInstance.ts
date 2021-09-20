@@ -5,6 +5,9 @@ import SceneController3D from "../../3d_annotation/SceneController3D";
 export default class Cuboid3DInstance extends Instance {
 
   scene_controller_3d: SceneController3D;
+  mesh: THREE.Mesh;
+  geometry: THREE.BoxGeometry;
+  material: THREE.MeshBasicMaterial;
 
   public constructor(scene_controller_3d: SceneController3D, x, y) {
     super();
@@ -17,20 +20,15 @@ export default class Cuboid3DInstance extends Instance {
     let render = this.scene_controller_3d.render;
     let renderer = this.scene_controller_3d.renderer;
 
-    const texture = new THREE.TextureLoader().load( 'textures/crate.gif', render.bind(this) );
-    texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-
-    const geometry = new THREE.BoxGeometry( 2, 2, 2 );
-    const material = new THREE.MeshStandardMaterial({
+    this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
+    this.material = new THREE.MeshBasicMaterial({
       color: new THREE.Color('red'),
       opacity: 0.5,
       transparent: true,
     });
 
-    const cube = new THREE.Mesh(geometry, material);
-    const mesh = new THREE.Mesh( geometry, material );
-    alert('adding cube')
-    this.scene_controller_3d.add_mesh_to_scene(mesh, false)
+    this.mesh = new THREE.Mesh( this.geometry, this.material );
+    this.scene_controller_3d.add_mesh_to_scene(this.mesh, false)
   }
 
 
