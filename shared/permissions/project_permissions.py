@@ -67,6 +67,15 @@ class Project_permissions():
 
 
 	@staticmethod
+	def check_basic_auth_exists():
+		if request.headers:
+			user_agent = request.headers.get('User-Agent')
+			if user_agent and len(user_agent) >= 6:
+				if user_agent[:6] == "python":
+					if request.authorization is None:
+						raise Forbidden("Check client_id client_secret - Missing sending basic auth while using python SDK.")
+
+	@staticmethod
 	def by_project_core(
 			project_string_id: str,
 			Roles: list,
@@ -77,6 +86,8 @@ class Project_permissions():
 		with sessionMaker.session_scope() as session:
 			if not project_string_id or project_string_id == "null" or project_string_id == "undefined":
 				raise Forbidden(default_denied_message + " [ First Sanity Checks ] project_string_id None, null, etc.")
+
+			Project_permissions.check_basic_auth_exists()
 
 			if request.authorization is not None:
 	
