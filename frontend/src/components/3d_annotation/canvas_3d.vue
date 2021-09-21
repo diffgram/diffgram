@@ -1,5 +1,5 @@
 <template>
-  <div id="3d-container">
+  <div :id="container_id">
 
   </div>
 
@@ -34,6 +34,15 @@
         radar_url: {
           default: "https://storage.googleapis.com/diffgram-sandbox/testing/radar_rear.pcd"
         },
+        instance_list: {
+          default: []
+        },
+        container_id:{
+          default: '3d-container'
+        },
+        draw_mode:{
+          default: false
+        }
 
       },
       data() {
@@ -41,6 +50,7 @@
           controls_transform: null,
           controls_orbit: null,
           renderer: null,
+          container: null,
           scene_controller: null,
           camera: null,
         }
@@ -54,13 +64,15 @@
           this.renderer.setSize( window.innerWidth, window.innerHeight );
 
           const scene = new THREE.Scene();
-          document.getElementById('3d-container').appendChild( this.renderer.domElement );
+          document.getElementById(this.$props.container_id).appendChild( this.renderer.domElement );
           this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-
-          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer)
+          this.container = document.getElementById(this.$props.container_id)
+          console.log('CONTAINER', this.container)
+          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container)
 
           this.scene_controller.attach_mouse_events();
+          this.scene_controller.set_draw_mode(this.$props.draw_mode)
 
           this.configure_controls();
 
@@ -70,12 +82,21 @@
 
           this.camera.position.y = 10;
           window.addEventListener( 'resize', this.on_window_resize );
-          this.scene_controller.start_render();
+
+          this.add_instance_list_to_scene();
+
+          // TODO: REMOVE WHEN WE CAN DRAW CUBOIDS
           let cuboid = new Cuboid3DInstance(this.scene_controller, 0, 30);
           cuboid.draw_on_scene();
           if(cuboid.mesh){
             // this.scene_controller.attach_transform_controls_to_mesh(cuboid.mesh)
           }
+          this.instance_list.push(cuboid)
+
+
+          this.scene_controller.start_render();
+
+
 
         } else {
           const warning = WEBGL.getWebGLErrorMessage();
@@ -90,11 +111,21 @@
 
       },
       methods: {
+        set_draw_mode: function(draw_mode){
+          this.scene_controller.set_draw_mode(draw_mode);
+        },
+        add_instance_list_to_scene: function(){
+          for(const instance of this.$props.instance_list){
+            instance.draw_on_scene();
+          }
+        },
         on_window_resize: function(){
-          this.camera.aspect = window.innerWidth / window.innerHeight;
+          let w = this.container.clientWidth
+          let h = this.container.clientHeight
+          this.camera.aspect = w / h;
           this.camera.updateProjectionMatrix();
 
-          this.renderer.setSize( window.innerWidth, window.innerHeight );
+          this.renderer.setSize( w, h );
         },
         configure_controls: function(){
           if(!this.$props.allow_navigation){

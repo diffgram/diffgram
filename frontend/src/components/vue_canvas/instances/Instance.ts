@@ -123,3 +123,7 @@ export class Instance{
   }
 
 }
+
+export abstract class Instance3D extends Instance{
+  abstract draw_on_scene() : void;
+}

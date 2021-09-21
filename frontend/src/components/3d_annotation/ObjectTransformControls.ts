@@ -27,7 +27,7 @@ export default class ObjectTransformControls {
         control.setScaleSnap( 0.25 );
         break;
 
-      case 84: // W
+      case 84: // T
         if(control.mode === 'translate'){
           control.setMode( 'rotate' );
         }
@@ -63,6 +63,11 @@ export default class ObjectTransformControls {
 
       case 32: // Spacebar
         control.enabled = ! control.enabled;
+        break;
+
+
+      case 27: // ESC
+        this.controls_transform.detach();
         break;
 
     }

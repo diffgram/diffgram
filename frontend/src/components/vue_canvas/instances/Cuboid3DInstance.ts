@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import {Instance} from './Instance'
+import {Instance3D} from './Instance'
 import SceneController3D from "../../3d_annotation/SceneController3D";
 
-export default class Cuboid3DInstance extends Instance {
+export default class Cuboid3DInstance extends Instance3D {
 
   scene_controller_3d: SceneController3D;
   mesh: THREE.Mesh;
@@ -23,11 +23,12 @@ export default class Cuboid3DInstance extends Instance {
     this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
     this.material = new THREE.MeshBasicMaterial({
       color: new THREE.Color('red'),
-      opacity: 0.7,
+      opacity: 0.3,
       transparent: true,
     });
 
     this.mesh = new THREE.Mesh( this.geometry, this.material );
+    this.mesh.name = 'cuboid_3d'
     this.scene_controller_3d.add_mesh_to_scene(this.mesh, false)
   }
 

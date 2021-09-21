@@ -52,7 +52,11 @@
     </div>
     <div class="mt-4">
       <canvas_3d
+        ref="main_3d_canvas"
         :allow_navigation="true"
+        :instance_list="instance_list"
+        :draw_mode="draw_mode"
+        :container_id="'main_screen'"
         :with_keyboard_controls="true">
 
       </canvas_3d>
@@ -97,6 +101,7 @@
         warning: null,
         has_changed: false,
         instance_type: 'cuboid_3d',
+        instance_list: [],
         draw_mode: false,
         label_file_colour_map: null,
         full_file_loading: false,
@@ -131,10 +136,15 @@
       }
     },
     mounted() {
-
+      window.addEventListener( 'keydown', this.key_down_handler, false );
 
     },
     methods: {
+      key_down_handler: function(event){
+        if (event.keyCode === 27) { // ESC
+          this.edit_mode_toggle(!this.draw_mode)
+        }
+      },
       insert_tag_type: function(){
 
       },
@@ -159,8 +169,9 @@
       change_label_file: function(){
 
       },
-      edit_mode_toggle: function(){
-
+      edit_mode_toggle: function(draw_mode){
+        this.draw_mode = draw_mode;
+        this.$refs.main_3d_canvas.set_draw_mode(draw_mode)
       },
     }
   })
