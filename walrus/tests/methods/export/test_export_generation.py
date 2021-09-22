@@ -78,3 +78,68 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
             self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
 
+
+    def test_new_external_export_from_tasks(self):
+        """
+        Create a new job
+        Create a file and task
+        Annotate on tasks
+        Generate export from that job
+        """
+
+        job = data_mocking.create_job({
+            'name': 'my-test-job'
+        }, self.session)
+
+        file = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
+
+        task_1 = data_mocking.create_task({
+            'name': 'task1',
+            'job': job,
+            'file': file
+        }, self.session)
+
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 
+             'file_id': file.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        export = data_mocking.create_export({
+            'description': 'test',
+            'source': 'job',
+            'kind': 'Annotations',
+            'project_id': self.project.id,
+            'job_id': job.id
+        }, self.session)
+        self.session.commit()
+
+        with patch.object(
+            export_generation.data_tools, 'upload_from_string') as mock_1:
+
+            result, export_data = export_generation.new_external_export(
+                session = self.session,
+                project = self.project,
+                export_id = export.id,
+                use_request_context = False
+            )
+
+            mock_1.asser_called_once()
+
+            print('result', export_data)
+
+            self.assertTrue(result)
+
+            self.assertTrue('readme' in export_data)
+            self.assertTrue('label_map' in export_data)
+            self.assertTrue('export_info' in export_data)
+            self.assertTrue('attribute_groups_reference' in export_data)
+            self.assertTrue(file.id in export_data)
+            self.assertEqual(len(export_data[file.id]['instance_list']), 1)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['x_min'], 1)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['x_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['y_min'], 1)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
+
