@@ -11,6 +11,10 @@ import boto3
 import traceback
 from imageio import imread
 from shared.shared_logger import get_shared_logger
+from shared.database.input import Input
+from shared.database.batch.batch import InputBatch
+from sqlalchemy.orm import Session
+from shared.database.image import Image
 
 logger = get_shared_logger()
 
@@ -35,20 +39,21 @@ class DataToolsGCP:
         except Exception as exception:
             logger.error('Error intializing GCP Client')
             traceback.print_exc()
+
     def create_resumable_upload_session(
             self,
-            input: object,
+            input: Input,
             blob_path: str,
             content_type: str = None,
     ):
         """
-        We still need the blob path so we know where it is going
-        https://googleapis.dev/python/storage/latest/blobs.html#google.cloud.storage.blob.Blob.create_resumable_upload_session
+        Create an upload session url where the user can upload a file to be stored
+        in the given blob path.
 
-        This is specific to google cloud at the moment
-        can look at the code here if needed (local back up on machine )
-        General concept here is just getting a signed url to a resource given this information
-        that we can hit later to pass info
+        :param input: Input object
+        :param blob_path: the file path to create the upload session
+        :param content_type: Content type of the give blob_path
+        :return:
         """
 
         blob = self.bucket.blob(blob_path)
@@ -68,43 +73,41 @@ class DataToolsGCP:
             total_size: int,  # total size of whole upload (not chunk),
             total_parts_count: int,
             chunk_index: int,
-            input: object,
-            batch: object = None
+            input: Input,
+            batch: InputBatch = None
     ):
 
         """
-        This is specific to google but basic concept
-        is to send a request given the url and content byte information
+        Function job  is to send a request given the url and content byte information
             Conceptually this is very very similar to what we were
             already doing in terms of seeking with a file
-
-            I hadn't really expected I guess to have to continue to do that
-            but apparently  not much support for doing this without that
-            but maybe it's simle enough
-
-        https://github.com/googleapis/google-resumable-media-python/issues/61
-        Right so the assumption is the object is being stored
+            https://github.com/googleapis/google-resumable-media-python/issues/61
+            Right so the assumption is the object is being stored
 
         Assuming / hoping the built in "retry" will work
-        for this but can review more later
+            for this but can review more later
 
         From transmit next chunk
-        The upload will be considered complete if the stream produces
-            fewer than :attr:`chunk_size` bytes when a chunk is read from it.
-        ... So we need to have chunk size match the expected chunk right...
-
-        Perform a resumable upload.
-        Assumes ``chunk_size`` is not :data:`None` on the current blob.
-
-        :type stream: IO[bytes]
-        :param stream: A bytes IO object open for reading.
-
-        It seems like we have to specificy content range
+            The upload will be considered complete if the stream produces
+                fewer than :attr:`chunk_size` bytes when a chunk is read from it.
+            ... So we need to have chunk size match the expected chunk right...
 
         Byte range Inclusive / Exclusive:
-        Right now it leaves the start as is (0 indexed)
-        And then it subtracts 1 from end.
-        So basically the “end byte” is Exclusive and the start byte is Inclusive.
+            Right now it leaves the start as is (0 indexed)
+            And then it subtracts 1 from end.
+            So basically the “end byte” is Exclusive and the start byte is Inclusive.
+
+        :param stream: byte stream to send to cloud provider
+        :param blob_path: the string indicating the path in the bucket where the bytes will be stored
+        :param prior_created_url: The previously created URL
+        :param content_type: The content type of the stream
+        :param content_start: The content index start
+        :param content_size: The chunk size
+        :param total_size: The total size of the stream
+        :param total_parts_count: The total count of chunks from the stream
+        :param chunk_index: The current index to be sent
+        :param input: The Diffgram Input object where the parts are stored
+        :param batch: If the upload was from a batch upload, the parts will be saved on the batch provided here.
         """
 
         # - 1 seems to be needed
@@ -133,7 +136,14 @@ class DataToolsGCP:
 
         return response
 
-    def download_from_cloud_to_local_file(self, cloud_uri, local_file):
+    def download_from_cloud_to_local_file(self, cloud_uri: str, local_file: str):
+        """
+            Download a file from the given blob bath to the given local file path
+        :param cloud_uri: string for the bucket's path
+        :param local_file: string for the local file path to download to.
+        :return: File Object that contains the downloaded file
+        """
+
         blob = self.bucket.blob(cloud_uri)
         self.gcs.download_blob_to_file(
             blob_or_uri = blob,
@@ -145,21 +155,28 @@ class DataToolsGCP:
             temp_local_path: str,
             blob_path: str,
             content_type: str = None,
-            timeout = None
+            timeout: int = None
     ):
 
         """
-        TODO this assumes this operation was successful
-        would like some better error handling here...
+            Uploads the file in the given path to the Cloud Provider's storage service.
+        :param temp_local_path: path of the local file to upload
+        :param blob_path: path in the bucket where the blobl will be uploaded
+        :param content_type: content type of the blob to upload
+        :param timeout: Timeout for upload (optional)
+        :return: None
         """
-
         blob = self.bucket.blob(blob_path)
         blob.upload_from_filename(temp_local_path,
                                   content_type = content_type,
                                   timeout = timeout)
 
-    def get_image(self, blob_path):
-
+    def get_image(self, blob_path: str):
+        """
+            Returns the numpy image of the given blob_path in Cloud Providers's Blob Storage.
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: numpy image object for the downloaded image
+        """
         blob = self.bucket.blob(blob_path)
         try:
             image_string = blob.download_as_string()
@@ -175,7 +192,19 @@ class DataToolsGCP:
 
         return image_np
 
-    def upload_from_string(self, blob_path, string_data, content_type, bucket_type = 'web'):
+    def upload_from_string(self,
+                           blob_path: str,
+                           string_data: str,
+                           content_type: str,
+                           bucket_type: str = "web"):
+        """
+            Uploads the given string to gcp blob storage service.
+        :param blob_path: the blob path where the file will be uploaded in the bucket
+        :param string_data: the string data to upload
+        :param content_type: content type of the string data
+        :param bucket_type: the Diffgram bucket type (either 'web' or 'ml'). Defaults to 'web'
+        :return: None
+        """
 
         if bucket_type == "web":
             blob = self.bucket.blob(blob_path)
@@ -185,16 +214,23 @@ class DataToolsGCP:
 
         result = blob.upload_from_string(string_data, content_type=content_type)
 
-    def download_bytes(self, blob_path):
+    def download_bytes(self, blob_path: str):
+        """
+            Downloads the given blob as bytes content.
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: bytes of the blob that was downloaded
+        """
         blob = self.bucket.blob(blob_path)
         image_bytes = blob.download_as_string()
         return image_bytes
 
-    # TODO clarify this is for file downloads not images / maybe refactor
-    def build_secure_url(self, blob_name, expiration_offset = None, bucket = "web"):
+    def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
         """
-        blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
-        expiration_offset, integer, additional time from this moment to allow link
+            Builds a presigned URL to access the given blob path.
+        :param blob_name: The path to the blob for the presigned URL
+        :param expiration_offset: The expiration time for the presigned URL
+        :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
+        :return: the string for the presigned url
         """
         if expiration_offset is None:
             expiration_offset =  40368000
@@ -213,17 +249,25 @@ class DataToolsGCP:
         )
         return url_signed
 
-    def get_string_from_blob(self, blob_name):
+    def get_string_from_blob(self, blob_name: str):
         """
-        blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
+            Gets the data from the given blob path as a string
+        :param blob_name: path to the blob on the cloud providers's bucket
+        :return: string data of the downloaded blob
         """
         blob = self.ML_bucket.blob(blob_name)
 
         return blob.download_as_string()
 
-    def rebuild_secure_urls_image(self, session, image):
-
-        # TODO, maybe take time delta as argument?
+    def rebuild_secure_urls_image(self, session: Session, image: Image):
+        """
+            Re creates the signed url for the given image object.
+            This function is usually used in the context of an image url expiring
+            and needing to get a new url.
+        :param session: the sqlalchemy DB session
+        :param image: the Diffgram Image() object
+        :return: None
+        """
 
         image.url_signed_expiry = int(time.time() + 2592000)
 
@@ -235,6 +279,8 @@ class DataToolsGCP:
             image.url_signed_thumb = blob.generate_signed_url(expiration = image.url_signed_expiry)
 
         session.add(image)
+
+    ############################################################  AI / ML FUNCTIONS ##############################################
 
     # TODO refactor to be generic item if possible?
     # Potential problem is strings are different
@@ -255,7 +301,6 @@ class DataToolsGCP:
 
         session.add(inference)
 
-    ############################################################  AI / ML FUNCTIONS ##############################################
     def url_model_update(self, session, version):
 
         # TODO this name may changed base on AI package
