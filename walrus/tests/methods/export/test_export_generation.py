@@ -110,7 +110,6 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
              'label_file_id': label_file.id},
             self.session
         )
-        self.session.commit()
 
         export = data_mocking.create_export({
             'description': 'test',
@@ -119,7 +118,6 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             'project_id': self.project.id,
             'job_id': job.id
         }, self.session)
-        self.session.commit()
 
         with patch.object(
             export_generation.data_tools, 'upload_from_string') as mock_1:
