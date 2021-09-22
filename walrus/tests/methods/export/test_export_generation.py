@@ -88,10 +88,12 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
         """
 
         job = data_mocking.create_job({
-            'name': 'my-test-job'
+            'name': 'my-test-job',
+            'project': self.project
         }, self.session)
 
-        file = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
+        file = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'image'}, self.session)
 
         task_1 = data_mocking.create_task({
             'name': 'task1',
