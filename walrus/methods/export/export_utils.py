@@ -42,7 +42,7 @@ def has_project_permissions_for_export(export, project_string_id, session):
     project = Project.get(session, project_string_id)
     # Theory is that if a user has access to project
     # They have access to download from project
-    if export.project_id == project.id:
+    if export.project_id != project.id:
         log['error']['project_permissions'] = 'Permission error, invalid project export match'
 
     return log
@@ -54,7 +54,7 @@ def is_export_completed(export):
     # it failing if the export is not ready
     # note it's "complete" and not "success"
     if export.status != "complete":
-        log['error'] = "Export not ready yet."
+        log['error']['export'] = "Export not ready yet."
         log['export'] = export.serialize()
         return log
     return log
