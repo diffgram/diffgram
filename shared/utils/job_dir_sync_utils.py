@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job_working_dir import JobWorkingDir
+from shared.regular import regular_log
 
 logger = get_shared_logger()
 
@@ -80,7 +81,7 @@ class JobDirectorySyncManager:
         if result is not True:
             log['error']['create_file_links'] = 'Error creating links for file id: {}'.format(file.id)
             return False, log
-        if len(log['error'].keys()) > 1:
+        if regular_log.log_has_error(log):
             return False, log
 
         return True, log
@@ -338,7 +339,7 @@ class JobDirectorySyncManager:
                     )
                     if result is not True:
                         log['error']['sync_file_dirs'] = 'Error syncing dirs for file id: {}'.format(file.id)
-                    if len(log['error'].keys()) > 1:
+                    if regular_log.log_has_error(log):
                         return False, log
         else:
             logger.debug(
@@ -370,7 +371,7 @@ class JobDirectorySyncManager:
             )
             if result is not True:
                 log['error']['sync_file_dirs'] = 'Error syncing dirs for file id: {}'.format(file_to_link.id)
-            if len(log['error'].keys()) > 1:
+            if regular_log.log_has_error(log):
                 return False, log
         self.job.update_file_count_statistic(session = self.session)
         return True, self.log
