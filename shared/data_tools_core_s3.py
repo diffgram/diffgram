@@ -4,14 +4,15 @@ from io import BytesIO
 from shared.settings import settings
 import boto3
 import mimetypes
-from shared.database.input import Input
-from shared.database.batch.batch import InputBatch
-from sqlalchemy.orm import Session
-from shared.database.image import Image
+
 from imageio import imread
 
 
 class DataToolsS3:
+    from shared.database.input import Input
+    from shared.database.batch.batch import InputBatch
+    from sqlalchemy.orm import Session
+    from shared.database.image import Image
     """
         Data tools Implementation for AWS S3. Handles Upload and download
         of blobs from S3 Buckets.
@@ -31,10 +32,10 @@ class DataToolsS3:
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
 
     def create_resumable_upload_session(
-            self,
-            input: Input,
-            blob_path: str,
-            content_type: str = None
+        self,
+        input: Input,
+        blob_path: str,
+        content_type: str = None
     ):
         """
             Creates an S3 Multipart upload session and attached the upload ID
@@ -56,18 +57,18 @@ class DataToolsS3:
         input.upload_aws_id = response['UploadId']
 
     def transmit_chunk_of_resumable_upload(
-            self,
-            stream,
-            blob_path: str,
-            prior_created_url: str,
-            content_type: str,  # Why do we have to keep redeclaring content type
-            content_start: int,
-            content_size: int,
-            total_size: int,  # total size of whole upload (not chunk)
-            total_parts_count: int,
-            chunk_index: int,
-            input: Input,
-            batch: InputBatch = None
+        self,
+        stream,
+        blob_path: str,
+        prior_created_url: str,
+        content_type: str,  # Why do we have to keep redeclaring content type
+        content_start: int,
+        content_size: int,
+        total_size: int,  # total size of whole upload (not chunk)
+        total_parts_count: int,
+        chunk_index: int,
+        input: Input,
+        batch: InputBatch = None
 
     ):
         """
@@ -105,7 +106,7 @@ class DataToolsS3:
             PartNumber = int(chunk_index) + 1)
         if input:
             if input.upload_aws_parts_list is None or \
-                    input.upload_aws_parts_list.get('parts') is None:
+                input.upload_aws_parts_list.get('parts') is None:
                 input.upload_aws_parts_list = {
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
@@ -115,7 +116,7 @@ class DataToolsS3:
                 )
         elif not input and batch:
             if batch.upload_aws_parts_list is None or \
-                    batch.upload_aws_parts_list.get('parts') is None:
+                batch.upload_aws_parts_list.get('parts') is None:
                 batch.upload_aws_parts_list = {
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
@@ -129,7 +130,8 @@ class DataToolsS3:
                 Bucket = self.s3_bucket_name,
                 Key = blob_path,
                 UploadId = input.upload_aws_id if input else batch.upload_aws_id,
-                MultipartUpload = {"Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
+                MultipartUpload = {
+                    "Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
             )
         return True
 
@@ -145,11 +147,11 @@ class DataToolsS3:
         return local_file
 
     def upload_to_cloud_storage(
-            self,
-            temp_local_path: str,
-            blob_path: str,
-            content_type: str = None,
-            timeout: int = None
+        self,
+        temp_local_path: str,
+        blob_path: str,
+        content_type: str = None,
+        timeout: int = None
     ):
         """
             Uploads the file in the given path to the Cloud Provider's storage service.
@@ -210,7 +212,6 @@ class DataToolsS3:
 
         image_np = imread(BytesIO(byte_value))
 
-
         return image_np
 
     def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
@@ -237,9 +238,9 @@ class DataToolsS3:
 
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
-                                                            'Bucket': bucket_name,
-                                                            'ResponseContentDisposition': 'attachment; filename=' + filename,
-                                                            'Key': blob_name},
+                                                               'Bucket': bucket_name,
+                                                               'ResponseContentDisposition': 'attachment; filename=' + filename,
+                                                               'Key': blob_name},
                                                            ExpiresIn = int(expiration_time))
         return signed_url
 
@@ -265,7 +266,8 @@ class DataToolsS3:
         image.url_signed = self.build_secure_url(image.url_signed_blob_path, expiration_offset = 2592000)
 
         if hasattr(image, 'url_signed_thumb_blob_path') and image.url_signed_thumb_blob_path:
-            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path, expiration_offset = 2592000)
+            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path,
+                                                           expiration_offset = 2592000)
         session.add(image)
 
     ############################################################  AI / ML FUNCTIONS ##############################################
@@ -293,29 +295,29 @@ class DataToolsS3:
         raise NotImplementedError
 
     def create_tf_example_deep_lab_citiscape(
-            self,
-            file,
-            project_id
+        self,
+        file,
+        project_id
     ):
         raise NotImplementedError
 
     # TODO would like to try @profile on this for testing memory stuff
 
     def tf_records_new(
-            self,
-            session,
-            file_list,
-            project_id,
-            method,
-            output_blob_dir,
-            sub_method = None,
-            label_dict = None
+        self,
+        session,
+        file_list,
+        project_id,
+        method,
+        output_blob_dir,
+        sub_method = None,
+        label_dict = None
     ):
         raise NotImplementedError
 
     def label_dict_builder(
-            self,
-            file_list
+        self,
+        file_list
     ):
         """
 
