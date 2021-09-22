@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
+import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 
 export default class SceneController3D{
   public scene: THREE.Scene;
@@ -16,17 +17,21 @@ export default class SceneController3D{
   public axes_helper: THREE.AxesHelper;
   public grid_helper: THREE.GridHelper;
   public place_holder_cuboid: THREE.Mesh;
+  public component_ctx: object;
+  public label_file: object = null;
   public container: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
-  public instance_list: Array<Instance> [];
+  public instance_list: Array<Instance> =  [];
   public selected_instance: Instance3D = null;
+  public TRANSFORM_CONTROLS_LAYER: number = 1;
 
-  public constructor(scene, camera, renderer, container, controls_panning_speed = 60) {
+  public constructor(scene, camera, renderer, container, component_ctx, controls_panning_speed = 60) {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
     this.renderer.setPixelRatio( window.devicePixelRatio );
     this.container = container;
+    this.component_ctx = component_ctx;
     this.mouse =  new THREE.Vector2();
     this.raycaster = new THREE.Raycaster();
 
@@ -40,9 +45,13 @@ export default class SceneController3D{
     this.scene.add(this.grid_helper);
     this.scene.add(this.axes_helper);
     this.camera.position.set( 0, 0, 25 );
+    this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
 
   }
   private reset_materials(){
+    if(this.draw_mode){
+      return
+    }
     for(const child of this.scene.children){
       if(child.material){
         child.material.opacity = 0.3;
@@ -50,6 +59,11 @@ export default class SceneController3D{
     }
   }
 
+  private get_current_color(){
+    if(this.label_file){
+      return this.label_file.colour.hex;
+    }
+  }
   private on_drag_transform_controls(event){
     this.controls_orbit.enabled = ! event.value;
   }
@@ -61,6 +75,25 @@ export default class SceneController3D{
     }
     else{
       this.on_click_edit_mode(event);
+    }
+  }
+
+  private on_mouse_double_click(event){
+    if(this.draw_mode){
+      this.on_double_click_draw_mode(event)
+    }
+  }
+
+  private on_double_click_draw_mode(event){
+    if(this.place_holder_cuboid){
+      // Add cuboid to instance list
+      let new_instance = this.add_cube_to_instance_list(this.place_holder_cuboid);
+      this.place_holder_cuboid = null;
+      this.set_draw_mode(false);
+      this.attach_transform_controls_to_mesh(new_instance.mesh)
+      if(this.component_ctx){
+        this.component_ctx.$emit('instance_drawn', new_instance)
+      }
     }
   }
 
@@ -96,8 +129,8 @@ export default class SceneController3D{
     if(!this.place_holder_cuboid){
       let geometry = new THREE.BoxGeometry( 2, 2, 2 );
       let material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color('red'),
-        opacity: 0.7,
+        color: new THREE.Color(this.get_current_color()),
+        opacity: 0.9,
         transparent: true,
       });
       this.place_holder_cuboid = new THREE.Mesh( geometry, material );
@@ -115,7 +148,10 @@ export default class SceneController3D{
 
   }
 
-  private check_for_raycaster_picks(){
+  private check_hover(){
+    if(this.draw_mode){
+      return
+    }
     // update the picking ray with the camera and mouse position
     this.raycaster.setFromCamera( this.mouse, this.camera );
 
@@ -135,7 +171,7 @@ export default class SceneController3D{
 
     requestAnimationFrame( this.render.bind(this) );
     this.reset_materials();
-    this.check_for_raycaster_picks();
+    this.check_hover();
     this.renderer.render( this.scene, this.camera );
 
   }
@@ -143,6 +179,7 @@ export default class SceneController3D{
   public attach_mouse_events(){
     window.addEventListener( 'mousemove', this.on_mouse_move.bind(this), false );
     window.addEventListener( 'click', this.on_mouse_click.bind(this) );
+    window.addEventListener( 'dblclick', this.on_mouse_double_click.bind(this) );
   }
 
   public detach_mouse_events(){
@@ -151,6 +188,10 @@ export default class SceneController3D{
 
   public set_instance_list(instance_list){
     this.instance_list = instance_list;
+  }
+
+  public set_current_label_file(label_file){
+    this.label_file = label_file;
   }
 
   public remove_from_scene(object){
@@ -181,20 +222,26 @@ export default class SceneController3D{
   }
 
   public on_click_edit_mode(event){
+    console.log('CLICKK EDIITTT')
     this.raycaster.setFromCamera( this.mouse, this.camera );
 
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     if(intersects.length > 0){
-      console.log('INTERESETXT', intersects[0])
       this.selected_instance = intersects[0].object.userData.currentSquare;
       this.attach_transform_controls_to_mesh(intersects[0].object)
     }
     return intersects;
   }
 
-  public add_cube_to_instance_list(){
-
+  public add_cube_to_instance_list(cuboid_mesh){
+    let new_instance = new Cuboid3DInstance(
+      this,
+      cuboid_mesh
+    )
+    new_instance.draw_on_scene()
+    this.instance_list.push(new_instance);
+    return new_instance
   }
 
   public start_render(){
@@ -210,6 +257,7 @@ export default class SceneController3D{
     this.controls_orbit.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     this.controls_orbit.dampingFactor = 0.09;
     this.controls_orbit.screenSpacePanning = true;
+    this.controls_orbit.enableRotate = true;
     this.controls_orbit.keyPanSpeed = this.controls_panning_speed
     this.controls_orbit.minDistance = 0;
     this.controls_orbit.maxDistance = 99999;
@@ -230,13 +278,15 @@ export default class SceneController3D{
       this.renderer.domElement,
       this.scene,
       this.render.bind(this),
-      this.on_drag_transform_controls.bind(this)
+      this.on_drag_transform_controls.bind(this),
+      this.TRANSFORM_CONTROLS_LAYER
     )
 
   }
 
   public attach_transform_controls_to_mesh(mesh){
     this.object_transform_controls.attach_to_mesh(mesh)
+    console.log('attach controlss')
   }
   public add_mesh_to_scene(mesh, center_camera_to_object = true){
 
@@ -251,4 +301,5 @@ export default class SceneController3D{
     }
     this.scene.add(mesh);
   }
+
 }

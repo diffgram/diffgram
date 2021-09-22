@@ -9,28 +9,33 @@ export default class Cuboid3DInstance extends Instance3D {
   geometry: THREE.BoxGeometry;
   material: THREE.MeshBasicMaterial;
 
-  public constructor(scene_controller_3d: SceneController3D, x, y) {
+  public constructor(scene_controller_3d: SceneController3D, mesh: THREE.Mesh) {
     super();
     this.scene_controller_3d = scene_controller_3d;
-    this.center_x = x;
-    this.center_y = y;
+    this.mesh = mesh;
+    this.material = mesh.material;
+    this.geometry = mesh.geometry;
   }
 
   public draw_on_scene(){
-    let render = this.scene_controller_3d.render;
-    let renderer = this.scene_controller_3d.renderer;
+    if(!this.material){
+      this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
+    }
+    if(!this.geometry){
+      this.material = new THREE.MeshBasicMaterial({
+        color: new THREE.Color('red'),
+        opacity: 0.3,
+        transparent: true,
+      });
+    }
+    if(!this.mesh){
+      this.mesh = new THREE.Mesh( this.geometry, this.material );
+      this.mesh.name = 'cuboid_3d'
+    }
 
-    this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
-    this.material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color('red'),
-      opacity: 0.3,
-      transparent: true,
-    });
-
-    this.mesh = new THREE.Mesh( this.geometry, this.material );
-    this.mesh.name = 'cuboid_3d'
     this.scene_controller_3d.add_mesh_to_scene(this.mesh, false)
   }
+
 
 
 }

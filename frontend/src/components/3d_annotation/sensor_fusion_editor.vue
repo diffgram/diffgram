@@ -50,16 +50,71 @@
       <v_error_multiple :error="error">
       </v_error_multiple>
     </div>
-    <div class="mt-4">
-      <canvas_3d
-        ref="main_3d_canvas"
-        :allow_navigation="true"
-        :instance_list="instance_list"
-        :draw_mode="draw_mode"
-        :container_id="'main_screen'"
-        :with_keyboard_controls="true">
+    <div class="editor-body">
+      <div class="mt-4" style="max-height: 600px; overflow-y: hidden">
+        <canvas_3d
+          ref="main_3d_canvas"
+          height="600px"
+          :allow_navigation="true"
+          :instance_list="instance_list"
+          :current_label_file="current_label_file"
+          :draw_mode="draw_mode"
+          :container_id="'main_screen'"
+          :with_keyboard_controls="true"
+          @instance_drawn="on_instance_drawn"
+        >
 
-      </canvas_3d>
+        </canvas_3d>
+      </div>
+      <div class="mt-4 d-flex flex-row" style="max-height: 200px;">
+        <div>
+          <canvas_3d
+            ref="x_axis_3d_canvas"
+            :create_new_scene="false"
+            camera_type="ortographic"
+            :width="get_sub_canvas_width()"
+            :height="get_sub_canvas_height()"
+            :allow_navigation="true"
+            :instance_list="instance_list"
+            :current_label_file="current_label_file"
+            :draw_mode="draw_mode"
+            :container_id="'x_axis_3d_canvas'"
+            :with_keyboard_controls="true">
+          </canvas_3d>
+        </div>
+        <div>
+
+          <canvas_3d
+            ref="y_axis_3d_canvas"
+            :create_new_scene="false"
+            camera_type="ortographic"
+            :width="get_sub_canvas_width()"
+            :height="get_sub_canvas_height()"
+            :allow_navigation="true"
+            :instance_list="instance_list"
+            :current_label_file="current_label_file"
+            :draw_mode="draw_mode"
+            :container_id="'y_axis_3d_canvas'"
+            :with_keyboard_controls="true">
+          </canvas_3d>
+        </div>
+        <div>
+
+          <canvas_3d
+            ref="z_axis_3d_canvas"
+            :create_new_scene="false"
+            camera_type="ortographic"
+            :width="get_sub_canvas_width()"
+            :height="get_sub_canvas_height()"
+            :allow_navigation="true"
+            :instance_list="instance_list"
+            :current_label_file="current_label_file"
+            :draw_mode="draw_mode"
+            :container_id="'z_axis_3d_canvas'"
+            :with_keyboard_controls="true">
+          </canvas_3d>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -104,6 +159,7 @@
         instance_list: [],
         draw_mode: false,
         label_file_colour_map: null,
+        current_label_file: null,
         full_file_loading: false,
         view_issue_mode: false,
         canvas_scale_local: 1,  // for actually scaling dimensions within canvas
@@ -137,9 +193,30 @@
     },
     mounted() {
       window.addEventListener( 'keydown', this.key_down_handler, false );
+      // Set scene for secondary canvas
+      let main_scene = this.$refs.main_3d_canvas.scene_controller.scene;
+      let renderer = this.$refs.main_3d_canvas.scene_controller.renderer;
+      this.$refs.x_axis_3d_canvas.setup_scene_controls(main_scene)
+      this.$refs.y_axis_3d_canvas.setup_scene_controls(main_scene)
+      this.$refs.z_axis_3d_canvas.setup_scene_controls(main_scene)
 
     },
     methods: {
+      on_instance_drawn: function(instance){
+        this.center_secondary_cameras_to_instance(instance);
+        this.edit_mode_toggle(false);
+      },
+      center_secondary_cameras_to_instance: function(instance){
+        this.$refs.x_axis_3d_canvas.scene_controller.center_camera_to_mesh(instance.mesh, 'x')
+        this.$refs.y_axis_3d_canvas.scene_controller.center_camera_to_mesh(instance.mesh, 'y')
+        this.$refs.z_axis_3d_canvas.scene_controller.center_camera_to_mesh(instance.mesh, 'z')
+      },
+      get_sub_canvas_width: function(){
+        return '400px'
+      },
+      get_sub_canvas_height: function(){
+        return '300px'
+      },
       key_down_handler: function(event){
         if (event.keyCode === 27) { // ESC
           this.edit_mode_toggle(!this.draw_mode)
@@ -166,8 +243,9 @@
       change_instance_type: function(){
 
       },
-      change_label_file: function(){
-
+      change_label_file: function(label_file){
+        this.current_label_file = label_file;
+        this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
       edit_mode_toggle: function(draw_mode){
         this.draw_mode = draw_mode;

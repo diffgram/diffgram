@@ -1,5 +1,5 @@
 <template>
-  <div :id="container_id">
+  <div :id="container_id" :style="{width: width, height: height}">
 
   </div>
 
@@ -10,6 +10,7 @@
   import Vue from "vue";
   import * as THREE from "three";
   import SceneController3D from './SceneController3D';
+  import SceneControllerOrtographicView from './SceneControllerOrtographicView';
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
   import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
   import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
@@ -21,7 +22,22 @@
 
       },
       props: {
+        width: {
+          default: 'auto'
+        },
+        height: {
+          default: 'auto'
+        },
+        camera_type: {
+          default: 'perspective'
+        },
+        create_new_scene: {
+          default: true
+        },
         with_keyboard_controls: {
+          default: false
+        },
+        current_label_file: {
           default: false
         },
         allow_navigation:{
@@ -58,22 +74,65 @@
 
       async mounted() {
         if ( WEBGL.isWebGLAvailable() ) {
+          if(this.$props.create_new_scene){
+            await this.setup_scene_controls()
+          }
 
-          this.renderer = new THREE.WebGLRenderer();
-          this.renderer.setPixelRatio( window.devicePixelRatio );
-          this.renderer.setSize( window.innerWidth, window.innerHeight );
 
-          const scene = new THREE.Scene();
-          document.getElementById(this.$props.container_id).appendChild( this.renderer.domElement );
-          this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
-          this.container = document.getElementById(this.$props.container_id)
-          console.log('CONTAINER', this.container)
-          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container)
+        } else {
+          const warning = WEBGL.getWebGLErrorMessage();
+          alert('WebGL is not available on this machine.')
 
+        }
+      },
+      beforeDestroy() {
+        if(this.scene_controller){
+          this.scene_controller.detach_mouse_events();
+        }
+
+      },
+    computed: {
+
+      },
+      methods: {
+        setup_ortographic_scene_controller: function(scene){
+          this.camera = new THREE.OrthographicCamera(
+            -20,
+            20,
+            -20,
+            20,
+            0.1,
+            1000 );
+          this.scene_controller = new SceneControllerOrtographicView(scene, this.camera, this.renderer, this.container, this)
           this.scene_controller.attach_mouse_events();
           this.scene_controller.set_draw_mode(this.$props.draw_mode)
+          this.scene_controller.set_current_label_file(this.$props.current_label_file)
+        },
+        setup_perspective_scene_controller: function(scene){
+          this.camera = new THREE.PerspectiveCamera( 75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000 );
+          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container, this)
+          this.scene_controller.attach_mouse_events();
+          this.scene_controller.set_draw_mode(this.$props.draw_mode)
+          this.scene_controller.set_current_label_file(this.$props.current_label_file)
+        },
+        setup_scene_controls: async function(scene = undefined, ){
+          this.container = document.getElementById(this.$props.container_id)
+          this.renderer = new THREE.WebGLRenderer();
 
+          this.renderer.setPixelRatio( window.devicePixelRatio );
+          this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+
+          if(!scene){
+            scene = new THREE.Scene();
+          }
+          document.getElementById(this.$props.container_id).appendChild( this.renderer.domElement );
+          if(this.$props.camera_type === 'perspective'){
+            this.setup_perspective_scene_controller(scene);
+          }
+          else if(this.$props.camera_type === 'ortographic'){
+            this.setup_ortographic_scene_controller(scene)
+          }
           this.configure_controls();
 
           this.point_cloud_mesh = await this.load_pcd();
@@ -85,32 +144,11 @@
 
           this.add_instance_list_to_scene();
 
-          // TODO: REMOVE WHEN WE CAN DRAW CUBOIDS
-          let cuboid = new Cuboid3DInstance(this.scene_controller, 0, 30);
-          cuboid.draw_on_scene();
-          if(cuboid.mesh){
-            // this.scene_controller.attach_transform_controls_to_mesh(cuboid.mesh)
-          }
-          this.instance_list.push(cuboid)
-
-
           this.scene_controller.start_render();
-
-
-
-        } else {
-          const warning = WEBGL.getWebGLErrorMessage();
-          alert('WebGL is not available on this machine.')
-
-        }
-      },
-      beforeDestroy() {
-        this.scene_controller.detach_mouse_events();
-      },
-    computed: {
-
-      },
-      methods: {
+        },
+        set_current_label_file: function(label_file){
+          this.scene_controller.set_current_label_file(label_file)
+        },
         set_draw_mode: function(draw_mode){
           this.scene_controller.set_draw_mode(draw_mode);
         },

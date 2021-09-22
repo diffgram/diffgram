@@ -4,10 +4,32 @@ import { TransformControls } from 'three/examples/jsm/controls/TransformControls
 export default class ObjectTransformControls {
   controls_transform: TransformControls;
 
-  public constructor(camera, domeElement, scene, render_function, drag_function) {
+  public constructor(camera, domeElement, scene, render_function, drag_function, layer_number) {
     this.controls_transform = new TransformControls( camera, domeElement );
     this.controls_transform.addEventListener( 'change', render_function );
     this.controls_transform.addEventListener( 'dragging-changed', drag_function);
+
+    console.log('ObjectTransformControls', this.controls_transform, layer_number)
+    let gizmo = this.controls_transform._gizmo.gizmo;
+    let picker = this.controls_transform._gizmo.picker;
+    let helper = this.controls_transform._gizmo.helper;
+
+    gizmo['translate'].traverse( function( child ) { child.layers.set( 1 ) });
+    gizmo['rotate'].traverse( function( child ) { child.layers.set( 1 ) });
+    gizmo['scale'].traverse( function( child ) { child.layers.set( 1 ) });
+
+
+    picker['translate'].layers.set(layer_number);
+    picker['rotate'].layers.set(layer_number);
+    picker['scale'].layers.set(layer_number);
+
+    helper['translate'].layers.set(layer_number);
+    helper['rotate'].layers.set(layer_number);
+    helper['scale'].layers.set(layer_number);
+
+
+
+
     scene.add(this.controls_transform)
   }
 
