@@ -111,12 +111,15 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.session
         )
 
+
         export = data_mocking.create_export({
             'description': 'test',
             'source': 'job',
             'kind': 'Annotations',
             'project_id': self.project.id,
-            'job_id': job.id
+            'job_id': job.id,
+            'ann_is_complete': False,
+            'file_comparison_mode': 'latest'
         }, self.session)
 
         with patch.object(
@@ -129,9 +132,9 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 use_request_context = False
             )
 
-            mock_1.asser_called_once()
+            mock_1.assert_called_once()
 
-            print('result', export_data)
+            print('result', export_data[file.id]['instance_list'])
 
             self.assertTrue(result)
 
