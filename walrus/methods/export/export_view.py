@@ -92,6 +92,7 @@ def export_link(project_string_id):
         return jsonify(result), 200
 
 
+# CAUTION this is a private method - call check_export_permissions_and_status() in many cases
 def export_view_core(
         export,
         format="JSON",
