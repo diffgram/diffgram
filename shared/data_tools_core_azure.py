@@ -9,7 +9,10 @@ from azure.storage.blob._shared_access_signature import BlobSharedAccessSignatur
 import base64
 import uuid
 import datetime
-
+from shared.database.input import Input
+from shared.database.batch.batch import InputBatch
+from sqlalchemy.orm import Session
+from shared.database.image import Image
 from imageio import imread
 
 
@@ -43,14 +46,14 @@ class DataToolsAzure:
             stream,
             blob_path: str,
             prior_created_url: str,
-            content_type: str,  # Why do we have to keep redeclaring content type
+            content_type: str,
             content_start: int,
             content_size: int,
-            total_size: int,  # total size of whole upload (not chunk)
+            total_size: int,
             total_parts_count: int,
             chunk_index: int,
-            input: object,
-            batch: object = None
+            input: Input,
+            batch: InputBatch = None
 
     ):
         """
@@ -60,16 +63,17 @@ class DataToolsAzure:
 
         From transmit next chunk
         Assumes ``chunk_size`` is not :data:`None` on the current blob.
-        :param stream:
-        :param blob_path:
-        :param prior_created_url:
-        :param content_type:
-        :param content_start:
-        :param content_size:
-        :param total_size:
-        :param total_parts_count:
-        :param chunk_index:
-        :param input:
+        :param stream: byte stream to send to cloud provider
+        :param blob_path: the string indicating the path in the bucket where the bytes will be stored
+        :param prior_created_url: The previously created URL (NOT used for Azure)
+        :param content_type: The content type of the stream (NOT used for Azure)
+        :param content_start: The content index start (NOT used for Azure)
+        :param content_size: The chunk size (NOT used for Azure)
+        :param total_size: The total size of the stream (NOT used for Azure)
+        :param total_parts_count: The total count of chunks from the stream
+        :param chunk_index: The current index to be sent
+        :param input: The Diffgram Input object where the parts are stored
+        :param batch: If the upload was from a batch upload, the parts will be saved on the batch provided here.
         :return:
         """
         # - 1 seems to be needed
@@ -111,7 +115,15 @@ class DataToolsAzure:
                 blob_client.commit_block_list(blocks)
         return True
 
-    def download_from_cloud_to_local_file(self, cloud_uri, local_file):
+    def download_from_cloud_to_local_file(self,
+                                          cloud_uri: str,
+                                          local_file: str):
+        """
+            Download a file from the given blob bath to the given local file path
+        :param cloud_uri: string for the bucket's path
+        :param local_file: string for the local file path to download to.
+        :return: File Object that contains the downloaded file
+        """
 
         blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
                                                                 blob = cloud_uri)
@@ -123,15 +135,15 @@ class DataToolsAzure:
             temp_local_path: str,
             blob_path: str,
             content_type: str = None,
-            timeout = None
+            timeout: int = None
     ):
         """
-            Uploads the file in the given path to the Azure Blob storage service.
-        :param temp_local_path:
-        :param blob_path:
-        :param content_type:
-        :param timeout:
-        :return:
+            Uploads the file in the given path to the Cloud Provider's storage service.
+        :param temp_local_path: path of the local file to upload
+        :param blob_path: path in the bucket where the blobl will be uploaded
+        :param content_type: content type of the blob to upload
+        :param timeout: Timeout for upload (optional)
+        :return: None
         """
         blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
                                                                 blob = blob_path)
@@ -140,14 +152,18 @@ class DataToolsAzure:
         with open(temp_local_path, "rb") as stream:
             blob_client.upload_blob(stream, overwrite = True, content_settings = my_content_settings)
 
-    def upload_from_string(self, blob_path, string_data, content_type, bucket_type = "web"):
+    def upload_from_string(self,
+                           blob_path: str,
+                           string_data: str,
+                           content_type: str,
+                           bucket_type: str = "web"):
         """
             Uploads the given string to azure blob storage service.
-        :param blob_path:
-        :param string_data:
-        :param content_type:
-        :param bucket_type:
-        :return:
+        :param blob_path: the blob path where the file will be uploaded in the bucket
+        :param string_data: the string data to upload
+        :param content_type: content type of the string data
+        :param bucket_type: the Diffgram bucket type (either 'web' or 'ml'). Defaults to 'web'
+        :return: None
         """
         if bucket_type == 'web':
             blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
@@ -160,11 +176,11 @@ class DataToolsAzure:
         my_content_settings = ContentSettings(content_type = content_type)
         blob_client.upload_blob(string_data, content_settings = my_content_settings)
 
-    def download_bytes(self, blob_path):
+    def download_bytes(self, blob_path: str):
         """
             Downloads the given blob as bytes content.
-        :param blob_path:
-        :return:
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: bytes of the blob that was downloaded
         """
 
         blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
@@ -173,11 +189,11 @@ class DataToolsAzure:
 
         return download_stream.content_as_bytes()
 
-    def get_image(self, blob_path):
+    def get_image(self, blob_path: str):
         """
-            Returns the numpy image of the given blob_path in Azure Blob Storage.
-        :param blob_path:
-        :return:
+            Returns the numpy image of the given blob_path in Cloud Providers's Blob Storage.
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: numpy image object for the downloaded image
         """
         bytes_buffer = BytesIO()
         blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
@@ -190,10 +206,13 @@ class DataToolsAzure:
         image_np = imread(BytesIO(byte_value))
         return image_np
 
-    def build_secure_url(self, blob_name, expiration_offset = None, bucket = "web"):
+    def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
         """
-        blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
-        expiration_offset, integer, additional time from this moment to allow link
+            Builds a presigned URL to access the given blob path.
+        :param blob_name: The path to the blob for the presigned URL
+        :param expiration_offset: The expiration time for the presigned URL
+        :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
+        :return: the string for the presigned url
         """
         container = None
         if bucket == 'web':
@@ -228,9 +247,11 @@ class DataToolsAzure:
         )
         return sas_url
 
-    def get_string_from_blob(self, blob_name):
+    def get_string_from_blob(self, blob_name: str):
         """
-            blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
+            Gets the data from the given blob path as a string
+        :param blob_name: path to the blob on the cloud providers's bucket
+        :return: string data of the downloaded blob
         """
         blob_client = self.azure_service_client.get_blob_client(container = self.azure_container_name,
                                                                 blob = blob_name)
@@ -238,14 +259,14 @@ class DataToolsAzure:
 
         return download_stream.content_as_text()
 
-    def rebuild_secure_urls_image(self, session, image):
+    def rebuild_secure_urls_image(self, session: Session, image: Image):
         """
-            Re created the signed url for the given image object.
+            Re creates the signed url for the given image object.
             This function is usually used in the context of an image url expiring
             and needing to get a new url.
-        :param session:
-        :param image:
-        :return:
+        :param session: the sqlalchemy DB session
+        :param image: the Diffgram Image() object
+        :return: None
         """
         image.url_signed_expiry = int(time.time() + 2592000)
 
