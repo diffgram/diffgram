@@ -17,5 +17,7 @@ def result_has_error(result):
 
 
 def log_has_error(log):
-    print(log)
-    return log and log.get('error') and len(log.get('error').keys()) >= 1
+    if log.get('error'):
+        if len(log.get('error').keys()) >= 1:
+            return True
+    return False

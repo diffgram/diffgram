@@ -6,6 +6,8 @@ from shared.data_tools_core import Data_tools
 from shared.database.export import Export
 from methods.export.export_view import export_view_core
 from shared.database.task.job.job import Job
+from methods.export.export_utils import check_export_permissions_and_status
+
 
 data_tools = Data_tools().data_tools
 
@@ -197,6 +199,12 @@ def web_export_to_file(project_string_id):
                 project_string_id = project_string_id,
                 export_id = export.id)
 
+            export_check_result = check_export_permissions_and_status(
+                export, project_string_id, session)
+
+            if regular_log.log_has_error(export_check_result):
+                return jsonify(export_check_result), 400
+
             result = export_view_core(
                 export = export,
                 format = "JSON",
@@ -263,5 +271,3 @@ def export_web_core(session,
             use_request_context = use_request_context
         )
 
-    project.generate_status = "complete"
-    session.add(project)

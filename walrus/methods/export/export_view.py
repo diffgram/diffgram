@@ -3,6 +3,8 @@ from methods.regular.regular_api import *
 from shared.data_tools_core import Data_tools
 from shared.database.export import Export
 from methods.export.export_utils import check_export_permissions_and_status
+from shared.regular import regular_log
+
 data_tools = Data_tools().data_tools
 
 
@@ -81,7 +83,7 @@ def export_link(project_string_id):
             Export.id == input['id']).first()
 
         export_check_result = check_export_permissions_and_status(export, project_string_id, session)
-        if len(export_check_result['error'].keys()) > 1:
+        if regular_log.log_has_error(export_check_result):
             return jsonify(export_check_result), 400
 
         result = export_view_core(
@@ -92,6 +94,7 @@ def export_link(project_string_id):
         return jsonify(result), 200
 
 
+# CAUTION this is a private method - call check_export_permissions_and_status() in many cases
 def export_view_core(
         export,
         format="JSON",

@@ -625,7 +625,7 @@ class File_Browser():
                 limit = self.metadata["limit"],
                 offset = self.metadata["start_index"],
             )
-            if not working_dir_file_list or len(log['error'].keys()) > 1:
+            if not working_dir_file_list or regular_log.log_has_error(log):
                 return False
             file_count += count
         else:
