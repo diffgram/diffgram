@@ -32,6 +32,7 @@
                    :loading_instance_templates="loading_instance_templates"
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
+                   :is_keypoint_template="is_keypoint_template"
                    @label_settings_change="label_settings = $event, refresh = Date.now()"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -49,6 +50,7 @@
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
                    @replace_file="$emit('replace_file', $event)"
+                   @open_instance_template_dialog="open_instance_template_dialog()"
                    @copy_all_instances="copy_all_instances"
 
           >
@@ -457,7 +459,7 @@
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
-                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2])"
+                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2], $event[3])"
                                     @cuboid_face_hover_update="cuboid_face_hover_update"
                                     @issue_hover_update="issue_hover_update"
                                     :canvas_transform="canvas_transform"
@@ -981,6 +983,8 @@
       // data()   comment is here for searching
       data() {
         return {
+
+          instance_rotate_control_mouse_hover: null,
 
           snackbar_paste_message: '',
           ghost_instance_hover_index: null,
@@ -1894,6 +1898,7 @@
           }
           this.$store.commit('set_instance_select_for_merge', false);
         },
+
         get_save_loading: function(frame_number){
           if(this.video_mode){
             if(!this.save_loading_frame[frame_number]){
@@ -2290,9 +2295,11 @@
           this.snackbar_message = message;
           this.show_custom_snackbar = true
         },
+
         open_instance_template_dialog: function(){
           this.$refs.instance_template_creation_dialog.open();
         },
+
         trigger_instance_changed(){
           // Callback for when an instance is changed
           // This is a WIP that will be used for all the class Instance Types
@@ -2682,6 +2689,10 @@
 
           if (update.mode == 'pause_object'){
             instance.pause_object = true
+          }
+
+          if (update.mode == 'on_click_update_point_attribute'){
+            instance.nodes[update.node_hover_index].occluded = true
           }
 
           // instance update
@@ -3368,7 +3379,12 @@
 
         },
 
-        instance_hover_update: function (index: Number, type : String, figure_id: String) {
+        instance_hover_update: function (
+            index: Number,
+            type : String,
+            figure_id: String,
+            instance_rotate_control_mouse_hover: Boolean
+            ) {
 
           if (this.lock_point_hover_change == true) {return}
           // important, we don't change the value if it's locked
@@ -3378,11 +3394,13 @@
             this.instance_hover_index = parseInt(index)
             this.hovered_figure_id = figure_id;
             this.instance_hover_type = type   // ie polygon, box, etc.
+            this.instance_rotate_control_mouse_hover = instance_rotate_control_mouse_hover
           }
           else{
             this.instance_hover_index = null;
             this.hovered_figure_id = null;
             this.instance_hover_type = null;
+            this.instance_rotate_control_mouse_hover = null
           }
         },
 
@@ -3651,6 +3669,7 @@
           if(!result){
             this.ellipse_hovered_corner = undefined;
           }
+
           return result;
         },
 
@@ -3876,10 +3895,17 @@
 
             this.detect_issue_hover();
 
+            this.style_mouse_if_rotation()
 
 
           } else {
             this.canvas_element.style.cursor = 'default'
+          }
+        },
+
+        style_mouse_if_rotation: function () {
+          if(this.instance_rotate_control_mouse_hover == true) {
+            this.canvas_element.style.cursor = 'help'
           }
         },
         detect_issue_hover: function(){
@@ -4161,36 +4187,7 @@
           }
 
           if(['rotate'].includes(this.ellipse_hovered_corner_key)){
-            // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-            let a = instance.width;
-            let b = instance.height;
-            let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-            let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
-            let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
-            let A = {x: centered_x, y: centered_y}
-            let B = {x: instance.center_x, y: instance.center_y}
-            let C = {x: this.mouse_position.x, y: this.mouse_position.y}
-            let BA = {x: A.x - B.x, y: A.y - B.y}
-            let BC = {x: C.x - B.x, y: C.y - B.y}
-            let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
-            let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
-            let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
-            let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
-            let angle = 0;
-            if(this.mouse_position.y < B.y){
-              angle = (Math.PI /2)  - theta
-            }
-            else{
-              if(theta <= (Math.PI/2) && theta > 0){
-                // First cuadrant.
-                angle = (Math.PI /2)  + theta
-              }
-              else if(theta > (Math.PI/2) && theta > 0){
-                // Second Cuadrant
-                angle = (Math.PI /2)  + theta
-              }
-            }
-            instance.angle = angle;
+            instance.angle = this.get_angle_of_rotated_ellipse(instance);
           }
 
           // Translation
@@ -4208,6 +4205,40 @@
           this.instance_list.splice(instance_index, 1, instance);
           return true
         },
+
+        get_angle_of_rotated_ellipse: function (instance) {
+          // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
+          let a = instance.width;
+          let b = instance.height;
+          let t = Math.atan(-(b) *  Math.tan(0))/ (a);
+          let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
+          let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
+          let A = {x: centered_x, y: centered_y}
+          let B = {x: instance.center_x, y: instance.center_y}
+          let C = {x: this.mouse_position.x, y: this.mouse_position.y}
+          let BA = {x: A.x - B.x, y: A.y - B.y}
+          let BC = {x: C.x - B.x, y: C.y - B.y}
+          let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
+          let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
+          let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+          let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
+          let angle = 0;
+          if(this.mouse_position.y < B.y){
+            angle = (Math.PI /2)  - theta
+          }
+          else{
+            if(theta <= (Math.PI/2) && theta > 0){
+              // First cuadrant.
+              angle = (Math.PI /2)  + theta
+            }
+            else if(theta > (Math.PI/2) && theta > 0){
+              // Second Cuadrant
+              angle = (Math.PI /2)  + theta
+            }
+          }
+          return angle;
+        },
+
         move_cuboid: function (event) {
 
           // Would prefer this to be part of general "move" something thing.
@@ -4526,10 +4557,7 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.x_min = Math.min(...instance.nodes.map(p => p.x))
-            instance.y_min = Math.min(...instance.nodes.map(p => p.y))
-            instance.x_max = Math.max(...instance.nodes.map(p => p.x))
-            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
+            instance.calculate_min_max_points()
           }
 
           instance.x_min = parseInt(instance.x_min)
@@ -4537,6 +4565,18 @@
           instance.x_max = parseInt(instance.x_max)
           instance.y_max = parseInt(instance.y_max)
 
+        },
+        move_keypoints: function(){
+          let key_points_did_move = false;
+          let instance = this.instance_list[this.instance_hover_index];
+          if(instance && this.is_actively_resizing){
+            if(!this.original_edit_instance){
+              this.original_edit_instance = instance.duplicate_for_undo();
+              this.original_edit_instance_index = this.instance_hover_index;
+            }
+            key_points_did_move = instance.move();
+          }
+          return key_points_did_move
         },
         move_something: function (event) {
 
@@ -4566,7 +4606,7 @@
           }
 
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.instance_list[this.instance_hover_index].move();
+            key_points_did_move = this.move_keypoints(event)
           }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
@@ -5244,6 +5284,20 @@
           this.original_edit_instance = undefined;
           this.original_edit_instance_index = undefined;
         },
+        keypoint_mouse_up_edit: function(){
+          if(!this.original_edit_instance){ return }
+          if(this.original_edit_instance.type != 'keypoints'){ return }
+          if(this.original_edit_instance_index == undefined){ return }
+
+          const command = new UpdateInstanceCommand(
+            this.instance_list[this.original_edit_instance_index],
+            this.original_edit_instance_index,
+            this.original_edit_instance,
+            this)
+          this.command_manager.executeCommand(command);
+          this.original_edit_instance = undefined;
+          this.original_edit_instance_index = undefined;
+        },
         polygon_delete_point: function(polygon_point_index){
           if(this.draw_mode){return}
           if(!this.selected_instance){return}
@@ -5264,9 +5318,30 @@
 
           this.instance_list.splice(this.selected_instance_index, 1, this.selected_instance)
         },
+
+        get_node_hover_index: function () {
+          if (!this.instance_hover_index) { return }
+          let instance = this.instance_list[this.instance_hover_index]
+          if (!instance.node_hover_index) { return }
+          return instance.node_hover_index
+        },
+
+        double_click_keypoint_special_action: function(){
+          let node_hover_index = this.get_node_hover_index()
+          if (node_hover_index == undefined) {return }
+          let update = {
+            index: this.instance_hover_index,
+            node_hover_index: node_hover_index,
+            mode: "on_click_update_point_attribute"
+          }
+          this.instance_update(update)
+
+        },
+
         double_click: function($event){
           this.mouse_position = this.mouse_transform($event, this.mouse_position)
           this.polygon_delete_point();
+          this.double_click_keypoint_special_action()
         },
 
         mouse_up: function () {
@@ -5301,6 +5376,7 @@
               this.bounding_box_mouse_up_edit()
               this.cuboid_mouse_up_edit();
               this.curve_mouse_up_edit();
+              this.keypoint_mouse_up_edit()
             }
           }
 
@@ -5729,9 +5805,9 @@
               });
 
             }
-
-            // Push one to the buffer dict an the other one to the actual instance_list.
             this.push_instance_to_instance_list_and_buffer(new_instance, this.current_frame)
+            //const command = new CreateInstanceCommand(new_instance, this);
+            //this.command_manager.executeCommand(command);
 
           })
         },

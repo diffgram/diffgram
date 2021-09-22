@@ -96,6 +96,8 @@
 
           instance_hover_type: null,
 
+          instance_rotate_control_mouse_hover: null
+
         }
       },
 
@@ -555,6 +557,21 @@
               this.count_instance_in_ctx_paths +=1;
               this.instance_hover_type = instance.type;
             }
+            const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+
+            this.instance_rotate_control_mouse_hover = instance.draw_rotate_point(
+              ctx,
+              this.draw_single_path_circle,
+              this.is_mouse_in_path,
+              i,
+              radius
+            )
+
+            if (this.instance_rotate_control_mouse_hover == true){
+              this.instance_hover_index = i   // becuase rotate point may not be in instance 
+              this.instance_hover_type = instance.type
+            }
+
           }
 
           // TODO we may want to add the edit circle things
@@ -669,7 +686,10 @@
               this.previous_instance_hover_index = this.instance_hover_index
 
               this.$emit('instance_hover_update',
-                [this.instance_hover_index, this.instance_hover_type, this.hovered_figure_id])
+                [this.instance_hover_index,
+                 this.instance_hover_type,
+                 this.hovered_figure_id,
+                 this.instance_rotate_control_mouse_hover])
             }
             if(this.instance_hover_type === 'cuboid' && this.prev_cuboid_hovered_face != this.cuboid_hovered_face){
               this.prev_cuboid_hovered_face = this.cuboid_hovered_face;
