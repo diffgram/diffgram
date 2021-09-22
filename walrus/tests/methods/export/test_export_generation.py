@@ -93,7 +93,8 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
         }, self.session)
 
         file = data_mocking.create_file(
-            {'project_id': self.project.id, 'type': 'image'}, self.session)
+            {'project_id': self.project.id, 
+             'type': 'image'}, self.session)
 
         task_1 = data_mocking.create_task({
             'name': 'task1',
@@ -105,9 +106,12 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
         
         instance1 = data_mocking.create_instance(
             {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 
-             'file_id': file.id, 'label_file_id': label_file.id},
+             'file_id': file.id, 
+             'label_file_id': label_file.id},
             self.session
         )
+        self.session.commit()
+
         export = data_mocking.create_export({
             'description': 'test',
             'source': 'job',
