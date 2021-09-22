@@ -16,10 +16,6 @@ logger = get_shared_logger()
 
 
 class DataToolsGCP:
-    from shared.database.input import Input
-    from shared.database.batch.batch import InputBatch
-    from sqlalchemy.orm import Session
-    from shared.database.image import Image
     """
     These tools are designed to be used on a new thread (not on http request directly)
 
@@ -43,7 +39,7 @@ class DataToolsGCP:
 
     def create_resumable_upload_session(
         self,
-        input: Input,
+        input: 'Input',
         blob_path: str,
         content_type: str = None,
     ):
@@ -74,8 +70,8 @@ class DataToolsGCP:
         total_size: int,  # total size of whole upload (not chunk),
         total_parts_count: int,
         chunk_index: int,
-        input: Input,
-        batch: InputBatch = None
+        input: 'Input',
+        batch: 'InputBatch' = None
     ):
 
         """
@@ -258,7 +254,7 @@ class DataToolsGCP:
 
         return blob.download_as_string()
 
-    def rebuild_secure_urls_image(self, session: Session, image: Image):
+    def rebuild_secure_urls_image(self, session: 'Session', image: 'Image'):
         """
             Re creates the signed url for the given image object.
             This function is usually used in the context of an image url expiring

@@ -9,10 +9,6 @@ from imageio import imread
 
 
 class DataToolsS3:
-    from shared.database.input import Input
-    from shared.database.batch.batch import InputBatch
-    from sqlalchemy.orm import Session
-    from shared.database.image import Image
     """
         Data tools Implementation for AWS S3. Handles Upload and download
         of blobs from S3 Buckets.
@@ -33,7 +29,7 @@ class DataToolsS3:
 
     def create_resumable_upload_session(
         self,
-        input: Input,
+        input: 'Input',
         blob_path: str,
         content_type: str = None
     ):
@@ -67,8 +63,8 @@ class DataToolsS3:
         total_size: int,  # total size of whole upload (not chunk)
         total_parts_count: int,
         chunk_index: int,
-        input: Input,
-        batch: InputBatch = None
+        input: 'Input',
+        batch: 'InputBatch' = None
 
     ):
         """
@@ -252,7 +248,7 @@ class DataToolsS3:
         """
         raise NotImplementedError
 
-    def rebuild_secure_urls_image(self, session: Session, image: Image):
+    def rebuild_secure_urls_image(self, session: 'Session', image: 'Image'):
         """
             Re creates the signed url for the given image object.
             This function is usually used in the context of an image url expiring
