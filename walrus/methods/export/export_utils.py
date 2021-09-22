@@ -62,11 +62,11 @@ def is_export_completed(export):
 
 def check_export_permissions_and_status(export, project_string_id, session):
     project_perms = has_project_permissions_for_export(export, project_string_id, session)
-    if len(project_perms['error'].keys()) > 1:
+    if regular_log.log_has_error(project_perms):
         return project_perms
 
     export_completed_result = is_export_completed(export)
-    if len(export_completed_result['error'].keys()) > 1:
+    if regular_log.log_has_error(export_completed_result):
         return export_completed_result
 
     return regular_log.default()

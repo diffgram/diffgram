@@ -152,7 +152,7 @@ class JobDirectorySyncManager:
                 create_tasks = create_tasks,
                 sync_event_manager = sync_event_manager)
 
-            if len(self.log['error'].keys()) > 1:
+            if regular_log.log_has_error(self.log):
                 return False, self.log
             job.update_file_count_statistic(session = self.session)
         return True, self.log
