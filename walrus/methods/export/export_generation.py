@@ -86,13 +86,21 @@ def new_external_export(
     # files not replaced in the directory yet.
     if export.source == "job":
 
-        file_list = WorkingDirFileLink.file_list(
-            session=session,
-            limit=None,
-            root_files_only=True,
-            job_id=export.job_id,
-            ann_is_complete=export.ann_is_complete
+        status = None
+        if export.ann_is_complete is True:
+            status = "complete"
+
+        task_list = Task.list(
+            session = session,
+            job_id = export.job_id,
+            status = status,
+            project_id = export.project_id,
+            limit_count=None
         )
+
+        file_list =[]
+        for task in task_list:
+            file_list.append(task.file)
 
     if export.source == "directory":
         # Question, why are we declaring this here?
