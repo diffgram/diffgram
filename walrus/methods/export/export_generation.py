@@ -115,7 +115,7 @@ def new_external_export(
         file_list=file_list)
 
     if result is False or result is None:
-        return False
+        return False, None
 
     filename = generate_file_name_from_export(export, session)
 
