@@ -11,14 +11,15 @@ import boto3
 import traceback
 from imageio import imread
 from shared.shared_logger import get_shared_logger
-from shared.database.input import Input
-from shared.database.batch.batch import InputBatch
-from sqlalchemy.orm import Session
-from shared.database.image import Image
 
 logger = get_shared_logger()
 
+
 class DataToolsGCP:
+    from shared.database.input import Input
+    from shared.database.batch.batch import InputBatch
+    from sqlalchemy.orm import Session
+    from shared.database.image import Image
     """
     These tools are designed to be used on a new thread (not on http request directly)
 
@@ -41,10 +42,10 @@ class DataToolsGCP:
             traceback.print_exc()
 
     def create_resumable_upload_session(
-            self,
-            input: Input,
-            blob_path: str,
-            content_type: str = None,
+        self,
+        input: Input,
+        blob_path: str,
+        content_type: str = None,
     ):
         """
         Create an upload session url where the user can upload a file to be stored
@@ -63,18 +64,18 @@ class DataToolsGCP:
         return url
 
     def transmit_chunk_of_resumable_upload(
-            self,
-            stream,
-            blob_path: str,
-            prior_created_url: str,
-            content_type: str,  # Why do we have to keep redeclaring content type
-            content_start: int,
-            content_size: int,
-            total_size: int,  # total size of whole upload (not chunk),
-            total_parts_count: int,
-            chunk_index: int,
-            input: Input,
-            batch: InputBatch = None
+        self,
+        stream,
+        blob_path: str,
+        prior_created_url: str,
+        content_type: str,  # Why do we have to keep redeclaring content type
+        content_start: int,
+        content_size: int,
+        total_size: int,  # total size of whole upload (not chunk),
+        total_parts_count: int,
+        chunk_index: int,
+        input: Input,
+        batch: InputBatch = None
     ):
 
         """
@@ -115,7 +116,6 @@ class DataToolsGCP:
 
         end = int(content_start) + int(content_size) - 1
 
-
         content_range_extended: str = "bytes " + str(content_start) + \
                                       "-" + str(end) + "/" + str(total_size)
 
@@ -132,7 +132,6 @@ class DataToolsGCP:
             # TODO if we are going to have a try block
             # here should we error / pass this to Input instance in some way?
             return False
-
 
         return response
 
@@ -151,11 +150,11 @@ class DataToolsGCP:
         return local_file
 
     def upload_to_cloud_storage(
-            self,
-            temp_local_path: str,
-            blob_path: str,
-            content_type: str = None,
-            timeout: int = None
+        self,
+        temp_local_path: str,
+        blob_path: str,
+        content_type: str = None,
+        timeout: int = None
     ):
 
         """
@@ -212,7 +211,7 @@ class DataToolsGCP:
         if bucket_type == "ml":
             blob = self.ML_bucket.blob(blob_path)
 
-        result = blob.upload_from_string(string_data, content_type=content_type)
+        result = blob.upload_from_string(string_data, content_type = content_type)
 
     def download_bytes(self, blob_path: str):
         """
@@ -233,7 +232,7 @@ class DataToolsGCP:
         :return: the string for the presigned url
         """
         if expiration_offset is None:
-            expiration_offset =  40368000
+            expiration_offset = 40368000
         expiration_time = int(time.time() + expiration_offset)
 
         if bucket == "web":
@@ -323,10 +322,9 @@ class DataToolsGCP:
                 blob[0].name, 600)
         return version
 
-
     def label_dict_builder(
-            self,
-            file_list
+        self,
+        file_list
     ):
         """
 

@@ -9,14 +9,14 @@ from azure.storage.blob._shared_access_signature import BlobSharedAccessSignatur
 import base64
 import uuid
 import datetime
-from shared.database.input import Input
-from shared.database.batch.batch import InputBatch
-from sqlalchemy.orm import Session
-from shared.database.image import Image
 from imageio import imread
 
 
 class DataToolsAzure:
+    from shared.database.input import Input
+    from shared.database.batch.batch import InputBatch
+    from sqlalchemy.orm import Session
+    from shared.database.image import Image
     """
     These tools are designed to be used on a new thread (not on http request directly)
 
@@ -31,10 +31,10 @@ class DataToolsAzure:
         self.azure_container_name_ml = settings.ML__DIFFGRAM_AZURE_CONTAINER_NAME
 
     def create_resumable_upload_session(
-            self,
-            input: object,
-            blob_path: str,
-            content_type: str = None
+        self,
+        input: object,
+        blob_path: str,
+        content_type: str = None
     ):
         """
           Azure has no concept of creating a resumable session, so for now this does nothing.
@@ -42,18 +42,18 @@ class DataToolsAzure:
         return
 
     def transmit_chunk_of_resumable_upload(
-            self,
-            stream,
-            blob_path: str,
-            prior_created_url: str,
-            content_type: str,
-            content_start: int,
-            content_size: int,
-            total_size: int,
-            total_parts_count: int,
-            chunk_index: int,
-            input: Input,
-            batch: InputBatch = None
+        self,
+        stream,
+        blob_path: str,
+        prior_created_url: str,
+        content_type: str,
+        content_start: int,
+        content_size: int,
+        total_size: int,
+        total_parts_count: int,
+        chunk_index: int,
+        input: Input,
+        batch: InputBatch = None
 
     ):
         """
@@ -84,7 +84,7 @@ class DataToolsAzure:
         blob_client.stage_block(block_id = block_id, data = stream)
         if input:
             if input.upload_azure_block_list is None or input.upload_azure_block_list.get(
-                    'upload_azure_block_list') is None:
+                'upload_azure_block_list') is None:
                 input.upload_azure_block_list = {
                     'upload_azure_block_list': [block_id]
                 }
@@ -94,7 +94,7 @@ class DataToolsAzure:
                 input.upload_azure_block_list = {'upload_azure_block_list': new_list}
         elif batch and not input:
             if batch.upload_azure_block_list is None or batch.upload_azure_block_list.get(
-                    'upload_azure_block_list') is None:
+                'upload_azure_block_list') is None:
                 batch.upload_azure_block_list = {
                     'upload_azure_block_list': [block_id]
                 }
@@ -131,11 +131,11 @@ class DataToolsAzure:
         local_file.write(download_stream.readall())
 
     def upload_to_cloud_storage(
-            self,
-            temp_local_path: str,
-            blob_path: str,
-            content_type: str = None,
-            timeout: int = None
+        self,
+        temp_local_path: str,
+        blob_path: str,
+        content_type: str = None,
+        timeout: int = None
     ):
         """
             Uploads the file in the given path to the Cloud Provider's storage service.
@@ -273,7 +273,8 @@ class DataToolsAzure:
         image.url_signed = self.build_secure_url(image.url_signed_blob_path, expiration_offset = 2592000)
 
         if hasattr(image, 'url_signed_thumb_blob_path') and image.url_signed_thumb_blob_path:
-            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path, expiration_offset = 2592000)
+            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path,
+                                                           expiration_offset = 2592000)
         session.add(image)
 
     ############################################################  AI / ML FUNCTIONS ##############################################
@@ -301,28 +302,27 @@ class DataToolsAzure:
         raise NotImplementedError
 
     def create_tf_example_deep_lab_citiscape(
-            self,
-            file,
-            project_id
+        self,
+        file,
+        project_id
     ):
         raise NotImplementedError
 
-
     def tf_records_new(
-            self,
-            session,
-            file_list,
-            project_id,
-            method,
-            output_blob_dir,
-            sub_method = None,
-            label_dict = None
+        self,
+        session,
+        file_list,
+        project_id,
+        method,
+        output_blob_dir,
+        sub_method = None,
+        label_dict = None
     ):
         raise NotImplementedError
 
     def label_dict_builder(
-            self,
-            file_list
+        self,
+        file_list
     ):
         """
 
