@@ -10,10 +10,12 @@ from imageio import imread
 
 class DataToolsS3:
     """
-    These tools are designed to be used on a new thread (not on http request directly)
+        Data tools Implementation for AWS S3. Handles Upload and download
+        of blobs from S3 Buckets.
 
-    Use init with class for ease with google cloud buckets
-    Can we use @staticmethod then? I don't think so?se t
+        Requires setting the following settings
+        - DIFFGRAM_AWS_ACCESS_KEY_ID
+        - DIFFGRAM_AWS_ACCESS_KEY_SECRET
 
     """
 
@@ -26,14 +28,18 @@ class DataToolsS3:
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
 
     def create_resumable_upload_session(
-            self,
-            input: object,
-            blob_path: str,
-            content_type: str = None
+        self,
+        input: 'Input',
+        blob_path: str,
+        content_type: str = None
     ):
         """
             Creates an S3 Multipart upload session and attached the upload ID
             to the Diffgram Input Object for future reference.
+
+        :param input: Input object
+        :param blob_path: the file path to create the upload session
+        :param content_type: Content type of the give blob_path
         """
         mimetypes.init()
         if content_type is None:
@@ -47,44 +53,42 @@ class DataToolsS3:
         input.upload_aws_id = response['UploadId']
 
     def transmit_chunk_of_resumable_upload(
-            self,
-            stream,
-            blob_path: str,
-            prior_created_url: str,
-            content_type: str,  # Why do we have to keep redeclaring content type
-            content_start: int,
-            content_size: int,
-            total_size: int,  # total size of whole upload (not chunk)
-            total_parts_count: int,
-            chunk_index: int,
-            input: object,
-            batch: object = None
+        self,
+        stream,
+        blob_path: str,
+        prior_created_url: str,
+        content_type: str,  # Why do we have to keep redeclaring content type
+        content_start: int,
+        content_size: int,
+        total_size: int,  # total size of whole upload (not chunk)
+        total_parts_count: int,
+        chunk_index: int,
+        input: 'Input',
+        batch: 'InputBatch' = None
 
     ):
         """
-                basic concept
-        is to send a request given the url and content byte information
-            Conceptually this is very very similar to what we were
-            already doing in terms of seeking with a file
+        This function's job  is to send a request given the url and content byte information.
+        Conceptually this is very very similar to what we were
+        already doing in terms of seeking with a file
 
             https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Object.initiate_multipart_upload
         Right so the assumption is the object is being stored
 
-        Assuming / hoping the built in "retry" will work
-        for this but can review more later
-
         From transmit next chunk
         Assumes ``chunk_size`` is not :data:`None` on the current blob.
-        :param stream:
-        :param blob_path:
-        :param prior_created_url:
-        :param content_type:
-        :param content_start:
-        :param content_size:
-        :param total_size:
-        :param total_parts_count:
-        :param chunk_index:
-        :param input:
+
+        :param stream: byte stream to send to cloud provider
+        :param blob_path: the string indicating the path in the bucket where the bytes will be stored
+        :param prior_created_url: The previously created URL (NOT used for S3)
+        :param content_type: The content type of the stream (NOT used for S3)
+        :param content_start: The content index start (NOT used for S3)
+        :param content_size: The chunk size
+        :param total_size: The total size of the stream
+        :param total_parts_count: The total count of chunks from the stream
+        :param chunk_index: The current index to be sent
+        :param input: The Diffgram Input object where the parts are stored
+        :param batch: If the upload was from a batch upload, the parts will be saved on the batch provided here.
         :return:
         """
         # - 1 seems to be needed
@@ -98,7 +102,7 @@ class DataToolsS3:
             PartNumber = int(chunk_index) + 1)
         if input:
             if input.upload_aws_parts_list is None or \
-                    input.upload_aws_parts_list.get('parts') is None:
+                input.upload_aws_parts_list.get('parts') is None:
                 input.upload_aws_parts_list = {
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
@@ -108,7 +112,7 @@ class DataToolsS3:
                 )
         elif not input and batch:
             if batch.upload_aws_parts_list is None or \
-                    batch.upload_aws_parts_list.get('parts') is None:
+                batch.upload_aws_parts_list.get('parts') is None:
                 batch.upload_aws_parts_list = {
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
@@ -122,29 +126,53 @@ class DataToolsS3:
                 Bucket = self.s3_bucket_name,
                 Key = blob_path,
                 UploadId = input.upload_aws_id if input else batch.upload_aws_id,
-                MultipartUpload = {"Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
+                MultipartUpload = {
+                    "Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
             )
         return True
 
-    def download_from_cloud_to_local_file(self, cloud_uri, local_file):
+    def download_from_cloud_to_local_file(self, cloud_uri: str, local_file: str):
+        """
+        Download a file from the given blob bath to the given local file path
+
+        :param cloud_uri: string for the bucket's path
+        :param local_file: string for the local file path to download to.
+        :return: File Object that contains the downloaded file
+        """
         self.s3_client.download_fileobj(self.s3_bucket_name, cloud_uri, local_file)
         return local_file
 
     def upload_to_cloud_storage(
-            self,
-            temp_local_path: str,
-            blob_path: str,
-            content_type: str = None,
-            timeout = None
+        self,
+        temp_local_path: str,
+        blob_path: str,
+        content_type: str = None,
+        timeout: int = None
     ):
         """
-        TODO this assumes this operation was successful
-        would like some better error handling here...
+            Uploads the file in the given path to the Cloud Provider's storage service.
+        :param temp_local_path: path of the local file to upload
+        :param blob_path: path in the bucket where the blobl will be uploaded
+        :param content_type: content type of the blob to upload
+        :param timeout: Timeout for upload (optional)
+        :return: None
         """
         self.s3_client.upload_file(temp_local_path, self.s3_bucket_name, blob_path,
                                    ExtraArgs = {'ContentType': content_type})
 
-    def upload_from_string(self, blob_path, string_data, content_type, bucket_type = "web"):
+    def upload_from_string(self,
+                           blob_path: str,
+                           string_data: str,
+                           content_type: str,
+                           bucket_type: str = "web"):
+        """
+            Uploads the given string to S3 blob storage service.
+        :param blob_path: the blob path where the file will be uploaded in the bucket
+        :param string_data: the string data to upload
+        :param content_type: content type of the string data
+        :param bucket_type: the Diffgram bucket type (either 'web' or 'ml'). Defaults to 'web'
+        :return: None
+        """
         if bucket_type == "web":
             bucket_name = self.s3_bucket_name
 
@@ -156,15 +184,23 @@ class DataToolsS3:
                                   Key = blob_path,
                                   ContentType = content_type)
 
-    def download_bytes(self, blob_path):
-
+    def download_bytes(self, blob_path: str):
+        """
+            Downloads the given blob as bytes content.
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: bytes of the blob that was downloaded
+        """
         bytes_buffer = BytesIO()
         self.s3_client.download_fileobj(Bucket = self.s3_bucket_name, Key = blob_path, Fileobj = bytes_buffer)
         byte_value = bytes_buffer.getvalue()
         return byte_value
 
-    def get_image(self, blob_path):
-
+    def get_image(self, blob_path: str):
+        """
+            Returns the numpy image of the given blob_path in Cloud Providers's Blob Storage.
+        :param blob_path: path of the cloud provider bucket to download the bytes from
+        :return: numpy image object for the downloaded image
+        """
         bytes_buffer = BytesIO()
         self.s3_client.download_fileobj(Bucket = self.s3_bucket_name, Key = blob_path, Fileobj = bytes_buffer)
         byte_value = bytes_buffer.getvalue()
@@ -172,15 +208,15 @@ class DataToolsS3:
 
         image_np = imread(BytesIO(byte_value))
 
-
         return image_np
 
-
-    # TODO clarify this is for file downloads not images / maybe refactor
-    def build_secure_url(self, blob_name, expiration_offset = None, bucket = "web"):
+    def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
         """
-        blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
-        expiration_offset, integer, additional time from this moment to allow link
+            Builds a presigned URL to access the given blob path.
+        :param blob_name: The path to the blob for the presigned URL
+        :param expiration_offset: The expiration time for the presigned URL
+        :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
+        :return: the string for the presigned url
         """
 
         if expiration_offset is None:
@@ -198,36 +234,37 @@ class DataToolsS3:
 
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
-                                                            'Bucket': bucket_name,
-                                                            'ResponseContentDisposition': 'attachment; filename=' + filename,
-                                                            'Key': blob_name},
+                                                               'Bucket': bucket_name,
+                                                               'ResponseContentDisposition': 'attachment; filename=' + filename,
+                                                               'Key': blob_name},
                                                            ExpiresIn = int(expiration_time))
         return signed_url
 
-    def get_string_from_blob(self, blob_name):
+    def get_string_from_blob(self, blob_name: str):
         """
-        blob_name, string of blob name. don't include CLOUD_STORAGE_BUCKET
+            Gets the data from the given blob path as a string
+        :param blob_name: path to the blob on the cloud providers's bucket
+        :return: string data of the downloaded blob
         """
         raise NotImplementedError
 
-    def rebuild_secure_urls_image(self, session, image):
+    def rebuild_secure_urls_image(self, session: 'Session', image: 'Image'):
         """
-            Re created the signed url for the given image object.
+            Re creates the signed url for the given image object.
             This function is usually used in the context of an image url expiring
             and needing to get a new url.
-        :param session:
-        :param image:
-        :return:
+        :param session: the sqlalchemy DB session
+        :param image: the Diffgram Image() object
+        :return: None
         """
         image.url_signed_expiry = int(time.time() + 2592000)
 
         image.url_signed = self.build_secure_url(image.url_signed_blob_path, expiration_offset = 2592000)
 
         if hasattr(image, 'url_signed_thumb_blob_path') and image.url_signed_thumb_blob_path:
-            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path, expiration_offset = 2592000)
+            image.url_signed_thumb = self.build_secure_url(image.url_signed_thumb_blob_path,
+                                                           expiration_offset = 2592000)
         session.add(image)
-    # TODO refactor to be generic item if possible?
-    # Potential problem is strings are different
 
     ############################################################  AI / ML FUNCTIONS ##############################################
     def build_secure_url_inference(self, session, ai, inference):
@@ -254,29 +291,29 @@ class DataToolsS3:
         raise NotImplementedError
 
     def create_tf_example_deep_lab_citiscape(
-            self,
-            file,
-            project_id
+        self,
+        file,
+        project_id
     ):
         raise NotImplementedError
 
     # TODO would like to try @profile on this for testing memory stuff
 
     def tf_records_new(
-            self,
-            session,
-            file_list,
-            project_id,
-            method,
-            output_blob_dir,
-            sub_method = None,
-            label_dict = None
+        self,
+        session,
+        file_list,
+        project_id,
+        method,
+        output_blob_dir,
+        sub_method = None,
+        label_dict = None
     ):
         raise NotImplementedError
 
     def label_dict_builder(
-            self,
-            file_list
+        self,
+        file_list
     ):
         """
 
