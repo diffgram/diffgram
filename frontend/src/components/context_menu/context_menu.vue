@@ -100,6 +100,7 @@
         num_frames: 1,
         locked_mouse_position: undefined,
         show_issue_panel: false,
+        node_hover_index_locked: undefined
 
       }
     },
@@ -145,6 +146,7 @@
           this.instance_hover_index_locked = this.instance_hover_index
           this.hovered_figure_id_locked = this.hovered_figure_id;
           this.polygon_point_hover_locked = this.$props.polygon_point_hover_index
+          this.node_hover_index_locked = this.selected_instance.node_hover_index
 
           // We want to free condition on null in template so "normalize" it here.
           if (isNaN(this.instance_hover_index_locked)) {
@@ -156,6 +158,7 @@
           this.top = '-1000px';
           this.left = '-1000px';
           this.instance_hover_index_locked = null
+          this.node_hover_index_locked = undefined
           this.show_paste_menu = false;
           this.show_instance_template_menu = false;
         }
@@ -174,6 +177,16 @@
 
     },
     methods: {
+
+      on_click_update_point_attribute: function () {
+         let instance_update = {
+          index: this.instance_hover_index_locked,
+          node_hover_index: this.node_hover_index_locked,
+          mode: "on_click_update_point_attribute"
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
+
       is_unmerged_instance: function(instance_index){
         if(instance_index == undefined){
           return false
@@ -541,7 +554,10 @@
         link
         dense
         data-cy="merge_polygon"
-        v-if="instance_hover_index_locked != undefined && is_unmerged_instance(instance_hover_index_locked)"
+        v-if="instance_hover_index_locked != undefined
+           && is_unmerged_instance(instance_hover_index_locked)
+           && selected_instance.type == 'polygon' // only polygon supported for now
+           "
         @click="on_click_merge_polygon"
       >
 
@@ -562,7 +578,10 @@
         link
         dense
         data-cy="unmerge_polygon"
-        v-if="instance_hover_index_locked != undefined && !is_unmerged_instance(instance_hover_index_locked)"
+        v-if="instance_hover_index_locked != undefined
+            && !is_unmerged_instance(instance_hover_index_locked)
+            && selected_instance.type == 'polygon' // only polygon supported for now
+             "
         @click="on_click_unmerge_polygon"
       >
 
@@ -591,7 +610,7 @@
       <v-list-item
         link
         dense
-        data-cy="delete_instance"
+        data-cy="delete_polygon_point"
         v-if="polygon_point_hover_locked"
         @click="on_click_delete_polygon_point"
       >
@@ -599,7 +618,7 @@
         <v-list-item-icon>
           <tooltip_icon
 
-            tooltip_message="Delete Instance"
+            tooltip_message="Delete"
             icon="mdi-vector-polyline-minus"
             color="primary"
           />
@@ -610,6 +629,31 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-list-item
+        link
+        dense
+        data-cy="delete_keypoint_point"
+        v-if="node_hover_index_locked != undefined"
+        @click="on_click_update_point_attribute()"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+
+            tooltip_message="Update"
+            icon="mdi-vector-polyline-minus"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Mark Ocluded
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+
       <v-list-item
         link
         dense
