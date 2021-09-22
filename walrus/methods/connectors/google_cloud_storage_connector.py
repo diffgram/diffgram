@@ -389,7 +389,7 @@ class GoogleCloudStorageConnector(Connector):
             export_check_result = check_export_permissions_and_status(export,
                                                                       self.config_data['project_string_id'],
                                                                       session)
-            if len(export_check_result['error'].keys()) > 1:
+            if regular_log.log_has_error(export_check_result):
                 log = regular_log.default()
                 log['error'] = export_check_result['error']
                 log['error']['file_name'] = opts['path']
