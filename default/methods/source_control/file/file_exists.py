@@ -36,14 +36,7 @@ def file_list_exists_api(project_string_id):
 
         project = Project.get_by_string_id(session, project_string_id)
         user = User.get(session)
-        member = None
-        if user:
-            member = user.member
-        else:
-            if request.authorization:
-                client_id = request.authorization.get('username', None)
-                auth = Auth_api.get(session, client_id)
-                member = auth.member
+        member = get_member(session=session)
 
         result, log = file_list_exists_core(
             session = session,
