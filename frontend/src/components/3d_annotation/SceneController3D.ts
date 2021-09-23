@@ -54,7 +54,9 @@ export default class SceneController3D{
     }
     for(const child of this.scene.children){
       if(child.material){
+
         child.material.opacity = 0.3;
+        child.material.color = new THREE.Color(child.userData.color)
       }
     }
   }
@@ -235,10 +237,12 @@ export default class SceneController3D{
       this,
       cuboid_mesh
     )
+    new_instance.label_file = this.label_file;
     new_instance.draw_on_scene()
     this.instance_list.push(new_instance);
     let index = this.instance_list.length - 1;
     new_instance.mesh.userData.instance_index = index;
+    new_instance.mesh.userData.color = this.label_file.colour.hex;
     return new_instance
   }
 

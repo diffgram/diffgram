@@ -71,8 +71,10 @@
       },
 
       async mounted() {
+
         if (WEBGL.isWebGLAvailable()) {
           if (this.$props.create_new_scene) {
+
             await this.setup_scene_controls()
           }
 
@@ -90,6 +92,14 @@
 
       },
       computed: {},
+      watch:{
+        width: function(){
+          this.update_camera_aspect_ratio();
+        },
+        height: function(){
+          this.update_camera_aspect_ratio();
+        }
+      },
       methods: {
         setup_ortographic_scene_controller: function (scene) {
           this.camera = new THREE.OrthographicCamera(
@@ -113,7 +123,7 @@
         },
         setup_scene_controls: async function (scene = undefined,) {
           this.container = document.getElementById(this.$props.container_id)
-          console.log('SETTINGS SCENETE', this.container.clientWidth, this.container.clientHeight, this.$props.width, 'qq');
+          console.log('setup scene controls', this.container.clientWidth, this.container.clientHeight, this.$props.width, this.$props.height)
           if(this.container.clientWidth === 0 || this.container.clientHeight === 0){
             return
           }
@@ -122,7 +132,7 @@
           this.renderer.setPixelRatio(window.devicePixelRatio);
 
           this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
-
+          window.addEventListener( 'resize', this.on_window_resize );
           if (!scene) {
             scene = new THREE.Scene();
           }
@@ -139,13 +149,17 @@
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
           this.camera.position.y = 10;
-          window.addEventListener('resize', this.on_window_resize);
 
           this.add_instance_list_to_scene();
 
           this.scene_controller.start_render();
+
+          this.$emit('scene_ready', this.scene_controller)
         },
         set_current_label_file: function (label_file) {
+          if(!this.scene_controller){
+            return
+          }
           this.scene_controller.set_current_label_file(label_file)
         },
         set_draw_mode: function (draw_mode) {
@@ -156,13 +170,20 @@
             instance.draw_on_scene();
           }
         },
-        on_window_resize: function () {
+        update_camera_aspect_ratio: function(){
+          console.log('update_camera_aspect_ratio', this.camera)
+          if(!this.camera){
+            return
+          }
           let w = this.container.clientWidth
           let h = this.container.clientHeight
           this.camera.aspect = w / h;
           this.camera.updateProjectionMatrix();
-
+          console.log('w, h', w, h)
           this.renderer.setSize(w, h);
+        },
+        on_window_resize: function () {
+          this.update_camera_aspect_ratio();
         },
         configure_controls: function () {
           if (!this.$props.allow_navigation) {

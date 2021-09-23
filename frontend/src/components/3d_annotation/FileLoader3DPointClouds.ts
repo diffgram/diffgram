@@ -14,7 +14,6 @@ export default class FileLoader3DPointClouds {
       let pcd_loader = new PCDLoader();
       pcd_loader.load(url,
         (mesh) => {
-          console.log('SUCCESS', mesh)
           mesh.material.color.set('white');
           mesh.name = 'point_cloud'
           resolve(mesh)

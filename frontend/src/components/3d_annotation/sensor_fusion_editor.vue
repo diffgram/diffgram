@@ -51,10 +51,12 @@
       </v_error_multiple>
     </div>
     <div class="editor-body">
-      <div class="mt-4" style="max-height: 600px; overflow-y: hidden">
+      <div id="main_3d_canvas_container">
         <canvas_3d
+          v-if="main_canvas_height && main_canvas_width"
           ref="main_3d_canvas"
-          height="600px"
+          :width="main_canvas_width"
+          :height="main_canvas_height"
           :allow_navigation="true"
           :instance_list="instance_list"
           :current_label_file="current_label_file"
@@ -62,16 +64,16 @@
           :container_id="'main_screen'"
           :with_keyboard_controls="true"
           @instance_drawn="on_instance_drawn"
+          @scene_ready="on_scene_ready"
           @instance_updated="on_instance_updated"
         >
 
         </canvas_3d>
       </div>
-      <div id="secondary_3d_canvas_container"
-           class="mt-4 d-flex flex-row"
-           style="max-height: 200px;">
+      <div id="secondary_3d_canvas_container" class="d-flex">
         <div class="ma-1">
           <canvas_3d
+            v-if="secondary_canvas_width && secondary_canvas_height"
             ref="x_axis_3d_canvas"
             :create_new_scene="false"
             camera_type="ortographic"
@@ -88,6 +90,7 @@
         <div class="ma-1">
 
           <canvas_3d
+            v-if="secondary_canvas_width && secondary_canvas_height"
             ref="y_axis_3d_canvas"
             :create_new_scene="false"
             camera_type="ortographic"
@@ -104,6 +107,7 @@
         <div class="ma-1">
 
           <canvas_3d
+            v-if="secondary_canvas_width && secondary_canvas_height"
             ref="z_axis_3d_canvas"
             :create_new_scene="false"
             camera_type="ortographic"
@@ -130,7 +134,7 @@
   import canvas_3d from "./canvas_3d";
 
   export default Vue.extend({
-    name: "annotation_editor_3d",
+    name: "sensor_fusion_editor_3d",
     components:{
       toolbar_sensor_fusion,
       canvas_3d
@@ -191,50 +195,60 @@
           canvas_scale_global_setting: 0.5,
           left_nav_width: 450,
           on_instance_creation_advance_sequence: true,
-          ghost_instances_closed_by_open_view_edit_panel: false
+          ghost_instances_closed_by_open_view_edit_panel: false,
+
         },
+        main_canvas_width: undefined,
+        main_canvas_height: undefined,
+        secondary_canvas_width: undefined,
+        secondary_canvas_height: undefined,
       }
     },
-    mounted() {
+    async mounted() {
+      window.addEventListener( 'resize', this.on_window_resize );
       window.addEventListener( 'keydown', this.key_down_handler, false );
-      this.setup_secondary_scene_controls();
+      this.calculate_main_canvas_dimension();
+      this.calculate_secondary_canvas_dimension();
 
     },
-    computed:{
-      secondary_canvas_width: function(){
-          if(this.secondary_3d_canvas_container){
-            let width = this.secondary_3d_canvas_container.clientWidth * 0.333;
-            width = parseInt(width, 10);
-            return `${width}px`
-          }
-      },
-      secondary_canvas_height: function(){
-        return '220px'
-      },
-    },
     watch:{
-      // secondary_canvas_width: async function(new_val, old_val){
-      //   console.log('watcher', new_val, old_val)
-      //   if(new_val !== old_val){
-      //     alert('aa');
-      //
-      //     this.setup_secondary_scene_controls()
-      //   }
-      //
-      // },
-      // secondary_canvas_height: function(new_val, old_val){
-      //   if(new_val !== old_val){
-      //     this.setup_secondary_scene_controls()
-      //   }
-      // }
+
     },
     methods: {
-      setup_secondary_scene_controls: async function(){
+      calculate_main_canvas_dimension: function(){
+        let main_3d_canvas_container = document.getElementById('main_3d_canvas_container')
+        if(main_3d_canvas_container){
+          this.main_canvas_width = `${parseInt(window.innerWidth * 1.0)}px`;
+          this.main_canvas_height = `${parseInt(window.innerHeight * 0.65)}px`;
+        }
+      },
+      calculate_secondary_canvas_dimension: function(){
+        let secondary_3d_canvas_container = document.getElementById('main_3d_canvas_container')
+        if(secondary_3d_canvas_container){
+          let width = window.innerWidth * 0.333;
+          width = parseInt(width, 10);
+          this.secondary_canvas_width =  `${width}px`;
+
+          let height = window.innerHeight * 0.235;
+          height = parseInt(height, 10);
+          this.secondary_canvas_height = `${height}px`;
+        }
+        console.log('new sizes', this.secondary_canvas_height, this.secondary_canvas_width)
+      },
+      on_window_resize: function(event){
+        this.calculate_main_canvas_dimension();
+        this.calculate_secondary_canvas_dimension();
+      },
+      on_scene_ready: function(scene_controller){
+        alert('scenread')
+        let main_scene = scene_controller.scene;
+        this.setup_secondary_scene_controls(main_scene)
+
+      },
+      setup_secondary_scene_controls: async function(main_scene){
         // Set scene for secondary canvas
-        let main_scene = this.$refs.main_3d_canvas.scene_controller.scene;
-        this.secondary_3d_canvas_container = document.getElementById('secondary_3d_canvas_container')
-        console.log('WIDTH', this.secondary_canvas_width);
         await this.$nextTick();
+        this.secondary_3d_canvas_container = document.getElementById('secondary_3d_canvas_container')
         this.$refs.x_axis_3d_canvas.setup_scene_controls(main_scene)
         this.$refs.y_axis_3d_canvas.setup_scene_controls(main_scene)
         this.$refs.z_axis_3d_canvas.setup_scene_controls(main_scene)
@@ -279,6 +293,9 @@
 
       },
       change_label_file: function(label_file){
+        if(!this.$refs.main_3d_canvas){
+          return
+        }
         this.current_label_file = label_file;
         this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
