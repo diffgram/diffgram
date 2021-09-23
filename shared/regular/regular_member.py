@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 from shared.database.user import User
 from flask import request
 from shared.database.auth.api import Auth_api
@@ -6,6 +5,8 @@ from shared.database.auth.api import Auth_api
 
 def get_member(session):
 	"""
+	Private method. Assumes request already verified.
+
 	An issue of this being part of auth is that we may want the actual 
 	member object available in the session,
 	and at least our current process is to close / not pass the 
@@ -22,8 +23,10 @@ def get_member(session):
 	if user:
 		member = user.member
 	else:
-		client_id = request.authorization.get('username', None)
-		auth = Auth_api.get(session, client_id)
-		member = auth.member
+		if request.authorization:
+			client_id = request.authorization.get('username', None)
+			if client_id and client_id != 'None':
+				auth = Auth_api.get(session, client_id)
+				member = auth.member
 
 	return member
