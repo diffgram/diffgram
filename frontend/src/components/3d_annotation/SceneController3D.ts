@@ -165,10 +165,6 @@ export default class SceneController3D{
 
   private render(){
 
-    if(this.controls_orbit){
-      this.controls_orbit.update();
-    }
-
     requestAnimationFrame( this.render.bind(this) );
     this.reset_materials();
     this.check_hover();
@@ -241,6 +237,8 @@ export default class SceneController3D{
     )
     new_instance.draw_on_scene()
     this.instance_list.push(new_instance);
+    let index = this.instance_list.length - 1;
+    new_instance.mesh.userData.instance_index = index;
     return new_instance
   }
 
@@ -254,7 +252,7 @@ export default class SceneController3D{
   public add_orbit_controls(){
     this.controls_orbit = new OrbitControls(this.camera, this.renderer.domElement)
     this.controls_orbit.listenToKeyEvents( window ); // optional
-    this.controls_orbit.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+    this.controls_orbit.enableDamping = false; // an animation loop is required when either damping or auto-rotation are enabled
     this.controls_orbit.dampingFactor = 0.09;
     this.controls_orbit.screenSpacePanning = true;
     this.controls_orbit.enableRotate = true;
@@ -275,6 +273,7 @@ export default class SceneController3D{
   public add_transform_controls(){
     this.object_transform_controls = new ObjectTransformControls(
       this.camera,
+      this,
       this.renderer.domElement,
       this.scene,
       this.render.bind(this),

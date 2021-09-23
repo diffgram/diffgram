@@ -36,36 +36,51 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
 
   public center_camera_to_mesh(mesh, axis = 'x'){
     let center = getCenterPoint(mesh);
-    let frustrum_height = mesh.min;
-    let frustrum_width = mesh.max;
-    console.log('center', center)
+    let frustrum_height;
+    var aspect = this.container.clientWidth / this.container.clientHeight;
+    var helper_bbox = new THREE.BoxHelper(mesh);
+    helper_bbox.update();
+    var bbox_radius = helper_bbox.geometry.boundingSphere.radius;
+    let center2 = helper_bbox.geometry.boundingSphere;
+    if(aspect > 1){
+      frustrum_height = 2 * bbox_radius;
+    }
+    else{
+      frustrum_height = 2 * bbox_radius / aspect;
+    }
+
     if(axis === 'x'){
 
+      this.camera.position.set(center.x - 20, center.y, center.z);
+      this.camera.lookAt(this.scene.position);
 
-      // this.camera.left = - frustrum_width / 2;
-      // this.camera.right = frustrum_width / 2;
-      // this.camera.top = frustrum_height / 2;
-      // this.camera.bottom = - frustrum_height / 2;
-      // this.camera.updateProjectionMatrix();
-
-      this.camera.position.set(center.x - 20, center.y, center.z)
-      this.camera.lookAt(center.x , center.y, center.z)
-      this.camera.zoom = 8
+      this.camera.left = - frustrum_height * aspect / 2;
+      this.camera.right = frustrum_height * aspect / 2;
+      this.camera.top = frustrum_height / 2;
+      this.camera.bottom = - frustrum_height / 2;
       this.camera.updateProjectionMatrix();
+
 
     }
     if(axis === 'y'){
-      this.camera.position.set(center.x , center.y - 20, center.z)
-      this.camera.lookAt(center.x , center.y, center.z)
-      this.camera.zoom = 8
+      this.camera.position.set(center.x, center.y - 20, center.z);
+      this.camera.lookAt(this.scene.position)
+
+      this.camera.left = - frustrum_height * aspect / 2;
+      this.camera.right = frustrum_height * aspect / 2;
+      this.camera.top = frustrum_height / 2;
+      this.camera.bottom = - frustrum_height / 2;
       this.camera.updateProjectionMatrix();
 
     }
     if(axis === 'z'){
+      this.camera.position.set(center.x, center.y, center.z - 20);
+      this.camera.lookAt(this.scene.position)
 
-      this.camera.position.set(center.x , center.y , center.z - 20)
-      this.camera.lookAt(center.x , center.y, center.z)
-      this.camera.zoom = 8
+      this.camera.left = - frustrum_height * aspect / 2;
+      this.camera.right = frustrum_height * aspect / 2;
+      this.camera.top = frustrum_height / 2;
+      this.camera.bottom = - frustrum_height / 2;
       this.camera.updateProjectionMatrix();
 
     }

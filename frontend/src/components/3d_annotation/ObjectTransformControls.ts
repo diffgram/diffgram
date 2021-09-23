@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
+import SceneController3D from "./SceneController3D";
 
 export default class ObjectTransformControls {
   controls_transform: TransformControls;
+  scene_controller: SceneController3D;
 
-  public constructor(camera, domeElement, scene, render_function, drag_function, layer_number) {
+  public constructor(camera, scene_controller, domeElement, scene, render_function, drag_function, layer_number) {
     this.controls_transform = new TransformControls( camera, domeElement );
     this.controls_transform.addEventListener( 'change', render_function );
     this.controls_transform.addEventListener( 'dragging-changed', drag_function);
-
+    this.scene_controller = scene_controller;
     console.log('ObjectTransformControls', this.controls_transform, layer_number)
     let gizmo = this.controls_transform._gizmo.gizmo;
     let picker = this.controls_transform._gizmo.picker;
@@ -29,8 +31,14 @@ export default class ObjectTransformControls {
 
 
 
-
+    this.controls_transform.addEventListener('objectChange', this.on_mesh_changed.bind(this));
     scene.add(this.controls_transform)
+  }
+
+  private on_mesh_changed(event){
+    let instance_index= event.target.object.userData.instance_index;
+    let instance = this.scene_controller.instance_list[instance_index];
+    this.scene_controller.component_ctx.$emit('instance_updated', instance)
   }
 
   private on_key_down(event){
