@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 from functools import wraps
 
 from shared.database.user import User
@@ -87,7 +86,12 @@ class Project_permissions():
 			if not project_string_id or project_string_id == "null" or project_string_id == "undefined":
 				raise Forbidden(default_denied_message + " [ First Sanity Checks ] project_string_id None, null, etc.")
 
-			Project_permissions.check_basic_auth_exists()
+			project = Project.get(session, project_string_id)
+			if project is None:
+				raise Forbidden(basic_auth_denied_message + " Can't find project")
+
+			if Project_permissions.check_if_project_is_public(project, Roles):
+				return True
 
 			if request.authorization is not None:
 	
@@ -106,10 +110,6 @@ class Project_permissions():
 				if result is not True:
 					raise Forbidden(basic_auth_denied_message + "Failed API Permissions")
 
-				project = Project.get(session, project_string_id)
-				if project is None:
-					raise Forbidden(basic_auth_denied_message + " Can't find project")
-
 				# Project APIs, maybe should role this into API_Permissions
 				check_all_apis( 
 					project = project,
@@ -125,12 +125,27 @@ class Project_permissions():
 				apis_user_list = apis_user_list,
 				project_string_id = project_string_id,
 				Roles = Roles,
-				user_denied_message = user_denied_message)
+				user_denied_message = user_denied_message,
+				project = project)
 
 			if result is True:
 				return True
 			else:
 				raise Forbidden(user_denied_message)
+
+
+	@staticmethod
+	def check_if_project_is_public(project, Roles):
+		# Just becuase a project is public
+		# Doesn't mean public is allowed acccess to all
+		# routes. ie only admins can delete project
+
+		if 'allow_if_project_is_public' in Roles:
+			if project:
+				if project.is_public is True:
+					return True
+
+		return False
 
 
 	# Assumes in the context of a user - not basic auth
@@ -139,7 +154,8 @@ class Project_permissions():
 						  session,
 						  apis_project_list = None,
 						  apis_user_list = None,
-						  user_denied_message = None):
+						  user_denied_message = None,
+						  project = None):
 		"""
 
 		"""
@@ -153,19 +169,17 @@ class Project_permissions():
 		if 'allow_anonymous' in Roles:
 			return True
 		
-		project = Project.get(session, project_string_id)
 		if project is None:
-			raise Forbidden(user_denied_message + " Failed to Get Project ")
+			project = Project.get(session, project_string_id)
+			if project is None:
+				raise Forbidden(user_denied_message + " Failed to Get Project ")
 
-		# Careful here! Just becuase a project is public
-		# Doesn't mean public is allowed acccess to all
-		# routes. ie only admins can delete project
+			if Project_permissions.check_if_project_is_public(project, Roles):
+				return True
 
-		# if a project is public we don't need to check a user's apis right?
-		if 'allow_if_project_is_public' in Roles:
-			if project:
-				if project.is_public is True:
-					return True
+		# Must come after public project check, otherwise blocks public projects since auth is None
+		# Must come before a human user based check like LoggedIn()
+		Project_permissions.check_basic_auth_exists()
 
 		# TODO merge LoggedIn() with getUserID() similar internal logic
 		if LoggedIn() != True:
