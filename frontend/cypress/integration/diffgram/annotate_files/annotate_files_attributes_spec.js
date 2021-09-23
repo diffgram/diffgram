@@ -59,7 +59,7 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(5000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
@@ -67,6 +67,8 @@ describe('Annotate Files Tests', () => {
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
         cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_select"]`).first().click({force: true})
@@ -119,14 +121,16 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_textfield"]`).first().click({force: true})
@@ -186,14 +190,16 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_multiple_select"]`).click({force: true});
@@ -252,14 +258,16 @@ describe('Annotate Files Tests', () => {
         cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
         cy.wait(2000);
         cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
-        cy.select_label();
+        cy.select_label('car with Attributes');
 
         // Draw a box
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
-
+        cy.wait(3000);
+        cy.mousedowncanvas(90, 90);
+        cy.mouseupcanvas();
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_radio_${selectAttribute.options[2]}"]`).first().click({force: true})

@@ -15,6 +15,7 @@ from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
 from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+from shared.regular import regular_log
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -334,7 +335,7 @@ class S3Connector(Connector):
             export_check_result = check_export_permissions_and_status(export,
                                                                       self.config_data['project_string_id'],
                                                                       session)
-            if len(export_check_result['error'].keys()) > 1:
+            if regular_log.log_has_error(export_check_result):
                 return export_check_result
 
             result = export_view_core(

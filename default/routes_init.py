@@ -120,3 +120,5 @@ def do_routes_importing():
     from methods.model.model_run_list import model_run_list_web
     from methods.query_engine.query_suggest import query_suggest_web
     from methods.source_control.file.file_cache_regen import api_file_cache_regen
+
+    from methods.video.sequence_preview_create import api_create_sequence_preview

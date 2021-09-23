@@ -254,7 +254,7 @@ def job_update_api(project_string_id):
             project=project)
 
         job, log = job_update_core(session, job, project, input, log)
-        if len(log['error'].keys()) > 1:
+        if regular_log.log_has_error(log):
             return jsonify(log=log), 400
         log['success'] = True
         out = jsonify(job=job.serialize_new(),
@@ -313,7 +313,7 @@ def job_output_dir_update(project_string_id):
 
         job, log = update_output_dir_actions(session, job, project, input, log)
 
-        if len(log['error'].keys()) > 1:
+        if regular_log.log_has_error(log):
             return jsonify(log=log), 400
         log['success'] = True
         out = jsonify(job=job.serialize_new(),

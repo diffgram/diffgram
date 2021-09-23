@@ -77,6 +77,7 @@ class Annotation_Update():
     clean_instances: bool = False
     force_lock: bool = True
     sequence = None
+    new_created_sequence_list: list = field(default_factory = lambda: [])
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
 
@@ -1026,6 +1027,8 @@ class Annotation_Update():
             return 0, 0
         elif instance.type == 'keypoints':
             # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
+            if not instance.nodes['nodes'][0]['x'] or not instance.nodes['nodes'][0]['y']:
+                return 0, 0
             return min([p['x'] for p in instance.nodes['nodes']]), min([p['y'] for p in instance.nodes['nodes']])
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
@@ -1068,7 +1071,8 @@ class Annotation_Update():
             # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
             return 0, 0
         elif instance.type == 'keypoints':
-            # Here assumption is that tag is not really a "spacial" thing so no idea for min/max applies here.
+            if not instance.nodes['nodes'][0]['x'] or not instance.nodes['nodes'][0]['y']:
+                return 0, 0
             return max([p['x'] for p in instance.nodes['nodes']]), max([p['y'] for p in instance.nodes['nodes']])
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
@@ -1278,6 +1282,22 @@ class Annotation_Update():
         self.instance_count_updates()
 
         self.sequence_update(instance = self.instance)
+
+    def update_sequence_id_in_cache_list(self, instance):
+        """
+            Updates the sequences ID in the cache list.
+        :param instance:
+        :return:
+        """
+        if instance.id is None:
+            return
+        if instance.sequence_id is None:
+            return
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            existing_serialized_instance = self.instance_list_kept_serialized[i]
+            if existing_serialized_instance.get('id') == instance.id:
+                existing_serialized_instance['sequence_id'] = instance.sequence_id
+
 
     def update_cache_single_instance_in_list_context(self):
         """
@@ -1668,26 +1688,32 @@ class Annotation_Update():
         and then serializing and returning that list.
         Because it's now updating in the deleted contexts
         """
-        sequence = self.session.query(Sequence).filter(
-            Sequence.id == instance.sequence_id
-        ).first()
-        if sequence and sequence.keyframe_list:
-            frame_list = sequence.keyframe_list.get('frame_number_list')
-            if frame_list and len(frame_list) > 100:
-                logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
-                return
+        # sequence = self.session.query(Sequence).filter(
+        #     Sequence.id == instance.sequence_id,
+        #     Sequence.archived == False
+        # ).first()
+
+        # if sequence and sequence.keyframe_list:
+        #     frame_list = sequence.keyframe_list.get('frame_number_list')
+        #     if frame_list and len(frame_list) > 100:
+        #         logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
+        #         return
 
         # For "Human" updates only
         if update_existing_only is False:
 
-            self.sequence = Sequence.update(
+            updated_sequence, is_new_sequence = Sequence.update(
                 session = self.session,
                 project = self.project,
                 video_mode = self.video_mode,
                 instance = instance,
                 video_file = self.video_parent_file
             )
-
+            if updated_sequence is not None and not updated_sequence.archived:
+                self.sequence = updated_sequence
+            if is_new_sequence:
+                self.new_created_sequence_list.append(self.sequence)
+            self.update_sequence_id_in_cache_list(instance = instance)
         else:
             # Eg for deleting when sequence is changed on existing instance
             sequence = Sequence.update_single_existing_sequence(
@@ -1695,6 +1721,7 @@ class Annotation_Update():
                 instance = instance,
                 video_file = self.video_parent_file
             )
+            self.update_sequence_id_in_cache_list(instance = instance)
 
     def check_polygon_points_and_build_bounds(self):
         """
@@ -1720,7 +1747,10 @@ class Annotation_Update():
 
             filtered_points.append(
                 {"x": point[x],
-                 "y": point[y]})
+                 "y": point[y],
+                 "figure_id": point.get('figure_id')
+                }
+            )
 
             if point[x] <= self.instance.x_min: self.instance.x_min = point[x]
             if point[x] >= self.instance.x_max: self.instance.x_max = point[x]

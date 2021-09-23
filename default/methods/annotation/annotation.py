@@ -27,10 +27,12 @@ def annotation_update_via_project_api(project_string_id, file_id):
             return jsonify(log = annotation_update.log), 400
 
         sequence = None
+        new_sequence_list = []
         if annotation_update.sequence:
             sequence = annotation_update.sequence.serialize_for_label_subset(
                 session = session)
-
+        if annotation_update.new_created_sequence_list:
+            new_sequence_list = [seq.serialize_for_label_subset(session = session) for seq in annotation_update.new_created_sequence_list]
         deleted_instances = annotation_update.new_deleted_instances
         added_instances = annotation_update.new_added_instances
         # We need to serialize all the instances for the frontend to render them correctly.
@@ -42,6 +44,7 @@ def annotation_update_via_project_api(project_string_id, file_id):
             new_file = new_file,
             added_instances = added_instances,
             deleted_instances = deleted_instances,
+            new_sequence_list = new_sequence_list,
             sequence = sequence), 200
 
 
@@ -90,6 +93,10 @@ def task_annotation_update_api(task_id):
             sequence = annotation_update.sequence.serialize_for_label_subset(
                 session = session)
 
+        new_sequence_list = []
+        if annotation_update.new_created_sequence_list:
+            new_sequence_list = [seq.serialize_for_label_subset(session = session) for seq in annotation_update.new_created_sequence_list]
+
         deleted_instances = annotation_update.new_deleted_instances
         added_instances = annotation_update.new_added_instances
         # We need to serialize all the instances for the frontend to render them correctly.
@@ -101,4 +108,5 @@ def task_annotation_update_api(task_id):
             new_file = new_file,
             added_instances = added_instances,
             deleted_instances = deleted_instances,
+            new_sequence_list = new_sequence_list,
             sequence = sequence), 200

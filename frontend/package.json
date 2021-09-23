@@ -20,7 +20,7 @@
     "@babel/runtime": "^7.12.5",
     "@cypress/browserify-preprocessor": "^3.0.1",
     "@vue/babel-helper-vue-jsx-merge-props": "^1.2.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
