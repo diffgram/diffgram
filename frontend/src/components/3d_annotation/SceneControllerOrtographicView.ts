@@ -41,18 +41,17 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     var helper_bbox = new THREE.BoxHelper(mesh);
     helper_bbox.update();
     var bbox_radius = helper_bbox.geometry.boundingSphere.radius;
-    let center2 = helper_bbox.geometry.boundingSphere;
     if(aspect > 1){
       frustrum_height = 2 * bbox_radius;
     }
     else{
       frustrum_height = 2 * bbox_radius / aspect;
     }
-
+    console.log('CENTERING', mesh)
     if(axis === 'x'){
 
       this.camera.position.set(center.x - 20, center.y, center.z);
-      this.camera.lookAt(this.scene.position);
+      this.camera.lookAt(center);
 
       this.camera.left = - frustrum_height * aspect / 2;
       this.camera.right = frustrum_height * aspect / 2;
@@ -64,7 +63,7 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     }
     if(axis === 'y'){
       this.camera.position.set(center.x, center.y - 20, center.z);
-      this.camera.lookAt(this.scene.position)
+      this.camera.lookAt(center);
 
       this.camera.left = - frustrum_height * aspect / 2;
       this.camera.right = frustrum_height * aspect / 2;
@@ -75,8 +74,8 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     }
     if(axis === 'z'){
       this.camera.position.set(center.x, center.y, center.z - 20);
-      this.camera.lookAt(this.scene.position)
-
+      this.camera.lookAt(center);
+      
       this.camera.left = - frustrum_height * aspect / 2;
       this.camera.right = frustrum_height * aspect / 2;
       this.camera.top = frustrum_height / 2;

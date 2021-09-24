@@ -21,7 +21,7 @@ export default class SceneController3D{
   public label_file: object = null;
   public container: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
-  public instance_list: Array<Instance> =  [];
+  public instance_list: Array<Instance3D> =  [];
   public selected_instance: Instance3D = null;
   public TRANSFORM_CONTROLS_LAYER: number = 1;
 
@@ -84,6 +84,16 @@ export default class SceneController3D{
     if(this.draw_mode){
       this.on_double_click_draw_mode(event)
     }
+    else{
+      this.on_double_click_edit_mode(event)
+    }
+  }
+
+  private on_double_click_edit_mode(event){
+    if(this.object_transform_controls){
+      this.object_transform_controls.detach_controls();
+    }
+
   }
 
   private on_double_click_draw_mode(event){
@@ -220,14 +230,17 @@ export default class SceneController3D{
   }
 
   public on_click_edit_mode(event){
-    console.log('CLICKK EDIITTT')
     this.raycaster.setFromCamera( this.mouse, this.camera );
 
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     if(intersects.length > 0){
-      this.selected_instance = intersects[0].object.userData.currentSquare;
+      let index = intersects[0].object.userData.instance_index
+      this.selected_instance = this.instance_list[index];
       this.attach_transform_controls_to_mesh(intersects[0].object)
+      if(this.component_ctx){
+        this.component_ctx.$emit('instance_selected', this.selected_instance)
+      }
     }
     return intersects;
   }

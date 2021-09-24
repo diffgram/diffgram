@@ -64,6 +64,7 @@
           :container_id="'main_screen'"
           :with_keyboard_controls="true"
           @instance_drawn="on_instance_drawn"
+          @instance_selected="on_instance_selected"
           @scene_ready="on_scene_ready"
           @instance_updated="on_instance_updated"
         >
@@ -215,6 +216,10 @@
 
     },
     methods: {
+      on_instance_selected: function(instance){
+        console.log('INSTANCE', instance)
+        this.center_secondary_cameras_to_instance(instance)
+      },
       calculate_main_canvas_dimension: function(){
         let main_3d_canvas_container = document.getElementById('main_3d_canvas_container')
         if(main_3d_canvas_container){
@@ -240,7 +245,6 @@
         this.calculate_secondary_canvas_dimension();
       },
       on_scene_ready: function(scene_controller){
-        alert('scenread')
         let main_scene = scene_controller.scene;
         this.setup_secondary_scene_controls(main_scene)
 
