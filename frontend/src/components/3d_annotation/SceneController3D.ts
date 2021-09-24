@@ -25,7 +25,7 @@ export default class SceneController3D{
   public selected_instance: Instance3D = null;
   public TRANSFORM_CONTROLS_LAYER: number = 1;
 
-  public constructor(scene, camera, renderer, container, component_ctx, controls_panning_speed = 60) {
+  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60) {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
@@ -33,6 +33,7 @@ export default class SceneController3D{
     this.container = container;
     this.component_ctx = component_ctx;
     this.mouse =  new THREE.Vector2();
+    this.instance_list =  instance_list
     this.raycaster = new THREE.Raycaster();
 
     this.controls_panning_speed = controls_panning_speed
@@ -251,6 +252,7 @@ export default class SceneController3D{
       cuboid_mesh
     )
     new_instance.label_file = this.label_file;
+    new_instance.label_file_id = this.label_file.id;
     new_instance.draw_on_scene()
     this.instance_list.push(new_instance);
     let index = this.instance_list.length - 1;

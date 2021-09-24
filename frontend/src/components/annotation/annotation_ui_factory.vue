@@ -28,8 +28,11 @@
       <div v-else-if="annotation_interface === 'sensor_fusion'">
         <sensor_fusion_editor
           :project_string_id="computed_project_string_id"
+          :label_file_colour_map="label_file_colour_map"
+          :label_list="label_list"
           :task="task"
           :file="current_file"
+          :view_only_mode="view_only"
           ref="sensor_fusion_editor"
         >
         </sensor_fusion_editor>

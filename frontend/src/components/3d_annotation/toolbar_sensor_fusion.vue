@@ -8,7 +8,8 @@
     :height="height"
     style="overflow: hidden; padding:0; border-bottom: 1px solid #e0e0e0"
   >
-    <v-toolbar-items class="pl-0">
+    <v-toolbar-items class="pl-0 ml-0" style="border: 1px solid #e0e0e0; width: 100%">
+
       <v-chip v-if="file && file.state === 'removed'" color="error" small class="mt-3">
         <v-icon small>mdi-archive</v-icon>
         Archived
@@ -52,9 +53,6 @@
       </v_is_complete>
 
 
-      <v-divider
-        vertical
-      ></v-divider>
 
 
     <div style="width: 310px" class=" pt-4">
@@ -635,3 +633,9 @@
       }
     }
   ) </script>
+
+<style>
+  .v-toolbar__content{
+    padding: 0;
+  }
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div :id="container_id" :style="{width: width, height: height}">
+  <div :id="container_id" :style="{width: `${width}px`, height: `${height}px`}">
 
   </div>
 
@@ -109,17 +109,19 @@
             20,
             0.1,
             1000);
-          this.scene_controller = new SceneControllerOrtographicView(scene, this.camera, this.renderer, this.container, this)
+          this.scene_controller = new SceneControllerOrtographicView(scene, this.camera, this.renderer, this.container, this, this.$props.instance_list)
           this.scene_controller.attach_mouse_events();
-          this.scene_controller.set_draw_mode(this.$props.draw_mode)
-          this.scene_controller.set_current_label_file(this.$props.current_label_file)
+          this.scene_controller.set_draw_mode(this.$props.draw_mode);
+          this.scene_controller.set_current_label_file(this.$props.current_label_file);
+
         },
         setup_perspective_scene_controller: function (scene) {
           this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
-          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container, this)
+          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container, this, this.$props.instance_list)
           this.scene_controller.attach_mouse_events();
-          this.scene_controller.set_draw_mode(this.$props.draw_mode)
-          this.scene_controller.set_current_label_file(this.$props.current_label_file)
+          this.scene_controller.set_draw_mode(this.$props.draw_mode);
+          this.scene_controller.set_current_label_file(this.$props.current_label_file);
+          this.$props.instance_list
         },
         setup_scene_controls: async function (scene = undefined,) {
           this.container = document.getElementById(this.$props.container_id)

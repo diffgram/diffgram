@@ -50,77 +50,107 @@
       <v_error_multiple :error="error">
       </v_error_multiple>
     </div>
-    <div class="editor-body">
-      <div id="main_3d_canvas_container">
-        <canvas_3d
-          v-if="main_canvas_height && main_canvas_width"
-          ref="main_3d_canvas"
-          :width="main_canvas_width"
-          :height="main_canvas_height"
-          :allow_navigation="true"
-          :instance_list="instance_list"
-          :current_label_file="current_label_file"
-          :draw_mode="draw_mode"
-          :container_id="'main_screen'"
-          :with_keyboard_controls="true"
-          @instance_drawn="on_instance_drawn"
-          @instance_selected="on_instance_selected"
-          @scene_ready="on_scene_ready"
-          @instance_updated="on_instance_updated"
+    <div class="editor-body d-flex">
+      <div class="sidebar-left-container" :style="{width: `${editor_3d_settings.left_nav_width}px`, overflow: 'hidden', paddingLeft: '12px'}">
+        <instance_detail_list_view  ref="instance_detail_list"
+                                    v-if="!error && file && current_label_file && label_file_colour_map"
+                                    :instance_list="instance_list"
+                                    :model_run_list="undefined"
+                                    :label_file_colour_map="label_file_colour_map"
+                                    :refresh="refresh"
+                                    @toggle_instance_focus="()=>{}"
+                                    @show_all="()=>{}"
+                                    @update_canvas="()=>{}"
+                                    @instance_update="()=>{}"
+                                    :video_mode="false"
+                                    :task="task"
+                                    :view_only_mode="view_only_mode"
+                                    :label_settings = "label_settings"
+                                    :label_list = "label_list"
+                                    :draw_mode = "draw_mode"
+                                    :current_frame = "current_frame"
+                                    :current_video_file_id = "file.id"
+                                    :current_label_file_id = "current_label_file.id"
+                                    :video_playing="video_playing"
+                                    :external_requested_index="request_change_current_instance"
+                                    :trigger_refresh_current_instance="trigger_refresh_current_instance"
+                                    :current_file="file ? file : task"
         >
+        </instance_detail_list_view>
 
-        </canvas_3d>
       </div>
-      <div id="secondary_3d_canvas_container" class="d-flex">
-        <div class="ma-1">
+      <div class="canvas-container">
+        <div id="main_3d_canvas_container">
           <canvas_3d
-            v-if="secondary_canvas_width && secondary_canvas_height"
-            ref="x_axis_3d_canvas"
-            :create_new_scene="false"
-            camera_type="ortographic"
-            :width="secondary_canvas_width"
-            :height="secondary_canvas_height"
+            v-if="main_canvas_height && main_canvas_width"
+            ref="main_3d_canvas"
+            :width="main_canvas_width"
+            :height="main_canvas_height"
             :allow_navigation="true"
             :instance_list="instance_list"
             :current_label_file="current_label_file"
             :draw_mode="draw_mode"
-            :container_id="'x_axis_3d_canvas'"
-            :with_keyboard_controls="true">
+            :container_id="'main_screen'"
+            :with_keyboard_controls="true"
+            @instance_drawn="on_instance_drawn"
+            @instance_selected="on_instance_selected"
+            @scene_ready="on_scene_ready"
+            @instance_updated="on_instance_updated"
+          >
+
           </canvas_3d>
         </div>
-        <div class="ma-1">
+        <div id="secondary_3d_canvas_container" class="d-flex">
+          <div class="mr-1 mt-1">
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height"
+              ref="x_axis_3d_canvas"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'x_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
+          </div>
+          <div class="mr-1 mt-1">
 
-          <canvas_3d
-            v-if="secondary_canvas_width && secondary_canvas_height"
-            ref="y_axis_3d_canvas"
-            :create_new_scene="false"
-            camera_type="ortographic"
-            :width="secondary_canvas_width"
-            :height="secondary_canvas_height"
-            :allow_navigation="true"
-            :instance_list="instance_list"
-            :current_label_file="current_label_file"
-            :draw_mode="draw_mode"
-            :container_id="'y_axis_3d_canvas'"
-            :with_keyboard_controls="true">
-          </canvas_3d>
-        </div>
-        <div class="ma-1">
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height"
+              ref="y_axis_3d_canvas"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'y_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
+          </div>
+          <div class="mr-1 mt-1">
 
-          <canvas_3d
-            v-if="secondary_canvas_width && secondary_canvas_height"
-            ref="z_axis_3d_canvas"
-            :create_new_scene="false"
-            camera_type="ortographic"
-            :width="secondary_canvas_width"
-            :height="secondary_canvas_height"
-            :allow_navigation="true"
-            :instance_list="instance_list"
-            :current_label_file="current_label_file"
-            :draw_mode="draw_mode"
-            :container_id="'z_axis_3d_canvas'"
-            :with_keyboard_controls="true">
-          </canvas_3d>
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height"
+              ref="z_axis_3d_canvas"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'z_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
+          </div>
         </div>
       </div>
     </div>
@@ -132,12 +162,14 @@
   import Vue from "vue";
 
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
+  import instance_detail_list_view from "../annotation/instance_detail_list_view";
   import canvas_3d from "./canvas_3d";
 
   export default Vue.extend({
     name: "sensor_fusion_editor_3d",
     components:{
       toolbar_sensor_fusion,
+      instance_detail_list_view,
       canvas_3d
     },
     props: {
@@ -150,6 +182,15 @@
       'task': {
         default: null
       },
+      'view_only_mode':{
+        default: true
+      },
+      'label_file_colour_map':{
+        default: null
+      },
+      'label_list':{
+        default: null
+      }
 
     },
     data(){
@@ -164,15 +205,17 @@
         warning: null,
         has_changed: false,
         instance_type: 'cuboid_3d',
-        instance_list: [],
         draw_mode: false,
-        label_file_colour_map: null,
+        request_change_current_instance: null,
+        current_frame: null,
+        video_playing: null,
+        trigger_refresh_current_instance: null,
         secondary_3d_canvas_container: null,
         current_label_file: null,
         full_file_loading: false,
+        instance_list: [],
         view_issue_mode: false,
         canvas_scale_local: 1,  // for actually scaling dimensions within canvas
-        label_list: [],
         canvas_translate: {
           x: 0,
           y: 0
@@ -212,6 +255,9 @@
       this.calculate_secondary_canvas_dimension();
 
     },
+    computed:{
+
+    },
     watch:{
 
     },
@@ -223,20 +269,20 @@
       calculate_main_canvas_dimension: function(){
         let main_3d_canvas_container = document.getElementById('main_3d_canvas_container')
         if(main_3d_canvas_container){
-          this.main_canvas_width = `${parseInt(window.innerWidth * 1.0)}px`;
-          this.main_canvas_height = `${parseInt(window.innerHeight * 0.65)}px`;
+          this.main_canvas_width = parseInt(window.innerWidth - this.editor_3d_settings.left_nav_width);
+          this.main_canvas_height = parseInt(window.innerHeight * 0.65);
         }
       },
       calculate_secondary_canvas_dimension: function(){
         let secondary_3d_canvas_container = document.getElementById('main_3d_canvas_container')
         if(secondary_3d_canvas_container){
-          let width = window.innerWidth * 0.333;
+          let width = this.main_canvas_width * 0.333;
           width = parseInt(width, 10);
-          this.secondary_canvas_width =  `${width}px`;
+          this.secondary_canvas_width =  width;
 
           let height = window.innerHeight * 0.235;
           height = parseInt(height, 10);
-          this.secondary_canvas_height = `${height}px`;
+          this.secondary_canvas_height = height;
         }
         console.log('new sizes', this.secondary_canvas_height, this.secondary_canvas_width)
       },

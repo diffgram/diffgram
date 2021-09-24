@@ -7,8 +7,8 @@ import SceneController3D from "./SceneController3D";
 import {getCenterPoint} from './utils_3d'
 
 export default class SceneControllerOrtographicView extends  SceneController3D{
-  public constructor(scene, camera, renderer, container, component_ctx, controls_panning_speed = 60) {
-    super(scene, camera, renderer, container, component_ctx, controls_panning_speed)
+  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60) {
+    super(scene, camera, renderer, container, component_ctx, controls_panning_speed, instance_list)
 
     // Hide the 3D transform controls layer. Because here we'll use 2D bounding box
     this.camera.layers.disable(this.TRANSFORM_CONTROLS_LAYER);
@@ -75,7 +75,7 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     if(axis === 'z'){
       this.camera.position.set(center.x, center.y, center.z - 20);
       this.camera.lookAt(center);
-      
+
       this.camera.left = - frustrum_height * aspect / 2;
       this.camera.right = frustrum_height * aspect / 2;
       this.camera.top = frustrum_height / 2;
