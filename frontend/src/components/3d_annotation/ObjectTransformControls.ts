@@ -38,6 +38,11 @@ export default class ObjectTransformControls {
   private on_mesh_changed(event){
     let instance_index= event.target.object.userData.instance_index;
     let instance = this.scene_controller.instance_list[instance_index];
+    if(instance.helper_lines){
+      instance.helper_lines.position.copy(instance.mesh.position)
+      instance.helper_lines.rotation.copy(instance.mesh.rotation)
+      instance.helper_lines.scale.copy(instance.mesh.scale)
+    }
     this.scene_controller.component_ctx.$emit('instance_updated', instance)
   }
 
@@ -59,10 +64,10 @@ export default class ObjectTransformControls {
 
       case 84: // T
         if(control.mode === 'translate'){
-          control.setMode( 'rotate' );
-        }
-        else if(control.mode === 'rotate'){
           control.setMode( 'scale' );
+        }
+        else if(control.mode === 'scale'){
+          control.setMode( 'rotate' );
         }
         else{
           control.setMode( 'translate' );
@@ -97,7 +102,11 @@ export default class ObjectTransformControls {
 
 
       case 27: // ESC
+        if(this.scene_controller.selected_instance){
+          this.scene_controller.deselect_instance()
+        }
         this.controls_transform.detach();
+
         break;
 
     }

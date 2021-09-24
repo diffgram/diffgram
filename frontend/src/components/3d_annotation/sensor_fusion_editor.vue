@@ -318,7 +318,11 @@
 
       key_down_handler: function(event){
         if (event.keyCode === 27) { // ESC
-          this.edit_mode_toggle(!this.draw_mode)
+          if(this.$refs.main_3d_canvas &&
+            !this.$refs.main_3d_canvas.scene_controller.object_transform_controls.controls_transform.object){
+            this.edit_mode_toggle(!this.draw_mode)
+          }
+
         }
       },
       insert_tag_type: function(){

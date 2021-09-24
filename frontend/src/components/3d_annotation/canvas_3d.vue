@@ -139,12 +139,17 @@
             scene = new THREE.Scene();
           }
           document.getElementById(this.$props.container_id).appendChild(this.renderer.domElement);
+
+          // Disable selecting text when double clicking inside canvas
+          // see: https://stackoverflow.com/questions/3684285/how-to-prevent-text-select-outside-html5-canvas-on-double-click
+          this.renderer.domElement.onselectstart = function () { return false; }
           if (this.$props.camera_type === 'perspective') {
             this.setup_perspective_scene_controller(scene);
+            this.configure_controls();
           } else if (this.$props.camera_type === 'ortographic') {
             this.setup_ortographic_scene_controller(scene)
           }
-          this.configure_controls();
+
 
           this.point_cloud_mesh = await this.load_pcd();
 

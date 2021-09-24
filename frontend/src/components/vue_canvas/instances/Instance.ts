@@ -1,4 +1,5 @@
-
+import * as THREE from 'three';
+import SceneController3D from "../../3d_annotation/SceneController3D";
 
 export interface InstanceBehaviour {
   draw(ctx): void
@@ -125,5 +126,11 @@ export class Instance{
 }
 
 export abstract class Instance3D extends Instance{
+  public helper_lines: THREE.Mesh;
+  public mesh: THREE.Mesh;
+  public scene_controller_3d: SceneController3D;
+  public geometry: THREE.BoxGeometry;
+  public material: THREE.MeshBasicMaterial;
+
   abstract draw_on_scene() : void;
 }

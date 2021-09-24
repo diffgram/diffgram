@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from './OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
@@ -55,9 +55,17 @@ export default class SceneController3D{
     }
     for(const child of this.scene.children){
       if(child.material){
-
+        let instance_index = child.userData.instance_index;
         child.material.opacity = 0.3;
-        child.material.color = new THREE.Color(child.userData.color)
+        child.material.color.set(child.userData.color)
+        let instance = this.instance_list[instance_index];
+        if(this.selected_instance){
+          if(this.selected_instance.mesh === child){
+            child.material.color.set(0xFFFFFF)
+            child.material.opacity = 0.5;
+          }
+        }
+
       }
     }
   }
@@ -82,6 +90,7 @@ export default class SceneController3D{
   }
 
   private on_mouse_double_click(event){
+    event.stopPropagation();
     if(this.draw_mode){
       this.on_double_click_draw_mode(event)
     }
@@ -90,9 +99,11 @@ export default class SceneController3D{
     }
   }
 
+
+
   private on_double_click_edit_mode(event){
     if(this.object_transform_controls){
-      this.object_transform_controls.detach_controls();
+      this.deselect_instance()
     }
 
   }
@@ -102,8 +113,10 @@ export default class SceneController3D{
       // Add cuboid to instance list
       let new_instance = this.add_cube_to_instance_list(this.place_holder_cuboid);
       this.place_holder_cuboid = null;
+      this.select_instance(new_instance);
       this.set_draw_mode(false);
-      this.attach_transform_controls_to_mesh(new_instance.mesh)
+
+
       if(this.component_ctx){
         this.component_ctx.$emit('instance_drawn', new_instance)
       }
@@ -151,7 +164,7 @@ export default class SceneController3D{
 
     }
     // Transform the Mouse 2D Coordinates to the 3D world using unproject()
-    let mouse_vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
+    let mouse_vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5  );
     mouse_vector.unproject( this.camera );
     mouse_vector.sub(this.camera.position).normalize();
     let distance = - this.camera.position.z / mouse_vector.z
@@ -171,7 +184,7 @@ export default class SceneController3D{
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     for ( let i = 0; i < intersects.length; i ++ ) {
-      intersects[i].object.material.opacity = 0.7;
+      intersects[i].object.material.opacity = 0.5;
       intersects[i].object.material.color.set(0xFFFFFF);
     }
   }
@@ -223,11 +236,47 @@ export default class SceneController3D{
     this.draw_mode = draw_mode;
     if(this.draw_mode){
       this.draw_place_holder_cuboid();
+      if(this.object_transform_controls){
+        this.object_transform_controls.detach_controls();
+      }
     }
     else{
       this.remove_from_scene(this.place_holder_cuboid);
+
       this.place_holder_cuboid = null;
     }
+  }
+
+  public deselect_instance(){
+    if(!this.selected_instance){
+      return
+    }
+    this.selected_instance.mesh.remove(...this.selected_instance.mesh.children);
+    this.remove_from_scene(this.selected_instance.helper_lines)
+    this.selected_instance.helper_lines = null;
+    this.selected_instance = null;
+    this.object_transform_controls.detach_controls();
+
+  }
+
+  public select_instance(instance){
+    // Build the White Edges Box (To highlight edge lines of cuboid)
+    const geometry = instance.mesh.geometry.clone();
+    const edges = new THREE.EdgesGeometry( geometry );
+    const line = new THREE.LineSegments( edges, new THREE.LineBasicMaterial( { color: 0xffffff } ) );
+
+    line.position.copy(instance.mesh.position);
+    line.rotation.copy(instance.mesh.rotation);
+    line.scale.copy(instance.mesh.scale);
+
+    instance.mesh.add(line);
+    this.attach_transform_controls_to_mesh(instance.mesh)
+    if(this.component_ctx){
+      this.component_ctx.$emit('instance_selected', instance)
+    }
+    this.selected_instance = instance;
+    this.selected_instance.helper_lines = line;
+    this.scene.add(line);
   }
 
   public on_click_edit_mode(event){
@@ -237,11 +286,12 @@ export default class SceneController3D{
     const intersects = this.raycaster.intersectObjects( this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     if(intersects.length > 0){
       let index = intersects[0].object.userData.instance_index
-      this.selected_instance = this.instance_list[index];
-      this.attach_transform_controls_to_mesh(intersects[0].object)
-      if(this.component_ctx){
-        this.component_ctx.$emit('instance_selected', this.selected_instance)
+      let instance_to_select = this.instance_list[index];
+      if(instance_to_select){
+        this.select_instance(instance_to_select)
       }
+
+
     }
     return intersects;
   }

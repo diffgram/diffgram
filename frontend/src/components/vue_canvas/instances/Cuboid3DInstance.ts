@@ -4,10 +4,7 @@ import SceneController3D from "../../3d_annotation/SceneController3D";
 
 export default class Cuboid3DInstance extends Instance3D {
 
-  scene_controller_3d: SceneController3D;
-  mesh: THREE.Mesh;
-  geometry: THREE.BoxGeometry;
-  material: THREE.MeshBasicMaterial;
+
 
   public constructor(scene_controller_3d: SceneController3D, mesh: THREE.Mesh) {
     super();
