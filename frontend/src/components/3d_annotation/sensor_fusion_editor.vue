@@ -86,6 +86,8 @@
             ref="main_3d_canvas"
             :width="main_canvas_width"
             :height="main_canvas_height"
+            :zoom_speed="editor_3d_settings.zoom_speed"
+            :pan_speed="editor_3d_settings.pan_speed"
             :allow_navigation="true"
             :instance_list="instance_list"
             :current_label_file="current_label_file"
@@ -125,6 +127,7 @@
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
+
               :height="secondary_canvas_height"
               :allow_navigation="true"
               :instance_list="instance_list"
@@ -235,6 +238,8 @@
           filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
           filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
           instance_buffer_size: 60,
+          zoom_speed: 1,
+          pan_speed: 1,
           canvas_scale_global_is_automatic: true,
           canvas_scale_global_setting: 0.5,
           left_nav_width: 450,

@@ -1,5 +1,5 @@
 <template>
-  <div :id="container_id" :style="{width: `${width}px`, height: `${height}px`}">
+  <div :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
 
   </div>
 
@@ -56,6 +56,12 @@
         },
         draw_mode: {
           default: false
+        },
+        zoom_speed:{
+          default: 1
+        },
+        pan_speed:{
+          default: 1
         }
 
       },
@@ -93,6 +99,12 @@
       },
       computed: {},
       watch:{
+        zoom_speed: function(new_val, old_val){
+          this.update_zoom_speed(new_val)
+        },
+        pan_speed: function(new_val, old_val){
+          this.update_pan_speed(new_val)
+        },
         width: function(){
           this.update_camera_aspect_ratio();
         },
@@ -101,6 +113,14 @@
         }
       },
       methods: {
+        update_pan_speed: function(){
+          this.scene_controller.controls_orbit.panSpeed = this.$props.pan_speed;
+          this.scene_controller.controls_orbit.update();
+        },
+        update_zoom_speed: function(){
+          this.scene_controller.controls_orbit.zoomSpeed = this.$props.zoom_speed;
+          this.scene_controller.controls_orbit.update();
+        },
         setup_ortographic_scene_controller: function (scene) {
           this.camera = new THREE.OrthographicCamera(
             -20,
@@ -111,6 +131,7 @@
             1000);
           this.scene_controller = new SceneControllerOrtographicView(scene, this.camera, this.renderer, this.container, this, this.$props.instance_list)
           this.scene_controller.attach_mouse_events();
+          this.scene_controller.controls_orbit.zoomSpeed = this.$props.zoom_speed;
           this.scene_controller.set_draw_mode(this.$props.draw_mode);
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
 

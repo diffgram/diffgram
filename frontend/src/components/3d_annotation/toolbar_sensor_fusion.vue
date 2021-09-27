@@ -439,6 +439,22 @@
                               v-model="label_settings_local.show_removed_instances">
                   </v-checkbox>
 
+                  <v-slider label="Panning Speed"
+                            min=1
+                            max=20
+                            thumb-label
+                            ticks
+                            v-model="label_settings_local.pan_speed">
+                  </v-slider>
+
+                  <v-slider label="Zoom Speed"
+                            min=1
+                            max=20
+                            thumb-label
+                            ticks
+                            v-model="label_settings_local.zoom_speed">
+                  </v-slider>
+
                   <v-slider label="Text Font Size"
                             min=10
                             max=30
