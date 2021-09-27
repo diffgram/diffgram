@@ -9,26 +9,6 @@
       class="ma-auto"
       max-width="300"
       tile>
-
-      <v-list-item
-        link
-        dense
-        @click="open_issue_panel"
-      >
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Create Issue"
-            icon="mdi-alert-circle"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Create Issue
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
       <v-list-item
         link
         dense
@@ -267,7 +247,23 @@
       }
     },
 
-    computed: {},
+    computed: {
+      selected_instance: function () {
+        let selected = this.instance_list[this.instance_hover_index_locked]
+        if (selected) {
+          return selected
+        } else {
+          return {}
+        }
+      },
+      member: function () {
+        return this.$store.state.project.current.member_list.find(x => {
+          return x.member_id == this.instance_list[
+            this.instance_hover_index_locked].member_created_id
+        })
+      },
+
+    },
 
     watch: {
       show_context_menu(isVisible) {

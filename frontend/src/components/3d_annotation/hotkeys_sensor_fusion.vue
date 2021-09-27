@@ -9,6 +9,7 @@
   <p> <kbd>Esc</kbd> Toggle draw and edit mode </p>
 
   <p> <kbd>Esc</kbd> (Twice) Cancel current drawing and return to draw mode </p>
+  <p> <kbd>Double Click</kbd> Deselect selected instance </p>
 
   <p> <kbd>W</kbd> Toggle Label Menu </p>
   <p> <kbd>X</kbd> Change Transform tool when instance selected (Translate, Rotate, Scale) </p>

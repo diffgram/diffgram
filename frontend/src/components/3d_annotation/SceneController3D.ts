@@ -135,7 +135,7 @@ export default class SceneController3D {
     var rect = canvas.getBoundingClientRect(),
       x = event.clientX - rect.left,
       y = event.clientY - rect.top;
-    console.log('EVENETT', event)
+
     this.mouse.x = (x / this.container.clientWidth) * 2 - 1;
     this.mouse.y = -(y / this.container.clientHeight) * 2 + 1;
     this.component_ctx.$emit('updated_mouse_position',
@@ -160,7 +160,7 @@ export default class SceneController3D {
   }
 
   private draw_place_holder_cuboid() {
-    console.log('cuboid hoveer')
+
     if (!this.place_holder_cuboid) {
       let geometry = new THREE.BoxGeometry(2, 2, 2);
       let material = new THREE.MeshBasicMaterial({
@@ -326,6 +326,7 @@ export default class SceneController3D {
     new_instance.label_file = this.label_file;
     new_instance.label_file_id = this.label_file.id;
     new_instance.draw_on_scene()
+    new_instance.update_spacial_data();
     this.instance_list.push(new_instance);
     let index = this.instance_list.length - 1;
     new_instance.mesh.userData.instance_index = index;
@@ -374,7 +375,7 @@ export default class SceneController3D {
 
   public attach_transform_controls_to_mesh(mesh) {
     this.object_transform_controls.attach_to_mesh(mesh)
-    console.log('attach controlss')
+
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {

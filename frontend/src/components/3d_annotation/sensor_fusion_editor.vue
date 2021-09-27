@@ -360,7 +360,6 @@
 
       },
       on_instance_selected: function(instance){
-        console.log('INSTANCE', instance)
         this.center_secondary_cameras_to_instance(instance)
       },
       calculate_main_canvas_dimension: function(){
@@ -381,7 +380,6 @@
           height = parseInt(height, 10);
           this.secondary_canvas_height = height;
         }
-        console.log('new sizes', this.secondary_canvas_height, this.secondary_canvas_width)
       },
       on_window_resize: function(event){
         this.calculate_main_canvas_dimension();

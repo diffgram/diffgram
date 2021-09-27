@@ -131,6 +131,29 @@ export abstract class Instance3D extends Instance{
   public scene_controller_3d: SceneController3D;
   public geometry: THREE.BoxGeometry;
   public material: THREE.MeshBasicMaterial;
+  public depth: number;
+  public center_z: number;
+  // Rotation is in Euler Angles
+  public rotation_euler_angles: {x: number, y: number, z: number};
+  public position_3d: {x: number, y: number, z: number};
 
   abstract draw_on_scene() : void;
+
+  public update_spacial_data(){
+    this.width = this.mesh.geometry.width;
+    this.height = this.mesh.geometry.height;
+    this.depth = this.mesh.geometry.depth;
+    this.rotation_euler_angles = {
+      x: this.mesh.rotation.x,
+      y: this.mesh.rotation.y,
+      z: this.mesh.rotation.z,
+    }
+    this.position_3d = {
+      x: this.mesh.position.x,
+      y: this.mesh.position.y,
+      z: this.mesh.position.z,
+    }
+    console.log('udpated', this.position_3d)
+    console.log('udpated', this.rotation_euler_angles)
+  }
 }

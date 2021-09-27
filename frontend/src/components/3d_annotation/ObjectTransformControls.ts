@@ -43,6 +43,7 @@ export default class ObjectTransformControls {
       instance.helper_lines.rotation.copy(instance.mesh.rotation)
       instance.helper_lines.scale.copy(instance.mesh.scale)
     }
+    instance.update_spacial_data();
     this.scene_controller.component_ctx.$emit('instance_updated', instance)
   }
 
