@@ -51,6 +51,7 @@
       </v_error_multiple>
     </div>
     <div class="editor-body d-flex">
+
       <div class="sidebar-left-container" :style="{width: `${editor_3d_settings.left_nav_width}px`, overflow: 'hidden', paddingLeft: '12px'}">
         <instance_detail_list_view  ref="instance_detail_list"
                                     v-if="!error && file && current_label_file && label_file_colour_map"
@@ -79,8 +80,8 @@
         </instance_detail_list_view>
 
       </div>
-      <div class="canvas-container">
-        <div id="main_3d_canvas_container">
+      <div class="canvas-container" >
+        <div id="main_3d_canvas_container"  style="position: relative" @contextmenu="open_context_menu">
           <canvas_3d
             v-if="main_canvas_height && main_canvas_width"
             ref="main_3d_canvas"
@@ -95,12 +96,35 @@
             :container_id="'main_screen'"
             :with_keyboard_controls="true"
             @instance_drawn="on_instance_drawn"
+            @updated_mouse_position="on_update_mouse_position"
+            @instance_hovered="on_instance_hovered"
+            @instance_unhovered="on_instance_unhovered"
             @instance_selected="on_instance_selected"
             @scene_ready="on_scene_ready"
             @instance_updated="on_instance_updated"
           >
 
           </canvas_3d>
+          <context_menu_3d_editor
+            :mouse_position="mouse_position"
+            :show_context_menu="show_context_menu"
+            :instance_clipboard="instance_clipboard"
+            :draw_mode="draw_mode"
+            :selected_instance_index="selected_instance_index"
+            :project_string_id="project_string_id"
+            :task="task"
+            :instance_hover_index="instance_hover_index"
+            :instance_list="instance_list"
+            @instance_update="instance_update($event)"
+            @share_dialog_open="open_share_dialog"
+            @copy_instance="on_context_menu_copy_instance"
+            @paste_instance="paste_instance"
+            @open_instance_history_panel="show_instance_history_panel"
+            @close_instance_history_panel="close_instance_history_panel"
+            ref="context_menu"
+            @share_dialog_close="close_share_dialog"
+            @close_context_menu="show_context_menu = false"
+          ></context_menu_3d_editor>
         </div>
         <div id="secondary_3d_canvas_container" class="d-flex">
           <div class="mr-1 mt-1">
@@ -155,6 +179,7 @@
             </canvas_3d>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -166,6 +191,7 @@
 
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
   import instance_detail_list_view from "../annotation/instance_detail_list_view";
+  import context_menu_3d_editor from "./context_menu_3d_editor";
   import canvas_3d from "./canvas_3d";
 
   export default Vue.extend({
@@ -173,6 +199,7 @@
     components:{
       toolbar_sensor_fusion,
       instance_detail_list_view,
+      context_menu_3d_editor,
       canvas_3d
     },
     props: {
@@ -207,13 +234,26 @@
         error: null,
         warning: null,
         has_changed: false,
+        show_context_menu: false,
         instance_type: 'cuboid_3d',
         draw_mode: false,
         request_change_current_instance: null,
+        instance_hover_index: null,
+        instance_hover: null,
         current_frame: null,
         video_playing: null,
         trigger_refresh_current_instance: null,
+        instance_clipboard: undefined,
         secondary_3d_canvas_container: null,
+        mouse_position: {
+          raw: {
+            x: 0,
+            y: 0
+          },
+          x: 150,
+          y: 150
+        },
+
         current_label_file: null,
         full_file_loading: false,
         instance_list: [],
@@ -223,6 +263,7 @@
           x: 0,
           y: 0
         },
+
         editor_3d_settings: {
           show_text: true,
           show_label_text: true,
@@ -233,6 +274,7 @@
           spatial_line_size: 2,
           vertex_size: 3,
           show_removed_instances: false,
+
           target_reticle_size: 20,
           filter_brightness: 100, // Percentage. Applies a linear multiplier to the drawing, making it appear more or less bright.
           filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
@@ -256,17 +298,67 @@
     async mounted() {
       window.addEventListener( 'resize', this.on_window_resize );
       window.addEventListener( 'keydown', this.key_down_handler, false );
+      document.addEventListener('mousedown', this.mouse_events_global_down);
       this.calculate_main_canvas_dimension();
       this.calculate_secondary_canvas_dimension();
 
     },
     computed:{
-
+      selected_instance_index: function(){
+        if(!this.$refs.main_3d_canvas){
+          return
+        }
+        let scene_ctrl = this.$refs.main_3d_canvas.scene_controller;
+        if(scene_ctrl.selected_instance){
+          return scene_ctrl.selected_instance
+        }
+      }
     },
     watch:{
 
     },
     methods: {
+      detect_clicks_outside_context_menu: function (e) {
+
+        // skip clicks on the actual context menu
+        if (e.target.matches('.context-menu, .context-menu *')){
+          return;
+        }
+        // assume if not on context menu, then it's outside and we want to hide it
+        this.hide_context_menu()
+      },
+      mouse_events_global_down: function(e) {
+
+        this.detect_clicks_outside_context_menu(e)
+
+      },
+      hide_context_menu: function(){
+        this.show_context_menu = false;
+      },
+      open_context_menu: function(){
+        this.show_context_menu = true;
+      },
+      close_instance_history_panel: function(){
+
+      },
+      show_instance_history_panel: function(){
+
+      },
+      paste_instance: function(){
+
+      },
+      instance_update: function(){
+
+      },
+      close_share_dialog: function(){
+
+      },
+      open_share_dialog: function(){
+
+      },
+      on_context_menu_copy_instance: function(){
+
+      },
       on_instance_selected: function(instance){
         console.log('INSTANCE', instance)
         this.center_secondary_cameras_to_instance(instance)
@@ -310,6 +402,19 @@
       },
       on_instance_updated: function(instance){
         this.center_secondary_cameras_to_instance(instance)
+      },
+      on_instance_hovered: function(instance, index){
+        this.instance_hover_index = index;
+        this.instance_hovered = instance;
+
+      },
+      on_instance_unhovered: function(){
+        this.instance_hover_index = null;
+        this.instance_hovered = null;
+
+      },
+      on_update_mouse_position: function(mouse){
+        this.mouse_position = mouse;
       },
       on_instance_drawn: function(instance){
         this.center_secondary_cameras_to_instance(instance);

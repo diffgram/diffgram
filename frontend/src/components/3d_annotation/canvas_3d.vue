@@ -97,7 +97,9 @@
         }
 
       },
-      computed: {},
+      computed: {
+
+      },
       watch:{
         zoom_speed: function(new_val, old_val){
           this.update_zoom_speed(new_val)
@@ -131,7 +133,7 @@
             1000);
           this.scene_controller = new SceneControllerOrtographicView(scene, this.camera, this.renderer, this.container, this, this.$props.instance_list)
           this.scene_controller.attach_mouse_events();
-          this.scene_controller.controls_orbit.zoomSpeed = this.$props.zoom_speed;
+
           this.scene_controller.set_draw_mode(this.$props.draw_mode);
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
 
@@ -219,6 +221,8 @@
           }
 
           this.scene_controller.add_orbit_controls();
+          this.scene_controller.controls_orbit.zoomSpeed = this.$props.zoom_speed;
+          this.scene_controller.controls_orbit.panSpeed = this.$props.pan_speed;
           this.scene_controller.add_transform_controls();
 
 
