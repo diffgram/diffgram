@@ -209,9 +209,14 @@ export default class SceneController3D {
     }
   }
 
+  private animate(){
+    requestAnimationFrame( this.animate.bind(this) );
+
+    this.render();
+  }
+
   private render() {
 
-    requestAnimationFrame(this.render.bind(this));
     this.reset_materials();
     this.check_hover();
     this.renderer.render(this.scene, this.camera);
@@ -336,7 +341,7 @@ export default class SceneController3D {
   }
 
   public start_render() {
-    this.render();
+    this.animate();
   }
 
 

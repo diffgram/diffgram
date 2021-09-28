@@ -47,8 +47,11 @@ from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
+from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileProcessor
 import numpy as np
+from shared.regular.regular_log import log_has_error
 import os
+
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
@@ -59,18 +62,18 @@ csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
 
-@dataclass(order=True)
+@dataclass(order = True)
 class PrioritizedItem:
     # https://diffgram.com/docs/prioritizeditem
     priority: int
-    input_id: int = field(compare=False, default=None)
-    input: int = field(compare=False, default=None)
-    file_is_numpy_array: bool = field(compare=False, default=False)
-    raw_numpy_image: Any = field(compare=False, default=None)
-    video_id: Any = field(compare=False, default=None)
-    video_parent_file: Any = field(compare=False, default=None)
-    frame_number: Any = field(compare=False, default=None)
-    global_frame_number: Any = field(compare=False, default=None)
+    input_id: int = field(compare = False, default = None)
+    input: int = field(compare = False, default = None)
+    file_is_numpy_array: bool = field(compare = False, default = False)
+    raw_numpy_image: Any = field(compare = False, default = None)
+    video_id: Any = field(compare = False, default = None)
+    video_parent_file: Any = field(compare = False, default = None)
+    frame_number: Any = field(compare = False, default = None)
+    global_frame_number: Any = field(compare = False, default = None)
     frame_completion_controller: Any = None
     total_frames: int = 0
     num_frames_to_update: int = 0
@@ -78,14 +81,13 @@ class PrioritizedItem:
 
 
 def process_media_unit_of_work(item):
-
     with sessionMaker.session_scope_threaded() as session:
 
         process_media = Process_Media(
-            session=session,
-            input_id=item.input_id,
-            input=item.input,
-            item=item)
+            session = session,
+            input_id = item.input_id,
+            input = item.input,
+            item = item)
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
@@ -95,6 +97,7 @@ def process_media_unit_of_work(item):
                 logger.error(str(e))
         else:
             process_media.main_entry()
+
 
 # REMOTE queue
 def start_queue_check_loop():
@@ -113,7 +116,7 @@ def start_queue_check_loop():
             add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time)
         except Exception as exception:
             logger.info("[Media Queue Failed] {}".format(str(exception)))
-            add_deferred_items_time = 30    # reset
+            add_deferred_items_time = 30  # reset
 
 
 def check_if_add_items_to_queue(add_deferred_items_time):
@@ -130,12 +133,12 @@ def check_if_add_items_to_queue(add_deferred_items_time):
     with sessionMaker.session_scope_threaded() as session:
 
         try:
-            update_input = Update_Input(session=session).automatic_retry()
+            update_input = Update_Input(session = session).automatic_retry()
         except Exception as exception:
             logger.error("Couldn't find Update_Input {}".format(str(exception)))
             return 30
 
-        input = session.query(Input).with_for_update(skip_locked=True).filter(
+        input = session.query(Input).with_for_update(skip_locked = True).filter(
             Input.processing_deferred == True,
             Input.archived == False,
             Input.status != 'success'
@@ -153,13 +156,12 @@ def check_if_add_items_to_queue(add_deferred_items_time):
         input.processing_deferred = False
 
         item = PrioritizedItem(
-            priority=100,  # 100 is current default priority
-            input_id=input.id)
+            priority = 100,  # 100 is current default priority
+            input_id = input.id)
         add_item_to_queue(item)
         logger.info(str(input.id) + " Added to queue.")
 
         return add_deferred_items_time
-
 
 
 # https://diffgram.com/docs/process-media-local-worker-queues
@@ -171,6 +173,7 @@ threads = []
 
 video_threads = settings.PROCESS_MEDIA_NUM_VIDEO_THREADS
 frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
+
 
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
@@ -210,8 +213,8 @@ def process_media_queue_getter(queue, queue_lock):
 # Kick off worker threads for global queue
 for i in range(video_threads):
     t = threading.Thread(
-        target=process_media_queue_worker,
-        args=(VIDEO_QUEUE, 'video',)
+        target = process_media_queue_worker,
+        args = (VIDEO_QUEUE, 'video',)
     )
     t.daemon = True  # Allow hot reload to work
     t.start()
@@ -219,8 +222,8 @@ for i in range(video_threads):
 
 for i in range(frame_threads):
     t = threading.Thread(
-        target=process_media_queue_worker,
-        args=(FRAME_QUEUE, 'frame',)
+        target = process_media_queue_worker,
+        args = (FRAME_QUEUE, 'frame',)
     )
     t.daemon = True  # Allow hot reload to work
     t.start()
@@ -287,14 +290,14 @@ class Process_Media():
 
     def __init__(self,
                  session,
-                 member=None,
+                 member = None,
                  project: Project = None,
                  project_id: int = None,
-                 org=None,
-                 raw_file=None,
+                 org = None,
+                 raw_file = None,
                  input_id: int = None,
                  input: Input = None,
-                 item=None
+                 item = None
                  ):
 
         # Assign default item since we currently
@@ -306,8 +309,8 @@ class Process_Media():
 
         if item is None:
             item = PrioritizedItem(
-                priority=100,
-                input_id=None)
+                priority = 100,
+                input_id = None)
 
         self.video_id = item.video_id
         self.video_parent_file = item.video_parent_file
@@ -355,8 +358,8 @@ class Process_Media():
 
     ### TODO move these other main entry things over to init
 
-    @retry(wait=wait_random_exponential(multiplier=1, max=5),
-           stop=stop_after_attempt(4))
+    @retry(wait = wait_random_exponential(multiplier = 1, max = 5),
+           stop = stop_after_attempt(4))
     def get_input_with_retry(self):
         """
         If we already have a valid input object we skip this
@@ -372,8 +375,8 @@ class Process_Media():
         if self.input is None:
 
             self.input = Input.get_by_id(
-                session=self.session,
-                id=self.input_id)
+                session = self.session,
+                id = self.input_id)
 
             # Oracle if get_by_id() failed
             # Do we want to log this somewhere on 'final' failure?
@@ -381,9 +384,7 @@ class Process_Media():
                 raise Exception('Input not Found.')
 
         if not self.input.update_log:
-           self.input.update_log = regular_log.default()
-
-
+            self.input.update_log = regular_log.default()
 
     def main_entry(self):
         """
@@ -415,8 +416,8 @@ class Process_Media():
         self.project_id = self.input.project_id
         if self.project is None:
             self.project = Project.get_by_id(
-                session=self.session,
-                id=self.project_id)
+                session = self.session,
+                id = self.project_id)
 
         if self.input.allow_csv:
             self.allow_csv = self.input.allow_csv
@@ -439,13 +440,13 @@ class Process_Media():
             # We are exiting main loop here
             return
         if self.input.mode == "update":
-            self.__update_existing_file(file=self.input.file)
+            self.__update_existing_file(file = self.input.file)
             # Important!
             # We are exiting main loop here
             return
-        if self.input.mode == "update_with_existing":   # existing instances
-            self.__update_existing_file(file=self.input.file,
-                                       init_existing_instances=True)
+        if self.input.mode == "update_with_existing":  # existing instances
+            self.__update_existing_file(file = self.input.file,
+                                        init_existing_instances = True)
             # Important!
             # We are exiting main loop here
             return
@@ -469,9 +470,9 @@ class Process_Media():
             # Why are we getting working_dir here?
             # Why not just use it from input.directory?
             self.working_dir = WorkingDir.get_with_fallback(
-                session=self.session,
-                project=self.project,
-                directory_id=self.input.directory_id)
+                session = self.session,
+                project = self.project,
+                directory_id = self.input.directory_id)
 
             # Careful to not leak directory information through this
             if self.working_dir is False or self.working_dir is None:
@@ -538,6 +539,9 @@ class Process_Media():
         if not self.input:
             return True
 
+        if log_has_error(self.log):
+            return False
+
         process_instance_result = self.process_existing_instance_list()
 
         self.may_attach_to_job()
@@ -548,8 +552,6 @@ class Process_Media():
         self.log['info']['run_time'] = end_time - start_time
 
         return True
-
-
 
     def __file_does_not_exist_in_target_directory(self):
         """
@@ -572,32 +574,30 @@ class Process_Media():
             session = self.session,
             working_dir_id = self.input.directory_id,
             original_filename = self.input.original_filename
-            )
+        )
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
             return False
-        
+
         return True
-
-
 
     def __copy_video(self):
 
         logger.debug('Copying Video {}'.format(self.input.file_id))
 
         self.input.newly_copied_file = File.copy_file_from_existing(
-            session=self.session,
-            working_dir=self.input.directory,
-            orginal_directory_id=self.input.source_directory_id,
-            existing_file=self.input.file,
-            copy_instance_list=False, 
+            session = self.session,
+            working_dir = self.input.directory,
+            orginal_directory_id = self.input.source_directory_id,
+            existing_file = self.input.file,
+            copy_instance_list = False,
             log = self.input.update_log,
-            add_link=True,
-            remove_link=False,
-            flush_session=True,
-            defer_copy=False,
-            batch_id=self.input.batch_id
+            add_link = True,
+            remove_link = False,
+            flush_session = True,
+            defer_copy = False,
+            batch_id = self.input.batch_id
         )
 
         if self.input.copy_instance_list is False:
@@ -605,12 +605,11 @@ class Process_Media():
             self.declare_success(input = self.input)
             return
 
-
         # COPY INSTANCES, Sequences, and Frames
         new_video = New_video(
-            session=self.session,
-            project=self.project,
-            input=self.input
+            session = self.session,
+            project = self.project,
+            input = self.input
         )
         new_video.add_sequence_map_to_input(
             source_video_parent_file = self.input.file,
@@ -629,29 +628,27 @@ class Process_Media():
             # For declaring success on the video file when no frames are available (i.e no instances)
             self.declare_success(input = self.input)
 
-
     def __copy_frame(self):
 
         file = File.get_by_id(self.session, self.input.file_id)
-        
+
         # The frame input has copies of this so we don't have to get parent
 
         new_file = File.copy_file_from_existing(
-            session=self.session,
-            working_dir = None, # avoid detached session
+            session = self.session,
+            working_dir = None,  # avoid detached session
             working_dir_id = self.input.directory_id,
             existing_file = file,
             copy_instance_list = self.input.copy_instance_list,
-            add_link = self.input.add_link,     # Not sure about making this dynamic
+            add_link = self.input.add_link,  # Not sure about making this dynamic
             remove_link = self.input.remove_link,
             sequence_map = self.input.sequence_map,
             previous_video_parent_id = self.input.parent_file_id,
-            flush_session=True,
+            flush_session = True,
         )
         self.frame_completion_controller.mark_frame_complete(self.frame_number)
         # Update Percent of parent input
         self.video_status_updates()
-
 
         # Should this be part of "declare success?
         # Or use get_parent_with_retry()
@@ -672,23 +669,22 @@ class Process_Media():
                 sync_event_manager = None,
             )
 
-
         return new_file
 
     def __copy_image(self):
         logger.debug('Copying Image {}'.format(self.input.file_id))
 
         self.input.newly_copied_file = File.copy_file_from_existing(
-            session=self.session,
+            session = self.session,
             working_dir = None,
             working_dir_id = self.input.directory_id,
-            existing_file=self.input.file,
-            copy_instance_list=self.input.copy_instance_list,
-            add_link=self.input.add_link,
-            remove_link=self.input.remove_link,
-            sequence_map=None,
-            previous_video_parent_id=None,
-            flush_session=True
+            existing_file = self.input.file,
+            copy_instance_list = self.input.copy_instance_list,
+            add_link = self.input.add_link,
+            remove_link = self.input.remove_link,
+            sequence_map = None,
+            previous_video_parent_id = None,
+            flush_session = True
         )
 
         self.declare_success(self.input)
@@ -697,7 +693,7 @@ class Process_Media():
         dest_dir = WorkingDir.get_by_id(self.session, self.input.directory_id)
         perform_sync_events_after_file_transfer(
             session = self.session,
-            source_directory = None, # We just provide destination directory to attach incoming dir to task.
+            source_directory = None,  # We just provide destination directory to attach incoming dir to task.
             destination_directory = dest_dir,
             log = self.log,
             log_sync_events = True,
@@ -724,7 +720,7 @@ class Process_Media():
 
     def __update_existing_file(self,
                                file,
-                               init_existing_instances=False):
+                               init_existing_instances = False):
 
         # Prep work
         if file:
@@ -744,27 +740,26 @@ class Process_Media():
         # TODO what other input keys do we need to update (ie this assumes images etc)
         if file and self.input.media_type == "video":
             logger.debug("Parent Video File Update")
-            self.__update_existing_video()      # Maybe should be a strategy operation
+            self.__update_existing_video()  # Maybe should be a strategy operation
             return
 
         elif file and self.input.media_type == 'text':
             self.process_existing_instance_list(
-                init_existing_instances=init_existing_instances)
+                init_existing_instances = init_existing_instances)
         else:
             process_instance_result = self.process_existing_instance_list(
-                init_existing_instances=init_existing_instances)
+                init_existing_instances = init_existing_instances)
             logger.debug(("Image or Frame File Update"))
 
             if file and file.frame_number:
                 logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
-            
+
             if process_instance_result is True and self.input.media_type == 'frame':
                 self.__update_parent_video_at_last_frame()
 
         # TODO first video case (otherwise then goes in frame processing flow)
         if self.input.media_type in ["image", "text"] and self.input.status != "failed":
-            self.declare_success(input=self.input)
-
+            self.declare_success(input = self.input)
 
     def __update_parent_video_at_last_frame(self):
         # Last frame
@@ -773,17 +768,16 @@ class Process_Media():
             # Assumes frames are put in priority queue in frame order.
             # See determine_unique_sequences_from_external() for how this is derived
             logger.info("Last Frame Update")
-            time.sleep(4)   # in case this worker is ahead of another
+            time.sleep(4)  # in case this worker is ahead of another
             logger.info("Updating Sequences")
             self.update_sequences()
 
             # We assume if we get to this stage it was successful?
             parent_input = self.get_parent_input_with_retry()
 
-            self.__toggle_flags_from_input(input=parent_input)
-            self.declare_success(input=parent_input)
+            self.__toggle_flags_from_input(input = parent_input)
+            self.declare_success(input = parent_input)
             self._add_input_to_session(parent_input)
-
 
     def __toggle_flags_from_input(self, input: Input):
         if not input.task:
@@ -791,11 +785,10 @@ class Process_Media():
 
         if input.task_action == 'complete_task':
             result, new_file = task_complete.task_complete(
-				session = self.session,
-				task = input.task,
-				new_file = input.file,
-				project = self.project)
-
+                session = self.session,
+                task = input.task,
+                new_file = input.file,
+                project = self.project)
 
     def __update_existing_video(self):
 
@@ -803,19 +796,19 @@ class Process_Media():
         from methods.video.video import New_video
 
         if not self.input.frame_packet_map:
-            self.input.update_log['error']['frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
+            self.input.update_log['error'][
+                'frame_packet_map'] = 'Please provide a frame packet map. It cannot be empty.'
             self.input.status = 'failed'
             self.input.status_text = "Please provide a frame packet map. It cannot be empty.'"
             self._add_input_to_session(self.input)
             self.try_to_commit()
             return
 
-
         # TODO "new video" name makes less sense in new context
         new_video = New_video(
-            session=self.session,
-            project=self.project,
-            input=self.input
+            session = self.session,
+            project = self.project,
+            input = self.input
         )
 
         try:
@@ -827,21 +820,19 @@ class Process_Media():
             self._add_input_to_session(self.input)
             logger.error(str(e))
 
-
         if len(self.input.update_log["error"].keys()) >= 1:
             self.input = self.update_video_status_when_update_has_errors(input = self.input)  # 'parent' here not frame
             self._add_input_to_session(self.input)
-         
+
         # We should not declare success here, it's only started processing
         # TODO review if another state to put here like is_processing
 
     def update_video_status_when_update_has_errors(self, input):
-        
+
         input.status = "failed"
         input.status_text = "See Update Log"
         input.update_log['last_updated'] = str(time.time())  # to make sure we trigger update
         return input
-
 
     def split_video_into_clips(self):
         """
@@ -861,16 +852,16 @@ class Process_Media():
 
         try:
             video_preprocess = Video_Preprocess(
-                session=self.session,
-                parent_input=self.input
+                session = self.session,
+                parent_input = self.input
             )
         except Exception as exception:
 
             from methods.video.video_preprocess import Video_Preprocess
 
             video_preprocess = Video_Preprocess(
-                session=self.session,
-                parent_input=self.input
+                session = self.session,
+                parent_input = self.input
             )
 
         is_ok_to_split = video_preprocess.check_ok_to_split()
@@ -893,9 +884,9 @@ class Process_Media():
         :return:
         """
         job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            job=self.input.job,
-            log=self.log
+            session = self.session,
+            job = self.input.job,
+            log = self.log
         )
         return job_sync_manager.create_task_from_file(self.input.file)
 
@@ -912,26 +903,26 @@ class Process_Media():
             logger.info("[update_jobs_with_attached_dirs] Default Dir Used : {}".format(self.project.directory_default))
 
         jobs = JobWorkingDir.list(
-            session=self.session,
-            sync_type='sync',
-            class_to_return=Job,
-            working_dir_id=directory.id
+            session = self.session,
+            sync_type = 'sync',
+            class_to_return = Job,
+            working_dir_id = directory.id
         )
         for job in jobs:
             job_sync_dir_manger = job_dir_sync_utils.JobDirectorySyncManager(
-                session=self.session,
-                job=job,
-                log=self.log
+                session = self.session,
+                job = job,
+                log = self.log
             )
             job_sync_dir_manger.create_file_links_for_attached_dirs(
-                sync_only=True,
-                create_tasks=True,
-                file_to_link=self.input.file,
-                file_to_link_dataset=self.working_dir,
-                related_input=self.input,
-                member=self.member
+                sync_only = True,
+                create_tasks = True,
+                file_to_link = self.input.file,
+                file_to_link_dataset = self.working_dir,
+                related_input = self.input,
+                member = self.member
             )
-            job.update_file_count_statistic(session=self.session)
+            job.update_file_count_statistic(session = self.session)
 
             # Refresh the task stat count to the latest value.
             # We want to do this because there may be cases where 2 frames updated the task count
@@ -940,7 +931,6 @@ class Process_Media():
             # Commit any update job/task data.
             self.try_to_commit()
             job.refresh_stat_count_tasks(self.session)
-
 
     def may_attach_to_job(self):
 
@@ -953,25 +943,41 @@ class Process_Media():
         # We could use Job_permissions.check_job_after_project_already_valid()
         # But I'm not sure if raising in a thread is a good idea.
         Job_permissions.check_job_after_project_already_valid(
-            job=self.input.job,
-            project=self.project)
+            job = self.input.job,
+            project = self.project)
 
         result, log = WorkingDirFileLink.file_link_update(
-            session=self.session,
-            add_or_remove="add",
-            incoming_directory=self.input.directory,
-            directory=self.input.job.directory,  # difference is this is from job
-            file_id=self.input.file.id,
-            job=self.input.job
+            session = self.session,
+            add_or_remove = "add",
+            incoming_directory = self.input.directory,
+            directory = self.input.job.directory,  # difference is this is from job
+            file_id = self.input.file.id,
+            job = self.input.job
         )
 
         # If job is not completed we should be creating tasks for the new files attached.
         if self.input.job.status in ['active', 'in_review']:
             self.create_task_on_job_sync_directories()
 
-
     def process_sensor_fusion_json(self):
-        print('TEMP FILE DIR IS', self.input.temp_dir_path_and_filename)
+        sf_processor = SensorFusionFileProcessor(
+            session = self.session,
+            input = self.input,
+            log = self.log
+        )
+
+        try:
+            result, self.log = sf_processor.process_sensor_fusion_file_contents()
+
+            if log_has_error(self.log):
+                self.input.status = 'failed'
+                logger.error('Sensor fussion file failed to process. Input {}'.format(self.input.id))
+                logger.error(self.log)
+        except Exception as e:
+            logger.error('Exception on process sensor fusion: {}'.format(traceback.format_exc()))
+            self.log['error']['process_sensor_fusion_json'] = traceback.format_exc()
+            self.input.status = 'failed'
+            self.input.update_log = self.log
 
     def route_based_on_media_type(self):
         """
@@ -1006,22 +1012,21 @@ class Process_Media():
 
         operation()
 
-
     def check_limits(self):
 
         # Limits for uploading
         # Cache's check and only re runs every x seconds
         if self.working_dir.file_limit_time is None or \
-                time.time() > self.working_dir.file_limit_time + 7200:
+            time.time() > self.working_dir.file_limit_time + 7200:
 
             print("[process media] Checking limits")
 
             directory_file_count = WorkingDirFileLink.file_list(
-                session=self.session,
-                working_dir_id=self.working_dir_id,
-                type="image",
-                counts_only=True,
-                limit=None)
+                session = self.session,
+                working_dir_id = self.working_dir_id,
+                type = "image",
+                counts_only = True,
+                limit = None)
             # Could also try to cache this as files get added...
 
             # Reject
@@ -1036,7 +1041,6 @@ class Process_Media():
                 self.working_dir.file_limit_time = time.time()
 
         return True
-
 
     def try_to_commit(self):
         """
@@ -1057,7 +1061,6 @@ class Process_Media():
             self.session.rollback()
             raise
 
-
     def read_raw_file(self):
         # Get Raw file
         # TODO not fan that this defaults to in the negative
@@ -1072,13 +1075,11 @@ class Process_Media():
                     self.input.status_text = "Could not open file"
                     return False
 
-
     def read_raw_text_file(self):
         # Get Raw file
         self.raw_text_file = open(self.input.temp_dir_path_and_filename, "rb")
         print(self.raw_text_file)
         return self.raw_text_file
-
 
     def process_frame(self):
         """
@@ -1124,17 +1125,15 @@ class Process_Media():
         if self.frame_number == 0:
             self.process_thumbnail_image_for_frame()
 
-
     def process_image_for_frame(self):
 
         self.blob_path_to_frame = self.input.root_blob_path_to_frames + str(self.frame_number)
 
-        self.save_and_upload(path=self.blob_path_to_frame)
+        self.save_and_upload(path = self.blob_path_to_frame)
 
         self.process_first_frame_of_video()
 
         self.video_status_updates()
-
 
     def process_thumbnail_image_for_frame(self):
 
@@ -1144,8 +1143,7 @@ class Process_Media():
         # I don't think this is quite the right name yet
         self.blob_path_to_frame += "_thumb"
 
-        self.save_and_upload(path=self.blob_path_to_frame)
-
+        self.save_and_upload(path = self.blob_path_to_frame)
 
     def save_and_upload(self, path):
         # Trying to make this a bit more generic could maybe use with
@@ -1157,11 +1155,10 @@ class Process_Media():
         imwrite(temp_local_path, self.raw_numpy_image)
 
         data_tools.upload_to_cloud_storage(
-            temp_local_path=temp_local_path,
-            blob_path=path,
-            content_type="image/jpg"
+            temp_local_path = temp_local_path,
+            blob_path = path,
+            content_type = "image/jpg"
         )
-
 
     def process_first_frame_of_video(self):
 
@@ -1180,7 +1177,6 @@ class Process_Media():
             # if we wanted to cache it?
 
             self.session.add(video)
-
 
     def video_status_updates(self):
         """
@@ -1240,7 +1236,8 @@ class Process_Media():
             run_every_x_number_of_frames = int(round(self.num_frames_to_update / 10))
             run_every_x_number_of_frames = max(1, run_every_x_number_of_frames)
             # If we're at least 20 frames before the last one. It means we're near the last frame.
-            near_last_frame: bool = (self.frame_completion_controller.get_total_frames() - self.frame_completion_controller.completed_frames) <= 5
+            near_last_frame: bool = (
+                                        self.frame_completion_controller.get_total_frames() - self.frame_completion_controller.completed_frames) <= 5
             # Count the completed frame to track progress.
             time_to_update_frame: bool = self.frame_completion_controller.completed_frames % run_every_x_number_of_frames == 0
         else:
@@ -1257,20 +1254,22 @@ class Process_Media():
             parent_input = self.get_parent_input_with_retry()
             if parent_input:
                 if near_last_frame is True:
-                    self.declare_success(input=parent_input)
+                    self.declare_success(input = parent_input)
                     if self.input.mode == 'copy_file' and time_to_update_frame:
-                        estimated_percent_complete = (self.frame_completion_controller.completed_frames / self.num_frames_to_update)  * 100
+                        estimated_percent_complete = (
+                                                         self.frame_completion_controller.completed_frames / self.num_frames_to_update) * 100
 
                 elif time_to_update_frame is True:
                     if self.input.mode == 'copy_file':
-                        estimated_percent_complete = (self.frame_completion_controller.completed_frames / self.num_frames_to_update)  * 100
+                        estimated_percent_complete = (
+                                                         self.frame_completion_controller.completed_frames / self.num_frames_to_update) * 100
                     else:
                         # File upload case:  Context that this is only x percent (ie 20) of the overall processing.
                         new_work_done_estimate = (run_every_x_number_of_frames / self.input.video_parent_length) * 20
                         estimated_percent_complete = parent_input.percent_complete + new_work_done_estimate
 
                     if estimated_percent_complete >= 100:
-                        self.declare_success(input=parent_input)
+                        self.declare_success(input = parent_input)
                     else:
                         parent_input.status = "processing_frames_in_queue"
                         parent_input.percent_complete = estimated_percent_complete
@@ -1288,27 +1287,25 @@ class Process_Media():
                 time.sleep(2)  # just give a little breather while stuff is settling.
                 self.update_sequences()
 
-
-    @retry(wait=wait_random_exponential(multiplier=2, max=20),
-           stop=stop_after_attempt(5))
+    @retry(wait = wait_random_exponential(multiplier = 2, max = 20),
+           stop = stop_after_attempt(5))
     def get_parent_input_with_retry(self):
         """
         """
         print("ran get_parent_input_with_retry")
 
         parent_input = Input.get_by_id(
-            session=self.session,
-            id=self.input.parent_input_id,
-            skip_locked=True)
+            session = self.session,
+            id = self.input.parent_input_id,
+            skip_locked = True)
         if parent_input is None:
             raise Exception
 
         return parent_input
 
-
     def declare_success(
-            self,
-            input: Input):
+        self,
+        input: Input):
         """
         Caution, for video we are assuming this is the "parent_input"
         we bounce between self.input and input
@@ -1321,12 +1318,12 @@ class Process_Media():
             return
 
         Event.new_deferred(
-            session=self.session,
-            kind='input_file_uploaded',
-            project_id=input.project_id,
-            input_id=input.id,
-            file_id=input.file_id,
-            wait_for_commit=True
+            session = self.session,
+            kind = 'input_file_uploaded',
+            project_id = input.project_id,
+            input_id = input.id,
+            file_id = input.file_id,
+            wait_for_commit = True
         )
         input.percent_complete = 100
         input.status = "success"
@@ -1350,9 +1347,9 @@ class Process_Media():
 
         """
         Sequence.update_all_sequences_in_file(
-            session=self.session,
-            video_file_id=self.input.parent_file_id,
-            regenerate_preview_images=True)
+            session = self.session,
+            video_file_id = self.input.parent_file_id,
+            regenerate_preview_images = True)
 
     def process_one_text_file(self):
         """
@@ -1367,7 +1364,7 @@ class Process_Media():
         # self.content_type = "image/" + str(self.input.extension)
 
         # Image() subclass
-        self.new_text_file = TextFile(original_filename=self.input.original_filename)
+        self.new_text_file = TextFile(original_filename = self.input.original_filename)
         self.session.add(self.new_text_file)
         self.session.flush()
 
@@ -1381,14 +1378,14 @@ class Process_Media():
         self.save_raw_text_file()
 
         self.input.file = File.new(
-            session=self.session,
-            working_dir_id=self.working_dir_id,
-            file_type="text",
-            text_file_id=self.new_text_file.id,
-            original_filename=self.input.original_filename,
-            project_id=self.project_id,
-            input_id=self.input.id,
-            file_metadata=self.input.file_metadata,
+            session = self.session,
+            working_dir_id = self.working_dir_id,
+            file_type = "text",
+            text_file_id = self.new_text_file.id,
+            original_filename = self.input.original_filename,
+            project_id = self.project_id,
+            input_id = self.input.id,
+            file_metadata = self.input.file_metadata,
         )
         # Set success state for input.
         if self.input.media_type == 'text':
@@ -1414,6 +1411,7 @@ class Process_Media():
                 pass
 
         return True
+
     def process_one_image_file(self):
 
         """
@@ -1434,7 +1432,7 @@ class Process_Media():
 
         # Image() subclass
         self.new_image = Image(
-            original_filename=self.input.original_filename)
+            original_filename = self.input.original_filename)
         self.session.add(self.new_image)
         self.session.flush()
 
@@ -1453,13 +1451,13 @@ class Process_Media():
         self.save_raw_image_thumb()
 
         self.input.file = File.new(
-            session=self.session,
-            working_dir_id=self.working_dir_id,
-            file_type="image",
-            image_id=self.new_image.id,
-            original_filename=self.input.original_filename,
-            project_id=self.project_id,  # TODO test if project_id is working as expected here
-            input_id=self.input.id,
+            session = self.session,
+            working_dir_id = self.working_dir_id,
+            file_type = "image",
+            image_id = self.new_image.id,
+            original_filename = self.input.original_filename,
+            project_id = self.project_id,  # TODO test if project_id is working as expected here
+            input_id = self.input.id,
             file_metadata = self.input.file_metadata
         )
 
@@ -1498,7 +1496,7 @@ class Process_Media():
         model_run_list = ModelRun.list(session = self.session, project_id = self.project_id)
         return [m.id for m in model_run_list]
 
-    def process_existing_instance_list(self, init_existing_instances=False):
+    def process_existing_instance_list(self, init_existing_instances = False):
         """
         Assumptions
             For both video and images, this is only if the instance list
@@ -1531,7 +1529,7 @@ class Process_Media():
             video_data = None
 
             if self.input.task_id:
-                task = Task.get_by_id(self.session, task_id=self.input.task_id)
+                task = Task.get_by_id(self.session, task_id = self.input.task_id)
 
             # We just complete it for images and text, 
             # video files are handled by __update_parent_video_at_last_frame()
@@ -1551,22 +1549,21 @@ class Process_Media():
             logger.error('Invalid media type {}'.format(self.input.media_type))
             return
 
-
         allowed_model_id_list = self.__get_allowed_model_ids()
         allowed_model_runs_id_list = self.__get_allowed_model_run_ids()
         try:
             annotation_update = Annotation_Update(
-                session=self.session,
-                file=file,
-                instance_list_new=instance_list,
-                project_id=self.input.project_id,
-                video_data=video_data,
-                task=task,
-                complete_task=should_complete_task,
-                do_init_existing_instances=init_existing_instances,
-                external_map=self.input.external_map,
-                external_map_action=self.input.external_map_action,
-                do_update_sequences=False,
+                session = self.session,
+                file = file,
+                instance_list_new = instance_list,
+                project_id = self.input.project_id,
+                video_data = video_data,
+                task = task,
+                complete_task = should_complete_task,
+                do_init_existing_instances = init_existing_instances,
+                external_map = self.input.external_map,
+                external_map_action = self.input.external_map_action,
+                do_update_sequences = False,
                 allowed_model_id_list = allowed_model_id_list,
                 allowed_model_run_id_list = allowed_model_runs_id_list,
                 force_lock = False
@@ -1594,20 +1591,16 @@ class Process_Media():
 
                 return False
             return True
-        
+
         except Exception as e:
             trace = traceback.format_exc()
             self.input.status = "failed"
             self.input.status_text = "Instance List Creation error: {}".format(trace)
             logger.error(trace)
 
-
             return False
 
-
-
-
-    def proprogate_frame_instance_update_errors_to_parent(self, 
+    def proprogate_frame_instance_update_errors_to_parent(self,
                                                           error_log: dict):
         """
          
@@ -1623,7 +1616,6 @@ class Process_Media():
 
         self._add_input_to_session(parent_input)
 
-
     def save_raw_image_file(self):
 
         self.new_image.url_signed_expiry = int(time.time() + 2592000)  # 1 month
@@ -1631,12 +1623,10 @@ class Process_Media():
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
-
         new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
                             str(self.input.extension)
 
         imwrite(new_temp_filename, np.asarray(self.raw_numpy_image))
-
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
@@ -1652,7 +1642,7 @@ class Process_Media():
         self.new_text_file.url_signed_expiry = int(time.time() + 2592000)  # 1 month
 
         self.new_text_file.url_signed_blob_path = settings.PROJECT_TEXT_FILES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_text_file.id)
+                                                  str(self.project_id) + "/" + str(self.new_text_file.id)
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug('Uploading text file from {}'.format(self.input.temp_dir_path_and_filename))
@@ -1693,15 +1683,13 @@ class Process_Media():
             content_type = "image/jpg",
         )
 
-
     def get_and_set_width_and_height(
-            self,
-            diffgram_image,
-            imageio_read_image):
+        self,
+        diffgram_image,
+        imageio_read_image):
 
         diffgram_image.height = imageio_read_image.shape[0]
         diffgram_image.width = imageio_read_image.shape[1]
-
 
     def resize_raw_image(self):
 
@@ -1715,7 +1703,7 @@ class Process_Media():
             raise IOError("Could not open")
 
         self.get_and_set_width_and_height(
-            diffgram_image = self.new_image, 
+            diffgram_image = self.new_image,
             imageio_read_image = self.raw_numpy_image)
 
         max_size = settings.DEFAULT_MAX_SIZE
@@ -1728,10 +1716,10 @@ class Process_Media():
             shape_y = int(round(self.new_image.height * ratio))
 
             self.raw_numpy_image = imresize(self.raw_numpy_image,
-                                                       (shape_x, shape_y))
+                                            (shape_x, shape_y))
 
             self.get_and_set_width_and_height(
-                diffgram_image = self.new_image, 
+                diffgram_image = self.new_image,
                 imageio_read_image = self.raw_numpy_image)
 
     def process_csv_file(self):
@@ -1780,8 +1768,8 @@ class Process_Media():
                 # To keep orginal instance seperate
 
                 item = PrioritizedItem(
-                    priority=100,
-                    input_id=row_input.id)
+                    priority = 100,
+                    input_id = row_input.id)
 
                 add_item_to_queue(item)
 
@@ -1837,11 +1825,9 @@ class Process_Media():
 
         logger.info(str(self.input.id) + " InputID Probably Downloaded")
 
-
     def download_from_cloud_storage_to_file(self):
 
         # TODO would prefer this part to be in data tools...
-
 
         self.input.temp_dir = tempfile.mkdtemp()
 
@@ -1868,7 +1854,6 @@ class Process_Media():
 
         self.input.status = "downloaded"
 
-
     def download_from_url(self):
         # https://diffgram.com/docs/download_from_url-process-media
         if self.input.url[0: 4] != "http":
@@ -1876,25 +1861,29 @@ class Process_Media():
             self.input.status_text = "Invalid url (Did not start with http)"
             self.log['error']['status_text'] = self.input.status_text
 
-            logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)) )
+            logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)))
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
-                self.input.url, input_original_filename = self.input.original_filename)
+            self.input.url, input_original_filename = self.input.original_filename)
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
         if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
             self.input.original_filename = self.input.original_filename + self.input.extension
-            
+
         if self.__file_does_not_exist_in_target_directory() is False:
             self.log['error']['status_text'] = self.input.status_text
             return
 
-        response = requests.get(self.input.url, stream=True)
+        response = requests.get(self.input.url, stream = True)
 
         if response.status_code != 200:
             self.input.status = "failed"
-            logger.error("Exceeded retry limit, no valid response ({}) from {} Response: {}".format(response.status_code, self.input.url, str(response.text)))
-            self.input.status_text = "Exceeded retry limit, no valid response ({}) from {} Response: {}".format(response.status_code, self.input.url, str(response.text))
+            logger.error(
+                "Exceeded retry limit, no valid response ({}) from {} Response: {}".format(response.status_code,
+                                                                                           self.input.url,
+                                                                                           str(response.text)))
+            self.input.status_text = "Exceeded retry limit, no valid response ({}) from {} Response: {}".format(
+                response.status_code, self.input.url, str(response.text))
             self.log['error']['status_text'] = self.input.status_text
             return
 
@@ -1935,11 +1924,11 @@ class Process_Media():
                         return
 
             self.input.media_type = self.determine_media_type(
-                extension=self.input.extension,
-                allow_csv=self.allow_csv)
+                extension = self.input.extension,
+                allow_csv = self.allow_csv)
 
             if self.input.media_type is None or \
-                    self.input.media_type not in ["image", "video"]:
+                self.input.media_type not in ["image", "video"]:
                 self.input.status = "failed"
                 self.input.status_text = "Invalid media type: " + str(self.input.extension)
                 self.log['error']['status_text'] = self.input.status_text
@@ -1984,7 +1973,6 @@ class Process_Media():
             self._add_input_to_session(self.input)
             new_frame_packet_map = {}
             for frame_num, instance_list in frame_packet_map.items():
-
                 model_manager = ModelManager(session = self.session,
                                              instance_list_dicts = instance_list,
                                              member = self.member,
@@ -2020,9 +2008,9 @@ class Process_Media():
             from methods.video.video import New_video
 
         new_video = New_video(
-            session=self.session,
-            project=self.project,
-            input=self.input
+            session = self.session,
+            project = self.project,
+            input = self.input
         )
 
         # TODO Would prefer to just pass input here
@@ -2031,11 +2019,11 @@ class Process_Media():
         try:
             self.populate_new_models_and_runs()
             file = new_video.load(
-                video_file_name=self.input.temp_dir_path_and_filename,
-                original_filename=self.input.original_filename,
-                extension=self.input.extension,
-                input=self.input,
-                directory_id=self.input.directory_id)
+                video_file_name = self.input.temp_dir_path_and_filename,
+                original_filename = self.input.original_filename,
+                extension = self.input.extension,
+                input = self.input,
+                directory_id = self.input.directory_id)
 
 
         except Exception as e:
@@ -2046,21 +2034,19 @@ class Process_Media():
 
         self.clean_up_temp_dir_on_thread()
 
-
-    def clean_up_temp_dir_on_thread(self, wait_time=0):
+    def clean_up_temp_dir_on_thread(self, wait_time = 0):
 
         # cast as string since we don't want to keep session hanging around
         temp_dir_copy = str(self.input.temp_dir)
-        t = threading.Timer(wait_time, clean_up_temp_dir, args=(temp_dir_copy,))
+        t = threading.Timer(wait_time, clean_up_temp_dir, args = (temp_dir_copy,))
         t.daemon = True
         t.start()
 
-
     @staticmethod
     def determine_media_type(
-            extension,
-            allow_csv=True,
-            input_type = None):
+        extension,
+        allow_csv = True,
+        input_type = None):
         """
         Maps filenames to "media_type" concept in Diffgram system
         Arguments:
