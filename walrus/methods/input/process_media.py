@@ -52,6 +52,7 @@ import os
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
+sensor_fusion_allowed_extensions = [".json"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
 csv_allowed_file_names = [".csv"]
@@ -489,7 +490,10 @@ class Process_Media():
                 return False
 
         if self.input.type in ["from_resumable",
-                               "from_url", "from_video_split", "ui_wizard"]:
+                               "from_url",
+                               "from_video_split",
+                               "from_sensor_fusion_json",
+                               "ui_wizard"]:
 
             download_result = self.download_media()
 
@@ -966,6 +970,9 @@ class Process_Media():
             self.create_task_on_job_sync_directories()
 
 
+    def process_sensor_fusion_json(self):
+        print('TEMP FILE DIR IS', self.input.temp_dir_path_and_filename)
+
     def route_based_on_media_type(self):
         """
 
@@ -977,6 +984,7 @@ class Process_Media():
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
             "frame": self.process_frame,
+            "sensor_fusion": self.process_sensor_fusion_json,
             "video": self.process_video,
             "csv": self.process_csv_file
         }
@@ -2051,7 +2059,8 @@ class Process_Media():
     @staticmethod
     def determine_media_type(
             extension,
-            allow_csv=True):
+            allow_csv=True,
+            input_type = None):
         """
         Maps filenames to "media_type" concept in Diffgram system
         Arguments:
@@ -2081,6 +2090,10 @@ class Process_Media():
                 return None
 
             return "csv"
+
+        if input_type is not None and input_type == 'from_sensor_fusion_json':
+            if extension in sensor_fusion_allowed_extensions:
+                return 'sensor_fusion'
 
         if extension in existing_instances_allowed_file_names:
             return "existing_instances"

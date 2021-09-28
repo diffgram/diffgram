@@ -410,24 +410,31 @@
                 <!-- For now mode is part of this too -->
                 <v-layout>
                   <tooltip_icon
-                    v-if="props.item.source == 'from_resumable'"
+                    v-if="props.item.source === 'from_resumable'"
                     tooltip_message="User Interface"
                     icon="mdi-television-guide"
                     color="primary">
                   </tooltip_icon>
 
                   <tooltip_icon
-                    v-else-if="props.item.source == 'from_video_split'"
+                    v-else-if="props.item.source === 'from_video_split'"
                     tooltip_message="Video Split"
                     icon="mdi-call-split"
                     color="blue">
                   </tooltip_icon>
 
                   <tooltip_icon
-                    v-else-if="props.item.source == 'from_url'"
+                    v-else-if="props.item.source === 'from_url'"
                     tooltip_message="SDK / API"
                     icon="mdi-api"
                     color="green">
+                  </tooltip_icon>
+
+                  <tooltip_icon
+                    v-else-if="props.item.source === 'from_sensor_fusion_json'"
+                    tooltip_message="Sensor Fusion JSON"
+                    icon="mdi-printer-3d"
+                    color="purple">
                   </tooltip_icon>
 
                   <v-chip v-else small color="primary">

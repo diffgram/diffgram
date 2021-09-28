@@ -310,7 +310,8 @@ export default class SceneController3D {
       let index = intersects[0].object.userData.instance_index
       let instance_to_select = this.instance_list[index];
       if (instance_to_select) {
-        this.select_instance(instance_to_select, index)
+        this.deselect_instance();
+        this.select_instance(instance_to_select, index);
       }
 
 

@@ -326,11 +326,7 @@
       },
 
       on_click_delete_instance() {
-        let instance_update = {
-          index: this.instance_hover_index_locked,
-          mode: "delete"
-        }
-        this.emit_update_and_hide_instance(instance_update)
+        this.$emit('delete_instance', this.instance_hover_index_locked)
       },
       show_share_context_menu() {
         this.show_share_instance_menu = true;
@@ -355,13 +351,6 @@
         this.$emit('share_dialog_close')
 
       },
-      emit_update_and_hide_instance(instance_update: Object) {
-        if (this.instance_hover_index_locked == undefined) {
-          return
-        }
-        this.$emit('instance_update', instance_update);
-        this.$emit('close_context_menu');
-      }
     }
   });
 </script>

@@ -102,6 +102,10 @@ export class Instance{
       this.on_instance_updated(instance);
     }
   }
+
+  public delete(){
+    this.soft_delete = true;
+  }
   public instance_hovered_callback(instance){
     if(this.on_instance_hovered){
       this.on_instance_hovered(instance)
@@ -155,5 +159,10 @@ export abstract class Instance3D extends Instance{
     }
     console.log('udpated', this.position_3d)
     console.log('udpated', this.rotation_euler_angles)
+  }
+
+  public delete(){
+    super.delete();
+    this.mesh.visible = false;
   }
 }
