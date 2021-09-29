@@ -6595,7 +6595,7 @@
         },
 
         may_toggle_show_hide_occlusion: function (event) {
-          if (event.key === "o") {
+          if (event.key === "o" || event.key === "O") {
             this.label_settings.show_occluded_keypoints = !this.label_settings.show_occluded_keypoints
             this.refresh = new Date();
           }
