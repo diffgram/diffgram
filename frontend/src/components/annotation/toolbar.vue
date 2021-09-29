@@ -385,16 +385,7 @@
     </template>
 
   </button_with_menu>
-  <tooltip_button
-    tooltip_message="Copy All Instances"
-    @click="$emit('copy_all_instances')"
-    :disabled="loading || annotations_loading"
-    color="primary"
-    icon="mdi-content-duplicate"
-    :icon_style="true"
-    :bottom="true"
-  >
-  </tooltip_button>
+
   <button_with_menu
     tooltip_message="Hotkeys"
     v-if="view_only_mode != true"
@@ -756,6 +747,19 @@
               :icon_style="true"
               :bottom="true"
               color="primary">
+          </tooltip_button>
+        </v-layout>
+
+        <v-layout>
+          <tooltip_button
+            tooltip_message="Copy All Instances"
+            @click="$emit('copy_all_instances')"
+            :disabled="loading || annotations_loading"
+            color="primary"
+            icon="mdi-content-duplicate"
+            :icon_style="true"
+            :bottom="true"
+          >
           </tooltip_button>
         </v-layout>
 
