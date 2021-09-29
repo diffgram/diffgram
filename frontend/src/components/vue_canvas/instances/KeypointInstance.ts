@@ -31,7 +31,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public current_node_connection: any = [];
   private instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
-  public label_settings: any = {} 
+  public label_settings: any = undefined 
 
 
   public get_instance_data(): object {
@@ -411,7 +411,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       // order of operations
       ctx.lineWidth = 2;
 
-      if (this.label_settings.show_occluded_keypoints == false &&
+      if (this.label_settings &&
+          this.label_settings.show_occluded_keypoints == false &&
           node.occluded == true) {
         continue
       }
@@ -609,7 +610,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let node1 = this.nodes.filter(n => n.id === edge.from)[0];
       let node2 = this.nodes.filter(n => n.id === edge.to)[0];
 
-      if (this.label_settings.show_occluded_keypoints == false &&
+      if (this.label_settings &&
+          this.label_settings.show_occluded_keypoints == false &&
           node2.occluded == true) {
         continue
       }
