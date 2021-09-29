@@ -6594,6 +6594,18 @@
           }
         },
 
+        may_toggle_escape_key: function (event) {
+          if (event.keyCode === 27) { // Esc
+            if (this.$props.view_only_mode == true) { return }
+            if(this.instance_select_for_issue || this.view_issue_mode){return}
+            if(this.instance_select_for_merge){return}
+
+            this.draw_mode = !this.draw_mode
+            this.edit_mode_toggle( this.draw_mode)
+            this.is_actively_drawing = false
+          }
+        },
+
         keyboard_events_global_down: function (event) {
           var ctrlKey = 17,
             cmdKey = 91,
@@ -6637,17 +6649,7 @@
             this.save(true);  // and_complete == true
           }
 
-          if (event.keyCode === 27) { // Esc
-            if (this.$props.view_only_mode == true) { return }
-            if(this.instance_select_for_issue || this.view_issue_mode){return}
-            if(this.instance_select_for_merge){return}
-
-            this.draw_mode = !this.draw_mode
-            this.edit_mode_toggle( this.draw_mode)
-            this.is_actively_drawing = false
-            // careful, can't include this direclty in edit_mode_toggle
-            // since veutify switch does this behaviour too
-          }
+          this.may_toggle_escape_key(event)
 
           if (event.keyCode === 32) { // space
 
