@@ -1872,6 +1872,13 @@ class Process_Media():
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
                 self.input.url, input_original_filename = self.input.original_filename)
+
+        if self.input.extension is None:
+            self.input.status = "failed"
+            self.input.status_text = "Invalid extension, check filename"
+            self.log['error']['status_text'] = self.input.status_text
+            return
+
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
         if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
