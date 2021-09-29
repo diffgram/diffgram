@@ -22,4 +22,3 @@ class PCDFileBuilder:
         arr = numpy.array(pcd_data, dtype = numpy.float32)
         new_cloud = pypcd.make_xyz_rgb_point_cloud(arr)
         new_cloud.save(save_path)
-        print('SAVED TO', save_path)
