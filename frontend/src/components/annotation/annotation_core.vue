@@ -986,12 +986,15 @@
 
           instance_rotate_control_mouse_hover: null,
 
+          snapped_to_instance: undefined,
+
           snackbar_paste_message: '',
           ghost_instance_hover_index: null,
           default_instance_opacity: 0.25,
           model_run_list: null,
           ghost_instance_hover_type: null,
           ghost_instance_list: [],
+          selected_instance_list: [],
 
           show_default_navigation: true,
           snackbar_merge_polygon: false,
@@ -1129,6 +1132,7 @@
           loading: false,
 
           label_settings: {
+            enable_snap_to_instance: true,
             show_ghost_instances: true,
             show_text: true,
             show_label_text: true,
@@ -1446,6 +1450,9 @@
         },
         selected_instance: function(){
           if(!this.instance_list){return}
+          if(this.selected_instance_list && this.selected_instance_list.length > 0) {
+            return this.selected_instance_list[0]
+          }
           for(let i=0; i < this.instance_list.length; i ++){
             if(this.instance_list[i].selected){
               return this.instance_list[i]
@@ -2645,10 +2652,14 @@
 
           // careful can't use id, since newly created instances won't have an ID!
           this.instance_focused_index = focus.index
+          this.selected_instance_list = [this.instance_list[this.instance_focused_index]]
+          this.snap_to_instance(this.selected_instance)
         },
 
         focus_instance_show_all() {
           this.instance_focused_index = null
+          this.selected_instance_list = []
+          this.reset_to_full()
         },
 
         instance_update: function (update) {
@@ -3345,6 +3356,85 @@
 
           this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
             event, this.canvas_scale_local)
+        },
+
+        reset_to_full: function () {
+          this.canvas_translate.x = 0
+          this.canvas_translate.y = 0
+          this.canvas_scale_local = 1
+        },
+
+        get_center_point_of_instance:function (instance) {
+          let x = instance.x_max - (instance.width / 2)
+          let y = instance.y_max - (instance.height / 2)
+          return {'x' : x, 'y' : y}
+        },
+
+        get_focus_point_of_instance: function (instance){
+          let point = {'x': 0, 'y': 0}
+          let center_point = this.get_center_point_of_instance(instance)
+          let center_of_frame = {'x': this.canvas_width/2, 'y': this.canvas_height/2}
+
+          if (this.point_is_intersecting_circle(center_point, center_of_frame, 100)) {
+            return center_point
+          }
+
+          if (instance.x_max > (this.canvas_width / 2)) {
+            point.x = instance.x_max
+          }
+          else {
+            point.x = instance.x_min
+          }
+          if (instance.y_max > (this.canvas_height / 2)) {
+            point.y = instance.y_max
+          }
+          else {
+            point.y = instance.y_min
+          }
+          return point
+
+        },
+
+        clamp_values(val, min, max) {
+          return Math.min(Math.max(val, min), max)
+        },
+
+        auto_revert_snapped_to_instance_if_unchanged: function (instance) {
+          if (this.snapped_to_instance == instance) {
+            this.reset_to_full()
+            this.snapped_to_instance = undefined
+            return true
+          }
+          return false
+        },
+
+        get_zoom_region_of_instance: function (instance){
+          let max_zoom = 10
+          let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
+          let padding = -0.5
+          return max_zoom_to_show_all + padding
+        },
+
+        snap_to_instance: function (instance){
+
+          if (this.label_settings.enable_snap_to_instance == false) {
+            return
+          }
+
+          if (this.auto_revert_snapped_to_instance_if_unchanged(instance) == true) {
+            return
+          }
+
+          this.snapped_to_instance = instance
+
+          let point = this.get_focus_point_of_instance(instance)
+
+          this.canvas_translate.x = point.x * this.canvas_scale_global
+          this.canvas_translate.y = point.y * this.canvas_scale_global
+
+          this.canvas_scale_local = this.get_zoom_region_of_instance(instance)
         },
 
         update_label_file_visible: function (label_file) {
@@ -5009,8 +5099,9 @@
       }
       */
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
-          if (this.ctrl_key == true) {
+          if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)
+            this.canvas_element.style.cursor = 'move'
             return
           }
           this.move_something(event)
@@ -6490,23 +6581,25 @@
 
         },
 
+        set_control_key: function (event){
+          // Caution used name commands here to that when multiple keys are pressed it still works
+          if (event.ctrlKey == false || event.metaKey == false) { // ctrlKey cmd key
+            this.ctrl_key = false
+          }
+          if (event.ctrlKey == true || event.metaKey == true) { // ctrlKey cmd key
+            this.ctrl_key = true
+          }
+        },
+
         // hotkey hotkeys
         keyboard_events_global_up: function (event) {
-          /*
-       *  So one thing to think about is having all annotation
-       *  hotkeys in one place
-       *  -> Things like the new label lock
-       *  -> ease of reference / **preventing overlap**
-       *  -> Event listeners are not great to have to setup and take down
-       *  in each component
-       *
-       *  BUT that's not for context relevant things I guess
-       *  Was thinking in context of where to add a hotkey for
-       *  sequences and at first thinking there and then realizing
-       *  maybe not.
-       *
-       */
-          var   ctrlKey = 17;
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return    // Caution must be near top to prevent when typing
+          }
+
+          this.set_control_key(event)
+
           if(this.show_context_menu){
             return
           }
@@ -6514,19 +6607,9 @@
             //
             this.shift_key = false
           }
-          if(event.keyCode === 91){ // cmd key
-            this.ctrl_key = false;
-          }
-          if (event.keyCode === ctrlKey) { // ctrlKey
-            this.ctrl_key = false
-          }
 
           if (event.keyCode === 72) { // h key
             this.show_annotations = !this.show_annotations;
-          }
-
-          if (this.$store.state.user.is_typing_or_menu_open == true) {
-            return
           }
 
           if (event.key === "f") {
@@ -6535,10 +6618,6 @@
 
           if (event.key === "g") {
             this.label_settings.show_ghost_instances = !this.label_settings.show_ghost_instances
-          }
-
-          if (event.keyCode === 83) { // save
-            this.save();
           }
 
           if (event.keyCode === 13) {  // enter
@@ -6558,8 +6637,6 @@
 
 
         },
-
-        // more hotkeys
 
         may_toggle_instance_transparency: function (event) {
           if (event.keyCode === 84) { // shift + t
@@ -6581,6 +6658,12 @@
             } else {
               this.shift_frame_via_store(-1)
             }
+          }
+        },
+        
+        may_snap_to_instance: function (event) {
+          if (this.shift_key == true && event.key === "F") {
+            this.snap_to_instance(this.selected_instance)
           }
         },
 
@@ -6613,26 +6696,34 @@
           }
         },
 
+        may_save: function (event) {
+          if (event.key === "s" && this.shift_key == false) { // save
+            this.save();
+          }
+        },
+
         keyboard_events_global_down: function (event) {
           var ctrlKey = 17,
             cmdKey = 91,
             shiftKey = 16,
             vKey = 86,
             cKey = 67;
-          if (event.keyCode == ctrlKey || event.keyCode == cmdKey) {this.ctrl_key = true;}
+
+          this.set_control_key(event)
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return    // this guard should be at highest level
+          }
+
           if (event.keyCode === shiftKey) { // shift
             //
             this.shift_key = true
           }
-          if(event.keyCode === 17){
-            this.ctrl_key = true;
-            this.canvas_element.style.cursor = 'move'
-          }
 
-          if (this.$store.state.user.is_typing_or_menu_open == true) {
-            //console.debug("Blocked by is_typing_or_menu_open")
-            return
-          }
+          this.may_save(event)
+
+          this.may_snap_to_instance(event)
+
 
           this.may_toggle_file_change_left(event)
           this.may_toggle_file_change_right(event)

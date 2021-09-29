@@ -4,6 +4,7 @@
     <div id="annotation_ui_factory" tabindex="0">
       <div v-if="show_annotation_core == true">
         <v_annotation_core
+          class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
           :model_run_id_list="model_run_id_list"
           :model_run_color_list="model_run_color_list"
