@@ -973,6 +973,9 @@ class Process_Media():
                 self.input.status = 'failed'
                 logger.error('Sensor fussion file failed to process. Input {}'.format(self.input.id))
                 logger.error(self.log)
+
+            self.declare_success(self.input)
+
         except Exception as e:
             logger.error('Exception on process sensor fusion: {}'.format(traceback.format_exc()))
             self.log['error']['process_sensor_fusion_json'] = traceback.format_exc()

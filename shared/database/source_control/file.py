@@ -5,6 +5,7 @@ import json
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from werkzeug.exceptions import Forbidden
 from shared.database.text_file import TextFile
+from shared.database.point_cloud.point_cloud import PointCloud
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
 from shared.database.label import Label
@@ -104,6 +105,9 @@ class File(Base, Caching):
 
     image_id = Column(Integer, ForeignKey('image.id'))
     image = relationship("Image")
+
+    point_cloud_id = Column(Integer, ForeignKey('point_cloud.id'))
+    point_cloud = relationship(PointCloud)
 
     text_file_id = Column(Integer, ForeignKey('text_file.id'))
     text_file = relationship(TextFile, foreign_keys=[text_file_id])
@@ -841,6 +845,7 @@ class File(Base, Caching):
             project_id=None,
             file_type=None,
             image_id=None,
+            point_cloud_id=None,
             text_file_id=None,
             video_id=None,
             frame_number=None,
@@ -885,6 +890,7 @@ class File(Base, Caching):
         file = File(
             original_filename=original_filename,
             image_id=image_id,
+            point_cloud_id=point_cloud_id,
             state="added",
             type=file_type,
             project_id=project_id,

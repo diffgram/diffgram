@@ -5,6 +5,7 @@ from shared.data_tools_core import Data_tools
 from methods.sensor_fusion.pcd_file_builder import PCDFileBuilder
 from shared.settings import settings
 from shared.database.source_control.file import File
+from shared.database.point_cloud.point_cloud import PointCloud
 
 
 class SensorFusionFileProcessor:
@@ -41,13 +42,23 @@ class SensorFusionFileProcessor:
         pcd_file_builder.generate_pcd_file(save_path = pcd_save_path)
         return pcd_save_path
 
-    def __upload_pcd(self, file_3d, file_path):
+    def __upload_pcd(self, file_3d, pcd_file_path):
         """
-            Uploads the pcd file in the given path to cloud storage.
+            Uploads the pcd file in the given path to cloud storage and
+            creates point cloud object
         :return:
         """
-        blob_path = '{}/{}/{}'.format(settings.PROJECT_IMAGES_BASE_DIR, str(self.project_id), str(file_3d.id))
-        self.data_tools.upload_to_cloud_storage(temp_local_path = file_path, blob_path = blob_path)
+        blob_path = '{}/{}/{}'.format(settings.PROJECT_IMAGES_BASE_DIR, str(self.input.project_id), str(file_3d.id))
+        self.data_tools.upload_to_cloud_storage(temp_local_path = pcd_file_path, blob_path = blob_path)
+
+        point_cloud = PointCloud.new(
+            session = self.session,
+            original_filename = pcd_file_path,
+            url_signed_blob_path = blob_path
+        )
+
+        file_3d.point_cloud_id = point_cloud.id
+        return point_cloud
 
     def __create_sensor_fusion_file(self):
         """
@@ -63,12 +74,13 @@ class SensorFusionFileProcessor:
             input_id = self.input.id,
             file_metadata = self.input.file_metadata
         )
+
         return file
 
-    def __create_point_cloud_object(self):
-        raise NotImplementedError
+    def __add_file_to_input(self, file):
+        self.input.file_id = file.id
 
-    def __create_3d_point_cloud_file(self, blob_path, parent_sensor_fusion_file):
+    def __create_3d_point_cloud_file(self, parent_sensor_fusion_file):
         """
             Creates the 3D point cloud file
         :param blob_path:
@@ -79,7 +91,7 @@ class SensorFusionFileProcessor:
             session = self.session,
             working_dir_id = self.input.directory_id,
             file_type = "point_cloud_3d",
-            point_cloud=point_cloud,
+            parent_id = parent_sensor_fusion_file.id,
             original_filename = self.input.original_filename,
             project_id = self.input.project_id,
             input_id = self.input.id,
@@ -106,7 +118,10 @@ class SensorFusionFileProcessor:
 
         sensor_fusion_file = self.__create_sensor_fusion_file()
 
-        file_3d = self.__create_3d_point_cloud_file()
+        file_3d = self.__create_3d_point_cloud_file(sensor_fusion_file)
 
-        upload_result = self.__upload_pcd()
+        point_cloud_obj = self.__upload_pcd(file_3d, pcd_path)
+
+        self.__add_file_to_input(sensor_fusion_file)
+
         return True, self.log
