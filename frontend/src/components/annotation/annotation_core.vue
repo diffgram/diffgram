@@ -6574,6 +6574,26 @@
           }
         },
 
+        may_toggle_file_change_left: function (event) {
+          if (event.keyCode === 37 || event.key === "a") { // left arrow or A
+            if (this.shift_key) {
+              this.change_file("previous");
+            } else {
+              this.shift_frame_via_store(-1)
+            }
+          }
+        },
+
+        may_toggle_file_change_right: function (event) {
+          if (event.keyCode === 39 || event.key === "d") { // right arrow
+            if (this.shift_key) {
+              this.change_file("next");
+            } else {
+              this.shift_frame_via_store(1)
+            }
+          }
+        },
+
         keyboard_events_global_down: function (event) {
           var ctrlKey = 17,
             cmdKey = 91,
@@ -6595,23 +6615,10 @@
             return
           }
 
-          if (event.keyCode === 37 || event.key === "a") { // left arrow or A
-            if (this.shift_key) {
-              this.change_file("previous");
-            } else {
-              this.shift_frame_via_store(-1)
-            }
-          }
+          this.may_toggle_file_change_left(event)
+          this.may_toggle_file_change_right(event)
 
           this.may_toggle_instance_transparency(event)
-
-          if (event.keyCode === 39 || event.key === "d") { // right arrow
-            if (this.shift_key) {
-              this.change_file("next");
-            } else {
-              this.shift_frame_via_store(1)
-            }
-          }
 
           if (event.key === "N") { // shift + n
             if (this.shift_key) {
