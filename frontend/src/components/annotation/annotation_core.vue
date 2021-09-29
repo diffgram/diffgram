@@ -2692,7 +2692,11 @@
           }
 
           if (update.mode == 'on_click_update_point_attribute'){
-            instance.nodes[update.node_hover_index].occluded = true
+            if (instance.nodes[update.node_hover_index].occluded == true) {
+              instance.nodes[update.node_hover_index].occluded = false
+            } else {
+              instance.nodes[update.node_hover_index].occluded = true
+            }
           }
 
           // instance update
