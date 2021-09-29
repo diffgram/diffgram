@@ -86,6 +86,7 @@
             v-if="main_canvas_height && main_canvas_width"
             ref="main_3d_canvas"
             :width="main_canvas_width"
+            :pcd_url="pcd_url"
             :height="main_canvas_height"
             :zoom_speed="editor_3d_settings.zoom_speed"
             :pan_speed="editor_3d_settings.pan_speed"
@@ -101,8 +102,7 @@
             @instance_unhovered="on_instance_unhovered"
             @instance_selected="on_instance_selected"
             @scene_ready="on_scene_ready"
-            @instance_updated="on_instance_updated"
-          >
+            @instance_updated="on_instance_updated">
 
           </canvas_3d>
           <context_menu_3d_editor
@@ -131,6 +131,7 @@
             <canvas_3d
               v-if="secondary_canvas_width && secondary_canvas_height"
               ref="x_axis_3d_canvas"
+              :pcd_url="pcd_url"
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
@@ -151,7 +152,7 @@
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
-
+              :pcd_url="pcd_url"
               :height="secondary_canvas_height"
               :allow_navigation="true"
               :instance_list="instance_list"
@@ -166,6 +167,7 @@
             <canvas_3d
               v-if="secondary_canvas_width && secondary_canvas_height"
               ref="z_axis_3d_canvas"
+              :pcd_url="pcd_url"
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
@@ -312,7 +314,13 @@
         if(scene_ctrl.selected_instance){
           return scene_ctrl.selected_instance
         }
-      }
+      },
+      pcd_url: function(){
+        if(!this.$props.file){
+          return
+        }
+        return this.$props.file.point_cloud.url_signed;
+      },
     },
     watch:{
 

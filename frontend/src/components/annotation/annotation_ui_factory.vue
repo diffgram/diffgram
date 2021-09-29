@@ -197,7 +197,16 @@
         },
 
         annotation_interface: function(){
-          return 'sensor_fusion';
+          if(!this.current_file){
+            return
+          }
+          if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+            return 'image_or_video';
+          }
+          else if(this.current_file.type === 'sensor_fusion'){
+            return 'sensor_fusion';
+          }
+
         },
 
         label_file_colour_map: function () {

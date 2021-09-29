@@ -48,7 +48,7 @@ class SensorFusionFileProcessor:
             creates point cloud object
         :return:
         """
-        blob_path = '{}/{}/{}'.format(settings.PROJECT_IMAGES_BASE_DIR, str(self.input.project_id), str(file_3d.id))
+        blob_path = '{}{}/{}'.format(settings.PROJECT_PCD_FILES_BASE_DIR, str(self.input.project_id), str(file_3d.id))
         self.data_tools.upload_to_cloud_storage(temp_local_path = pcd_file_path, blob_path = blob_path)
 
         point_cloud = PointCloud.new(
@@ -56,7 +56,7 @@ class SensorFusionFileProcessor:
             original_filename = pcd_file_path,
             url_signed_blob_path = blob_path
         )
-
+        point_cloud.regenerate_url(session = self.session)
         file_3d.point_cloud_id = point_cloud.id
         return point_cloud
 

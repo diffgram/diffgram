@@ -42,11 +42,11 @@
           default: false
         },
         pcd_url: {
-          default: "https://storage.googleapis.com/diffgram-sandbox/testing/lidar_ascii_v5.pcd"
+          default: null
           // default: "https://diffgrampublic1.s3.amazonaws.com/Zaghetto.pcd"
         },
         radar_url: {
-          default: "https://storage.googleapis.com/diffgram-sandbox/testing/radar_rear.pcd"
+          default: null
         },
         instance_list: {
           default: []

@@ -354,7 +354,13 @@ class File(Base, Caching):
                 return self.text_file.url_signed_blob_path
         return None
 
+    def get_child_point_cloud_file(self, session):
 
+        file = session.query(File).filter(
+            File.type == 'point_cloud_3d',
+            File.parent_id == self.id
+        ).first()
+        return file
     def serialize_with_type(self,
                             session=None
                             ):
@@ -379,8 +385,14 @@ class File(Base, Caching):
             if self.text_file:
                 file['text'] = self.text_file.serialize()
 
-        # Could also get parent file information here too...
+        if self.type == "sensor_fusion":
+            point_cloud_file = self.get_child_point_cloud_file(session = session)
+            print('POINNFF', point_cloud_file)
+            if point_cloud_file and point_cloud_file.point_cloud:
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
+        # Could also get parent file information here too...
+        print('aaaaaa', self.type)
         if self.type == "label":
             if self.label:
 
