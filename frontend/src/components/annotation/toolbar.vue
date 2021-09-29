@@ -649,6 +649,11 @@
                           v-model="label_settings_local.show_occluded_keypoints">
               </v-checkbox>
 
+              <v-checkbox label="Enable Snap to Instance"
+                          data-cy="enable_snap_to_instance"
+                          v-model="label_settings_local.enable_snap_to_instance">
+              </v-checkbox>
+
               <v-slider label="Text Font Size"
                         min=10
                         max=30
