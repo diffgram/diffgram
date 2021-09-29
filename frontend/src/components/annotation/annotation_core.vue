@@ -6594,6 +6594,13 @@
           }
         },
 
+        may_toggle_show_hide_occlusion: function (event) {
+          if (event.key === "o") {
+            this.label_settings.show_occluded_keypoints = !this.label_settings.show_occluded_keypoints
+            this.refresh = new Date();
+          }
+        },
+
         may_toggle_escape_key: function (event) {
           if (event.keyCode === 27) { // Esc
             if (this.$props.view_only_mode == true) { return }
@@ -6631,6 +6638,7 @@
           this.may_toggle_file_change_right(event)
 
           this.may_toggle_instance_transparency(event)
+          this.may_toggle_show_hide_occlusion(event)
 
           if (event.key === "N") { // shift + n
             if (this.shift_key) {
