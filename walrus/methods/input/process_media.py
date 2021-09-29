@@ -567,8 +567,9 @@ class Process_Media():
         existing_file_list = WorkingDirFileLink.file_list(
             session = self.session,
             working_dir_id = self.input.directory_id,
-            original_filename = self.input.original_filename
-            )
+            original_filename = self.input.original_filename,
+            original_filename_match_type = None
+        )
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
