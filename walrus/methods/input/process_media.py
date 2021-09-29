@@ -1107,15 +1107,20 @@ class Process_Media():
          of frame processing time (which is 25->40% of overall time.)
 
         """
+        print('Processing Frame: {}'.format(self.frame_number))
+        try:
+            result = self.read_raw_file()
+            if result is False: return False
 
-        result = self.read_raw_file()
-        if result is False: return False
+            self.process_image_for_frame()
 
-        self.process_image_for_frame()
-
-        if self.frame_number == 0:
-            self.process_thumbnail_image_for_frame()
-
+            if self.frame_number == 0:
+                self.process_thumbnail_image_for_frame()
+        except Exception as e:
+            logger.error('Error Processing frame {}, input {} '.format(self.frame_number, self.input.id))
+            logger.error(traceback.format_exc())
+            self.input.status = 'failed'
+            self.input.description = traceback.format_exc()
 
     def process_image_for_frame(self):
 
