@@ -652,6 +652,11 @@
                           data-cy="show_allow_multiple_select_checkbox"
                           v-model="label_settings_local.allow_multiple_instance_select">
               </v-checkbox>
+              
+              <v-checkbox label="Show Occluded Keypoints"
+                          data-cy="show_occluded_keypoints"
+                          v-model="label_settings_local.show_occluded_keypoints">
+              </v-checkbox>
 
               <v-slider label="Text Font Size"
                         min=10

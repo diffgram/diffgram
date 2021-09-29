@@ -1134,6 +1134,7 @@
             show_label_text: true,
             show_attribute_text: true,
             show_list: true,
+            show_occluded_keypoints: true,
             allow_multiple_instance_select: false,
             font_size: 20,
             spatial_line_size: 2,
@@ -6559,6 +6560,20 @@
         },
 
         // more hotkeys
+
+        may_toggle_instance_transparency: function (event) {
+          if (event.keyCode === 84) { // shift + t
+            if (this.shift_key) {
+              if(this.default_instance_opacity === 1){
+                this.default_instance_opacity = 0.25;
+              }
+              else{
+                this.default_instance_opacity = 1;
+              }
+            }
+          }
+        },
+
         keyboard_events_global_down: function (event) {
           var ctrlKey = 17,
             cmdKey = 91,
@@ -6588,16 +6603,7 @@
             }
           }
 
-          if (event.keyCode === 84) { // shift + t
-            if (this.shift_key) {
-              if(this.default_instance_opacity === 1){
-                this.default_instance_opacity = 0.25;
-              }
-              else{
-                this.default_instance_opacity = 1;
-              }
-            }
-          }
+          this.may_toggle_instance_transparency(event)
 
           if (event.keyCode === 39 || event.key === "d") { // right arrow
             if (this.shift_key) {
@@ -6712,7 +6718,8 @@
               this.trigger_instance_changed,
               this.instance_selected,
               this.instance_deselected,
-              this.mouse_down_delta_event
+              this.mouse_down_delta_event,
+              this.label_settings
             );
             initialized_instance.populate_from_instance_obj(instance);
             return initialized_instance
