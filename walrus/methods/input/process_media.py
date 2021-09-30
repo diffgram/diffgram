@@ -1117,10 +1117,13 @@ class Process_Media():
             if self.frame_number == 0:
                 self.process_thumbnail_image_for_frame()
         except Exception as e:
+            log = regular_log.default()
+            log['error'] = traceback.format_exc()
+
+            self.proprogate_frame_instance_update_errors_to_parent(log)
+
             logger.error('Error Processing frame {}, input {} '.format(self.frame_number, self.input.id))
             logger.error(traceback.format_exc())
-            self.input.status = 'failed'
-            self.input.description = traceback.format_exc()
 
     def process_image_for_frame(self):
 
@@ -2168,3 +2171,16 @@ def clean_up_temp_dir(path):
     except OSError as exc:
         logger.error("shutil error {}".format(str(exc)))
         pass
+
+
+def get_memory_percent():
+    import psutil
+
+    memory_percent = 0.0
+    try:
+        psutil_memory_result = psutil.virtual_memory()
+        memory_percent = psutil_memory_result[2]
+    except Exception as e:
+        logger.warn(traceback.format_exc())       
+
+    return memory_percent
