@@ -208,7 +208,7 @@ class New_video():
 
                 clip.write_videofile(video_file_name,
                                      audio = False,
-                                     threads = num_cores,
+                                     threads = int(num_cores / 2),
                                      logger = None
                                      )
             except Exception as exception:
@@ -220,7 +220,7 @@ class New_video():
         else:
             clip.write_videofile(video_file_name,
                                  audio = False,
-                                 threads = num_cores,
+                                 threads = int(num_cores / 2),
                                  logger = None
                                  )
         if not directory_id:
