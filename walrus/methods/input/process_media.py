@@ -567,8 +567,9 @@ class Process_Media():
         existing_file_list = WorkingDirFileLink.file_list(
             session = self.session,
             working_dir_id = self.input.directory_id,
-            original_filename = self.input.original_filename
-            )
+            original_filename = self.input.original_filename,
+            original_filename_match_type = None
+        )
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
@@ -1880,6 +1881,13 @@ class Process_Media():
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
                 self.input.url, input_original_filename = self.input.original_filename)
+
+        if self.input.extension is None:
+            self.input.status = "failed"
+            self.input.status_text = "Invalid extension, check filename"
+            self.log['error']['status_text'] = self.input.status_text
+            return
+
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
         if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
