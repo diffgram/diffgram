@@ -385,16 +385,7 @@
     </template>
 
   </button_with_menu>
-  <tooltip_button
-    tooltip_message="Copy All Instances"
-    @click="$emit('copy_all_instances')"
-    :disabled="loading || annotations_loading"
-    color="primary"
-    icon="mdi-content-duplicate"
-    :icon_style="true"
-    :bottom="true"
-  >
-  </tooltip_button>
+
   <button_with_menu
     tooltip_message="Hotkeys"
     v-if="view_only_mode != true"
@@ -652,6 +643,16 @@
                           data-cy="show_allow_multiple_select_checkbox"
                           v-model="label_settings_local.allow_multiple_instance_select">
               </v-checkbox>
+              
+              <v-checkbox label="Show Occluded Keypoints"
+                          data-cy="show_occluded_keypoints"
+                          v-model="label_settings_local.show_occluded_keypoints">
+              </v-checkbox>
+
+              <v-checkbox label="Enable Snap to Instance"
+                          data-cy="enable_snap_to_instance"
+                          v-model="label_settings_local.enable_snap_to_instance">
+              </v-checkbox>
 
               <v-slider label="Text Font Size"
                         min=10
@@ -751,6 +752,19 @@
               :icon_style="true"
               :bottom="true"
               color="primary">
+          </tooltip_button>
+        </v-layout>
+
+        <v-layout>
+          <tooltip_button
+            tooltip_message="Copy All Instances"
+            @click="$emit('copy_all_instances')"
+            :disabled="loading || annotations_loading"
+            color="primary"
+            icon="mdi-content-duplicate"
+            :icon_style="true"
+            :bottom="true"
+          >
           </tooltip_button>
         </v-layout>
 
