@@ -198,9 +198,25 @@ def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
 
     if item.media_type and item.media_type in ["frame", "image", "text"]:
+
+        wait_until_queue_pressure_is_lower(
+            queue = FRAME_QUEUE, 
+            limit = frame_threads * 2, 
+            check_interval=1)
         FRAME_QUEUE.put(item)
+
     else:
         VIDEO_QUEUE.put(item)
+
+
+def wait_until_queue_pressure_is_lower(queue, limit, check_interval=1):
+
+    while True:
+        if queue.qsize() < limit:
+            return True
+        else:
+            logger.warn("Queue Presure Too High: {} size is above limit of {} ".format(str(queue.qsize()), limit))
+            time.sleep(check_interval)
 
 
 def process_media_queue_worker(queue, queue_type):
