@@ -1,6 +1,10 @@
 <template>
-  <div :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
+  <div v-if="!loading_pcd" :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
 
+  </div>
+  <div  class="ma-auto d-flex flex-column justify-center" v-else-if="show_loading_bar" style="background: white" :style="{width: `${width}px`, height: `${height}px`}">
+    <h2 class="ma-auto mb-0">Loading 3D Data...</h2>
+    <v-progress-linear height="50" class="ma-auto mr-4 ml-4" v-if="show_loading_bar" striped :value="percentage"></v-progress-linear>
   </div>
 
 </template>
@@ -25,6 +29,9 @@
         },
         height: {
           default: 'auto'
+        },
+        show_loading_bar:{
+          default: false
         },
         camera_type: {
           default: 'perspective'
@@ -68,7 +75,9 @@
       data() {
         return {
           controls_transform: null,
+          percentage: 0,
           controls_orbit: null,
+          loading_pcd: true,
           renderer: null,
           container: null,
           scene_controller: null,
@@ -147,6 +156,7 @@
           this.$props.instance_list
         },
         setup_scene_controls: async function (scene = undefined,) {
+          this.point_cloud_mesh = await this.load_pcd();
           this.container = document.getElementById(this.$props.container_id)
           console.log('setup scene controls', this.container.clientWidth, this.container.clientHeight, this.$props.width, this.$props.height)
           if(this.container.clientWidth === 0 || this.container.clientHeight === 0){
@@ -174,7 +184,7 @@
           }
 
 
-          this.point_cloud_mesh = await this.load_pcd();
+
 
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
@@ -228,8 +238,13 @@
 
         },
         load_pcd: async function () {
-          let file_loader_3d = new FileLoader3DPointClouds();
+          let file_loader_3d = new FileLoader3DPointClouds(this);
           this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.$props.pcd_url)
+          this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
+            color: new THREE.Color('white'),
+            opacity: 1,
+            transparent: false,
+          });
           return this.point_cloud_mesh
 
         }

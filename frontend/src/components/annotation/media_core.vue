@@ -618,7 +618,15 @@
                       @on_image_error="on_image_error(index)"
                     >
                     </thumbnail>
-                    <v-container class="d-flex flex-column justify-center align-center"
+                    <v-container v-else-if="item.type === 'sensor_fusion'"
+                                 class="d-flex flex-column justify-center align-center pa-0"
+                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
+                      <v-icon size="32" class="ma-0 pa-0">
+                        mdi-video-3d-variant
+                      </v-icon>
+                      <p class="ma-0 title-file">{{item.original_filename}}</p>
+                    </v-container>
+                    <v-container v-else  class="d-flex flex-column justify-center align-center"
                                  style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
                       <v-icon>
                         mdi-script-text
@@ -1706,3 +1714,17 @@ import Vue from "vue";
 }
 
 ) </script>
+<style scoped>
+  .title-file{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    width: 90px;
+    font-size: 10px;
+    color: #757575;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    text-align: center;
+    overflow: hidden
+  }
+</style>

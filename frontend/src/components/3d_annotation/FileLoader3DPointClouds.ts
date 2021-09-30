@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import {PCDLoader} from 'three/examples/jsm/loaders/PCDLoader';
 
 export default class FileLoader3DPointClouds {
-
+  component_ctx: object;
   pcd_loading_status: string = 'pending';
 
-  public constructor() {
-
+  public constructor(component_ctx) {
+    this.component_ctx = component_ctx;
   }
 
   public async load_pcd_from_url(url) {
@@ -16,11 +16,16 @@ export default class FileLoader3DPointClouds {
         (mesh) => {
           mesh.material.color.set('white');
           mesh.name = 'point_cloud'
+          this.component_ctx.loading_pcd = false;
           resolve(mesh)
         },
         (xhr) => {
-          console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+          let percentage = (xhr.loaded / xhr.total * 100);
           this.pcd_loading_status = 'in_progress'
+          if(this.component_ctx){
+            this.component_ctx.loading_pcd = true;
+            this.component_ctx.percentage = percentage * 100;
+          }
         },
         (error) => {
           reject(error);

@@ -85,6 +85,7 @@
           <canvas_3d
             v-if="main_canvas_height && main_canvas_width"
             ref="main_3d_canvas"
+            :show_loading_bar="true"
             :width="main_canvas_width"
             :pcd_url="pcd_url"
             :height="main_canvas_height"
