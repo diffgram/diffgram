@@ -106,6 +106,8 @@ class New_video():
         Returns
             None
         """
+        process_media.check_and_wait_for_memory(memory_limit_float=85.0)
+
         logger.info('Reading video data for {} - {}'.format(input.id, video_file_name))
         try:
 
@@ -179,6 +181,9 @@ class New_video():
         logger.info('Writing video file... - InputID: {}'.format(input.id))
         num_cores = os.cpu_count()
         logger.info('Num Core to write video: {}'.format(num_cores))
+
+        process_media.check_and_wait_for_memory(memory_limit_float=75.0)
+
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
                 # See https://zulko.github.io/moviepy/ref/VideoClip/VideoClip.html?highlight=write_videofile#moviepy.video.io.VideoFileClip.VideoFileClip.write_videofile
@@ -286,8 +291,8 @@ class New_video():
         initial_global_frame = 0
         if input.type == 'from_video_split':
             initial_global_frame = video.fps * input.offset_in_seconds
+
         for index, frame in enumerate(clip.iter_frames()):
-            print('Adding frame {}'.format(frame))
             global_frame_number = frame
 
             if input.type == 'from_video_split':
@@ -318,6 +323,7 @@ class New_video():
             # Because at the moment this loop can be fairly slow
 
             if index % 10 == 0:
+                process_media.check_and_wait_for_memory(memory_limit_float=90.0)
                 # Where 10 is adding this every 10 frames
                 # to be completed by next phase
                 # at most this adds 1 when compelte so multiple by 30 to represent
