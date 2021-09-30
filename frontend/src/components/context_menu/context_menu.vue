@@ -640,15 +640,14 @@
 
         <v-list-item-icon>
           <tooltip_icon
-
-            tooltip_message="Update"
+            tooltip_message="Mark Occluded"
             icon="mdi-vector-polyline-minus"
             color="primary"
           />
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            Mark Ocluded
+            Mark Occluded
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

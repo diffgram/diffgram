@@ -31,6 +31,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public current_node_connection: any = [];
   private instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
+  public label_settings: any = undefined 
 
 
   public get_instance_data(): object {
@@ -43,7 +44,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
               on_instance_updated = undefined,
               on_instance_selected = undefined,
               on_instance_deselected = undefined,
-              mouse_down_delta_event = undefined) {
+              mouse_down_delta_event = undefined,
+              label_settings = undefined) {
 
     super();
     this.nodes = [];
@@ -57,6 +59,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.mouse_position = mouse_position;
     this.initialized = true;
     this.ctx = ctx;
+    this.label_settings = label_settings;
   }
 
   public duplicate_for_undo(){
@@ -407,12 +410,20 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     for (let node of this.nodes) {
       // order of operations
       ctx.lineWidth = 2;
+
+      if (this.label_settings &&
+          this.label_settings.show_occluded_keypoints == false &&
+          node.occluded == true) {
+        continue
+      }
+
       if (node.occluded == true) {
         ctx.fillStyle = 'gray'
       } else {
         ctx.strokeStyle = this.strokeColor;
         ctx.fillStyle = this.fillColor;
       }
+
 
       let x = node.x
       let y = node.y
@@ -598,6 +609,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       let node1 = this.nodes.filter(n => n.id === edge.from)[0];
       let node2 = this.nodes.filter(n => n.id === edge.to)[0];
+
+      if (this.label_settings &&
+          this.label_settings.show_occluded_keypoints == false &&
+          node2.occluded == true) {
+        continue
+      }
 
       if (node2.occluded == true) {
         ctx.strokeStyle = 'gray'
