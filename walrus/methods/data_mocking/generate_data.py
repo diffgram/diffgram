@@ -88,6 +88,7 @@ class DiffgramDataMocker:
                                             session=self.session,
                                             media_url='https://picsum.photos/1000',
                                             media_type='image',
+                                            original_filename="example.jpg",
                                             directory_id=dataset.id,
                                             commit_input=True,
                                             task_id=None,
