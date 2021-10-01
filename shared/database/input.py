@@ -291,7 +291,7 @@ class Input(Base):
             'task_id': self.task_id,  # Include task_id
             'update_log': self.update_log,
             'instance_list': self.instance_list,
-            'frame_packet_map': self.frame_packet_map,
+            # 'frame_packet_map': self.frame_packet_map,
             'newly_copied_file_id': self.newly_copied_file_id
         }
 

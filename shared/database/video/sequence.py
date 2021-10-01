@@ -9,7 +9,7 @@ from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
-
+import traceback
 
 class Sequence(Base):
     """
@@ -441,7 +441,11 @@ class Sequence(Base):
         for sequence in sequence_list:
             sequence.regenerate_keyframe_list(session = session)
             if regenerate_preview_images:
-                sequence.build_instance_preview_dict(session = session)
+                try:
+                    sequence.build_instance_preview_dict(session = session)
+                except Exception as e:
+                    logger.error('Could not regenerate sequence preview image')
+                    logger.error(traceback.format_exc())
             session.add(sequence)
             print(sequence.keyframe_list)
 
