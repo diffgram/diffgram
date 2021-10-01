@@ -1339,6 +1339,32 @@
 
           ctx.fillStyle = this.$get_sequence_color(instance.sequence_id)
 
+          this.draw_text(ctx, message, x, y, ctx.font,
+            '255, 255, 255,',
+            this.$props.label_settings.font_background_opacity);
+        },
+
+        draw_text(ctx, message, x, y, font, background_color, background_opacity) {
+
+          ctx.textBaseline = 'bottom'
+          ctx.font = font
+
+          let text_width = ctx.measureText(message).width;
+
+          let previous_style = ctx.fillStyle
+          ctx.fillStyle = "rgba(" + background_color + background_opacity + ")";
+
+          let text_height = parseInt(font, 10)
+          // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+          let padding = 2
+          ctx.fillRect(
+            x - 1,
+            y - text_height - padding,
+            text_width + padding,
+            text_height + padding)
+
+          ctx.fillStyle = previous_style
+
           ctx.fillText(message, x, y);
 
         },
