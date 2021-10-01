@@ -92,6 +92,7 @@ def process_media_unit_of_work(item):
             except Exception as e:
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
+                logger.error(traceback.format_exc())
         else:
             process_media.main_entry()
 
