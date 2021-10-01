@@ -138,6 +138,11 @@ class Instance(Base):
     # For Ellipse Instances
     center_x = Column(Integer)
     center_y = Column(Integer)
+    # For Cuboids 3D
+    center_z = Column(Integer)
+    rotation_euler_angles = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'rotation': []})
+    position_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'position': []})
+
     angle = Column(Float)  # For ellipse rotation, and probably other instance in the future
 
     # Bezier curve [quadratic]
@@ -322,6 +327,9 @@ class Instance(Base):
             self.cp,
             self.center_x,
             self.center_y,
+            self.center_z,
+            self.rotation_euler_angles,
+            self.position_3d,
             self.angle,
             self.width,
             self.height,
@@ -396,6 +404,9 @@ class Instance(Base):
             'cp': self.cp,
             'center_x': self.center_x,
             'center_y': self.center_y,
+            'center_z': self.center_z,
+            'rotation_euler_angles': self.rotation_euler_angles,
+            'position_3d': self.position_3d,
             'angle': self.angle,
             'creation_ref_id': self.creation_ref_id,
             'width': self.width,

@@ -158,7 +158,8 @@
         setup_scene_controls: async function (scene = undefined,) {
           this.point_cloud_mesh = await this.load_pcd();
           this.container = document.getElementById(this.$props.container_id)
-          console.log('setup scene controls', this.container.clientWidth, this.container.clientHeight, this.$props.width, this.$props.height)
+
+
           if(this.container.clientWidth === 0 || this.container.clientHeight === 0){
             return
           }
@@ -170,6 +171,7 @@
           window.addEventListener( 'resize', this.on_window_resize );
           if (!scene) {
             scene = new THREE.Scene();
+            // scene.background = new THREE.Color('blue')
           }
           document.getElementById(this.$props.container_id).appendChild(this.renderer.domElement);
 
@@ -183,9 +185,6 @@
             this.setup_ortographic_scene_controller(scene)
           }
 
-
-
-
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
           this.camera.position.y = 10;
@@ -193,6 +192,16 @@
           this.add_instance_list_to_scene();
 
           this.scene_controller.start_render();
+          // this.scene_controller.center_camera_to_mesh(this.point_cloud_mesh);
+
+          // var box = new THREE.Box3().setFromObject(this.point_cloud_mesh);
+          // let scene_width = box.min;
+          // let scene_height = box.max;
+          // let scene_depth = box.getSize();
+
+          // this.scene_controller.set_scene_dimensions(scene_width, scene_height, scene_depth)
+          //
+          // console.log(box.min, box.max, box.getSize());
 
           this.$emit('scene_ready', this.scene_controller)
         },

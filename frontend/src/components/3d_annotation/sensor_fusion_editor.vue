@@ -191,11 +191,13 @@
 
 <script>
   import Vue from "vue";
-
+  import {has_duplicate_instances} from '../annotation/utils/AnnotationUtills';
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
   import instance_detail_list_view from "../annotation/instance_detail_list_view";
   import context_menu_3d_editor from "./context_menu_3d_editor";
   import canvas_3d from "./canvas_3d";
+  import moment from "moment";
+  import axios from "axios";
 
   export default Vue.extend({
     name: "sensor_fusion_editor_3d",
@@ -237,13 +239,16 @@
         error: null,
         warning: null,
         has_changed: false,
+        save_loading_scene: false,
         show_context_menu: false,
         instance_type: 'cuboid_3d',
         draw_mode: false,
         request_change_current_instance: null,
         instance_hover_index: null,
+        save_loading_frame: {},
         instance_hover: null,
         current_frame: null,
+        instance_list_cache: [],
         video_playing: null,
         trigger_refresh_current_instance: null,
         instance_clipboard: undefined,
@@ -273,6 +278,7 @@
           show_attribute_text: true,
           show_list: true,
           allow_multiple_instance_select: false,
+          save_loading_frame: false,
           font_size: 20,
           spatial_line_size: 2,
           vertex_size: 3,
@@ -307,6 +313,9 @@
 
     },
     computed:{
+      any_loading: function(){
+        return this.save_loading_scene
+      },
       selected_instance_index: function(){
         if(!this.$refs.main_3d_canvas){
           return
@@ -327,6 +336,205 @@
 
     },
     methods: {
+      set_save_loading: function(value, frame){
+        if(this.video_mode){
+          this.save_loading_frame[frame] = value;
+        }
+        else{
+          this.save_loading_scene = value;
+        }
+        this.$forceUpdate();
+      },
+      get_save_loading: function(frame_number){
+        if(this.video_mode){
+          if(!this.save_loading_frame[frame_number]){
+            return false
+          }
+          else{
+            return true;
+          }
+        }
+        else{
+          return this.save_loading_scene;
+        }
+      },
+      save: async function(and_complete=false, frame_number_param = undefined, instance_list_param = undefined){
+        this.error = {}
+        this.warning = {}
+        if (this.$props.view_only_mode) {
+          return
+        }
+        let current_frame = undefined;
+        let instance_list = this.instance_list.map(inst => inst.get_instance_data());
+
+        if(this.get_save_loading(current_frame)){
+          // If we have new instances created while saving. We might still need to save them after the first
+          // save has been completed.
+          return
+        }
+        if (this.any_loading) {
+          return
+        }
+
+        this.set_save_loading(true, current_frame);
+        let [has_duplicate_instances_result, dup_ids, dup_indexes] = has_duplicate_instances(instance_list);
+        let dup_instance_list = dup_indexes.map(i => ({...instance_list[i], original_index: i}));
+        dup_instance_list.sort(function(a,b){
+          return moment(b.client_created_time, 'YYYY-MM-DD HH:mm') - moment(a.client_created_time, 'YYYY-MM-DD HH:mm');
+        });
+
+        if(has_duplicate_instances_result){
+          this.save_warning = {
+            duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
+          }
+
+          // We want to focus the most recent instance, if we focus the older one we can produce an error.
+          this.$refs.instance_detail_list.toggle_instance_focus(dup_instance_list[0].original_index, undefined);
+
+          this.set_save_loading(false, current_frame);
+          return
+        }
+        this.instance_list_cache = instance_list.slice();
+        let current_frame_cache = this.current_frame;
+        let current_video_file_id_cache = this.current_video_file_id;
+        let video_mode_cache = this.video_mode;
+
+
+
+        // a video file can now be
+        // saved from file id + frame, so the current file
+        let current_file_id = null;
+        if(this.$props.file){
+          current_file_id = this.$props.file.id;
+        }
+        else if(this.$props.task){
+          current_file_id = this.$props.task.file.id
+        }
+        else{
+          throw new Error('You must provide either a file or a task in props in order to save.')
+        }
+
+
+        var url = null
+
+        if (this.task && this.task.id) {
+          url = `/api/v1/task/${this.task.id}/annotation/update`
+        } else {
+
+          if (this.$store.state.builder_or_trainer.mode == "builder") {
+            url = `/api/project/${this.project_string_id}/file/${current_file_id}/annotation/update`
+          }
+        }
+
+        video_data = null
+        if (video_mode_cache == true) {
+          var video_data = {
+            video_mode: video_mode_cache,
+            video_file_id: current_video_file_id_cache,
+            current_frame: current_frame
+          }
+        }
+
+        try {
+          const response = await axios.post(url, {
+            instance_list: this.instance_list_cache,
+            and_complete: and_complete,
+            directory_id: this.$store.state.project.current_directory.directory_id,
+            gold_standard_file: this.gold_standard_file,    // .instance_list gets updated ie missing
+            video_data: video_data
+          })
+
+          this.save_count += 1;
+          this.add_ids_to_new_instances_and_delete_old(response, video_data);
+
+
+          this.check_if_pending_created_instance();
+          this.$emit('save_response_callback', true)
+
+          if(this.instance_buffer_metadata[this.current_frame]){
+            this.instance_buffer_metadata[this.current_frame].pending_save = false;
+          }
+          else{
+            this.instance_buffer_metadata[this.current_frame] = {pending_save: false};
+          }
+
+          if (response.data.sequence) {
+            // Because: new color thing based on sequence id but seq id not assigned till response
+            // not good code. just placeholder in current constraints until we can figure out something better.
+            // ie maybe whole instance should be getting replaced
+            let instance_list_request_frame = this.instance_list;
+            if(this.video_mode){
+              // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
+              // Because it could have potentially changed during save.
+              instance_list_request_frame = this.instance_buffer_dict[video_data.current_frame]
+            }
+            let instance_index = instance_list_request_frame.findIndex(
+              x => x.label_file_id == response.data.sequence.label_file_id &&
+                x.soft_delete === false &&
+                x.number == response.data.sequence.number)
+            // just in case so we don't overwrite
+            // maybe don't need this, but going to look at other options in the future there too
+            // doesn't cover buffer case?
+            if(instance_index
+              &&  instance_list_request_frame[instance_index]
+              && instance_list_request_frame[instance_index].sequence_id == undefined
+              && instance_list_request_frame[instance_index].label_file_id == response.data.sequence.label_file_id) {
+              instance_list_request_frame[instance_index].sequence_id = response.data.sequence.id
+            }
+            // end of temp sequence thing
+
+            // Update any new created sequences
+            if(response.data.new_sequence_list){
+              for(let new_seq of response.data.new_sequence_list){
+                this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
+              }
+            }
+            if(this.video_mode){
+              this.refresh_sequence_frame_list(instance_list_request_frame, video_data.current_frame);
+            }
+          }
+
+
+
+          /* When we save the file and go to next, we don't rely upon the
+       * newly returned file to be anything related to the next task
+       * We simply go to the "well" so to speak and request the next task here
+       * using the "change_file".
+       */
+          this.set_save_loading(false, current_frame);
+          this.has_changed = false
+          if (and_complete == true) {
+            // now that complete completes whole video, we can move to next as expected.
+            this.snackbar_success = true
+            this.snackbar_success_text = "Saved and completed. Moved to next."
+
+            if(this.task && this.task.id){   // props
+              this.trigger_task_change('next', this.task)
+            }
+            else{
+              this.trigger_task_change('next', 'none')    // important
+            }
+
+
+          }
+          this.check_if_pending_created_instance();
+          return true
+        } catch (error) {
+          console.error(error);
+          this.set_save_loading(false, current_frame);
+          if(error.response.data &&
+            error.response.data.log &&
+            error.response.data.log.error && error.response.data.log.error.missing_ids){
+            this.display_refresh_cache_button = true;
+            clearInterval(this.interval_autosave);
+          }
+
+          this.save_error = this.$route_api_errors(error)
+          console.debug(error);
+          //this.logout()
+          return false
+        }
+      },
       detect_clicks_outside_context_menu: function (e) {
 
         // skip clicks on the actual context menu
@@ -409,6 +617,7 @@
       },
       on_instance_updated: function(instance){
         this.center_secondary_cameras_to_instance(instance)
+        this.has_changed = true
       },
       on_instance_hovered: function(instance, index){
         this.instance_hover_index = index;
@@ -426,6 +635,7 @@
       on_instance_drawn: function(instance){
         this.center_secondary_cameras_to_instance(instance);
         this.edit_mode_toggle(false);
+        this.has_changed = true;
       },
       center_secondary_cameras_to_instance: function(instance){
         this.$refs.x_axis_3d_canvas.scene_controller.center_camera_to_mesh(instance.mesh, 'x')
@@ -455,9 +665,6 @@
 
       },
       change_file: function(){
-
-      },
-      save: function(){
 
       },
       change_instance_type: function(){

@@ -79,7 +79,7 @@ export class Instance{
       points: this.points,
       sequence_id: this.sequence_id,
       soft_delete: this.soft_delete,
-      pause_object: this.pause_object
+      pause_object: this.pause_object,
     }
   }
 
@@ -144,7 +144,7 @@ export abstract class Instance3D extends Instance{
   abstract draw_on_scene() : void;
 
   public update_spacial_data(){
-    this.width = this.mesh.geometry.width;
+    this.width = this.mesh.geometry.min;
     this.height = this.mesh.geometry.height;
     this.depth = this.mesh.geometry.depth;
     this.rotation_euler_angles = {
@@ -157,12 +157,25 @@ export abstract class Instance3D extends Instance{
       y: this.mesh.position.y,
       z: this.mesh.position.z,
     }
-    console.log('udpated', this.position_3d)
-    console.log('udpated', this.rotation_euler_angles)
+    console.log('width', this.width)
+    console.log('height', this.height)
+    console.log('depth', this.depth)
+
   }
 
   public delete(){
     super.delete();
     this.mesh.visible = false;
+  }
+  public get_instance_data(){
+    let result = super.get_instance_data();
+    return {
+      ...result,
+      center_z: this.center_z,
+      rotation_euler_angles: this.rotation_euler_angles,
+      position_3d: this.position_3d,
+
+    }
+
   }
 }

@@ -87,12 +87,13 @@ class SensorFusionFileProcessor:
         :param parent_sensor_fusion_file:
         :return:
         """
+        filename = self.input.original_filename.split('_sf.json')[0]
         file = File.new(
             session = self.session,
             working_dir_id = self.input.directory_id,
             file_type = "point_cloud_3d",
             parent_id = parent_sensor_fusion_file.id,
-            original_filename = self.input.original_filename,
+            original_filename = filename,
             project_id = self.input.project_id,
             input_id = self.input.id,
             file_metadata = self.input.file_metadata

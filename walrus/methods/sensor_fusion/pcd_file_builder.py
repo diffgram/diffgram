@@ -17,7 +17,7 @@ class PCDFileBuilder:
                 row['x'],
                 row['y'],
                 row['z'],
-                row['intensity'],
+                row['intensity'] if row['intensity'] else 1.0,
             ])
         arr = numpy.array(pcd_data, dtype = numpy.float32)
         new_cloud = pypcd.make_xyz_rgb_point_cloud(arr)

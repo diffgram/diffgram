@@ -3,11 +3,12 @@ import {OrbitControls} from './OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
+import {getCenterPoint} from "./utils_3d";
 
 export default class SceneController3D {
   public scene: THREE.Scene;
   public controls_orbit: OrbitControls;
-  public camera: OrbitControls;
+  public camera: THREE.Camera;
   public renderer: THREE.WebGLRenderer;
   public controls_panning_speed: number;
   public object_transform_controls: ObjectTransformControls;
@@ -26,6 +27,9 @@ export default class SceneController3D {
   public selected_instance_index: number = null;
   public instance_hovered_index: number = null;
   public TRANSFORM_CONTROLS_LAYER: number = 1;
+  public scene_width: number = null;
+  public scene_height: number = null;
+  public scene_depth: number = null;
 
   public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60) {
     this.scene = scene;
@@ -162,6 +166,7 @@ export default class SceneController3D {
   private draw_place_holder_cuboid() {
 
     if (!this.place_holder_cuboid) {
+      // let geometry = new THREE.BoxGeometry(this.scene_width * 0.1, this.scene_height * 0.1, this.scene_depth * 0.1);
       let geometry = new THREE.BoxGeometry(2, 2, 2);
       let material = new THREE.MeshBasicMaterial({
         color: new THREE.Color(this.get_current_color()),
@@ -397,4 +402,15 @@ export default class SceneController3D {
     this.scene.add(mesh);
   }
 
+  public center_camera_to_mesh(mesh, axis = 'x'){
+    let center = getCenterPoint(mesh);
+    this.camera.position.set(center.x - 1, center.y - 1, center.z - 1);
+    this.camera.lookAt(center);
+  }
+
+  public set_scene_dimensions(width, height, depth){
+    this.scene_width = width;
+    this.scene_height = height;
+    this.scene_depth = depth;
+  }
 }

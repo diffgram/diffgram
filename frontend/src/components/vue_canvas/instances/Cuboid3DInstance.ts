@@ -12,6 +12,7 @@ export default class Cuboid3DInstance extends Instance3D {
     this.mesh = mesh;
     this.material = mesh.material;
     this.geometry = mesh.geometry;
+    this.type = 'cuboid_3d'
   }
 
   public draw_on_scene(){
