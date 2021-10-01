@@ -27,11 +27,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public reference_width: number = undefined;
   public reference_height: number = undefined;
   public mouse_down_delta_event: any = undefined;
+  public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
   private instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
-  public label_settings: any = undefined 
+  public label_settings: any = undefined
 
 
   public get_instance_data(): object {
@@ -45,6 +46,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
               on_instance_selected = undefined,
               on_instance_deselected = undefined,
               mouse_down_delta_event = undefined,
+              mouse_down_position = undefined,
               label_settings = undefined) {
 
     super();
@@ -54,6 +56,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.on_instance_selected = on_instance_selected;
     this.on_instance_deselected = on_instance_deselected;
     this.mouse_down_delta_event = mouse_down_delta_event;
+    this.mouse_down_position = mouse_down_position;
     this.instance_context = instance_context;
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
@@ -169,24 +172,35 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
 
-    console.log('ANGLEEE', this.angle, degrees)
     //console.log(this.angle)
   }
 
   private move_single_node(node) {
     const x_move = this.mouse_down_delta_event.x;
     const y_move = this.mouse_down_delta_event.y;
-    node.x += x_move;
-    node.y += y_move;
-    node.x = parseInt(node.x)
-    node.y = parseInt(node.y)
+    console.log('initial' ,node.x, node.y)
+    console.log('get_scaled_x' ,this.get_scaled_x(node), this.get_scaled_y(node))
+    console.log('x_move, y_move', x_move, y_move)
+    let old_x = node.x
+    let old_y = node.y;
+    let new_x = old_x + x_move;
+    let new_y = old_y + y_move;
+    let new_point = this.get_rotated_point({x: new_x, y:new_y}, -this.angle)
+    node.x = parseInt(new_point.x)
+    node.y = parseInt(new_point.y)
+    console.log('final', node.x, node.y)
     return node
   }
 
   private drag_instance(event): void{
+    let i = 0;
+    this.calculate_min_max_points();
     for(let node of this.nodes){
-      node = this.move_single_node(node)
+      console.log('-----------------', i)
+      this.move_single_node(node)
+      i += 1
     }
+    this.calculate_min_max_points();
   }
   public stop_moving(){
     this.is_moving = false;
@@ -197,7 +211,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.do_rotation_movement()
       return true
     }
-    if (this.is_moving) {
+    else if (this.is_moving) {
       this.calculate_min_max_points()
       this.move_node(event)
       return true;
@@ -241,12 +255,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_scaled_x(point){
-    //console.log(this.scale_width, this.reference_width, this.translate_x)
-    let x = point.x
-    //let degrees = 90;
-    //let angle =  degrees * (Math.PI/180)
+
     // Origin is center of shape
-    x = this.get_rotated_point(point).x
+    let x = this.get_rotated_point(point).x
 
     if(this.scale_width == undefined){return x }
     if(this.reference_width == undefined){return x}
@@ -427,7 +438,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       let x = node.x
       let y = node.y
-
+      console.log('nodex,u', node.x, node.y)
       if(node.left_or_right == 'left') {
         let apples = this.draw_icon(ctx, x, y, 'alert')
       }
@@ -439,6 +450,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       y = this.get_scaled_y(node)
       //console.log(this)
 
+      console.log('scaleddd,u', x, y)
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
       i += 1
     }

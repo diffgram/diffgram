@@ -916,6 +916,7 @@
         mouse_computed(newval, oldval){
           // We don't want to create a new object here since the reference is used on all instance types.
           // If we create a new object we'll lose the reference on our class InstanceTypes
+
           this.mouse_down_delta_event.x = parseInt(newval.delta_x - oldval.delta_x)
           this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
         },
@@ -6660,7 +6661,7 @@
             }
           }
         },
-        
+
         may_snap_to_instance: function (event) {
           if (this.shift_key == true && event.key === "F") {
             this.snap_to_instance(this.selected_instance)
@@ -6827,6 +6828,7 @@
               this.instance_selected,
               this.instance_deselected,
               this.mouse_down_delta_event,
+              this.mouse_down_position,
               this.label_settings
             );
             initialized_instance.populate_from_instance_obj(instance);
