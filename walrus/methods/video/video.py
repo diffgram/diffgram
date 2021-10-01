@@ -21,7 +21,6 @@ from shared.database.input import Input
 from methods.input import process_media
 from shared.data_tools_core import Data_tools
 
-
 # Design doc
 
 class FrameCompletionControl:
@@ -107,7 +106,9 @@ class New_video():
         Returns
             None
         """
+        process_media.check_and_wait_for_memory(memory_limit_float=85.0)
 
+        logger.info('Reading video data for {} - {}'.format(input.id, video_file_name))
         try:
 
             clip = moviepy_editor.VideoFileClip(video_file_name)
@@ -145,7 +146,7 @@ class New_video():
 
         # Always using original. FPS conversion is now deprecated
         fps = original_fps
-
+        logger.info('Setting FPS for {} - InputID: {}'.format(input.id, video_file_name))
         clip = clip.set_fps(fps)
         # https://zulko.github.io/moviepy/ref/VideoClip/VideoClip.html#moviepy.video.VideoClip.VideoClip.set_fps
         # Returns a copy of the clip with a new default fps for functions like write_videofile, iterframe, etc.
@@ -160,20 +161,28 @@ class New_video():
         # temp higher limit for testing stuff
         # enough for a 120fps 5 minutes, or 60 fps 10 minutes
         frame_count_limit = 36000
-
+        logger.info('Frame Count Is: {} - InputID: {}'.format(length, frame_count_limit))
         if length > frame_count_limit:
             input.status = "failed"
             input.status_text = "Frame count of " + str(length) + \
                                 " exceeded limit of " + str(frame_count_limit) + " (per video)" + \
                                 " Lower FPS conversion in settings, split into seperate files, or upgrade account."
+            logger.error('Video upload exceed frame count limit of {}'.format(frame_count_limit))
             return None
 
         max_size = settings.DEFAULT_MAX_SIZE
 
+        logger.info('Resizing Video... - InputID: {}'.format(input.id))
         if clip.w > max_size or clip.h > max_size:
             clip = resize_video(clip)
 
         video_file_name = os.path.splitext(video_file_name)[0] + "_re_saved.mp4"
+
+        logger.info('Writing video file... - InputID: {}'.format(input.id))
+        num_cores = os.cpu_count()
+        logger.info('Num Core to write video: {}'.format(num_cores))
+
+        process_media.check_and_wait_for_memory(memory_limit_float=75.0)
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
@@ -199,7 +208,7 @@ class New_video():
 
                 clip.write_videofile(video_file_name,
                                      audio = False,
-                                     threads = 4,
+                                     threads = int(num_cores / 2),
                                      logger = None
                                      )
             except Exception as exception:
@@ -211,7 +220,7 @@ class New_video():
         else:
             clip.write_videofile(video_file_name,
                                  audio = False,
-                                 threads = 4,
+                                 threads = int(num_cores / 2),
                                  logger = None
                                  )
         if not directory_id:
@@ -231,7 +240,7 @@ class New_video():
         afterwards from file can be challenging becasue as the system does
         various modifications the parent gets further and further removed.
         """
-
+        logger.info('Creating Video Objects... - InputID: {}'.format(input.id))
         parent_video_split_duration = None
         try:
             parent_input = input.parent_input(self.session)
@@ -269,6 +278,7 @@ class New_video():
         video.root_blob_path_to_frames = settings.PROJECT_IMAGES_BASE_DIR + \
                                          str(self.project.id) + "/" + str(video.id) + "/frames/"
 
+        logger.info('Re uploading Video... - InputID: {}'.format(input.id))
         self.upload_video_file(video_file_name, ".mp4", video)
 
         input.status = "finished_writing_video_file"
@@ -281,6 +291,7 @@ class New_video():
         initial_global_frame = 0
         if input.type == 'from_video_split':
             initial_global_frame = video.fps * input.offset_in_seconds
+
         for index, frame in enumerate(clip.iter_frames()):
             global_frame_number = frame
 
@@ -312,6 +323,7 @@ class New_video():
             # Because at the moment this loop can be fairly slow
 
             if index % 10 == 0:
+                process_media.check_and_wait_for_memory(memory_limit_float=90.0)
                 # Where 10 is adding this every 10 frames
                 # to be completed by next phase
                 # at most this adds 1 when compelte so multiple by 30 to represent
@@ -323,6 +335,7 @@ class New_video():
 
         input.time_pushed_all_frames_to_queue = datetime.datetime.utcnow()
 
+        logger.info('Finished Video loading. - InputID: {}'.format(input.id))
         return input.file
 
     def try_to_commit(self):
