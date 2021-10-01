@@ -10,8 +10,8 @@ export class CanvasMouseTools {
 
   public zoom_in(canvas_transform): number {
     canvas_transform.canvas_scale_local += 0.1;
-    if (canvas_transform.canvas_scale_local >= 9) {
-      canvas_transform.canvas_scale_local = 9
+    if (canvas_transform.canvas_scale_local >= 30) {
+      canvas_transform.canvas_scale_local = 30
     }
     return canvas_transform.canvas_scale_local
   }
@@ -67,8 +67,8 @@ export class CanvasMouseTools {
     }
 
     // TODO abstract this
-    if (canvas_scale_local >= 9) {
-      canvas_scale_local = 9
+    if (canvas_scale_local >= 30) {
+      canvas_scale_local = 30
     }
     return canvas_scale_local
   }

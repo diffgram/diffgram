@@ -95,6 +95,7 @@ def process_media_unit_of_work(item):
             except Exception as e:
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
+                logger.error(traceback.format_exc())
         else:
             process_media.main_entry()
 
@@ -111,12 +112,35 @@ def start_queue_check_loop():
     while True:
         time.sleep(add_deferred_items_time)
 
+        check_and_wait_for_memory(memory_limit_float=75.0)
+
         logger.info("[Media Queue Heartbeat]")
         try:
             add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time)
         except Exception as exception:
             logger.info("[Media Queue Failed] {}".format(str(exception)))
             add_deferred_items_time = 30  # reset
+
+
+def check_and_wait_for_memory(memory_limit_float=75.0, check_interval=5):
+    while True:
+        if is_memory_available(memory_limit_float=memory_limit_float):
+            return True
+        else:
+            logger.warn("No memory available, waiting. There is no harm if processing large amount please wait.")
+            time.sleep(check_interval)
+
+
+def is_memory_available(memory_limit_float=75.0):
+
+    memory_percent = get_memory_percent()
+    if memory_percent is None: return True      # Don't stop if this check fails
+
+    if memory_percent > memory_limit_float:
+        logger.warn("[Memory] {} % used is > {} limit.".format(memory_percent, memory_limit_float))
+        return False
+
+    return True
 
 
 def check_if_add_items_to_queue(add_deferred_items_time):
@@ -179,9 +203,25 @@ def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
 
     if item.media_type and item.media_type in ["frame", "image", "text"]:
+
+        wait_until_queue_pressure_is_lower(
+            queue = FRAME_QUEUE, 
+            limit = frame_threads * 2, 
+            check_interval=1)
         FRAME_QUEUE.put(item)
+
     else:
         VIDEO_QUEUE.put(item)
+
+
+def wait_until_queue_pressure_is_lower(queue, limit, check_interval=1):
+
+    while True:
+        if queue.qsize() < limit:
+            return True
+        else:
+            logger.warn("Queue Presure Too High: {} size is above limit of {} ".format(str(queue.qsize()), limit))
+            time.sleep(check_interval)
 
 
 def process_media_queue_worker(queue, queue_type):
@@ -394,6 +434,8 @@ class Process_Media():
 
         start_time = time.time()
 
+        check_and_wait_for_memory(memory_limit_float=75.0)
+
         ### Warm up
         self.get_input_with_retry()
 
@@ -573,8 +615,9 @@ class Process_Media():
         existing_file_list = WorkingDirFileLink.file_list(
             session = self.session,
             working_dir_id = self.input.directory_id,
-            original_filename = self.input.original_filename
-        )
+            original_filename = self.input.original_filename,
+            original_filename_match_type = None
+            )
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
@@ -1119,14 +1162,23 @@ class Process_Media():
          of frame processing time (which is 25->40% of overall time.)
 
         """
+        print('Processing Frame: {}'.format(self.frame_number))
+        try:
+            result = self.read_raw_file()
+            if result is False: return False
 
-        result = self.read_raw_file()
-        if result is False: return False
+            self.process_image_for_frame()
 
-        self.process_image_for_frame()
+            if self.frame_number == 0:
+                self.process_thumbnail_image_for_frame()
+        except Exception as e:
+            log = regular_log.default()
+            log['error'] = traceback.format_exc()
 
-        if self.frame_number == 0:
-            self.process_thumbnail_image_for_frame()
+            self.proprogate_frame_instance_update_errors_to_parent(log)
+
+            logger.error('Error Processing frame {}, input {} '.format(self.frame_number, self.input.id))
+            logger.error(traceback.format_exc())
 
     def process_image_for_frame(self):
 
@@ -1867,7 +1919,12 @@ class Process_Media():
             logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)))
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
-            self.input.url, input_original_filename = self.input.original_filename)
+                self.input.url, input_original_filename = self.input.original_filename)
+        if self.input.extension is None:
+            self.input.status = "failed"
+            self.input.status_text = "Invalid extension, check filename"
+            self.log['error']['status_text'] = self.input.status_text
+            return
         # Add extension to name: ffmpeg requires the filename with the extension.
         # check the split() function in video_preprocess.py
         if self.input.original_filename and not self.input.original_filename.endswith(self.input.extension):
@@ -2165,3 +2222,16 @@ def clean_up_temp_dir(path):
     except OSError as exc:
         logger.error("shutil error {}".format(str(exc)))
         pass
+
+
+def get_memory_percent():
+    import psutil
+
+    memory_percent = None
+    try:
+        psutil_memory_result = psutil.virtual_memory()
+        memory_percent = psutil_memory_result[2]
+    except Exception as e:
+        logger.warn(traceback.format_exc())       
+
+    return memory_percent

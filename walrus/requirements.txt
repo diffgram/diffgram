@@ -30,4 +30,5 @@ labelbox==2.4.9
 boto3==1.16.63
 alembic==1.4.2
 azure-storage-blob==12.8.0
+psutil==5.6.5
 git+https://github.com/DanielPollithy/pypcd.git
