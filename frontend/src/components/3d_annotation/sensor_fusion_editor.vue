@@ -7,7 +7,7 @@
 
           <toolbar_sensor_fusion :height="50"
                     class="pa-0"
-                   :save_loading="false"
+                   :save_loading="this.video_mode ? this.save_loading_frame[this.current_frame] : this.save_loading_scene"
                    :annotations_loading="false"
                    :loading="false"
                    :view_only_mode="false"
@@ -54,7 +54,7 @@
 
       <div class="sidebar-left-container" :style="{width: `${editor_3d_settings.left_nav_width}px`, overflow: 'hidden', paddingLeft: '12px'}">
         <instance_detail_list_view  ref="instance_detail_list"
-                                    v-if="!error && file && current_label_file && label_file_colour_map"
+                                    v-if="file && current_label_file && label_file_colour_map"
                                     :instance_list="instance_list"
                                     :model_run_list="undefined"
                                     :label_file_colour_map="label_file_colour_map"
@@ -191,7 +191,11 @@
 
 <script>
   import Vue from "vue";
-  import {has_duplicate_instances} from '../annotation/utils/AnnotationUtills';
+  import {
+    has_duplicate_instances,
+    add_ids_to_new_instances_and_delete_old,
+    check_if_pending_created_instance
+  } from '../annotation/utils/AnnotationUtills';
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
   import instance_detail_list_view from "../annotation/instance_detail_list_view";
   import context_menu_3d_editor from "./context_menu_3d_editor";
@@ -225,6 +229,9 @@
       },
       'label_list':{
         default: null
+      },
+      'video_mode':{
+        default: false,
       }
 
     },
@@ -358,6 +365,7 @@
           return this.save_loading_scene;
         }
       },
+
       save: async function(and_complete=false, frame_number_param = undefined, instance_list_param = undefined){
         this.error = {}
         this.warning = {}
@@ -445,18 +453,20 @@
           })
 
           this.save_count += 1;
-          this.add_ids_to_new_instances_and_delete_old(response, video_data);
+          add_ids_to_new_instances_and_delete_old(response, video_data, this.instance_list, this.$props.video_mode)
 
-
-          this.check_if_pending_created_instance();
+          this.has_changed = check_if_pending_created_instance(this.instance_list);
           this.$emit('save_response_callback', true)
 
-          if(this.instance_buffer_metadata[this.current_frame]){
-            this.instance_buffer_metadata[this.current_frame].pending_save = false;
+          if(this.$props.video_mode){
+            if(this.instance_buffer_metadata[this.current_frame]){
+              this.instance_buffer_metadata[this.current_frame].pending_save = false;
+            }
+            else{
+              this.instance_buffer_metadata[this.current_frame] = {pending_save: false};
+            }
           }
-          else{
-            this.instance_buffer_metadata[this.current_frame] = {pending_save: false};
-          }
+
 
           if (response.data.sequence) {
             // Because: new color thing based on sequence id but seq id not assigned till response
@@ -517,7 +527,7 @@
 
 
           }
-          this.check_if_pending_created_instance();
+          this.has_changed = check_if_pending_created_instance(this.instance_list);
           return true
         } catch (error) {
           console.error(error);

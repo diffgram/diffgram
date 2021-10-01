@@ -20,9 +20,15 @@ def upgrade():
     op.add_column('instance', sa.Column('rotation_euler_angles', MutableDict.as_mutable(JSONEncodedDict)))
     op.add_column('instance', sa.Column('position_3d', MutableDict.as_mutable(JSONEncodedDict)))
     op.add_column('instance', sa.Column('center_3d', MutableDict.as_mutable(JSONEncodedDict)))
+    op.add_column('instance', sa.Column('max_point_3d', MutableDict.as_mutable(JSONEncodedDict)))
+    op.add_column('instance', sa.Column('min_point_3d', MutableDict.as_mutable(JSONEncodedDict)))
+    op.add_column('instance', sa.Column('dimensions_3d', MutableDict.as_mutable(JSONEncodedDict)))
 
 
 def downgrade():
     op.drop_column('instance', 'rotation_euler_angles')
     op.drop_column('instance', 'position_3d')
     op.drop_column('instance', 'center_3d')
+    op.drop_column('instance', 'max_point_3d')
+    op.drop_column('instance', 'min_point_3d')
+    op.drop_column('instance', 'dimensions_3d')

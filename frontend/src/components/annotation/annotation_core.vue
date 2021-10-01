@@ -796,7 +796,11 @@
   import view_edit_issue_panel from '../discussions/view_edit_issue_panel.vue';
   import { ellipse } from '../vue_canvas/ellipse.js';
   import {CommandManagerAnnotationCore} from './annotation_core_command_manager.js'
-  import {has_duplicate_instances} from './utils/AnnotationUtills'
+  import {
+    has_duplicate_instances,
+    add_ids_to_new_instances_and_delete_old,
+    check_if_pending_created_instance
+  } from './utils/AnnotationUtills'
   import {CreateInstanceCommand} from './commands/create_instance_command.js'
   import {UpdateInstanceCommand} from './commands/update_instance_command.js'
   import {AnnotationCoreInteractionGenerator} from '../vue_canvas/interactions/AnnotationCoreInteractionGenerator'
@@ -2045,15 +2049,7 @@
 
 
         },
-        check_if_pending_created_instance: function(){
-          // Sets the pending changes flag if there are any instances that have not been saved yet.
-          for(let i = 0; i < this.instance_list.length; i++){
-            let instance = this.instance_list[i];
-            if(!instance.id){
-              this.has_changed = true;
-            }
-          }
-        },
+
         instance_template_has_keypoints_type: function(instance_template){
           return instance_template.instance_list.filter(instance => instance.type === 'keypoints').length > 0;
         },
@@ -6933,68 +6929,6 @@
           this.update_draw_mode_on_instances(draw_mode);
           this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
         },
-
-        add_ids_to_new_instances_and_delete_old: function(response, request_video_data){
-          /*
-      * This function is used in the context of AnnotationUpdate.
-      * The new created/deleted instances are merged without loss of the current
-      * frontend data (like selected context for example).
-      * This is done by destructuring the new instance (the one received from backend)
-      * and then adding the original instance keys on top of the new one.
-      * */
-          // Add instance ID's to the newly created instances
-
-          const new_added_instances = response.data.added_instances;
-          const new_deleted_instances = response.data.deleted_instances;
-          let instance_list = this.instance_list;
-          if(this.video_mode){
-            instance_list = this.instance_buffer_dict[request_video_data.current_frame]
-          }
-          for(let i = 0;  i < instance_list.length; i++){
-            const current_instance = instance_list[i]
-            if(!current_instance.id){
-              // Case of a new instance added
-              const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
-              if(new_instance.length > 0){
-                // Now update the instance with the new ID's provided by the API
-                current_instance.id = new_instance[0].id;
-                current_instance.root_id =  new_instance[0].root_id;
-                current_instance.version =  new_instance[0].version;
-                current_instance.sequence_id = new_instance[0].sequence_id;
-                current_instance.number = new_instance[0].number;
-                instance_list.splice(i, 1, current_instance)
-
-              }
-            }
-            else{
-              // Case of an instance updated.
-              const new_instance = new_added_instances.filter(x => x.previous_id === current_instance.id)
-              if(new_instance.length > 0){
-                // Now update the instance with the new ID's provided by the API
-                current_instance.id = new_instance[0].id;
-                current_instance.root_id =  new_instance[0].root_id;
-                current_instance.previous_id =  new_instance[0].previous_id;
-                current_instance.version =  new_instance[0].version;
-                current_instance.sequence_id = new_instance[0].sequence_id;
-                current_instance.number = new_instance[0].number;
-                instance_list.splice(i, 1, current_instance)
-
-              }
-            }
-
-          }
-
-
-          const current_frontend_instances = instance_list.map(id => id);
-
-        },
-        hash_string: function(str){
-          return sha256(str)
-        },
-        has_duplicate_instances: function(instance_list){
-          return has_duplicate_instances(instance_list)
-
-        },
         refresh_sequence_frame_list: function(instance_list, frame_number){
 
           for(const instance of instance_list){
@@ -7124,10 +7058,14 @@
            */
 
             this.save_count += 1;
-            this.add_ids_to_new_instances_and_delete_old(response, video_data);
+            add_ids_to_new_instances_and_delete_old(response,
+              video_data,
+              this.instance_list,
+              this.$props.video_mode
+            );
 
 
-            this.check_if_pending_created_instance();
+            this.has_changed = check_if_pending_created_instance(this.instance_list);
             this.$emit('save_response_callback', true)
 
             if(this.instance_buffer_metadata[this.current_frame]){
@@ -7196,7 +7134,7 @@
 
 
             }
-            this.check_if_pending_created_instance();
+            this.has_changed = check_if_pending_created_instance(this.instance_list);
             return true
           } catch (error) {
             console.error(error);

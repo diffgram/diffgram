@@ -141,10 +141,11 @@ export abstract class Instance3D extends Instance {
   public geometry: THREE.BoxGeometry;
   public material: THREE.MeshBasicMaterial;
   public depth: number;
-  public center_3d: { center: { x: number, y: number, z: number } };
+  public center_3d: { x: number, y: number, z: number };
   // Rotation is in Euler Angles
-  public rotation_euler_angles: { rotation: { x: number, y: number, z: number } };
-  public position_3d: { position: { x: number, y: number, z: number } };
+  public rotation_euler_angles: { x: number, y: number, z: number };
+  public position_3d: { x: number, y: number, z: number };
+  public dimensions_3d: { width: number, height: number, depth: number };
 
   abstract draw_on_scene(): void;
 
@@ -156,29 +157,26 @@ export abstract class Instance3D extends Instance {
     this.depth = box.max.z - box.min.z;
     let center = getCenterPoint(this.mesh);
     this.center_3d = {
-      center: {
-        x: center.x,
-        y: center.y,
-        z: center.z
-      }
+      x: center.x,
+      y: center.y,
+      z: center.z
     }
     this.rotation_euler_angles = {
-      rotation:{
-        x: this.mesh.rotation.x,
-        y: this.mesh.rotation.y,
-        z: this.mesh.rotation.z,
-      }
+      x: this.mesh.rotation.x,
+      y: this.mesh.rotation.y,
+      z: this.mesh.rotation.z,
     }
     this.position_3d = {
-      position:{
-        x: this.mesh.position.x,
-        y: this.mesh.position.y,
-        z: this.mesh.position.z,
-      }
+      x: this.mesh.position.x,
+      y: this.mesh.position.y,
+      z: this.mesh.position.z,
     }
-    console.log('width', this.width)
-    console.log('height', this.height)
-    console.log('depth', this.depth)
+
+    this.dimensions_3d = {
+      width: this.width,
+      height: this.height,
+      depth: this.depth,
+    }
 
   }
 
@@ -191,9 +189,10 @@ export abstract class Instance3D extends Instance {
     let result = super.get_instance_data();
     return {
       ...result,
-      center_z: this.center_z,
       rotation_euler_angles: this.rotation_euler_angles,
       position_3d: this.position_3d,
+      dimensions_3d: this.dimensions_3d,
+      center_3d: this.center_3d,
 
     }
 

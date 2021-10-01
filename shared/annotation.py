@@ -67,7 +67,7 @@ class Annotation_Update():
     directory = None
     external_map: ExternalMap = None
     external_map_action: str = None
-    new_instance_dict_hash: dict = field(default_factory = lambda: {}) # Keep a hash of all
+    new_instance_dict_hash: dict = field(default_factory = lambda: {})  # Keep a hash of all
     do_create_new_file = False
     new_file = None
     frame_number = None
@@ -272,6 +272,11 @@ class Annotation_Update():
             'kind': dict
         }
         },
+        {'dimensions_3d': {
+            'default': None,
+            'kind': dict
+        }
+        },
         {'width': {
             'default': None,
             'kind': int
@@ -409,12 +414,14 @@ class Annotation_Update():
         if len(ids_not_included) > 0:
             logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
             self.log['warning'] = {}
-            self.log['warning']['new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
+            self.log['warning'][
+                'new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
                 ids_not_included
             )
-            self.log['warning']['information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
-                                               'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
-                                               'Please contact use if this persists.'
+            self.log['warning'][
+                'information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+                                 'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
+                                 'Please contact use if this persists.'
             self.log['warning']['missing_ids'] = ids_not_included
             self.log['warning']['instance_list_new'] = self.instance_list_new
             self.log['warning']['instance_list_existing_ids'] = [x.id for x in self.instance_list_existing]
@@ -427,7 +434,7 @@ class Annotation_Update():
                 task_id = self.task.id if self.task else None,
                 kind = "missing_ids_in_new_instance_list_error",
                 member_id = self.member.id if self.member else None,
-                error_log=self.log,
+                error_log = self.log,
                 success = False)
             # Do not return an error state for now, we are recording the event.
             # return False
@@ -441,7 +448,9 @@ class Annotation_Update():
         return False
 
     def order_new_instances_by_date(self):
-        self.instance_list_new.sort(key=lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')), reverse=True)
+        self.instance_list_new.sort(
+            key = lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')),
+            reverse = True)
         return self.instance_list_new
 
     def annotation_update_main(self):
@@ -990,6 +999,7 @@ class Annotation_Update():
                 rotation_euler_angles = input['rotation_euler_angles'],
                 position_3d = input['position_3d'],
                 center_3d = input['center_3d'],
+                dimensions_3d = input['dimensions_3d'],
                 angle = input['angle'],
                 width = input['width'],
                 height = input['height'],
@@ -1049,10 +1059,11 @@ class Annotation_Update():
                 return 0, 0
             return min([p['x'] for p in instance.nodes['nodes']]), min([p['y'] for p in instance.nodes['nodes']])
         elif instance.type == 'cuboid_3d':
-            print('center_x', instance.center_3d['center'])
-            print('width', instance.width)
-            print('height', instance.height)
-            return instance.center_3d['center']['x'] - (instance.width / 2), instance.center_3d['center']['y'] - (instance.height / 2)
+            print('instance', instance.dimensions_3d)
+            print('instance', instance.center_3d)
+            return instance.center_3d['x'] - (instance.dimensions_3d['width'] / 2), \
+                   instance.center_3d['y'] - (instance.dimensions_3d['height'] / 2), \
+                   instance.center_3d['z'] - (instance.dimensions_3d['depth'] / 2)
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
@@ -1098,7 +1109,9 @@ class Annotation_Update():
                 return 0, 0
             return max([p['x'] for p in instance.nodes['nodes']]), max([p['y'] for p in instance.nodes['nodes']])
         elif instance.type == 'cuboid_3d':
-            return instance.center_x + (instance.width / 2), instance.center_y + (instance.height / 2)
+            return instance.center_3d['x'] + (instance.dimensions_3d['width'] / 2), \
+                   instance.center_3d['y'] + (instance.dimensions_3d['height'] / 2), \
+                   instance.center_3d['z'] + (instance.dimensions_3d['depth'] / 2)
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
@@ -1138,6 +1151,7 @@ class Annotation_Update():
                         rotation_euler_angles = None,
                         position_3d = None,
                         center_3d = None,
+                        dimensions_3d = None,
                         angle = None,
                         width = None,
                         height = None,
@@ -1232,6 +1246,7 @@ class Annotation_Update():
             'center_3d': center_3d,
             'rotation_euler_angles': rotation_euler_angles,
             'position_3d': position_3d,
+            'dimensions_3d': dimensions_3d,
             'angle': angle,
             'width': width,
             'height': height,
@@ -1257,12 +1272,30 @@ class Annotation_Update():
             return False
 
         # After instance limits to make sure points are available.
-        deducted_x_min, deducted_y_min = self.get_min_coordinates_instance(self.instance)
-        deducted_x_max, deducted_y_max = self.get_max_coordinates_instance(self.instance)
-        self.instance.x_min = int(deducted_x_min)
-        self.instance.y_min = int(deducted_y_min)
-        self.instance.x_max = int(deducted_x_max)
-        self.instance.y_max = int(deducted_y_max)
+        min_coords = self.get_min_coordinates_instance(self.instance)
+        max_coords = self.get_max_coordinates_instance(self.instance)
+
+        if self.instance.type in ['cuboid_3d']:
+            self.instance.min_point_3d = {
+                'min': {
+                    'x': min_coords[0],
+                    'y': min_coords[1],
+                    'z': min_coords[2]
+                }
+            }
+            self.instance.max_point_3d = {
+                'max': {
+                    'x': max_coords[0],
+                    'y': max_coords[1],
+                    'z': max_coords[2]
+                }
+            }
+        else:
+            self.instance.x_min = int(min_coords[0])
+            self.instance.y_min = int(min_coords[1])
+
+            self.instance.x_max = int(max_coords[0])
+            self.instance.y_max = int(max_coords[1])
 
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
@@ -1328,7 +1361,6 @@ class Annotation_Update():
             existing_serialized_instance = self.instance_list_kept_serialized[i]
             if existing_serialized_instance.get('id') == instance.id:
                 existing_serialized_instance['sequence_id'] = instance.sequence_id
-
 
     def update_cache_single_instance_in_list_context(self):
         """
@@ -1508,11 +1540,10 @@ class Annotation_Update():
                                              str(self.instance.y_min) + " > y_max" + str(self.instance.y_max)
                 return False
 
-
     def detect_special_duplicate_data_cases_from_existing_ids(self, old_id):
 
         if self.instance.soft_delete is True or not self.new_instance_dict_hash.get(self.instance.hash):
-            self.append_new_instance_list_hash(self.instance)   # tracking for special cases
+            self.append_new_instance_list_hash(self.instance)  # tracking for special cases
             return True
         else:
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
@@ -1597,7 +1628,6 @@ class Annotation_Update():
 
             # In this case instance is NOT a new instance, because hash already exists.
             return is_new_instance
-
 
         # TODO maybe look at pulling this into it's own function
 
@@ -1780,7 +1810,7 @@ class Annotation_Update():
                 {"x": point[x],
                  "y": point[y],
                  "figure_id": point.get('figure_id')
-                }
+                 }
             )
 
             if point[x] <= self.instance.x_min: self.instance.x_min = point[x]
