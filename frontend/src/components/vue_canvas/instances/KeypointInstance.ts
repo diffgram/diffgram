@@ -169,7 +169,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
 
-    console.log('ANGLEEE', this.angle, degrees)
+    //console.log('ANGLEEE', this.angle, degrees)
     //console.log(this.angle)
   }
 
@@ -428,18 +428,13 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let x = node.x
       let y = node.y
 
-      if(node.left_or_right == 'left') {
-        let apples = this.draw_icon(ctx, x, y, 'alert')
-      }
-      //if(node.left_or_right=='right') {
-      //  this.draw_icon(ctx, x, y, 'alert')
-      //}
-
       x = this.get_scaled_x(node)
-      y = this.get_scaled_y(node)
-      //console.log(this)
+      y = this.get_scaled_y(node)     
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
+
+      this.draw_left_right_arrows(ctx, node, x, y)
+
       i += 1
     }
     if (this.num_hovered_paths === 0) {
@@ -457,6 +452,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     if(this.instance_rotate_control_mouse_hover){
       this.ctx.canvas.style.cursor = 'all-scroll'
+    }
+  }
+
+  private draw_left_right_arrows(ctx, node, x, y){
+    if(node.left_or_right == 'left') {
+      this.draw_icon(ctx, x - 5, y, 'arrow_left', 24, 'rgb(255,0,0)')
+    }
+    if(node.left_or_right=='right') {
+      this.draw_icon(ctx, x + 5, y, 'arrow_right', 24, 'rgb(0,255,0)')
     }
   }
 
@@ -506,22 +510,45 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private draw_icon(ctx, x, y, icon){
+  private draw_icon(
+        ctx, x, y, icon='arrow_left',
+        font_size=24, fillStyle='rgb(255,175,0)'){
+    // CAUTION if icon is invalid it won't render anything
+    // use `arrow_left` as an example that works
     if(!ctx.material_icons_loaded){
       return
     }
     const old_color = ctx.fillStyle;
     const old_font = ctx.font
-    ctx.beginPath();
-    ctx.font = '24px material-icons';
-    ctx.fillStyle = 'rgb(255,175,0)';
+    const old_textAlign = ctx.textAlign
+    const old_baseLine = ctx.textBaseline
+
+    ctx.font = font_size + 'px material-icons'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
     const text_icon = icon;
-    const text = ctx.fillText(text_icon,
-      x - 20,
-      y + 20);
+    //outline
+    ctx.font = font_size + 'px material-icons'
+    ctx.fillStyle = 'rgb(255,255,255)'
+    const text = ctx.fillText(
+      text_icon,
+      x,
+      y);
+
+    // inset main
+    let border_width = 10
+    ctx.fillStyle = fillStyle
+    ctx.font = font_size - border_width + 'px material-icons'
+    ctx.fillText(
+      text_icon,
+      x,
+      y);
+
     ctx.fillStyle = old_color;
     ctx.font = old_font;
-    const measures = ctx.measureText(text_icon);
+    ctx.textAlign = old_textAlign
+    ctx.textBaseline = old_baseLine
+    //const measures = ctx.measureText(text_icon);
     // Create an invisible box for click events.
     //const region = {x: x - 24 , y: y - 24 , w: measures.width, h: 100};
     //this.is_mouse_in_path_issue(ctx, region, i, issue)
