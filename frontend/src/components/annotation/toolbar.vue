@@ -86,7 +86,9 @@
     <!-- Defer, In Task Context Only -->
     <div>
       <tooltip_button
-        v-if="task && task.id"
+        v-if="task
+              && task.id
+              && task.status == 'available'"
         @click="$emit('task_update_toggle_deferred')"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
