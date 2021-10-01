@@ -654,12 +654,25 @@
                           v-model="label_settings_local.enable_snap_to_instance">
               </v-checkbox>
 
-              <v-slider label="Text Font Size"
-                        min=10
-                        max=30
-                        thumb-label
-                        ticks
-                        v-model="label_settings_local.font_size">
+              <v-slider
+                  label="Text Font Size"
+                  min=10
+                  max=30
+                  thumb-label
+                  ticks
+                  v-model="label_settings_local.font_size"
+                  prepend-icon="mdi-format-size">
+              </v-slider>
+
+              <v-slider
+                  label="Text Background Opacity"
+                  v-model="label_settings_local.font_background_opacity"
+                  prepend-icon="brightness_4"
+                  thumb-label
+                  ticks
+                  min=0.0
+                  step=.05
+                  max=1.0>
               </v-slider>
 
               <v-slider label="Target Reticle Size"
@@ -877,8 +890,11 @@ export default Vue.extend( {
     }
   },
   watch: {
-    label_settings_local(event) {
-      this.$emit('label_settings_change', event)
+    'label_settings_local': {
+        deep: true,
+        handler: function (event) {
+          this.$emit('label_settings_change', event)
+        }
     },
     label_settings(event){
       this.label_settings_local = event
