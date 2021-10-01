@@ -139,9 +139,9 @@ class Instance(Base):
     center_x = Column(Integer)
     center_y = Column(Integer)
     # For Cuboids 3D
-    center_z = Column(Integer)
     rotation_euler_angles = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'rotation': []})
     position_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'position': []})
+    center_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'center': []})
 
     angle = Column(Float)  # For ellipse rotation, and probably other instance in the future
 

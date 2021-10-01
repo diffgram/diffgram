@@ -257,17 +257,17 @@ class Annotation_Update():
             'kind': int
         }
         },
-        {'center_z': {
-            'default': None,
-            'kind': int
-        }
-        },
         {'rotation_euler_angles': {
             'default': None,
             'kind': dict
         }
         },
         {'position_3d': {
+            'default': None,
+            'kind': dict
+        }
+        },
+        {'center_3d': {
             'default': None,
             'kind': dict
         }
@@ -987,9 +987,9 @@ class Annotation_Update():
                 root_id = input['root_id'],
                 center_x = input['center_x'],
                 center_y = input['center_y'],
-                center_z = input['center_z'],
                 rotation_euler_angles = input['rotation_euler_angles'],
                 position_3d = input['position_3d'],
+                center_3d = input['center_3d'],
                 angle = input['angle'],
                 width = input['width'],
                 height = input['height'],
@@ -1049,7 +1049,10 @@ class Annotation_Update():
                 return 0, 0
             return min([p['x'] for p in instance.nodes['nodes']]), min([p['y'] for p in instance.nodes['nodes']])
         elif instance.type == 'cuboid_3d':
-            return instance.center_x - (instance.width / 2), instance.center_y - (instance.height / 2)
+            print('center_x', instance.center_3d['center'])
+            print('width', instance.width)
+            print('height', instance.height)
+            return instance.center_3d['center']['x'] - (instance.width / 2), instance.center_3d['center']['y'] - (instance.height / 2)
         else:
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
@@ -1132,9 +1135,9 @@ class Annotation_Update():
                         root_id = None,
                         center_x = None,
                         center_y = None,
-                        center_z = None,
                         rotation_euler_angles = None,
                         position_3d = None,
+                        center_3d = None,
                         angle = None,
                         width = None,
                         height = None,
@@ -1226,7 +1229,7 @@ class Annotation_Update():
             'root_id': root_id,
             'center_x': center_x,
             'center_y': center_y,
-            'center_z': center_z,
+            'center_3d': center_3d,
             'rotation_euler_angles': rotation_euler_angles,
             'position_3d': position_3d,
             'angle': angle,

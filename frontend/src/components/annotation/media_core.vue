@@ -619,12 +619,14 @@
                     >
                     </thumbnail>
                     <v-container v-else-if="item.type === 'sensor_fusion'"
-                                 class="d-flex flex-column justify-center align-center pa-0"
-                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
+                                 :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
+                                 ['unsselected-box']: !selected.includes(item),
+                                 ['selected-box']: selected.includes(item)}"
+                                 style="width: 100px; height: 100px; " v-else>
                       <v-icon size="32" class="ma-0 pa-0">
                         mdi-video-3d-variant
                       </v-icon>
-                      <p class="ma-0 title-file">{{item.original_filename}}</p>
+                      <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
                     <v-container v-else  class="d-flex flex-column justify-center align-center"
                                  style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
@@ -1726,5 +1728,11 @@ import Vue from "vue";
     text-overflow: ellipsis;
     text-align: center;
     overflow: hidden
+  }
+  .selected-box{
+    border: 3px solid #2196f3;
+  }
+  .unsselected-box{
+    border: 1px solid #bdbdbd;
   }
 </style>

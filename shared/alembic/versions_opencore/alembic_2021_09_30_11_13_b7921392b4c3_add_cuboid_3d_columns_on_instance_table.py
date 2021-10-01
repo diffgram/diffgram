@@ -17,13 +17,12 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('instance', sa.Column('center_z', sa.Integer))
     op.add_column('instance', sa.Column('rotation_euler_angles', MutableDict.as_mutable(JSONEncodedDict)))
     op.add_column('instance', sa.Column('position_3d', MutableDict.as_mutable(JSONEncodedDict)))
-
+    op.add_column('instance', sa.Column('center_3d', MutableDict.as_mutable(JSONEncodedDict)))
 
 
 def downgrade():
-    op.drop_column('instance', 'center_z')
     op.drop_column('instance', 'rotation_euler_angles')
     op.drop_column('instance', 'position_3d')
+    op.drop_column('instance', 'center_3d')

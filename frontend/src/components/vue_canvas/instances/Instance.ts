@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import SceneController3D from "../../3d_annotation/SceneController3D";
+import {getCenterPoint} from "../../3d_annotation/utils_3d";
 
 export interface InstanceBehaviour {
   draw(ctx): void
 }
 
 
-export class Instance{
+export class Instance {
   public id: number = null;
   public creation_ref_id: string = null;
   public x_min: number = null;
@@ -45,7 +46,7 @@ export class Instance{
   public pause_object: false
 
 
-  public get_instance_data(): object{
+  public get_instance_data(): object {
     /*
     * Specific instance types should add/remove fields to this object if required.
     * */
@@ -83,79 +84,97 @@ export class Instance{
     }
   }
 
-  public select(){
+  public select() {
     this.selected = true
   }
 
-  public unselect(){
+  public unselect() {
     this.selected = false
   }
 
-  public populate_from_instance_obj(inst){
-    for(let key in inst){
+  public populate_from_instance_obj(inst) {
+    for (let key in inst) {
       this[key] = inst[key]
     }
   }
 
-  public instance_updated_callback(instance){
-    if(this.on_instance_updated){
+  public instance_updated_callback(instance) {
+    if (this.on_instance_updated) {
       this.on_instance_updated(instance);
     }
   }
 
-  public delete(){
+  public delete() {
     this.soft_delete = true;
   }
-  public instance_hovered_callback(instance){
-    if(this.on_instance_hovered){
+
+  public instance_hovered_callback(instance) {
+    if (this.on_instance_hovered) {
       this.on_instance_hovered(instance)
     }
   }
-  public instance_selected_callback(instance){
-    if(this.on_instance_selected){
+
+  public instance_selected_callback(instance) {
+    if (this.on_instance_selected) {
       this.on_instance_selected(instance);
     }
   }
-  public instance_deselected_callback(instance){
-    if(this.on_instance_deselected){
+
+  public instance_deselected_callback(instance) {
+    if (this.on_instance_deselected) {
       this.on_instance_deselected(instance);
     }
   }
-  public instance_unhovered_callback(instance){
-    if(this.on_instance_unhovered){
+
+  public instance_unhovered_callback(instance) {
+    if (this.on_instance_unhovered) {
       this.on_instance_unhovered(instance);
     }
   }
 
 }
 
-export abstract class Instance3D extends Instance{
+export abstract class Instance3D extends Instance {
   public helper_lines: THREE.Mesh;
   public mesh: THREE.Mesh;
   public scene_controller_3d: SceneController3D;
   public geometry: THREE.BoxGeometry;
   public material: THREE.MeshBasicMaterial;
   public depth: number;
-  public center_z: number;
+  public center_3d: { center: { x: number, y: number, z: number } };
   // Rotation is in Euler Angles
-  public rotation_euler_angles: {x: number, y: number, z: number};
-  public position_3d: {x: number, y: number, z: number};
+  public rotation_euler_angles: { rotation: { x: number, y: number, z: number } };
+  public position_3d: { position: { x: number, y: number, z: number } };
 
-  abstract draw_on_scene() : void;
+  abstract draw_on_scene(): void;
 
-  public update_spacial_data(){
-    this.width = this.mesh.geometry.min;
-    this.height = this.mesh.geometry.height;
-    this.depth = this.mesh.geometry.depth;
+  public update_spacial_data() {
+    var box = new THREE.Box3().setFromObject(this.mesh);
+    console.log(box.min, box.max);
+    this.width = box.max.x - box.min.x;
+    this.height = box.max.y - box.min.y;
+    this.depth = box.max.z - box.min.z;
+    let center = getCenterPoint(this.mesh);
+    this.center_3d = {
+      center: {
+        x: center.x,
+        y: center.y,
+        z: center.z
+      }
+    }
     this.rotation_euler_angles = {
-      x: this.mesh.rotation.x,
-      y: this.mesh.rotation.y,
-      z: this.mesh.rotation.z,
+      rotation:{
+        x: this.mesh.rotation.x,
+        y: this.mesh.rotation.y,
+        z: this.mesh.rotation.z,
+      }
     }
     this.position_3d = {
-      x: this.mesh.position.x,
-      y: this.mesh.position.y,
-      z: this.mesh.position.z,
+      position:{
+        x: this.mesh.position.x,
+        y: this.mesh.position.y,
+        z: this.mesh.position.z,
+      }
     }
     console.log('width', this.width)
     console.log('height', this.height)
@@ -163,11 +182,12 @@ export abstract class Instance3D extends Instance{
 
   }
 
-  public delete(){
+  public delete() {
     super.delete();
     this.mesh.visible = false;
   }
-  public get_instance_data(){
+
+  public get_instance_data() {
     let result = super.get_instance_data();
     return {
       ...result,

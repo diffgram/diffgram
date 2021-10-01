@@ -586,7 +586,7 @@ class File_Browser():
         media_type = self.metadata.get("media_type", None)
 
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text"]
+            media_type_query = ["image", "video", "text", "sensor_fusion"]
 
         if media_type == "Image":
             media_type_query = "image"
@@ -629,6 +629,7 @@ class File_Browser():
                 return False
             file_count += count
         else:
+
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,

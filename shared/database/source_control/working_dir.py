@@ -563,7 +563,8 @@ class WorkingDirFileLink(Base):
                     or_(
                         and_(File.type == "image", File.video_id == None),
                         File.type == "video",
-                        File.type == "text"
+                        File.type == "text",
+                        File.type == "sensor_fusion"
                     )
                 )
             else:
