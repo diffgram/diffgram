@@ -1140,6 +1140,7 @@
             show_attribute_text: true,
             show_list: true,
             show_occluded_keypoints: true,
+            show_left_right_arrows: true,
             allow_multiple_instance_select: false,
             font_size: 20,
             spatial_line_size: 2,

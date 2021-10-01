@@ -649,6 +649,11 @@
                           v-model="label_settings_local.show_occluded_keypoints">
               </v-checkbox>
 
+              <v-checkbox label="Show Left Right Icons Keypoints"
+                          data-cy="show_left_right_arrows"
+                          v-model="label_settings_local.show_left_right_arrows">
+              </v-checkbox>
+
               <v-checkbox label="Enable Snap to Instance"
                           data-cy="enable_snap_to_instance"
                           v-model="label_settings_local.enable_snap_to_instance">

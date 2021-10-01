@@ -456,11 +456,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_left_right_arrows(ctx, node, x, y){
+    if (this.label_settings.show_left_right_arrows == false) {
+      return
+    }
+    let size = this.vertex_size * 8
     if(node.left_or_right == 'left') {
-      this.draw_icon(ctx, x - 5, y, 'arrow_left', 24, 'rgb(255,0,0)')
+      this.draw_icon(ctx, x - 5, y, 'arrow_left', size, 'rgb(255,0,0)')
     }
     if(node.left_or_right=='right') {
-      this.draw_icon(ctx, x + 5, y, 'arrow_right', 24, 'rgb(0,255,0)')
+      this.draw_icon(ctx, x + 5, y, 'arrow_right', size, 'rgb(0,255,0)')
     }
   }
 
@@ -536,7 +540,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       y);
 
     // inset main
-    let border_width = 10
+    let border_width = Math.round(font_size / 3)
     ctx.fillStyle = fillStyle
     ctx.font = font_size - border_width + 'px material-icons'
     ctx.fillText(
