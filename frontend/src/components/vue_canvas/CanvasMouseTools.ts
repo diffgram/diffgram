@@ -94,7 +94,7 @@ export class CanvasMouseTools {
       let point = this.raw_point(event)
 
       let scaled_point = this.divide_point(point, this.scale*prior_scale, canvas_scale_global)
-      let new_point = this.divide_point(point, new_scale, canvas_scale_global)
+      let new_point = this.divide_point(point, this.scale, canvas_scale_global)
       new_point = this.subtract_point(new_point, scaled_point)
       this.canvas_translate = this.subtract_point(this.canvas_translate, new_point)
       this.scale *= new_scale
