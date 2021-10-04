@@ -30,6 +30,9 @@ export default Vue.extend({
         },
         "annotations_loading" : {
             default: true
+        },
+        "canvas_transform" : {
+          default: true
         }
       },
 
@@ -46,7 +49,17 @@ export default Vue.extend({
           let grayscale = `grayscale(${this.canvas_filters['grayscale']}%)`
           ctx.filter = brightness + contrast + grayscale
           if(!this.$props.auto_scale_bg){
-            ctx.drawImage(this.image, 0, 0);
+            ctx.drawImage(
+              this.image,
+              this.$props.canvas_transform.translate_previous.x,
+              this.$props.canvas_transform.translate_previous.y,
+              this.image.width / this.canvas_transform.canvas_scale_local,
+              this.image.height / this.canvas_transform.canvas_scale_local,
+              0,
+              0,
+              ctx.canvas.width,
+              ctx.canvas.height); // destination rectangle
+
           }
           else{
             var hRatio = ctx.canvas.width / this.image.width;

@@ -418,6 +418,7 @@
                     :current_file="file"
                     :refresh="refresh"
                     @update_canvas="update_canvas"
+                    :canvas_transform="canvas_transform"
                     :canvas_filters="canvas_filters"
                     :ord="1"
                     :annotations_loading="any_loading"
@@ -1339,10 +1340,12 @@
             x: 0,
             y: 0
           },
-          prior_translate: {
+
+          canvas_translate_previous: {
             x: 0,
             y: 0
           },
+          zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
           shift_key: false,
@@ -1605,7 +1608,8 @@
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
             'translate': this.canvas_translate,
-            'prior_translate': this.prior_translate
+            'translate_previous': this.canvas_translate_previous,
+            'zoom': this.zoom_canvas
           }
         },
 
@@ -2936,6 +2940,7 @@
           this.canvas_mouse_tools = new CanvasMouseTools(
             this.mouse_position,
             this.canvas_translate,
+            this.canvas_element,
           )
           //console.debug("mounted")
           // Reset issue mode
@@ -3363,14 +3368,19 @@
 
           this.hide_context_menu()    // context of position updating looks funny if it stays
           let prior_scale = this.canvas_scale_local
-          this.prior_translate = this.canvas_translate
-
-          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
-          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
-          this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
+          this.canvas_translate_previous = {...this.canvas_translate}
+          // let canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
+          //   event,
+          //   this.canvas_scale_local
+          // )
+          let zoom_object = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
             event,
             this.canvas_scale_local
           )
+          console.log('zoom obhject', zoom_object)
+          this.canvas_scale_local = zoom_object.scale;
+          console.log('new canvas_scale_local', this.canvas_scale_local)
+          this.zoom_canvas = zoom_object.zoom;
 
           this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
             event,
@@ -3378,8 +3388,6 @@
             this.canvas_scale_local,
             this.canvas_scale_global
           )
-          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
-          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
         },
 
         reset_to_full: function () {
@@ -5078,8 +5086,6 @@
 
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
-          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
-          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
           return this.canvas_mouse_tools.mouse_transform(
             event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
         },
