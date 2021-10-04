@@ -33,6 +33,7 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
+                   :ui_schema="ui_schema"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -554,6 +555,14 @@
               </current_instance_template>
 
             </canvas>
+
+            <ui_schema_context_menu
+              :show_context_menu="show_ui_schema_context_menu"
+              :mouse_position="mouse_position"
+              :project_string_id="project_string_id"
+              @close_context_menu="show_ui_schema_context_menu = false"
+            ></ui_schema_context_menu>
+
             <polygon_borders_context_menu
               :show_context_menu="show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -561,6 +570,7 @@
               @start_auto_bordering="perform_auto_bordering"
               @close_context_menu="show_polygon_border_context_menu = false"
             ></polygon_borders_context_menu>
+
             <context_menu :mouse_position="mouse_position"
                           :show_context_menu="show_context_menu"
                           :instance_clipboard="instance_clipboard"
@@ -789,6 +799,7 @@
   import task_status_icons from '../regular_concrete/task_status_icons'
   import context_menu from '../context_menu/context_menu.vue';
   import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
+  import ui_schema_context_menu from '../context_menu/ui_schema_context_menu.vue';
   import issues_sidepanel from '../discussions/issues_sidepanel.vue';
   import current_instance_template from '../vue_canvas/current_instance_template.vue';
   import instance_template_creation_dialog from '../instance_templates/instance_template_creation_dialog';
@@ -810,6 +821,7 @@
   import PropType from 'vue'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
+  import {UI_Schema} from "./ui_schema.js"
   import pLimit from 'p-limit';
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
@@ -847,7 +859,8 @@
         context_menu,
         userscript,
         toolbar,
-        ghost_canvas_available_alert
+        ghost_canvas_available_alert,
+        ui_schema_context_menu
       },
       props: {
         'project_string_id': {
@@ -1046,6 +1059,8 @@
           ellipse_hovered_instance: undefined,
           ellipse_hovered_instance_index: undefined,
 
+          show_ui_schema_context_menu: true,
+
           drawing_curve: false,
           curve_hovered_point: undefined,
 
@@ -1092,6 +1107,8 @@
 
           instance_buffer_dict: {},
           instance_buffer_metadata: {},
+
+          ui_schema: {},
 
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
@@ -2853,6 +2870,7 @@
 
           this.update_user_settings_from_store();
           this.command_manager = new CommandManagerAnnotationCore();
+          this.ui_schema = new UI_Schema();
           // Initial File Set
           if(this.$props.file){
             this.on_change_current_file();
