@@ -72,7 +72,7 @@ import Vue from 'vue'
       }
 
       // TODO not clear if this is needed / performance differences
-      //ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save()
       let canvas_transform = vnode.data.attrs.canvas_transform
 

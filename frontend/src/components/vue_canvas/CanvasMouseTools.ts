@@ -62,8 +62,10 @@ export class CanvasMouseTools {
     event.preventDefault();
     canvas_scale_local += (.1 * event.wheelDelta / 100)
 
-    if (canvas_scale_local < 1) {
+    if (canvas_scale_local <= 1) {
       canvas_scale_local = 1
+      this.canvas_translate.x = 0
+      this.canvas_translate.y = 0
     }
 
     // TODO abstract this
@@ -73,30 +75,71 @@ export class CanvasMouseTools {
     return canvas_scale_local
   }
 
-  public zoom_wheel_canvas_translate(event, canvas_scale_local): number {
+  public zoom_wheel_canvas_translate(event, prior_scale, new_scale, canvas_scale_global): number {
 
-    // TODO: I would like to be smoother. In case of being zoomed in and then moving mouse, then zooming out it jerks
-    // TODO if it's zoomed would like to get delta or cap this so it doesn't
-    // "jerk" as much
-    if (event.wheelDelta > 0) {
-      let deltaX = this.mouse_position.raw.x - this.canvas_translate.x
-      let deltaY = this.mouse_position.raw.y - this.canvas_translate.y
-      // want clamp to decrease as scale is zoomed in?
-      // ie so 100 / 5 = 20
-      if (canvas_scale_local > 1.5) {
-        // if statement is because for very intial most thing person could want
-        // furtherest corner and there isn't a strong need to scale it.
-        deltaX = this.clamp_values(deltaX,
-          -80 / canvas_scale_local, 80 / canvas_scale_local)
+    console.log(event, prior_scale, new_scale, canvas_scale_global)
 
-        deltaY = this.clamp_values(deltaY,
-          -80 / canvas_scale_local, 80 / canvas_scale_local)
-      }
-
-      this.canvas_translate.x += deltaX
-      this.canvas_translate.y += deltaY
+    if (this.canvas_translate.x === 0) {
+      let point = this.raw_point(event)
+      this.canvas_translate = point
+      return this.canvas_translate
     }
 
+    if (event.wheelDelta > 0) {
+
+      // this is the illusionary point on UI that we wish to stay locked on
+      let point = this.raw_point(event)
+
+      let scaled_point = this.scale_point(point, prior_scale, canvas_scale_global)
+
+      scaled_point = this.add_point(scaled_point, this.canvas_translate)
+
+      let new_scaled_point = this.scale_point(point, new_scale, canvas_scale_global)
+
+      let new_point = this.subtract_point(scaled_point, new_scaled_point)
+ 
+      this.canvas_translate = new_point
+      console.log("final", this.canvas_translate.x, this.canvas_translate.y)
+      console.log("_______________________")
+    }
+    
+
     return this.canvas_translate
+  }
+
+  private raw_point(event){
+    let x_raw = (event.clientX - this.canvas_rectangle.left)
+    let y_raw = (event.clientY - this.canvas_rectangle.top)
+    let point = {'x': x_raw, 'y': y_raw}
+    return point
+  }
+
+  private divide_point(point, scale, global){
+    let new_point = {'x': undefined, 'y': undefined}
+    new_point.x = Math.round(point.x / scale / global)
+    new_point.y = Math.round(point.y / scale / global)
+    return new_point
+  }
+
+
+  private scale_point(point, scale, global){
+    let new_point = {'x': undefined, 'y': undefined}
+    new_point.x = Math.round(point.x * scale * global)
+    new_point.y = Math.round(point.y * scale * global)
+    return new_point
+  }
+
+  private subtract_point(point, second_point){
+    let new_point = {'x': undefined, 'y': undefined}
+    new_point.x = point.x - second_point.x
+    new_point.y = point.y - second_point.y
+    return new_point
+  }
+
+  private add_point(point, second_point){
+    let new_point = {'x': undefined, 'y': undefined}
+    new_point.x = point.x + second_point.x
+    new_point.y = point.y + second_point.y
+    return new_point
   }
 }
