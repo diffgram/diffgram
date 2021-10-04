@@ -7,6 +7,13 @@ export class UI_Schema {
     this.show_logo = false
   }
 
+  show(value) {
+    if (value == undefined){
+      return true
+    }
+    return value
+  }
+
   undo(){
     const command = this.command_history[this.command_index];
     if(!command){return}

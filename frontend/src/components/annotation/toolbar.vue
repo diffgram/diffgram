@@ -13,8 +13,12 @@
     <v-chip v-if="file && file.state === 'removed'" color="error" small class="mt-3"><v-icon small>mdi-archive</v-icon>Archived</v-chip>
     <div v-show="task && task.id">
       <v-layout>
-        <ahref_seo_optimal :href="'/home/dashboard'">
-          <div class="pt-2 pr-3 clickable">
+        <ahref_seo_optimal
+          v-if="ui_schema.show(ui_schema.show_logo)"
+          :href="'/home/dashboard'">
+          <div class="pt-2 pr-3 clickable"
+               @mouseover="mouseover"
+               >
 
             <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
                   height="30px" />
@@ -23,12 +27,15 @@
         </ahref_seo_optimal>
 
         <tooltip_button
+          v-if="ui_schema.show(ui_schema.show_home_button)"
           color="primary"
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
           @click="$router.push('/job/' + task.job_id)"
-          :bottom="true">
+          :bottom="true"
+          @mouseover="mouseover"
+                        >
         </tooltip_button>
 
         <v-divider
@@ -881,7 +888,10 @@ export default Vue.extend( {
     'loading_instance_templates': {},
     'instance_type_list': {},
     'view_issue_mode': {},
-    'is_keypoint_template': {}
+    'is_keypoint_template': {},
+    'ui_schema': {
+    }
+
   },
   data() {
     return {
@@ -925,6 +935,10 @@ export default Vue.extend( {
       this.label_settings_local.filter_contrast = 100
       this.label_settings_local.filter_grayscale = 0
     },
+
+    mouseover: function (event) {
+      console.log(event)
+    }
 
   }
 }
