@@ -1151,8 +1151,8 @@
             filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
             filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
             instance_buffer_size: 60,
-            canvas_scale_global_is_automatic: true,
-            canvas_scale_global_setting: 0.5,
+            canvas_scale_global_is_automatic: false,
+            canvas_scale_global_setting: 1,
             left_nav_width: 450,
             on_instance_creation_advance_sequence: true,
             ghost_instances_closed_by_open_view_edit_panel: false
@@ -3356,12 +3356,13 @@
         zoom_wheel_scroll_canvas_transform_update: function (event) {
 
           this.hide_context_menu()    // context of position updating looks funny if it stays
+          let prior_scale = this.canvas_scale_local
 
           this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
             event, this.canvas_scale_local)
 
           this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event, this.canvas_scale_local)
+            event, prior_scale, this.canvas_scale_local, this.canvas_scale_global)
         },
 
         reset_to_full: function () {
