@@ -410,6 +410,7 @@
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
+              :mouse_position="mouse_position"
               :canvas_transform="canvas_transform">
 
 
@@ -3357,12 +3358,21 @@
 
           this.hide_context_menu()    // context of position updating looks funny if it stays
           let prior_scale = this.canvas_scale_local
-
+          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
+          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
           this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-            event, this.canvas_scale_local)
+            event,
+            this.canvas_scale_local
+          )
 
           this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event, prior_scale, this.canvas_scale_local, this.canvas_scale_global)
+            event,
+            prior_scale,
+            this.canvas_scale_local,
+            this.canvas_scale_global
+          )
+          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
+          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
         },
 
         reset_to_full: function () {
@@ -5061,6 +5071,8 @@
 
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
+          this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
+          this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
           return this.canvas_mouse_tools.mouse_transform(
             event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
         },
@@ -6667,7 +6679,7 @@
             }
           }
         },
-        
+
         may_snap_to_instance: function (event) {
           if (this.shift_key == true && event.key === "F") {
             this.snap_to_instance(this.selected_instance)

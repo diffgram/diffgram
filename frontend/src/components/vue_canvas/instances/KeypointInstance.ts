@@ -31,7 +31,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public current_node_connection: any = [];
   private instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
-  public label_settings: any = undefined 
+  public label_settings: any = undefined
 
 
   public get_instance_data(): object {
@@ -168,9 +168,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.angle = this.get_angle_of_from_rotation_control_movement()
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
-
-    //console.log('ANGLEEE', this.angle, degrees)
-    //console.log(this.angle)
   }
 
   private move_single_node(node) {
@@ -429,7 +426,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       let y = node.y
 
       x = this.get_scaled_x(node)
-      y = this.get_scaled_y(node)     
+      y = this.get_scaled_y(node)
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
 
