@@ -2,10 +2,13 @@ export class CanvasMouseTools {
   private mouse_position: any;
   private canvas_translate: any;
   private canvas_rectangle: any;
+  private scale: number;
+
 
   constructor(mouse_position, canvas_translate) {
     this.mouse_position = mouse_position;
     this.canvas_translate = canvas_translate;
+    this.scale = 1
   }
 
   public zoom_in(canvas_transform): number {
@@ -81,7 +84,7 @@ export class CanvasMouseTools {
 
     if (this.canvas_translate.x === 0) {
       let point = this.raw_point(event)
-      this.canvas_translate = point
+      this.canvas_translate = this.raw_point(event)
       return this.canvas_translate
     }
 
@@ -90,17 +93,12 @@ export class CanvasMouseTools {
       // this is the illusionary point on UI that we wish to stay locked on
       let point = this.raw_point(event)
 
-      let scaled_point = this.scale_point(point, prior_scale, canvas_scale_global)
-
-      scaled_point = this.add_point(scaled_point, this.canvas_translate)
-
-      let new_scaled_point = this.scale_point(point, new_scale, canvas_scale_global)
-
-      let new_point = this.subtract_point(scaled_point, new_scaled_point)
- 
-      this.canvas_translate = new_point
-      console.log("final", this.canvas_translate.x, this.canvas_translate.y)
-      console.log("_______________________")
+      let scaled_point = this.divide_point(point, this.scale*prior_scale, canvas_scale_global)
+      let new_point = this.divide_point(point, new_scale, canvas_scale_global)
+      new_point = this.subtract_point(new_point, scaled_point)
+      this.canvas_translate = this.subtract_point(this.canvas_translate, new_point)
+      this.scale *= new_scale
+      console.log(this.scale)
     }
     
 
