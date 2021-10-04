@@ -33,7 +33,7 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
-                   @label_settings_change="label_settings = $event, refresh = Date.now()"
+                   @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
                    @change_instance_type="change_instance_type($event)"
@@ -1132,6 +1132,7 @@
           loading: false,
 
           label_settings: {
+            font_background_opacity: .75,
             enable_snap_to_instance: true,
             show_ghost_instances: true,
             show_text: true,
@@ -1857,6 +1858,10 @@
       },
 
       methods: {
+        update_label_settings: function (event) {
+          this.label_settings = event
+          this.refresh = Date.now()
+        },
         cancel_merge: function(){
           this.$store.commit('set_instance_select_for_merge', false);
         },
