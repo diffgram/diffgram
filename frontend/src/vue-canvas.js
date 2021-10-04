@@ -75,13 +75,14 @@ import Vue from 'vue'
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save()
       let canvas_transform = vnode.data.attrs.canvas_transform
-
       // using set transform to prevent that double scaling (where it scales image twice)
       // not sure if that's a heavy operation or not but seems to be needed.
 
+
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       if(canvas_transform){
-        ctx.translate(canvas_transform['translate']['x'], canvas_transform['translate']['y'])
+
+        ctx.translate(canvas_transform['prior_translate']['x'], canvas_transform['prior_translate']['y'])
         ctx.scale(canvas_transform['canvas_scale_local'], canvas_transform['canvas_scale_local'])
         ctx.translate(-canvas_transform['translate']['x'], -canvas_transform['translate']['y'])
 
