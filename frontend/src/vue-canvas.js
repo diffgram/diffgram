@@ -70,11 +70,11 @@ import Vue from 'vue'
           ctx.material_icons_loaded = true;
         }).catch( console.error );
       }
-
-      // TODO not clear if this is needed / performance differences
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save()
       let canvas_transform = vnode.data.attrs.canvas_transform
+      // TODO not clear if this is needed / performance differences
+      ctx.clearRect(0, 0, canvas.width , canvas.height);
+      ctx.save()
+
       // using set transform to prevent that double scaling (where it scales image twice)
       // not sure if that's a heavy operation or not but seems to be needed.
 
@@ -82,8 +82,8 @@ import Vue from 'vue'
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       if(canvas_transform){
 
-        ctx.translate(canvas_transform['prior_translate']['x'], canvas_transform['prior_translate']['y'])
-        ctx.scale(canvas_transform['canvas_scale_local'], canvas_transform['canvas_scale_local'])
+        ctx.translate(canvas_transform['translate_previous']['x'], canvas_transform['translate_previous']['y'])
+        ctx.scale(canvas_transform['zoom'], canvas_transform['zoom'])
         ctx.translate(-canvas_transform['translate']['x'], -canvas_transform['translate']['y'])
 
         // maybe skip if scale is == 1?

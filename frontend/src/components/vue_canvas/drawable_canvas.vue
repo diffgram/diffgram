@@ -175,6 +175,11 @@
           x: 0,
           y: 0
         },
+        canvas_translate_previous: {
+          x: 0,
+          y: 0
+        },
+        zoom_canvas: 1,
         canvas_scale_local: 1,
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
@@ -197,6 +202,7 @@
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
+        this.canvas_transform,
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       if(this.$props.allow_zoom){
@@ -244,9 +250,11 @@
       },
       zoom_wheel_scroll_canvas_transform_update: function (event) {
 
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
+        this.zoom_object = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
           event, this.canvas_scale_local)
 
+        this.canvas_scale_local = this.zoom_object.scale;
+        this.zoom_canvas = this.zoom_object.zoom;
         this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
           event, this.canvas_scale_local)
       },
@@ -325,7 +333,9 @@
           'canvas_scale_global': this.canvas_scale_global,
           'canvas_scale_local': this.canvas_scale_local,
           'canvas_scale_combined': this.canvas_scale_local * this.canvas_scale_global,
-          'translate': this.canvas_translate
+          'translate': this.canvas_translate,
+          'translate_previous': this.canvas_translate,
+          'zoom_canvas': this.zoom_canvas
         }
       },
     }

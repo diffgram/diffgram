@@ -568,7 +568,7 @@
             )
 
             if (this.instance_rotate_control_mouse_hover == true){
-              this.instance_hover_index = i   // becuase rotate point may not be in instance 
+              this.instance_hover_index = i   // becuase rotate point may not be in instance
               this.instance_hover_type = instance.type
             }
 
