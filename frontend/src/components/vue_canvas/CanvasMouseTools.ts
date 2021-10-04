@@ -93,13 +93,13 @@ export class CanvasMouseTools {
 
     if (event.wheelDelta > 0) {
       let point = this.raw_point(event)
-      this.canvas_translate = this.raw_point(event)
+      //this.canvas_translate = this.raw_point(event)
       // this is the illusionary point on UI that we wish to stay locked on
       // let point = this.raw_point(event)
 
-      let scaled_point = this.divide_point(point, this.scale * prior_scale, canvas_scale_global)
-      let new_point = this.divide_point(point, this.scale, canvas_scale_global)
-      new_point = this.subtract_point(new_point, scaled_point)
+      let scaled_point = this.divide_point(point, this.scale * new_scale, canvas_scale_global)
+      let new_point = this.divide_point(point, new_scale, canvas_scale_global)
+      new_point = this.subtract_point(scaled_point, new_point)
       this.canvas_translate = this.subtract_point(this.canvas_translate, new_point)
       this.scale *= new_scale
       console.log(this.scale)
