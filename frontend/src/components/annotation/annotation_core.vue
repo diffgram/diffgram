@@ -4700,10 +4700,6 @@
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'curve') {
             curve_did_move = this.move_curve(event)
           }
-
-          if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.move_keypoints(event)
-          }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
           // not 100% sure how to explain difference between it

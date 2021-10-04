@@ -171,36 +171,28 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.angle = this.get_angle_of_from_rotation_control_movement()
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
-
-    //console.log(this.angle)
+    
   }
 
   private move_single_node(node) {
     const x_move = this.mouse_down_delta_event.x;
     const y_move = this.mouse_down_delta_event.y;
-    console.log('initial' ,node.x, node.y)
-    console.log('get_scaled_x' ,this.get_scaled_x(node), this.get_scaled_y(node))
-    console.log('x_move, y_move', x_move, y_move)
-    let old_x = node.x
-    let old_y = node.y;
-    let new_x = old_x + x_move;
-    let new_y = old_y + y_move;
-    let new_point = this.get_rotated_point({x: new_x, y:new_y}, -this.angle)
-    node.x = parseInt(new_point.x)
-    node.y = parseInt(new_point.y)
-    console.log('final', node.x, node.y)
+    let old = this.get_rotated_point(node)
+    let old_x =  old.x
+    let old_y = old.y
+    let new_point = {x: 0, y:0};
+    new_point.x = old_x + x_move;
+    new_point.y = old_y + y_move;
+    new_point = this.get_rotated_point(new_point, -this.angle);
+    node.x = new_point.x
+    node.y = new_point.y
     return node
   }
 
   private drag_instance(event): void{
-    let i = 0;
-    this.calculate_min_max_points();
     for(let node of this.nodes){
-      console.log('-----------------', i)
       this.move_single_node(node)
-      i += 1
     }
-    this.calculate_min_max_points();
   }
   public stop_moving(){
     this.is_moving = false;
@@ -231,12 +223,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     let node = this.nodes[this.node_hover_index]
-    //console.log(node.x, node.y, this.mouse_position.x, this.mouse_position.y, node)
     if (node) {
 
       node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
       node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
-      //console.log(node.x,node.y)
 
       this.instance_updated_callback(this);
     }
@@ -438,9 +428,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       let x = node.x
       let y = node.y
-      console.log('nodex,u', node.x, node.y)
       if(node.left_or_right == 'left') {
-        let apples = this.draw_icon(ctx, x, y, 'alert')
+        this.draw_icon(ctx, x, y, 'alert')
       }
       //if(node.left_or_right=='right') {
       //  this.draw_icon(ctx, x, y, 'alert')
@@ -448,9 +437,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       x = this.get_scaled_x(node)
       y = this.get_scaled_y(node)
-      //console.log(this)
-
-      console.log('scaleddd,u', x, y)
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
       i += 1
     }
