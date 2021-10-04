@@ -1,10 +1,11 @@
 from shared.database.common import *
+from sqlalchemy_serializer import SerializerMixin
 
 from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
 
 
-class UI_Schema(Base):
+class UI_Schema(Base, SerializerMixin):
     """
     
 
@@ -116,3 +117,110 @@ class UI_Schema(Base):
 
     default_to_view_only_mode = Column(Boolean)
     default_to_qa_slideshow = Column(Boolean)
+
+
+    def serialize(self):
+        # https://github.com/n0nSmoker/SQLAlchemy-serializer
+        return self.to_dict()
+
+
+    @staticmethod
+    def get_by_id(session,
+                  id: int):
+
+        return session.query(UI_Schema).filter(
+            UI_Schema.id == id).first()
+
+
+    @staticmethod
+    def get(session,
+            id: int,
+            project_id: int):
+
+        query = session.query(UI_Schema)
+        query = query.filter(UI_Schema.id == id)
+        query = query.filter(or_(
+            UI_Schema.project_id == project_id,
+            UI_Schema.is_public == True
+            ))
+
+        return query.first()
+
+
+    @staticmethod
+    def list(
+            session,
+            project_id=None,
+            org=None,
+            limit=100,
+            return_kind="objects",
+            archived = False,
+            date_to = None,     # datetime
+            date_from = None,   # datetime
+            date_to_string: str = None,
+            date_from_string: str = None,
+            name: str = None,
+            name_match_type: str = "ilike",  # substring and helps if case Aa is off
+            order_by_class_and_attribute = None,
+            order_by_direction = desc,
+            public_only = False
+            ):
+        """
+
+
+        """
+
+        query = session.query(UI_Schema)
+
+        # Assume we must either have public  or project id
+        if public_only is True:
+            query = query.filter(UI_Schema.is_public == True)
+        else:
+            query = query.filter(UI_Schema.project_id == project_id)
+
+        if name:
+            if name_match_type == "ilike":
+                name_search = "%{}%".format(name)
+                query = query.filter(UI_Schema.name.ilike(name_search))
+            else:
+                query = query.filter(UI_Schema.name == name)
+
+        if date_from or date_to:
+            if date_from:
+                query = query.filter(UI_Schema.created_time >= date_from)
+            if date_to:
+                query = query.filter(UI_Schema.created_time <= date_to)
+        else:
+            query = regular_methods.regular_query(
+                query=query,
+                date_from_string=date_from_string,
+                date_to_string=date_to_string,
+                base_class=UI_Schema,
+                created_time_string='time_updated'
+            )
+
+        if archived is False:   
+            query = query.filter(UI_Schema.archived == False)
+
+        if order_by_class_and_attribute:
+            query = query.order_by(
+                nullslast(order_by_direction(order_by_class_and_attribute)))
+
+        if return_kind == "count":
+            return query.limit(limit).count()
+
+        if return_kind == "objects":
+            return query.limit(limit).all()
+
+
+    @staticmethod
+    def new(
+            member: 'Member' = None,
+            project: 'Project' = None,
+            client_created_time = None,
+            client_creation_ref_id = None,
+            name = None
+            ) -> 'UI_Schema':
+
+        print("kwargs", kwargs)
+        return UI_Schema(kwargs)   

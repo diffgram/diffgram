@@ -29,3 +29,4 @@ alembic==1.4.2
 sqlalchemy-utils==0.36.6
 azure-storage-blob==12.8.0
 lark
+SQLAlchemy-serializer==1.4.1
