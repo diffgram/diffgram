@@ -1339,6 +1339,10 @@
             x: 0,
             y: 0
           },
+          prior_translate: {
+            x: 0,
+            y: 0
+          },
           error_no_permissions: {},
           snap_to_edges: 5,
           shift_key: false,
@@ -1600,7 +1604,8 @@
             'canvas_scale_global': this.canvas_scale_global,
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
-            'translate': this.canvas_translate
+            'translate': this.canvas_translate,
+            'prior_translate': this.prior_translate
           }
         },
 
@@ -3358,6 +3363,8 @@
 
           this.hide_context_menu()    // context of position updating looks funny if it stays
           let prior_scale = this.canvas_scale_local
+          this.prior_translate = this.canvas_translate
+
           this.canvas_mouse_tools.set_mouse_position(this.mouse_position)
           this.canvas_mouse_tools.set_canvas_translate(this.canvas_translate)
           this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
