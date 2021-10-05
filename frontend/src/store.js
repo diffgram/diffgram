@@ -661,6 +661,10 @@ const ui_schema = {
       state.current[state.target_element] = payload
       state.refresh = Date.now()
     },
+    set_ui_schema_element_target_and_value(state, payload) {
+      state.current[payload[0]] = payload[1]
+      state.refresh = Date.now()
+    },
   }
 }
 

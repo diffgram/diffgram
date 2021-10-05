@@ -327,6 +327,17 @@
         :bottom="true"
       >
       </tooltip_button>
+      <tooltip_button
+        tooltip_message="Add Button"
+        ui_schema_name="add_button"
+        v-if="!$store.getters.get_ui_schema('previous_task')"
+        @click="$emit('edit_ui_schema')"
+        color="primary"
+        icon="add"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
     </div>
     <div>
       <tooltip_button
