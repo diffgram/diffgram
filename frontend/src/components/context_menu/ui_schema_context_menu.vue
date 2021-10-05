@@ -31,13 +31,18 @@
         button_to_add: undefined,
 
         buttons_list_original: [
-            {'name': 'previous_task',
+            {'name': 'show_previous_task',
              'display_name': 'Previous Task',
              'icon': 'mdi-chevron-left-circle',
              'color': 'primary'
             },
-            {'name': 'failed',
-              'icon': 'error'
+            {'name': 'show_next_task',
+             'display_name': 'Next Task',
+             'icon': 'mdi-chevron-right-circle',
+             'color': 'primary'
+            },
+            {'name': 'show_logo',
+             'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_25,w_25,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
             },
             {'name': 'processing',
               'icon': ''
@@ -89,15 +94,24 @@
           self.get_mouse_position()
         },
       )
+      this.show_ui_schema_add_menu = this.$store.watch((state) => {
+          return this.$store.state.ui_schema.ui_schema_add_menu
+        },
+        (new_val, old_val) => {
+          this.show_add_menu = new_val
+        },
+      )
       // OR worst case can watch the refresh value of ui_schema
     },
     beforeDestroy() {
       this.get_target_element_watcher()
+      this.show_ui_schema_add_menu()
     },
     methods: {
       get_mouse_position: function () {
         if (!this.$store.state.ui_schema.target_element) {
           // we don't update mouse position unless exiting the edit mode
+          this.show_add_menu = false
           return
         }
         let event = this.$store.state.ui_schema.event
