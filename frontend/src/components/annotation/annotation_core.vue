@@ -2918,11 +2918,7 @@
         },
 
         async mounted() {
-          this.canvas_mouse_tools = new CanvasMouseTools(
-            this.mouse_position,
-            this.canvas_translate,
-            this.canvas_element,
-          )
+
           //console.debug("mounted")
           // Reset issue mode
           this.$store.commit('set_instance_select_for_issue', false);
@@ -2934,7 +2930,13 @@
           this.fetch_instance_template();
 
           this.update_canvas()
-
+          this.canvas_mouse_tools = new CanvasMouseTools(
+            this.mouse_position,
+            this.canvas_translate,
+            this.canvas_translate_previous,
+            this.canvas_transform,
+            this.canvas_element
+          )
           // assumes canvas wrapper available
           this.canvas_wrapper.style.display = ""
 
@@ -3367,13 +3369,24 @@
             event,
             prior_scale,
             this.canvas_scale_local,
-            this.canvas_scale_global
-          )
+            this.canvas_scale_global,
+            this.canvas_translate_previous
+          );
+          // this.canvas_mouse_tools.update_canvas_transforms(
+          //   this.canvas_translate_previous,
+          //   this.canvas_translate,
+          //   this.canvas_scale_local,
+          //   this.zoom_canvas,
+          //   this.canvas_scale_global
+          // );
+          // this.update_canvas();
         },
 
         reset_to_full: function () {
           this.canvas_translate.x = 0
           this.canvas_translate.y = 0
+          this.canvas_translate_previous.x = 0
+          this.canvas_translate_previous.y = 0
           this.canvas_scale_local = 1
         },
 
