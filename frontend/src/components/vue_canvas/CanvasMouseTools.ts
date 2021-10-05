@@ -37,21 +37,9 @@ export class CanvasMouseTools {
     return canvas_transform.canvas_scale_local
   }
 
-  public clamp_values(val, min, max) {
-    //https://stackoverflow.com/questions/11409895/whats-the-most-elegant-way-to-cap-a-number-to-a-segment
-    return Math.min(Math.max(val, min), max)
-  }
-
   public mouse_transform(event, mouse_position, canvas_element, update_canvas, canvas_transform): void {
     this.canvas_element = canvas_element;
     if (canvas_element) {
-      this.canvas_rectangle = canvas_element.getBoundingClientRect()
-    }
-    // sometimes the canvas just doesn't seem to want to update correctly
-    // if the left value is 0 there is most likely a problem so try to refresh teh canvas
-    if (this.canvas_rectangle.left == 0) {
-      // TODO: Discuss if we can remove this, I feel this is a bit hacky.
-      update_canvas()
       this.canvas_rectangle = canvas_element.getBoundingClientRect()
     }
 
@@ -164,19 +152,19 @@ export class CanvasMouseTools {
 
   public update_canvas_transforms(translate_previous, translate, scale, zoom, scale_global) {
     console.log('SCALE TEST', scale)
-    this.canvas_ctx.clearRect(0,
-      0,
-      this.canvas_elm.width,
-      this.canvas_elm.height);
-    if (scale <= 1) {
+
+    if (scale <= 1 || translate.x <= 0 || translate.y <= 0) {
       this.canvas_ctx.setTransform(1, 0, 0, 1, 0, 0);
+      translate_previous.x = 0;
+      translate_previous.y = 0;
+      translate.x = 0;
+      translate.y = 0;
       return
     }
     this.canvas_ctx.clearRect(0,
       0,
       this.canvas_elm.width,
       this.canvas_elm.height);
-
     console.log('translate_previous', translate_previous.x, translate_previous.y)
     console.log('translate', translate.x, translate.y)
     console.log('zoom', zoom, zoom)

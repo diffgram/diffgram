@@ -3352,17 +3352,12 @@
           this.hide_context_menu()    // context of position updating looks funny if it stays
           let prior_scale = this.canvas_scale_local
           this.canvas_translate_previous = {...this.canvas_translate}
-          // let canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-          //   event,
-          //   this.canvas_scale_local
-          // )
+
           let zoom_object = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
             event,
             this.canvas_scale_local
           )
-          console.log('zoom obhject', zoom_object)
           this.canvas_scale_local = zoom_object.scale;
-          console.log('new canvas_scale_local', this.canvas_scale_local)
           this.zoom_canvas = zoom_object.zoom;
 
           this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
@@ -3380,6 +3375,7 @@
             this.canvas_scale_global
           );
           this.update_canvas();
+
         },
 
         reset_to_full: function () {
