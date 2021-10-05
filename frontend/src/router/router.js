@@ -8,6 +8,11 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
+    path: '/me',
+    component: 'user/home/annotator_dashboard',
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/projects',
     component: 'project/project_manager',
     meta: {
