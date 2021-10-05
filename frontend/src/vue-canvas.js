@@ -82,11 +82,11 @@ import Vue from 'vue'
       // not sure if that's a heavy operation or not but seems to be needed.
 
 
-      // ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       if(canvas_transform){
 
         ctx.translate(canvas_transform['translate_previous']['x'], canvas_transform['translate_previous']['y'])
-        ctx.scale(canvas_transform['zoom'], canvas_transform['zoom'])
+        ctx.scale(canvas_transform['canvas_scale_local'], canvas_transform['canvas_scale_local'])
         ctx.translate(-canvas_transform['translate']['x'], -canvas_transform['translate']['y'])
 
         // maybe skip if scale is == 1?
