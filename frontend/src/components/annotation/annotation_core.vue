@@ -1,6 +1,13 @@
 <template>
   <div id="annotation_core">
 
+    <ui_schema_context_menu
+      :show_context_menu="show_ui_schema_context_menu"
+      :mouse_position="mouse_position"
+      :project_string_id="project_string_id"
+      @close_context_menu="show_ui_schema_context_menu = false"
+    >
+    </ui_schema_context_menu>
 
     <div style="position: relative">
 
@@ -53,6 +60,7 @@
                    @replace_file="$emit('replace_file', $event)"
                    @open_instance_template_dialog="open_instance_template_dialog()"
                    @copy_all_instances="copy_all_instances"
+                   @edit_ui_schema="edit_ui_schema"
 
           >
           </toolbar>
@@ -556,13 +564,6 @@
 
             </canvas>
 
-            <ui_schema_context_menu
-              :show_context_menu="show_ui_schema_context_menu"
-              :mouse_position="mouse_position"
-              :project_string_id="project_string_id"
-              @close_context_menu="show_ui_schema_context_menu = false"
-            ></ui_schema_context_menu>
-
             <polygon_borders_context_menu
               :show_context_menu="show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -1059,7 +1060,7 @@
           ellipse_hovered_instance: undefined,
           ellipse_hovered_instance_index: undefined,
 
-          show_ui_schema_context_menu: true,
+          show_ui_schema_context_menu: false,
 
           drawing_curve: false,
           curve_hovered_point: undefined,
@@ -1109,7 +1110,7 @@
           instance_buffer_metadata: {},
 
           ui_schema: {},
-
+          is_editing_ui_schema: true,
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
           lateral_edges : {
@@ -1875,6 +1876,11 @@
       },
 
       methods: {
+        edit_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+        },
+
         update_label_settings: function (event) {
           this.label_settings = event
           this.refresh = Date.now()
