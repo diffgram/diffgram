@@ -20,7 +20,7 @@ from shared.database.input import Input
 
 from methods.input import process_media
 from shared.data_tools_core import Data_tools
-
+import traceback
 # Design doc
 
 class FrameCompletionControl:
@@ -215,6 +215,7 @@ class New_video():
                 input.status = "failed"
                 input.status_text = "Could not write video file. Try a different format or contact us."
                 logger.error('Could not write video file. Try a different format or contact us.)')
+                logger.error(traceback.format_exc())
                 return None
 
         else:
