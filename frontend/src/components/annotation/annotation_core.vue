@@ -1563,6 +1563,11 @@
           // get media core height
           if (document.getElementById("media_core")){
             this.media_core_height = document.getElementById("media_core").__vue__.height
+          } else {
+            this.media_core_height = 0 // reset eg for task mode
+          }
+          if (this.task) {
+            this.magic_nav_spacer = 0
           }
 
           let middle_pane_height = this.window_height_from_listener - toolbar_height
