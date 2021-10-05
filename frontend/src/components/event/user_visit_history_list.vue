@@ -258,7 +258,7 @@ export default Vue.extend( {
         if(response.status === 200){
           this.user_visit_history = response.data.user_visit_events;
           this.user_visit_history = this.remove_duplicate_element(this.user_visit_history);
-
+          this.$store.commit('set_user_state', ['history', this.user_visit_history])
         }
       }
       catch (e) {
