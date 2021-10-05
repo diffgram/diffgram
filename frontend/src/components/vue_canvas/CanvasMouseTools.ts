@@ -136,7 +136,7 @@ export class CanvasMouseTools {
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
     let point = {'x': x_raw, 'y': y_raw}
-    return point
+    return this.mouse_position
   }
 
   private divide_point(point, scale, global) {

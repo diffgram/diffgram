@@ -1953,25 +1953,6 @@
           instance.change_source = 'ui_diffgram_frontend'
           instance.machine_made = false;
         },
-        get_roi_canvas_from_instance: function (instance, ghost_canvas) {
-          // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData
-
-
-          let ghost_canvas_context = ghost_canvas.getContext('2d')
-
-          let region_of_interest_image_data = ghost_canvas_context.getImageData(
-            instance.x_min, instance.y_min,
-            instance.width, instance.height)
-
-          var roi_canvas = document.createElement('canvas');
-          var roi_canvas_ctx = roi_canvas.getContext('2d');
-          roi_canvas.width =  instance.width;
-          roi_canvas.height = instance.height;
-
-          roi_canvas_ctx.putImageData(region_of_interest_image_data, 0, 0);
-
-          return roi_canvas
-        },
         regenerate_file_cache: async function(){
           this.regenerate_file_cache_loading = true;
           let frame_number = this.current_frame;
@@ -5077,7 +5058,7 @@
         onRendered: function (ctx) {
 
           // IMPORTANT   restore canvas from various transform operations
-          ctx.restore()
+          // ctx.restore()
         },
 
         test: function () {
@@ -5087,7 +5068,11 @@
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
           return this.canvas_mouse_tools.mouse_transform(
-            event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
+            event,
+            mouse_position,
+            this.canvas_element,
+            this.update_canvas,
+            this.canvas_transform)
         },
 
         helper_difference_absolute: function (a, b) { return Math.abs(a - b) },
