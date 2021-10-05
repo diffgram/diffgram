@@ -642,6 +642,7 @@ const ui_schema = {
       state.event = undefined;
       state.target_element = undefined;
       state.editing = false
+      state.ui_schema_add_menu = false
       state.refresh = Date.now()
     },
     clear_ui_schema_event(state) {
@@ -651,6 +652,9 @@ const ui_schema = {
     },
     set_ui_schema_editing_state(state, editing) {
       state.editing = editing
+    },
+    set_ui_schema_add_menu(state, bool) {
+      state.ui_schema_add_menu = bool
     },
     set_ui_schema_event(state, payload) {
       state.target_element = payload[0]
