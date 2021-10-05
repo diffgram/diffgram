@@ -30,7 +30,7 @@
 
         button_to_add: undefined,
 
-        buttons_list: [
+        buttons_list_original: [
             {'name': 'previous_task',
              'display_name': 'Previous Task',
              'icon': 'mdi-chevron-left-circle',
@@ -47,7 +47,15 @@
     },
 
     computed: {
-
+      buttons_list_available: function () {
+        let list = []
+        for (var button of this.buttons_list_original) {
+          if (this.$store.getters.get_ui_schema(button.name) != true) {
+            list.push(button)
+          }
+        }
+        return list
+      },
 
     },
 
@@ -81,6 +89,7 @@
           self.get_mouse_position()
         },
       )
+      // OR worst case can watch the refresh value of ui_schema
     },
     beforeDestroy() {
       this.get_target_element_watcher()
@@ -183,7 +192,7 @@
           <v-card-text>
 
             <diffgram_select
-                :item_list="buttons_list"
+                :item_list="buttons_list_available"
                 v-model="button_to_add"
                 label="Buttons"
                 >
