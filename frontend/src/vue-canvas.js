@@ -72,11 +72,11 @@ import Vue from 'vue'
       }
       let canvas_transform = vnode.data.attrs.canvas_transform
       // TODO not clear if this is needed / performance differences
-      ctx.clearRect(0,
-        0,
-        canvas.width ,
-        canvas.height);
-      ctx.save()
+      // ctx.clearRect(0,
+      //   0,
+      //   canvas.width ,
+      //   canvas.height);
+      // ctx.save()
 
       // using set transform to prevent that double scaling (where it scales image twice)
       // not sure if that's a heavy operation or not but seems to be needed.
