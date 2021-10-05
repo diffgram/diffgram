@@ -39,7 +39,6 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
-                   :ui_schema="ui_schema"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -821,7 +820,6 @@
   import PropType from 'vue'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
-  import {UI_Schema} from "./ui_schema.js"
   import pLimit from 'p-limit';
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
@@ -1108,7 +1106,6 @@
           instance_buffer_dict: {},
           instance_buffer_metadata: {},
 
-          ui_schema: {},
           is_editing_ui_schema: true,
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
@@ -2887,7 +2884,6 @@
 
           this.update_user_settings_from_store();
           this.command_manager = new CommandManagerAnnotationCore();
-          this.ui_schema = new UI_Schema();
           // Initial File Set
           if(this.$props.file){
             this.on_change_current_file();
