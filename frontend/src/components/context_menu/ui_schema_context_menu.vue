@@ -42,11 +42,26 @@
              'color': 'primary'
             },
             {'name': 'show_logo',
+             'display_name': 'Logo',
              'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_25,w_25,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
             },
-            {'name': 'processing',
-              'icon': ''
+            {'name': 'show_home_button',
+             'icon': 'mdi-home',
+             'display_name': 'Home Button',
+            },
+            {'name': 'show_defer',
+             'icon': 'mdi-debug-step-over',
+             'display_name': 'Defer',
+            },
+            {'name': 'show_zoom',
+             'icon': 'mdi-magnify-plus-outline',
+             'display_name': 'Zoom Display',
+            },
+            {'name': 'show_label_selector',
+             'icon': 'mdi-format-paint',
+             'display_name': 'Label Selector',
             }
+
           ]
       }
     },
@@ -156,6 +171,7 @@
       <v-list-item
         link
         @click="hide"
+        v-if="$store.state.ui_schema.target_element != 'add_button'"
       >
 
         <v-list-item-icon>
@@ -180,7 +196,7 @@
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Show"
-            icon="mdi-eye"
+            icon="add"
             color="primary"
           />
         </v-list-item-icon>
@@ -190,6 +206,26 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-list-item
+        link
+        @click="close()"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Exit"
+            icon="close"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Exit
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
 
       <v-menu
 
