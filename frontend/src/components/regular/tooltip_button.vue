@@ -1,6 +1,9 @@
 <template>
 
-  <div @mouseover="mouseover" @mouseleave="mouseleave">
+  <div @mouseover="mouseover"
+       @mouseleave="mouseleave"
+       v-if="show_button()"
+       >
     <v-tooltip :top="top_actual" :bottom="bottom_actual">
 
       <template v-slot:activator="{ on }">
@@ -172,7 +175,8 @@ export default Vue.extend( {
         default: '_self'
      },
     'ui_schema_name': {
-        type: String
+        type: String,
+        default: undefined
      }
   },
   data() {
@@ -192,6 +196,10 @@ export default Vue.extend( {
     }
   },
   methods: {
+    show_button(){
+      if (this.$props.ui_schema_name == undefined) { return true } 
+      return this.$store.getters.get_ui_schema(this.$props.ui_schema_name)
+    },
     preventdefault(event) {
       // we don't assume this will go anywhere unless opened in new tab
       // in which case the event will follow the default. In the future
