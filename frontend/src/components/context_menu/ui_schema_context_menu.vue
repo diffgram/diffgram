@@ -60,6 +60,10 @@
             {'name': 'show_label_selector',
              'icon': 'mdi-format-paint',
              'display_name': 'Label Selector',
+            },
+            {'name': 'show_instance_selector',
+             'icon': 'mdi-vector-polygon',
+             'display_name': 'Label Selector',
             }
 
           ]
