@@ -6,8 +6,8 @@ export class CanvasMouseTools {
   private canvas_ctx: any;
   private canvas_elm: any;
   private scale: number;
-  private translate_acc: { x: number, y:number };
-  private canvas_translate_previous: { x: number, y:number };
+  private translate_acc: { x: number, y: number };
+  private canvas_translate_previous: { x: number, y: number };
 
 
   constructor(mouse_position, canvas_translate, canvas_translate_previous, canvas_transform, canvas_elm) {
@@ -57,10 +57,25 @@ export class CanvasMouseTools {
 
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
-    console.log('canvas_translate_previous', this.canvas_translate_previous.x, this.canvas_translate_previous.y)
-    console.log('canvas_translate', this.canvas_translate.x, this.canvas_translate.y)
-    let x = (((x_raw - (this.canvas_translate.x)) / canvas_transform.canvas_scale_local) + (this.canvas_translate.x)) / canvas_transform.canvas_scale_global
-    let y = (((y_raw - (this.canvas_translate.y)) / canvas_transform.canvas_scale_local) + (this.canvas_translate.y)) / canvas_transform.canvas_scale_global
+
+    // let x = (((x_raw - (this.canvas_translate_previous.x)) / canvas_transform.canvas_scale_local) + (this.canvas_translate.x)) / canvas_transform.canvas_scale_global
+    // let y = (((y_raw - (this.canvas_translate_previous.y)) / canvas_transform.canvas_scale_local) + (this.canvas_translate.y)) / canvas_transform.canvas_scale_global
+    event = event || window.event;
+    var target = event.target || event.srcElement,
+      style = target.currentStyle || window.getComputedStyle(target, null),
+      borderLeftWidth = parseInt(style["borderLeftWidth"], 10),
+      borderTopWidth = parseInt(style["borderTopWidth"], 10),
+      rect = target.getBoundingClientRect(),
+      offsetX = event.clientX - borderLeftWidth - rect.left,
+      offsetY = event.clientY - borderTopWidth - rect.top;
+    let x = (offsetX * target.width) / target.clientWidth;
+    let y = (offsetY * target.height) / target.clientHeight;
+    const ctx = this.canvas_ctx;
+    var transform = ctx.getTransform();
+    const invMat = transform.invertSelf();
+
+    x = x * invMat.a + y * invMat.c + invMat.e;
+    y = x * invMat.b + y * invMat.d + invMat.f;
 
 
     // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
@@ -73,7 +88,7 @@ export class CanvasMouseTools {
     return mouse_position;
   }
 
-  public zoom_wheel_scroll_canvas_transform_update(event, canvas_scale_local): {scale:number, zoom:number} {
+  public zoom_wheel_scroll_canvas_transform_update(event, canvas_scale_local): { scale: number, zoom: number } {
     event.preventDefault();
 
     const wheel = event.deltaY < 0 ? 1 : -1;
@@ -84,7 +99,6 @@ export class CanvasMouseTools {
     let scale = canvas_scale_local * zoom;
 
     if (scale <= 1) {
-      zoom = 1;
       scale = 1;
     }
     if (scale >= 30) {
@@ -117,13 +131,13 @@ export class CanvasMouseTools {
     console.log('prior_scale', prior_scale)
     console.log('new_scale', new_scale)
     console.log('canvas_scale_global', canvas_scale_global)
-    console.log('canvas_translate[x,y]', this.canvas_translate.x,  this.canvas_translate.y)
+    console.log('canvas_translate[x,y]', this.canvas_translate.x, this.canvas_translate.y)
 
     // this is the illusionary point on UI that we wish to stay locked on
     let point = this.raw_point(event)
     console.log('point', point.x, point.y)
-    let scaled_point = this.divide_point(point, this.scale * new_scale, canvas_scale_global);
-    let new_point = this.divide_point(point, this.scale, canvas_scale_global);
+    let scaled_point = this.divide_point(point, new_scale, canvas_scale_global);
+    let new_point = this.divide_point(point, prior_scale, canvas_scale_global);
     console.log('scaled_point', scaled_point.x, scaled_point.y)
     console.log('old_point', new_point.x, new_point.y)
     new_point = this.subtract_point(scaled_point, new_point);
@@ -132,9 +146,9 @@ export class CanvasMouseTools {
     // this.canvas_translate = this.subtract_point(this.translate_acc, this.canvas_translate)
 
     this.scale *= new_scale;
-    this.translate_acc.x += this.canvas_translate_previous.x;
-    this.translate_acc.y += this.canvas_translate_previous.y;
-    if(new_scale === 1){
+    // this.translate_acc.x += this.canvas_translate.x;
+    // this.translate_acc.y += this.canvas_translate.y;
+    if (new_scale <= 1) {
       this.scale = 1
       this.canvas_translate = {x: 0, y: 0}
       translate_previous.x = 0
@@ -148,20 +162,19 @@ export class CanvasMouseTools {
     return this.canvas_translate
   }
 
-  public update_canvas_transforms(translate_previous, translate, scale, zoom, scale_global){
+  public update_canvas_transforms(translate_previous, translate, scale, zoom, scale_global) {
     console.log('SCALE TEST', scale)
     this.canvas_ctx.clearRect(0,
       0,
-      this.canvas_elm.width ,
+      this.canvas_elm.width,
       this.canvas_elm.height);
-    if(scale < 1){
-
+    if (scale <= 1) {
       this.canvas_ctx.setTransform(1, 0, 0, 1, 0, 0);
       return
     }
     this.canvas_ctx.clearRect(0,
       0,
-      this.canvas_elm.width ,
+      this.canvas_elm.width,
       this.canvas_elm.height);
 
     console.log('translate_previous', translate_previous.x, translate_previous.y)
@@ -182,11 +195,12 @@ export class CanvasMouseTools {
     // }
 
   }
+
   private raw_point(event) {
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
     let point = {'x': x_raw, 'y': y_raw}
-    return this.mouse_position
+    return point
   }
 
   private divide_point(point, scale, global) {
