@@ -216,6 +216,28 @@ class Task(Base):
             return query.first()
         return task
 
+
+    def get_last_task(
+            session,
+            user,
+            status_allow_list = ["available", "in_progress"]):
+
+        last_task = user.last_task
+
+        if last_task:
+            if last_task.status in status_allow_list:
+                return last_task
+
+
+    def assign_task_to_user(
+            task,
+            user):
+
+        task.assignee_user = user
+        user.last_task = task
+        task.status = "in_progress"
+
+
     @staticmethod
     def get_related_files(session, task_id):
         """
@@ -270,6 +292,36 @@ class Task(Base):
             # If the provided task anything else except the last element we return the next task in the list.
             index_current = task_ids_with_issues.index(task_id)
             return task_ids_with_issues[index_current + 1]
+
+
+    def request_next_task_by_project(
+            session,
+            project,
+            user,
+            ignore_task_IDS_list=None,
+            status='available',
+            skip_locked=True,
+            task_type=None):
+
+        if project is None:
+            return False
+
+        query = session.query(Task).filter(
+            Task.project_id == project.id)
+
+        if skip_locked == True:
+            query = query.with_for_update(skip_locked=True)
+
+        if status:
+            query = query.filter(Task.status == status)
+
+        if task_type:
+            query = query.filter(Task.task_type == task_type)
+
+        if ignore_task_IDS_list:
+            query = query.filter(Task.id.notin_(ignore_task_IDS_list))
+
+        return query.first()
 
 
 
