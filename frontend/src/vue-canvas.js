@@ -70,7 +70,7 @@ import Vue from 'vue'
           ctx.material_icons_loaded = true;
         }).catch( console.error );
       }
-      let canvas_transform = vnode.data.attrs.canvas_transform
+      // let canvas_transform = vnode.data.attrs.canvas_transform
       // TODO not clear if this is needed / performance differences
       // ctx.clearRect(0,
       //   0,

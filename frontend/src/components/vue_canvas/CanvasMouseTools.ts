@@ -133,18 +133,14 @@ export class CanvasMouseTools {
     this.canvas_translate = this.subtract_point(this.canvas_translate, new_point);
     // this.canvas_translate = this.subtract_point(this.translate_acc, this.canvas_translate)
 
-    this.scale *= new_scale;
     // this.translate_acc.x += this.canvas_translate.x;
     // this.translate_acc.y += this.canvas_translate.y;
     if (new_scale <= 1) {
-      this.scale = 1
       this.canvas_translate = {x: 0, y: 0}
       translate_previous.x = 0
       translate_previous.y = 0
     }
     console.log('canvas_translate_new', this.canvas_translate.x, this.canvas_translate.y)
-
-    console.log('THIS.SSCALE', this.scale)
 
 
     return this.canvas_translate
