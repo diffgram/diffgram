@@ -14,7 +14,7 @@
     <div v-show="task && task.id">
       <v-layout>
         <ahref_seo_optimal
-          v-if="ui_schema.show(ui_schema.show_logo)"
+          v-if="$store.getters.get_ui_schema('show_logo')"
           :href="'/home/dashboard'">
           <div class="pt-2 pr-3 clickable"
                >
@@ -45,6 +45,17 @@
           @click="$emit('edit_ui_schema')"
           :bottom="true"
                         >
+        </tooltip_button>
+
+        <tooltip_button
+          tooltip_message="Add Schema"
+          ui_schema_name="add_button"
+          @click="$emit('edit_ui_schema')"
+          color="primary"
+          icon="add"
+          :icon_style="true"
+          :bottom="true"
+        >
         </tooltip_button>
 
         <v-divider
@@ -316,9 +327,8 @@
     <div>
       <tooltip_button
         tooltip_message="Previous Task"
-        v-if="task &&
-              $store.getters.get_ui_schema('previous_task')"
-        ui_schema_name="previous_task"
+        v-if="task"
+        ui_schema_name="show_previous_task"
         @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
@@ -331,7 +341,7 @@
         tooltip_message="Add Button"
         ui_schema_name="add_button"
         v-if="!$store.getters.get_ui_schema('previous_task')"
-        @click="$emit('edit_ui_schema')"
+        @click="$emit('add_ui_schema')"
         color="primary"
         icon="add"
         :icon_style="true"
@@ -343,6 +353,7 @@
       <tooltip_button
         tooltip_message="Next Task"
         v-if="task"
+        ui_schema_name="show_next_task"
         @click="$emit('change_task', 'next')"
         :disabled="loading || annotations_loading || full_file_loading || !task"
         color="primary"

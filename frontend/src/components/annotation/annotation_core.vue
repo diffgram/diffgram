@@ -1878,6 +1878,13 @@
         edit_ui_schema: function (event) {
           this.$store.commit('set_ui_schema_editing_state', true);
           this.show_ui_schema_context_menu = true
+          this.show_snackbar("Hover over a button to show options. Click plus to add buttons back.")
+        },
+        add_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+          this.$store.commit('set_ui_schema_add_menu', true);
+          this.show_snackbar("Click plus to add buttons.")
         },
 
         update_label_settings: function (event) {
