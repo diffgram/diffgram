@@ -3,7 +3,6 @@
 
     <ui_schema_context_menu
       :show_context_menu="show_ui_schema_context_menu"
-      :mouse_position="mouse_position"
       :project_string_id="project_string_id"
       @close_context_menu="show_ui_schema_context_menu = false"
     >

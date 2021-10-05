@@ -26,8 +26,23 @@
         instance_hover_index_locked: null,
         show_share_instance_menu: false,
         locked_mouse_position: undefined,
-        show_issue_panel: false,
+        show_add_menu: false,
 
+        button_to_add: undefined,
+
+        buttons_list: [
+            {'name': 'previous_task',
+             'display_name': 'Previous Task',
+             'icon': 'mdi-chevron-left-circle',
+             'color': 'primary'
+            },
+            {'name': 'failed',
+              'icon': 'error'
+            },
+            {'name': 'processing',
+              'icon': ''
+            }
+          ]
       }
     },
 
@@ -93,6 +108,10 @@
         this.$store.commit('set_ui_schema_element_value', true)
         //this.close();
       },
+      add_selected() {
+        this.$store.commit('set_ui_schema_element_target_and_value',
+          [this.button_to_add, true])
+      }
     }
   });
 </script>
@@ -132,7 +151,7 @@
 
       <v-list-item
         link
-        @click="show"
+        @click="show_add_menu = true"
       >
 
         <v-list-item-icon>
@@ -144,10 +163,45 @@
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            Show
+            Add
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-menu
+
+        v-model="show_add_menu"
+        :allow-overflow="true"
+        :offset-overflow="true"
+        :close-on-click="false"
+        :close-on-content-click="false"
+        :attach="true"
+        :z-index="999999"
+      >
+        <v-card>
+          <v-card-title>Add</v-card-title>
+          <v-card-text>
+
+            <diffgram_select
+                :item_list="buttons_list"
+                v-model="button_to_add"
+                label="Buttons"
+                >
+            </diffgram_select>
+
+          </v-card-text>
+          <v-card-actions>
+            <v-btn @click="show_add_menu = false">Close
+            </v-btn>
+            <v-btn data-cy="add_selected"
+                   @click="add_selected"
+                   color="success">
+              Add Selected
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-menu>
+
 
     </v-card>
 
