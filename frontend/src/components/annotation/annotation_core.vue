@@ -3372,14 +3372,14 @@
             this.canvas_scale_global,
             this.canvas_translate_previous
           );
-          // this.canvas_mouse_tools.update_canvas_transforms(
-          //   this.canvas_translate_previous,
-          //   this.canvas_translate,
-          //   this.canvas_scale_local,
-          //   this.zoom_canvas,
-          //   this.canvas_scale_global
-          // );
-          // this.update_canvas();
+          this.canvas_mouse_tools.update_canvas_transforms(
+            this.canvas_translate_previous,
+            this.canvas_translate,
+            this.canvas_scale_local,
+            this.zoom_canvas,
+            this.canvas_scale_global
+          );
+          this.update_canvas();
         },
 
         reset_to_full: function () {
