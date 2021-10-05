@@ -1095,7 +1095,7 @@
           lock_point_hover_change: false,
           save_warning: {},
 
-          magic_nav_spacer: 40,
+          magic_nav_spacer: 80,
 
 
           hidden_label_id_list: [],

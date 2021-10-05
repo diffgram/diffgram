@@ -47,14 +47,15 @@ class UI_Schema(Base, SerializerMixin):
 
 
     show_logo = Column(Boolean)
-    show_home_button = Column(Boolean)
+    show_home = Column(Boolean)
     show_undo = Column(Boolean)
     show_redo = Column(Boolean)
     show_complete = Column(Boolean)
     show_defer = Column(Boolean)
     show_zoom = Column(Boolean)
-    show_labels = Column(Boolean)
+    show_label_selector = Column(Boolean)
     show_instance_selector = Column(Boolean)
+    show_edit_instance_template = Column(Boolean)
     show_draw_edit = Column(Boolean)
     show_save = Column(Boolean)
     show_next_task = Column(Boolean)
