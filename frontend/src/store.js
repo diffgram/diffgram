@@ -32,7 +32,8 @@ export const user_module = {
     },
     current_project_permission_level: null,
     is_typing_or_menu_open: false,
-    settings: default_user_settings
+    settings: default_user_settings,
+    history: undefined
 	},
 
 	mutations: {
@@ -46,6 +47,7 @@ export const user_module = {
       state.current = {}
       state.is_typing_or_menu_open = false
       state.settings = default_user_settings
+      state.history = undefined
     },
     restore_default_user_settings(state) {
       state.settings = default_user_settings
@@ -66,6 +68,11 @@ export const user_module = {
       let key = key_value_array[0]
       let value = key_value_array[1]
       state.current[key] = value
+    },
+    set_user_state(state, payload) {
+      let key = payload[0]
+      let value = payload[1]
+      state[key] = value
     },
     set_user_setting(state, payload) {
       // eg $store.commit('set_user_setting', ['studio_box_info', false])
@@ -621,13 +628,14 @@ const clipboard = {
 const ui_schema = {
   state: {
     current: {},
+    schema_dict: {},    // many schemas
     event: undefined,
     target_element: undefined,
     refresh: undefined,
   },
   getters:{
-    get_ui_schema: (state) => (id) => {
-      let result = state.current[id]
+    get_ui_schema: (state) => (string_key) => {
+      let result = state.current[string_key]
       if (result === undefined) { return true} // default
       return result
     }
