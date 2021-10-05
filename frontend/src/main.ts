@@ -65,6 +65,9 @@ import error_multiple from './components/regular/error_multiple'
 import tooltip_button from './components/regular/tooltip_button'
 Vue.component('tooltip_button', tooltip_button)
 
+import ui_schema from './components/regular/ui_schema_wrapper'
+Vue.component('ui_schema', ui_schema)
+
 import button_with_confirm from './components/regular/button_with_confirm'
 Vue.component('button_with_confirm', button_with_confirm)
 
