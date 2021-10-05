@@ -51,14 +51,9 @@ export default Vue.extend({
           if(!this.$props.auto_scale_bg){
             ctx.drawImage(
               this.image,
-              this.$props.canvas_transform.translate_previous.x,
-              this.$props.canvas_transform.translate_previous.y,
-              this.image.width / this.canvas_transform.canvas_scale_local,
-              this.image.height / this.canvas_transform.canvas_scale_local,
               0,
               0,
-              ctx.canvas.width,
-              ctx.canvas.height); // destination rectangle
+            )
 
           }
           else{
