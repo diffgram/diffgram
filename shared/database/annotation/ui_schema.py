@@ -3,6 +3,7 @@ from sqlalchemy_serializer import SerializerMixin
 
 from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class UI_Schema(Base, SerializerMixin):
@@ -47,6 +48,12 @@ class UI_Schema(Base, SerializerMixin):
 
 
     show_logo = Column(Boolean)
+    logo_schema = Column(MutableDict.as_mutable(JSONB))
+    # client logo
+    # JSON field postgres, check native support
+    # name, color, theme...
+    # Default JSON to include show?
+
     show_home = Column(Boolean)
     show_undo = Column(Boolean)
     show_redo = Column(Boolean)
