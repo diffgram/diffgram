@@ -14,7 +14,7 @@
       },
       'show_context_menu':{
         type: Boolean,
-        default: false
+        default: true   // temporary true, false when done
       },
 
     },
@@ -32,15 +32,7 @@
     },
 
     computed: {
-      selected_instance: function(){
-        return this.instance_list[this.instance_hover_index_locked];
-      },
-      member: function () {
-        return this.$store.state.project.current.member_list.find(x => {
-          return x.member_id == this.instance_list[
-            this.instance_hover_index_locked].member_created_id
-        })
-      },
+
 
     },
 
@@ -65,30 +57,41 @@
         }
       },
     },
+    mounted() {
+      var self = this
+      this.get_target_element_watcher = this.$store.watch((state) => {
+          return this.$store.state.ui_schema.target_element
+        },
+        (new_val, old_val) => {
+          self.get_mouse_position()
+        },
+      )
+    },
+    beforeDestroy() {
+      this.get_target_element_watcher()
+    },
     methods: {
       get_mouse_position: function () {
-        this.top = this.mouse_position.raw.y + 'px';
-        this.left = this.mouse_position.raw.x + 'px';
-        this.locked_mouse_position = {...this.mouse_position};
+        if (!this.$store.state.ui_schema.target_element) {
+          // we don't update mouse position unless exiting the edit mode
+          return
+        }
+        let event = this.$store.state.ui_schema.event
+        console.log(event)
+        this.top = event.clientY - event.offsetY + 'px';
+        this.left = event.clientX - event.offsetX + 'px';
+        //this.locked_mouse_position = {...this.mouse_position};
       },
       close(){
         this.$emit('close_context_menu')
       },
-      on_click_long_path() {
-        let instance_update = {
-          index: this.instance_hover_index_locked,
-          mode: "delete"
-        }
-        this.$emit('start_auto_bordering', 'long_path')
-        this.close();
+      hide() {
+        this.$store.commit('set_ui_schema_element_value', false)
+        //this.close();
       },
-      on_click_short_path() {
-        let instance_update = {
-          index: this.instance_hover_index_locked,
-          mode: "delete"
-        }
-        this.$emit('start_auto_bordering', 'short_path')
-        this.close();
+      show() {
+        this.$store.commit('set_ui_schema_element_value', true)
+        //this.close();
       },
     }
   });
@@ -110,13 +113,13 @@
 
       <v-list-item
         link
-        @click="on_click_short_path"
+        @click="hide"
       >
 
         <v-list-item-icon>
           <tooltip_icon
-            tooltip_message="Delete Instance"
-            icon="mdi-shape-polygon-plus"
+            tooltip_message="Hide"
+            icon="mdi-eye-off"
             color="primary"
           />
         </v-list-item-icon>
@@ -126,15 +129,16 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
       <v-list-item
         link
-        @click="on_click_long_path"
+        @click="show"
       >
 
         <v-list-item-icon>
           <tooltip_icon
-            tooltip_message="Delete Instance"
-            icon="mdi-vector-polygon"
+            tooltip_message="Show"
+            icon="mdi-eye"
             color="primary"
           />
         </v-list-item-icon>

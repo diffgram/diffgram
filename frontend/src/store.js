@@ -108,6 +108,7 @@ export const user_module = {
       commit('clear_org')
       commit('clear_job')
       commit('clear_connection')
+      commit('clear_ui_schema')
 
     },
 
@@ -617,6 +618,52 @@ const clipboard = {
   }
 }
 
+const ui_schema = {
+  state: {
+    current: {},
+    event: undefined,
+    target_element: undefined,
+    refresh: undefined,
+  },
+  getters:{
+    get_ui_schema: (state) => (id) => {
+      let result = state.current[id]
+      if (result === undefined) { return true} // default
+      return result
+    }
+  },
+  mutations: {
+    set_ui_schema(state, current) {
+      state.current = current
+      state.refresh = Date.now()
+    },
+    clear_ui_schema(state) {
+      state.current = {};
+      state.event = undefined;
+      state.target_element = undefined;
+      state.editing = false
+      state.refresh = Date.now()
+    },
+    clear_ui_schema_event(state) {
+      state.event = undefined;
+      state.target_element = undefined;
+      state.refresh = Date.now()
+    },
+    set_ui_schema_editing_state(state, editing) {
+      state.editing = editing
+    },
+    set_ui_schema_event(state, payload) {
+      state.target_element = payload[0]
+      state.event = payload[1]
+      state.refresh = Date.now()
+    },
+    set_ui_schema_element_value(state, payload) {
+      state.current[state.target_element] = payload
+      state.refresh = Date.now()
+    },
+  }
+}
+
 const video = {
   state: {
     current: {},
@@ -668,7 +715,8 @@ const my_store = new Vuex.Store({
     connection: connection,
     input: input,
     clipboard: clipboard,
-    public_project: public_project
+    public_project: public_project,
+    ui_schema: ui_schema
   },
   plugins: [createPersistedState({
 

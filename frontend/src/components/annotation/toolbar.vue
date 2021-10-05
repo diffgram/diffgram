@@ -17,7 +17,6 @@
           v-if="ui_schema.show(ui_schema.show_logo)"
           :href="'/home/dashboard'">
           <div class="pt-2 pr-3 clickable"
-               @mouseover="mouseover"
                >
 
             <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
@@ -27,14 +26,24 @@
         </ahref_seo_optimal>
 
         <tooltip_button
-          v-if="ui_schema.show(ui_schema.show_home_button)"
+          v-if="$store.getters.get_ui_schema('show_home_button')"
+          ui_schema_name="show_home_button"
           color="primary"
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
           @click="$router.push('/job/' + task.job_id)"
           :bottom="true"
-          @mouseover="mouseover"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+          color="primary"
+          :icon_style="true"
+          icon="edit"
+          tooltip_message="Edit UI Schema"
+          @click="$emit('edit_ui_schema')"
+          :bottom="true"
                         >
         </tooltip_button>
 
@@ -54,7 +63,9 @@
         icon="mdi-undo"
         tooltip_message="Undo (ctrl+z)"
         @click="$emit('undo')"
-        :bottom="true">
+        :bottom="true"
+        ui_schema_name="show_undo"
+                      >
       </tooltip_button>
 
       <tooltip_button
@@ -65,7 +76,9 @@
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
         @click="$emit('redo')"
-        :bottom="true">
+        :bottom="true"
+        ui_schema_name="show_redo"
+                      >
       </tooltip_button>
     </div>
 
@@ -303,7 +316,9 @@
     <div>
       <tooltip_button
         tooltip_message="Previous Task"
-        v-if="task"
+        v-if="task &&
+              $store.getters.get_ui_schema('previous_task')"
+        ui_schema_name="previous_task"
         @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
@@ -936,9 +951,6 @@ export default Vue.extend( {
       this.label_settings_local.filter_grayscale = 0
     },
 
-    mouseover: function (event) {
-      console.log(event)
-    }
 
   }
 }
