@@ -11,7 +11,7 @@
               color="primary"
               x-large
               data-cy="annotate_now"
-              @click="annotate_now()"
+              @click="api_get_next_task_annotator()"
             >
               Annotate Now
             </v-btn>
@@ -119,6 +119,26 @@ export default Vue.extend( {
     route_last_task: function(){
       const routeData = `/task/${this.last_task.task_id}`;
       this.$router.push(routeData)
+    },
+
+    api_get_next_task_annotator: async function(){
+      try{
+        this.loading = true
+        const response = await axios.post(
+          `/api/v1/project/${this.project_string_id}/task/next`, {
+        });
+        if(response.status === 200){
+          let task = response.data.task
+          const routeData = `/task/${task.id}`;
+          this.$router.push(routeData)
+        }
+      }
+      catch (e) {
+        console.error(e);
+      }
+      finally {
+        this.loading = false;
+      }
     }
 
   }
