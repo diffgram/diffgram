@@ -1,158 +1,179 @@
-# OPENCORE - ADD
 from methods.regular.regular_api import *
 
-from shared.database.project import Project
 
-from shared.database.user import User
-from shared.database.user import UserbaseProject
+@routes.route('/api/v1/project/<string:project_string_id>' +
+              '/task/next',
+              methods = ['POST'])
+@limiter.limit("1 per second, 50 per minute, 1000 per day")
+@Project_permissions.user_has_project(
+    ["admin", "Editor", "Annotator"])
+def api_get_next_task_annotator(project_string_id):
 
-from shared.database.task.job.job import Job
-from shared.database.task.task import Task
+    log = regular_input.regular_log.default_api_log()
 
-from methods.source_control import working_dir  # rename new to directory in the future
+    with sessionMaker.session_scope() as session:
+
+        project = Project.get(session, project_string_id)
+        user = User.get(session)
+        
+        if not user:
+            log['error']['usage'] = "Designed for human users."
+            return jsonify( log = log), 200
+
+        task = get_next_task_by_project(
+            session = session,
+            user = user,
+            project = project)
+
+        if task is None:
+            log['info']['task'] = "No tasks available."
+            return jsonify( log = log), 200
+
+        task_serialized = task.serialize_trainer_annotate(session)
+
+        log['success'] = True
+        return jsonify( log = log,
+                        task = task_serialized), 200
 
 
-# Based on user being attached to job right?
+def get_next_task_by_project(
+        session,
+        user,
+        project):
 
-# TODO do we want a seperate route
-# For builders doing internal jobs? / how we want to handle that
-# Still want to use most of the provisioning system
+    task = Task.get_last_task(
+        session = session,
+        user = user,
+        status_allow_list = ["available", "in_progress"])
+
+    if task:
+        return task
+
+    task = Task.request_next_task_by_project( 
+        session = session,
+        project = project,
+        user = user)
+
+    if task:
+        Task.assign_task_to_user(
+            task = task,
+            user = user)
+        session.add(task)
+        session.add(user)
+
+    return task
+
+
+def get_next_task_by_job(
+        session,
+        user,
+        job):
+
+    task = Task.get_last_task(
+        session = session,
+        user = user,
+        status_allow_list = ["available", "in_progress"])
+
+    if task:
+        return task
+
+    task = recursively_get_next_available(session = session,
+                                          job = job,
+                                          user = user)
+
+    if task:
+        Task.assign_task_to_user(
+            task = task,
+            user = user)
+        session.add(task)
+        session.add(user)
+
+    return task
+
 
 @routes.route('/api/v1/job/<int:job_id>' +
-			  '/task/trainer/request',
-			  methods = ['POST'])
+              '/task/trainer/request',
+              methods = ['POST'])
 @limiter.limit("1 per second, 50 per minute, 500 per day")
 @Job_permissions.by_job_id(	
-	mode = "trainer",
+    mode = "trainer",
     apis_user_list = ['builder_or_trainer', 'security_email_verified'])
 def task_trainer_request_api(job_id):
-	"""
 
-	"""
-	log = regular_input.regular_log.default_api_log()
+    log = regular_input.regular_log.default_api_log()
 
-	with sessionMaker.session_scope() as session:
+    with sessionMaker.session_scope() as session:
 
-		# Job id will have already been checked in permissions
-		job = Job.get_by_id(session, job_id)
+        job = Job.get_by_id(session, job_id)
+        user = User.get(session)
 
-		### MAIN
-		user = User.get(session)
-		member = user.member
-		
-		result, task = task_trainer_request( session = session,
-											 user = user,
-											 job = job)
-		####
+        task = get_next_task_by_job(
+            session = session,
+            user = user,
+            project = project)
 
-		if result is True:
-			task_serialized = task.serialize_trainer_annotate(session)
+        if task is None:
+            log['info']['task'] = "No tasks available."
+            return jsonify( log = log), 200
 
-			log['success'] = True
-			return jsonify( log = log,
-						   task = task_serialized), 200
+        task_serialized = task.serialize_trainer_annotate(session)
 
-		# TODO front end handling on this
-		log['error']['task_request'] = "No tasks available."
-		return jsonify( log = log), 200
+        log['success'] = True
+        return jsonify( log = log,
+                        task = task_serialized), 200
 
 
-
-def task_trainer_request(session,
-						 user,
-						 job):
-	"""
-	
-	1) Check if user has any existing tasks
-	2) If not, assign a new task
-
-	ASSUMPTIONS
-		Tasks are generally pre assigned
-
-	"""
-
-	last_task = user.last_task
-
-	if last_task:
-
-		# Caution, if we don't check for job id too here
-		# Then run risk of task being shown not being in context of job!
-		# TODO, maybe save last task in user_to_job table so it's unique per job
-
-		if last_task.status == "available" and last_task.job_id == job.id:
-			return True, last_task
-	
-
-	task = recursively_get_next_available(session = session,
-										  job = job,
-										  user = user)
-
-	if task:
-		# handle assigning to user and related
-		task.assignee_user = user
-
-		# TODO [ ] check prior annotation assignment thing for ideas on that
-
-		# assign last_task to user too
-		session.add(user)
-		user.last_task = task
-
-
-		return True, task
-
-
-	return False, None
 
 
 def recursively_get_next_available(session,
-								   job,
-								   user):
-	"""
-	Goal, give consideration to task types,
-	and not expect that first result from shared.database
-	matches "business?" logic
+                                   job,
+                                   user):
+    """
+    Goal, give consideration to task types,
+    and not expect that first result from shared.database
+    matches "business?" logic
 
-	Example of saying a person can't review their own task
+    Example of saying a person can't review their own task
 
-	"""
+    """
 
-	ignore_task_IDS_list = []
+    ignore_task_IDS_list = []
 
-	while True:
+    while True:
 
-		task = Task.get_next_available_task_by_job_id( 
-			session = session,
-			job_id = job.id,
-			ignore_task_IDS_list = ignore_task_IDS_list)
+        task = Task.get_next_available_task_by_job_id( 
+            session = session,
+            job_id = job.id,
+            ignore_task_IDS_list = ignore_task_IDS_list)
 
-		if task is None:
-			return None
+        if task is None:
+            return None
 
-		if task.task_type == 'draw':
-			return task
+        if task.task_type == 'draw':
+            return task
 
-		if task.task_type == 'review':
+        if task.task_type == 'review':
 
-			result = valid_review_task_for_user(session = session,
-												task = task,
-												user = user)
+            result = valid_review_task_for_user(session = session,
+                                                task = task,
+                                                user = user)
 
-			if result is True:
-				return task
+            if result is True:
+                return task
 
-			else:
-				ignore_task_IDS_list.append(task.id)
+            else:
+                ignore_task_IDS_list.append(task.id)
 
 
 def valid_review_task_for_user(session,
-							   task,
-							   user):
+                               task,
+                               user):
 
-	parent = Task.get_by_id(session, task.parent_id)
-	# task.parent not working for some reason
+    parent = Task.get_by_id(session, task.parent_id)
+    # task.parent not working for some reason
 
-	if parent:
-		if user == parent.assignee_user:
-			return False
-	
-	return True
+    if parent:
+        if user == parent.assignee_user:
+            return False
+    
+    return True
