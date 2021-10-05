@@ -26,7 +26,6 @@
         </ahref_seo_optimal>
 
         <tooltip_button
-          v-if="$store.getters.get_ui_schema('show_home_button')"
           ui_schema_name="show_home_button"
           color="primary"
           :icon_style="true"
@@ -50,7 +49,7 @@
         <tooltip_button
           tooltip_message="Add Schema"
           ui_schema_name="add_button"
-          @click="$emit('edit_ui_schema')"
+          @click="$emit('add_ui_schema')"
           color="primary"
           icon="add"
           :icon_style="true"
@@ -120,6 +119,7 @@
         v-if="task
               && task.id
               && task.status == 'available'"
+        ui_schema_name="show_defer"
         @click="$emit('task_update_toggle_deferred')"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
@@ -135,57 +135,61 @@
       vertical
     ></v-divider>
 
-    <div class="pt-3 pl-2 pr-2">
+    <ui_schema name="show_zoom">
+      <div class="pt-3 pl-2 pr-2">
 
-      <v-tooltip bottom
-                  color="info"
-                  >
-        <template v-slot:activator="{ on }">
-          <v-chip v-on="on"
-                  color="white"
-                  small
-                  text-color="primary">
-            <h3> {{Math.round((canvas_scale_local) * 100)}}% </h3>
-          </v-chip>
-        </template>
+        <v-tooltip bottom
+                   color="info"
+                    >
+          <template v-slot:activator="{ on }">
+            <v-chip v-on="on"
+                    color="white"
+                    small
+                    text-color="primary">
+              <h3> {{Math.round((canvas_scale_local) * 100)}}% </h3>
+            </v-chip>
+          </template>
 
-        <v-alert type="info"
-                  >
-          While over image <kbd>Scroll</kbd> to Zoom.
-        </v-alert>
+          <v-alert type="info"
+                    >
+            While over image <kbd>Scroll</kbd> to Zoom.
+          </v-alert>
 
-      </v-tooltip>
+        </v-tooltip>
 
-    </div>
+      </div>
+    </ui_schema>
 
     <v-divider
       vertical
     ></v-divider>
 
-    <div style="width: 310px">
-      <div class="pl-2 pr-3 pt-4">
-        <label_select_annotation
-            :project_string_id="project_string_id"
-            :label_file_list="label_list"
-            :label_file_colour_map="label_file_colour_map"
-            @change="$emit('change_label_file', $event)"
-            :loading="loading"
-            :request_refresh_from_project="true"
-            :show_visibility_toggle="true"
-            @update_label_file_visible="$emit('update_label_file_visibility', $event)"
-        >
-        </label_select_annotation>
+    <ui_schema name="show_label_selector">
+      <div style="width: 310px">
+        <div class="pl-2 pr-3 pt-4">
+          <label_select_annotation
+              :project_string_id="project_string_id"
+              :label_file_list="label_list"
+              :label_file_colour_map="label_file_colour_map"
+              @change="$emit('change_label_file', $event)"
+              :loading="loading"
+              :request_refresh_from_project="true"
+              :show_visibility_toggle="true"
+              @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+          >
+          </label_select_annotation>
+        </div>
       </div>
-    </div>
+    </ui_schema>
 
     <!-- TODO @get_next_instance="request_next_instance" -->
 
     <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
-    <v-flex xs2>
-      <div class="pl-3 pr-3 pt-4">
+    <ui_schema name="show_instance_selector">
 
+      <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
         <!-- instance_selector -->
         <diffgram_select
             v-if="view_only_mode != true"
@@ -198,19 +202,9 @@
             >
         </diffgram_select>
 
-      </div>
-    </v-flex>
+      </div>   
 
-    <tooltip_button
-      tooltip_message="Edit Instance Template"
-      v-if="instance_template_selected && is_keypoint_template"
-      @click="$emit('open_instance_template_dialog')"
-      color="primary"
-      icon="mdi-vector-polyline-edit"
-      :icon_style="true"
-      :bottom="true"
-    >
-    </tooltip_button>
+    </ui_schema>
 
     <tooltip_button
       v-if="instance_type == 'tag'"
@@ -222,22 +216,35 @@
       :bottom="true">
     </tooltip_button>
 
+    <ui_schema name="show_edit_instance_template">
+      <tooltip_button
+        tooltip_message="Edit Instance Template"
+        v-if="instance_template_selected && is_keypoint_template"
+        @click="$emit('open_instance_template_dialog')"
+        color="primary"
+        icon="mdi-vector-polyline-edit"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </ui_schema>
+
     <v-divider
       vertical
     ></v-divider>
 
-
-    <div class="pl-3 pt-3 pr-2">
-      <v-switch v-if="view_only_mode != true"
-                :label_file="mode_text"
-                data-cy="edit_toggle"
-                :disabled="view_issue_mode"
-                v-model="draw_mode_local"
-                @change="$emit('edit_mode_toggle', draw_mode_local)"
-                :label="mode_text">
-      </v-switch>
-    </div>
-
+    <ui_schema name="show_draw_edit">
+      <div class="pl-3 pt-3 pr-2">
+        <v-switch v-if="view_only_mode != true"
+                  :label_file="mode_text"
+                  data-cy="edit_toggle"
+                  :disabled="view_issue_mode"
+                  v-model="draw_mode_local"
+                  @change="$emit('edit_mode_toggle', draw_mode_local)"
+                  :label="mode_text">
+        </v-switch>
+      </div>
+    </ui_schema>
 
     <v-divider
       vertical
