@@ -242,21 +242,8 @@
         }
         await this.$nextTick();
       },
-      zoom_in: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
-      },
-      zoom_out: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_out(this.canvas_transform);
-      },
       zoom_wheel_scroll_canvas_transform_update: function (event) {
-
-        this.zoom_object = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-          event, this.canvas_scale_local)
-
-        this.canvas_scale_local = this.zoom_object.scale;
-        this.zoom_canvas = this.zoom_object.zoom;
-        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-          event, this.canvas_scale_local)
+        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel(event)
       },
       mouse_transform: function (event, mouse_position) {
         return this.canvas_mouse_tools.mouse_transform(event, mouse_position, this.canvas_element, () => {}, this.canvas_transform)

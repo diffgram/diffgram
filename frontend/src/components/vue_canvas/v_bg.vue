@@ -53,6 +53,12 @@ export default Vue.extend({
               this.image,
               0,
               0,
+              this.image.width,
+              this.image.height,
+              0,
+              0,
+              this.image.width,
+              this.image.height
             )
 
           }
