@@ -46,6 +46,7 @@ class UI_Schema(Base, SerializerMixin):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
+    global_theme = Column(MutableDict.as_mutable(JSONB))
 
     show_logo = Column(Boolean)
     logo_schema = Column(MutableDict.as_mutable(JSONB))
