@@ -42,6 +42,7 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
+                   @canvas_scale_global_changed="on_canvas_scale_global_changed"
                    @change_task="trigger_task_change($event, task)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
@@ -1547,6 +1548,7 @@
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+
           let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
           let toolbar_height = 80
@@ -1581,6 +1583,7 @@
           let new_size = Math.round(lowest_size * 100) / 100
 
           this.label_settings.canvas_scale_global_setting = new_size
+
 
 
           return new_size
@@ -1867,6 +1870,16 @@
       },
 
       methods: {
+        on_canvas_scale_global_changed: function(new_scale){
+          // Force a canvas reset when changing global scale.
+          console.log('NEW SCALE', new_scale)
+          this.label_settings.canvas_scale_global_setting = new_scale;
+          this.canvas_element_ctx.resetTransform();
+          this.canvas_element_ctx.scale(new_scale, new_scale);
+          this.canvas_mouse_tools.canvas_scale_global = new_scale;
+          this.canvas_mouse_tools.scale = new_scale;
+          this.update_canvas();
+        },
         update_label_settings: function (event) {
           this.label_settings = event
           this.refresh = Date.now()
@@ -2931,9 +2944,8 @@
           this.canvas_mouse_tools = new CanvasMouseTools(
             this.mouse_position,
             this.canvas_translate,
-            this.canvas_transform,
             this.canvas_element,
-            this.html_image
+            this.canvas_scale_global
           )
           // assumes canvas wrapper available
           this.canvas_wrapper.style.display = ""
@@ -3354,7 +3366,7 @@
         },
 
         reset_to_full: function () {
-          this.canvas_element_ctx.resetTransform();
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
         },
 
         get_center_point_of_instance:function (instance) {
