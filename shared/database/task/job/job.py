@@ -389,12 +389,12 @@ class Job(Base, Caching):
 
         if 'all' in member_list_ids:
             user_list = self.project.users
-            job.permission = "all_secure_users"
-            session.add(job)
+            self.permission = "all_secure_users"
+            session.add(self)
 
         else:
-            job.permission = "invite_only"
-            session.add(job)
+            self.permission = "invite_only"
+            session.add(self)
             for member_id in member_list_ids:
 
                 user = User.get_by_member_id(
