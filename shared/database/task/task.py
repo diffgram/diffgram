@@ -369,7 +369,8 @@ class Task(Base):
             'status': self.job_type,
             'file': self.file.serialize_with_type(session=session),
             'guide': guide,
-            'label_dict': self.label_dict
+            'label_dict': self.label_dict,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def serialize_builder_view_by_id(self, session):
@@ -400,7 +401,8 @@ class Task(Base):
             'status': self.status,
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
-            'default_userscript': default_userscript
+            'default_userscript': default_userscript,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def get_by_job_and_file(
@@ -544,7 +546,8 @@ class Task(Base):
             },
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
-            'time_created': self.time_created.isoformat()
+            'time_created': self.time_created.isoformat(),
+            'assignee_user_id': self.assignee_user_id
 
         }
 
@@ -558,7 +561,8 @@ class Task(Base):
             'time_updated': self.time_updated,
             'time_completed': self.time_completed,
             'review_star_rating_average': self.review_star_rating_average,
-            'gold_standard_missing': self.gold_standard_missing
+            'gold_standard_missing': self.gold_standard_missing,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def get_gold_standard_file(self):
