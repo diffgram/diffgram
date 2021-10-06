@@ -20,7 +20,7 @@ export class CanvasMouseTools {
     this.canvas_translate = canvas_translate;
     this.canvas_elm = canvas_elm;
     this.canvas_ctx = this.canvas_elm.getContext('2d')
-    this.scale = canvas_scale_global;
+    this.scale = 1;
     this.canvas_scale_global = canvas_scale_global;
     this.translate_acc = {x: 0, y: 0}
   }
@@ -82,30 +82,33 @@ export class CanvasMouseTools {
   public reset_transform_with_global_scale(){
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
-    this.scale = this.canvas_scale_global;
   }
 
   public zoom_wheel(event): void {
     // this is the illusionary point on UI that we wish to stay locked on
     let point = this.raw_point(event);
-    this.mouse_transform(event, this.mouse_position, this.canvas_elm)
     const wheel = event.deltaY < 0 ? 1 : -1;
 
-    let transform = this.canvas_ctx.getTransform();
+
     // Compute zoom factor.
     let zoomIntensity = 0.1;
     let zoom = Math.exp(wheel * zoomIntensity);
 
     console.log('SCALEEE', this.scale)
+    console.log('zoom', zoom)
     console.log('this.canvas_scale_global', this.canvas_scale_global)
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-    if (this.scale < this.canvas_scale_global) {
 
+    this.scale = this.scale * zoom;
+    if (this.scale <= this.canvas_scale_global) {
+      console.log('RESET')
       this.reset_transform_with_global_scale();
       this.scale = this.canvas_scale_global;
       return
+
     }
-    this.scale = this.scale * zoom;
+    console.log('startranfomr')
+    console.log('NEW SCALE', this.scale)
     if (this.scale >= 30) {
       this.scale = 30
     }
@@ -116,8 +119,8 @@ export class CanvasMouseTools {
       this.canvas_elm.height
     );
 
-
-    this.reset_transform_with_global_scale();
+    let transform = this.canvas_ctx.getTransform();
+    this.canvas_ctx.resetTransform();
     this.canvas_ctx.translate(point.x, point.y);
 
     this.canvas_ctx.scale(zoom, zoom);
@@ -125,18 +128,10 @@ export class CanvasMouseTools {
 
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
     let transform_new = this.canvas_ctx.getTransform();
-    console.log('a', transform_new.a, 'd', transform_new.d)
-    console.log('e', transform_new.e, 'f', transform_new.f)
-    console.log('e', transform_new.e, 'f', transform_new.f)
 
-
+    console.log('transform_new scale', transform_new.a, transform_new.b)
     // Avoid positive values translates
-    if(transform_new.a < 1 || transform.d < 1){
-      this.reset_transform_with_global_scale();
-    }
-    if(transform_new.e > 0 || transform.f > 0){
-      this.reset_transform_with_global_scale();
-    }
+
     this.previous_zoom = zoom;
     this.previous_point = point;
     this.previous_transform = transform;
