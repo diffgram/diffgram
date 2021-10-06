@@ -286,10 +286,22 @@
         Playback Issue Detected.
         <ol>
           <li>Try Reloading the Page.</li>
-          <li>Log out and log in again. (Permissions may have expired)</li>
+          <li>Log out and log in again.</li>
           <li>Check your internet connection and <a href="https://diffgram.readme.io/docs/minimum-hardware-specs"> Diffgram Minimum Specs. </a></li>
         </ol>
-        If the issue persists please run a speed test and send us the result and task id.
+        <br>
+        Technical Info:
+        <ul>
+          <li> Error: <b>{{video_error_message}} </b></li>
+          <li> Project: {{$store.state.project.current.project_string_id}} </li>
+          <li> VideoFileID: {{current_video_file_id}} </li>
+        </ul>
+        <br>
+        <div v-if="task">
+          Task: {{task.id}}
+        </div>
+
+        If the issue persists please send your admin a screenshot and run a speed test.
       </v-alert>
 
       <v-alert v-if="at_end_of_video == true"
@@ -475,7 +487,8 @@ export default Vue.extend( {
 
       slide_active: false,
 
-      playback_info: null,
+      playback_info: false,
+      video_error_message: undefined,
 
       muted: false,
 
@@ -967,7 +980,8 @@ export default Vue.extend( {
             // Show playing UI.
 
             this.playing = true
-            this.playback_info = null // reset
+            this.playback_info = false // reset
+            this.video_error_message = undefined
 
             this.primary_video.currentTime = this.video_current_frame_guess / this.current_video.frame_rate
 
@@ -984,7 +998,7 @@ export default Vue.extend( {
 
             this.playback_info = true
             this.$emit('video_play_failed')
-
+            this.video_error_message = error.message
             // throw new error for sentry IO capturing benefit
             // context of trying to get understanding of what client side issue
             // is happening
