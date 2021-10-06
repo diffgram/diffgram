@@ -5,15 +5,33 @@
   <v-container>
     <v-card>
       <v-container>
+
+      <v-progress-linear
+        v-if="next_task_loading"
+        height="10"
+        indeterminate
+        absolute
+        top
+        color="secondary accent-4">
+      </v-progress-linear>
+
         <h1>Annotate Next Available Task </h1>
           <div class="pa-2">
             <v-btn
               color="primary"
               x-large
               data-cy="annotate_now"
+              :disabled="next_task_loading"
               @click="api_get_next_task_annotator()"
             >
-              Annotate Now
+              Annotate
+
+                  <v-icon
+                    right
+                  >
+                    mdi-play
+                  </v-icon>
+
             </v-btn>
           </div>
       </v-container>
@@ -23,16 +41,33 @@
     <v-container>
       <v-card>
         <v-container>
+
+        <v-progress-linear
+          v-if="resume_task_loading"
+          height="10"
+          indeterminate
+          absolute
+          top
+          color="secondary accent-4">
+        </v-progress-linear>
+
           <h2>Resume Last Task </h2>
             <div class="pa-2">
               <v-btn
                 color="primary"
                 large
                 data-cy="resume_last_task"
-                :disabled="last_task === false"
-                @click="route_last_task()"
+                :disabled="last_task === false || resume_task_loading"
+                @click="route_resume_task()"
               >
                 Resume
+
+                  <v-icon
+                    right
+                  >
+                    mdi-replay
+                  </v-icon>
+
               </v-btn>
               <div v-if="last_task" class="pt-2 font-weight-light">
                 {{last_task.time_created}}
@@ -55,7 +90,14 @@
                 data-cy="serach_route"
                 @click="$router.push('/job/list')"
               >
-                Browse Now
+                Browse
+
+                  <v-icon
+                    right
+                  >
+                    mdi-compass
+                  </v-icon>
+
               </v-btn>
             </div>
           </v-container>
@@ -93,8 +135,8 @@ export default Vue.extend( {
   },
   data () {
     return {
-
-
+      next_task_loading : false,
+      resume_task_loading: false
     }
   },
   created() {
@@ -116,14 +158,16 @@ export default Vue.extend( {
     }
   },
   methods: {
-    route_last_task: function(){
+
+    route_resume_task: function(){
+      this.resume_task_loading = true
       const routeData = `/task/${this.last_task.task_id}`;
       this.$router.push(routeData)
     },
 
     api_get_next_task_annotator: async function(){
       try{
-        this.loading = true
+        this.next_task_loading = true
         const response = await axios.post(
           `/api/v1/project/${this.project_string_id}/task/next`, {
         });
@@ -137,7 +181,7 @@ export default Vue.extend( {
         console.error(e);
       }
       finally {
-        this.loading = false;
+        this.next_task_loading = false;
       }
     }
 
