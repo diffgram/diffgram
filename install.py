@@ -379,6 +379,7 @@ class DiffgramInstallTool:
             env_file = 'DIFFGRAM_AWS_ACCESS_KEY_ID={}\n'.format(self.s3_access_id)
             env_file += 'DIFFGRAM_AWS_ACCESS_KEY_SECRET={}\n'.format(self.s3_access_secret)
             env_file += 'DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
+            env_file += 'DIFFGRAM_S3_BUCKET_REGION={}\n'.format(self.bucket_region)
             env_file += 'ML__DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
             env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
             env_file += 'DIFFGRAM_STATIC_STORAGE_PROVIDER={}\n'.format(self.static_storage_provider)
