@@ -168,6 +168,7 @@ class User(Base):
             project_current = self.project_current.serialize()
 
         return {
+            'id': self.id,
             'current_project_string_id': self.current_project_string_id,
             'is_super_admin': self.is_super_admin,
             'first_name': self.first_name,
@@ -197,6 +198,7 @@ class User(Base):
         # Careful, this may be accessed by other users (ie on same project)
 
         user = {
+            'id': self.id,
             'first_name': self.first_name,
             'id': self.id,
             'last_name': self.last_name,
@@ -212,6 +214,7 @@ class User(Base):
             permission_level = self.permissions_projects.get(project_string_id)
 
         return {
+            'id': self.id,
             'member_id': self.member_id,
             'email': self.email,
             'first_name': self.first_name,
@@ -221,6 +224,7 @@ class User(Base):
             'permission_level': permission_level,
             'member_kind': 'human'
         }
+    
 
     def serialize_with_permission_only(self, project_string_id):
         return self.permissions_projects.get(project_string_id, None)
