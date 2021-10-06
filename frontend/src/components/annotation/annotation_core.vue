@@ -3354,9 +3354,7 @@
         },
 
         reset_to_full: function () {
-          this.canvas_translate.x = 0
-          this.canvas_translate.y = 0
-          this.canvas_scale_local = 1
+          this.canvas_element_ctx.resetTransform();
         },
 
         get_center_point_of_instance:function (instance) {
@@ -3408,12 +3406,13 @@
           let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
           let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
           let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
-          let padding = -0.5
+          let padding = -2
           return max_zoom_to_show_all + padding
         },
 
         snap_to_instance: function (instance){
-
+          console.log('label_settings', this.label_settings.enable_snap_to_instance)
+          console.log('auto_revert_snapped_to_instance_if_unchanged', this.auto_revert_snapped_to_instance_if_unchanged(instance))
           if (this.label_settings.enable_snap_to_instance == false) {
             return
           }
@@ -3426,10 +3425,15 @@
 
           let point = this.get_focus_point_of_instance(instance)
 
-          this.canvas_translate.x = point.x * this.canvas_scale_global
-          this.canvas_translate.y = point.y * this.canvas_scale_global
+          let move = {
+            x: point.x * this.canvas_scale_global,
+            y: point.y * this.canvas_scale_global
+          }
 
-          this.canvas_scale_local = this.get_zoom_region_of_instance(instance)
+          let scale = this.get_zoom_region_of_instance(instance);
+          this.canvas_mouse_tools.zoom_to_point(move, scale)
+
+          this.update_canvas();
         },
 
         update_label_file_visible: function (label_file) {
@@ -5070,12 +5074,12 @@
           let pan_position_x = x + this.mouse_position.x;
           let pan_position_y = y + this.mouse_position.y;
 
-          if ( pan_position_x >= 0 && pan_position_x < this.canvas_width_scaled){
+          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width_scaled)){
             this.canvas_mouse_tools.pan_x(movementX)
             this.canvas_pan_accumulated.x = x
 
           }
-          if ( pan_position_y >= 0 && pan_position_y < this.canvas_height_scaled){
+          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height_scaled)){
             this.canvas_mouse_tools.pan_y(movementY)
             this.canvas_pan_accumulated.y = y
 

@@ -52,13 +52,7 @@ export default Vue.extend({
             ctx.drawImage(
               this.image,
               0,
-              0,
-              this.image.width,
-              this.image.height,
-              0,
-              0,
-              this.image.width,
-              this.image.height
+              0
             )
 
           }
