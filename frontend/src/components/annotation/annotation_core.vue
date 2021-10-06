@@ -1340,8 +1340,7 @@
             x: 0,
             y: 0
           },
-
-          canvas_translate_previous: {
+          canvas_pan_accumulated: {
             x: 0,
             y: 0
           },
@@ -1608,7 +1607,6 @@
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
             'translate': this.canvas_translate,
-            'translate_previous': this.canvas_translate_previous,
             'zoom': this.zoom_canvas
           }
         },
@@ -2933,9 +2931,9 @@
           this.canvas_mouse_tools = new CanvasMouseTools(
             this.mouse_position,
             this.canvas_translate,
-            this.canvas_translate_previous,
             this.canvas_transform,
-            this.canvas_element
+            this.canvas_element,
+            this.html_image
           )
           // assumes canvas wrapper available
           this.canvas_wrapper.style.display = ""
@@ -3349,31 +3347,8 @@
 
         zoom_wheel_scroll_canvas_transform_update: function (event) {
 
-          this.hide_context_menu()    // context of position updating looks funny if it stays
-          let prior_scale = this.canvas_scale_local
-          this.canvas_translate_previous = {...this.canvas_translate}
-
-          let zoom_object = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-            event,
-            this.canvas_scale_local
-          )
-          this.canvas_scale_local = zoom_object.scale;
-          this.zoom_canvas = zoom_object.zoom;
-
-          this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event,
-            prior_scale,
-            this.canvas_scale_local,
-            this.canvas_scale_global,
-            this.canvas_translate_previous
-          );
-          this.canvas_mouse_tools.update_canvas_transforms(
-            this.canvas_translate_previous,
-            this.canvas_translate,
-            this.canvas_scale_local,
-            this.zoom_canvas,
-            this.canvas_scale_global
-          );
+          this.hide_context_menu()
+          this.canvas_mouse_tools.zoom_wheel(event);
           this.update_canvas();
 
         },
@@ -3381,8 +3356,6 @@
         reset_to_full: function () {
           this.canvas_translate.x = 0
           this.canvas_translate.y = 0
-          this.canvas_translate_previous.x = 0
-          this.canvas_translate_previous.y = 0
           this.canvas_scale_local = 1
         },
 
@@ -5088,27 +5061,24 @@
 
 
         move_position_based_on_mouse: function (movementX, movementY) {
-
-          // using local could work if we also "dragged" it... but feels funny for free move
-          // let x = this.canvas_translate.x + (movementX / this.canvas_scale_local)
-          // let y = this.canvas_translate.y + (movementY / this.canvas_scale_local)
-          let x = this.canvas_translate.x + movementX
-          let y = this.canvas_translate.y + movementY
-
-          /* Below are Locks so it doesn't go out of bounds.
-       * if it goes out of boudnds (ie negative or greater then image actual)
-       * then it causes severe rendering error.
-       *
-       * careful, we assume we need to compare to scaled value
-       * base on rest of context
-       * This is wishy washy answer but basically console logged
-       * and it was clear neeeded scaled value from that.
-       */
-          if (x >= 0 && x < this.canvas_width_scaled){
-            this.canvas_translate.x = x
+          if(this.canvas_mouse_tools.scale === 1){
+            return
           }
-          if (y >= 0 && y < this.canvas_height_scaled){
-            this.canvas_translate.y = y
+
+          let x = this.canvas_pan_accumulated.x + movementX;
+          let y = this.canvas_pan_accumulated.y + movementY;
+          let pan_position_x = x + this.mouse_position.x;
+          let pan_position_y = y + this.mouse_position.y;
+
+          if ( pan_position_x >= 0 && pan_position_x < this.canvas_width_scaled){
+            this.canvas_mouse_tools.pan_x(movementX)
+            this.canvas_pan_accumulated.x = x
+
+          }
+          if ( pan_position_y >= 0 && pan_position_y < this.canvas_height_scaled){
+            this.canvas_mouse_tools.pan_y(movementY)
+            this.canvas_pan_accumulated.y = y
+
           }
 
         },
@@ -5130,6 +5100,7 @@
             this.canvas_element.style.cursor = 'move'
             return
           }
+          this.canvas_pan_accumulated = {x:0, y: 0};
           this.move_something(event)
 
           this.update_mouse_style()
