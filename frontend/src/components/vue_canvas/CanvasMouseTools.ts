@@ -23,6 +23,13 @@ export class CanvasMouseTools {
     this.translate_acc = {x: 0, y: 0}
   }
 
+  public zoom_to_point(point, scale){
+    this.canvas_ctx.resetTransform();
+    this.canvas_ctx.translate(point.x, point.y);
+    this.canvas_ctx.scale(scale, scale)
+    this.canvas_ctx.translate(-point.x, -point.y);
+    this.scale = scale;
+  }
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
   }
@@ -92,8 +99,8 @@ export class CanvasMouseTools {
     this.canvas_ctx.clearRect(
       0,
       0,
-      this.canvas_elm.width / this.scale,
-      this.canvas_elm.height / this.scale
+      this.canvas_elm.width,
+      this.canvas_elm.height
     );
 
     let transform = this.canvas_ctx.getTransform();
