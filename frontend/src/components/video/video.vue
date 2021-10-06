@@ -283,7 +283,13 @@
 
       <v-alert v-if="playback_info"
                 type="warning">
-        {{ playback_info }}
+        Playback Issue Detected.
+        <ol>
+          <li>Try Reloading the Page.</li>
+          <li>Log out and log in again. (Permissions may have expired)</li>
+          <li>Check your internet connection and <a href="https://diffgram.readme.io/docs/minimum-hardware-specs"> Diffgram Minimum Specs. </a></li>
+        </ol>
+        If the issue persists please run a speed test and send us the result and task id.
       </v-alert>
 
       <v-alert v-if="at_end_of_video == true"
@@ -976,7 +982,7 @@ export default Vue.extend( {
             // Show paused UI.
             // TODO treat 403 / permissions errors differently
 
-            this.playback_info = "Please check your internet connection. Or try reloading. Contact us if this persists."
+            this.playback_info = true
             this.$emit('video_play_failed')
 
             // throw new error for sentry IO capturing benefit
