@@ -13,6 +13,10 @@ export default Vue.extend( {
       type: Number,
       default: null,
     },
+    'user_id' : {
+      type: Number,
+      default: null,
+    },
     'show_full_name' : {
       type: Boolean,
       default: false,
@@ -53,9 +57,14 @@ export default Vue.extend( {
     user_local: function (){
       if (this.$props.user){
         return this.$props.user
-      } else {
+      }
+      if (this.$props.member_id){
         return this.$store.state.project.current.member_list.find(x=> {
             return x.member_id == this.$props.member_id})
+      }
+      if (this.$props.user_id){
+        return this.$store.state.project.current.member_list.find(x=> {
+            return x.id == this.$props.user_id})
       }
     }
   },
