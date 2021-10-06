@@ -94,21 +94,15 @@ export class CanvasMouseTools {
     let zoomIntensity = 0.1;
     let zoom = Math.exp(wheel * zoomIntensity);
 
-    console.log('SCALEEE', this.scale)
-    console.log('zoom', zoom)
-    console.log('this.canvas_scale_global', this.canvas_scale_global)
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
 
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
-      console.log('RESET')
       this.reset_transform_with_global_scale();
       this.scale = this.canvas_scale_global;
       return
 
     }
-    console.log('startranfomr')
-    console.log('NEW SCALE', this.scale)
     if (this.scale >= 30) {
       this.scale = 30
     }
@@ -129,7 +123,6 @@ export class CanvasMouseTools {
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
     let transform_new = this.canvas_ctx.getTransform();
 
-    console.log('transform_new scale', transform_new.a, transform_new.b)
     // Avoid positive values translates
 
     this.previous_zoom = zoom;

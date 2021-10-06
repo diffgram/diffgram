@@ -1872,7 +1872,6 @@
       methods: {
         on_canvas_scale_global_changed: function(new_scale){
           // Force a canvas reset when changing global scale.
-          console.log('NEW SCALE', new_scale)
           this.label_settings.canvas_scale_global_setting = new_scale;
           this.canvas_element_ctx.resetTransform();
           this.canvas_element_ctx.scale(new_scale, new_scale);
@@ -3423,8 +3422,6 @@
         },
 
         snap_to_instance: function (instance){
-          console.log('label_settings', this.label_settings.enable_snap_to_instance)
-          console.log('auto_revert_snapped_to_instance_if_unchanged', this.auto_revert_snapped_to_instance_if_unchanged(instance))
           if (this.label_settings.enable_snap_to_instance == false) {
             return
           }
@@ -5077,7 +5074,7 @@
 
 
         move_position_based_on_mouse: function (movementX, movementY) {
-          if(this.canvas_mouse_tools.scale === 1){
+          if(this.canvas_mouse_tools.scale === this.canvas_scale_global){
             return
           }
 
@@ -5085,7 +5082,10 @@
           let y = this.canvas_pan_accumulated.y + movementY;
           let pan_position_x = x + this.mouse_position.x;
           let pan_position_y = y + this.mouse_position.y;
-
+          console.log('x', x)
+          console.log('pan_position_x', pan_position_x)
+          console.log('canvas_width_scaled', this.canvas_width_scaled)
+          console.log('canvas_width', this.canvas_width)
           if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width_scaled)){
             this.canvas_mouse_tools.pan_x(movementX)
             this.canvas_pan_accumulated.x = x
