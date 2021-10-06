@@ -54,7 +54,7 @@
       <!-- start list view -->
       <div v-if="mode_view=='list'">
 
-        <v-container class="ma-0">
+        <v-container>
           <v-layout>
 
             <div v-if="['direct_route', 'exam_results'].includes(mode_data)">
@@ -192,6 +192,7 @@
                   {{props.item.time_created | moment("ddd, MMM Do H:mm:ss a")}}
                 </div>
               </td>
+
               <td v-if="mode_data!='exam_results' && show_detail_button">
                 <v-container v-if="!props.item.loading && props.item.status === 'available'"
                              class="d-flex justify-center align-center">
@@ -278,6 +279,12 @@
                 </v-btn>
                     -->
               </td>
+
+              <td>
+                  <v_user_icon :user_id="props.item.assignee_user_id">
+                  </v_user_icon>
+              </td>
+
               <td v-if="mode_data=='exam_results'">
                 <v-rating v-model="props.item.review_star_rating_average"
                           readonly
@@ -518,6 +525,12 @@
             },
             {
               text: "Action",
+              align: 'center',
+              sortable: false,
+              value: ''
+            },
+            {
+              text: "Assigned User",
               align: 'center',
               sortable: false,
               value: ''
