@@ -33,6 +33,6 @@ describe('Login Flow tests', function () {
       'user',
       'clipboard',
       'video',
-      'history');
+      'ui_schema');
   })
 });
