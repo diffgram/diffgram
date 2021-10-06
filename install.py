@@ -58,6 +58,7 @@ class bcolors:
 class DiffgramInstallTool:
     static_storage_provider = None
     bucket_name = None
+    bucket_region = None
     gcp_credentials_path = None
     s3_access_id = None
     s3_access_secret = None
@@ -236,11 +237,12 @@ class DiffgramInstallTool:
         access_id = self.s3_access_id
         access_secret = self.s3_access_secret
         bucket_name = self.bucket_name
+        bucket_region = self.bucket_region
         test_file_path = 'diffgram_test_file.txt'
         client = None
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
-            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret)
+            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret, region_name = bucket_region)
             print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To S3 Account')
         except Exception as e:
             print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
@@ -315,6 +317,18 @@ class DiffgramInstallTool:
             self.bucket_name = 'diffgram-storage'
         else:
             self.bucket_name = bucket_name
+
+        # Ask for bucket region
+        is_valid = False
+
+        while not is_valid:
+            bucket_region = bcolors.inputcolor('Please provide the AWS S3 Bucket Region: ')
+            if bucket_region == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.bucket_region = bucket_region
+                is_valid = True
 
     def set_azure_credentials(self):
         # Ask For Access Key ID
