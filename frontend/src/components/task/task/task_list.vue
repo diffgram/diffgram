@@ -194,6 +194,15 @@
               </td>
 
               <td v-if="mode_data!='exam_results' && show_detail_button">
+
+                  <v-btn @click="route_task(props.item.id)"
+                         :loading="loading"
+                         color="primary"
+                         v-if="!integration_name"
+                       >
+                    View
+                  </v-btn>
+
                 <v-container v-if="!props.item.loading && props.item.status === 'available'"
                              class="d-flex justify-center align-center">
 
@@ -211,15 +220,12 @@
 
                   </v-btn>
 
-
-                  <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
-                         color="primary">
-                    View
-                  </v-btn>
                 </v-container>
+
                 <v-container class="d-flex justify-center align-center"
-                             v-else-if="!props.item.loading && props.item.status === 'in_progress'">
+                             v-if="integration_name&&
+                                  !props.item.loading
+                                  && props.item.status === 'in_progress'">
                   <p class="primary--text font-weight-bold">
                     <v-icon color="primary">mdi-refresh</v-icon>
                     Task is being processed by external provider.
@@ -247,15 +253,10 @@
 
                     </v-btn>
                   </a>
-
-                  <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
-                         color="primary">
-                    View
-                  </v-btn>
                 </v-container>
+     
                 <v-container class="d-flex justify-center align-center"
-                             v-else-if="!props.item.loading">
+                             v-if="integration_name && !props.item.loading">
                   <v-btn @click="route_task(props.item.id)"
                          :loading="loading"
                          color="primary">
@@ -263,7 +264,9 @@
                   </v-btn>
                 </v-container>
 
-                <v-progress-circular v-else color="primary" :indeterminate="true"></v-progress-circular>
+                <v-progress-linear v-if="loading"
+                                     color="primary"
+                                     :indeterminate="true"></v-progress-linear>
 
                 <!-- TODO review this function -->
 
