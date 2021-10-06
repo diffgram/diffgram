@@ -8,6 +8,7 @@ import shared.database.discussion.discussion as discussion
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
 
+
 class Task(Base):
     """
     A single unit of work.
@@ -303,11 +304,26 @@ class Task(Base):
             skip_locked=True,
             task_type=None):
 
+        from shared.database.task.job.user_to_job import User_To_Job
+        from shared.database.task.job.job import Job
+
         if project is None:
             return False
 
         query = session.query(Task).filter(
             Task.project_id == project.id)
+
+        job_ids_user_is_assigned = User_To_Job.get_job_ids_from_user(
+            session=session,
+            user_id=user.id)
+
+        job_ids_open_to_all_users = Job.get_job_IDS_open_to_all(
+            session = session,
+            project = project)
+
+        job_ids_allowed = job_ids_user_is_assigned + job_ids_open_to_all_users
+
+        query = query.filter(Task.job_id.in_(job_ids_allowed))
 
         if skip_locked == True:
             query = query.with_for_update(skip_locked=True)
