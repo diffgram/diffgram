@@ -2721,16 +2721,9 @@
 
           // instance update
           if (update.mode == "update_label") {
-            const instance_copy = {...this.instance_list[index]}
             // not 100% sure if we need both here
             instance.label_file = update.payload
             instance.label_file_id = update.payload.id
-
-            const new_instance = this.instance_list[index];
-            const command = new UpdateInstanceCommand(new_instance, index, instance_copy, this);
-            this.command_manager.executeCommand(command);
-            this.original_edit_instance = undefined;
-            this.original_edit_instance_index = undefined;
           }
 
           if (update.mode == "change_sequence"){
