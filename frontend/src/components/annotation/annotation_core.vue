@@ -3432,10 +3432,10 @@
           this.snapped_to_instance = instance
 
           let point = this.get_focus_point_of_instance(instance)
-          ctx.draw
+
           let move = {
-            x: point.x * this.canvas_scale_global,
-            y: point.y * this.canvas_scale_global
+            x: point.x,
+            y: point.y
           }
 
           let scale = this.get_zoom_region_of_instance(instance);
