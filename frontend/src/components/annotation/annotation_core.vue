@@ -2719,9 +2719,16 @@
 
           // instance update
           if (update.mode == "update_label") {
+            const instance_copy = {...this.instance_list[index]}
             // not 100% sure if we need both here
             instance.label_file = update.payload
             instance.label_file_id = update.payload.id
+
+            const new_instance = this.instance_list[index];
+            const command = new UpdateInstanceCommand(new_instance, index, instance_copy, this);
+            this.command_manager.executeCommand(command);
+            this.original_edit_instance = undefined;
+            this.original_edit_instance_index = undefined;
           }
 
           if (update.mode == "change_sequence"){
@@ -2802,7 +2809,6 @@
 
           this.has_changed = true;
           this.trigger_refresh_with_delay()
-
 
         },
 
@@ -5666,6 +5672,7 @@
         },
 
         mouse_down_limits: function (event) {
+          console.log("Mouse down")
           /* not a fan of having a value
        * and a flag... but also have to deal with both
        * mouse up and down firing, but not wanting to rerun this stuff twice
@@ -5738,6 +5745,7 @@
 
         bounding_box_mouse_down: function(){
           if (this.$store.state.annotation_state.draw == true) {
+            console.log("Box mouse down")
             if (this.current_instance.x_max - this.current_instance.x_min >= 5
               && this.current_instance.y_max - this.current_instance.y_min >= 5) {
               const create_box_command = new CreateInstanceCommand(this.current_instance, this);
