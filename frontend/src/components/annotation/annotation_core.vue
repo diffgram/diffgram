@@ -2669,7 +2669,6 @@
         },
 
         instance_update: function (update) {
-          console.log(update)
           /*
          * update, an object like:
          *
@@ -5646,7 +5645,6 @@
         },
 
         mouse_down_limits: function (event) {
-          console.log("Mouse down")
           /* not a fan of having a value
        * and a flag... but also have to deal with both
        * mouse up and down firing, but not wanting to rerun this stuff twice
@@ -5719,7 +5717,6 @@
 
         bounding_box_mouse_down: function(){
           if (this.$store.state.annotation_state.draw == true) {
-            console.log("Box mouse down")
             if (this.current_instance.x_max - this.current_instance.x_min >= 5
               && this.current_instance.y_max - this.current_instance.y_min >= 5) {
               const create_box_command = new CreateInstanceCommand(this.current_instance, this);
