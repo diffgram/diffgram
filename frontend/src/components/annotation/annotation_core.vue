@@ -1155,7 +1155,7 @@
             filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
             instance_buffer_size: 60,
             canvas_scale_global_is_automatic: false,
-            canvas_scale_global_setting: 1,
+            canvas_scale_global_setting: 0.5,
             left_nav_width: 450,
             on_instance_creation_advance_sequence: true,
             ghost_instances_closed_by_open_view_edit_panel: false
@@ -2939,7 +2939,6 @@
           this.fetch_model_run_list();
           this.fetch_instance_template();
 
-          this.update_canvas()
           this.canvas_mouse_tools = new CanvasMouseTools(
             this.mouse_position,
             this.canvas_translate,
@@ -3416,7 +3415,7 @@
           let max_zoom = 10
           let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
           let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
+          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y) * this.canvas_scale_global
           let padding = -2
           return max_zoom_to_show_all + padding
         },
@@ -3433,7 +3432,7 @@
           this.snapped_to_instance = instance
 
           let point = this.get_focus_point_of_instance(instance)
-
+          ctx.draw
           let move = {
             x: point.x * this.canvas_scale_global,
             y: point.y * this.canvas_scale_global
@@ -5111,7 +5110,9 @@
         window.focus()
       }
       */
+          console.log('------------------------MOUSE MOVE')
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
+          console.log('mouse_position', this.mouse_position)
           if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)
             this.canvas_element.style.cursor = 'move'
@@ -5468,9 +5469,9 @@
               this.is_actively_resizing = false
             }
           }
-
           this.$store.commit('mouse_state_up')
 
+          console.log('MOUSE STATE UP SET')
           this.polygon_click_index = null
           this.polygon_point_click_index = null
 
@@ -5528,13 +5529,16 @@
 
             if (this.instance_type == "box") {
 
+              console.log('box mouse up')
               if (this.$store.state.annotation_state.draw == false) {
                 this.is_actively_drawing = true       // required for current_instance visual to display
                 this.$store.commit('init_draw')
+                console.log('box init_draw up')
               }
               else {
                 // is actively drawing negation handled by generic instance push method now
                 this.$store.commit('finish_draw')
+                console.log('box finish_draw up')
               }
             }
 
@@ -5749,12 +5753,15 @@
         },
 
         bounding_box_mouse_down: function(){
+          console.log('this.$store.state.annotation_state.draw', this.$store.state.annotation_state.draw)
+          console.log('this.current_instance.x_max', this.current_instance.x_max, this.current_instance.x_min, this.current_instance.y_max, this.current_instance.y_min)
           if (this.$store.state.annotation_state.draw == true) {
             if (this.current_instance.x_max - this.current_instance.x_min >= 5
               && this.current_instance.y_max - this.current_instance.y_min >= 5) {
               const create_box_command = new CreateInstanceCommand(this.current_instance, this);
               this.command_manager.executeCommand(create_box_command)
               this.create_instance_events()
+              console.log('CREATE BOX COMMAND EXECUTED')
 
             }
           }
@@ -5973,12 +5980,14 @@
 
           // TODO new method ie
           // this.is_actively_drawing = true
-
+          this.mouse_position = this.mouse_transform(event, this.mouse_position);
+          console.log('------------------------------- mouse down event', this.mouse_position, this.mouse_position.x, this.mouse_position.y)
           if (this.$props.view_only_mode == true) {
             return
           }
 
           if (this.mouse_down_limits(event) == false) {
+            console.log('mouse_down_limits trueeee', event)
             return
           }
 
@@ -5986,6 +5995,7 @@
 
           // For new refactored instance types (eventually all should be here)
           const mouse_down_interaction = this.generate_event_interactions(event);
+          console.log('mouse_down_interaction', mouse_down_interaction)
           if(mouse_down_interaction){
             mouse_down_interaction.process();
           }
@@ -6003,7 +6013,9 @@
               this.ellipse_mouse_down()
             }
             if (this.instance_type == "box") {
+
               this.bounding_box_mouse_down();
+              console.log('bounding_box_mouse_down')
             }
             if (this.instance_type == "keypoints") {
               this.key_points_mouse_down();
@@ -6032,7 +6044,7 @@
           this.mouse_down_position.request_time = Date.now()
           this.lock_polygon_corner();
           this.polygon_mid_point_mouse_down()
-
+          console.log('mouse_down_position', this.mouse_down_position)
 
 
         },
@@ -6444,7 +6456,8 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
-
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale()
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6473,6 +6486,8 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale()
         },
 
         refresh_attributes_from_current_file: async function (file) {

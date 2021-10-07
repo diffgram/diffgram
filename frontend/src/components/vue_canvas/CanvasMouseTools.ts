@@ -47,7 +47,8 @@ export class CanvasMouseTools {
 
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
-
+    console.log('mouse_transform X_RAW', x_raw)
+    console.log('mouse_transform y_raw', y_raw)
     event = event || window.event;
     var target = event.target || event.srcElement,
       style = target.currentStyle || window.getComputedStyle(target, null),
@@ -56,16 +57,36 @@ export class CanvasMouseTools {
       rect = target.getBoundingClientRect(),
       offsetX = event.clientX - borderLeftWidth - rect.left,
       offsetY = event.clientY - borderTopWidth - rect.top;
-    let x = (offsetX * target.width) / target.clientWidth;
-    let y = (offsetY * target.height) / target.clientHeight;
+    let canvas_width = target.width;
+    let canvas_height = target.height;
+    if(!canvas_width){
+      canvas_width = this.canvas_elm.width;
+      canvas_height = this.canvas_elm.height;
+    }
+    let x = (offsetX * canvas_width) / target.clientWidth;
+    let y = (offsetY * canvas_height) / target.clientHeight;
     const ctx = this.canvas_ctx;
     var transform = ctx.getTransform();
     const invMat = transform.invertSelf();
 
+    console.log('mouse_transform target', target)
+    console.log('mouse_transform target width', target.width)
+    console.log('mouse_transform target clientWidth', target.clientWidth)
+    console.log('mouse_transform offsetX', offsetX)
+    console.log('mouse_transform rect', rect)
+    console.log('mouse_transform borderLeftWidth', borderLeftWidth)
+
+    console.log('mouse_transform x', x)
+    console.log('mouse_transform y', y)
+    console.log('mouse_transform ctx', ctx)
+    console.log('mouse_transform invMat', invMat)
+    console.log('mouse_transform transform', transform)
     x = x * invMat.a + y * invMat.c + invMat.e;
     y = x * invMat.b + y * invMat.d + invMat.f;
 
 
+    console.log('mouse_transform new x', x)
+    console.log('mouse_transform new y', y)
     // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
     // class intances that are on this.instance_list(). You can see the initialize_instance() function to see
     // how the reference is passed.
