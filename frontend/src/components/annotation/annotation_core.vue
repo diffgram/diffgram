@@ -5086,12 +5086,13 @@
           console.log('pan_position_x', pan_position_x)
           console.log('canvas_width_scaled', this.canvas_width_scaled)
           console.log('canvas_width', this.canvas_width)
-          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width_scaled)){
+          console.log('canvas_width * scale', this.canvas_width + this.canvas_element_ctx.getTransform().e)
+          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width)){
             this.canvas_mouse_tools.pan_x(movementX)
             this.canvas_pan_accumulated.x = x
 
           }
-          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height_scaled)){
+          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height)){
             this.canvas_mouse_tools.pan_y(movementY)
             this.canvas_pan_accumulated.y = y
 
