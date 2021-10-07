@@ -16,6 +16,7 @@
         "canvas_transform": {},
         "target_colour": {},
         "text_color": {},
+        "canvas_element": {},
         "target_text": {},
         "target_type": '', // "canvas_cross" or "small_cross"
         "reticle_size": null,
@@ -25,6 +26,7 @@
       },
       methods: {
         draw: function (ctx, done) {
+          if(!this.$props.canvas_element){return}
           if (this.show == true) {
               //var canvas = ctx.canvas;
               if (this.width == 0) {
@@ -48,6 +50,15 @@
                 //ctx.font = font_size + "px Verdana";
               }
               if (this.$props.target_type === 'canvas_cross') {
+                  if(x < 0 || y < 0){
+                    done();
+                    return
+                  }
+                  if(x >= this.$props.canvas_element.width || y >= this.$props.canvas_element.height){
+                    done();
+                    return
+                  }
+
                   this.draw_text(ctx, x, y, this.$props.target_text, this.$props.text_color)
                   ctx.beginPath()
                   ctx.lineWidth = (1.5 / this.canvas_transform['canvas_scale_combined']).toString()
@@ -61,7 +72,7 @@
                   ctx.lineTo(0, y)  // (end)
 
                   ctx.moveTo(x + 1, y)
-                  ctx.lineTo(this.width, y) // use original height here
+                  ctx.lineTo(this.$props.canvas_element.width, y) // use original height here
                   // since if we use the canvas it will be off when scaled
                   // ie canvas.width is 320, which is correct,
                   // however this is absolute cordinates, so the mouse position
@@ -71,7 +82,7 @@
                   ctx.lineTo(x, 0)  //  (end)
 
                   ctx.moveTo(x, y + 1) // line x, y start
-                  ctx.lineTo(x, this.height)
+                  ctx.lineTo(x, this.$props.canvas_element.height)
 
               }
 

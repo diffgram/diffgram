@@ -27,6 +27,7 @@ export class CanvasMouseTools {
 
   public zoom_to_point(point, scale){
     this.reset_transform_with_global_scale();
+    this.scale = this.canvas_scale_global;
     this.canvas_ctx.translate(point.x, point.y);
     this.canvas_ctx.scale(scale, scale)
     this.canvas_ctx.translate(-point.x, -point.y);
@@ -47,8 +48,7 @@ export class CanvasMouseTools {
 
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
-    console.log('mouse_transform X_RAW', x_raw)
-    console.log('mouse_transform y_raw', y_raw)
+
     event = event || window.event;
     var target = event.target || event.srcElement,
       style = target.currentStyle || window.getComputedStyle(target, null),
@@ -69,24 +69,9 @@ export class CanvasMouseTools {
     var transform = ctx.getTransform();
     const invMat = transform.invertSelf();
 
-    console.log('mouse_transform target', target)
-    console.log('mouse_transform target width', target.width)
-    console.log('mouse_transform target clientWidth', target.clientWidth)
-    console.log('mouse_transform offsetX', offsetX)
-    console.log('mouse_transform rect', rect)
-    console.log('mouse_transform borderLeftWidth', borderLeftWidth)
-
-    console.log('mouse_transform x', x)
-    console.log('mouse_transform y', y)
-    console.log('mouse_transform ctx', ctx)
-    console.log('mouse_transform invMat', invMat)
-    console.log('mouse_transform transform', transform)
     x = x * invMat.a + y * invMat.c + invMat.e;
     y = x * invMat.b + y * invMat.d + invMat.f;
 
-
-    console.log('mouse_transform new x', x)
-    console.log('mouse_transform new y', y)
     // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
     // class intances that are on this.instance_list(). You can see the initialize_instance() function to see
     // how the reference is passed.
@@ -114,11 +99,23 @@ export class CanvasMouseTools {
 
 
     // Compute zoom factor.
-    let zoomIntensity = 0.2;
+    let zoomIntensity = 0.1;
     let zoom = Math.exp(wheel * zoomIntensity);
 
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-
+    // if(point_changed){
+    //   let transform = this.canvas_ctx.getTransform();
+    //   this.canvas_ctx.resetTransform();
+    //   this.canvas_ctx.translate(point.x, point.y);
+    //   this.scale = this.scale * zoom;
+    //   this.canvas_ctx.scale(this.scale, this.scale);
+    //   this.canvas_ctx.translate(-point.x, -point.y);
+    //   this.previous_zoom = zoom;
+    //   this.previous_point = point;
+    //   this.previous_transform = transform;
+    //   this.mouse_transform(event, this.mouse_position, this.canvas_elm)
+    //   return
+    // }
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
       this.reset_transform_with_global_scale();
