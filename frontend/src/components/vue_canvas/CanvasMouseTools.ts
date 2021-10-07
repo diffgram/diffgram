@@ -30,7 +30,7 @@ export class CanvasMouseTools {
     this.canvas_ctx.translate(point.x, point.y);
     this.canvas_ctx.scale(scale, scale)
     this.canvas_ctx.translate(-point.x, -point.y);
-    this.scale = scale;
+    this.scale *= scale;
   }
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
@@ -106,13 +106,15 @@ export class CanvasMouseTools {
   }
 
   public zoom_wheel(event): void {
+    event.preventDefault()
+    event.stopPropagation()
     // this is the illusionary point on UI that we wish to stay locked on
     let point = this.raw_point(event);
     const wheel = event.deltaY < 0 ? 1 : -1;
 
 
     // Compute zoom factor.
-    let zoomIntensity = 0.1;
+    let zoomIntensity = 0.2;
     let zoom = Math.exp(wheel * zoomIntensity);
 
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
