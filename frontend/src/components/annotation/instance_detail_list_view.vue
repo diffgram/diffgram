@@ -342,6 +342,7 @@
                                 icon="mdi-format-paint"
                                 color="primary"
                                 :close_by_button="true"
+                                @click="(e) => e.preventDefault()"
                               >
 
                                 <template slot="content">
