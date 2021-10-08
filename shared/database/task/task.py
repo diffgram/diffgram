@@ -383,7 +383,7 @@ class Task(Base):
             'task_type': self.task_type,
             'job_type': self.job_type,
             'status': self.job_type,
-            'file': self.file.serialize_with_type(session=session),
+            'file': self.file.serialize_with_annotations(session=session),
             'guide': guide,
             'label_dict': self.label_dict,
             'assignee_user_id': self.assignee_user_id

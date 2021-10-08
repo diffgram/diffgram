@@ -53,27 +53,75 @@
 
           <h2>Resume Last Task </h2>
             <div class="pa-2">
-              <v-btn
-                color="primary"
-                large
-                data-cy="resume_last_task"
-                :disabled="last_task === false || resume_task_loading"
-                @click="route_resume_task()"
-              >
-                Resume
 
-                  <v-icon
-                    right
+              <v-layout>
+                <div class="d-flex align-center justify-center">
+                  <v-btn
+                    color="primary"
+                    large
+                    data-cy="resume_last_task"
+                    :disabled="last_task_event === false || resume_task_loading"
+                    @click="route_resume_task()"
                   >
-                    mdi-replay
-                  </v-icon>
+                    Resume
 
-              </v-btn>
-              <div v-if="last_task" class="pt-2 font-weight-light">
-                {{last_task.time_created}}
-                {{last_task.project_string_id}}
-                {{last_task.task_id}}
-              </div>
+                      <v-icon
+                        right
+                      >
+                        mdi-replay
+                      </v-icon>
+
+                  </v-btn>
+                </div>
+
+                
+
+                <div class="pl-4"
+                     v-if="last_task_event.task
+                        && last_task_event.task.file">
+
+                    <file_preview
+                      v-if="project_string_id == last_task_event.project_string_id"
+                      class="d-flex file-preview"
+                      file_preview_width="150"
+                      file_preview_height="150"
+                      :key="last_task_event.task.id"
+                      :project_string_id="last_task_event.project_string_id"
+                      :file="last_task_event.task.file"
+                      :instance_list="last_task_event.task.file.instance_list"
+                      :show_ground_truth="true"
+                      @view_file_detail="route_resume_task()"
+                    ></file_preview>
+
+                    <div @click="route_resume_task()"
+                         v-if="project_string_id != last_task_event.project_string_id"
+                         >
+                      <thumbnail
+                        v-if="last_task_event.task.file.type === 'video'
+                           || last_task_event.task.file.type === 'image'"
+                        :item="last_task_event.task.file"
+                      >
+                      </thumbnail>
+                    </div>
+                    
+
+                </div>
+
+                <div v-if="last_task_event"
+                     class="pa-2 font-weight-light flex-column d-flex">
+                  <div>
+                  {{last_task_event.time_created}}
+                  </div>
+                  <div>
+                  {{last_task_event.project_string_id}}
+                  </div>
+                  <div>
+                  {{last_task_event.task_id}}
+                  </div>
+                </div>
+
+
+             </v-layout>
             </div>
           </v-container>
       </v-card>
@@ -126,7 +174,7 @@ import project_pipeline from '../../project/project_pipeline'
 import Vue from "vue";
 
 export default Vue.extend( {
-  name: 'annotator_dashboard',
+  name: 'annotator_dashboard_me',
   components: {
     report_dashboard,
     user_visit_history_list,
@@ -149,19 +197,19 @@ export default Vue.extend( {
     project_string_id: function(){
       return this.$store.state.project.current.project_string_id;
     },
-    last_task: function (){
+    last_task_event: function (){
       if (!this.$store.state.user.history) { return false }
-      const last_task = this.$store.state.user.history.find(
+      const last_task_event = this.$store.state.user.history.find(
         x => x.page_name == 'task_detail')
 
-      return last_task
+      return last_task_event
     }
   },
   methods: {
 
     route_resume_task: function(){
       this.resume_task_loading = true
-      const routeData = `/task/${this.last_task.task_id}`;
+      const routeData = `/task/${this.last_task_event.task_id}`;
       this.$router.push(routeData)
     },
 
