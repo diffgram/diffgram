@@ -50,7 +50,7 @@ export class CanvasMouseTools {
 
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
-
+    console.log('mouse_trans raw', x_raw, y_raw)
     event = event || window.event;
     var target = event.target || event.srcElement,
       style = target.currentStyle || window.getComputedStyle(target, null),
@@ -67,13 +67,18 @@ export class CanvasMouseTools {
     }
     let x = (offsetX * canvas_width) / target.clientWidth;
     let y = (offsetY * canvas_height) / target.clientHeight;
+    console.log('event target', event.target)
+    console.log('offset XY', offsetX, offsetY)
+    console.log('canvas_width height', canvas_width, canvas_height)
+    console.log('canvas_width target.clientWidth, hight', target.clientWidth, target.clientHeight)
+    console.log('mouse_trans initial', x, y)
     const ctx = this.canvas_ctx;
     var transform = ctx.getTransform();
     const invMat = transform.invertSelf();
 
     x = x * invMat.a + y * invMat.c + invMat.e;
     y = x * invMat.b + y * invMat.d + invMat.f;
-
+    console.log('mouse_trans fin', x, y)
     // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
     // class intances that are on this.instance_list(). You can see the initialize_instance() function to see
     // how the reference is passed.
