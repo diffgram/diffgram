@@ -927,6 +927,7 @@
         mouse_computed(newval, oldval){
           // We don't want to create a new object here since the reference is used on all instance types.
           // If we create a new object we'll lose the reference on our class InstanceTypes
+
           this.mouse_down_delta_event.x = parseInt(newval.delta_x - oldval.delta_x)
           this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
         },
@@ -4735,10 +4736,6 @@
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'curve') {
             curve_did_move = this.move_curve(event)
           }
-
-          if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.move_keypoints(event)
-          }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
           // not 100% sure how to explain difference between it
@@ -6696,7 +6693,7 @@
             }
           }
         },
-        
+
         may_snap_to_instance: function (event) {
           if (this.shift_key == true && event.key === "F") {
             this.snap_to_instance(this.selected_instance)
@@ -6863,6 +6860,7 @@
               this.instance_selected,
               this.instance_deselected,
               this.mouse_down_delta_event,
+              this.mouse_down_position,
               this.label_settings
             );
             initialized_instance.populate_from_instance_obj(instance);
