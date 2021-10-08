@@ -34,6 +34,9 @@ import './css/vue_dropzone.css'
 import file_preview from './components/source_control/file_preview'
 Vue.component('file_preview', file_preview)
 
+import file_preview_with_hover_expansion from './components/regular/file_preview_with_hover_expansion'
+Vue.component('file_preview_with_hover_expansion', file_preview_with_hover_expansion)
+
 import v_directory_list from './components/source_control/directory_list'
 Vue.component('v_directory_list', v_directory_list)
 
