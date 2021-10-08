@@ -122,7 +122,11 @@ class Event(Base):
             'service_name': settings.DIFFGRAM_SERVICE_NAME,
         }
 
-    def serialize_for_visit_history(self):
+    def serialize_for_visit_history(self, session):
+        task = None
+        if self.task:
+            task = self.task.serialize_trainer_annotate(session)
+
         return {
             'id': self.id,
             'kind': self.kind,
@@ -135,6 +139,7 @@ class Event(Base):
             'file_id': self.file_id,
             'task_id': self.task_id,
             'job_id': self.job_id,
+            'task': task,
             'member_id': self.member_id,
             'time_created': self.time_created.strftime('%Y-%m-%d')
 

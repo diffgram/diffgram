@@ -90,7 +90,7 @@
         default: null
       },
       'show_ground_truth':{
-        default: null
+        default: true
       },
       'video':{
         default: null

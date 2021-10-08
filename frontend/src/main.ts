@@ -31,6 +31,9 @@ import './css/vue_dropzone.css'
  *
  */
 
+import file_preview from './components/source_control/file_preview'
+Vue.component('file_preview', file_preview)
+
 import v_directory_list from './components/source_control/directory_list'
 Vue.component('v_directory_list', v_directory_list)
 
@@ -326,6 +329,9 @@ Vue.prototype.$get_sequence_color = get_sequence_color
 
 import {addQueriesToLocation} from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
+
+
+
 
 // import {google_cloud_storage_searchbar} from './components/connectors/google_cloud_storage_searchbar.vue'
 // Vue.component('google_cloud_storage_searchbar', google_cloud_storage_searchbar)
