@@ -67,7 +67,8 @@
               return
             }
             this.loading = true;
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/task/list`,
+            const response = await axios.post(
+              `/api/v1/project/${this.$props.project_string_id}/task/list`,
               {
                 file_id: file_id,
                 mode_data: 'list',
