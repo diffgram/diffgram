@@ -6860,7 +6860,6 @@
           this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
         },
         initialize_instance: function(instance){
-          // TODO: add other instance types as they are migrated to classes.
           if(instance.type === 'keypoints' && !instance.initialized){
             let initialized_instance = new KeypointInstance(
               this.mouse_position,
