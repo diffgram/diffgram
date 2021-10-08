@@ -25,14 +25,12 @@ export const get_transformed_coordinates = function (point,
   let x = (offsetX * canvas_width) / target.clientWidth;
   let y = (offsetY * canvas_height) / target.clientHeight;
   const ctx = canvas_element_ctx;
-  console.log('CTXXXXX', ctx)
   var transform = ctx.getTransform();
   const invMat = transform.invertSelf();
 
   x = x * invMat.a + y * invMat.c + invMat.e;
   y = x * invMat.b + y * invMat.d + invMat.f;
-  console.log('CANVAS UTILS TARGET', target)
-  console.log('CANVAS UTILS TARGET', target.clientWidth, target.clientHeight)
+
   return {
     x: parseInt(x, 10),
     y: parseInt(y, 10),

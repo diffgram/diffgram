@@ -66,7 +66,6 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
     const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    cy.log('canvas_client_box', canvas_client_box)
     const real_x = x + canvas_client_box.left;
     const real_y = y + canvas_client_box.top;
     cy.get('#canvas_wrapper').then(($el) => {
