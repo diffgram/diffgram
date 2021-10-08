@@ -1776,6 +1776,7 @@
             }
 
           }
+          console.log('CURRENT BOX', x_min, x_max, y_min, y_max);
           let instance_data = {
             x_min: x_min,
             y_min: y_min,
