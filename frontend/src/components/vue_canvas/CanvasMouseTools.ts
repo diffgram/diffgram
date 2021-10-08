@@ -103,19 +103,7 @@ export class CanvasMouseTools {
     let zoom = Math.exp(wheel * zoomIntensity);
 
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-    // if(point_changed){
-    //   let transform = this.canvas_ctx.getTransform();
-    //   this.canvas_ctx.resetTransform();
-    //   this.canvas_ctx.translate(point.x, point.y);
-    //   this.scale = this.scale * zoom;
-    //   this.canvas_ctx.scale(this.scale, this.scale);
-    //   this.canvas_ctx.translate(-point.x, -point.y);
-    //   this.previous_zoom = zoom;
-    //   this.previous_point = point;
-    //   this.previous_transform = transform;
-    //   this.mouse_transform(event, this.mouse_position, this.canvas_elm)
-    //   return
-    // }
+
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
       this.reset_transform_with_global_scale();
