@@ -14,6 +14,8 @@
         "y": {},
         "show": {},
         "canvas_transform": {},
+        "width_scaled": {},
+        "height_scaled": {},
         "target_colour": {},
         "text_color": {},
         "canvas_element": {},
@@ -54,7 +56,7 @@
                     done();
                     return
                   }
-                  if(x >= this.$props.canvas_element.width || y >= this.$props.canvas_element.height){
+                  if(x >= this.$props.width || y >= this.$props.height){
                     done();
                     return
                   }
@@ -72,7 +74,7 @@
                   ctx.lineTo(0, y)  // (end)
 
                   ctx.moveTo(x + 1, y)
-                  ctx.lineTo(this.$props.canvas_element.width, y) // use original height here
+                  ctx.lineTo(this.$props.width, y) // use original height here
                   // since if we use the canvas it will be off when scaled
                   // ie canvas.width is 320, which is correct,
                   // however this is absolute cordinates, so the mouse position
@@ -82,7 +84,7 @@
                   ctx.lineTo(x, 0)  //  (end)
 
                   ctx.moveTo(x, y + 1) // line x, y start
-                  ctx.lineTo(x, this.$props.canvas_element.height)
+                  ctx.lineTo(x, this.$props.height)
 
               }
 

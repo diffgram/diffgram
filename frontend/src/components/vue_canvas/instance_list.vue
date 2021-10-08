@@ -21,6 +21,8 @@
         },
         "instance_list": {},
         "issues_list": undefined,
+        "width": undefined,
+        "height": undefined,
         "compare_to_instance_list_set": {
           default: null
         },
@@ -287,7 +289,6 @@
 
 
         draw_single_instance_limits: function (instance, i) {
-
 
           if (instance.type == 'tag') { // tag is whole image so nothing to draw.
             return false

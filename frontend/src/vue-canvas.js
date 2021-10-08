@@ -26,18 +26,6 @@ import Vue from 'vue'
           return child.componentInstance.draw;
         });
       }
-      // else{
-      //   var children = children.filter(function (child) {
-      //
-      //     return child.componentOptions !== undefined && child.componentInstance !== undefined;
-      //   });
-      //
-      //   console.log('      var children = vnode.children;', vnode.children)
-      //   console.log('childdd', children)
-      //   console.log('uid[uid]', uid)
-      //   console.log('drawFuncs[uid]', drawFuncs[uid])
-      //
-      // }
 
       var promises = drawFuncs[uid].map(function (draw) {
         return function () {
@@ -89,7 +77,6 @@ import Vue from 'vue'
         }).catch(console.error);
       }
 
-      drawGrid(canvas);
       vnode.children.forEach(function (c) {
 
         if (c.tag && c.componentInstance && c.elm.localName == "v-canvas-wrapper") {
