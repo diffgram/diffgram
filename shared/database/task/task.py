@@ -340,6 +340,18 @@ class Task(Base):
         return query.first()
 
 
+    @staticmethod
+    def get_file_ids_related_to_a_task(
+            session, 
+            task_id,
+            project_id):
+
+        related_tasks_list = session.query(Task).filter(
+            Task.id == task_id,
+            Task.project_id == project_id).all()
+        allowed_file_id_list = [task.file_id for task in related_tasks_list]
+        return allowed_file_id_list
+
 
     def get_next_available_task_by_job_id(
             session,
