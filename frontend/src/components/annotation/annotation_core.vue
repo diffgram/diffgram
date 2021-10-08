@@ -2691,7 +2691,6 @@
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
           const initial_instance = {...this.instance_list[index]}
-
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2793,6 +2792,10 @@
             let value = update.payload[1]
 
             // we assume this represents a group
+            initial_instance.prev_attribute = {
+              group: group.id,
+              value: {...instance.attribute_groups[group.id]}
+            }
             instance.attribute_groups[group.id] = value
             //console.debug(group, value)
           }
