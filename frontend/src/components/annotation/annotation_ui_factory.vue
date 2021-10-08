@@ -149,7 +149,12 @@
 
       },
       async mounted() {
-        await this.get_project();
+        if (!this.$props.task_id_prop) {
+          await this.get_project();
+        } else {
+          this.loading_project = false // caution some assumptions around this flag for media loading
+        }
+
         await this.get_labels_from_project();
         this.get_model_runs_from_query(this.$route.query);
         if (this.$route.query.view_only) {
@@ -292,11 +297,10 @@
             });
             if (response.data.log.success == true) {
 
-              // TODO what parts of this can be merged with
-              // builder traner mode below
               this.$refs.file_manager_sheet.set_file_list([response.data.task.file])
               this.$refs.file_manager_sheet.hide_file_manager_sheet();
               this.task = response.data.task
+              await this.get_project(this.task.project_string_id);
 
             }
             this.task_error = response.data.log.error
@@ -351,16 +355,20 @@
           }
         },
 
-        get_project: async function () {
+        get_project: async function (project_string_id=undefined) {
           try {
             this.loading_project = true
-            if (this.project_string_id == null) {
+
+            let local_project_string_id = this.project_string_id
+            if (local_project_string_id == null) {
+              local_project_string_id = project_string_id
+            }
+
+            if (local_project_string_id == this.$store.state.project.current.project_string_id) {
               return
             }
-            if (this.project_string_id == this.$store.state.project.current.project_string_id) {
-              return
-            }
-            const response = await axios.get('/api/project/' + this.project_string_id + '/view');
+
+            const response = await axios.get('/api/project/' + local_project_string_id + '/view');
             if (response.data['none_found'] == true) {
               this.none_found = true
             } else {
@@ -375,12 +383,9 @@
                 }
               }
 
-              if (this.computed_project_string_id == null) {
-                return
-              }
-              if (this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
-                return
-              }
+              this.show_snackbar = true;
+              this.snackbar_message = 'Changed project now in ' + response.data['project']['name'];
+
             }
           }
           catch (error) {

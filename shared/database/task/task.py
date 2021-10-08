@@ -380,6 +380,7 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'project_id' : self.project_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'status': self.job_type,
@@ -408,6 +409,7 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'project_string_id' : self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'file': self.file.serialize_with_type(session=session),

@@ -16,6 +16,8 @@ class DataToolsS3:
         Requires setting the following settings
         - DIFFGRAM_AWS_ACCESS_KEY_ID
         - DIFFGRAM_AWS_ACCESS_KEY_SECRET
+        - DIFFGRAM_S3_BUCKET_REGION
+        - DIFFGRAM_S3_BUCKET_NAME
 
     """
 
@@ -23,7 +25,8 @@ class DataToolsS3:
 
         self.s3_client = boto3.client('s3',
                                       aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
-                                      aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET)
+                                      aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
+                                      region_name = settings.DIFFGRAM_S3_BUCKET_REGION)
         self.s3_bucket_name = settings.DIFFGRAM_S3_BUCKET_NAME
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
 
