@@ -157,7 +157,10 @@ export class CanvasMouseTools {
     }
     else{
       let elm = this.zoom_stack.pop()
-      point = elm.point
+      if(elm){
+        point = elm.point
+      }
+
     }
 
     this.perform_zoom_delta(zoom, point)
