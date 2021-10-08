@@ -437,6 +437,8 @@
                                 :height="canvas_height"
                                 :width="canvas_width"
                                 :canvas_element="canvas_element"
+                                :width_scaled="canvas_width_scaled"
+                                :height_scaled="canvas_height_scaled"
                                 :canvas_mouse_tools="canvas_mouse_tools"
                                 :show="show_target_reticle"
                                 :target_colour="current_label_file ? current_label_file.colour : undefined"
@@ -462,6 +464,8 @@
                                     :label_settings="label_settings"
                                     :current_instance="current_instance"
                                     :is_actively_drawing="is_actively_drawing"
+                                    :height="canvas_height"
+                                    :width="canvas_width"
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
@@ -1162,7 +1166,7 @@
             filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
             instance_buffer_size: 60,
             canvas_scale_global_is_automatic: true,
-            canvas_scale_global_setting: 1,
+            canvas_scale_global_setting: 0.5,
             left_nav_width: 450,
             on_instance_creation_advance_sequence: true,
             ghost_instances_closed_by_open_view_edit_panel: false
@@ -1876,21 +1880,29 @@
 
       methods: {
         on_canvas_scale_global_changed: async function(new_scale){
+          if(!new_scale){
+            return
+          }
           // Force a canvas reset when changing global scale.
-          console.log('new scale', new_scale)
           if(!this.canvas_element){
             return
           }
           this.label_settings.canvas_scale_global_setting = new_scale;
           this.canvas_mouse_tools.canvas_scale_global = new_scale;
           this.canvas_mouse_tools.scale = new_scale;
-
+          this.canvas_element_ctx.clearRect(
+            0,
+            0,
+            this.canvas_element.width,
+            this.canvas_element.height
+          );
           this.canvas_element_ctx.resetTransform();
-
           this.canvas_element_ctx.scale(new_scale, new_scale);
           this.canvas_element.width += 0;
-          await this.$nextTick();
-          console.log('transs', this.canvas_element_ctx.getTransform());
+
+
+          await this.$nextTick()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
           this.update_canvas();
         },
         update_label_settings: function (event) {
@@ -5124,6 +5136,7 @@
         window.focus()
       }
       */
+
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
           if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)

@@ -5,6 +5,7 @@ export class CanvasMouseTools {
   private canvas_transform: any;
   private canvas_ctx: any;
   private canvas_elm: any;
+  private zoom_stack: {zoom: number}[];
   private previous_transform: any;
   private image: any;
   private scale: number;
@@ -23,6 +24,7 @@ export class CanvasMouseTools {
     this.scale = 1;
     this.canvas_scale_global = canvas_scale_global;
     this.translate_acc = {x: 0, y: 0}
+    this.zoom_stack = [];
   }
 
   public zoom_to_point(point, scale){
@@ -88,20 +90,10 @@ export class CanvasMouseTools {
   public reset_transform_with_global_scale(){
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
+    this.zoom_stack = [];
   }
 
-  public zoom_wheel(event): void {
-    event.preventDefault()
-    event.stopPropagation()
-    // this is the illusionary point on UI that we wish to stay locked on
-    let point = this.raw_point(event);
-    const wheel = event.deltaY < 0 ? 1 : -1;
-
-
-    // Compute zoom factor.
-    let zoomIntensity = 0.1;
-    let zoom = Math.exp(wheel * zoomIntensity);
-
+  public perform_zoom_delta(zoom, point){
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
 
     this.scale = this.scale * zoom;
@@ -120,9 +112,9 @@ export class CanvasMouseTools {
       this.canvas_elm.width,
       this.canvas_elm.height
     );
-
     let transform = this.canvas_ctx.getTransform();
     this.canvas_ctx.resetTransform();
+
     this.canvas_ctx.translate(point.x, point.y);
 
     this.canvas_ctx.scale(zoom, zoom);
@@ -132,10 +124,48 @@ export class CanvasMouseTools {
     let transform_new = this.canvas_ctx.getTransform();
 
     // Avoid positive values translates
-
+    this.canvas_ctx.clearRect(
+      0,
+      0,
+      this.canvas_elm.width,
+      this.canvas_elm.height
+    );
     this.previous_zoom = zoom;
     this.previous_point = point;
     this.previous_transform = transform;
+  }
+
+  public zoom_wheel(event): void {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const wheel = event.deltaY < 0 ? 1 : -1;
+    // Compute zoom factor.
+    let zoomIntensity = 0.1;
+    let zoom = Math.exp(wheel * zoomIntensity);
+
+    // this is the illusionary point on UI that we wish to stay locked on
+    let point = this.raw_point(event);
+    let zoom_in = true;
+    if(zoom < 1){
+      zoom_in = false
+    }
+    if(zoom_in){
+      this.zoom_stack.push({
+        point: point
+      });
+    }
+    else{
+      let elm = this.zoom_stack.pop()
+      point = elm.point
+    }
+
+    this.perform_zoom_delta(zoom, point)
+
+
+
+
+
 
   }
   private raw_point(event) {

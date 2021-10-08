@@ -54,14 +54,13 @@
           ctx.drawImage(
             this.image,
             0,
-            0
+            0,
           )
 
         } else {
           var hRatio = ctx.canvas.width / this.image.width;
           var vRatio = ctx.canvas.height / this.image.height;
           var ratio = Math.min(hRatio, vRatio);
-
           ctx.drawImage(
             this.image,
             0,
