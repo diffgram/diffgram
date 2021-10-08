@@ -3,6 +3,7 @@
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details(undefined)" >
       <drawable_canvas
         v-if="image_bg"
+        ref="drawable_canvas"
         :allow_zoom="false"
         :image_bg="image_bg"
         :canvas_height="file_preview_height"
@@ -57,9 +58,12 @@
 
 <script>
   import Vue from "vue";
+
   import instance_list from "../vue_canvas/instance_list";
   import drawable_canvas from "../vue_canvas/drawable_canvas";
   import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
+  import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
+  import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   export default Vue.extend({
     name: "file_preview",
     components: {
@@ -102,6 +106,7 @@
         refresh: null,
         filtered_instance_list: [],
         video_instance_list: [],
+        instance_context: new InstanceContext(),
         compare_to_instance_list_set: [],
         label_settings: {
           font_size: 20,
@@ -113,9 +118,9 @@
         }
       }
     },
-    mounted() {
+    async mounted() {
       if (this.$props.file) {
-        this.set_bg(this.$props.file);
+        await this.set_bg(this.$props.file);
 
         this.prepare_filtered_instance_list();
       }
@@ -142,6 +147,29 @@
         this.prepare_filtered_instance_list();
         this.refresh = Date.now()
       },
+      initialize_instance: function(instance){
+
+        console.log('AAAAA', this.$refs.drawable_canvas)
+        if(instance.type === 'keypoints' && !instance.initialized){
+
+          // In this case we can send empty object for mouse position since we don't want drawing controls.
+          let initialized_instance = new KeypointInstance(
+            {},
+            {},
+            this.instance_context,
+            () =>{},
+            () =>{},
+            () =>{},
+            {},
+            this.label_settings
+          );
+          initialized_instance.populate_from_instance_obj(instance);
+          return initialized_instance
+        }
+        else{
+          return instance
+        }
+      },
       prepare_filtered_instance_list: function () {
         this.filtered_instance_list = []
         if (this.$props.base_model_run) {
@@ -149,10 +177,9 @@
             return inst.model_run_id === this.$props.base_model_run.id;
           })
           this.filtered_instance_list = this.filtered_instance_list.map(inst => {
-            return {
-              ...inst,
-              override_color: this.$props.base_model_run.color
-            }
+            inst = this.initialize_instance(inst)
+            inst.override_color =this.$props.base_model_run.color
+            return inst
           })
         }
 
@@ -165,45 +192,55 @@
               return inst.model_run_id === model_run.id;
             })
             filtered_instances = filtered_instances.map(inst => {
-              return {
-                ...inst,
-                override_color: model_run.color
-              }
+              inst = this.initialize_instance(inst)
+              inst.override_color = model_run.color
+              return inst
             })
             for(const instance of filtered_instances){
               if(!added_ids.includes(instance.id)){
-                this.filtered_instance_list.push(instance);
-                added_ids.push(instance.id)
+                let initialized_instance = this.initialize_instance(instance);
+                this.filtered_instance_list.push(initialized_instance);
+                added_ids.push(initialized_instance.id)
               }
             }
           }
+
         }
 
 
         if(this.$props.show_ground_truth){
           const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
           for(const inst of ground_truth_instances){
-
-            this.filtered_instance_list.push(inst)
+            let initialized_instance = this.initialize_instance(inst);
+            this.filtered_instance_list.push(initialized_instance)
           }
         }
       },
 
       set_bg: async function (newFile) {
-        if (!newFile) {
-          this.image_bg = undefined;
-          this.refresh = new Date();
-        } else {
-          if (newFile.image) {
-            const image = new Image();
-            image.onload = () => {
-              this.image_bg = image;
-              this.refresh = new Date();
+        return new Promise((resolve, reject) => {
+          if (!newFile) {
+            this.image_bg = undefined;
+            this.refresh = new Date();
+          }
+          else {
+            if (newFile.image) {
+              const image = new Image();
+              image.onload = () => {
+                this.image_bg = image;
+                this.refresh = new Date();
+                image.onload = () => resolve(image)
+              }
+              image.src = this.$props.file.image.url_signed;
+              image.onerror = reject
             }
-            image.src = this.$props.file.image.url_signed;
+            else{
+              resolve();
+            }
 
           }
-        }
+        })
+
       },
 
       view_file_details: function(current_frame){

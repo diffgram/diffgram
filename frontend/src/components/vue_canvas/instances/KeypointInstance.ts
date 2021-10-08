@@ -372,7 +372,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.instance_rotate_control_mouse_hover = null
 
     let rotate_point = this.get_rotate_point_control_location()
-
+    if(!rotate_point){
+      return this.instance_rotate_control_mouse_hover
+    }
     draw_single_path_circle(
         rotate_point.x,
         rotate_point.y ,
@@ -557,6 +559,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private is_mouse_in_path(ctx) {
+    if(!this.mouse_position || !this.mouse_position.raw){
+      return false
+    }
     if (ctx.isPointInPath(
       this.mouse_position.raw.x,
       this.mouse_position.raw.y)) {
