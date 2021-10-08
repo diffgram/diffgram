@@ -557,10 +557,10 @@ class Task(Base):
 
         return task
 
-    def serialize_for_list_view_builder(self):
+    def serialize_for_list_view_builder(self, session=None):
 
-        # could also do isoformat()
-        # but then need a None check...
+        if session:
+            file = self.file.serialize_with_annotations(session=session)
 
         return {
             'id': self.id,
@@ -577,7 +577,8 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'time_created': self.time_created.isoformat(),
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
+            'file': file
 
         }
 

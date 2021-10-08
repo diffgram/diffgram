@@ -158,6 +158,19 @@
                 </v-checkbox>
 
               </td>
+
+              <td>
+                <file_preview_with_hover_expansion
+                  :file="props.item.file"
+                  :project_string_id="project_string_id"
+                  tooltip_direction="right"
+                  @view_file_detail="route_resume_task()"
+                  :file_preview_width="100"
+                  :file_preview_height="100"
+                                                    >
+                </file_preview_with_hover_expansion>
+              </td>
+
               <td>
                 {{props.item.id}}
 
@@ -258,13 +271,13 @@
                 <v-container class="d-flex justify-center align-center"
                              v-if="integration_name && !props.item.loading">
                   <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
+                         :disabled="loading"
                          color="primary">
                     View
                   </v-btn>
                 </v-container>
 
-                <v-progress-linear v-if="loading"
+                <v-progress-linear v-if="integration_name && loading"
                                      color="primary"
                                      :indeterminate="true"></v-progress-linear>
 
@@ -483,6 +496,12 @@
               align: 'left',
               sortable: false,
               value: 'is_selected'
+            },
+            {
+              text: "Preview",
+              align: 'center',
+              sortable: false,
+              value: ''
             },
             {
               text: "ID",

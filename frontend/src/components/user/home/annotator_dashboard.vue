@@ -74,12 +74,21 @@
                   </v-btn>
                 </div>
 
-                
 
                 <div class="pl-4"
                      v-if="last_task_event.task
                         && last_task_event.task.file">
 
+                    <file_preview_with_hover_expansion
+                      :file="last_task_event.task.file"
+                      v-if="project_string_id == last_task_event.project_string_id"
+                      :project_string_id="last_task_event.project_string_id"
+                      tooltip_direction="right"
+                      @view_file_detail="route_resume_task()"
+                                                       >
+                    </file_preview_with_hover_expansion>
+
+                  <!--
                     <file_preview
                       v-if="project_string_id == last_task_event.project_string_id"
                       class="d-flex file-preview"
@@ -92,6 +101,7 @@
                       :show_ground_truth="true"
                       @view_file_detail="route_resume_task()"
                     ></file_preview>
+                  -->
 
                     <div @click="route_resume_task()"
                          v-if="project_string_id != last_task_event.project_string_id"
