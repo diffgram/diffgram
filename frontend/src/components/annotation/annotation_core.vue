@@ -1875,15 +1875,22 @@
       },
 
       methods: {
-        on_canvas_scale_global_changed: function(new_scale){
+        on_canvas_scale_global_changed: async function(new_scale){
           // Force a canvas reset when changing global scale.
+          console.log('new scale', new_scale)
+          if(!this.canvas_element){
+            return
+          }
           this.label_settings.canvas_scale_global_setting = new_scale;
-
-          this.canvas_element_ctx.resetTransform();
-          this.canvas_element_ctx.scale(new_scale, new_scale);
           this.canvas_mouse_tools.canvas_scale_global = new_scale;
           this.canvas_mouse_tools.scale = new_scale;
+
+          this.canvas_element_ctx.resetTransform();
+
+          this.canvas_element_ctx.scale(new_scale, new_scale);
           this.canvas_element.width += 0;
+          await this.$nextTick();
+          console.log('transs', this.canvas_element_ctx.getTransform());
           this.update_canvas();
         },
         update_label_settings: function (event) {
@@ -2952,8 +2959,10 @@
             this.canvas_element,
             this.canvas_scale_global
           )
+          this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
-          this.canvas_wrapper.style.display = ""
+          this.canvas_wrapper.style.display = "";
+
 
           var self = this
           this.get_instances_watcher = this.$store.watch((state) => {
