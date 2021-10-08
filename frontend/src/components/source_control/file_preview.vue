@@ -15,8 +15,8 @@
         :editable="false"
         :auto_scale_bg="false"
         :refresh="refresh"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
+        :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
       >
 
         <instance_list
@@ -49,8 +49,8 @@
         :auto_scale_bg="true"
         :label_settings="label_settings"
         :refresh="refresh"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
+        :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
         @on_click_details="view_file_details"
         ref="video_drawable_canvas"
         @update_instance_list="set_video_instance_list"

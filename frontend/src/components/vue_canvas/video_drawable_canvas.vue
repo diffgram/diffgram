@@ -10,8 +10,8 @@
         :auto_scale_bg="false"
         :refresh="refresh"
         :video_mode="true"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
+        :canvas_wrapper_id="canvas_wrapper_id || `canvas_wrapper__${file.id}`"
+        :canvas_id="canvas_id || `canvas__${file.id}`"
         @refresh="refresh = Date.now()"
         ref="drawable_canvas"
       >
@@ -82,7 +82,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     props: {
       canvas_wrapper_id:{
-        default: 'canvas_wrapper'
+        default: undefined
       },
       project_string_id: {
         default: undefined
@@ -106,7 +106,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         default: undefined,
       },
       canvas_id: {
-        default: 'my_canvas'
+        default: undefined
       },
       canvas_height: {
         default: 800
