@@ -15,6 +15,7 @@
           :file="file"
           :instance_list="file.instance_list"
           :show_ground_truth="true"
+          :show_video_nav_bar="false"
           @view_file_detail="$emit('view_file_detail')"
         ></file_preview>
        </div>
@@ -30,6 +31,7 @@
         :file="file"
         :instance_list="file.instance_list"
         :show_ground_truth="true"
+        :show_video_nav_bar="false"
         @view_file_detail="$emit('view_file_detail')"
       ></file_preview>
 

@@ -62,7 +62,9 @@
               :view_only_mode="true"
               :has_changed="false"
               :canvas_width_scaled="$refs.drawable_canvas.canvas_width_scaled"
-              ref="video_controllers">
+              ref="video_controllers"
+              :show_video_nav_bar="show_video_nav_bar"
+             >
     </v_video>
   </div>
 </template>
@@ -121,6 +123,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         default: null
       },
       allow_zoom:{
+        default: true
+      },
+      show_video_nav_bar:{
         default: true
       },
       reticle_colour: {

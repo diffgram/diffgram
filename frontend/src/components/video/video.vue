@@ -1,6 +1,9 @@
 <template>
   <div v-cloak style="position:relative;">
-    <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
+    <v-card v-if="video_mode == true && show_video_nav_bar == true"
+            :max-height="player_height"
+            elevation="1"
+            :width="player_width ? player_width: undefined">
       <v-container fluid >
 
       <v-row :style="{overflow: 'hidden'}" class="pt-2">
@@ -455,6 +458,9 @@ export default Vue.extend( {
       },
       'parent_save':{
         default: undefined
+      },
+      'show_video_nav_bar':{
+        default: true
       }
     },
   components: {

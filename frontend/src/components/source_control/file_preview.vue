@@ -49,6 +49,7 @@
         :auto_scale_bg="true"
         :label_settings="label_settings"
         :refresh="refresh"
+        :show_video_nav_bar="show_video_nav_bar"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
         :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
         @on_click_details="view_file_details"
@@ -95,6 +96,9 @@
         default: null
       },
       'show_ground_truth':{
+        default: true
+      },
+      show_video_nav_bar:{
         default: true
       },
       'video':{
