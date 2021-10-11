@@ -17,8 +17,14 @@ export class KeypointInstanceMouseMove extends Interaction {
     this.key_point_instance.ctx.canvas.style.cursor = 'default'
     if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'copy'
-    } else if (this.key_point_instance.is_node_hovered && !this.key_point_instance.instance_context.draw_mode) {
-      this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'
+    }
+    else if (!this.key_point_instance.is_node_hovered
+      && !this.key_point_instance.instance_context.draw_mode
+      && this.key_point_instance.is_bounding_box_hovered) {
+      this.key_point_instance.ctx.canvas.style.cursor = 'move'
+    }
+    else if (this.key_point_instance.is_node_hovered && !this.key_point_instance.instance_context.draw_mode) {
+      this.key_point_instance.ctx.canvas.style.cursor = 'pointer'
     }
     else if (this.key_point_instance.is_bounding_box_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'

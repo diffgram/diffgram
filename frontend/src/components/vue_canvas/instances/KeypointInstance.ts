@@ -132,7 +132,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if (this.node_hover_index != undefined) {
       this.is_moving = true;
     }
-    if(this.selected && this.is_bounding_box_hovered){
+    if(this.selected || (this.is_bounding_box_hovered && this.node_hover_index == undefined)){
       this.start_dragging();
     }
     if(this.instance_rotate_control_mouse_hover == true){
@@ -171,7 +171,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.angle = this.get_angle_of_from_rotation_control_movement()
     var pi = Math.PI;
     let degrees = this.angle  * (180/pi);
-    
+
   }
 
   private move_single_node(node) {
@@ -209,7 +209,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true;
     }
     else if(this.is_dragging_instance){
-      this.ctx.canvas.style.cursor = 'all-scroll'
+      this.ctx.canvas.style.cursor = 'move'
       this.drag_instance(event);
       return true
     }
@@ -536,7 +536,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   }
   private draw_instance_bounding_box(ctx){
-    if(!this.selected){ return }
     let rotated_nodes = this.nodes.map(node => this.get_rotated_point(node, this.angle))
     let min_x = Math.min(...rotated_nodes.map(n => n.x)) - this.vertex_size
     let max_x = Math.max(...rotated_nodes.map(n => n.x)) + this.vertex_size
@@ -549,11 +548,22 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.beginPath();
 
     ctx.rect(min_x, min_y, width + this.vertex_size, height + this.vertex_size);
-    ctx.stroke()
-    ctx.fill()
+    if(this.selected){
+      ctx.stroke()
+      ctx.fill()
+    }
+
+
     if(this.is_mouse_in_path(ctx)){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
+      // Draw helper bounding box
+      if(!this.selected){
+        ctx.fillStyle = 'white'
+        ctx.globalAlpha = 0.2;
+        ctx.stroke()
+        ctx.fill()
+      }
     }
     else{
       this.is_bounding_box_hovered = false;
@@ -574,6 +584,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     ctx.stroke();
     ctx.fill();
+
+    // Invisible second circle to extend hover range of the points
+    ctx.arc(x, y, this.vertex_size + 10, 0, 2 * Math.PI);
+    if (this.is_mouse_in_path(ctx)) {
+      this.is_hovered = true;
+      this.is_node_hovered = true;
+      this.node_hover_index = i
+      ctx.fillStyle = 'green'
+      this.num_hovered_paths += 1
+
+    }
   }
 
   private draw_currently_drawing_edge(ctx) {
