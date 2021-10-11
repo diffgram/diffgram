@@ -58,15 +58,22 @@
           )
 
         } else {
-          var hRatio = ctx.canvas.width / this.image.width;
-          var vRatio = ctx.canvas.height / this.image.height;
-          var ratio = Math.min(hRatio, vRatio);
+          console.log('width heigh image', this.image.width, this.image.height)
+          console.log('naturalHeight heigh image', this.image.naturaWidth, this.image.naturaHeight)
+          console.log('ctx.canvas.width', ctx.canvas.width, ctx.canvas.height)
+          let scale_x = ctx.canvas.width / this.image.width;
+          let scale_y = ctx.canvas.height / this.image.height;
           ctx.drawImage(
             this.image,
             0,
             0,
+            this.image.width,
+            this.image.height,
+            0,
+            0,
             ctx.canvas.width,
             ctx.canvas.height); // destination rectangle
+          ctx.scale(scale_x, scale_y)
 
         }
         ctx.filter = "none"
