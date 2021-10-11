@@ -429,12 +429,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       let x = node.x
       let y = node.y
-      if(node.left_or_right == 'left') {
-        this.draw_icon(ctx, x, y, 'alert')
-      }
-      //if(node.left_or_right=='right') {
-      //  this.draw_icon(ctx, x, y, 'alert')
-      //}
 
       x = this.get_scaled_x(node)
       y = this.get_scaled_y(node)
@@ -463,7 +457,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_left_right_arrows(ctx, node, x, y){
-    if (this.label_settings.show_left_right_arrows == false) {
+    if (this.label_settings &&
+        this.label_settings.show_left_right_arrows == false) {
       return
     }
     let size = this.vertex_size * 8
