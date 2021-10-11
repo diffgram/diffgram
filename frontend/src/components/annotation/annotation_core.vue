@@ -1993,6 +1993,25 @@
           instance.change_source = 'ui_diffgram_frontend'
           instance.machine_made = false;
         },
+        get_roi_canvas_from_instance: function (instance, ghost_canvas) {
+          // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData
+
+
+          let ghost_canvas_context = ghost_canvas.getContext('2d')
+
+          let region_of_interest_image_data = ghost_canvas_context.getImageData(
+            instance.x_min, instance.y_min,
+            instance.width, instance.height)
+
+          var roi_canvas = document.createElement('canvas');
+          var roi_canvas_ctx = roi_canvas.getContext('2d');
+          roi_canvas.width =  instance.width;
+          roi_canvas.height = instance.height;
+
+          roi_canvas_ctx.putImageData(region_of_interest_image_data, 0, 0);
+
+          return roi_canvas
+        },
         regenerate_file_cache: async function(){
           this.regenerate_file_cache_loading = true;
           let frame_number = this.current_frame;
