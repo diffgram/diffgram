@@ -12,7 +12,6 @@ export class CanvasMouseTools {
   private previous_zoom: number;
   private canvas_scale_global: number;
   private translate_acc: { x: number, y: number };
-  private canvas_translate_previous: { x: number, y: number };
   private previous_point: { x: number, y: number };
 
 
