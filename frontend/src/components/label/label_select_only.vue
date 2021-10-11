@@ -236,7 +236,7 @@
           this.selected = this.label_list.find(obj => {
             return obj.id == this.select_this_id_at_load
           })
-          this.emit_selected() // in case something relies on this,
+          // this.emit_selected() // in case something relies on this,
           // ie the data circles back / watching $event
           // TODO consider v-model for selected in this context.
         }
@@ -417,7 +417,6 @@
         },
 
         emit_selected: function () {
-
           // ie if we unselect a single one
           // then need to update state.
           this.check_select_all_state()
