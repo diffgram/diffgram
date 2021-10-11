@@ -9,7 +9,7 @@
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
         :editable="false"
-        :auto_scale_bg="false"
+        :auto_scale_bg="true"
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
         :canvas_id="`canvas__${file.id}`"
