@@ -122,13 +122,6 @@ export class CanvasMouseTools {
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
     let transform_new = this.canvas_ctx.getTransform();
 
-    // Avoid positive values translates
-    this.canvas_ctx.clearRect(
-      0,
-      0,
-      this.canvas_elm.width,
-      this.canvas_elm.height
-    );
     this.previous_zoom = zoom;
     this.previous_point = point;
     this.previous_transform = transform;
