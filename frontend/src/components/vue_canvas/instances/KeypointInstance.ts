@@ -33,6 +33,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
   public label_settings: any = undefined
+  private nearest_points_dict: any = undefined
 
 
   public get_instance_data(): object {
@@ -408,6 +409,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     this.draw_edges(ctx)
 
+    this.nearest_points_dict = {}
+
     for (let node of this.nodes) {
       // order of operations
       ctx.lineWidth = 2;
@@ -440,6 +443,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
       i += 1
     }
+
+    this.determine_and_set_nearest_node_hovered(ctx)
+
     if (this.num_hovered_paths === 0) {
       this.node_hover_index = undefined;
       this.is_node_hovered = false;
@@ -458,6 +464,22 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
+  private determine_and_set_nearest_node_hovered(ctx){
+    const sorted = Object.keys(this.nearest_points_dict).sort().reduce(
+        (obj, key) => { 
+          obj[key] = this.nearest_points_dict[key]; 
+          return obj;
+        }, 
+        {}
+      );
+
+    let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
+    let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
+    let radius = this.vertex_size + 10
+    if (this.point_is_intersecting_circle(point, this.mouse_position, radius)) {
+      this.set_node_hovered(ctx, index)
+    }
+  }
 
   public stop_dragging(){
     this.is_dragging_instance = false;
@@ -571,30 +593,37 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.globalAlpha = 1;
   }
 
+  private get_square_delta_point_mouse(point, mouse): number {
+    return Math.sqrt(
+              (point.x - mouse.x) ** 2
+            + (mouse.y - point.y) ** 2)
+  }
+
+  private point_is_intersecting_circle(point, mouse, radius): boolean {
+
+      return Math.sqrt(
+          (point.x - mouse.x) ** 2
+        + (mouse.y - point.y) ** 2) < radius 
+  }
+
+  private set_node_hovered(ctx, i): void {
+    this.is_hovered = true;
+    this.is_node_hovered = true;
+    this.node_hover_index = i
+    ctx.fillStyle = 'green'
+    this.num_hovered_paths += 1
+  }
+
   private draw_point_and_set_node_hover_index(x, y, i, ctx): void {
     ctx.beginPath();
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
-    if (this.is_mouse_in_path(ctx)) {
-      this.is_hovered = true;
-      this.is_node_hovered = true;
-      this.node_hover_index = i
-      ctx.fillStyle = 'green'
-      this.num_hovered_paths += 1
-
-    }
     ctx.stroke();
     ctx.fill();
 
-    // Invisible second circle to extend hover range of the points
-    ctx.arc(x, y, this.vertex_size + 10, 0, 2 * Math.PI);
-    if (this.is_mouse_in_path(ctx)) {
-      this.is_hovered = true;
-      this.is_node_hovered = true;
-      this.node_hover_index = i
-      ctx.fillStyle = 'green'
-      this.num_hovered_paths += 1
-
-    }
+    let point = {'x': x, 'y': y}
+    this.nearest_points_dict[this.get_square_delta_point_mouse(
+      point,
+      this.mouse_position)] = i
   }
 
   private draw_currently_drawing_edge(ctx) {
