@@ -2690,7 +2690,7 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-
+          const initial_instance = {...this.instance_list[index]}
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2792,17 +2792,20 @@
             let value = update.payload[1]
 
             // we assume this represents a group
+            initial_instance.prev_attribute = {
+              group: group.id,
+              value: {...instance.attribute_groups[group.id]}
+            }
             instance.attribute_groups[group.id] = value
             //console.debug(group, value)
           }
 
           // end instance update
 
-          let insert_instance_result = this.insert_instance(index, instance, update)
+          let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
 
           this.has_changed = true;
           this.trigger_refresh_with_delay()
-
 
         },
 
@@ -2813,36 +2816,15 @@
           return new_instance
         },
 
-        insert_instance(index, instance, update) {
+        insert_instance(index, instance, initial_instance, update) {
           // Use index = ` -1 ` if New instnace
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
 
-          if (!update.list_type || update.list_type == "default") {
-            if (index === -1){
-              this.instance_list.push(instance)
-            } else {
-              this.instance_list.splice(index, 1, instance)
-            }
-            // update instance buffer
-            if (this.video_mode == true)  {
-              if (this.current_frame in this.instance_buffer_dict){
-                // Updating existing reference
-                if (index === -1){
-                  this.instance_buffer_dict[this.current_frame].push(instance)
-                } else {
-                  this.instance_buffer_dict[this.current_frame].splice(index, 1, instance)
-                }
-              }
-              else{
-                // This is ok ONLY becuase we already checked that the reference to instance_list
-                // did not exist
-                this.instance_buffer_dict[this.current_frame] = [instance]
-              }
-            }
+          const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+          this.command_manager.executeCommand(command);
 
-          }
           if (update.list_type == "gold_standard") {
             this.gold_standard_file.instance_list.splice(index, 1, instance)
           }
