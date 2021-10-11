@@ -175,10 +175,6 @@
           x: 0,
           y: 0
         },
-        canvas_translate_previous: {
-          x: 0,
-          y: 0
-        },
         zoom_canvas: 1,
         canvas_scale_local: 1,
         canvas_scale_global: 1,
