@@ -5082,8 +5082,6 @@
 
         onRendered: function (ctx) {
 
-          // IMPORTANT   restore canvas from various transform operations
-          // ctx.restore()
         },
 
         test: function () {
