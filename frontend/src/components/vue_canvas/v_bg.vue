@@ -58,11 +58,15 @@
           )
 
         } else {
-          console.log('width heigh image', this.image.width, this.image.height)
-          console.log('naturalHeight heigh image', this.image.naturaWidth, this.image.naturaHeight)
-          console.log('ctx.canvas.width', ctx.canvas.width, ctx.canvas.height)
           let scale_x = ctx.canvas.width / this.image.width;
           let scale_y = ctx.canvas.height / this.image.height;
+          // ctx.clearRect(
+          //   0,
+          //   0,
+          //   this.image.width,
+          //   this.image.height
+          // );
+          ctx.resetTransform();
           ctx.drawImage(
             this.image,
             0,
