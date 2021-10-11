@@ -21,7 +21,7 @@
                    :project_string_id="project_string_id"
                    :task="task"
                    :file="file"
-                   :canvas_scale_local="canvas_scale_local"
+                   :canvas_scale_local="zoom_value"
                    :has_changed="has_changed"
                    :label_list="label_list"
                    :draw_mode="draw_mode"
@@ -1347,6 +1347,7 @@
           full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
           canvas_scale_local: 1,  // for actually scaling dimensions within canvas
+          zoom_value: 1,  // for display only
 
           canvas_translate: {
             x: 0,
@@ -1904,6 +1905,7 @@
 
           await this.$nextTick()
           this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
         update_label_settings: function (event) {
@@ -3388,6 +3390,7 @@
 
           this.hide_context_menu()
           this.canvas_mouse_tools.zoom_wheel(event);
+          this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
 
         },
@@ -3471,7 +3474,7 @@
 
           let scale = this.get_zoom_region_of_instance(instance);
           this.canvas_mouse_tools.zoom_to_point(move, scale)
-
+          this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
 
