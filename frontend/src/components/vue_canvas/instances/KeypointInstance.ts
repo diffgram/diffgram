@@ -245,6 +245,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
+  private get_scaled_and_rotated_point(point){
+    let x = this.get_scaled_x(point)
+    let y = this.get_scaled_y(point)
+    return {'x' : x, 'y' : y}
+  }
+
   private get_scaled_x(point){
 
     // Origin is center of shape
@@ -476,7 +482,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
     let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
     let radius = this.vertex_size + 10
-    if (this.point_is_intersecting_circle(point, this.mouse_position, radius)) {
+
+    if (this.point_is_intersecting_circle(
+      this.get_scaled_and_rotated_point(point),
+      this.mouse_position,
+      radius))
+    {
       this.set_node_hovered(ctx, index)
     }
   }
