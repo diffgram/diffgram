@@ -149,7 +149,6 @@
       },
       initialize_instance: function(instance){
 
-        console.log('AAAAA', this.$refs.drawable_canvas)
         if(instance.type === 'keypoints' && !instance.initialized){
 
           // In this case we can send empty object for mouse position since we don't want drawing controls.
