@@ -212,9 +212,12 @@
 
       window.addEventListener('resize', this.update_window_size_from_listener)
       this.update_window_size_from_listener();
-      this.canvas_element.width += 0;
+
       this.loading = false;
+      this.canvas_ctx = this.canvas_element.getContext('2d');
+
       this.update_canvas();
+
     },
 
     beforeDestroy() {
@@ -272,7 +275,8 @@
       },
       onRendered: function (ctx) {
         this.canvas_ctx = ctx;
-        ctx.restore()
+
+
       },
       update_canvas: function(){
         this.refresh = new Date();
@@ -287,7 +291,7 @@
 
 
       canvas_width_scaled: function () {
-        return this.canvas_width * this.canvas_scale_global
+        return this.canvas_width  * this.canvas_scale_global
       },
 
       canvas_height_scaled: function () {
