@@ -51,6 +51,12 @@
             label="Filter by Batch ID">
           </v-text-field>
 
+          <v-text-field
+            type="number"
+            clearable
+            v-model="task_id_filter"
+            label="Filter by Task ID">
+          </v-text-field>
 
           <v-text-field
             type="number"
@@ -564,6 +570,7 @@
 
           file_id_filter: null,
           batch_id_filter: null,
+          task_id_filter: undefined,
 
           metadata_limit_options: [10, 25, 50, 100, 250, 500],
           metadata_limit: 10,
@@ -738,6 +745,11 @@
 
           this.error = {}
           this.error_video = null
+
+          let task_id_to_use = this.$props.task_id
+          if(this.task_id_filter) {
+            task_id_to_use = parseInt(this.task_id_filter)
+          }
           try {
             const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
               + '/input/view/list', {
@@ -749,7 +761,7 @@
               date_to: this.date ? this.date.to : undefined,
               file_id: parseInt(this.file_id_filter),
               batch_id: parseInt(this.batch_id_filter),
-              task_id: this.$props.task_id
+              task_id: task_id_to_use
             })
 
             if (response.data.success == true) {
