@@ -99,6 +99,7 @@ def process_media_unit_of_work(item):
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
                 logger.error(traceback.format_exc())
+                process_media_queue_manager.remove_item_from_processing_list(item)
         else:
             process_media_queue_manager.add_item_to_processing_list(item)
             process_media.main_entry()
