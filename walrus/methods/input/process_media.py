@@ -60,30 +60,6 @@ existing_instances_allowed_file_names = [".json"]
 
 STOP_PROCESSING_DATA = False
 
-
-class ProcessingInputList(metaclass = Singleton):
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        # If no instance of class already exits
-        if cls._instance is None:
-            cls._instance = object.__new__(cls)
-            cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self):
-        if self._initialized:
-            return
-
-        print('INITIALIZED ITEMS')
-        self.items = []
-        # set the attribute to `True` to not initialize again
-        self.initialized = True
-
-
-processing_input_manager = ProcessingInputList()
-
-
 @dataclass(order = True)
 class PrioritizedItem:
     # https://diffgram.com/docs/prioritizeditem
@@ -102,7 +78,8 @@ class PrioritizedItem:
     media_type: str = None
 
 
-def process_media_unit_of_work(item, processing_input_manager):
+def process_media_unit_of_work(item):
+    from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
     with sessionMaker.session_scope_threaded() as session:
 
         process_media = Process_Media(
@@ -113,37 +90,19 @@ def process_media_unit_of_work(item, processing_input_manager):
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
-                if item.input:
-                    processing_input_manager.items.append(item.input)
-                else:
-                    processing_input_manager.items.append(item.input_id)
-                print('APPEND', processing_input_manager)
-                process_media.main_entry()
 
-                processing_input_manager.items.remove(item.input_id)
-                if item.input:
-                    processing_input_manager.items.remove(item.input)
-                else:
-                    processing_input_manager.items.remove(item.input_id)
-                print('REMOVE', processing_input_manager)
+                process_media_queue_manager.add_item_to_processing_list(item)
+                process_media.main_entry()
+                process_media_queue_manager.remove_item_from_processing_list(item)
+
             except Exception as e:
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
                 logger.error(traceback.format_exc())
         else:
-            print('AAAAA', item, item.input, item.input_id)
-            if item.input:
-                processing_input_manager.items.append(item.input)
-            else:
-                processing_input_manager.items.append(item.input_id)
-            print('APPEND', processing_input_manager.items)
+            process_media_queue_manager.add_item_to_processing_list(item)
             process_media.main_entry()
-            if item.input:
-                processing_input_manager.items.remove(item.input)
-            else:
-                processing_input_manager.items.remove(item.input_id)
-            print('REMOVE', processing_input_manager.items)
-
+            process_media_queue_manager.remove_item_from_processing_list(item)
 
 # REMOTE queue
 def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
@@ -156,7 +115,6 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
 
     while True:
         time.sleep(add_deferred_items_time)
-        print('STOP_PROCESSING_DATA', process_media_queue_manager.STOP_PROCESSING_DATA)
         if process_media_queue_manager.STOP_PROCESSING_DATA:
             logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
             break
@@ -264,7 +222,7 @@ def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
             time.sleep(check_interval)
 
 
-def process_media_queue_worker(queue, queue_type, processing_input_manager, frame_queue_lock, video_queue_lock):
+def process_media_queue_worker(queue, queue_type, frame_queue_lock, video_queue_lock):
     queue_lock = None
     if queue_type == 'frame':
         queue_lock = frame_queue_lock
@@ -274,16 +232,16 @@ def process_media_queue_worker(queue, queue_type, processing_input_manager, fram
         logger.error('Invalid queue type')
         return
     while True:
-        process_media_queue_getter(queue, queue_lock, processing_input_manager)
+        process_media_queue_getter(queue, queue_lock)
 
 
-def process_media_queue_getter(queue, queue_lock, processing_input_manager):
+def process_media_queue_getter(queue, queue_lock):
     # https://diffgram.com/docs/process_media_queue_getter
     queue_lock.acquire()
     if not queue.empty():
         item = queue.get()
         queue_lock.release()
-        process_media_unit_of_work(item, processing_input_manager)
+        process_media_unit_of_work(item)
         queue.task_done()
     else:
         queue_lock.release()
@@ -631,6 +589,7 @@ class Process_Media():
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
+            self.input.update_log = {'existing_file_id': existing_file_list[0].id}
             return False
 
         return True
