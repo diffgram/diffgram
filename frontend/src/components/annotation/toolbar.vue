@@ -571,7 +571,8 @@
                   step=.05
                   thumb-label="always"
                   ticks
-                  @change="label_settings_local.canvas_scale_global_is_automatic = false"
+                  @change="on_change_canvas_scale_global"
+                  @click="on_change_canvas_scale_global"
                   v-model="label_settings_local.canvas_scale_global_setting">
                 </v-slider>
 
@@ -645,10 +646,15 @@
                           data-cy="show_allow_multiple_select_checkbox"
                           v-model="label_settings_local.allow_multiple_instance_select">
               </v-checkbox>
-              
+
               <v-checkbox label="Show Occluded Keypoints"
                           data-cy="show_occluded_keypoints"
                           v-model="label_settings_local.show_occluded_keypoints">
+              </v-checkbox>
+
+              <v-checkbox label="Show Left Right Icons Keypoints"
+                          data-cy="show_left_right_arrows"
+                          v-model="label_settings_local.show_left_right_arrows">
               </v-checkbox>
 
               <v-checkbox label="Enable Snap to Instance"
@@ -919,7 +925,10 @@ export default Vue.extend( {
     },
   },
   methods: {
-
+    on_change_canvas_scale_global: function(){
+      this.label_settings_local.canvas_scale_global_is_automatic = false;
+      this.$emit('canvas_scale_global_changed', this.label_settings_local.canvas_scale_global_setting)
+    },
     filter_reset: function () {
       this.label_settings_local.filter_brightness = 100
       this.label_settings_local.filter_contrast = 100
