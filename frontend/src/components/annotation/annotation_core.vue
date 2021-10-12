@@ -27,7 +27,7 @@
                    :project_string_id="project_string_id"
                    :task="task"
                    :file="file"
-                   :canvas_scale_local="canvas_scale_local"
+                   :canvas_scale_local="zoom_value"
                    :has_changed="has_changed"
                    :label_list="label_list"
                    :draw_mode="draw_mode"
@@ -48,6 +48,7 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
+                   @canvas_scale_global_changed="on_canvas_scale_global_changed"
                    @change_task="trigger_task_change($event, task)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
@@ -417,6 +418,7 @@
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
+              :mouse_position="mouse_position"
               :canvas_transform="canvas_transform">
 
 
@@ -424,7 +426,9 @@
                     :current_file="file"
                     :refresh="refresh"
                     @update_canvas="update_canvas"
+                    :canvas_transform="canvas_transform"
                     :canvas_filters="canvas_filters"
+                    :canvas_element="canvas_element"
                     :ord="1"
                     :annotations_loading="any_loading"
               >
@@ -439,6 +443,10 @@
                                 :mouse_position="mouse_position"
                                 :height="canvas_height"
                                 :width="canvas_width"
+                                :canvas_element="canvas_element"
+                                :width_scaled="canvas_width_scaled"
+                                :height_scaled="canvas_height_scaled"
+                                :canvas_mouse_tools="canvas_mouse_tools"
                                 :show="show_target_reticle"
                                 :target_colour="current_label_file ? current_label_file.colour : undefined"
                                 :text_color="this.$get_sequence_color(this.current_instance.sequence_id)"
@@ -463,6 +471,8 @@
                                     :label_settings="label_settings"
                                     :current_instance="current_instance"
                                     :is_actively_drawing="is_actively_drawing"
+                                    :height="canvas_height"
+                                    :width="canvas_width"
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
@@ -901,6 +911,10 @@
         }
       },
       watch: {
+        canvas_scale_global: function(newVal, oldVal){
+          this.on_canvas_scale_global_changed(newVal)
+
+        },
         file: {
           handler(newVal, oldVal){
             if(newVal != oldVal){
@@ -1155,6 +1169,7 @@
             show_attribute_text: true,
             show_list: true,
             show_occluded_keypoints: true,
+            show_left_right_arrows: true,
             allow_multiple_instance_select: false,
             font_size: 20,
             spatial_line_size: 2,
@@ -1347,11 +1362,17 @@
           full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
           canvas_scale_local: 1,  // for actually scaling dimensions within canvas
+          zoom_value: 1,  // for display only
 
           canvas_translate: {
             x: 0,
             y: 0
           },
+          canvas_pan_accumulated: {
+            x: 0,
+            y: 0
+          },
+          zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
           shift_key: false,
@@ -1554,6 +1575,7 @@
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+
           let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
           let toolbar_height = 80
@@ -1594,7 +1616,6 @@
 
           this.label_settings.canvas_scale_global_setting = new_size
 
-
           return new_size
 
 
@@ -1618,7 +1639,8 @@
             'canvas_scale_global': this.canvas_scale_global,
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
-            'translate': this.canvas_translate
+            'translate': this.canvas_translate,
+            'zoom': this.zoom_canvas
           }
         },
 
@@ -1775,6 +1797,7 @@
             }
 
           }
+
           let instance_data = {
             x_min: x_min,
             y_min: y_min,
@@ -1878,6 +1901,33 @@
       },
 
       methods: {
+        on_canvas_scale_global_changed: async function(new_scale){
+          if(!new_scale){
+            return
+          }
+          // Force a canvas reset when changing global scale.
+          if(!this.canvas_element){
+            return
+          }
+          this.label_settings.canvas_scale_global_setting = new_scale;
+          this.canvas_mouse_tools.canvas_scale_global = new_scale;
+          this.canvas_mouse_tools.scale = new_scale;
+          this.canvas_element_ctx.clearRect(
+            0,
+            0,
+            this.canvas_element.width,
+            this.canvas_element.height
+          );
+          this.canvas_element_ctx.resetTransform();
+          this.canvas_element_ctx.scale(new_scale, new_scale);
+          this.canvas_element.width += 0;
+
+
+          await this.$nextTick()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
+        },
         edit_ui_schema: function (event) {
           this.$store.commit('set_ui_schema_editing_state', true);
           this.show_ui_schema_context_menu = true
@@ -2721,7 +2771,7 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-
+          const initial_instance = {...this.instance_list[index]}
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2823,17 +2873,20 @@
             let value = update.payload[1]
 
             // we assume this represents a group
+            initial_instance.prev_attribute = {
+              group: group.id,
+              value: {...instance.attribute_groups[group.id]}
+            }
             instance.attribute_groups[group.id] = value
             //console.debug(group, value)
           }
 
           // end instance update
 
-          let insert_instance_result = this.insert_instance(index, instance, update)
+          let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
 
           this.has_changed = true;
           this.trigger_refresh_with_delay()
-
 
         },
 
@@ -2844,36 +2897,15 @@
           return new_instance
         },
 
-        insert_instance(index, instance, update) {
+        insert_instance(index, instance, initial_instance, update) {
           // Use index = ` -1 ` if New instnace
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
 
-          if (!update.list_type || update.list_type == "default") {
-            if (index === -1){
-              this.instance_list.push(instance)
-            } else {
-              this.instance_list.splice(index, 1, instance)
-            }
-            // update instance buffer
-            if (this.video_mode == true)  {
-              if (this.current_frame in this.instance_buffer_dict){
-                // Updating existing reference
-                if (index === -1){
-                  this.instance_buffer_dict[this.current_frame].push(instance)
-                } else {
-                  this.instance_buffer_dict[this.current_frame].splice(index, 1, instance)
-                }
-              }
-              else{
-                // This is ok ONLY becuase we already checked that the reference to instance_list
-                // did not exist
-                this.instance_buffer_dict[this.current_frame] = [instance]
-              }
-            }
+          const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+          this.command_manager.executeCommand(command);
 
-          }
           if (update.list_type == "gold_standard") {
             this.gold_standard_file.instance_list.splice(index, 1, instance)
           }
@@ -2958,10 +2990,7 @@
         },
 
         async mounted() {
-          this.canvas_mouse_tools = new CanvasMouseTools(
-            this.mouse_position,
-            this.canvas_translate,
-          )
+
           //console.debug("mounted")
           // Reset issue mode
           this.$store.commit('set_instance_select_for_issue', false);
@@ -2972,10 +3001,16 @@
           this.fetch_model_run_list();
           this.fetch_instance_template();
 
-          this.update_canvas()
-
+          this.canvas_mouse_tools = new CanvasMouseTools(
+            this.mouse_position,
+            this.canvas_translate,
+            this.canvas_element,
+            this.canvas_scale_global
+          )
+          this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
-          this.canvas_wrapper.style.display = ""
+          this.canvas_wrapper.style.display = "";
+
 
           var self = this
           this.get_instances_watcher = this.$store.watch((state) => {
@@ -3386,19 +3421,17 @@
 
         zoom_wheel_scroll_canvas_transform_update: function (event) {
 
-          this.hide_context_menu()    // context of position updating looks funny if it stays
+          this.hide_context_menu()
+          this.canvas_mouse_tools.zoom_wheel(event);
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
 
-          this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-            event, this.canvas_scale_local)
-
-          this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event, this.canvas_scale_local)
         },
 
         reset_to_full: function () {
-          this.canvas_translate.x = 0
-          this.canvas_translate.y = 0
-          this.canvas_scale_local = 1
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.canvas_mouse_tools.scale = this.canvas_mouse_tools.canvas_scale_global;
+          this.update_canvas();
         },
 
         get_center_point_of_instance:function (instance) {
@@ -3449,13 +3482,12 @@
           let max_zoom = 10
           let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
           let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
-          let padding = -0.5
+          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y) * this.canvas_scale_global
+          let padding = -2
           return max_zoom_to_show_all + padding
         },
 
         snap_to_instance: function (instance){
-
           if (this.label_settings.enable_snap_to_instance == false) {
             return
           }
@@ -3468,10 +3500,15 @@
 
           let point = this.get_focus_point_of_instance(instance)
 
-          this.canvas_translate.x = point.x * this.canvas_scale_global
-          this.canvas_translate.y = point.y * this.canvas_scale_global
+          let move = {
+            x: point.x,
+            y: point.y
+          }
 
-          this.canvas_scale_local = this.get_zoom_region_of_instance(instance)
+          let scale = this.get_zoom_region_of_instance(instance);
+          this.canvas_mouse_tools.zoom_to_point(move, scale)
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
         },
 
         update_label_file_visible: function (label_file) {
@@ -5077,8 +5114,6 @@
 
         onRendered: function (ctx) {
 
-          // IMPORTANT   restore canvas from various transform operations
-          ctx.restore()
         },
 
         test: function () {
@@ -5088,34 +5123,35 @@
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
           return this.canvas_mouse_tools.mouse_transform(
-            event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
+            event,
+            mouse_position,
+            this.canvas_element,
+            this.update_canvas,
+            this.canvas_transform)
         },
 
         helper_difference_absolute: function (a, b) { return Math.abs(a - b) },
 
 
         move_position_based_on_mouse: function (movementX, movementY) {
-
-          // using local could work if we also "dragged" it... but feels funny for free move
-          // let x = this.canvas_translate.x + (movementX / this.canvas_scale_local)
-          // let y = this.canvas_translate.y + (movementY / this.canvas_scale_local)
-          let x = this.canvas_translate.x + movementX
-          let y = this.canvas_translate.y + movementY
-
-          /* Below are Locks so it doesn't go out of bounds.
-       * if it goes out of boudnds (ie negative or greater then image actual)
-       * then it causes severe rendering error.
-       *
-       * careful, we assume we need to compare to scaled value
-       * base on rest of context
-       * This is wishy washy answer but basically console logged
-       * and it was clear neeeded scaled value from that.
-       */
-          if (x >= 0 && x < this.canvas_width_scaled){
-            this.canvas_translate.x = x
+          if(this.canvas_mouse_tools.scale === this.canvas_scale_global){
+            return
           }
-          if (y >= 0 && y < this.canvas_height_scaled){
-            this.canvas_translate.y = y
+
+          let x = this.canvas_pan_accumulated.x + movementX;
+          let y = this.canvas_pan_accumulated.y + movementY;
+          let pan_position_x = x + this.mouse_position.x;
+          let pan_position_y = y + this.mouse_position.y;
+
+          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width)){
+            this.canvas_mouse_tools.pan_x(movementX)
+            this.canvas_pan_accumulated.x = x
+
+          }
+          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height)){
+            this.canvas_mouse_tools.pan_y(movementY)
+            this.canvas_pan_accumulated.y = y
+
           }
 
         },
@@ -5131,12 +5167,14 @@
         window.focus()
       }
       */
+
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
           if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)
             this.canvas_element.style.cursor = 'move'
             return
           }
+          this.canvas_pan_accumulated = {x:0, y: 0};
           this.move_something(event)
 
           this.update_mouse_style()
@@ -5487,7 +5525,6 @@
               this.is_actively_resizing = false
             }
           }
-
           this.$store.commit('mouse_state_up')
 
           this.polygon_click_index = null
@@ -5992,6 +6029,7 @@
 
           // TODO new method ie
           // this.is_actively_drawing = true
+          this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
           if (this.$props.view_only_mode == true) {
             return
@@ -6022,6 +6060,7 @@
               this.ellipse_mouse_down()
             }
             if (this.instance_type == "box") {
+
               this.bounding_box_mouse_down();
             }
             if (this.instance_type == "keypoints") {
@@ -6051,7 +6090,6 @@
           this.mouse_down_position.request_time = Date.now()
           this.lock_polygon_corner();
           this.polygon_mid_point_mouse_down()
-
 
 
         },
@@ -6463,7 +6501,8 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
-
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale()
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6492,6 +6531,8 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale()
         },
 
         refresh_attributes_from_current_file: async function (file) {
@@ -6850,7 +6891,6 @@
           this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
         },
         initialize_instance: function(instance){
-          // TODO: add other instance types as they are migrated to classes.
           if(instance.type === 'keypoints' && !instance.initialized){
             let initialized_instance = new KeypointInstance(
               this.mouse_position,
