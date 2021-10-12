@@ -18,7 +18,8 @@
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
         :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
-      >
+
+                       >
 
         <instance_list
           slot-scope="props"
@@ -127,11 +128,12 @@
         }
       }
     },
+    created() {
+      this.prepare_filtered_instance_list();
+    },
     async mounted() {
       if (this.$props.file) {
         await this.set_bg(this.$props.file);
-
-        this.prepare_filtered_instance_list();
       }
     },
     watch: {
