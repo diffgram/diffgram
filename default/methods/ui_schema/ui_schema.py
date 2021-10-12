@@ -56,10 +56,10 @@ def __ui_schema_new(
         do_add_to_session = True):
 
     ui_schema = UI_Schema.new(
-        member = get_member(session),
+        member_created = get_member(session),
         project = Project.get(session, project_string_id),
         client_created_time = input['client_created_time'],
-        client_creation_ref_id = input['client_creation_ref_id'],
+        creation_ref_id = input['client_creation_ref_id'],
         name = input['name']
         )
 
