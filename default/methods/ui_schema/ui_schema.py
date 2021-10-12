@@ -6,6 +6,31 @@ except:
 from shared.database.ui_schema.ui_schema import UI_Schema
 
 
+ui_schema_button_spec_list = [
+    {"show" : {
+		'default': True,
+		'kind': bool
+		}
+	},
+    {"style" : {
+		'default': None,
+		'kind': str,
+        'required': False
+		}
+	}
+]
+
+ui_schema_logo_spec_list = [
+    {"url" : {
+		'default': None,
+		'kind': str,
+        'required': False
+		}
+	}
+]
+ui_schema_logo_spec_list.extend(ui_schema_button_spec_list)
+
+
 @routes.route('/api/v1/project/<string:project_string_id>/ui_schema/new', 
               methods = ['POST'])
 @Project_permissions.user_has_project(
