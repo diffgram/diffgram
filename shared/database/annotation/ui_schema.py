@@ -46,86 +46,65 @@ class UI_Schema(Base, SerializerMixin):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
+    # {show: bool,
+    #  url: example,
+    #  style: example}
+
     global_theme = Column(MutableDict.as_mutable(JSONB))
 
-    show_logo = Column(Boolean)
-    logo_schema = Column(MutableDict.as_mutable(JSONB))
-    # client logo
-    # JSON field postgres, check native support
-    # name, color, theme...
-    # Default JSON to include show?
+    logo = Column(MutableDict.as_mutable(JSONB))
+    home = Column(MutableDict.as_mutable(JSONB))
+    undo = Column(MutableDict.as_mutable(JSONB))
+    redo = Column(MutableDict.as_mutable(JSONB))
+    complete = Column(MutableDict.as_mutable(JSONB))
+    defer = Column(MutableDict.as_mutable(JSONB))
+    zoom = Column(MutableDict.as_mutable(JSONB))
+    label_selector = Column(MutableDict.as_mutable(JSONB))
+    instance_selector = Column(MutableDict.as_mutable(JSONB))
+    edit_instance_template = Column(MutableDict.as_mutable(JSONB))
+    draw_edit = Column(MutableDict.as_mutable(JSONB))
+    save = Column(MutableDict.as_mutable(JSONB))
+    next_task = Column(MutableDict.as_mutable(JSONB))
+    previous_task = Column(MutableDict.as_mutable(JSONB))
+    guide = Column(MutableDict.as_mutable(JSONB))
+    brightness_contrast_filters = Column(MutableDict.as_mutable(JSONB))
+    hotkeys = Column(MutableDict.as_mutable(JSONB))
+    overflow_menu = Column(MutableDict.as_mutable(JSONB))
+    settings = Column(MutableDict.as_mutable(JSONB))
 
-    show_home = Column(Boolean)
-    show_undo = Column(Boolean)
-    show_redo = Column(Boolean)
-    show_complete = Column(Boolean)
-    show_defer = Column(Boolean)
-    show_zoom = Column(Boolean)
-    show_label_selector = Column(Boolean)
-    show_instance_selector = Column(Boolean)
-    show_edit_instance_template = Column(Boolean)
-    show_draw_edit = Column(Boolean)
-    show_save = Column(Boolean)
-    show_next_task = Column(Boolean)
-    show_previous_task = Column(Boolean)
-    show_guide = Column(Boolean)
-    show_brightness_contrast_filters = Column(Boolean)
-    show_hotkeys = Column(Boolean)
-    show_overflow_menu = Column(Boolean)
-    show_settings = Column(Boolean)
+    attributes = Column(MutableDict.as_mutable(JSONB))
+    instances = Column(MutableDict.as_mutable(JSONB))
+    userscripts = Column(MutableDict.as_mutable(JSONB))
+    nav_bar = Column(MutableDict.as_mutable(JSONB))
+    left_bar = Column(MutableDict.as_mutable(JSONB))
 
-    show_attributes = Column(Boolean)
-    show_instances = Column(Boolean)
-    show_userscripts = Column(Boolean)
-    show_nav_bar = Column(Boolean)
-    show_left_bar = Column(Boolean)
+    main_canvas = Column(MutableDict.as_mutable(JSONB))
 
-    style_complete_button = Column(String())
-
-    background_color = Column(String())
-
-    # label_settings
-    settings_enable_snap_to_instance = Column(Boolean)
-    settings_show_ghost_instances = Column(Boolean)
-    settings_show_text = Column(Boolean)
-    settings_show_label_text = Column(Boolean)
-    settings_show_attribute_text = Column(Boolean)
-    settings_show_list = Column(Boolean)
-    settings_show_occluded_keypoints = Column(Boolean)
-    settings_allow_multiple_instance_select = Column(Boolean)
-    settings_font_size = Column(Integer)
-    settings_spatial_line_size = Column(Integer)
-    settings_vertex_size = Column(Integer)
-    settings_font_background_opacity = Column(Integer)
-    settings_show_removed_instances = Column(Boolean)
-    settings_target_reticle_size = Column(Integer)
-    settings_filter_brightness = Column(Integer)
-    settings_filter_contrast = Column(Integer)
-    settings_filter_grayscale = Column(Integer)
-    settings_instance_buffer_size = Column(Integer)
-    settings_canvas_scale_global_is_automatic = Column(Boolean)
-    settings_canvas_scale_global_setting = Column(Float)
-    settings_left_nav_width = Column(Integer)
-    settings_on_instance_creation_advance_sequence = Column(Boolean)
-    settings_ghost_instances_closed_by_open_view_edit_panel = Column(Boolean)
+    label_settings = Column(MutableDict.as_mutable(JSONB))
 
     allowed_instance_type_list = Column(ARRAY(String()))
     allowed_instance_template_id_list = Column(ARRAY(Integer()))
 
-    allow_instance_delete = Column(Boolean)
-    allow_instance_move = Column(Boolean)
-    allow_new_instance_creation = Column(Boolean)
-    allow_new_instance_creation = Column(Boolean)
-    allow_label_change = Column(Boolean)
-    allow_attribute_change = Column(Boolean)
-    allow_copy_paste = Column(Boolean)
-    allow_new_template_creation = Column(Boolean)
-    allow_history_access = Column(Boolean)
+    allow_actions = Column(MutableDict.as_mutable(JSONB))
+    block_actions = Column(MutableDict.as_mutable(JSONB))
 
-    allow_edit_of_complete_task = Column(Boolean)
+    # example actions
 
-    default_to_view_only_mode = Column(Boolean)
-    default_to_qa_slideshow = Column(Boolean)
+    #allow_instance_delete 
+    #allow_instance_move 
+    #allow_new_instance_creation 
+    #allow_new_instance_creation 
+    #allow_label_change 
+    #allow_attribute_change 
+    #allow_copy_paste 
+    #allow_new_template_creation 
+    #allow_history_access 
+
+    #allow_edit_of_complete_task = Column(Boolean)
+
+    # These should be rolled into label settings maybe?
+    #default_to_view_only_mode
+    #default_to_qa_slideshow
 
 
     def serialize(self):
