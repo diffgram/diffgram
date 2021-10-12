@@ -4,7 +4,7 @@
       <drawable_canvas
         :allow_zoom="allow_zoom"
         :image_bg="html_image"
-        :canvas_height="canvas_height - video_player_height"
+        :canvas_height="canvas_height_computed"
         :canvas_width="canvas_width"
         :editable="editable"
         :auto_scale_bg="true"
@@ -433,6 +433,12 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       style_max_width: function () {
         return "max-width:" + this.canvas_width_scaled + "px"
       },
+      canvas_height_computed: function() {
+        if (this.show_video_nav_bar) {
+          return this.canvas_height - this.video_player_height
+        }
+        return this.canvas_height
+      }
     }
   });
 </script>
