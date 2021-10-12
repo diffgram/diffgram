@@ -60,6 +60,7 @@
                    @open_instance_template_dialog="open_instance_template_dialog()"
                    @copy_all_instances="copy_all_instances"
                    @edit_ui_schema="edit_ui_schema"
+                   @add_ui_schema="add_ui_schema"
 
           >
           </toolbar>
@@ -808,7 +809,7 @@
   import task_status_icons from '../regular_concrete/task_status_icons'
   import context_menu from '../context_menu/context_menu.vue';
   import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
-  import ui_schema_context_menu from '../context_menu/ui_schema_context_menu.vue';
+  import ui_schema_context_menu from '../ui_schema/ui_schema_context_menu.vue';
   import issues_sidepanel from '../discussions/issues_sidepanel.vue';
   import current_instance_template from '../vue_canvas/current_instance_template.vue';
   import instance_template_creation_dialog from '../instance_templates/instance_template_creation_dialog';
