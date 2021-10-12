@@ -175,6 +175,7 @@
           x: 0,
           y: 0
         },
+        zoom_canvas: 1,
         canvas_scale_local: 1,
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
@@ -197,6 +198,8 @@
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
+        this.canvas_element,
+        this.canvas_scale_global
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       if(this.$props.allow_zoom){
@@ -205,9 +208,12 @@
 
       window.addEventListener('resize', this.update_window_size_from_listener)
       this.update_window_size_from_listener();
-      this.canvas_element.width += 0;
+
       this.loading = false;
+      this.canvas_ctx = this.canvas_element.getContext('2d');
+
       this.update_canvas();
+
     },
 
     beforeDestroy() {
@@ -236,19 +242,8 @@
         }
         await this.$nextTick();
       },
-      zoom_in: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
-      },
-      zoom_out: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_out(this.canvas_transform);
-      },
       zoom_wheel_scroll_canvas_transform_update: function (event) {
-
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-          event, this.canvas_scale_local)
-
-        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-          event, this.canvas_scale_local)
+        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel(event)
       },
       mouse_transform: function (event, mouse_position) {
         return this.canvas_mouse_tools.mouse_transform(event, mouse_position, this.canvas_element, () => {}, this.canvas_transform)
@@ -276,7 +271,8 @@
       },
       onRendered: function (ctx) {
         this.canvas_ctx = ctx;
-        ctx.restore()
+
+
       },
       update_canvas: function(){
         this.refresh = new Date();
@@ -291,7 +287,7 @@
 
 
       canvas_width_scaled: function () {
-        return this.canvas_width * this.canvas_scale_global
+        return this.canvas_width  * this.canvas_scale_global
       },
 
       canvas_height_scaled: function () {
@@ -325,7 +321,9 @@
           'canvas_scale_global': this.canvas_scale_global,
           'canvas_scale_local': this.canvas_scale_local,
           'canvas_scale_combined': this.canvas_scale_local * this.canvas_scale_global,
-          'translate': this.canvas_translate
+          'translate': this.canvas_translate,
+          'translate_previous': this.canvas_translate,
+          'zoom_canvas': this.zoom_canvas
         }
       },
     }
