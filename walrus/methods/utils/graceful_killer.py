@@ -13,7 +13,7 @@ class GracefulKiller(metaclass = Singleton):
     killing_gracefully = False
     # To reason this do: SLEEP_TIME x MAX_CHECKS
     # For default case we will wait for the walrus to finish processing for 1 hours 55mins max.
-    MAX_CHECKS = 12 * 55
+    MAX_CHECKS = 12 * 55 * 2
     SLEEP_TIME = 5
 
     def __init__(self):
