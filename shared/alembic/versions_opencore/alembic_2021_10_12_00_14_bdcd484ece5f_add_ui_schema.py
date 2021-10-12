@@ -37,6 +37,9 @@ def upgrade():
        
         sa.Column('project_id', sa.Integer()),
         
+        sa.Column('deletion_type', sa.String(), nullable = True),
+        sa.Column('change_source', sa.String(), nullable = True),
+
         sa.Column('archived', sa.Boolean()),
         sa.Column('is_visible', sa.Boolean(), default=True),
         sa.Column('is_public', sa.Boolean(), default=False),

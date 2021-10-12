@@ -1,5 +1,6 @@
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import desc
 
 from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
@@ -38,13 +39,14 @@ class UI_Schema(Base, SerializerMixin):
     project_id = Column(Integer, ForeignKey('project.id'), index=True)
     project = relationship("Project")
 
-    is_template = Column(Boolean, default = False)
-
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+    allowed_instance_type_list = Column(ARRAY(String()))
+    allowed_instance_template_id_list = Column(ARRAY(Integer()))
 
     # {show: bool,
     #  url: example,
@@ -81,9 +83,6 @@ class UI_Schema(Base, SerializerMixin):
     main_canvas = Column(MutableDict.as_mutable(JSONB))
 
     label_settings = Column(MutableDict.as_mutable(JSONB))
-
-    allowed_instance_type_list = Column(ARRAY(String()))
-    allowed_instance_template_id_list = Column(ARRAY(Integer()))
 
     allow_actions = Column(MutableDict.as_mutable(JSONB))
     block_actions = Column(MutableDict.as_mutable(JSONB))
@@ -203,12 +202,11 @@ class UI_Schema(Base, SerializerMixin):
 
     @staticmethod
     def new(
-            member: 'Member' = None,
+            member_created: 'Member' = None,
             project: 'Project' = None,
             client_created_time = None,
-            client_creation_ref_id = None,
+            creation_ref_id = None,
             name = None
             ) -> 'UI_Schema':
 
-        print("kwargs", kwargs)
-        return UI_Schema(kwargs)   
+        return UI_Schema(**locals())   
