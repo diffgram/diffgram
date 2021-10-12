@@ -645,8 +645,16 @@ const ui_schema = {
       state.current = current
       state.refresh = Date.now()
     },
+    reset_ui_schema(state, current){
+      for (const [key, value] of Object.entries(state.current)) {
+        state.current[key] = undefined
+      }
+      state.refresh = Date.now()
+    },
     clear_ui_schema(state) {
-      state.current = {};
+      for (const [key, value] of Object.entries(state.current)) {
+        state.current[key] = undefined
+      }
       state.event = undefined;
       state.target_element = undefined;
       state.editing = false

@@ -143,6 +143,9 @@
       close(){
         this.$emit('close_context_menu')
       },
+      reset(){
+        this.$store.commit('reset_ui_schema')
+      },
       hide() {
         this.$store.commit('set_ui_schema_element_value', false)
         //this.close();
@@ -279,6 +282,16 @@
         Hover over a button to show options. Click plus to add buttons.
 
         <template v-slot:action="{ attrs }">
+          <v-btn
+            color="white"
+            text
+            v-bind="attrs"
+            @click="reset()"
+          >
+          <v-icon left > mdi-restore </v-icon>
+            Reset
+          </v-btn>
+
           <v-btn
             color="red"
             text
