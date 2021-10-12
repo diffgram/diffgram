@@ -106,6 +106,7 @@ class New_video():
         Returns
             None
         """
+        print('LOADDDD VIDEOOOO')
         process_media.check_and_wait_for_memory(memory_limit_float=85.0)
 
         logger.info('Reading video data for {} - {}'.format(input.id, video_file_name))

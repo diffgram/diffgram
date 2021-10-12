@@ -17,7 +17,6 @@ import csv
 import gc
 import shutil
 
-from queue import PriorityQueue
 from random import randrange
 
 from werkzeug.utils import secure_filename
@@ -48,9 +47,8 @@ from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
 import numpy as np
-from methods.utils.graceful_killer import GracefulKiller
 import os
-from shared.data_tools_core import Singleton
+from shared.utils.singleton import Singleton
 
 data_tools = Data_tools().data_tools
 
@@ -84,7 +82,6 @@ class ProcessingInputList(metaclass = Singleton):
 
 
 processing_input_manager = ProcessingInputList()
-graceful_killer = GracefulKiller(processing_input_manager)
 
 
 @dataclass(order = True)
@@ -149,9 +146,9 @@ def process_media_unit_of_work(item, processing_input_manager):
 
 
 # REMOTE queue
-def start_queue_check_loop():
+def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-start_queue_check_loop
-
+    from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
     if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == False:
         return
 
@@ -159,15 +156,16 @@ def start_queue_check_loop():
 
     while True:
         time.sleep(add_deferred_items_time)
-
-        if STOP_PROCESSING_DATA:
+        print('STOP_PROCESSING_DATA', process_media_queue_manager.STOP_PROCESSING_DATA)
+        if process_media_queue_manager.STOP_PROCESSING_DATA:
+            logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
             break
 
         check_and_wait_for_memory(memory_limit_float = 75.0)
 
         logger.info("[Media Queue Heartbeat]")
         try:
-            add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time)
+            add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE)
         except Exception as exception:
             logger.info("[Media Queue Failed] {}".format(str(exception)))
             add_deferred_items_time = 30  # reset
@@ -193,7 +191,7 @@ def is_memory_available(memory_limit_float = 75.0):
     return True
 
 
-def check_if_add_items_to_queue(add_deferred_items_time):
+def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-check_if_add_items_to_queue
 
     queue_limit = 1
@@ -239,29 +237,22 @@ def check_if_add_items_to_queue(add_deferred_items_time):
 
 
 # https://diffgram.com/docs/process-media-local-worker-queues
-VIDEO_QUEUE = PriorityQueue()
-FRAME_QUEUE = PriorityQueue()
-frame_queue_lock = threading.Lock()
-video_queue_lock = threading.Lock()
-threads = []
-
-video_threads = settings.PROCESS_MEDIA_NUM_VIDEO_THREADS
-frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
 
 
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
+    from methods.input.process_media_queue_manager import process_media_queue_manager
 
     if item.media_type and item.media_type in ["frame", "image", "text"]:
 
         wait_until_queue_pressure_is_lower(
-            queue = FRAME_QUEUE,
-            limit = frame_threads * 2,
+            queue = process_media_queue_manager.FRAME_QUEUE,
+            limit = process_media_queue_manager.frame_threads * 2,
             check_interval = 1)
-        FRAME_QUEUE.put(item)
+        process_media_queue_manager.FRAME_QUEUE.put(item)
 
     else:
-        VIDEO_QUEUE.put(item)
+        process_media_queue_manager.VIDEO_QUEUE.put(item)
 
 
 def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
@@ -273,7 +264,7 @@ def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
             time.sleep(check_interval)
 
 
-def process_media_queue_worker(queue, queue_type, processing_input_manager):
+def process_media_queue_worker(queue, queue_type, processing_input_manager, frame_queue_lock, video_queue_lock):
     queue_lock = None
     if queue_type == 'frame':
         queue_lock = frame_queue_lock
@@ -297,30 +288,6 @@ def process_media_queue_getter(queue, queue_lock, processing_input_manager):
     else:
         queue_lock.release()
         time.sleep(0.1)
-
-
-# Kick off worker threads for global queue
-for i in range(video_threads):
-    t = threading.Thread(
-        target = process_media_queue_worker,
-        args = (VIDEO_QUEUE, 'video', processing_input_manager)
-    )
-    t.daemon = True  # Allow hot reload to work
-    t.start()
-    threads.append(t)
-
-for i in range(frame_threads):
-    t = threading.Thread(
-        target = process_media_queue_worker,
-        args = (FRAME_QUEUE, 'frame', processing_input_manager)
-    )
-    t.daemon = True  # Allow hot reload to work
-    t.start()
-    threads.append(t)
-
-t = threading.Timer(20, start_queue_check_loop)
-t.daemon = True  # Allow hot reload to work
-t.start()
 
 
 class Process_Media():
