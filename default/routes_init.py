@@ -122,3 +122,5 @@ def do_routes_importing():
     from methods.source_control.file.file_cache_regen import api_file_cache_regen
 
     from methods.video.sequence_preview_create import api_create_sequence_preview
+
+    from methods.ui_schema.ui_schema import ui_schema_new_api
