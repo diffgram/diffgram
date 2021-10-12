@@ -108,7 +108,10 @@ class UI_Schema(Base, SerializerMixin):
 
     def serialize(self):
         # https://github.com/n0nSmoker/SQLAlchemy-serializer
-        return self.to_dict()
+        return self.to_dict(rules=(
+            '-member_created', 
+            '-member_updated',
+            '-project'))
 
 
     @staticmethod
