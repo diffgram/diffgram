@@ -46,7 +46,7 @@
                  @click="$emit('click', $event), click()"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color=icon_color_computed>{{icon}}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->
@@ -68,7 +68,7 @@
                  :class="{'ml-4':true, [background]:true}"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color=icon_color_computed>{{icon}}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->
@@ -227,6 +227,9 @@
         'color': { // button color (not menu)
           default: 'red'
         },
+        'icon_color': { // icon color
+          default: null
+        },
         'button_text': {
           default: undefined,
           type: String
@@ -374,7 +377,17 @@
           this.menu_open = event
         }
       },
+      computed: {
+        icon_color_computed: function () {
 
+          if (this.$props.icon_color) {
+            return this.$props.icon_color
+          } else {
+            return this.$props.color;
+          }
+
+        },
+      },
       methods: {
         close_menu: function () {
           this.menu_open = false;
