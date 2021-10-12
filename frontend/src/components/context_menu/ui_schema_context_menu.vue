@@ -27,6 +27,7 @@
         show_share_instance_menu: false,
         locked_mouse_position: undefined,
         show_add_menu: false,
+        show_schema_editing_snackbar: true,
 
         button_to_add: undefined,
 
@@ -268,8 +269,28 @@
 
     </v-card>
 
-  </div>
+    <v-snackbar
+        v-model="show_schema_editing_snackbar"
+        :multi-line="true"
+        :timeout="-1"
+        right
+      >
+        <b>Editing UI Design</b> <br>
+        Hover over a button to show options. Click plus to add buttons.
 
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="red"
+            text
+            v-bind="attrs"
+            @click="close()"
+          >
+            Exit
+          </v-btn>
+        </template>
+      </v-snackbar>
+
+  </div>
 </template>
 <style>
   .context-menu {
