@@ -91,6 +91,10 @@
         canvas_height: 600,
         is_open: false,
         name: undefined,
+        label_settings: {
+          show_occluded_keypoints: true,
+          show_left_right_arrows: true
+        }
       }
     },
     mounted() {
@@ -113,8 +117,10 @@
           () => {},
           () => {},
           () => {},
-          this.$refs.instance_template_canvas.mouse_down_delta_event
+          this.$refs.instance_template_canvas.mouse_down_delta_event,
+          this.label_settings
         );
+
 
         // Set this to allow the creation of new nodes and edges.
         this.instance.template_creation_mode = true;

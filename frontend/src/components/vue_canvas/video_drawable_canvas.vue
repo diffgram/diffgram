@@ -7,7 +7,7 @@
         :canvas_height="canvas_height - video_player_height"
         :canvas_width="canvas_width"
         :editable="editable"
-        :auto_scale_bg="false"
+        :auto_scale_bg="true"
         :refresh="refresh"
         :video_mode="true"
         :canvas_wrapper_id="canvas_wrapper_id || `canvas_wrapper__${file.id}`"

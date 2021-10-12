@@ -41,20 +41,23 @@ describe('Annotate Files Tests', () => {
 
         cy.document().then((doc) => {
           cy.window().then((window) => {
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
             const min_clientX = min_x + canvas_client_box.x;
             const min_clientY = min_y + canvas_client_box.y;
             const box_point_min = get_transformed_coordinates({x: min_clientX, y: min_clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
             const max_clientX = 120 + canvas_client_box.x;
             const max_clientY = 120 + canvas_client_box.y;
             const box_point_max = get_transformed_coordinates({x: max_clientX, y: max_clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate);
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx);
             expect(annCore.instance_list[0]).to.exist;
             expect(annCore.instance_list[0].x_min).to.equal(box_point_min.x);
             expect(annCore.instance_list[0].x_max).to.equal(box_point_max.x);
@@ -100,6 +103,7 @@ describe('Annotate Files Tests', () => {
 
         cy.document().then((doc) => {
           cy.window().then((window) => {
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
             expect(annCore.instance_list[1]).to.exist;
@@ -111,8 +115,9 @@ describe('Annotate Files Tests', () => {
               const clientY = point.y + canvas_client_box.y;
               const box_point = get_transformed_coordinates({x: clientX, y: clientY},
                 canvas_client_box,
-                annCore.canvas_transform,
-                annCore.canvas_translate)
+                annCore.canvas_element,
+                canvas_wrapper,
+                annCore.canvas_element_ctx)
 
               expect(annCore.instance_list[1].points[i].x).to.equal(box_point.x);
               expect(annCore.instance_list[1].points[i].y).to.equal(box_point.y);
@@ -136,6 +141,7 @@ describe('Annotate Files Tests', () => {
         cy.wait(1000);
         cy.document().then((doc) => {
           cy.window().then((window) => {
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
 
@@ -143,8 +149,9 @@ describe('Annotate Files Tests', () => {
             const clientY = point.y + canvas_client_box.y;
             const box_point = get_transformed_coordinates({x: clientX, y: clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
             expect(annCore.instance_list[2]).to.exist;
             expect(annCore.instance_list[2].points[0].x).to.equal(box_point.x);
             expect(annCore.instance_list[2].points[0].y).to.equal(box_point.y);
@@ -172,6 +179,7 @@ describe('Annotate Files Tests', () => {
 
         cy.document().then((doc) => {
           cy.window().then((window) => {
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
             expect(annCore.instance_list[1]).to.exist;
@@ -183,8 +191,9 @@ describe('Annotate Files Tests', () => {
               const clientY = point.y + canvas_client_box.y;
               const box_point = get_transformed_coordinates({x: clientX, y: clientY},
                 canvas_client_box,
-                annCore.canvas_transform,
-                annCore.canvas_translate)
+                annCore.canvas_element,
+                canvas_wrapper,
+                annCore.canvas_element_ctx)
 
               expect(annCore.instance_list[3].points[i].x).to.equal(box_point.x);
               expect(annCore.instance_list[3].points[i].y).to.equal(box_point.y);
@@ -221,10 +230,12 @@ describe('Annotate Files Tests', () => {
 
             let clientX = rear_top_left.x + canvas_client_box.x;
             let clientY = rear_top_left.y + canvas_client_box.y;
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             let box_point = get_transformed_coordinates({x: clientX, y: clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
 
             expect(annCore.instance_list[4].rear_face.top_left.x).to.equal(box_point.x);
             expect(annCore.instance_list[4].rear_face.top_left.y).to.equal(box_point.y);
@@ -233,8 +244,9 @@ describe('Annotate Files Tests', () => {
             clientY = rear_bot_right.y + canvas_client_box.y;
             box_point = get_transformed_coordinates({x: clientX, y: clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
 
             expect(annCore.instance_list[4].rear_face.bot_right.x).to.equal(box_point.x);
             expect(annCore.instance_list[4].rear_face.bot_right.y).to.equal(box_point.y);
@@ -243,8 +255,9 @@ describe('Annotate Files Tests', () => {
             clientY = front_bot_right.y + canvas_client_box.y;
             box_point = get_transformed_coordinates({x: clientX, y: clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
 
             expect(annCore.instance_list[4].front_face.bot_right.x).to.equal(box_point.x);
             expect(annCore.instance_list[4].front_face.bot_right.y).to.equal(box_point.y);
@@ -274,6 +287,7 @@ describe('Annotate Files Tests', () => {
           cy.window().then((window) => {
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
+            const canvas_wrapper = doc.getElementById('canvas_wrapper');
             expect(annCore.instance_list[5]).to.exist;
 
 
@@ -281,8 +295,9 @@ describe('Annotate Files Tests', () => {
             let clientY = center_y + canvas_client_box.y;
             let box_point = get_transformed_coordinates({x: clientX, y: clientY},
               canvas_client_box,
-              annCore.canvas_transform,
-              annCore.canvas_translate)
+              annCore.canvas_element,
+              canvas_wrapper,
+              annCore.canvas_element_ctx)
 
             expect(annCore.instance_list[5].center_x).to.equal(box_point.x);
             expect(annCore.instance_list[5].center_y).to.equal(box_point.y);
@@ -370,14 +385,18 @@ describe('Annotate Files Tests', () => {
 
       it('Correctly Saves The edited instances', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
-        cy.get('[data-cy="save_button"]').click({force: true})
-        cy.wait('@annotation_update')
-          .should(({request, response}) => {
-            expect(request.method).to.equal('POST')
-            // it is a good practice to add assertion messages
-            // as the 2nd argument to expect()
-            expect(response.statusCode, 'response status').to.eq(200)
-          })
+        cy.window().then((window) => {
+          window.AnnotationCore.has_changed = true;
+          cy.get('[data-cy="save_button"]').click({force: true})
+          cy.wait('@annotation_update')
+            .should(({request, response}) => {
+              expect(request.method).to.equal('POST')
+              // it is a good practice to add assertion messages
+              // as the 2nd argument to expect()
+              expect(response.statusCode, 'response status').to.eq(200)
+            })
+        })
+
       })
     })
 

@@ -21,6 +21,8 @@
         },
         "instance_list": {},
         "issues_list": undefined,
+        "width": undefined,
+        "height": undefined,
         "compare_to_instance_list_set": {
           default: null
         },
@@ -287,7 +289,6 @@
 
 
         draw_single_instance_limits: function (instance, i) {
-
 
           if (instance.type == 'tag') { // tag is whole image so nothing to draw.
             return false
@@ -568,7 +569,7 @@
             )
 
             if (this.instance_rotate_control_mouse_hover == true){
-              this.instance_hover_index = i   // becuase rotate point may not be in instance 
+              this.instance_hover_index = i   // becuase rotate point may not be in instance
               this.instance_hover_type = instance.type
             }
 

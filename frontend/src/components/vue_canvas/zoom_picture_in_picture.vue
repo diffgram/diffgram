@@ -5,7 +5,7 @@
 <script lang="ts">
 
   import Vue from 'vue'
-  
+
   export default  Vue.extend({
 
       props: ["ord",
@@ -27,7 +27,6 @@
                 var y = this.mouse_position.y
 
                 ctx.save()
-                ctx.setTransform(1, 0, 0, 1, 0, 0)
 
                 var ratio = this.zoom_settings.ratio
                 var size = this.zoom_settings.size
