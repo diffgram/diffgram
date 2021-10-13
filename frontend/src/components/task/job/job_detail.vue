@@ -7,7 +7,8 @@
         <div class="font-weight-light">
           {{$store.state.project.current.name}} / 
         </div>
-        <div class="font-weight-normal pl-2">
+        <div v-if="$store.state.job.current.id == this.job_id"
+             class="font-weight-normal pl-2">
         {{ $store.state.job.current.name }}
         </div>
       </v-layout>
