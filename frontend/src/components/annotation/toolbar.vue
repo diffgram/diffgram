@@ -15,7 +15,7 @@
       <v-layout>
         <ahref_seo_optimal
           v-if="$store.getters.get_ui_schema('show_logo')"
-          :href="'/home/dashboard'">
+          :href="'/me'">
           <div class="pt-2 pr-3 clickable"
                >
 
@@ -31,6 +31,17 @@
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
+          @click="$router.push('/me')"
+          :bottom="true"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+          ui_schema_name="show_task_list"
+          color="primary"
+          :icon_style="true"
+          icon="mdi-playlist-play"
+          tooltip_message="Task List"
           @click="$router.push('/job/' + task.job_id)"
           :bottom="true"
                         >
