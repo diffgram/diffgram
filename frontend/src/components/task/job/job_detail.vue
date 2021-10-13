@@ -1,6 +1,18 @@
 <template>
 
   <div class="job-detail-container">
+
+    <h1 class="pa-2">
+      <v-layout>
+        <div class="font-weight-light">
+          {{$store.state.project.current.name}} / 
+        </div>
+        <div class="font-weight-normal pl-2">
+        {{ $store.state.job.current.name }}
+        </div>
+      </v-layout>
+    </h1>
+
     <v-tabs
       v-model="tab"
       align-with-title
