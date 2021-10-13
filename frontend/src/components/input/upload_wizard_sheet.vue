@@ -259,6 +259,7 @@
             :currently_uploading="currently_uploading_bytes"
             :progress_percentage="progress_percentage"
             @close_wizard="close"
+            @success_upload="on_success_upload"
           >
 
           </upload_progress>
@@ -514,6 +515,12 @@
       },
 
       methods: {
+        on_success_upload: function(){
+          this.is_open = false;
+          Object.assign(this.$data, get_initial_state());
+          this.$emit('upload_success')
+          this.$router.push({query: {}}).catch(()=>{});
+        },
         update_is_actively_sending: function(is_actively_sending){
           this.is_actively_sending = is_actively_sending
         },
