@@ -76,11 +76,11 @@
 
 
                 <div class="pl-4"
-                     v-if="last_task_event.task
-                        && last_task_event.task.file">
+                     v-if="last_task_event
+                        && last_file">
 
                     <file_preview_with_hover_expansion
-                      :file="last_task_event.task.file"
+                      :file="last_file"
                       v-if="project_string_id == last_task_event.project_string_id"
                       :project_string_id="last_task_event.project_string_id"
                       tooltip_direction="right"
@@ -96,8 +96,8 @@
                       file_preview_height="150"
                       :key="last_task_event.task.id"
                       :project_string_id="last_task_event.project_string_id"
-                      :file="last_task_event.task.file"
-                      :instance_list="last_task_event.task.file.instance_list"
+                      :file="last_file"
+                      :instance_list="last_file.instance_list"
                       :show_ground_truth="true"
                       @view_file_detail="route_resume_task()"
                     ></file_preview>
@@ -107,9 +107,9 @@
                          v-if="project_string_id != last_task_event.project_string_id"
                          >
                       <thumbnail
-                        v-if="last_task_event.task.file.type === 'video'
-                           || last_task_event.task.file.type === 'image'"
-                        :item="last_task_event.task.file"
+                        v-if="last_file.type === 'video'
+                           || last_file.type === 'image'"
+                        :item="last_file"
                       >
                       </thumbnail>
                     </div>
@@ -194,7 +194,8 @@ export default Vue.extend( {
   data () {
     return {
       next_task_loading : false,
-      resume_task_loading: false
+      resume_task_loading: false,
+      last_file: undefined
     }
   },
   created() {
@@ -209,8 +210,10 @@ export default Vue.extend( {
     },
     last_task_event: function (){
       if (!this.$store.state.user.history) { return false }
-      const last_task_event = this.$store.state.user.history.find(
+      let last_task_event = this.$store.state.user.history.find(
         x => x.page_name == 'task_detail')
+
+      this.get_file_with_annotations(last_task_event)
 
       return last_task_event
     }
@@ -221,6 +224,27 @@ export default Vue.extend( {
       this.resume_task_loading = true
       const routeData = `/task/${this.last_task_event.task_id}`;
       this.$router.push(routeData)
+    },
+
+    async get_file_with_annotations(last_task_event) {
+
+        let url = '/api/v1/task/' + last_task_event.task_id + '/annotation/list';
+        this.get_annotations_error = {}
+        this.get_annotations_loading = true
+        this.last_file = undefined
+
+        try{
+          const response = await axios.post(url, {})
+          this.last_file = response.data.file_serialized
+        }
+        catch(error){
+          console.debug(error);
+          this.get_annotations_error = this.$route_api_errors(error)
+        }
+        finally{
+          this.get_annotations_loading = false
+        }
+      return 
     },
 
     api_get_next_task_annotator: async function(){
