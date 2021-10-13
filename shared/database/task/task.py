@@ -560,7 +560,7 @@ class Task(Base):
     def serialize_for_list_view_builder(self, session=None):
 
         if session:
-            file = self.file.serialize_with_annotations(session=session)
+            file = self.file.serialize_with_type(session=session)
 
         return {
             'id': self.id,

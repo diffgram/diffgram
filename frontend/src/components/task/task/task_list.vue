@@ -130,6 +130,9 @@
         <v_error_multiple :error="error_attach">
         </v_error_multiple>
 
+        <v_error_multiple :error="get_annotations_error">
+        </v_error_multiple>
+
         <v-alert type="success"
 
                  v-if="show_success_attach">
@@ -409,6 +412,7 @@
   import task_status_select from '../../regular_concrete/task_status_select'
   import task_input_list_dialog from '../../input/task_input_list_dialog'
 
+  import pLimit from 'p-limit';
 
   import Vue from "vue";
 
@@ -479,6 +483,8 @@
             'sortDesc': [true],
             'itemsPerPage': 20
           },
+
+          get_annotations_error: {},
 
           error_attach: {},
           error_send_task: {},
@@ -761,6 +767,7 @@
               this.task_list = response.data.task_list
               this.pending_initial_dir_sync = response.data.pending_initial_dir_sync;
 
+              this.update_tasks_with_file_annotations(this.task_list)
             }
             return response
           } catch (error) {
@@ -771,6 +778,43 @@
           }
 
         },
+
+        update_tasks_with_file_annotations: async function(task_list){
+          const limit = pLimit(7); // Max concurrent request.
+          try {
+            const promises = task_list.map(task => {
+              return limit(() => this.get_file_with_annotations(task))
+            });
+            const result = await Promise.all(promises);
+            return result
+
+          } catch (error) {
+            this.file_update_error = this.$route_api_errors(error);
+            console.error(error);
+          }
+        },
+
+        async get_file_with_annotations(task) {
+
+          if (task.file.type != 'image') { return }
+
+          let url = '/api/v1/task/' + task.id + '/annotation/list';
+          this.get_annotations_error = {}
+          this.get_annotations_loading = true
+
+          try{
+            const response = await axios.post(url, {})     
+            task.file = response.data.file_serialized
+          }
+          catch(error){
+            console.debug(error);
+            this.get_annotations_error = this.$route_api_errors(error)
+          }
+          finally{
+            this.get_annotations_loading = false
+          }
+        },
+
         async refresh_task_list() {
           this.loading = true
           const result = await this.trigger_connection_interface_refresh()
