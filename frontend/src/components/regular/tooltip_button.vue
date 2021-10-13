@@ -15,6 +15,7 @@
               :loading="loading"
               :disabled="disabled"
               :x-small="xSmall"
+              :small="small"
               data-cy="data_cy"
               :left="left"
               :icon="icon_style"
@@ -103,6 +104,9 @@ export default Vue.extend( {
       default: false
      },
     'xSmall':{
+      default: false
+    },
+    'small':{
       default: false
     },
     'iconSize':{
