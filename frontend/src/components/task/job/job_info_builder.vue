@@ -11,26 +11,6 @@
         as *different* from something that updates tasks
         too like the labels thing. -->
 
-      <v-layout>
-
-        <v-spacer> </v-spacer>   
-
-        <!-- output_dir_action -->
-        <icon_from_regular_list
-            :item_list="output_dir_action_icon_list"
-            :value="job.output_dir_action">
-        </icon_from_regular_list>
-
-        <icon_from_regular_list
-            :item_list="share_icon_list"
-            :value="job.share_type">
-        </icon_from_regular_list>
-
-        <job_type :type="job.type"
-                  :size="40">
-        </job_type>
-
-      </v-layout>
 
       <!-- TODO job status component -->
       <div>
@@ -55,15 +35,13 @@
 <script lang="ts">
 
 import axios from 'axios';
-import job_type from './job_type';
-import { route_errors } from '../../regular/regular_error_handling'
 
 import Vue from "vue";
 
 export default Vue.extend( {
   name: 'job_overview_and_task_list',
   components: {
-    job_type
+
   },
   props: {
     'job_id': {
@@ -80,43 +58,6 @@ export default Vue.extend( {
   data() {
     return {
       loading: false,
-
-      share_icon_list : [
-        {
-          'display_name': 'Shared with Project',
-          'name': 'project',
-          'icon': 'mdi-lightbulb',
-          'color': 'blue'
-        },
-        {
-          'display_name': 'Shared with Org',
-          'name': 'org',
-          'icon': 'mdi-domain',
-          'color': 'green'
-         }
-      ],
-
-      output_dir_action_icon_list : [
-        {
-          'display_name': 'Output Dataset Action: Copy',
-          'name': 'copy',
-          'icon': 'mdi-content-copy',
-          'color': 'blue'
-        },
-        {
-          'display_name': 'Output Dataset Action: Move',
-          'name': 'move',
-          'icon': 'mdi-file-move',
-          'color': 'green'
-         },
-         {
-          'display_name': 'Output Dataset Action: None',
-          'name': 'nothing',
-          'icon': 'mdi-circle-off-outline',
-          'color': 'gray'
-         }
-      ],
-
 
       info: {},
       error: {},
