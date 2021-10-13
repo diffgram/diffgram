@@ -71,6 +71,7 @@
   import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
   import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+
   export default Vue.extend({
     name: "file_preview",
     components: {
@@ -219,10 +220,12 @@
 
 
         if(this.$props.show_ground_truth){
-          const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
-          for(const inst of ground_truth_instances){
-            let initialized_instance = this.initialize_instance(inst);
-            this.filtered_instance_list.push(initialized_instance)
+          if(this.global_instance_list) { 
+            const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
+            for(const inst of ground_truth_instances){
+              let initialized_instance = this.initialize_instance(inst);
+              this.filtered_instance_list.push(initialized_instance)
+            }
           }
         }
       },
