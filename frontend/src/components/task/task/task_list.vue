@@ -178,7 +178,13 @@
 
               <td>
                 {{props.item.id}}
+              </td>
 
+              <td>
+                <div v-if="props.item.file
+                        && props.item.file.instance_list">
+                  {{props.item.file.instance_list.length}}
+                </div>             
               </td>
               <td>
                 <v-btn @click="open_input_log_dialog(props.item.id)" type="primary" small color="primary" outlined>
@@ -515,6 +521,12 @@
               align: 'left',
               sortable: true,
               value: 'id'
+            },
+            {
+              text: "Annotation Count",
+              align: 'left',
+              sortable: true,
+              value: 'annotation_count'
             },
             {
               text: "Data Update Log",
