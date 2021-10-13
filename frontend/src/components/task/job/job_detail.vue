@@ -4,7 +4,8 @@
 
     <h1 class="pa-2">
       <v-layout>
-        <div class="font-weight-light">
+        <div class="font-weight-light clickable"
+             @click="$router.push('/job/list')">
           {{$store.state.project.current.name}} / 
         </div>
         <div v-if="$store.state.job.current.id == this.job_id"
