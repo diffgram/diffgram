@@ -145,3 +145,10 @@ import Vue from "vue"; export default Vue.extend( {
 }
 
 ) </script>
+
+<style scoped>
+  .label-row{
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+  }
+</style>

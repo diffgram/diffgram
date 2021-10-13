@@ -1,6 +1,10 @@
 <template>
-  <v-layout class="pa-0 d-flex flex-column">
+  <v-layout class="pa-0 d-flex flex-column" style="min-height: 600px">
+    <v-btn x-small @click="go_to_step(3)" class="text-left ml-auto mb-6" color="secondary">
 
+      <v-icon>mdi-debug-step-over</v-icon>
+      Skip, I will create labels later
+    </v-btn>
     <v-layout>
       <v-row>
 
@@ -40,22 +44,23 @@
 
         </v-col>
         <v-col cols="6" style="border-left: 1px solid #b9d1ec" class="d-flex flex-column">
-          <attribute_group_list
+          <attribute_group_list_manager
+            v-if="project_string_id"
+            ref="attribute_group_list_manager"
             :show_borders="true"
             :project_string_id="project_string_id"
             :mode = "'edit'"
             :show_empty_placeholder="true"
             @attribute_group_list_updated="on_attribute_group_list_updated"
           >
-          </attribute_group_list>
+          </attribute_group_list_manager>
 
         </v-col>
       </v-row>
-    </v-layout>
-    <v-btn small @click="go_to_step(3)" class="text-left ml-auto mt-6" color="secondary">
 
-      <v-icon>mdi-debug-step-over</v-icon>
-      Skip, I will create labels later
+    </v-layout>
+    <v-btn :disabled="label_file_list.length == 0 && attribute_group_list.length === 0" x-large @click="go_to_step(3)" class="text-left ml-auto mb-6" color="success">
+      Continue
     </v-btn>
   </v-layout>
 
@@ -67,15 +72,14 @@
   import Vue from "vue";
   import v_labels_edit from '../annotation/labels_edit'
   import attribute_group_new from '../attribute/attribute_group_new'
-  import attribute_group_list from '../attribute/attribute_group_list'
+  import attribute_group_list_manager from '../attribute/attribute_group_list_manager'
   import labels_management_list from '../label/labels_management_list'
 
   export default Vue.extend({
       name: 'labels_attributes_manager',
       components:{
-        attribute_group_list,
+        attribute_group_list_manager,
         labels_management_list,
-        attribute_group_new,
         v_labels_edit,
       },
       props: {
@@ -100,11 +104,16 @@
         on_attribute_group_list_updated: function(new_attr_list){
           this.attribute_group_list = new_attr_list;
         },
+        update_attributes_label_file_list: function(new_label_file_list){
+          this.$refs.attribute_group_list_manager.update_label_file_list_for_all_attributes(new_label_file_list)
+        },
         on_label_file_list_updated: function(new_label_file_list){
           this.label_file_list = new_label_file_list;
+          this.update_attributes_label_file_list(new_label_file_list)
         },
         on_label_created: function(label_file){
-          this.label_file_list.push(label_file)
+          this.label_file_list.push(label_file);
+          this.update_attributes_label_file_list(this.label_file_list)
         },
         go_to_step: function(step){
           this.$emit('skip', step)
@@ -149,10 +158,7 @@
   ) </script>
 
 <style scoped>
-  .label-row{
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-  }
+
   .skip-title{
     color: #1565c0 !important;
   }
