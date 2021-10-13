@@ -1,9 +1,11 @@
 <template>
 <div id="">
 
-  <v-card-title>
+  <v-container class="d-flex">
 
-    Attributes
+    <h2 class="font-weight-medium text--primary flex-grow-1">
+      Attributes:
+    </h2>
 
     <!--
     <v-icon>mdi-collage</v-icon>
@@ -11,17 +13,18 @@
 
     <tooltip_button
       datacy="new_attribute_button"
-      tooltip_message="New Attribute Group"
+      button_color="primary"
+      tooltip_message="Create Attribute"
+      button_message="Create Attribute"
       @click="api_attribute_group_new"
       icon="add"
-      :large="true"
-      :icon_style="true"
+      small
       :loading="loading"
       :disabled="loading"
-      color="primary">
+      color="white">
     </tooltip_button>
 
-  </v-card-title>
+  </v-container>
 
   <v_error_multiple :error="error">
   </v_error_multiple>

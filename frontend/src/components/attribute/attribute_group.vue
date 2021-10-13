@@ -1,7 +1,7 @@
 <template>
   <div id="">
 
-    <!-- 
+    <!--
       note for formatting we keep the "annotation" display separate
       from the "administration" thing, different formatting goals
       ie tight space conservation vs seperation for different groups.
@@ -27,7 +27,7 @@
             found out after it not setting it MAY have been unrelated
             something to review later-->
 
-          <!-- 
+          <!--
               v-model here returns an object  -->
 
           <v-radio-group
@@ -278,6 +278,7 @@
         <v-row>
           <v-col cols="12">
             <label_select_only
+              ref="label_selector"
               datacy="label_select_attribute"
               :project_string_id="project_string_id"
               :mode=" 'multiple' "
@@ -369,7 +370,7 @@
           </v_error_multiple>
 
           <v-container container--fluid grid-list-md>
-
+            <h2 v-if="group.attribute_template_list.length > 0">Options: </h2>
             <draggable
               v-if="group"
               v-model="group.attribute_template_list"
@@ -603,7 +604,9 @@
         }
       },
       methods: {
-
+        update_label_files: function(new_label_list){
+          this.$refs.label_selector.set_label_list(new_label_list)
+        },
         // group change
         attribute_change: function () {
 
@@ -668,7 +671,7 @@
         },
 
         set_existing_selected: function () {
-          /* 
+          /*
            * In context of annotation this component is focused
            * on displaying attributes and propogating selections
            * If an instance already has selections then we need to set it,
