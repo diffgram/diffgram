@@ -168,6 +168,27 @@
             :disabled="loading">
           </button_with_confirm>
 
+          <v-layout>
+
+            <v-spacer> </v-spacer>   
+
+            <!-- output_dir_action -->
+            <icon_from_regular_list
+                :item_list="output_dir_action_icon_list"
+                :value="$store.state.job.current.output_dir_action">
+            </icon_from_regular_list>
+
+            <icon_from_regular_list
+                :item_list="share_icon_list"
+                :value="$store.state.job.current.share_type">
+            </icon_from_regular_list>
+
+            <job_type :type="$store.state.job.current.type"
+                      :size="40">
+            </job_type>
+
+          </v-layout>
+
           <v_credential_list :job_id="job_id"
                              :mode_options="'job_detail'"
                              :mode_view="'list'">
@@ -200,6 +221,7 @@ import task_template_discussions from '../../discussions/task_template_discussio
 import job_pipeline_mxgraph from './job_pipeline_mxgraph'
 import label_select_only from '../../label/label_select_only.vue'
 import axios from 'axios';
+import job_type from './job_type';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'job_detail',
@@ -209,7 +231,8 @@ import Vue from "vue"; export default Vue.extend( {
     task_template_discussions,
     v_job_detail_trainer,
     job_pipeline_mxgraph,
-    label_select_only
+    label_select_only,
+    job_type
   },
 
   data () {
@@ -242,6 +265,43 @@ import Vue from "vue"; export default Vue.extend( {
       request_refresh_labels: null,
 
       loading: false,
+
+      share_icon_list : [
+        {
+          'display_name': 'Shared with Project',
+          'name': 'project',
+          'icon': 'mdi-lightbulb',
+          'color': 'blue'
+        },
+        {
+          'display_name': 'Shared with Org',
+          'name': 'org',
+          'icon': 'mdi-domain',
+          'color': 'green'
+         }
+      ],
+
+      output_dir_action_icon_list : [
+        {
+          'display_name': 'Output Dataset Action: Copy',
+          'name': 'copy',
+          'icon': 'mdi-content-copy',
+          'color': 'blue'
+        },
+        {
+          'display_name': 'Output Dataset Action: Move',
+          'name': 'move',
+          'icon': 'mdi-file-move',
+          'color': 'green'
+         },
+         {
+          'display_name': 'Output Dataset Action: None',
+          'name': 'nothing',
+          'icon': 'mdi-circle-off-outline',
+          'color': 'gray'
+         }
+      ],
+
     }
   },
   created() {

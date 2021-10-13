@@ -2,72 +2,68 @@
   <div v-cloak>
     <v-card>
 
+      <v-layout>
 
-      <!-- Temporary button -->
-      <v-btn  @click="$router.push('/task/' + task_list[0].id )"
-              :loading="loading"
-              color="primary"
-              large
-      >
-        Start Annotating
-      </v-btn>
+        <!-- Temporary button -->
+        <v-btn  @click="$router.push('/task/' + task_list[0].id )"
+                :loading="loading"
+                color="primary"
+                large
+        >
+          Start Annotating
+        </v-btn>
 
-      <v-layout v-if="external_interface === 'labelbox' && !pending_initial_dir_sync && task_list.length > 0">
-        <v-row>
-          <v-col cols="12" class="d-flex align-center justify-center">
-            <h3 class="mr-4">Start labeling with</h3>
-            <img width="100px" height="80px" src="https://labelbox.com/static/images/logo-v3.svg" alt="">
-            <a :href='`https://editor.labelbox.com/?project=${labelbox_project_id}`' target="_blank">
-              <v-btn type="primary" color="primary" class="ml-4">
-                <v-icon>mdi-play</v-icon>
-                Start Labeling
-              </v-btn>
-            </a>
-          </v-col>
-        </v-row>
-      </v-layout>
-      <v-layout v-else-if="external_interface === 'datasaur' && !pending_initial_dir_sync && task_list.length > 0">
-        <v-row>
-          <v-col cols="12" class="d-flex align-center justify-center">
-            <h3 class="mr-4">Start labeling with</h3>
-            <img width="150px" height="100px"
-                 src="https://venturebeat.com/wp-content/uploads/2020/02/datasaur.png?w=1200&strip=all" alt="">
-            <a :href='`https://datasaur.ai/projects/${datasaur_project_id}/`' target="_blank">
-              <v-btn type="primary" color="primary" class="ml-4">
-                <v-icon>mdi-play</v-icon>
-                Start Labeling
-              </v-btn>
-            </a>
-          </v-col>
-        </v-row>
-      </v-layout>
-      <!-- TODO show date picker if null ?-->
+        <v-layout v-if="external_interface === 'labelbox' && !pending_initial_dir_sync && task_list.length > 0">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center justify-center">
+              <h3 class="mr-4">Start labeling with</h3>
+              <img width="100px" height="80px" src="https://labelbox.com/static/images/logo-v3.svg" alt="">
+              <a :href='`https://editor.labelbox.com/?project=${labelbox_project_id}`' target="_blank">
+                <v-btn type="primary" color="primary" class="ml-4">
+                  <v-icon>mdi-play</v-icon>
+                  Start Labeling
+                </v-btn>
+              </a>
+            </v-col>
+          </v-row>
+        </v-layout>
+        <v-layout v-else-if="external_interface === 'datasaur' && !pending_initial_dir_sync && task_list.length > 0">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center justify-center">
+              <h3 class="mr-4">Start labeling with</h3>
+              <img width="150px" height="100px"
+                   src="https://venturebeat.com/wp-content/uploads/2020/02/datasaur.png?w=1200&strip=all" alt="">
+              <a :href='`https://datasaur.ai/projects/${datasaur_project_id}/`' target="_blank">
+                <v-btn type="primary" color="primary" class="ml-4">
+                  <v-icon>mdi-play</v-icon>
+                  Start Labeling
+                </v-btn>
+              </a>
+            </v-col>
+          </v-row>
+        </v-layout>
 
-      <!--
-      <date_picker @date="date = $event">
-      </date_picker>
-      -->
-
-      <!-- start list view -->
-      <div v-if="mode_view=='list'">
-
-        <v-container>
+          <v-container>
           <v-layout>
 
-            <div v-if="['direct_route', 'exam_results'].includes(mode_data)">
+          <!-- Filters -->
+          <button_with_menu
+            tooltip_message="Filters"
+            icon="mdi-filter"
+            :close_by_button="true"
+            offset="x"
+            color="primary"
+          >
 
-              <!--
-              <v-checkbox v-model="my_stuff_only"
-                          label="My tasks Only">
-              </v-checkbox>
-              -->
-              <v-layout class="d-flex justify-start align-center">
+            <template slot="content">
+
                 <task_status_select
                   :clearable="true"
                   v-model="task_status"
                   label="Status"
                   :disabled="loading">
                 </task_status_select>
+
                 <v-select
                   v-model="issues_filter"
                   :items="issue_filter_options"
@@ -76,8 +72,10 @@
                   item-text="name"
                   item-value="value"
                 ></v-select>
+
                 <date_picker @date="date = $event" :with_spacer="false" :initialize_empty="true">
                 </date_picker>
+
                 <v_directory_list
                   class="ml-4 mr-8"
                   :project_string_id="project_string_id"
@@ -90,39 +88,46 @@
                   :initial_dir_from_state="false"
                   @change_directory="on_change_dir"
                 ></v_directory_list>
+
                 <v-btn @click="refresh_task_list"
-                       :loading="loading"
-                       color="primary">
+                        :loading="loading"
+                        color="primary">
                   Refresh
                 </v-btn>
-                <v-layout class="ml-6 d-flex justify-self-end align-center">
-                  <v-select
-                    :clearable="true"
-                    :items="actions_list"
-                    v-model="selected_action"
-                    item-value="value"
-                    item-text="name"
-                    label="Actions"
-                    class="mr-4"
-                    :disabled="selected_tasks.length === 0">
-                  </v-select>
-                  <v-btn @click="show_confirm_archive_model"
-                         v-if="selected_action === 'archive' && selected_tasks.length > 0"
-                         :loading="loading"
 
-                         :disabled="selected_tasks.length === 0"
-                         color="error">
-                    <v-icon>mdi-archive</v-icon>
-                    Archive
-                  </v-btn>
-                </v-layout>
-              </v-layout>
+            </template>
+          </button_with_menu>
 
-            </div>
 
-          </v-layout>
+          <v-select
+            v-if="selected_tasks.length !== 0"
+            :clearable="true"
+            :items="actions_list"
+            v-model="selected_action"
+            item-value="value"
+            item-text="name"
+            label="Actions"
+            class="mr-4">
+          </v-select>
+          <v-btn @click="show_confirm_archive_model"
+                  v-if="selected_action === 'archive' && selected_tasks.length > 0"
+                  :loading="loading"
+
+                  :disabled="selected_tasks.length === 0"
+                  color="error">
+            <v-icon>mdi-archive</v-icon>
+            Archive
+          </v-btn>
+
+          <!--
+          <v-checkbox v-model="my_stuff_only"
+                      label="My tasks Only">
+          </v-checkbox>
+          -->
+        </v-layout>
         </v-container>
 
+        </v-layout>
 
         <v_error_multiple :error="error_attach">
         </v_error_multiple>
@@ -340,8 +345,7 @@
             </v-col>
           </v-row>
         </v-container>
-      </div>
-      <!-- end list view -->
+        <!-- end list view -->
 
     </v-card>
 
