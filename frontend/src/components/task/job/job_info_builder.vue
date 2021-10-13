@@ -6,23 +6,13 @@
 
     <div v-if="['job_detail'].includes(mode_view)">
 
-
       <!-- For now treating the
         general "job only" attributes
         as *different* from something that updates tasks
         too like the labels thing. -->
 
       <v-layout>
-        <job_type :type="job.type"
-                  :size="40"
-                  class="pa-2">
-        </job_type>
 
-        <h2 class="pa-2"
-            v-if="edit_job == false">
-          {{ job.name }}
-
-        </h2>
         <v-text-field
           v-if="edit_job == true"
           v-model="job.name"
@@ -32,17 +22,6 @@
           style="font-size: 18pt"
                 >
         </v-text-field>
-
-        <div class="pa-2">
-          <tooltip_button
-              v-if="edit_job == false"
-              tooltip_message="Edit Name"
-              @click="edit_job = true"
-              icon="edit"
-              :icon_style="true"
-              color="primary">
-          </tooltip_button>
-        </div>
 
 
         <button_with_confirm
@@ -60,6 +39,17 @@
 
         <v-spacer> </v-spacer>
 
+      
+        <tooltip_button
+            v-if="edit_job == false"
+            tooltip_message="Edit Name"
+            tooltip_direction="bottom"
+            @click="edit_job = true"
+            icon="edit"
+            :icon_style="true"
+            color="primary">
+        </tooltip_button>     
+
         <!-- output_dir_action -->
         <icon_from_regular_list
             :item_list="output_dir_action_icon_list"
@@ -71,13 +61,16 @@
             :value="job.share_type">
         </icon_from_regular_list>
 
+        <job_type :type="job.type"
+                  :size="40">
+        </job_type>
 
       </v-layout>
 
       <!-- TODO job status component -->
-      <h3>
-        {{ job.status }}  tasks remaining {{ job.tasks_remaining }}
-      </h3>
+      <div>
+        {{ job.status }}  Tasks Remaining: {{ job.tasks_remaining }}
+      </div>
 
       <div class="pa-2">
       <v-progress-linear v-model="job.percent_completed">
@@ -281,7 +274,7 @@ export default Vue.extend( {
 
           this.job = response.data.job
           this.$emit('job_info', this.job)
-
+          this.$store.commit('set_job', this.job)
         }
 
         this.loading = false

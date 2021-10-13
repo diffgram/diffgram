@@ -2,9 +2,6 @@
   <div v-cloak>
     <v-card>
 
-      <v-card-title>
-        Task List
-      </v-card-title>
 
       <!-- Temporary button -->
       <v-btn  @click="$router.push('/task/' + task_list[0].id )"
