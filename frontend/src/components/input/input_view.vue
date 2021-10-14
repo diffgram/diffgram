@@ -288,12 +288,26 @@
 
 <!--                  <p  v-if="props.item.log && props.item.status == 'failed'" class="error&#45;&#45;text">{{JSON.stringify(props.item.log)}}</p>-->
 <!--                  <p  v-if="props.item.status == 'failed'" class="error&#45;&#45;text">{{props.item.status_text}}</p>-->
-                  <tooltip_icon
+                  <button_with_menu
                     v-if="props.item.status == 'failed'"
-                    :tooltip_message="props.item.status_text"
                     icon="error"
                     color="error">
-                  </tooltip_icon>
+                    <template slot="content">
+                      <v-layout column>
+
+                        <v-card-title> Log</v-card-title>
+                        <p class="error--text">
+                          {{ props.item.status_text}}
+                        </p>
+                        <v_error_multiple :error="props.item.update_log['error']">
+                        </v_error_multiple>
+
+                        <!-- Not showing info messages here yet -->
+
+
+                      </v-layout>
+                    </template>
+                  </button_with_menu>
 
                   <tooltip_icon
                     v-if="props.item.status == 'success'"
