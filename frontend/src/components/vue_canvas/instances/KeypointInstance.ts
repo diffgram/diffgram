@@ -450,12 +450,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       i += 1
     }
 
-    this.determine_and_set_nearest_node_hovered(ctx)
+
 
     if (this.num_hovered_paths === 0) {
       this.node_hover_index = undefined;
       this.is_node_hovered = false;
     }
+
+    this.determine_and_set_nearest_node_hovered(ctx)
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
       this.is_hovered = true;
@@ -472,14 +474,21 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private determine_and_set_nearest_node_hovered(ctx){
     const sorted = Object.keys(this.nearest_points_dict).sort().reduce(
-        (obj, key) => { 
-          obj[key] = this.nearest_points_dict[key]; 
+        (obj, key) => {
+          obj[key] = this.nearest_points_dict[key];
           return obj;
-        }, 
+        },
         {}
       );
 
+    console.log('SORETED', sorted)
+    if(sorted.length === 0){
+      return
+    }
     let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
+    if(this.nodes[index] == undefined){
+      return
+    }
     let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
     let radius = this.vertex_size + 10
 
@@ -504,7 +513,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.is_dragging_instance = true;
   }
   public add_node_to_instance() {
-    if (this.is_hovered) {
+    if (this.is_node_hovered) {
       if (this.current_node_connection.length === 1) {
         if(this.node_hover_index == undefined){return}
         let node = this.nodes[this.node_hover_index];
@@ -614,7 +623,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       return Math.sqrt(
           (point.x - mouse.x) ** 2
-        + (mouse.y - point.y) ** 2) < radius 
+        + (mouse.y - point.y) ** 2) < radius
   }
 
   private set_node_hovered(ctx, i): void {
@@ -623,10 +632,18 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.node_hover_index = i
     ctx.fillStyle = 'green'
     this.num_hovered_paths += 1
+    let node = this.nodes[i];
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, this.vertex_size, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fill();
   }
 
   private draw_point_and_set_node_hover_index(x, y, i, ctx): void {
     ctx.beginPath();
+    if(this.node_hover_index === i){
+      ctx.fillStyle = 'green'
+    }
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
