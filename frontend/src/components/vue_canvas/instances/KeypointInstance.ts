@@ -317,30 +317,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     qy = origin.y + qy
     return {x: qx, y: qy}
   }
-  private get_x_of_rotated_point(t, instance, h, angle=undefined){
-    let rot_angle = angle != undefined ? angle : instance.angle ;
-    let a = instance.width;
-    let b = instance.height;
-    let x = h + a*Math.cos(t) * Math.cos(rot_angle) - b * Math.sin(t) * Math.sin(rot_angle)
-    return x
-  }
-
-  private get_t(instance) {
-
-    let a = instance.width;
-    let b = instance.height;
-    let t = Math.atan(-(b) *  Math.tan(instance.angle))/ (a);
-    return t
-  }
-
-
-  private get_y_of_rotated_point(t, instance, k, angle=undefined){
-    let rot_angle = angle != undefined ? angle : instance.angle ;
-    let a = instance.width;
-    let b = instance.height;
-    let y = k + b*Math.sin(t) * Math.cos(rot_angle) + a * Math.cos(t) * Math.sin(rot_angle)
-    return y
-  }
 
   private get_angle_of_from_rotation_control_movement () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
@@ -367,10 +343,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return angle;
   }
 
-
-  private set_instance_color(){
-
-  }
 
   private draw_rotate_point(
       ctx,
@@ -448,14 +420,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       i += 1
     }
 
-
+    this.determine_and_set_nearest_node_hovered(ctx)
 
     if (this.num_hovered_paths === 0) {
       this.node_hover_index = undefined;
       this.is_node_hovered = false;
     }
 
-    this.determine_and_set_nearest_node_hovered(ctx)
+
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
       this.is_hovered = true;
@@ -471,15 +443,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private determine_and_set_nearest_node_hovered(ctx){
-    const sorted = Object.keys(this.nearest_points_dict).sort().reduce(
+    const sorted_keys = Object.keys(this.nearest_points_dict).map(elm => parseFloat(elm)).sort(function(a,b) { return a - b;})
+    const sorted = sorted_keys.reduce(
         (obj, key) => {
-          obj[key] = this.nearest_points_dict[key];
+          obj[key.toString()] = this.nearest_points_dict[key.toString()];
           return obj;
         },
         {}
       );
 
-    console.log('SORETED', sorted)
     if(sorted.length === 0){
       return
     }
@@ -671,10 +643,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.fillStyle = 'green'
     this.num_hovered_paths += 1
     let node = this.nodes[i];
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, this.vertex_size, 0, 2 * Math.PI);
-    ctx.stroke();
-    ctx.fill();
   }
 
   private draw_point_and_set_node_hover_index(x, y, i, ctx): void {

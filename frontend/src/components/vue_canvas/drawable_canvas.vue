@@ -247,7 +247,8 @@
         await this.$nextTick();
       },
       zoom_wheel_scroll_canvas_transform_update: function (event) {
-        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel(event)
+        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel(event);
+        this.update_canvas();
       },
       mouse_transform: function (event, mouse_position) {
         return this.canvas_mouse_tools.mouse_transform(event, mouse_position, this.canvas_element, () => {}, this.canvas_transform)
