@@ -38,6 +38,7 @@
                       :width="canvas_width"
                       :show="show_target_reticle"
                       :target_colour="reticle_colour"
+                      :canvas_element="canvas_element"
                       ref="reticle"
                       :text_color="text_color"
                       :target_text="this.instance.number"
@@ -177,6 +178,7 @@
         },
         zoom_canvas: 1,
         canvas_scale_local: 1,
+        canvas_element: null,
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
@@ -193,8 +195,10 @@
 
       }
     },
-    mounted() {
-      this.loading = true
+    async mounted() {
+      this.loading = true;
+      this.canvas_element =  document.getElementById(this.$props.canvas_id);
+      await this.$nextTick();
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
@@ -310,10 +314,7 @@
           delta_y : delta_y
         }
       },
-      canvas_element: function () {
-        return document.getElementById(this.$props.canvas_id)
 
-      },
       canvas_transform: function () {
         return {
           'canvas_scale_global_x': this.canvas_scale_global_x,

@@ -28,6 +28,7 @@
       },
       methods: {
         draw: function (ctx, done) {
+          console.log('RETICLEExxx', this.$props.canvas_element);
           if(!this.$props.canvas_element){return}
           if (this.show == true) {
               //var canvas = ctx.canvas;
