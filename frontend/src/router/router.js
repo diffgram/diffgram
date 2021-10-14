@@ -290,7 +290,7 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id_route/job/new',
-    component: 'task/job/job_new',
+    component: 'task/job/task_template_wizard_creation',
     props: true,
     meta: {
       requiresAuth: true,
