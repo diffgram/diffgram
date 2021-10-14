@@ -5172,7 +5172,10 @@
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
-            mouse_move_interaction.process();
+            let did_move_instance = mouse_move_interaction.process();
+            if(did_move_instance){
+              this.has_changed = true;
+            }
           }
           //console.debug(this.mouse_position)
         },

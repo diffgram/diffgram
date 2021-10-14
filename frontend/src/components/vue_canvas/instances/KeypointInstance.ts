@@ -285,7 +285,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       x: this.center_x,
       y: this.center_y + (this.height)
     }
-    let rotated_center_point = this.get_rotated_point(center_point, this.angle);
+    let rotated_center_point = this.get_scaled_and_rotated_point(center_point);
     return rotated_center_point
   }
 
@@ -344,28 +344,31 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
 
-  private draw_rotate_point(
+  public draw_rotate_point(
       ctx,
-      draw_single_path_circle,
       is_mouse_in_path,
       i,
       radius): boolean {
 
+
     this.instance_rotate_control_mouse_hover = null
 
     let rotate_point = this.get_rotate_point_control_location()
+    console.log('draw rotate pointt', rotate_point)
     if(!rotate_point){
       return this.instance_rotate_control_mouse_hover
     }
-    draw_single_path_circle(
-        rotate_point.x,
-        rotate_point.y ,
-        radius + 4, ctx, 'blue', '4px')
+    ctx.beginPath();
+    ctx.strokeStyle = 'blue';
+    ctx.fillStyle = 'white';
+    ctx.lineWidth = '4px';
+    ctx.arc(rotate_point.x, rotate_point.y, radius, 0, 2 * Math.PI);
+    ctx.fill()
+    ctx.stroke()
     if(is_mouse_in_path(ctx, i, this)){
 
       this.instance_rotate_control_mouse_hover = true
     }
-
     return this.instance_rotate_control_mouse_hover
   }
 
@@ -373,7 +376,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.ctx = ctx;
     this.num_hovered_paths = 0;
     let i = 0;
-
     // Not sure where we want to set this
     this.width = this.x_max - this.x_min
     this.height = this.y_max - this.y_min
@@ -487,6 +489,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public stop_dragging(){
     this.is_dragging_instance = false;
+
   }
 
   public stop_rotating(){

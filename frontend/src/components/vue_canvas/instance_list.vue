@@ -553,6 +553,7 @@
             instance.lineWidth = this.get_spatial_line_size();
             instance.vertex_size = this.$props.vertex_size;
             instance.draw(ctx);
+            console.log('DRAWIINNGGG')
             if(instance.is_hovered){
               this.instance_hover_index = i
               this.count_instance_in_ctx_paths +=1;
@@ -562,7 +563,6 @@
 
             this.instance_rotate_control_mouse_hover = instance.draw_rotate_point(
               ctx,
-              this.draw_single_path_circle,
               this.is_mouse_in_path,
               i,
               radius
