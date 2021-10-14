@@ -136,11 +136,9 @@ def build_input_list(
 
     # parent_file_id is to filter out say
     # an input image for a video file
-    print('LISSSST')
     query = session.query(Input).options(defer('frame_packet_map')).filter(
         Input.project_id == project.id,
         Input.parent_file_id == None)
-    print('FINISH')
     if show_deferred is False:
         # By default we show processing deferred
         # Example reason to set it to False
