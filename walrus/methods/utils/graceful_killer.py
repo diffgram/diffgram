@@ -4,7 +4,7 @@ import signal
 from walrus.methods.regular.regular_api import logger
 from shared.helpers.sessionMaker import session_scope
 from shared.utils.singleton import Singleton
-from signal import signal, SIGPIPE, SIG_DFL, SIGINT, SIGTERM, SIG_IGN
+from signal import signal, SIGINT, SIGTERM, SIG_IGN
 from shared.regular import regular_log
 
 
@@ -19,7 +19,6 @@ class GracefulKiller(metaclass = Singleton):
     def __init__(self):
         signal(SIGINT, self.exit_gracefully)
         signal(SIGTERM, self.exit_gracefully)
-        signal(SIGPIPE, SIG_IGN)
         logger.info('Listening for SIGTERM events for graceful shutdown')
 
     def exit_process(self):
