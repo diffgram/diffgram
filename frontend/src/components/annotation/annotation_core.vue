@@ -49,7 +49,7 @@
                    @save="save()"
                    @change_file="change_file($event)"
                    @canvas_scale_global_changed="on_canvas_scale_global_changed"
-                   @change_task="trigger_task_change($event, task)"
+                   @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
@@ -6414,6 +6414,7 @@
           // bottom of https://www.sitepoint.com/delay-sleep-pause-wait/
           // use aysnc in front of function
         },
+
         next_issue_task: async function(task){
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6444,7 +6445,7 @@
             this.loading = false;
           }
         },
-        trigger_task_change: async function(direction, task){
+        trigger_task_change: async function(direction, task, assign_to_user=False){
           // Keyboard shortcuts case
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6457,7 +6458,7 @@
           this.reset_for_file_change_context()
 
           // Ask parent for a new task
-          this.$emit('request_new_task', direction, task)
+          this.$emit('request_new_task', direction, task, assign_to_user)
         },
 
         reset_for_file_change_context: function (){
@@ -6614,11 +6615,7 @@
                 this.snackbar_success = true
                 this.snackbar_success_text = "Deferred for review. Moved to next."
 
-                //
-                // Question, change_file() seems to save by default here
-                // do we want that?
-                // maybe a good idea since a deferred task could still have work done
-                this.trigger_task_change('next', this.$props.task)
+                this.trigger_task_change('next', this.$props.task, true)
 
               }
 
@@ -7440,13 +7437,12 @@
               this.snackbar_success = true
               this.snackbar_success_text = "Saved and completed. Moved to next."
 
-              if(this.task && this.task.id){   // props
-                this.trigger_task_change('next', this.task)
+              if(this.$props.task && this.$props.task.id){
+                this.trigger_task_change('next', this.$props.task, true)
               }
               else{
-                this.trigger_task_change('next', 'none')    // important
+                this.trigger_task_change('next', 'none', true)    // important
               }
-
 
             }
             this.check_if_pending_created_instance();
