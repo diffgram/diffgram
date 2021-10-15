@@ -312,7 +312,8 @@
           }
         },
 
-        change_task: async function(direction, task){
+        change_task: async function(direction, task, assign_to_user=false){
+          // Assumes it does NOT assign the user
           if(!task){
             throw new Error('Provide task ')
           }
@@ -321,10 +322,11 @@
             const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
               project_string_id: this.computed_project_string_id,
               task_id: task.id,
-              direction: direction
+              direction: direction,
+              assign_to_user: assign_to_user
             });
             if(response.data){
-              if(response.data.task.id !== task.id){
+              if(response.data.task && response.data.task.id !== task.id){
                 this.$router.push(`/task/${response.data.task.id}`);
                 history.pushState({}, '', `/task/${response.data.task.id}`);
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
