@@ -190,32 +190,58 @@ class Task(Base):
                                         foreign_keys=[default_external_map_id])
 
     @staticmethod
-    def get_next_previous_task_by_task_id(session, task_id, job_id, direction='next'):
-        if task_id is not None:
-            task = Task.get_by_id(session, task_id=task_id)
-        else:
-            task = session.query(Task).filter(
+    def get_task_from_job_id(
+            session,
+            job_id,
+            user,
+            direction='next',
+            assign_to_user=False,):
+
+        query = session.query(Task).filter(
                 Task.status == 'available',
-                Task.job_id == job_id,
-            ).order_by(Task.time_created).first()
-            return task
+                Task.job_id == job_id)
 
         if direction == 'next':
-            query = session.query(Task).filter(Task.time_created > task.time_created,
-                                               Task.status != 'archived',
-                                               Task.job_id == job_id)
             query = query.order_by(Task.time_created)
-        elif direction == 'previous':
-            query = session.query(Task).filter(Task.time_created < task.time_created,
-                                               Task.status != 'archived',
-                                               Task.job_id == job_id)
-            query = query.order_by(Task.time_created.desc())
-        else:
-            return False
 
-        if query.first():
-            return query.first()
+        elif direction == 'previous':
+            query = query.order_by(Task.time_created.desc())
+
+        task = query.first()
+
+        if assign_to_user is True:
+            if task:
+                Task.assign_task_to_user(
+                    task = task,
+                    user = user)
+                session.add(task)
+                session.add(user)
+
         return task
+
+
+    def navigate_tasks_relative_to_given_task(
+            session,
+            task_id,
+            direction='next'
+        ):
+
+        known_task = Task.get_by_id(session, task_id=task_id)
+
+        query = session.query(Task).filter(
+                Task.status != 'archived',
+                Task.job_id == known_task.job_id)
+
+        if direction == 'next':
+            query = query.filter(Task.time_created > known_task.time_created)
+            query = query.order_by(Task.time_created)
+
+        elif direction == 'previous':
+            query = query.filter(Task.time_created < known_task.time_created)
+            query = query.order_by(Task.time_created.desc())
+
+        discovered_task = query.first()
+        return discovered_task
 
 
     def get_last_task(
