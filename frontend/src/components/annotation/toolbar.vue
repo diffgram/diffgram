@@ -13,20 +13,22 @@
     <v-chip v-if="file && file.state === 'removed'" color="error" small class="mt-3"><v-icon small>mdi-archive</v-icon>Archived</v-chip>
     <div v-show="task && task.id">
       <v-layout>
-        <ahref_seo_optimal
-          v-if="$store.getters.get_ui_schema('show_logo')"
-          :href="'/me'">
-          <div class="pt-2 pr-3 clickable"
-               >
+        <ui_schema name="logo">
+          <ahref_seo_optimal
+            v-if="$store.getters.get_ui_schema('logo', 'visible')"
+            :href="'/me'">
+            <div class="pt-2 pr-3 clickable"
+                 >
 
-            <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                  height="30px" />
+              <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+                    height="30px" />
 
-          </div>
-        </ahref_seo_optimal>
+            </div>
+          </ahref_seo_optimal>
+        </ui_schema>
 
         <tooltip_button
-          ui_schema_name="show_home_button"
+          ui_schema_name="home_button"
           color="primary"
           :icon_style="true"
           icon="mdi-home"
@@ -37,7 +39,7 @@
         </tooltip_button>
 
         <tooltip_button
-          ui_schema_name="show_task_list"
+          ui_schema_name="task_list"
           color="primary"
           :icon_style="true"
           icon="mdi-playlist-play"
@@ -78,7 +80,7 @@
 
     <!-- Undo Redo -->
 
-    <div v-if="show_undo_redo == true && command_manager">
+    <div v-if="undo_redo == true && command_manager">
       <tooltip_button
         :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0 || command_manager.command_index == undefined"
         color="primary"
@@ -100,7 +102,7 @@
         tooltip_message="Redo (ctrl+y)"
         @click="$emit('redo')"
         :bottom="true"
-        ui_schema_name="show_redo"
+        ui_schema_name="redo"
                       >
       </tooltip_button>
     </div>
@@ -132,7 +134,7 @@
         v-if="task
               && task.id
               && task.status == 'available'"
-        ui_schema_name="show_defer"
+        ui_schema_name="defer"
         @click="$emit('task_update_toggle_deferred')"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
@@ -148,7 +150,7 @@
       vertical
     ></v-divider>
 
-    <ui_schema name="show_zoom">
+    <ui_schema name="zoom">
       <div class="pt-3 pl-2 pr-2">
 
         <v-tooltip bottom
@@ -177,7 +179,7 @@
       vertical
     ></v-divider>
 
-    <ui_schema name="show_label_selector">
+    <ui_schema name="label_selector">
       <div style="width: 310px">
         <div class="pl-2 pr-3 pt-4">
           <label_select_annotation
@@ -200,7 +202,7 @@
     <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
-    <ui_schema name="show_instance_selector">
+    <ui_schema name="instance_selector">
 
       <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
         <!-- instance_selector -->
@@ -229,7 +231,7 @@
       :bottom="true">
     </tooltip_button>
 
-    <ui_schema name="show_edit_instance_template">
+    <ui_schema name="edit_instance_template">
       <tooltip_button
         tooltip_message="Edit Instance Template"
         v-if="instance_template_selected && is_keypoint_template"
@@ -348,7 +350,7 @@
       <tooltip_button
         tooltip_message="Previous Task"
         v-if="task"
-        ui_schema_name="show_previous_task"
+        ui_schema_name="previous_task"
         @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
@@ -373,7 +375,7 @@
       <tooltip_button
         tooltip_message="Next Task"
         v-if="task"
-        ui_schema_name="show_next_task"
+        ui_schema_name="next_task"
         @click="$emit('change_task', 'next')"
         :disabled="loading || annotations_loading || full_file_loading || !task"
         color="primary"
