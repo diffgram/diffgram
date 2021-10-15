@@ -634,9 +634,11 @@ const ui_schema = {
     refresh: undefined,
   },
   getters:{
-    get_ui_schema: (state) => (string_key) => {
-      let result = state.current[string_key]
-      if (result === undefined) { return true} // default
+    get_ui_schema: (state) => (element, string_key) => {
+      if (state.current[element] == undefined) {
+        return "element is undefined"
+      }
+      let result = state.current[element][string_key]
       return result
     }
   },
@@ -678,10 +680,22 @@ const ui_schema = {
       state.refresh = Date.now()
     },
     set_ui_schema_element_value(state, payload) {
-      state.current[state.target_element] = payload
+      const element = payload[0]
+      if (element === undefined) {
+        throw new Error("set_ui_schema_element_value element is undefined", payload)
+      }
+      const key = payload[1]
+      const value = payload[2]
+      if (state.current[element] == undefined) {
+        state.current[element] = {}
+      }
+      state.current[element][key] = value
       state.refresh = Date.now()
+      console.log(key, value)
+
     },
-    set_ui_schema_element_target_and_value(state, payload) {
+
+    set_ui_schema_top_level_key_value(state, payload) {
       state.current[payload[0]] = payload[1]
       state.refresh = Date.now()
     },

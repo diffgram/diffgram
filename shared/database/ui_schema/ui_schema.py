@@ -49,7 +49,7 @@ class UI_Schema(Base, SerializerMixin):
     allowed_instance_type_list = Column(ARRAY(String()))
     allowed_instance_template_id_list = Column(ARRAY(Integer()))
 
-    # {show: bool,
+    # {visible: bool,
     #  url: example,
     #  style: example}
 
