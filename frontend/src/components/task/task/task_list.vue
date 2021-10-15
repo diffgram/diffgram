@@ -43,8 +43,9 @@
           </v-row>
         </v-layout>
 
-          <v-container>
+        <v-container>
           <v-layout>
+
 
           <!-- Filters -->
           <button_with_menu
@@ -98,6 +99,36 @@
             </template>
           </button_with_menu>
 
+          <v-spacer></v-spacer>
+
+          <button_with_menu
+              tooltip_message="Show/Hide Columns"
+              icon="mdi-format-columns"
+              :close_by_button="true"
+              v-if="!view_only"
+              offset="x"
+              color="primary">
+
+              <template slot="content">
+
+                <v-select :items="column_list_all"
+                          v-model="column_list"
+                          multiple
+                          label="Columns"
+                          :disabled="loading">
+                </v-select>
+
+                <tooltip_button
+                  tooltip_message="Reset"
+                  @click="column_list = column_list_backup"
+                  v-if="column_list != column_list_backup"
+                  icon="autorenew"
+                  color="primary">
+                </tooltip_button>
+
+              </template>
+
+            </button_with_menu>
 
           <v-select
             v-if="selected_tasks.length !== 0"
@@ -143,7 +174,7 @@
 
         <v_error_multiple :error="error_send_task">
         </v_error_multiple>
-
+        
         <regular_table
             v-if="task_list.length > 0"
             :item_list="task_list"
@@ -494,10 +525,25 @@
           request_next_page_flag: false,
           request_next_page_available: true,
 
+          headers_selected_backup : [],  // copied from headers_selected during mounted
+
           column_list: [
             "Status",
             "Preview",
             "AnnotationCount",
+            "AssignedUser",
+            "LastUpdated",
+            "Action",
+          ],
+
+          column_list_all: [
+            "Select",
+            "Status",
+            "Preview",
+            "ID",
+            "AnnotationCount",
+            "DataUpdateLog",
+            "IncomingDataset",
             "AssignedUser",
             "LastUpdated",
             "Action",
@@ -595,24 +641,6 @@
 
           header_exam_results: [
             {
-              text: "ID",
-              align: 'left',
-              sortable: true,
-              value: 'id'
-            },
-            {
-              text: "Status",
-              align: 'left',
-              sortable: true,
-              value: 'status'
-            },
-            {
-              text: "Last updated",
-              align: 'left',
-              sortable: true,
-              value: 'time_updated'
-            },
-            {
               text: "Average Star Rating",
               align: 'left',
               sortable: true,
@@ -625,6 +653,7 @@
               value: ''
             }
           ],
+          view_only: false,
           next_task_loading: false
         }
       },
@@ -684,6 +713,9 @@
           return undefined;
         }
 
+      },
+      created() {
+        this.column_list_backup = this.column_list
       },
       mounted() {
         if (this.job) {
