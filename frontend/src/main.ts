@@ -248,7 +248,12 @@ Vue.use(Vuetify)
 
 
 Vue.use(vue_scroll_to)
-Vue.use(require('vue-moment'));
+
+import VueMoment from 'vue-moment'
+import moment from 'moment-timezone'
+Vue.use(VueMoment, {
+    moment,
+})
 
 Vue.component('v_task_list', task_list)
 Vue.component('v_job_cancel', job_cancel)
