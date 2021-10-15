@@ -132,11 +132,11 @@ def ui_schema_update_api(project_string_id):
 	    }
     ]
     log, input, untrusted_input = regular_input.master(request = request,
-                                                       spec_list = userscript_update_spec_list)
+                                                       spec_list = ui_schema_update_spec_list)
     if len(log["error"].keys()) >= 1: return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-        log, userscript = __userscript_update(
+        log, ui_schema = __ui_schema_update(
             session = session, 
             input = input,
             log = log,
@@ -147,33 +147,30 @@ def ui_schema_update_api(project_string_id):
         log['success'] = True
 
         return jsonify(
-            userscript = userscript.serialize(), 
+            ui_schema = ui_schema.serialize(), 
             log = log), 200
 
 
-def __userscript_update(
+def __ui_schema_update(
         session,
         input,
         project_string_id,
         log,
         do_add_to_session = True):
 
-    userscript = UserScript.get_by_id(
+    ui_schema = UI_Schema.get_by_id(
         session = session,
         id = input['id'])
 
-    if userscript is None:
+    if ui_schema is None:
         log['error']['id'] = "Does not exist"
         return log, False
 
     # Now update or add the rest of the fields
     fields_to_process = {
         'name': input['name'],
-        'code': input['code'],
-        'external_src_list': input['external_src_list'],
         'archived': input['archived'],
         'is_visible': input['is_visible'],
-        'language': input['language'],
     }
 
     user = User.get(session)
@@ -183,14 +180,14 @@ def __userscript_update(
 
     for field_key, field_val in fields_to_process.items():
 
-        if getattr(userscript, field_key) != field_val:
-            setattr(userscript, field_key, field_val)
+        if getattr(ui_schema, field_key) != field_val:
+            setattr(ui_schema, field_key, field_val)
             log['info'][field_key] = "Updated {}".format(field_key)
 
     if do_add_to_session is True:
-        session.add(userscript)
+        session.add(ui_schema)
 
-    return log, userscript
+    return log, ui_schema
 
 
 

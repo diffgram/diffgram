@@ -128,73 +128,74 @@
       <v-container>
       <v-layout>
 
-      <v-text-field
-        v-if="edit_name == true"
-        v-model="$store.state.ui_schema.current.name"
-        @input="has_changes = true"
-        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-        flat
-          >
-      </v-text-field>
-
+        <v_error_multiple :error="error">
+        </v_error_multiple>
       
-      <ui_schema_selector
-        :project_string_id="project_string_id"
-        @change="change($event)"
-        :current_userscript_prop="$store.state.ui_schema.current"
-        :disabled="selector_disabled"
-                      >
-      </ui_schema_selector>
+        <ui_schema_selector
+          :project_string_id="project_string_id"
+          @change="change($event)"
+          :current_ui_schema_prop="$store.state.ui_schema.current"
+          :disabled="selector_disabled"
+                        >
+        </ui_schema_selector>
       
+        <v-text-field
+          v-if="edit_name == true"
+          v-model="$store.state.ui_schema.current.name"
+          @input="has_changes = true"
+          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+          flat
+            >
+        </v-text-field>
 
-      <tooltip_button
-          tooltip_message="Edit Name"
-          datacy="ui_schema_edit_name"
-          @click="edit_name = !edit_name"
-          icon="edit"
+        <tooltip_button
+            tooltip_message="Edit Name"
+            datacy="ui_schema_edit_name"
+            @click="edit_name = !edit_name"
+            icon="edit"
+            :icon_style="true"
+            color="primary"
+            :disabled="!$store.state.ui_schema.current"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+            tooltip_message="New"
+            datacy="ui_schema_new"
+            @click="new_ui_schema_with_servercall()"
+            icon="add"
+            :icon_style="true"
+            color="primary"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+            tooltip_message="Copy to New"
+            datacy="ui_schema_copy"
+            @click="copy_ui_schema_with_servercall(ui_schema_literal)"
+            icon="mdi-content-copy"
+            :icon_style="true"
+            color="primary"
+            :disabled="!ui_schema_exists"
+                        >
+        </tooltip_button>
+
+
+        <tooltip_button
+          v-if="show_save"
+          datacy="ui_schema_save"
+          tooltip_message="Save ui_schema"
+          @click="update_ui_schema_with_servercall()"
+          icon="save"
+          :loading="loading"
+          :disabled="loading
+                  || !ui_schema_exists
+                  || public_not_super_admin"
           :icon_style="true"
           color="primary"
-          :disabled="!$store.state.ui_schema.current"
                       >
       </tooltip_button>
-
-      <tooltip_button
-          tooltip_message="New"
-          datacy="ui_schema_new"
-          @click="new_ui_schema_with_servercall()"
-          icon="add"
-          :icon_style="true"
-          color="primary"
-                      >
-      </tooltip_button>
-
-      <tooltip_button
-          tooltip_message="Copy to New"
-          datacy="ui_schema_copy"
-          @click="copy_ui_schema_with_servercall(ui_schema_literal)"
-          icon="mdi-content-copy"
-          :icon_style="true"
-          color="primary"
-          :disabled="!ui_schema_exists"
-                      >
-      </tooltip_button>
-
-
-      <tooltip_button
-        v-if="show_save"
-        datacy="ui_schema_save"
-        tooltip_message="Save ui_schema"
-        @click="update_ui_schema_with_servercall()"
-        icon="save"
-        :loading="loading"
-        :disabled="loading
-                || !ui_schema_exists
-                || public_not_super_admin"
-        :icon_style="true"
-        color="primary"
-                    >
-    </tooltip_button>
 
       <tooltip_button
           v-if="$store.state.user.current.is_super_admin == true"
@@ -470,9 +471,7 @@
           )
           if(result.status === 200){
 
-            console.log(result)
-
-            this.change(this.userscript_literal)
+            this.change(result.data.ui_schema)
 
             this.edit_name = true // assume a user wants to edit name of new script
           }
@@ -488,18 +487,17 @@
         }
 
       },
-      update_userscript_with_servercall: async function(){
+      update_ui_schema_with_servercall: async function(){
 
-        //console.debug(this.userscript_literal)
-        if (!this.userscript_literal || !this.userscript_literal.id) { return }
+        if (!this.get_ui_schema() || !this.get_ui_schema().id) { return }
 
         this.loading = true;
         this.error = {}
 
         try{
           const result = await axios.post(
-            `/api/v1/project/${this.project_string_id}/userscript/update`,
-            this.userscript_literal
+            `/api/v1/project/${this.project_string_id}/ui_schema/update`,
+            this.get_ui_schema()
           )
 
         }
@@ -525,23 +523,26 @@
       
       toggle_is_visible: async function () {
 
-        this.userscript_literal.is_visible = !this.userscript_literal.is_visible
-        this.update_userscript_with_servercall()
+        this.$store.commit('set_ui_schema_element_target_and_value',
+          ['is_visible', !this.get_ui_schema().is_visible])
+        this.update_ui_schema_with_servercall()
 
       },
 
       toggle_is_archive: async function () {
 
-        this.userscript_literal.archived = !this.userscript_literal.archived
-        this.update_userscript_with_servercall()
+        this.$store.commit('set_ui_schema_element_target_and_value',
+          ['archived', !this.get_ui_schema().archived])
+        this.update_ui_schema_with_servercall()
 
       },
 
       toggle_is_public: async function () {
 
         // requires super admin
-        this.userscript_literal.is_public = !this.userscript_literal.is_public
-        this.update_userscript_with_servercall()
+        this.$store.commit('set_ui_schema_element_target_and_value',
+          ['is_public', !this.get_ui_schema().is_public])
+        this.update_ui_schema_with_servercall()
 
       },
 
