@@ -175,193 +175,201 @@
 
         <v_error_multiple :error="error_send_task">
         </v_error_multiple>
-        
-        <regular_table
-            v-if="task_list.length > 0"
-            :item_list="task_list"
-            :header_list="header_list"
-            :column_list="column_list"
-            v-model="selected"
-            @rowclick="rowclick($event)"
-            >
 
-          <template slot="Select" slot-scope="props">
-            <v-checkbox v-model="props.item.is_selected">
-            </v-checkbox>
-          </template>
+        <v-skeleton-loader
+            :loading="loading"
+            type="table"
+            data-cy="skeletonloader"
+          >
 
-          <template slot="Status" slot-scope="props">
-            <task_status_icons
-              :status="props.item.status"
-            >
-            </task_status_icons> 
-          </template>
+          <regular_table
+              :item_list="task_list"
+              :header_list="header_list"
+              :column_list="column_list"
+              v-model="selected"
+              @rowclick="rowclick($event)"
+              >
 
-          <template slot="Preview" slot-scope="props">
-            <file_preview_with_hover_expansion
-              :file="props.item.file"
-              :project_string_id="project_string_id"
-              tooltip_direction="right"
-              @view_file_detail="route_task(item.id)"
-              :file_preview_width="100"
-              :file_preview_height="100"
-                                                >
-            </file_preview_with_hover_expansion>
-          </template>
+            <template slot="Select" slot-scope="props">
+              <v-checkbox v-model="props.item.is_selected">
+              </v-checkbox>
+            </template>
 
-          <template slot="ID" slot-scope="props">
-            {{props.item.id}}
-          </template>
+            <template slot="Status" slot-scope="props">
+              <task_status_icons
+                :status="props.item.status"
+              >
+              </task_status_icons> 
+            </template>
+
+            <template slot="Preview" slot-scope="props">
+              <file_preview_with_hover_expansion
+                :file="props.item.file"
+                :project_string_id="project_string_id"
+                tooltip_direction="right"
+                @view_file_detail="route_task(item.id)"
+                :file_preview_width="100"
+                :file_preview_height="100"
+                                                  >
+              </file_preview_with_hover_expansion>
+            </template>
+
+            <template slot="ID" slot-scope="props">
+              {{props.item.id}}
+            </template>
 
           
-          <template slot="AnnotationCount" slot-scope="props">
-           <div v-if="props.item.file
-                        && props.item.file.instance_list">
-                  {{props.item.file.instance_list.length}}
-            </div>        
-          </template>
+            <template slot="AnnotationCount" slot-scope="props">
+             <div v-if="props.item.file
+                          && props.item.file.instance_list">
+                    {{props.item.file.instance_list.length}}
+              </div>        
+            </template>
 
-          <template slot="DataUpdateLog" slot-scope="props">
-            <v-btn @click.stop.prevent="open_input_log_dialog(props.item.id)"
-                   type="primary"
-                   small
-                   color="primary"
-                   outlined>
-                <v-icon color="primary">mdi-format-list-bulleted</v-icon>
-            </v-btn>
-          </template>
-
-          <template slot="IncomingDataset" slot-scope="props">
-              <v-icon color="primary">mdi-folder</v-icon>
-              {{props.item.incoming_directory.nickname}}
-      
-          </template>
-
-          <template slot="AssignedUser" slot-scope="props">
-            <v_user_icon :user_id="props.item.assignee_user_id">
-            </v_user_icon>      
-          </template>
-
-          <template slot="LastUpdated" slot-scope="props">
-            <div v-if="props.item.time_updated">
-              {{props.item.time_updated | moment("subtract", "7 hours", "from")}}
-            </div>
-          </template>
-
-          <template slot="Created" slot-scope="props">
-            <div v-if="props.item.time_created">
-              {{props.item.time_created | moment("ddd, MMM Do H:mm:ss a")}}
-            </div>
-          </template>
-
-          <template slot="Action" slot-scope="props">
-
-          <tooltip_button
-              tooltip_message="Review"
-              @click.stop.prevent="route_task(props.item.id)"
-              v-if="!integration_name"
-              icon="mdi-file-find"
-              :icon_style="true"
-              :disabled="loading"
-              :large="true"
-              color="primary">
-          </tooltip_button>
-
-            <v-container v-if="!props.item.loading && props.item.status === 'available'"
-                          class="d-flex justify-center align-center">
-
-              <v-btn v-if="integration_name === 'scale_ai'"
-                      @click.stop.prevent="send_to_external(props.item)"
-                      :loading="loading"
-                      class="d-flex align-center mr-4"
-                      :outlined=true
-                      color="primary">
-                <span>Send To:</span>
-                <v-img style="margin-bottom: 5px" width="80px" height="45px"
-                        src="https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png">
-
-                </v-img>
-
+            <template slot="DataUpdateLog" slot-scope="props">
+              <v-btn @click.stop.prevent="open_input_log_dialog(props.item.id)"
+                     type="primary"
+                     small
+                     color="primary"
+                     outlined>
+                  <v-icon color="primary">mdi-format-list-bulleted</v-icon>
               </v-btn>
+            </template>
 
-            </v-container>
+            <template slot="IncomingDataset" slot-scope="props">
+                <v-icon color="primary">mdi-folder</v-icon>
+                {{props.item.incoming_directory.nickname}}
+      
+            </template>
 
-            <v-container class="d-flex justify-center align-center"
-                          v-if="integration_name&&
-                              !props.item.loading
-                              && props.item.status === 'in_progress'">
-              <p class="primary--text font-weight-bold">
-                <v-icon color="primary">mdi-refresh</v-icon>
-                Task is being processed by external provider.
-              </p>
-            </v-container>
-            <v-container class="d-flex justify-center align-center"
-                          v-else-if="!props.item.loading && props.item.status === 'complete'">
+            <template slot="AssignedUser" slot-scope="props">
+              <v_user_icon :user_id="props.item.assignee_user_id">
+              </v_user_icon>      
+            </template>
 
-              <a
-                v-if="integration_name === 'labelbox' && props.item.external_id"
-                :href='`https://editor.labelbox.com/?project=${labelbox_project_id}&label=${props.item.external_id}`'
-                target="_blank">
+            <template slot="LastUpdated" slot-scope="props">
+              <div v-if="props.item.time_updated">
+                {{props.item.time_updated | moment("subtract", "7 hours", "from")}}
+              </div>
+            </template>
 
-                <v-btn
-                  @click.stop.prevent="send_to_external(props.item)"
-                  :loading="loading"
-                  class="d-flex align-center mr-4 justify-center"
-                  :outlined=true
-                  color="primary">
-                  <v-img style="margin-bottom: 0px" width="32px" height="32px"
-                          src="https://cdn.theorg.com/e1e775ca-6ad1-4c9e-847e-44856cfc75a4_thumb.jpg">
+            <template slot="Created" slot-scope="props">
+              <div v-if="props.item.time_created">
+                {{props.item.time_created | moment("ddd, MMM Do H:mm:ss a")}}
+              </div>
+            </template>
+
+            <template slot="Action" slot-scope="props">
+
+            <tooltip_button
+                tooltip_message="Review"
+                @click.stop.prevent="route_task(props.item.id)"
+                v-if="!integration_name"
+                icon="mdi-file-find"
+                :icon_style="true"
+                :disabled="loading"
+                :large="true"
+                color="primary">
+            </tooltip_button>
+
+              <v-container v-if="!props.item.loading && props.item.status === 'available'"
+                            class="d-flex justify-center align-center">
+
+                <v-btn v-if="integration_name === 'scale_ai'"
+                        @click.stop.prevent="send_to_external(props.item)"
+                        :loading="loading"
+                        class="d-flex align-center mr-4"
+                        :outlined=true
+                        color="primary">
+                  <span>Send To:</span>
+                  <v-img style="margin-bottom: 5px" width="80px" height="45px"
+                          src="https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png">
 
                   </v-img>
-                  <span>View On Labelbox:</span>
 
                 </v-btn>
-              </a>
-            </v-container>
-     
-            <v-container class="d-flex justify-center align-center"
-                          v-if="integration_name && !props.item.loading">
-              <v-btn @click.stop.prevent="route_task(props.item.id)"
-                      :disabled="loading"
-                      color="primary">
-                View
-              </v-btn>
-            </v-container>
 
-            <v-progress-linear v-if="integration_name && loading"
-                                  color="primary"
-                                  :indeterminate="true"></v-progress-linear>
+              </v-container>
+
+              <v-container class="d-flex justify-center align-center"
+                            v-if="integration_name&&
+                                !props.item.loading
+                                && props.item.status === 'in_progress'">
+                <p class="primary--text font-weight-bold">
+                  <v-icon color="primary">mdi-refresh</v-icon>
+                  Task is being processed by external provider.
+                </p>
+              </v-container>
+              <v-container class="d-flex justify-center align-center"
+                            v-else-if="!props.item.loading && props.item.status === 'complete'">
+
+                <a
+                  v-if="integration_name === 'labelbox' && props.item.external_id"
+                  :href='`https://editor.labelbox.com/?project=${labelbox_project_id}&label=${props.item.external_id}`'
+                  target="_blank">
+
+                  <v-btn
+                    @click.stop.prevent="send_to_external(props.item)"
+                    :loading="loading"
+                    class="d-flex align-center mr-4 justify-center"
+                    :outlined=true
+                    color="primary">
+                    <v-img style="margin-bottom: 0px" width="32px" height="32px"
+                            src="https://cdn.theorg.com/e1e775ca-6ad1-4c9e-847e-44856cfc75a4_thumb.jpg">
+
+                    </v-img>
+                    <span>View On Labelbox:</span>
+
+                  </v-btn>
+                </a>
+              </v-container>
+     
+              <v-container class="d-flex justify-center align-center"
+                            v-if="integration_name && !props.item.loading">
+                <v-btn @click.stop.prevent="route_task(props.item.id)"
+                        :disabled="loading"
+                        color="primary">
+                  View
+                </v-btn>
+              </v-container>
+
+              <v-progress-linear v-if="integration_name && loading"
+                                    color="primary"
+                                    :indeterminate="true"></v-progress-linear>
 
             
-            <!--
-            <v-btn v-if="props.item.task_type == 'review' &&
-                    props.item.status == 'complete' &&
-                    props.item.job_type != 'Exam'
-                    "
-                    @click.stop.prevent="route_task_diff(props.item.id)"
-                    :loading="loading"
-                    color="green">
-              Review
-            </v-btn>
-                -->
+              <!--
+              <v-btn v-if="props.item.task_type == 'review' &&
+                      props.item.status == 'complete' &&
+                      props.item.job_type != 'Exam'
+                      "
+                      @click.stop.prevent="route_task_diff(props.item.id)"
+                      :loading="loading"
+                      color="green">
+                Review
+              </v-btn>
+                  -->
        
-          </template>
+            </template>
 
-          <template slot="Rating" slot-scope="props">
-             <v-rating v-model="props.item.review_star_rating_average"
-                        readonly
-                >
-             </v-rating>     
-          </template>
+            <template slot="Rating" slot-scope="props">
+               <v-rating v-model="props.item.review_star_rating_average"
+                          readonly
+                  >
+               </v-rating>     
+            </template>
 
-          <template slot="GoldStandardMissing" slot-scope="props">
-            {{props.item.gold_standard_missing}} 
-          </template>
+            <template slot="GoldStandardMissing" slot-scope="props">
+              {{props.item.gold_standard_missing}} 
+            </template>
 
-        </regular_table>
+          </regular_table>
 
+        </v-skeleton-loader>
 
-        <v-container v-else-if="task_list.length === 0 && has_filters_applied">
+        <v-container v-if="!loading
+                     && task_list.length === 0
+                     && has_filters_applied">
           <v-row>
             <v-col cols="12" class="d-flex flex-column align-center justify-center">
               <h2>No tasks available for current criteria.</h2>
