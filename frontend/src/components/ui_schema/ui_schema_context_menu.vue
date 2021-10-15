@@ -32,29 +32,107 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item
-        link
-        @click="show_add_menu = true"
-      >
+    </v-card>
 
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Show"
-            icon="add"
+  </div>
+
+  <div
+      class="save-menu"
+      :class="{visible: show_context_menu}"
+      :style="{top: 0, right: 0}"
+    >
+
+    <v-card>
+      <v-card-title>Editing {{$store.state.ui_schema.current.name}}
+
+        <v-spacer></v-spacer>
+
+        <tooltip_button
+            tooltip_message="Edit Name"
+            datacy="ui_schema_edit_name"
+            @click="edit_name = !edit_name"
+            icon="mdi-rename-box"
+            :icon_style="true"
             color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Add
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+            :disabled="!$store.state.ui_schema.current"
+                        >
+        </tooltip_button>
 
+        <v-text-field
+          v-if="edit_name == true"
+          v-model="$store.state.ui_schema.current.name"
+          @input="has_changes = true"
+          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+          flat
+            >
+        </v-text-field>
+      </v-card-title>
 
+      <v-alert
+            type="info"
+            dismissible>
+        <b>Editing UI Design</b> <br>
+        Hover over a button to show options. Click plus to add buttons.
+      </v-alert>
 
-      <v-menu
+      <v-container>
 
+        <v-layout>
+          <tooltip_button
+              tooltip_message="Add"
+              datacy="ui_schema_add"
+              button_message="Add Elements"
+              @click="show_add_menu=true"
+              icon="add"
+              :text_style="true"
+              color="primary"
+                          >
+          </tooltip_button>
+        </v-layout>
+
+      <v-divider class="pb-2 pt-2"></v-divider>
+
+      <v-layout>
+
+        <v_error_multiple :error="error">
+        </v_error_multiple>
+      
+     
+        <button_with_menu
+            tooltip_message="Choose Schema"
+            icon="mdi-playlist-edit"
+            color="primary"
+            :close_by_button="true"
+                >
+
+            <template slot="content">
+              <v-layout column>
+
+                <ui_schema_selector
+                  :project_string_id="project_string_id"
+                  @change="change($event)"
+                  :current_ui_schema_prop="$store.state.ui_schema.current"
+                  :disabled="selector_disabled"
+                                >
+                </ui_schema_selector>
+
+              </v-layout>
+            </template>
+
+        </button_with_menu>
+
+        <tooltip_button
+            tooltip_message="New Schema"
+            datacy="ui_schema_new"
+            @click="new_ui_schema_with_servercall()"
+            icon="add"
+            :icon_style="true"
+            color="primary"
+                        >
+        </tooltip_button>
+
+        <v-menu
         v-model="show_add_menu"
         :allow-overflow="true"
         :offset-overflow="true"
@@ -87,70 +165,6 @@
         </v-card>
       </v-menu>
 
-    </v-card>
-
-  </div>
-
-  <div
-      class="save-menu"
-      :class="{visible: show_context_menu}"
-      :style="{top: 0, right: 0}"
-    >
-
-    <v-card>
-      <v-card-title>Editing UI</v-card-title>
-
-      <v-alert
-            type="info"
-            dismissible>
-        <b>Editing UI Design</b> <br>
-        Hover over a button to show options. Click plus to add buttons.
-      </v-alert>
-
-      <v-container>
-      <v-layout>
-
-        <v_error_multiple :error="error">
-        </v_error_multiple>
-      
-        <ui_schema_selector
-          :project_string_id="project_string_id"
-          @change="change($event)"
-          :current_ui_schema_prop="$store.state.ui_schema.current"
-          :disabled="selector_disabled"
-                        >
-        </ui_schema_selector>
-      
-        <v-text-field
-          v-if="edit_name == true"
-          v-model="$store.state.ui_schema.current.name"
-          @input="has_changes = true"
-          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-          flat
-            >
-        </v-text-field>
-
-        <tooltip_button
-            tooltip_message="Edit Name"
-            datacy="ui_schema_edit_name"
-            @click="edit_name = !edit_name"
-            icon="edit"
-            :icon_style="true"
-            color="primary"
-            :disabled="!$store.state.ui_schema.current"
-                        >
-        </tooltip_button>
-
-        <tooltip_button
-            tooltip_message="New"
-            datacy="ui_schema_new"
-            @click="new_ui_schema_with_servercall()"
-            icon="add"
-            :icon_style="true"
-            color="primary"
-                        >
-        </tooltip_button>
 
         <tooltip_button
             tooltip_message="Copy to New"
@@ -167,7 +181,7 @@
         <tooltip_button
           v-if="show_save"
           datacy="ui_schema_save"
-          tooltip_message="Save ui_schema"
+          tooltip_message="Save"
           @click="update_ui_schema_with_servercall()"
           icon="save"
           :loading="loading"
@@ -228,6 +242,13 @@
           color="primary"                          >
       </tooltip_button>
 
+      </v-layout>
+
+    <v-layout>
+
+    <v-divider class="pb-2 pt-2"></v-divider>
+
+    <v-card-actions>
       <v-btn
         color="red"
         text
@@ -235,10 +256,13 @@
       >
         Exit
       </v-btn>
+    </v-card-actions>
+
     </v-layout>
-      </v-container>
-    </v-card>
-  </div>
+
+  </v-container>
+</v-card>
+</div>
 
 </div>
 
