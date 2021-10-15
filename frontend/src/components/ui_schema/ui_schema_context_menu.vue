@@ -51,24 +51,6 @@
         </v-list-item-content>
       </v-list-item>
 
-      <v-list-item
-        link
-        @click="close()"
-      >
-
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Exit"
-            icon="close"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Exit
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
 
 
       <v-menu
