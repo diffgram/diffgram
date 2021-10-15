@@ -55,7 +55,7 @@ export default Vue.extend( {
   methods: {
     show(){
       if (this.$props.name == undefined) { return true } 
-      return this.$store.getters.get_ui_schema(this.$props.name)
+      return this.$store.getters.get_ui_schema(this.$props.name, 'visible')
     },
     mouseover(event) {
       this.$store.commit('set_ui_schema_event', [this.name, event])

@@ -361,7 +361,7 @@
       buttons_list_available: function () {
         let list = []
         for (var button of this.buttons_list_original) {
-          if (this.$store.getters.get_ui_schema(button.name) != true) {
+          if (this.$store.getters.get_ui_schema(button.name, 'visible') != true) {
             list.push(button)
           }
         }

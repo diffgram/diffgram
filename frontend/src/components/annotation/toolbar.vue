@@ -359,10 +359,13 @@
         :bottom="true"
       >
       </tooltip_button>
+
+      <!-- This is an example of injecting a tombstone button to help positionally
+        make it easier for user.-->
       <tooltip_button
         tooltip_message="Add Button"
         ui_schema_name="add_button"
-        v-if="!$store.getters.get_ui_schema('previous_task')"
+        v-if="!$store.getters.get_ui_schema('previous_task', 'visible')"
         @click="$emit('add_ui_schema')"
         color="primary"
         icon="add"

@@ -198,7 +198,7 @@ export default Vue.extend( {
   methods: {
     show_button(){
       if (this.$props.ui_schema_name == undefined) { return true } 
-      return this.$store.getters.get_ui_schema(this.$props.ui_schema_name)
+      return this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
     },
     preventdefault(event) {
       // we don't assume this will go anywhere unless opened in new tab
