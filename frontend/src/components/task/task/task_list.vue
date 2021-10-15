@@ -221,7 +221,11 @@
           </template>
 
           <template slot="DataUpdateLog" slot-scope="props">
-            <v-btn @click="open_input_log_dialog(props.item.id)" type="primary" small color="primary" outlined>
+            <v-btn @click.stop.prevent="open_input_log_dialog(props.item.id)"
+                   type="primary"
+                   small
+                   color="primary"
+                   outlined>
                 <v-icon color="primary">mdi-format-list-bulleted</v-icon>
             </v-btn>
           </template>
@@ -253,7 +257,7 @@
 
           <tooltip_button
               tooltip_message="Review"
-              @click="route_task(props.item.id)"
+              @click.stop.prevent="route_task(props.item.id)"
               v-if="!integration_name"
               icon="mdi-file-find"
               :icon_style="true"
@@ -266,7 +270,7 @@
                           class="d-flex justify-center align-center">
 
               <v-btn v-if="integration_name === 'scale_ai'"
-                      @click="send_to_external(props.item)"
+                      @click.stop.prevent="send_to_external(props.item)"
                       :loading="loading"
                       class="d-flex align-center mr-4"
                       :outlined=true
@@ -299,7 +303,7 @@
                 target="_blank">
 
                 <v-btn
-                  @click="send_to_external(props.item)"
+                  @click.stop.prevent="send_to_external(props.item)"
                   :loading="loading"
                   class="d-flex align-center mr-4 justify-center"
                   :outlined=true
@@ -316,7 +320,7 @@
      
             <v-container class="d-flex justify-center align-center"
                           v-if="integration_name && !props.item.loading">
-              <v-btn @click="route_task(props.item.id)"
+              <v-btn @click.stop.prevent="route_task(props.item.id)"
                       :disabled="loading"
                       color="primary">
                 View
@@ -333,7 +337,7 @@
                     props.item.status == 'complete' &&
                     props.item.job_type != 'Exam'
                     "
-                    @click="route_task_diff(props.item.id)"
+                    @click.stop.prevent="route_task_diff(props.item.id)"
                     :loading="loading"
                     color="green">
               Review
