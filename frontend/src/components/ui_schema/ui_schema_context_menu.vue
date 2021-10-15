@@ -138,15 +138,15 @@
           >
       </v-text-field>
 
-      <!--
-      <userscript_select
+      
+      <ui_schema_selector
         :project_string_id="project_string_id"
-        @change="change_userscript($event)"
-        :current_userscript_prop="userscript_literal"
-        :disabled="userscript_select_disabled"
+        @change="change($event)"
+        :current_userscript_prop="$store.state.ui_schema.current"
+        :disabled="selector_disabled"
                       >
-      </userscript_select>
-      -->
+      </ui_schema_selector>
+      
 
       <tooltip_button
           tooltip_message="Edit Name"
@@ -190,7 +190,7 @@
         :loading="loading"
         :disabled="loading
                 || !ui_schema_exists
-                || public_script_not_super_admin"
+                || public_not_super_admin"
         :icon_style="true"
         color="primary"
                     >
@@ -222,7 +222,7 @@
           :icon_style="true"
           color="primary"
           :disabled="!ui_schema_exists
-                    || public_script_not_super_admin"
+                    || public_not_super_admin"
                       >
       </tooltip_button>
 
@@ -266,9 +266,13 @@
   import Vue from 'vue';
   import axios from 'axios';
   import {UI_Schema} from './ui_schema'
+  import ui_schema_selector from './ui_schema_selector'
 
   export default Vue.extend({
     name: 'UI_Schema_context_menu',
+    components: {
+      ui_schema_selector
+    },
     props: {
       'mouse_position': {
         type: Object,
@@ -290,6 +294,8 @@
     data() {
       // move context menu off the page out of view when hidden
       return {
+        selector_disabled: false,
+
         top: '-1000px',
         left: '-1000px',
         instance_hover_index_locked: null,
@@ -360,6 +366,12 @@
                return true
            }
        },
+      public_not_super_admin: function () {
+           if (this.$store.state.ui_schema.current.is_public == true
+            && this.$store.state.user.current.is_super_admin != true) {
+               return true
+           }
+       }
 
     },
 
@@ -460,11 +472,7 @@
 
             console.log(result)
 
-            this.userscript_literal.id = result.data.userscript.id;
-            this.userscript_literal.time_created = result.data.userscript.time_created;
-
-            // eg for script changes etc as that grows
-            this.change_userscript(this.userscript_literal)
+            this.change(this.userscript_literal)
 
             this.edit_name = true // assume a user wants to edit name of new script
           }
@@ -503,6 +511,15 @@
         finally {
           this.loading = false;
         }
+
+      },
+
+      change: function (event) {
+
+        if(!event) { return }
+        if(event.id == this.$store.state.ui_schema.current.id) { return }
+       
+        this.$store.commit('set_ui_schema', event)
 
       },
       
@@ -545,8 +562,7 @@
             this.userscript_literal.id = result.data.userscript.id;
             this.userscript_literal.time_created = result.data.userscript.time_created;
 
-            // eg for script changes etc as that grows
-            this.change_userscript(this.userscript_literal)
+            this.change(this.userscript_literal)
 
             this.edit_name = true // assume a user wants to edit name of new script
           }
