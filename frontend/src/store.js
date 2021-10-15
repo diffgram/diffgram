@@ -682,7 +682,7 @@ const ui_schema = {
     set_ui_schema_element_value(state, payload) {
       const element = payload[0]
       if (element === undefined) {
-        throw new Error("set_ui_schema_element_value element is undefined", payload)
+        throw new Error("set_ui_schema_element_value element is undefined")
       }
       const key = payload[1]
       const value = payload[2]
