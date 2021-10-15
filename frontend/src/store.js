@@ -644,7 +644,10 @@ const ui_schema = {
   },
   mutations: {
     set_ui_schema(state, current) {
-      state.current = current
+      // Doing this to keep the watchers, so the root pointer in theory is the same
+      for (const [key, value] of Object.entries(current)) {
+        state.current[key] = value
+      }
       state.refresh = Date.now()
     },
     reset_ui_schema(state, current){
