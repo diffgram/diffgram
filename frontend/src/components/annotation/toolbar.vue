@@ -49,29 +49,6 @@
                         >
         </tooltip_button>
 
-        <tooltip_button
-          v-if="show_edit_schema_button"
-          color="primary"
-          :icon_style="true"
-          icon="edit"
-          tooltip_message="Edit UI Schema"
-          @click="$emit('edit_ui_schema')"
-          :bottom="true"
-                        >
-        </tooltip_button>
-
-        <tooltip_button
-          v-if="show_edit_schema_button"
-          tooltip_message="Add Schema"
-          ui_schema_name="add_button"
-          @click="$emit('add_ui_schema')"
-          color="primary"
-          icon="add"
-          :icon_style="true"
-          :bottom="true"
-        >
-        </tooltip_button>
-
         <v-divider
           vertical
         ></v-divider>
