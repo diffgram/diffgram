@@ -312,37 +312,37 @@
         button_to_add: undefined,
 
         buttons_list_original: [
-            {'name': 'show_previous_task',
+            {'name': 'previous_task',
              'display_name': 'Previous Task',
              'icon': 'mdi-chevron-left-circle',
              'color': 'primary'
             },
-            {'name': 'show_next_task',
+            {'name': 'next_task',
              'display_name': 'Next Task',
              'icon': 'mdi-chevron-right-circle',
              'color': 'primary'
             },
-            {'name': 'show_logo',
+            {'name': 'logo',
              'display_name': 'Logo',
              'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_25,w_25,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
             },
-            {'name': 'show_home_button',
+            {'name': 'home_button',
              'icon': 'mdi-home',
              'display_name': 'Home Button',
             },
-            {'name': 'show_defer',
+            {'name': 'defer',
              'icon': 'mdi-debug-step-over',
              'display_name': 'Defer',
             },
-            {'name': 'show_zoom',
+            {'name': 'zoom',
              'icon': 'mdi-magnify-plus-outline',
              'display_name': 'Zoom Display',
             },
-            {'name': 'show_label_selector',
+            {'name': 'label_selector',
              'icon': 'mdi-format-paint',
              'display_name': 'Label Selector',
             },
-            {'name': 'show_instance_selector',
+            {'name': 'instance_selector',
              'icon': 'mdi-vector-polygon',
              'display_name': 'Tool Selector',
             }
@@ -421,7 +421,14 @@
     },
     methods: {
       get_ui_schema: function () {
+        if (this.$store.state.ui_schema.current == undefined) {
+          throw new Error("this.$store.state.ui_schema.current is undefined")
+        }
         return this.$store.state.ui_schema.current
+      },
+      get_target_element: function () {
+        // careful target is stored on ui_schema generally not `current`
+        return this.$store.state.ui_schema.target_element
       },
       get_mouse_position: function () {
         if (!this.$store.state.ui_schema.target_element) {
@@ -442,16 +449,18 @@
         this.$store.commit('reset_ui_schema')
       },
       hide() {
-        this.$store.commit('set_ui_schema_element_value', false)
+        this.$store.commit('set_ui_schema_element_value',
+          [this.get_target_element(),'visible', false])
         //this.close();
       },
       show() {
-        this.$store.commit('set_ui_schema_element_value', true)
+        this.$store.commit('set_ui_schema_element_value',
+          [this.get_target_element(),'visible', true])
         //this.close();
       },
       add_selected() {
-        this.$store.commit('set_ui_schema_element_target_and_value',
-          [this.button_to_add, true])
+        this.$store.commit('set_ui_schema_element_value',
+          [this.button_to_add,'visible', true])
       },
 
       new_ui_schema_with_servercall: async function(){
@@ -522,7 +531,7 @@
       
       toggle_is_visible: async function () {
 
-        this.$store.commit('set_ui_schema_element_target_and_value',
+        this.$store.commit('set_ui_schema_top_level_key_value',
           ['is_visible', !this.get_ui_schema().is_visible])
         this.update_ui_schema_with_servercall()
 
@@ -530,7 +539,7 @@
 
       toggle_is_archive: async function () {
 
-        this.$store.commit('set_ui_schema_element_target_and_value',
+        this.$store.commit('set_ui_schema_top_level_key_value',
           ['archived', !this.get_ui_schema().archived])
         this.update_ui_schema_with_servercall()
 
@@ -539,7 +548,7 @@
       toggle_is_public: async function () {
 
         // requires super admin
-        this.$store.commit('set_ui_schema_element_target_and_value',
+        this.$store.commit('set_ui_schema_top_level_key_value',
           ['is_public', !this.get_ui_schema().is_public])
         this.update_ui_schema_with_servercall()
 
