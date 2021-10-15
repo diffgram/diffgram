@@ -251,7 +251,7 @@ def list_ui_schema_api(project_string_id):
             	date_from_string = input['date_from'],
 			date_to_string = input['date_to'],
             name = input['name'],
-            order_by_class_and_attribute = UI_Schema.time_updated,
+            order_by_class_and_attribute = UI_Schema.last_updated_time,
             archived = input['archived'],
             public_only = False
             )
@@ -259,7 +259,7 @@ def list_ui_schema_api(project_string_id):
         public_list = UI_Schema.list(
             session = session,
             public_only = True,
-            order_by_class_and_attribute = UI_Schema.time_updated,
+            order_by_class_and_attribute = UI_Schema.last_updated_time,
             archived = False
             )
 

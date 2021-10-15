@@ -1,6 +1,7 @@
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import desc
+from sqlalchemy import nullslast
 
 from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
@@ -159,7 +160,6 @@ class UI_Schema(Base, SerializerMixin):
 
 
         """
-
         query = session.query(UI_Schema)
 
         # Assume we must either have public  or project id
@@ -180,21 +180,24 @@ class UI_Schema(Base, SerializerMixin):
                 query = query.filter(UI_Schema.created_time >= date_from)
             if date_to:
                 query = query.filter(UI_Schema.created_time <= date_to)
-        else:
+
+        elif date_from_string or date_to_string:
             query = regular_methods.regular_query(
                 query=query,
                 date_from_string=date_from_string,
                 date_to_string=date_to_string,
                 base_class=UI_Schema,
-                created_time_string='time_updated'
+                created_time_string='last_updated_time'
             )
 
         if archived is False:   
-            query = query.filter(UI_Schema.archived == False)
+            query = query.filter(or_(
+                UI_Schema.archived == None,
+                UI_Schema.archived == False))
 
         if order_by_class_and_attribute:
-            query = query.order_by(
-                nullslast(order_by_direction(order_by_class_and_attribute)))
+           query = query.order_by(
+              nullslast(order_by_direction(order_by_class_and_attribute)))
 
         if return_kind == "count":
             return query.limit(limit).count()
