@@ -716,18 +716,6 @@
   </v-navigation-drawer>
   -->
 
-    <!-- I would like to have a second sheet here for video stuff
-     but wondering if we should just attach the video thing to the image
-     This may need lot of fiddling to get it to load right under other sheet
-     -->
-    <!--
-  <v-bottom-sheet :value="true">
-
-    <h2 class="text-center"> BOTTOM </h2>
-
-  </v-bottom-sheet>
-  -->
-
 
     <!-- Media core -->
 
@@ -746,16 +734,10 @@
 
     https://vuetifyjs.com/en/components/bottom-sheets
 
-      TODO explore 'fullscreen' flag
-      may be useful if more files...
-
       https://github.com/vuetifyjs/vuetify/issues/8640
       needs :retain-focus="false" (but shouldn't)
 
     -->
-
-
-
 
     <instance_template_creation_dialog
       :project_string_id="project_string_id"
