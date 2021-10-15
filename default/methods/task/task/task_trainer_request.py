@@ -91,14 +91,13 @@ def get_next_task_by_job(
     return task
 
 
-@routes.route('/api/v1/job/<int:job_id>' +
-              '/task/trainer/request',
+@routes.route('/api/v1/job/<int:job_id>/task/next',
               methods = ['POST'])
-@limiter.limit("1 per second, 50 per minute, 500 per day")
+@limiter.limit("1 per second, 1000 per day")
 @Job_permissions.by_job_id(	
-    mode = "trainer",
+    mode = "builder",
     apis_user_list = ['builder_or_trainer', 'security_email_verified'])
-def task_trainer_request_api(job_id):
+def task_next_by_job_api(job_id):
 
     log = regular_input.regular_log.default_api_log()
 
@@ -110,7 +109,7 @@ def task_trainer_request_api(job_id):
         task = get_next_task_by_job(
             session = session,
             user = user,
-            project = project)
+            job = job)
 
         if task is None:
             log['info']['task'] = "No tasks available."
