@@ -195,7 +195,8 @@ class Task(Base):
             job_id,
             user,
             direction='next',
-            assign_to_user=False,):
+            assign_to_user=False,
+            skip_locked=True):
 
         query = session.query(Task).filter(
                 Task.status == 'available',
@@ -207,9 +208,16 @@ class Task(Base):
         elif direction == 'previous':
             query = query.order_by(Task.time_created.desc())
 
+        if skip_locked == True:
+            query = query.with_for_update(skip_locked=True)
+
         task = query.first()
 
         if assign_to_user is True:
+
+            # TODO check if job has open status, or user is assigned to job
+            # For now this assumes that the user is already on correct job
+
             if task:
                 Task.assign_task_to_user(
                     task = task,
