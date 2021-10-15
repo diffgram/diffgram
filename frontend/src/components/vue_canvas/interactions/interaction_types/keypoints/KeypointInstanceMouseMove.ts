@@ -14,6 +14,7 @@ export class KeypointInstanceMouseMove extends Interaction {
   }
 
   process(): boolean {
+
     this.key_point_instance.ctx.canvas.style.cursor = 'default'
     if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'copy'
@@ -21,10 +22,18 @@ export class KeypointInstanceMouseMove extends Interaction {
     else if (this.key_point_instance.is_node_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'pointer'
     }
+    else if (!this.key_point_instance.instance_context.draw_mode
+      && this.key_point_instance.instance_rotate_control_mouse_hover){
+      this.key_point_instance.ctx.canvas.style.cursor = 'help'
+    }
     else if (!this.key_point_instance.is_node_hovered
       && !this.key_point_instance.instance_context.draw_mode
       && this.key_point_instance.is_bounding_box_hovered) {
       this.key_point_instance.ctx.canvas.style.cursor = 'move'
+
+      if(this.key_point_instance.instance_rotate_control_mouse_hover){
+        this.key_point_instance.ctx.canvas.style.cursor = 'help'
+      }
     }
 
     else if (this.key_point_instance.is_bounding_box_hovered && !this.key_point_instance.instance_context.draw_mode) {

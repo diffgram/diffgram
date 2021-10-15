@@ -4695,13 +4695,14 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.calculate_min_max_points()
+            // instance.calculate_min_max_points()
           }
-
-          instance.x_min = parseInt(instance.x_min)
-          instance.y_min = parseInt(instance.y_min)
-          instance.x_max = parseInt(instance.x_max)
-          instance.y_max = parseInt(instance.y_max)
+          else{
+            instance.x_min = parseInt(instance.x_min)
+            instance.y_min = parseInt(instance.y_min)
+            instance.x_max = parseInt(instance.x_max)
+            instance.y_max = parseInt(instance.y_max)
+          }
 
         },
         move_keypoints: function(){
@@ -7083,7 +7084,7 @@
             this.set_clipboard([this.instance_clipboard]);
           }
           else{
-            alert('Copy paste not implements for multiple instnaces.')
+            alert('Copy paste not implemented for multiple instnaces.')
             // TODO implement flag limit conditions for multi selects.
             if(!this.selected_instance && instance_index == undefined){return}
           }
