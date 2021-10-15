@@ -173,7 +173,7 @@
         <tooltip_button
             tooltip_message="Copy to New"
             datacy="ui_schema_copy"
-            @click="copy_ui_schema_with_servercall(ui_schema_literal)"
+            @click="copy_ui_schema_with_servercall()"
             icon="mdi-content-copy"
             :icon_style="true"
             color="primary"
@@ -472,7 +472,6 @@
           if(result.status === 200){
 
             this.change(result.data.ui_schema)
-
             this.edit_name = true // assume a user wants to edit name of new script
           }
 
@@ -548,8 +547,8 @@
 
       copy_ui_schema_with_servercall: async function(){
 
-        this.ui_schema_literal = this.userscript_class.copy_userscript(
-            this.userscript_literal)
+        let ui_schema = new UI_Schema
+        const new_ui_schema = ui_schema.copy(this.get_ui_schema())
 
         this.loading = true;
         this.error = {}
@@ -557,27 +556,21 @@
         try{
           const result = await axios.post(
             `/api/v1/project/${this.project_string_id}/userscript/new`,
-            this.userscript_literal
+            new_ui_schema
           )
           if(result.status === 200){
-            this.userscript_literal.id = result.data.userscript.id;
-            this.userscript_literal.time_created = result.data.userscript.time_created;
 
-            this.change(this.userscript_literal)
-
+            this.change(result.data.ui_schema)
             this.edit_name = true // assume a user wants to edit name of new script
           }
-
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
           console.error(error)
-
         }
         finally {
           this.loading = false;
         }
-
       },
 
 

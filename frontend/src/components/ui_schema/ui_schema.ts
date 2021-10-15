@@ -32,7 +32,6 @@ export class UI_Schema {
     // TODO reivew in new class context
 
     let ui_schema = {...old}
-    ui_schema.external_src_list = [...old.external_src_list]
     ui_schema.client_creation_ref_id = uuidv4();
     ui_schema.client_created_time = new Date().toISOString();
     ui_schema.name = "Copy of " + old.name
