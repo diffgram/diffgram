@@ -168,22 +168,24 @@ def __ui_schema_update(
         log['error']['id'] = "Does not exist"
         return log, False
 
-    log, logo = regular_input.input_check_many(
-        spec_list = ui_schema_logo_spec_list,
-        log = log,
-        untrusted_input = untrusted_input['logo'])
-
-    if regular_log.log_has_error(log): return False
-
-    print(logo)
-
     # Now update or add the rest of the fields
     fields_to_process = {
         'name': input['name'],
         'archived': input['archived'],
-        'is_visible': input['is_visible'],
-        'logo': logo,
+        'is_visible': input['is_visible']
     }
+
+    if untrusted_input['logo']:
+        log, logo = regular_input.input_check_many(
+            spec_list = ui_schema_logo_spec_list,
+            log = log,
+            untrusted_input = untrusted_input['logo'])
+
+        if regular_log.log_has_error(log): 
+            return log, False
+
+        fields_to_process['logo'] = logo
+        print(logo)
 
     user = User.get(session)
     if user and user.is_super_admin is True:
