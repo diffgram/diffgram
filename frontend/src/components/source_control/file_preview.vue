@@ -5,7 +5,8 @@
           style="background: #f6f7f8"
           :height="file_preview_height">
 
-    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details(undefined)" >
+    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg"
+                 @click="view_file_details(undefined)" >
       <drawable_canvas
         v-if="image_bg"
         ref="drawable_canvas"
@@ -109,6 +110,9 @@
       },
       'video':{
         default: null
+      },
+      'enable_go_to_file_on_click':{
+        default: true
       }
     },
     data: function () {
@@ -257,6 +261,9 @@
       },
 
       view_file_details: function(current_frame){
+        if(this.$props.enable_go_to_file_on_click == false) {
+          return
+        }
         let model_runs = [];
         let color_list = [];
         if(this.base_model_run){

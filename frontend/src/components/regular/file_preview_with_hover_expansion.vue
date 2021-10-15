@@ -16,7 +16,7 @@
           :instance_list="file.instance_list"
           :show_ground_truth="true"
           :show_video_nav_bar="false"
-          @view_file_detail="$emit('view_file_detail')"
+          :enable_go_to_file_on_click="false"
         ></file_preview>
        </div>
 
@@ -32,7 +32,7 @@
         :instance_list="file.instance_list"
         :show_ground_truth="true"
         :show_video_nav_bar="false"
-        @view_file_detail="$emit('view_file_detail')"
+        :enable_go_to_file_on_click="false"
       ></file_preview>
 
     </v-tooltip>
