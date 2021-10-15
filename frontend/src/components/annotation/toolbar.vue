@@ -48,6 +48,7 @@
         </tooltip_button>
 
         <tooltip_button
+          v-if="show_edit_schema_button"
           color="primary"
           :icon_style="true"
           icon="edit"
@@ -58,6 +59,7 @@
         </tooltip_button>
 
         <tooltip_button
+          v-if="show_edit_schema_button"
           tooltip_message="Add Schema"
           ui_schema_name="add_button"
           @click="$emit('add_ui_schema')"
@@ -950,7 +952,9 @@ export default Vue.extend( {
     'instance_type_list': {},
     'view_issue_mode': {},
     'is_keypoint_template': {},
-    'ui_schema': {
+    'show_edit_schema_button' : {
+      default: false,
+      type: Boolean
     }
 
   },

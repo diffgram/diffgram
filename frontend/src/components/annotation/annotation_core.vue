@@ -39,6 +39,7 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
+                   :show_edit_schema_button="show_edit_schema_button"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -891,7 +892,8 @@
 
         'view_only_mode': {
           default: false
-        }
+        },
+        'show_edit_schema_button' : {}
       },
       watch: {
         canvas_scale_global: function(newVal, oldVal){
