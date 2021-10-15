@@ -85,6 +85,8 @@ Design Doc: https://docs.google.com/document/d/1FNl8L-gdhUAbJFC0iOMPyi9wg9bGXOW0
 column_list defines the order of the columns
 so to re-order, change the the order of column_list
 
+If Using @rowclick event, use @click.stop.prevent on interior buttons
+
 Zoom out context on this is:
 1) We want to dynamically customize how the table looks
 from a parent component. This can be cumbersome trying to
