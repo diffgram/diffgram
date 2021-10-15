@@ -1,4 +1,5 @@
 <template>
+<div>
   <div
     class="context-menu"
     :class="{visible: show_context_menu}"
@@ -106,149 +107,157 @@
 
     </v-card>
 
-    <v-snackbar
-        v-model="show_schema_editing_snackbar"
-        :multi-line="true"
-        :timeout="-1"
-        right
-        top
-      >
-      <b>Editing UI Design</b> <br>
-      Hover over a button to show options. Click plus to add buttons.
+  </div>
 
-      <template v-slot:action="{ attrs }">
+  <div
+      class="save-menu"
+      :class="{visible: show_context_menu}"
+      :style="{top: 0, right: 0}"
+    >
 
-        <v-text-field
-          v-if="edit_name == true"
-          v-model="$store.state.ui_schema.current.name"
-          @input="has_changes = true"
-          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-          flat
-            >
-        </v-text-field>
+    <v-card>
+      <v-card-title>Editing UI</v-card-title>
 
-        <!--
-        <userscript_select
-          :project_string_id="project_string_id"
-          @change="change_userscript($event)"
-          :current_userscript_prop="userscript_literal"
-          :disabled="userscript_select_disabled"
-                        >
-        </userscript_select>
-        -->
+      <v-alert
+            type="info"
+            dismissible>
+        <b>Editing UI Design</b> <br>
+        Hover over a button to show options. Click plus to add buttons.
+      </v-alert>
 
-        <tooltip_button
-            tooltip_message="Edit Name"
-            datacy="ui_schema_edit_name"
-            @click="edit_name = !edit_name"
-            icon="edit"
-            :icon_style="true"
-            color="primary"
-            :disabled="!$store.state.ui_schema.current"
-                        >
-        </tooltip_button>
+      <v-container>
+      <v-layout>
 
-        <tooltip_button
-            tooltip_message="New"
-            datacy="ui_schema_new"
-            @click="new_ui_schema_with_servercall()"
-            icon="add"
-            :icon_style="true"
-            color="primary"
-                        >
-        </tooltip_button>
+      <v-text-field
+        v-if="edit_name == true"
+        v-model="$store.state.ui_schema.current.name"
+        @input="has_changes = true"
+        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+        flat
+          >
+      </v-text-field>
 
-        <tooltip_button
-            tooltip_message="Copy to New"
-            datacy="ui_schema_copy"
-            @click="copy_ui_schema_with_servercall(ui_schema_literal)"
-            icon="mdi-content-copy"
-            :icon_style="true"
-            color="primary"
-            :disabled="!ui_schema_exists"
-                        >
-        </tooltip_button>
+      <!--
+      <userscript_select
+        :project_string_id="project_string_id"
+        @change="change_userscript($event)"
+        :current_userscript_prop="userscript_literal"
+        :disabled="userscript_select_disabled"
+                      >
+      </userscript_select>
+      -->
 
+      <tooltip_button
+          tooltip_message="Edit Name"
+          datacy="ui_schema_edit_name"
+          @click="edit_name = !edit_name"
+          icon="edit"
+          :icon_style="true"
+          color="primary"
+          :disabled="!$store.state.ui_schema.current"
+                      >
+      </tooltip_button>
 
-        <tooltip_button
-          v-if="show_save"
-          datacy="ui_schema_save"
-          tooltip_message="Save ui_schema"
-          @click="update_ui_schema_with_servercall()"
-          icon="save"
-          :loading="loading"
-          :disabled="loading
-                  || !ui_schema_exists
-                  || public_script_not_super_admin"
+      <tooltip_button
+          tooltip_message="New"
+          datacy="ui_schema_new"
+          @click="new_ui_schema_with_servercall()"
+          icon="add"
           :icon_style="true"
           color="primary"
                       >
       </tooltip_button>
 
-        <tooltip_button
-            v-if="$store.state.user.current.is_super_admin == true"
-            tooltip_message="Toggle is Public Example"
-            @click="toggle_is_public()"
-            icon="mdi-earth"
-            :icon_style="true"
-            color="primary"
-                        >
-        </tooltip_button>
-
-          <div  v-if="$store.state.user.current.is_super_admin == true">
-              <div v-if="$store.state.ui_schema.current.is_public">
-                  Public
-              </div> <div v-else>
-                  Not Public
-              </div>
-          </div>
-
-        <tooltip_button
-            v-if="!$store.state.ui_schema.current.archived"
-            tooltip_message="Archive"
-            @click="toggle_is_archive()"
-            icon="archive"
-            :icon_style="true"
-            color="primary"
-            :disabled="!ui_schema_exists
-                      || public_script_not_super_admin"
-                        >
-        </tooltip_button>
+      <tooltip_button
+          tooltip_message="Copy to New"
+          datacy="ui_schema_copy"
+          @click="copy_ui_schema_with_servercall(ui_schema_literal)"
+          icon="mdi-content-copy"
+          :icon_style="true"
+          color="primary"
+          :disabled="!ui_schema_exists"
+                      >
+      </tooltip_button>
 
 
-        <tooltip_button
-            v-if="$store.state.ui_schema.current.archived"
-            tooltip_message="Restore"
-            @click="toggle_is_archive()"
-            icon="mdi-delete-restore"
-            :icon_style="true"
-            color="primary"                          >
-        </tooltip_button>
+      <tooltip_button
+        v-if="show_save"
+        datacy="ui_schema_save"
+        tooltip_message="Save ui_schema"
+        @click="update_ui_schema_with_servercall()"
+        icon="save"
+        :loading="loading"
+        :disabled="loading
+                || !ui_schema_exists
+                || public_script_not_super_admin"
+        :icon_style="true"
+        color="primary"
+                    >
+    </tooltip_button>
+
+      <tooltip_button
+          v-if="$store.state.user.current.is_super_admin == true"
+          tooltip_message="Toggle is Public Example"
+          @click="toggle_is_public()"
+          icon="mdi-earth"
+          :icon_style="true"
+          color="primary"
+                      >
+      </tooltip_button>
+
+        <div  v-if="$store.state.user.current.is_super_admin == true">
+            <div v-if="$store.state.ui_schema.current.is_public">
+                Public
+            </div> <div v-else>
+                Not Public
+            </div>
+        </div>
+
+      <tooltip_button
+          v-if="!$store.state.ui_schema.current.archived"
+          tooltip_message="Archive"
+          @click="toggle_is_archive()"
+          icon="archive"
+          :icon_style="true"
+          color="primary"
+          :disabled="!ui_schema_exists
+                    || public_script_not_super_admin"
+                      >
+      </tooltip_button>
 
 
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
+      <tooltip_button
+          v-if="$store.state.ui_schema.current.archived"
+          tooltip_message="Restore"
+          @click="toggle_is_archive()"
+          icon="mdi-delete-restore"
+          :icon_style="true"
+          color="primary"                          >
+      </tooltip_button>
+
+
+      <tooltip_button
+          tooltip_message="Restore Defaults"
           @click="reset()"
-        >
-        <v-icon left > mdi-restore </v-icon>
-          Reset
-        </v-btn>
+          icon="mdi-restore "
+          :icon_style="true"
+          color="primary"                          >
+      </tooltip_button>
 
-        <v-btn
-          color="red"
-          text
-          v-bind="attrs"
-          @click="close()"
-        >
-          Exit
-        </v-btn>
-      </template>
-    </v-snackbar>
-
+      <v-btn
+        color="red"
+        text
+        @click="close()"
+      >
+        Exit
+      </v-btn>
+    </v-layout>
+      </v-container>
+    </v-card>
   </div>
+
+</div>
 
 </template>
 
@@ -565,10 +574,21 @@
     margin: 0;
     box-sizing: border-box;
     display: none;
-    z-index: 100;
+    z-index: 10000;
+  }
+
+  .save-menu {
+    position: absolute;
+    margin: 0;
+    box-sizing: border-box;
+    display: none;
+    z-index: 1000;
   }
 
   .context-menu.visible {
+    display: block;
+  }
+  .save-menu.visible {
     display: block;
   }
 </style>
