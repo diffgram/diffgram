@@ -8,6 +8,26 @@
     >
     </ui_schema_context_menu>
 
+    <v-tooltip v-if="show_edit_schema_button
+                 && !show_ui_schema_context_menu"
+               left>
+      Edit UI Schema
+      <template v-slot:activator="{ on }">
+        <v-btn
+          style="position: absolute; top: 25px; right: 25px"
+          color="primary"
+          data-cy="file_explorer_button"
+          @click="edit_ui_schema()"
+          fab
+          right
+          absolute
+          v-on="on"
+        >
+          <v-icon> mdi-puzzle-edit-outline</v-icon>
+        </v-btn>
+      </template>
+    </v-tooltip>
+
     <div style="position: relative">
 
 
@@ -60,8 +80,6 @@
                    @replace_file="$emit('replace_file', $event)"
                    @open_instance_template_dialog="open_instance_template_dialog()"
                    @copy_all_instances="copy_all_instances"
-                   @edit_ui_schema="edit_ui_schema"
-                   @add_ui_schema="add_ui_schema"
 
           >
           </toolbar>
@@ -2907,6 +2925,11 @@
           else if(this.$props.task){
             this.on_change_current_task();
           }
+
+          if (this.$props.show_edit_schema_button == true) {
+            this.edit_ui_schema()
+          }
+
         },
 
         update_user_settings_from_store() {
