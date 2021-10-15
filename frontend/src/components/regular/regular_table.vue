@@ -19,6 +19,7 @@
 
           <tr @mouseover="row_hover_index = props.index"
               @mouseleave="row_hover_index = -1"
+              @click="$emit('rowclick', props.item)"
               >
 
             <!-- Feb 27, 2020 checkbox is WIP -->
