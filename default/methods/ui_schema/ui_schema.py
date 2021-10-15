@@ -7,7 +7,7 @@ from shared.database.ui_schema.ui_schema import UI_Schema
 
 
 ui_schema_button_spec_list = [
-    {"show" : {
+    {"visible" : {
 		'default': True,
 		'kind': bool
 		}
@@ -139,6 +139,7 @@ def ui_schema_update_api(project_string_id):
         log, ui_schema = __ui_schema_update(
             session = session, 
             input = input,
+            untrusted_input = untrusted_input,
             log = log,
             project_string_id = project_string_id)
 
@@ -154,6 +155,7 @@ def ui_schema_update_api(project_string_id):
 def __ui_schema_update(
         session,
         input,
+        untrusted_input,
         project_string_id,
         log,
         do_add_to_session = True):
@@ -166,11 +168,21 @@ def __ui_schema_update(
         log['error']['id'] = "Does not exist"
         return log, False
 
+    log, logo = regular_input.input_check_many(
+        spec_list = ui_schema_logo_spec_list,
+        log = log,
+        untrusted_input = untrusted_input['logo'])
+
+    if regular_log.log_has_error(log): return False
+
+    print(logo)
+
     # Now update or add the rest of the fields
     fields_to_process = {
         'name': input['name'],
         'archived': input['archived'],
         'is_visible': input['is_visible'],
+        'logo': logo,
     }
 
     user = User.get(session)

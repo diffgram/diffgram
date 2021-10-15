@@ -80,7 +80,7 @@
 
     <!-- Undo Redo -->
 
-    <div v-if="undo_redo == true && command_manager">
+    <div v-if="show_undo_redo == true && command_manager">
       <tooltip_button
         :disabled="save_loading || view_only_mode || command_manager.command_history.length == 0 || command_manager.command_index == undefined"
         color="primary"
