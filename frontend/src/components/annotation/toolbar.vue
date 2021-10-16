@@ -337,8 +337,9 @@
       >
       </tooltip_button>
 
-      <!-- This is an example of injecting a tombstone button to help positionally
+      <!-- This is a WIP example of injecting a tombstone button to help positionally
         make it easier for user.-->
+      <!-- 
       <tooltip_button
         tooltip_message="Add Button"
         ui_schema_name="add_button"
@@ -350,6 +351,7 @@
         :bottom="true"
       >
       </tooltip_button>
+      -->
     </div>
     <div>
       <tooltip_button
