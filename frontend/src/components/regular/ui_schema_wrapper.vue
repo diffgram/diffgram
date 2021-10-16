@@ -2,7 +2,7 @@
 
   <div @mouseover="mouseover"
        @mouseleave="mouseleave"
-       v-if="show()"
+       v-if="visible"
        >
 
     <slot>
@@ -46,16 +46,29 @@ export default Vue.extend( {
   },
   data() {
     return {
-
+      visible: true
     }
   },
   created(){
-
+    this.refresh_state_from_ui_schema()
+  },
+  mounted(){
+    this.show_ui_schema_refresh = this.$store.watch((state) => {
+        return this.$store.state.ui_schema.refresh
+      },
+      (new_val, old_val) => {
+        this.refresh_state_from_ui_schema()
+      },
+    )
+  },
+  beforeDestroy() {
+    this.show_ui_schema_refresh()
   },
   methods: {
-    show(){
+    refresh_state_from_ui_schema(){
       if (this.$props.name == undefined) { return true } 
-      return this.$store.getters.get_ui_schema(this.$props.name, 'visible')
+      this.visible = this.$store.getters.get_ui_schema(this.$props.name, 'visible')
+      console.log("Wrapper ran")
     },
     mouseover(event) {
       this.$store.commit('set_ui_schema_event', [this.name, event])
