@@ -2,7 +2,7 @@
 
   <div @mouseover="mouseover"
        @mouseleave="mouseleave"
-       v-if="show_button()"
+       v-if="show_button"
        >
     <v-tooltip :top="top_actual" :bottom="bottom_actual">
 
@@ -184,7 +184,8 @@ export default Vue.extend( {
       // because we can't override props
       // and rather have the interface be the "cleaner / shorter" thing
       top_actual: true,
-      bottom_actual: false
+      bottom_actual: false,
+      show_button: true
     }
   },
   created(){
@@ -194,11 +195,25 @@ export default Vue.extend( {
       this.bottom_actual = true
       this.top_actual = false
     }
+    this.refresh_button_state_from_ui_schema()
+  },
+  mounted(){
+    this.show_ui_schema_refresh = this.$store.watch((state) => {
+        return this.$store.state.ui_schema.refresh
+      },
+      (new_val, old_val) => {
+        this.refresh_button_state_from_ui_schema()
+      },
+    )
+  },
+  beforeDestroy() {
+    this.show_ui_schema_refresh()
   },
   methods: {
-    show_button(){
+    refresh_button_state_from_ui_schema(){
       if (this.$props.ui_schema_name == undefined) { return true } 
-      return this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
+      this.show_button = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
+      console.log("Running")
     },
     preventdefault(event) {
       // we don't assume this will go anywhere unless opened in new tab
