@@ -2,7 +2,7 @@
 
   <div @mouseover="mouseover"
        @mouseleave="mouseleave"
-       v-if="show_button"
+       v-if="visible"
        >
     <v-tooltip :top="top_actual" :bottom="bottom_actual">
 
@@ -185,7 +185,7 @@ export default Vue.extend( {
       // and rather have the interface be the "cleaner / shorter" thing
       top_actual: true,
       bottom_actual: false,
-      show_button: true
+      visible: true
     }
   },
   created(){
@@ -212,7 +212,7 @@ export default Vue.extend( {
   methods: {
     refresh_button_state_from_ui_schema(){
       if (this.$props.ui_schema_name == undefined) { return true } 
-      this.show_button = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
+      this.visible = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
       console.log("Running")
     },
     preventdefault(event) {
