@@ -27,7 +27,7 @@
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            Hide
+            Hide {{$store.state.ui_schema.target_element}}
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -353,20 +353,12 @@
              'display_name': 'Tool Selector',
             }
 
-          ]
+          ],
+        buttons_list_available: []
       }
     },
 
     computed: {
-      buttons_list_available: function () {
-        let list = []
-        for (var button of this.buttons_list_original) {
-          if (this.$store.getters.get_ui_schema(button.name, 'visible') != true) {
-            list.push(button)
-          }
-        }
-        return list
-      },
       ui_schema_exists: function () {
            if (this.get_ui_schema().client_created_time ||   // frontend
                this.get_ui_schema().id) { // backend
@@ -404,6 +396,8 @@
       },
     },
     mounted() {
+      this.refresh_buttons_list_available()
+
       var self = this
       this.get_target_element_watcher = this.$store.watch((state) => {
           return this.$store.state.ui_schema.target_element
@@ -419,13 +413,29 @@
           this.show_add_menu = new_val
         },
       )
-      // OR worst case can watch the refresh value of ui_schema
+      this.show_ui_schema_refresh = this.$store.watch((state) => {
+          return this.$store.state.ui_schema.refresh
+        },
+        (new_val, old_val) => {
+          this.refresh_buttons_list_available()
+        },
+      )
     },
     beforeDestroy() {
       this.get_target_element_watcher()
       this.show_ui_schema_add_menu()
+      this.show_ui_schema_refresh()
     },
     methods: {
+      refresh_buttons_list_available: function () {
+        let list = []
+        for (var button of this.buttons_list_original) {
+          if (this.$store.getters.get_ui_schema(button.name, 'visible') != true) {
+            list.push(button)
+          }
+        }
+        this.buttons_list_available = list
+      },
       get_ui_schema: function () {
         if (this.$store.state.ui_schema.current == undefined) {
           throw new Error("this.$store.state.ui_schema.current is undefined")
