@@ -632,6 +632,7 @@ const ui_schema = {
     event: undefined,
     target_element: undefined,
     refresh: undefined,
+    refresh_mouse_over_event: undefined
   },
   getters:{
     get_ui_schema: (state) => (element, string_key) => {
@@ -680,7 +681,7 @@ const ui_schema = {
     set_ui_schema_event(state, payload) {
       state.target_element = payload[0]
       state.event = payload[1]
-      state.refresh = Date.now()
+      state.refresh_mouse_over_event = Date.now()
     },
     set_ui_schema_element_value(state, payload) {
       const element = payload[0]
