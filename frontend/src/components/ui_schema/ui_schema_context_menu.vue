@@ -472,6 +472,7 @@
       add_selected() {
         this.$store.commit('set_ui_schema_element_value',
           [this.button_to_add,'visible', true])
+        this.button_to_add = undefined
       },
 
       new_ui_schema_with_servercall: async function(){
