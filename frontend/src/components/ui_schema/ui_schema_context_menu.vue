@@ -39,14 +39,18 @@
   <div
       class="save-menu"
       :class="{visible: show_context_menu}"
-      :style="{top: 0, right: 0}"
+      :style="{top: '70px', right: '0px'}"
     >
 
-    <v-card>
-      <v-card-title>Editing {{$store.state.ui_schema.current.name}}
+    <v-card outlined
+            shaped
+            elevation="5"
+            color="blue lighten-4"
+            >
+      <v-card-title>UI Schema: {{$store.state.ui_schema.current.name}}
 
         <v-spacer></v-spacer>
-
+        
         <tooltip_button
             tooltip_message="Edit Name"
             datacy="ui_schema_edit_name"
