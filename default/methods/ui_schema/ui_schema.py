@@ -28,7 +28,47 @@ ui_schema_logo_spec_list = [
 		}
 	}
 ]
+
 ui_schema_logo_spec_list.extend(ui_schema_button_spec_list)
+
+
+all_ui_schema_specs = {
+    'logo' : ui_schema_logo_spec_list,
+
+    'global_theme' : ui_schema_button_spec_list,
+    'home' : ui_schema_button_spec_list,
+    'undo' : ui_schema_button_spec_list,
+    'redo' : ui_schema_button_spec_list,
+    'complete' : ui_schema_button_spec_list,
+    'defer' : ui_schema_button_spec_list,
+    'zoom' : ui_schema_button_spec_list,
+    'label_selector' : ui_schema_button_spec_list,
+    'instance_selector' : ui_schema_button_spec_list,
+    'edit_instance_template' : ui_schema_button_spec_list,
+    'draw_edit' : ui_schema_button_spec_list,
+    'save' : ui_schema_button_spec_list,
+    'next_task' : ui_schema_button_spec_list,
+    'previous_task' : ui_schema_button_spec_list,
+    'guide' : ui_schema_button_spec_list,
+    'brightness_contrast_filters' : ui_schema_button_spec_list,
+    'hotkeys' : ui_schema_button_spec_list,
+    'overflow_menu' : ui_schema_button_spec_list,
+    'settings' : ui_schema_button_spec_list,
+
+    'attributes' : ui_schema_button_spec_list,
+    'instances' : ui_schema_button_spec_list,
+    'userscripts' : ui_schema_button_spec_list,
+    'nav_bar' : ui_schema_button_spec_list,
+    'left_bar' : ui_schema_button_spec_list,
+
+    'main_canvas' : ui_schema_button_spec_list,
+
+    'label_settings' : ui_schema_button_spec_list,
+
+    'allow_actions' : ui_schema_button_spec_list,
+    'block_actions' : ui_schema_button_spec_list,
+
+    }
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/ui_schema/new', 
@@ -175,17 +215,20 @@ def __ui_schema_update(
         'is_visible': input['is_visible']
     }
 
-    if untrusted_input['logo']:
-        log, logo = regular_input.input_check_many(
-            spec_list = ui_schema_logo_spec_list,
-            log = log,
-            untrusted_input = untrusted_input['logo'])
+    for key, value in all_ui_schema_specs.items():
 
-        if regular_log.log_has_error(log): 
-            return log, False
+        if untrusted_input.get(key):
 
-        fields_to_process['logo'] = logo
-        print(logo)
+            log, result = regular_input.input_check_many(
+                spec_list = value,
+                log = log,
+                untrusted_input = untrusted_input[key])
+
+            if regular_log.log_has_error(log): 
+                return log, False
+
+            fields_to_process[key] = result
+            print(result)
 
     user = User.get(session)
     if user and user.is_super_admin is True:
