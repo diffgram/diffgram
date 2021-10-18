@@ -651,9 +651,12 @@ const ui_schema = {
       }
       state.refresh = Date.now()
     },
-    reset_ui_schema(state, current){
+    reset_ui_schema(state, current){  // restore
+      const ignore_list = ["name", "id"]
       for (const [key, value] of Object.entries(state.current)) {
-        state.current[key] = undefined
+        if (!ignore_list.includes(key)) {
+          state.current[key] = {'visible' : true}
+        }
       }
       state.refresh = Date.now()
     },
