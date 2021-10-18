@@ -80,7 +80,7 @@
       </h3>
 
       <div class="pa-2">
-      <v-progress-linear v-model="job.percent_completed">
+      <v-progress-linear :value="job.percent_completed">
       </v-progress-linear>
       </div>
       <!-- May want some fancier render
