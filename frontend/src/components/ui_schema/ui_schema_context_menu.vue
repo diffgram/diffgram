@@ -61,17 +61,20 @@
             :disabled="!$store.state.ui_schema.current"
                         >
         </tooltip_button>
+      </v-card-title>
 
+      <div class="pa-2">
         <v-text-field
           v-if="edit_name == true"
           v-model="$store.state.ui_schema.current.name"
           @input="has_changes = true"
           @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
           @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+          label="Schema Name:"
           flat
             >
         </v-text-field>
-      </v-card-title>
+      </div>
 
       <v-alert
             type="info"
@@ -93,6 +96,71 @@
               color="primary"
                           >
           </tooltip_button>
+
+          <tooltip_button
+            v-if="show_save"
+            datacy="ui_schema_save"
+            tooltip_message="Save"
+            @click="update_ui_schema_with_servercall()"
+            icon="save"
+            :loading="loading"
+            :disabled="loading
+                    || !ui_schema_exists
+                    || public_not_super_admin"
+            :icon_style="true"
+            color="primary"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+            v-if="!$store.state.ui_schema.current.archived"
+            tooltip_message="Archive"
+            @click="toggle_is_archive()"
+            icon="archive"
+            :icon_style="true"
+            color="primary"
+            :disabled="!ui_schema_exists
+                      || public_not_super_admin"
+                        >
+        </tooltip_button>
+
+
+        <tooltip_button
+            v-if="$store.state.ui_schema.current.archived"
+            tooltip_message="Restore"
+            @click="toggle_is_archive()"
+            icon="mdi-delete-restore"
+            :icon_style="true"
+            color="primary"                          >
+        </tooltip_button>
+
+
+        <tooltip_button
+            tooltip_message="Restore Defaults"
+            @click="reset()"
+            icon="mdi-restore "
+            :icon_style="true"
+            color="primary"                          >
+        </tooltip_button>
+
+        <tooltip_button
+            v-if="$store.state.user.current.is_super_admin == true"
+            tooltip_message="Toggle is Public Example"
+            @click="toggle_is_public()"
+            icon="mdi-earth"
+            :icon_style="true"
+            color="primary"
+                        >
+        </tooltip_button>
+
+          <div  v-if="$store.state.user.current.is_super_admin == true">
+              <div v-if="$store.state.ui_schema.current.is_public">
+                  Public
+              </div> <div v-else>
+                  Not Public
+              </div>
+          </div>
+
         </v-layout>
 
       <v-divider class="pb-2 pt-2"></v-divider>
@@ -104,9 +172,11 @@
       
      
         <button_with_menu
-            tooltip_message="Choose Schema"
+            button_text="List"
             icon="mdi-playlist-edit"
             color="primary"
+            :text_style="true"
+            :icon_style="false"
             :close_by_button="true"
                 >
 
@@ -181,70 +251,6 @@
                         >
         </tooltip_button>
 
-
-        <tooltip_button
-          v-if="show_save"
-          datacy="ui_schema_save"
-          tooltip_message="Save"
-          @click="update_ui_schema_with_servercall()"
-          icon="save"
-          :loading="loading"
-          :disabled="loading
-                  || !ui_schema_exists
-                  || public_not_super_admin"
-          :icon_style="true"
-          color="primary"
-                      >
-      </tooltip_button>
-
-      <tooltip_button
-          v-if="$store.state.user.current.is_super_admin == true"
-          tooltip_message="Toggle is Public Example"
-          @click="toggle_is_public()"
-          icon="mdi-earth"
-          :icon_style="true"
-          color="primary"
-                      >
-      </tooltip_button>
-
-        <div  v-if="$store.state.user.current.is_super_admin == true">
-            <div v-if="$store.state.ui_schema.current.is_public">
-                Public
-            </div> <div v-else>
-                Not Public
-            </div>
-        </div>
-
-      <tooltip_button
-          v-if="!$store.state.ui_schema.current.archived"
-          tooltip_message="Archive"
-          @click="toggle_is_archive()"
-          icon="archive"
-          :icon_style="true"
-          color="primary"
-          :disabled="!ui_schema_exists
-                    || public_not_super_admin"
-                      >
-      </tooltip_button>
-
-
-      <tooltip_button
-          v-if="$store.state.ui_schema.current.archived"
-          tooltip_message="Restore"
-          @click="toggle_is_archive()"
-          icon="mdi-delete-restore"
-          :icon_style="true"
-          color="primary"                          >
-      </tooltip_button>
-
-
-      <tooltip_button
-          tooltip_message="Restore Defaults"
-          @click="reset()"
-          icon="mdi-restore "
-          :icon_style="true"
-          color="primary"                          >
-      </tooltip_button>
 
       </v-layout>
 
