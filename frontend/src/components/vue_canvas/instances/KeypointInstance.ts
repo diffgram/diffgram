@@ -16,6 +16,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
   public node_hover_index: any = undefined;
+  public center: any = undefined;
   public num_hovered_paths: number = 0;
   public is_drawing_edge: boolean = false;
   public is_moving: boolean = false;
@@ -175,13 +176,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private move_single_node(node) {
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
-    let old = this.get_rotated_point(node, this.angle, this.get_center_point_rotated());
+    let old = {...node}
     let old_x =  old.x
     let old_y = old.y
     let new_point = {x: 0, y:0};
     new_point.x = old_x + x_move;
     new_point.y = old_y + y_move;
-    new_point = this.get_rotated_point(new_point, -this.angle, this.get_center_point_rotated());
     node.x = new_point.x
     node.y = new_point.y
     return node
@@ -198,21 +198,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public move(){
 
     if(this.is_rotating == true){
-
       this.do_rotation_movement()
       this.calculate_min_max_points();
       return true
     }
     else if (this.is_moving) {
-
       this.move_node(event)
       return true;
     }
     else if(this.is_dragging_instance){
       this.drag_instance(event);
       this.calculate_min_max_points();
-
-
       return true
     }
     else{
@@ -241,6 +237,13 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return {
       x: center_x, y: center_y
     }
+  }
+
+  public calculate_center(){
+    // This is the unrotated center.
+    this.center_x = parseInt((this.x_max + this.x_min) / 2)
+    this.center_y = parseInt((this.y_max + this.y_min) / 2)
+    this.center = {x: this.center_x, y: this.center_y};
   }
   private move_node(event): void {
     if (this.node_hover_index == undefined) {
@@ -330,10 +333,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
 
     if (origin === undefined) {
-      origin = {
-        x: (this.x_max + this.x_min) / 2,
-        y: (this.y_max + this.y_min) / 2,
-      }
+      origin = this.center;
     }
 
     // Move point to origin
@@ -350,7 +350,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private get_angle_of_from_rotation_control_movement () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-    let center = this.get_center_point_rotated();
+    let center = {x: this.center_x, y: this.center_y}
 
     let B = {x: center.x, y: center.y}
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
@@ -408,9 +408,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.width = this.x_max - this.x_min
     this.height = this.y_max - this.y_min
 
-    // This is the unrotated center.
-    this.center_x = parseInt((this.x_max + this.x_min) / 2)
-    this.center_y = parseInt((this.y_max + this.y_min) / 2)
+    this.calculate_center()
 
     this.draw_instance_bounding_box(ctx)
 
