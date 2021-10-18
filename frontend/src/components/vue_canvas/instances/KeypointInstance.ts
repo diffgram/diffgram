@@ -371,6 +371,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       is_mouse_in_path,
       radius): boolean {
 
+    if(this.template_creation_mode){
+      return
+    }
     let rotate_point = this.get_rotate_point_control_location()
 
     if(!rotate_point){
