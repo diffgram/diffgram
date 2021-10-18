@@ -24,6 +24,9 @@ class ModelManager:
         create_models = []
         created_runs = []
         for instance in self.instance_list:
+            if instance is None:
+                raise Exception('Instance cannot be None')
+
             if instance.get('model_ref') is None and instance.get('model_id') is None:
                 continue
 
