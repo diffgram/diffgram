@@ -50,6 +50,7 @@ def upgrade():
         sa.Column('global_theme', JSONB),
         sa.Column('logo', JSONB),
         sa.Column('home', JSONB),
+        sa.Column('task_list', JSONB),
         sa.Column('undo', JSONB),
         sa.Column('redo', JSONB),
         sa.Column('complete', JSONB),

@@ -57,6 +57,7 @@ class UI_Schema(Base, SerializerMixin):
 
     logo = Column(MutableDict.as_mutable(JSONB))
     home = Column(MutableDict.as_mutable(JSONB))
+    task_list = Column(MutableDict.as_mutable(JSONB))
     undo = Column(MutableDict.as_mutable(JSONB))
     redo = Column(MutableDict.as_mutable(JSONB))
     complete = Column(MutableDict.as_mutable(JSONB))
@@ -136,6 +137,7 @@ class UI_Schema(Base, SerializerMixin):
             ))
 
         return query.first()
+
 
 
     @staticmethod
