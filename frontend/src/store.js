@@ -652,9 +652,12 @@ const ui_schema = {
       state.refresh = Date.now()
     },
     reset_ui_schema(state, current){  // restore
-      const ignore_list = ["name", "id"]
+      const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
+        "defer", "zoom", "label_selector", "instance_selector", "edit_instance_template",
+        "draw_edit", "save", "next_task", "previous_task", "guide", "brightness_contrast_filters"
+        ]
       for (const [key, value] of Object.entries(state.current)) {
-        if (!ignore_list.includes(key)) {
+        if (allow_list.includes(key)) {
           state.current[key] = {'visible' : true}
         }
       }
