@@ -2740,7 +2740,8 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-          const initial_instance = {...this.instance_list[index]}
+          let initial_instance = {...this.instance_list[index], initialized: false}
+          initial_instance = this.initialize_instance(initial_instance);
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2871,7 +2872,6 @@
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
-
           const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
           this.command_manager.executeCommand(command);
 
@@ -4695,13 +4695,14 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.calculate_min_max_points()
+            // instance.calculate_min_max_points()
           }
-
-          instance.x_min = parseInt(instance.x_min)
-          instance.y_min = parseInt(instance.y_min)
-          instance.x_max = parseInt(instance.x_max)
-          instance.y_max = parseInt(instance.y_max)
+          else{
+            instance.x_min = parseInt(instance.x_min)
+            instance.y_min = parseInt(instance.y_min)
+            instance.x_max = parseInt(instance.x_max)
+            instance.y_max = parseInt(instance.y_max)
+          }
 
         },
         move_keypoints: function(){
@@ -5172,7 +5173,10 @@
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
-            mouse_move_interaction.process();
+            let did_move_instance = mouse_move_interaction.process();
+            if(did_move_instance){
+              this.has_changed = true;
+            }
           }
           //console.debug(this.mouse_position)
         },
@@ -7080,7 +7084,7 @@
             this.set_clipboard([this.instance_clipboard]);
           }
           else{
-            alert('Copy paste not implements for multiple instnaces.')
+            alert('Copy paste not implemented for multiple instnaces.')
             // TODO implement flag limit conditions for multi selects.
             if(!this.selected_instance && instance_index == undefined){return}
           }
