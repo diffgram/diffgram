@@ -202,10 +202,13 @@
 
                     <template slot="content">
                       <v-layout column>
+                        <h4 >Description: </h4>
+                        <p class="text--error">
+                          {{ props.item.description}}
+                        </p>
+                        <h4>Log: </h4>
 
-                        <v-card-title> Log</v-card-title>
-
-                        <v_error_multiple :error="props.item.update_log['error']">
+                        <v_error_multiple :error="props.item.update_log">
                         </v_error_multiple>
 
                         <!-- Not showing info messages here yet -->
@@ -275,18 +278,19 @@
                     color="error">
                     <template slot="content">
                       <v-layout column>
-
-                        <v-card-title> Log</v-card-title>
-                        <p class="error--text">
-                          {{ props.item.status_text}}
+                        <h4>Description: </h4>
+                        <p>
+                          {{ props.item.description}}
                         </p>
-                        <v_error_multiple :error="props.item.update_log['error']">
+                        <h4>Log: </h4>
+
+                        <v_error_multiple :error="props.item.update_log">
                         </v_error_multiple>
 
                         <!-- Not showing info messages here yet -->
 
-
                       </v-layout>
+
                     </template>
                   </button_with_menu>
 

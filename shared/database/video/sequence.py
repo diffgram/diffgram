@@ -502,7 +502,7 @@ class Sequence(Base):
             # saving maybe? but it was suprisingly glaring bug
             # on front end
 
-            if instance.frame_number not in frame_number_list:
+            if instance.frame_number not in frame_number_list and instance.frame_number is not None:
                 # binary search based insertion
                 bisect.insort(frame_number_list, instance.frame_number)
         elif instance.soft_delete and not default_sequences_to_single_frame:
