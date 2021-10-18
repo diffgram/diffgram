@@ -204,7 +204,6 @@
         return interaction_generator.generate_interaction();
       },
       mouse_move: function (event) {
-
         const interaction = this.generate_interaction_from_event(event);
         if(interaction){
           interaction.process();
