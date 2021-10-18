@@ -171,30 +171,13 @@
         </v_error_multiple>
       
      
-        <button_with_menu
-            button_text="List"
-            icon="mdi-playlist-edit"
-            color="primary"
-            :text_style="true"
-            :icon_style="false"
-            :close_by_button="true"
-                >
-
-            <template slot="content">
-              <v-layout column>
-
-                <ui_schema_selector
-                  :project_string_id="project_string_id"
-                  @change="change($event)"
-                  :current_ui_schema_prop="$store.state.ui_schema.current"
-                  :disabled="selector_disabled"
-                                >
-                </ui_schema_selector>
-
-              </v-layout>
-            </template>
-
-        </button_with_menu>
+        <ui_schema_selector
+          :project_string_id="project_string_id"
+          @change="change($event)"
+          :disabled="selector_disabled"
+                        >
+        </ui_schema_selector>
+    
 
         <tooltip_button
             tooltip_message="New Schema"
@@ -222,6 +205,7 @@
             <diffgram_select
                 :item_list="buttons_list_available"
                 v-model="button_to_add"
+                @focus="refresh_buttons_list_available()"
                 label="Buttons"
                 >
             </diffgram_select>
@@ -405,8 +389,9 @@
         }
       },
     },
+    created() {
+    },
     mounted() {
-      this.refresh_buttons_list_available()
 
       var self = this
       this.get_target_element_watcher = this.$store.watch((state) => {
@@ -427,7 +412,7 @@
           return this.$store.state.ui_schema.refresh
         },
         (new_val, old_val) => {
-          this.refresh_buttons_list_available()
+          
         },
       )
     },
@@ -440,7 +425,7 @@
       refresh_buttons_list_available: function () {
         let list = []
         for (var button of this.buttons_list_original) {
-          if (this.$store.getters.get_ui_schema(button.name, 'visible') != true) {
+          if (this.$store.getters.get_ui_schema(button.name, 'visible') == false) {
             list.push(button)
           }
         }
