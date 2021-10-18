@@ -317,7 +317,8 @@
                              && props.item.processing_deferred != true"
                            bottom>
                   <template v-slot:activator="{ on }">
-                    <v-progress-linear v-model="props.item.percent_complete"
+                    <v-progress-linear :value="props.item.percent_complete"
+
                                        v-on="on"
                     >
                     </v-progress-linear>
