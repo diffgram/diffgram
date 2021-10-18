@@ -41,7 +41,7 @@
 
       <v-text-field label="Name"
                     v-model="name_search"
-                    @change="refresh"
+                    @change="refresh()"
                     clearable
       >
       </v-text-field>
@@ -53,6 +53,7 @@
       </date_picker>
 
       <v-checkbox v-model="archived_search"
+                  @change="refresh()"
                   label="Show Archived">
       </v-checkbox>
 
