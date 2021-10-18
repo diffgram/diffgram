@@ -28,7 +28,7 @@
         </ui_schema>
 
         <tooltip_button
-          ui_schema_name="home_button"
+          ui_schema_name="home"
           color="primary"
           :icon_style="true"
           icon="mdi-home"
@@ -66,7 +66,7 @@
         tooltip_message="Undo (ctrl+z)"
         @click="$emit('undo')"
         :bottom="true"
-        ui_schema_name="show_undo"
+        ui_schema_name="undo"
                       >
       </tooltip_button>
 
@@ -225,7 +225,7 @@
       vertical
     ></v-divider>
 
-    <ui_schema name="show_draw_edit">
+    <ui_schema name="draw_edit">
       <div class="pl-3 pt-3 pr-2">
         <v-switch v-if="view_only_mode != true"
                   :label_file="mode_text"
@@ -246,6 +246,7 @@
 
     <div>
       <tooltip_button
+          ui_schema_name="save"
           @click="$emit('save')"
           datacy="save_button"
           :loading="save_loading"
@@ -403,38 +404,39 @@
   -->
 
 
+ <ui_schema name="brightness_contrast_filters">
+   <button_with_menu
+      tooltip_message="Brightness, Contrast, Filters"
+      color="primary"
+      icon="exposure"
+          >
+      <template slot="content">
 
- <button_with_menu
-    tooltip_message="Brightness, Contrast, Filters"
-    color="primary"
-    icon="exposure"
-        >
-    <template slot="content">
+        <v-layout column>
 
-      <v-layout column>
+          <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
+                    min="50"
+                    max="200">
+          </v-slider>
 
-        <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
-                  min="50"
-                  max="200">
-        </v-slider>
+          <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
+                    min="50"
+                    max="200"></v-slider>
 
-        <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
-                  min="50"
-                  max="200"></v-slider>
+          <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
+                    min="0"
+                    max="100"></v-slider>
 
-        <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
-                  min="0"
-                  max="100"></v-slider>
+          <v-btn icon @click="filter_reset()">
+            <v-icon color="primary"> autorenew </v-icon>
+          </v-btn>
 
-        <v-btn icon @click="filter_reset()">
-          <v-icon color="primary"> autorenew </v-icon>
-        </v-btn>
+        </v-layout>
 
-      </v-layout>
+      </template>
 
-    </template>
-
-  </button_with_menu>
+    </button_with_menu>
+  </ui_schema>
 
   <button_with_menu
     tooltip_message="Hotkeys"
