@@ -236,17 +236,7 @@ export default Vue.extend({
         })
         if (result.status === 200) {
           this.internal_ui_schema_list = result.data.ui_schema_list
-
-          if (this.internal_ui_schema_list &&
-            this.internal_ui_schema_list[0]) {
-
-            // temp disable because swapping doesn't clear as expected
-            //this.current_ui_schema = this.internal_ui_schema_list[0]
-            //this.$emit('change', this.current_ui_schema)
-
-          }
         }
-
       } catch (error) {
         this.error = this.$route_api_errors(error)
 
