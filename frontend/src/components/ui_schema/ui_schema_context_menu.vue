@@ -15,7 +15,7 @@
       <v-list-item
         link
         @click="hide"
-        v-if="$store.state.ui_schema.target_element != 'add_button'"
+        v-if="$store.state.ui_schema.target_element != undefined"
       >
 
         <v-list-item-icon>
