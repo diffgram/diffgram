@@ -2740,7 +2740,8 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-          const initial_instance = {...this.instance_list[index]}
+          let initial_instance = {...this.instance_list[index], initialized: false}
+          initial_instance = this.initialize_instance(initial_instance);
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2871,7 +2872,6 @@
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
-
           const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
           this.command_manager.executeCommand(command);
 

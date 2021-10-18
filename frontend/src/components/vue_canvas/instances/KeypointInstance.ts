@@ -355,8 +355,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let B = {x: center.x, y: center.y}
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
     // let C = {x: rotate_point.x, y: rotate_point.y}
-    console.log('C', C.x, C.y)
-    console.log('B', B.x, B.y)
 
     let BC = {x: C.x - B.x, y: C.y - B.y}
     // BC = this.get_rotated_point(B, this.angle)
@@ -364,7 +362,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let theta = -Math.atan2(BC.x, BC.y)
     let angle = 0;
     angle += theta
-    console.log('angle', angle, angle * (180/Math.PI))
     return angle;
   }
 
@@ -440,14 +437,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       let x = node.x
       let y = node.y
-      if(i === 0){
-        console.log('node befrore 0', x, y)
-      }
+
       x = this.get_scaled_x(node)
       y = this.get_scaled_y(node)
-      if(i === 0){
-        console.log('node 0', x, y)
-      }
+
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
 
       this.draw_left_right_arrows(ctx, node, x, y)
