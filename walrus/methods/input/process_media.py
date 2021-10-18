@@ -459,13 +459,23 @@ class Process_Media():
         if self.input.mode == "update":
             self.__update_existing_file(file = self.input.file)
             # Important!
+
             # We are exiting main loop here
+            if len(self.log["error"].keys()) >= 1:
+                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                return
+
             return
         if self.input.mode == "update_with_existing":  # existing instances
             self.__update_existing_file(file = self.input.file,
                                         init_existing_instances = True)
             # Important!
             # We are exiting main loop here
+            if len(self.log["error"].keys()) >= 1:
+                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                return
+
+
             return
 
         if self.input.type not in ["from_url", "from_video_split"]:
@@ -747,32 +757,42 @@ class Process_Media():
             self.log['error']['media_type'] = "media_type undefined. This may be a timing issue. \
                     Try including instances in single request, or waiting for file to finish processing before sending."
             return False
+        try:
+            self.populate_new_models_and_runs()
 
-        self.populate_new_models_and_runs()
+            # TODO what other input keys do we need to update (ie this assumes images etc)
+            if file and self.input.media_type == "video":
+                logger.debug("Parent Video File Update")
+                self.__update_existing_video()  # Maybe should be a strategy operation
+                return
 
-        # TODO what other input keys do we need to update (ie this assumes images etc)
-        if file and self.input.media_type == "video":
-            logger.debug("Parent Video File Update")
-            self.__update_existing_video()  # Maybe should be a strategy operation
-            return
+            elif file and self.input.media_type == 'text':
+                self.process_existing_instance_list(
+                    init_existing_instances = init_existing_instances)
+            else:
+                process_instance_result = self.process_existing_instance_list(
+                    init_existing_instances = init_existing_instances)
+                logger.debug(("Image or Frame File Update"))
 
-        elif file and self.input.media_type == 'text':
-            self.process_existing_instance_list(
-                init_existing_instances = init_existing_instances)
-        else:
-            process_instance_result = self.process_existing_instance_list(
-                init_existing_instances = init_existing_instances)
-            logger.debug(("Image or Frame File Update"))
+                if file and file.frame_number:
+                    logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
 
-            if file and file.frame_number:
-                logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
+                if process_instance_result is True and self.input.media_type == 'frame':
+                    self.__update_parent_video_at_last_frame()
 
-            if process_instance_result is True and self.input.media_type == 'frame':
-                self.__update_parent_video_at_last_frame()
+            # TODO first video case (otherwise then goes in frame processing flow)
+            if self.input.media_type in ["image", "text"] and self.input.status != "failed":
+                self.declare_success(input = self.input)
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            self.input.status = 'failed'
+            self.input.description = str(e)
+            self.input.update_log = {'error': traceback.format_exc()}
+            self.log['error']['update_instance'] = str(e)
+            self.log['error']['traceback'] = traceback.format_exc()
+            if self.input.media_type == 'frame':
+                self.proprogate_frame_instance_update_errors_to_parent(self.log)
 
-        # TODO first video case (otherwise then goes in frame processing flow)
-        if self.input.media_type in ["image", "text"] and self.input.status != "failed":
-            self.declare_success(input = self.input)
 
     def __update_parent_video_at_last_frame(self):
         # Last frame

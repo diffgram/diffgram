@@ -272,6 +272,7 @@ class Input(Base):
             'total_time': str(total_time),
             'media_type': self.media_type,
             'original_filename': self.original_filename,
+            'description': self.description,
             'status': self.status,
             'status_text': self.status_text,
             'directory': directory,
