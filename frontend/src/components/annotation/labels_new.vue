@@ -3,18 +3,21 @@
 
     <v-layout>
       <v-flex>
-
-        <v-text-field required
-                      :counter="30"
-                      data-cy="label_name_text_field"
-                      label="Label Name"
-                      v-model="new_label_name"
-                      :rules="[rules.new_label_name]"
-                      :disabled="loading">
+        <v-text-field
+            required
+            :counter="30"
+            data-cy="label_name_text_field"
+            label="Label Name"
+            v-model="new_label_name"
+            :rules="[rules.new_label_name]"
+            :disabled="loading"
+            class="pl-2 pr-2"
+            >
         </v-text-field>
 
         <v-container>
-          <slider-picker data-cy="color-slider" v-model="colour" />
+          <slider-picker data-cy="color-slider"
+                         v-model="colour" />
         </v-container>
 
       </v-flex>
@@ -22,15 +25,19 @@
 
     <v-card-actions class="pa-2">
 
-      <v-btn color="primary"
-             data-cy="create_label_button"
-              @click="new_label_function"
-              :loading="loading"
-              :disabled="loading"
-              x-large
-              >
-        Create
-      </v-btn>
+      <tooltip_button
+          button_message="Create"
+          button_color="primary"
+          datacy="create_label_button"
+          @click="new_label_function"
+          :loading="loading"
+          :disabled="!new_label_name || loading"
+          icon="mdi-check"
+          tooltip_message="(Enter)"
+          :bottom="true"
+          :left="true"
+          xLarge>
+      </tooltip_button>
 
       <v-spacer> </v-spacer>
 
@@ -47,7 +54,6 @@
 
     <v_error_multiple :error="error">
     </v_error_multiple>
-
 
   </div>
 </template>
@@ -94,11 +100,13 @@ import Vue from "vue"; export default Vue.extend( {
       }
     }
   },
-  computed: {
+  mounted: function () {
+    window.addEventListener('keydown', this.hotkeys);
   },
-  created() {
+  beforeDestroy() {
+    window.removeEventListener('keydown', this.hotkeys);
+  },
 
-  },
   methods: {
 
     new_label_function: function () {
@@ -111,9 +119,7 @@ import Vue from "vue"; export default Vue.extend( {
         '/label/new', {
 
           colour: this.colour,
-          name: this.new_label_name,
-          default_sequences_to_single_frame: this.default_sequences_to_single_frame
-
+          name: this.new_label_name
 
       }).then(response => {
 
@@ -131,11 +137,18 @@ import Vue from "vue"; export default Vue.extend( {
                 this.error = error.response.data.log.error
               }
           }
-
       });
 
-    }
+    },
 
+    hotkeys: function (event) {
+
+      console.log(event)
+
+      if (event.key === 'Enter') {
+        this.new_label_function()
+      }
+    },
   }
 }
 
