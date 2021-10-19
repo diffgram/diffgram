@@ -17,16 +17,18 @@
               @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
               icon="add"
               :icon_style="false"
-              small
+              :large="true"
+              :left="true"
               icon_color="white"
               :close_by_button="true"
               color="primary"
               offset="x"
             >
 
-              <template slot="content">
+              <template slot="content" slot-scope="props">
 
-                <v_labels_new @label_created="on_label_created">
+                <v_labels_new @label_created="on_label_created"
+                              :menu_open="props.menu_open">
                 </v_labels_new>
 
               </template>
