@@ -32,7 +32,9 @@
 
           <v-icon :large="large"
                   :size="iconSize"
-                  :color=color>{{icon}}</v-icon>
+                  :color=color
+                  :left="left"
+                  >{{icon}}</v-icon>
 
           {{ button_message }}
 
@@ -108,9 +110,6 @@ export default Vue.extend( {
       default: false
      },
     'xSmall':{
-      default: false
-    },
-    'small':{
       default: false
     },
     'small':{
