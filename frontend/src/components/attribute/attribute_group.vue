@@ -181,20 +181,13 @@
             </v-text-field>
           </v-layout>
          
-          <v-text-field label="Internal Tag"
-                        data-cy="attribute_tag"
-                        v-model="group.name"
-                        @change="api_group_update('UPDATE')"
-          >
-          </v-text-field>
-
         <v-layout column>
 
-          <h2 class="pb-2"> When Do You Want to Show These Options? </h2>
+          <h2 class="pb-2"> When Do You Want to Show This? </h2>
 
           <label_select_only
             ref="label_selector"
-            label_prompt="Visible on the Labels:"
+            label_prompt="Visible on Annotation with these Labels:"
             datacy="label_select_attribute"
             :project_string_id="project_string_id"
             :mode=" 'multiple' "
@@ -204,26 +197,6 @@
           </label_select_only>
 
         </v-layout>
-
-
-          <v-col col="1">
-            <!-- Archive button -->
-            <button_with_confirm
-              @confirm_click="api_group_update('ARCHIVE')"
-              class="text-right pa-4"
-              icon="archive"
-              color="red"
-              :loading="loading"
-              :disabled="loading"
-              :icon_style="true"
-              tooltip_message="Archive"
-            >
-            </button_with_confirm>
-            <!-- Archive button -->
-
-          </v-col>
-
-
 
         <v-row v-if="group.kind === 'slider'">
           <v-col cols="3">
@@ -392,6 +365,43 @@
           </v-col>
         </v-layout>
 
+
+        <v-layout column>
+
+          <h2> Settings </h2>
+
+          <v-text-field label="Internal Tag"
+                        data-cy="attribute_tag"
+                        v-model="group.name"
+                        @change="api_group_update('UPDATE')"
+          >
+          </v-text-field>
+
+          <!-- Archive button -->
+          <button_with_confirm
+            @confirm_click="api_group_update('ARCHIVE')"
+            class="text-right pa-4"
+            icon="archive"
+            color="red"
+            :loading="loading"
+            :disabled="loading"
+            :icon_style="true"
+            tooltip_message="Archive Entire Attribute and All Options"
+          >
+            <template slot="content">
+              <v-layout column>
+
+                 <v-alert type="warning">
+                    Are you sure? This will remove all options too.
+                 </v-alert>
+         
+              </v-layout>
+            </template>
+          </button_with_confirm>
+          <!-- Archive button -->
+
+
+        </v-layout>
 
         <div class="d-flex justify-end">
           <v-chip class="ma-2" x-small color="secondary">ID: {{group.id}}</v-chip>
