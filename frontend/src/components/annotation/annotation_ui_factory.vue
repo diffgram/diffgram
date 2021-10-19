@@ -17,7 +17,7 @@
           :view_only_mode="view_only"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
-          :show_edit_schema_button="show_edit_schema_button"
+          :enabled_edit_schema="enabled_edit_schema"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -95,7 +95,7 @@
         return {
 
           show_snackbar: false,
-          show_edit_schema_button: false,
+          enabled_edit_schema: false,
           snackbar_message: '',
           loading: false,
           loading_project: true,
@@ -133,7 +133,7 @@
 
 
         if (this.$route.query.edit_schema) {
-          this.show_edit_schema_button = true;
+          this.enabled_edit_schema = true;
         }
         if (this.$route.query.view_only) {
           this.view_only = true;

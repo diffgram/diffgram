@@ -938,7 +938,7 @@ export default Vue.extend( {
     'instance_type_list': {},
     'view_issue_mode': {},
     'is_keypoint_template': {},
-    'show_edit_schema_button' : {
+    'enabled_edit_schema' : {
       default: false,
       type: Boolean
     }
