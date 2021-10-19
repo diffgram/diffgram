@@ -41,9 +41,7 @@
         </v-expansion-panel-header>
 
         <v-expansion-panel-content>
-          <div class="d-flex justify-end">
-            <v-chip class="ma-2" x-small color="secondary">ID: {{group.id}}</v-chip>
-          </div>
+
           <attribute_group
             :ref="`attribute_group_${group.id}`"
             :project_string_id="project_string_id"
