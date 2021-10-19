@@ -8,7 +8,7 @@
       <v-btn
         style="position: absolute; top: 25px; right: 25px"
         color="primary"
-        data-cy="file_explorer_button"
+        data-cy="reopen_ui_schema"
         @click="$emit('start_edit_ui_schema')"
         fab
         right
@@ -35,6 +35,7 @@
       <v-list-item
         link
         @click="hide"
+        data-cy="hide_target_element"
         v-if="$store.state.ui_schema.target_element != undefined"
       >
 
@@ -158,6 +159,7 @@
         <tooltip_button
             tooltip_message="Restore Defaults"
             @click="reset()"
+            datacy="reset_defaults"
             icon="mdi-restore "
             :icon_style="true"
             color="primary"                          >

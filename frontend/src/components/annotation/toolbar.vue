@@ -30,6 +30,7 @@
         <tooltip_button
           ui_schema_name="home"
           color="primary"
+          datacy="toolbar_home_button"
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
@@ -127,7 +128,8 @@
       vertical
     ></v-divider>
 
-    <ui_schema name="zoom">
+    <ui_schema name="zoom"
+               data-cy="toolbar_zoom_info">
       <div class="pt-3 pl-2 pr-2">
 
         <v-tooltip bottom
@@ -329,6 +331,7 @@
         tooltip_message="Previous Task"
         v-if="task"
         ui_schema_name="previous_task"
+        datacy="previous_task"
         @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
@@ -359,6 +362,7 @@
         tooltip_message="Next Task"
         v-if="task"
         ui_schema_name="next_task"
+        datacy="next_task"
         @click="$emit('change_task', 'next')"
         :disabled="loading || annotations_loading || full_file_loading || !task"
         color="primary"
