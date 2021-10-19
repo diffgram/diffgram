@@ -29,10 +29,20 @@
           Dataset Binding
         </v-stepper-step>
         <v-divider></v-divider>
+        <v-stepper-step :complete="step > 5" step="5">
+          UI Schema
+        </v-stepper-step>
+        <v-divider></v-divider>
         <v-stepper-step
-          :complete="step > 5"
+          :complete="step > 6"
           step="5">
           Guides & Awards
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step
+          :complete="step > 7"
+          step="6">
+          Other Configs
         </v-stepper-step>
         <v-divider></v-divider>
       </v-stepper-header>
@@ -50,6 +60,7 @@
           <step_name_task_template
             :project_string_id="project_string_id"
             :job="job"
+
             @next_step="go_to_step(2)"
           ></step_name_task_template>
 
@@ -58,15 +69,26 @@
           <step_label_selection_task_template
             :project_string_id="project_string_id"
             :job="job"
+            @previous_step="go_to_step(1)"
             @next_step="go_to_step(3)"
           ></step_label_selection_task_template>
         </v-stepper-content>
         <v-stepper-content step="3" style="height: 100%">
-
+          <step_users_selection
+            :project_string_id="project_string_id"
+            :job="job"
+            @previous_step="go_to_step(2)"
+            @next_step="go_to_step(4)"
+          ></step_users_selection>
         </v-stepper-content>
 
         <v-stepper-content step="4">
-
+          <step_attach_directories_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            @previous_step="go_to_step(3)"
+            @next_step="go_to_step(5)"
+          ></step_attach_directories_task_template>
         </v-stepper-content>
 
         <v-stepper-content step="5">
@@ -90,6 +112,8 @@
   import axios from 'axios';
   import step_name_task_template from './step_name_task_template'
   import step_label_selection_task_template from './step_label_selection_task_template'
+  import step_users_selection from './step_users_selection'
+  import step_attach_directories_task_template from './step_attach_directories_task_template'
 
 
   import Vue from "vue";
@@ -110,13 +134,15 @@
 
       components: {
         step_name_task_template,
-        step_label_selection_task_template
+        step_users_selection,
+        step_label_selection_task_template,
+        step_attach_directories_task_template
       },
 
       data() {
         return {
           step: 1,
-          total_steps: 4,
+          total_steps: 6,
           error: {},
 
         }
