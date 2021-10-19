@@ -35,7 +35,6 @@
             @click="api_attribute_update_or_new('NEW')"
             :loading="loading"
             :disabled="!name || loading"
-            color="primary"
             button_message="Create"
             button_color="primary"
             icon="mdi-check"
@@ -102,7 +101,11 @@ import axios from 'axios';
 
       'attribute_prop' : {
         default: null
+      },
+      'menu_open': {
+        default: false
       }
+
     },
 
     data() {
@@ -142,8 +145,11 @@ import axios from 'axios';
       }
 
     },
-    mounted() {
-
+    mounted: function () {
+      window.addEventListener('keydown', this.hotkeys);
+    },
+    beforeDestroy() {
+      window.removeEventListener('keydown', this.hotkeys);
     },
     methods: {
 
@@ -188,12 +194,7 @@ import axios from 'axios';
 
           }).then(response => {
 
-
-            // TODO not a huge fan of it doing bulk reset of entire
-            // attribute thing
-
             this.$store.commit('attribute_refresh_group_list')
-
             this.success = true
             this.loading = false
 
@@ -215,7 +216,16 @@ import axios from 'axios';
             }
           });
 
-      }
+      },
+
+      hotkeys: function (event) {
+        if (this.$props.menu_open == false){
+          return
+        }
+        if (event.key === 'Enter') {
+          this.api_attribute_update_or_new(this.mode)
+        }
+    },
 
     }
   }
