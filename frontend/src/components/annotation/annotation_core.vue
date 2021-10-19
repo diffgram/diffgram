@@ -5,28 +5,9 @@
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
       @close_context_menu="show_ui_schema_context_menu = false"
+      @start_edit_ui_schema="edit_ui_schema()"
     >
     </ui_schema_context_menu>
-
-    <v-tooltip v-if="enabled_edit_schema
-                 && !show_ui_schema_context_menu"
-               left>
-      Edit UI Schema
-      <template v-slot:activator="{ on }">
-        <v-btn
-          style="position: absolute; top: 25px; right: 25px"
-          color="primary"
-          data-cy="file_explorer_button"
-          @click="edit_ui_schema()"
-          fab
-          right
-          absolute
-          v-on="on"
-        >
-          <v-icon> mdi-puzzle-edit-outline</v-icon>
-        </v-btn>
-      </template>
-    </v-tooltip>
 
     <div style="position: relative">
 
