@@ -11,7 +11,7 @@
    * @vue-event {string} get_mouse_position - Updates this.top and this.left from mouse position
    * @vue-event {object} on_click_delete_instance Delete click handler for context menu item "Delete"
    */
-
+    
   import user_icon from '../user/user_icon.vue';
   import share_instance_dialog from '../share/share_instance_dialog.vue';
   import sequence_select from '../video/sequence_select.vue'

@@ -46,7 +46,9 @@
                  @click="$emit('click', $event), click()"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color=color
+                    left >
+              {{icon}}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->
@@ -60,6 +62,8 @@
                  :loading="loading"
                  :disabled="disabled"
                  :data-cy="datacy"
+                 :icon="icon_style"
+                 :text="text_style"
                  :large="large"
                  :color="color"
                  :outlined="outlined"
@@ -68,7 +72,9 @@
                  :class="{'ml-4':true, [background]:true}"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color=color
+                    left>
+              {{icon}}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->

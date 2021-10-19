@@ -1,6 +1,13 @@
 <template>
   <div id="annotation_core">
 
+    <ui_schema_context_menu
+      :show_context_menu="show_ui_schema_context_menu"
+      :project_string_id="project_string_id"
+      @close_context_menu="show_ui_schema_context_menu = false"
+      @start_edit_ui_schema="edit_ui_schema()"
+    >
+    </ui_schema_context_menu>
 
     <div style="position: relative">
 
@@ -33,6 +40,7 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
+                   :enabled_edit_schema="enabled_edit_schema"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -43,7 +51,7 @@
                    @save="save()"
                    @change_file="change_file($event)"
                    @canvas_scale_global_changed="on_canvas_scale_global_changed"
-                   @change_task="trigger_task_change($event, task)"
+                   @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
@@ -564,6 +572,7 @@
               </current_instance_template>
 
             </canvas>
+
             <polygon_borders_context_menu
               :show_context_menu="show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -571,6 +580,7 @@
               @start_auto_bordering="perform_auto_bordering"
               @close_context_menu="show_polygon_border_context_menu = false"
             ></polygon_borders_context_menu>
+
             <context_menu :mouse_position="mouse_position"
                           :show_context_menu="show_context_menu"
                           :instance_clipboard="instance_clipboard"
@@ -706,18 +716,6 @@
   </v-navigation-drawer>
   -->
 
-    <!-- I would like to have a second sheet here for video stuff
-     but wondering if we should just attach the video thing to the image
-     This may need lot of fiddling to get it to load right under other sheet
-     -->
-    <!--
-  <v-bottom-sheet :value="true">
-
-    <h2 class="text-center"> BOTTOM </h2>
-
-  </v-bottom-sheet>
-  -->
-
 
     <!-- Media core -->
 
@@ -736,16 +734,10 @@
 
     https://vuetifyjs.com/en/components/bottom-sheets
 
-      TODO explore 'fullscreen' flag
-      may be useful if more files...
-
       https://github.com/vuetifyjs/vuetify/issues/8640
       needs :retain-focus="false" (but shouldn't)
 
     -->
-
-
-
 
     <instance_template_creation_dialog
       :project_string_id="project_string_id"
@@ -799,6 +791,7 @@
   import task_status_icons from '../regular_concrete/task_status_icons'
   import context_menu from '../context_menu/context_menu.vue';
   import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
+  import ui_schema_context_menu from '../ui_schema/ui_schema_context_menu.vue';
   import issues_sidepanel from '../discussions/issues_sidepanel.vue';
   import current_instance_template from '../vue_canvas/current_instance_template.vue';
   import instance_template_creation_dialog from '../instance_templates/instance_template_creation_dialog';
@@ -857,7 +850,8 @@
         context_menu,
         userscript,
         toolbar,
-        ghost_canvas_available_alert
+        ghost_canvas_available_alert,
+        ui_schema_context_menu
       },
       props: {
         'project_string_id': {
@@ -897,7 +891,8 @@
 
         'view_only_mode': {
           default: false
-        }
+        },
+        'enabled_edit_schema' : {}
       },
       watch: {
         canvas_scale_global: function(newVal, oldVal){
@@ -1061,6 +1056,8 @@
           ellipse_hovered_instance: undefined,
           ellipse_hovered_instance_index: undefined,
 
+          show_ui_schema_context_menu: false,
+
           drawing_curve: false,
           curve_hovered_point: undefined,
 
@@ -1095,7 +1092,7 @@
           lock_point_hover_change: false,
           save_warning: {},
 
-          magic_nav_spacer: 40,
+          magic_nav_spacer: 80,
 
 
           hidden_label_id_list: [],
@@ -1108,6 +1105,7 @@
           instance_buffer_dict: {},
           instance_buffer_metadata: {},
 
+          is_editing_ui_schema: true,
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
           lateral_edges : {
@@ -1569,6 +1567,11 @@
           // get media core height
           if (document.getElementById("media_core")){
             this.media_core_height = document.getElementById("media_core").__vue__.height
+          } else {
+            this.media_core_height = 0 // reset eg for task mode
+          }
+          if (this.task) {
+            this.magic_nav_spacer = 0
           }
 
           let middle_pane_height = this.window_height_from_listener - toolbar_height
@@ -1909,6 +1912,16 @@
           this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
+        edit_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+        },
+        add_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+          this.$store.commit('set_ui_schema_add_menu', true);
+        },
+
         update_label_settings: function (event) {
           this.label_settings = event
           this.refresh = Date.now()
@@ -2893,6 +2906,11 @@
           else if(this.$props.task){
             this.on_change_current_task();
           }
+
+          if (this.$props.enabled_edit_schema == true) {
+            this.edit_ui_schema()
+          }
+
         },
 
         update_user_settings_from_store() {
@@ -6388,6 +6406,7 @@
           // bottom of https://www.sitepoint.com/delay-sleep-pause-wait/
           // use aysnc in front of function
         },
+
         next_issue_task: async function(task){
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6418,7 +6437,7 @@
             this.loading = false;
           }
         },
-        trigger_task_change: async function(direction, task){
+        trigger_task_change: async function(direction, task, assign_to_user=False){
           // Keyboard shortcuts case
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6431,7 +6450,7 @@
           this.reset_for_file_change_context()
 
           // Ask parent for a new task
-          this.$emit('request_new_task', direction, task)
+          this.$emit('request_new_task', direction, task, assign_to_user)
         },
 
         reset_for_file_change_context: function (){
@@ -6588,11 +6607,7 @@
                 this.snackbar_success = true
                 this.snackbar_success_text = "Deferred for review. Moved to next."
 
-                //
-                // Question, change_file() seems to save by default here
-                // do we want that?
-                // maybe a good idea since a deferred task could still have work done
-                this.trigger_task_change('next', this.$props.task)
+                this.trigger_task_change('next', this.$props.task, true)
 
               }
 
@@ -7414,13 +7429,12 @@
               this.snackbar_success = true
               this.snackbar_success_text = "Saved and completed. Moved to next."
 
-              if(this.task && this.task.id){   // props
-                this.trigger_task_change('next', this.task)
+              if(this.$props.task && this.$props.task.id){
+                this.trigger_task_change('next', this.$props.task, true)
               }
               else{
-                this.trigger_task_change('next', 'none')    // important
+                this.trigger_task_change('next', 'none', true)    // important
               }
-
 
             }
             this.check_if_pending_created_instance();

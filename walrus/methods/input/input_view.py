@@ -177,7 +177,15 @@ def build_input_list(
         query = query.filter(Input.file_id == file_id)
 
     if task_id:
-        query = query.filter(Input.task_id == task_id)
+
+        related_file_ids_list = Task.get_file_ids_related_to_a_task(
+            session = session,
+            task_id = task_id,
+            project_id = project.id)
+
+        query = query.filter(
+            or_(Input.task_id == task_id,
+                Input.file_id.in_(related_file_ids_list)))
 
     input_list = query.order_by(
         Input.id.desc()).limit(limit).all()

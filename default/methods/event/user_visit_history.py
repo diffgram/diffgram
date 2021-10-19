@@ -41,6 +41,6 @@ def user_visit_history_core(session, project, member, limit=20):
     serialized_events = []
     if event_list:
         for event in event_list:
-            serialized_events.append(event.serialize_for_visit_history())
+            serialized_events.append(event.serialize_for_visit_history(session))
 
     return serialized_events

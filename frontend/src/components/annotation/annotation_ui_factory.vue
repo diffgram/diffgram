@@ -17,6 +17,7 @@
           :view_only_mode="view_only"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
+          :enabled_edit_schema="enabled_edit_schema"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -94,6 +95,7 @@
         return {
 
           show_snackbar: false,
+          enabled_edit_schema: false,
           snackbar_message: '',
           loading: false,
           loading_project: true,
@@ -130,9 +132,13 @@
       created() {
 
 
+        if (this.$route.query.edit_schema) {
+          this.enabled_edit_schema = true;
+        }
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
+
         if(!this.$store.getters.is_on_public_project || this.$store.state.user.current.is_super_admin == true){
 
           if (this.$props.task_id_prop) {
@@ -312,7 +318,8 @@
           }
         },
 
-        change_task: async function(direction, task){
+        change_task: async function(direction, task, assign_to_user=false){
+          // Assumes it does NOT assign the user
           if(!task){
             throw new Error('Provide task ')
           }
@@ -321,10 +328,11 @@
             const response = await axios.post(`/api/v1/job/${task.job_id}/next-task`, {
               project_string_id: this.computed_project_string_id,
               task_id: task.id,
-              direction: direction
+              direction: direction,
+              assign_to_user: assign_to_user
             });
             if(response.data){
-              if(response.data.task.id !== task.id){
+              if(response.data.task && response.data.task.id !== task.id){
                 this.$router.push(`/task/${response.data.task.id}`);
                 history.pushState({}, '', `/task/${response.data.task.id}`);
                 // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
