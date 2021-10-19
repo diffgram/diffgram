@@ -18,7 +18,7 @@ describe('UI Schema', () => {
       })
 
       it('Hides Home Button', () => {
-        cy.get('[data-cy="toolbar_home_button"]').trigger('mouseover')
+        cy.get('[data-cy="toolbar_home_button"]').trigger('mouseover', {force: true})
         cy.wait(400)
 
         cy.get('[data-cy="hide_target_element"]').click({force: true})
@@ -46,7 +46,7 @@ describe('UI Schema', () => {
       it("Works to be able to hide after cycling show/hide", () => {
 
         // Try to hover over it again
-        cy.get('[data-cy="toolbar_home_button"]').trigger('mouseover')
+        cy.get('[data-cy="toolbar_home_button"]').trigger('mouseover', {force: true})
         cy.wait(400)
 
         cy.get('[data-cy="hide_target_element"]').click({force: true})
