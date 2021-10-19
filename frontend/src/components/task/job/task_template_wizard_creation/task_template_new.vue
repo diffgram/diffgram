@@ -1,132 +1,114 @@
 <template>
-  <v-container fluid style="width: 100%">
-    <v-stepper v-model="step" :non-linear="true" style="height: 100%;" @change="on_change_step">
-      <v-stepper-header class="ma-0 pl-8 pr-8">
-        <v-stepper-step
-          editable
-          :complete="step > 1"
-          step="1"
-        >
-          Start
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          editable
-          :complete="step > 2"
-          step="2"
-        >
-          Label Selection & Configurations
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          editable
-          :complete="step > 3"
-          step="2"
-        >
-          Assign Users
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          editable
-          :complete="step > 4"
-          step="3">
-          Dataset Binding
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          editable
-          :complete="step > 5"
-          step="4">
-          Guides & Awards
-        </v-stepper-step>
-        <v-divider></v-divider>
-      </v-stepper-header>
 
-      <v-progress-linear
-        color="secondary"
-        striped
-        v-model="global_progress"
-        height="12"
-      >
-      </v-progress-linear>
+  <div id="">
+    <main_menu>
 
-      <v-stepper-items style="height: 100%">
-        <v-stepper-content step="1" style="height: 100%">
-          <step_name_task_template
-            :project_string_id="project_string_id"
-          ></step_name_task_template>
-        </v-stepper-content>
+    </main_menu>
+    <v-toolbar
+      class="mt-4"
+      dense
+      elevation="0"
+      fixed
+      style="width: 100%;"
+      height="30px"
+    >
 
+      <bread_crumbs
+        :item_list=bread_crumb_list>
+      </bread_crumbs>
 
-      </v-stepper-items>
+    </v-toolbar>
+    <v-container fluid class="d-flex justify-center">
+      <task_template_new_wizard
+        :project_string_id="project_string_id"
+        :job="job">
 
-    </v-stepper>
-    <v-stepper-items style="height: 100%">
-      <v-stepper-content step="1" style="height: 100%">
-        <step_name_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-        ></step_name_task_template>
+      </task_template_new_wizard>
+    </v-container>
 
-      </v-stepper-content>
-      <v-stepper-content step="2" style="height: 100%">
-
-      </v-stepper-content>
-      <v-stepper-content step="3" style="height: 100%">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="4">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="5">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="6">
-
-      </v-stepper-content>
-
-    </v-stepper-items>
-  </v-container>
+  </div>
 
 </template>
 
 <script lang="ts">
 
   import axios from 'axios';
-  import step_name_task_template from './step_name_task_template'
+  import sillyname from 'sillyname';
+  import task_template_new_wizard from './task_template_new_wizard'
 
 
   import Vue from "vue";
 
   export default Vue.extend({
-      name: 'task_template_new_wizard',
-      props: {
-        'project_string_id':{
-          default: null
-        },
-        'job':{
-          default: null
-        },
-        'job_id_route':{
-          default: null
-        },
-      },
+      name: 'task_template_new',
+      props: [
+        'project_string_id_route',
+        'job_id_route'],
 
       components: {
-        step_name_task_template
+        task_template_new_wizard: task_template_new_wizard,
       },
 
       data() {
         return {
+          connectors: [
+            {
+              'display_name': 'Scale AI Account #1',
+              'name': 'scale_ai_1',
+              'icon': 'mdi-cached',
+              'color': 'primary',
+              'credentials': {
+                'name': 'SCALE AI TEST',
+                'secret': '1'
+              }
+            },
+            {
+              'display_name': 'Scale AI Account #2',
+              'name': 'scale_ai_2',
+              'icon': 'mdi-cached',
+              'color': 'primary',
+              'credentials': {
+                'name': 'SCALE AI TEST',
+                'secret': '1'
+              }
+            },
+          ],
+
           show_credentials: false,
           save_draft_staus: false,
-          step: 1,
-          total_steps: 5,
+
+
+          stepper: 1,
           error_launch: {},
           success_launch: false,
+
+          // Caution! We aren't sending job dict back yet
+          // so have to still add this on API side too till we turn this
+          // into a computed property or something
+          job: {
+            name: sillyname().split(" ")[0],
+            label_mode: 'closed_all_available',
+            passes_per_file: 1,
+            share_object: {
+              // TODO this may fail for org jobs? double check this.
+              'text': String,
+              'type': 'project'
+            },
+            share: 'project',
+            instance_type: 'box', //"box" or "polygon" or... "text"...
+            permission: 'all_secure_users',
+            field: 'Other',
+            category: 'visual',
+            attached_directories_dict: {attached_directories_list: []},
+            type: 'Normal',
+            connector_data: {},
+            // default to no review while improving review system
+            review_by_human_freqeuncy: 'No review', //'every_3rd_pass'
+            td_api_trainer_basic_training: false,
+            file_handling: "use_existing",
+            interface_connection: undefined,
+            member_list_ids: []
+          },
           output_dir: {},
           latest_dataset: undefined,
           // Not super happy with this triplicate setup but more for Org (see org_dict below)
@@ -189,9 +171,6 @@
       },
 
       computed: {
-        global_progress: function () {
-          return (this.step * 100) / this.total_steps;
-        },
         bread_crumb_list: function () {
           return [
             {
@@ -200,7 +179,7 @@
               to: '/job/list'
             },
             {
-              text: 'New Template',
+              text: 'New Task Template',
               disabled: true
             }
           ]
@@ -210,7 +189,7 @@
         on_job_created(job) {
           this.job_id = job.id
           this.job.id = job.id
-          this.step = 2;
+          this.stepper = 2;
           const currPath = this.$route.path;
           if (currPath.endsWith('/job/new')) {
             this.$router.push(`/job/new/${this.job_id}`);
@@ -223,14 +202,14 @@
             // Create the job
 
             const res_new_job = await this.$refs.job_new_form.job_new();
-            if (!res_new_job || res_new_job.status !== 200) {
+            if(!res_new_job || res_new_job.status !== 200){
               this.loading = false;
               this.save_draft_staus = 'error'
               return false;
             }
             // Save any sync directories.
             const res_update_job = await this.$refs.job_new_form.job_update();
-            if (!res_new_job || res_new_job.status !== 200) {
+            if(!res_new_job || res_new_job.status !== 200){
               this.loading = false;
               this.save_draft_staus = 'error'
               return false;
@@ -252,8 +231,8 @@
           this.output_dir = output_dir
         },
         on_job_updated() {
-          if (this.step == 1) {
-            this.step = 2
+          if (this.stepper == 1) {
+            this.stepper = 2
           }
         },
         update_job_info(job) {
@@ -282,7 +261,7 @@
             }
           }
           // If we already have the job created, jump to second step by default?
-          this.step = 2
+          this.stepper = 2
 
           this.loading = false
           this.loading_job_fetch = false;

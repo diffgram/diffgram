@@ -4,8 +4,7 @@
     <p class="font-weight-medium text--primary">
       The following steps will guide you on the creation of a new task template
     </p>
-
-    <h2 class="font-weight-medium text--primary">Task Template Name</h2>
+    <h2 class="font-weight-medium text--primary">Task Template Name: </h2>
     <v-text-field label="Name"
                   data-cy="name-input"
                   v-model="job.name">

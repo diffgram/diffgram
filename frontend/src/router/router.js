@@ -289,8 +289,17 @@ const routerOptions = [
     }
   },
   {
+    path: '/project/:project_string_id_route/job/new-legacy',
+    component: 'task/job/job_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
     path: '/project/:project_string_id_route/job/new',
-    component: 'task/job/task_template_wizard_creation',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {
       requiresAuth: true,
