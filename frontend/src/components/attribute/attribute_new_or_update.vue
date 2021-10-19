@@ -5,12 +5,6 @@
       <v-container>
         <v-layout column>
 
-          <div v-if="mode == 'NEW' ">
-            <v-card-title>
-              New Attribute
-            </v-card-title>
-          </div>
-
           <div v-if="mode == 'UPDATE' ">
             <v-card-title>
               Update Attribute
@@ -34,14 +28,22 @@
 
           <!-- Hide on overlay since already created -->
 
-          <v-btn v-if="mode == 'NEW'"
-                 data-cy="create_attribute_option"
-                  @click="api_attribute_update_or_new('NEW')"
-                 :loading="loading"
-                 :disabled="loading"
-                 color="primary">
-            Create
-          </v-btn>
+
+          <tooltip_button
+            v-if="mode == 'NEW'"
+            datacy="create_attribute_option"
+            @click="api_attribute_update_or_new('NEW')"
+            :loading="loading"
+            :disabled="!name || loading"
+            color="primary"
+            button_message="Create"
+            button_color="primary"
+            icon="mdi-check"
+            tooltip_message="(Enter)"
+            :bottom="true"
+            :left="true"
+            xLarge>
+          </tooltip_button>
 
            <v-btn v-if="mode == 'UPDATE' "
 
