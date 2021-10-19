@@ -46,8 +46,7 @@
                  @click="$emit('click', $event), click()"
           >
             <v-icon :large="large"
-                    :color=icon_color_computed
-                    left >
+                    :color="icon_color_computed">
               {{icon}}
             </v-icon>
             {{ button_text }}
@@ -69,18 +68,20 @@
                  :outlined="outlined"
                  :small="small"
                  @click="$emit('click', $event), click()"
-                 :class="{'ml-4':true, [background]:true}"
+                 :class="{[background]:true}"
           >
             <v-icon :large="large"
-                    :color=icon_color_computed>{{icon}}
+                    :color="icon_color_computed"
                     left>
               {{icon}}
             </v-icon>
             {{ button_text }}
+
             <!-- Text Style thing is WIP here -->
             <div v-if="text_style==true">
               {{ tooltip_message}}
             </div>
+
           </v-btn>
 
         </template>
@@ -234,7 +235,7 @@
           default: 'red'
         },
         'icon_color': { // icon color
-          default: null
+          default: undefined
         },
         'button_text': {
           default: undefined,
@@ -386,7 +387,7 @@
       computed: {
         icon_color_computed: function () {
 
-          if (this.$props.icon_color) {
+          if (this.$props.icon_color != undefined) {
             return this.$props.icon_color
           } else {
             return this.$props.color;
