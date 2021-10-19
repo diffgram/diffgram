@@ -1,14 +1,20 @@
 <template>
-  <v-container>
-    <h1 class="font-weight-medium text--primary">New Task Template Creation</h1>
-    <p class="font-weight-medium text--primary">
+  <v-container fluid>
+    <h1 class="font-weight-medium text--primary mb-8"><v-icon color="primary" class="mr-4" size="48">mdi-brush</v-icon>Task Template Creation</h1>
+    <v_error_multiple :error="error"></v_error_multiple>
+    <p class="text--primary">
       The following steps will guide you on the creation of a new task template
     </p>
-    <h2 class="font-weight-medium text--primary">Task Template Name: </h2>
+    <h4>Give a name to your Task Template: </h4>
     <v-text-field label="Name"
                   data-cy="name-input"
                   v-model="job.name">
     </v-text-field>
+
+    <v-container fluid class="mt-8 pa-0 d-flex justify-end" style="width: 100%">
+<!--      <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>-->
+      <v-btn x-large color="primary" @click="on_next_button_click">Next</v-btn>
+    </v-container>
   </v-container>
 
 </template>
@@ -33,7 +39,7 @@
 
       data() {
         return {
-
+          error: {}
         }
       },
       created() {
@@ -44,6 +50,22 @@
 
       },
       methods: {
+        verify_name: function(){
+          if(!this.$props.job.name || this.$props.job.name === ''){
+            this.error = {
+              name: 'Name must not be empty.'
+            }
+            return false
+          }
+          return true
+        },
+        on_next_button_click: function(){
+          this.error = {};
+          let name_ok = this.verify_name();
+          if(name_ok){
+            this.$emit('next_step');
+          }
+        },
 
       }
     }
