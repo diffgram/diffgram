@@ -142,9 +142,6 @@ import Vue from "vue"; export default Vue.extend( {
     },
 
     hotkeys: function (event) {
-
-      console.log(event)
-
       if (event.key === 'Enter') {
         this.new_label_function()
       }
