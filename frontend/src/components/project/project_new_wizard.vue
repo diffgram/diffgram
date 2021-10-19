@@ -8,7 +8,7 @@
             :complete="step > 1"
             step="1"
           >
-            Create Project
+            Name
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
@@ -16,28 +16,28 @@
             :complete="step > 2"
             step="2"
           >
-            Create Labels & Attributes
+            Label Schema
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             editable
             :complete="step > 3"
             step="3">
-            Upload Data
+            Upload
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             editable
             :complete="step > 4"
             step="4">
-            Invite Team Members
+            Invite Team
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             editable
             :complete="step > 5"
             step="5">
-            Create Task Templates
+            Tasks
           </v-stepper-step>
 
         </v-stepper-header>
