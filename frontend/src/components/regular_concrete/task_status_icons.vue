@@ -21,8 +21,8 @@
 
   <tooltip_icon
     v-if="status == 'in_progress'"
-    tooltip_message="Task In Progress"
-    icon="mdi-lan-pending"
+    tooltip_message="In Progress"
+    icon="mdi-account-clock-outline"
     color="primary"
     :large="large"
   >

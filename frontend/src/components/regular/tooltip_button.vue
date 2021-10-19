@@ -1,46 +1,50 @@
 <template>
 
-  <v-tooltip :top="top_actual" :bottom="bottom_actual">
+  <div @mouseover="mouseover"
+       @mouseleave="mouseleave"
+       v-if="visible"
+       >
+    <v-tooltip :top="top_actual" :bottom="bottom_actual">
 
-    <template v-slot:activator="{ on }">
+      <template v-slot:activator="{ on }">
 
-    <a :href="href"
-       @click="preventdefault($event)"
-       :target="target"
-       style="text-decoration: none;">
+      <a :href="href"
+         @click="preventdefault($event)"
+         :target="target"
+         style="text-decoration: none;">
 
-      <v-btn  v-on="on"
-              :width="width"
-              :height="height"
-              :loading="loading"
-              :disabled="disabled"
-              :x-small="xSmall"
-              data-cy="data_cy"
-              :left="left"
-              :icon="icon_style"
-              :text="text_style"
-              :data-cy="datacy"
-              @click="$emit('click', $event)"
-              :large="large"
-              :color=button_color
-             >
+        <v-btn  v-on="on"
+                :width="width"
+                :height="height"
+                :loading="loading"
+                :disabled="disabled"
+                :x-small="xSmall"
+                data-cy="data_cy"
+                :left="left"
+                :icon="icon_style"
+                :text="text_style"
+                :data-cy="datacy"
+                @click="$emit('click', $event)"
+                :large="large"
+                :color=button_color
+               >
 
-        <v-icon :large="large"
-                :size="iconSize"
-                :color=color>{{icon}}</v-icon>
+          <v-icon :large="large"
+                  :size="iconSize"
+                  :color=color>{{icon}}</v-icon>
 
-        {{ button_message }}
+          {{ button_message }}
 
-      </v-btn>
-    </a>
+        </v-btn>
+      </a>
 
-    </template>
+      </template>
 
-    {{ tooltip_message }}
+      {{ tooltip_message }}
 
 
-  </v-tooltip>
-
+    </v-tooltip>
+  </div>
 </template>
 
 <script lang="ts">
@@ -169,6 +173,10 @@ export default Vue.extend( {
     'target': {
         type: String,
         default: '_self'
+     },
+    'ui_schema_name': {
+        type: String,
+        default: undefined
      }
   },
   data() {
@@ -176,7 +184,8 @@ export default Vue.extend( {
       // because we can't override props
       // and rather have the interface be the "cleaner / shorter" thing
       top_actual: true,
-      bottom_actual: false
+      bottom_actual: false,
+      visible: true
     }
   },
   created(){
@@ -186,8 +195,25 @@ export default Vue.extend( {
       this.bottom_actual = true
       this.top_actual = false
     }
+    this.refresh_button_state_from_ui_schema()
+  },
+  mounted(){
+    this.show_ui_schema_refresh = this.$store.watch((state) => {
+        return this.$store.state.ui_schema.refresh
+      },
+      (new_val, old_val) => {
+        this.refresh_button_state_from_ui_schema()
+      },
+    )
+  },
+  beforeDestroy() {
+    this.show_ui_schema_refresh()
   },
   methods: {
+    refresh_button_state_from_ui_schema(){
+      if (this.$props.ui_schema_name == undefined) { return true } 
+      this.visible = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
+    },
     preventdefault(event) {
       // we don't assume this will go anywhere unless opened in new tab
       // in which case the event will follow the default. In the future
@@ -195,6 +221,13 @@ export default Vue.extend( {
 
       if (this.target != '_self'){ return } // eg '_blank' we want default opening in new tab
       event.preventDefault();
+    },
+    mouseover(event) {
+      //console.log(this.ui_schema_name, event)
+      this.$store.commit('set_ui_schema_event', [this.ui_schema_name, event])
+    },
+    mouseleave(event) {
+      //this.$store.commit('clear_ui_schema_event')
     }
   }
 }

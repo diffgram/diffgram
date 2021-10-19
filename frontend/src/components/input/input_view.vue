@@ -2,14 +2,22 @@
   <div id="input_view">
 
     <v-card elevation="0">
+      
       <v-container fluid>
+
+        <v-progress-linear
+          v-if="loading"
+          indeterminate
+          rounded
+          absolute
+          height="5"
+          attach
+        ></v-progress-linear>
 
         <v-card-title>
           <h3> {{ title }} </h3>
 
           <v-btn @click="get_input_list"
-                 :loading="loading"
-                 @click.native="loader = 'loading'"
                  :disabled="loading"
                  color="primary"
                  data-cy="refresh-input-icon"
@@ -32,9 +40,13 @@
           >
           </diffgram_select>
 
-          <date_picker @date="date = $event"
-                       :with_spacer="true"
-                       :initialize_empty="true">
+          <date_picker
+            @date="date = $event"
+            :with_spacer="true"
+            :initialize_empty="true"
+            :disabled="loading"
+            @change="get_input_list"
+                       >
           </date_picker>
 
           <v-select
@@ -42,27 +54,36 @@
             v-model="metadata_limit"
             label="Limit"
             item-value="text"
-            :disabled="loading"></v-select>
+            :disabled="loading"
+            @change="get_input_list">
+          </v-select>
 
           <v-text-field
             type="number"
             clearable
             v-model="batch_id_filter"
-            label="Filter by Batch ID">
+            label="Filter by Batch ID"
+            :disabled="loading"
+            @change="get_input_list"
+                        >
           </v-text-field>
 
           <v-text-field
             type="number"
             clearable
             v-model="task_id_filter"
-            label="Filter by Task ID">
+            label="Filter by Task ID"
+            @change="get_input_list"
+                        >
           </v-text-field>
 
           <v-text-field
             type="number"
             clearable
             v-model="file_id_filter"
-            label="Filter by File ID">
+            label="Filter by File ID"
+            @change="get_input_list"
+                        >
           </v-text-field>
 
 
@@ -74,7 +95,6 @@
             tooltip_message="Retry Selected Inputs"
             @click="update_import(null, 'RETRY')"
             icon="mdi-redo-variant"
-            :loading="loading"
             :disabled="loading || selected.length == 0"
             :text_style="true"
             color="primary">
@@ -88,7 +108,6 @@
             icon="archive"
             tooltip_message="Archive and remove associated file."
             :icon_style="true"
-            :loading="loading"
             :disabled="loading || selected.length == 0">
           </button_with_confirm>
 
@@ -764,6 +783,7 @@
 
           this.error = {}
           this.error_video = null
+          this.loading = true
 
           let task_id_to_use = this.$props.task_id
           if(this.task_id_filter) {
@@ -787,11 +807,6 @@
 
               this.input_list = response.data.input_list
 
-              // Just check most recent one
-              // Otherwise when this updates it keeps pulling message
-
-              //for (let input of this.input_list) {}
-
               if (this.input_list[0]) {
 
                 if (this.input_list[0].status == "failed") {
@@ -805,8 +820,6 @@
                   }
                 }
               }
-
-
             }
           } catch (error) {
             this.error = this.$route_api_errors(error)

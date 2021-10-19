@@ -253,12 +253,12 @@ export default Vue.extend( {
       try{
         this.loading = true
         const response = await axios.post(`/api/v1/${this.$props.project_string_id}/user-visit-history/`, {
-          limit: 35
+          limit: 15
         });
         if(response.status === 200){
           this.user_visit_history = response.data.user_visit_events;
           this.user_visit_history = this.remove_duplicate_element(this.user_visit_history);
-
+          this.$store.commit('set_user_state', ['history', this.user_visit_history])
         }
       }
       catch (e) {

@@ -1,6 +1,9 @@
 <template>
   <div v-cloak style="position:relative;">
-    <v-card v-if="video_mode == true" :max-height="player_height" elevation="1"  :width="player_width ? player_width: undefined">
+    <v-card v-if="video_mode == true && show_video_nav_bar == true"
+            :max-height="player_height"
+            elevation="1"
+            :width="player_width ? player_width: undefined">
       <v-container fluid >
 
       <v-row :style="{overflow: 'hidden'}" class="pt-2">
@@ -283,7 +286,25 @@
 
       <v-alert v-if="playback_info"
                 type="warning">
-        {{ playback_info }}
+        Playback Issue Detected.
+        <ol>
+          <li>Try Reloading the Page.</li>
+          <li>Log out and log in again.</li>
+          <li>Check your internet connection and <a href="https://diffgram.readme.io/docs/minimum-hardware-specs"> Diffgram Minimum Specs. </a></li>
+        </ol>
+        <br>
+        Technical Info:
+        <ul>
+          <li> Error: <b>{{video_error_message}} </b></li>
+          <li> Project: {{$store.state.project.current.project_string_id}} </li>
+          <li> VideoFileID: {{current_video_file_id}} </li>
+        </ul>
+        <br>
+        <div v-if="task">
+          Task: {{task.id}}
+        </div>
+
+        If the issue persists please send your admin a screenshot and run a speed test.
       </v-alert>
 
       <v-alert v-if="at_end_of_video == true"
@@ -437,6 +458,9 @@ export default Vue.extend( {
       },
       'parent_save':{
         default: undefined
+      },
+      'show_video_nav_bar':{
+        default: true
       }
     },
   components: {
@@ -469,7 +493,8 @@ export default Vue.extend( {
 
       slide_active: false,
 
-      playback_info: null,
+      playback_info: false,
+      video_error_message: undefined,
 
       muted: false,
 
@@ -961,7 +986,8 @@ export default Vue.extend( {
             // Show playing UI.
 
             this.playing = true
-            this.playback_info = null // reset
+            this.playback_info = false // reset
+            this.video_error_message = undefined
 
             this.primary_video.currentTime = this.video_current_frame_guess / this.current_video.frame_rate
 
@@ -976,9 +1002,9 @@ export default Vue.extend( {
             // Show paused UI.
             // TODO treat 403 / permissions errors differently
 
-            this.playback_info = "Please check your internet connection. Or try reloading. Contact us if this persists."
+            this.playback_info = true
             this.$emit('video_play_failed')
-
+            this.video_error_message = error.message
             // throw new error for sentry IO capturing benefit
             // context of trying to get understanding of what client side issue
             // is happening

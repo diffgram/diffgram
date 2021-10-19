@@ -60,7 +60,11 @@
                </div>
                <div class="d-flex">
                  <span class="font-weight-bold text--primary" style="font-size: 10px">User: </span>
-                 <v_user_icon :show_full_name="true" :size="25" font-size="12px !important" :user="item.member_created"></v_user_icon>
+                 <v_user_icon
+                              :show_full_name="true"
+                              :size="25"
+                              font-size="12px !important"
+                              :user="item.member_created"></v_user_icon>
                </div>
              </v-list-item-subtitle>
            </v-list-item-content>

@@ -19,6 +19,7 @@
 
           <tr @mouseover="row_hover_index = props.index"
               @mouseleave="row_hover_index = -1"
+              @click="$emit('rowclick', props.item)"
               >
 
             <!-- Feb 27, 2020 checkbox is WIP -->
@@ -56,11 +57,7 @@
                     :item="props.item"
                     :index="props.index"
                     >
-              </slot>
-
-              <!--
-              {{column}}
-              -->
+              </slot>            
 
             </td>
 
@@ -84,6 +81,11 @@
 /*
 
 Design Doc: https://docs.google.com/document/d/1FNl8L-gdhUAbJFC0iOMPyi9wg9bGXOW0IUwrXTwvH94/edit#heading=h.9sf9rgg8d3d1
+
+column_list defines the order of the columns
+so to re-order, change the the order of column_list
+
+If Using @rowclick event, use @click.stop.prevent on interior buttons
 
 Zoom out context on this is:
 1) We want to dynamically customize how the table looks
@@ -227,16 +229,26 @@ export default Vue.extend( {
   computed: {
     headers_view: function () {
       let output_headers = []
-      for (let header of this.header_list) {
+      // careful we want the same sort order as the columns
 
-        // Default to pushing header in case forgot to put a string id on it / legacy
+      for (let column of this.column_list){
+        const header = this.header_list.find(
+              x => {
+                return x.header_string_id == column
+              }
+            )
+        if (header && header !== -1) {
+           output_headers.push(header)
+        }
+      }
+      // start legacy, push headers without a defined header_string_id 
+      for (let header of this.header_list) {
         if (!header.header_string_id){
           output_headers.push(header)
         }
-        else if (this.show_column(header.header_string_id)){
-          output_headers.push(header)
-        }
       }
+      // end legacy
+
       return output_headers
     }
   },

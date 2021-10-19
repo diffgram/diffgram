@@ -38,7 +38,7 @@ def do_routes_importing():
     from methods.task.task_template.job_list import job_list_api
     from methods.task.task_template.job_launch_list import job_launch_list_api
 
-    from methods.task.task.task_trainer_request import task_trainer_request_api
+    from methods.task.task.task_annotator_request import task_next_by_job_api
 
     from methods.task.guide.guide_new import guide_new_api
     from methods.task.guide.guide_edit import guide_edit_api
@@ -122,3 +122,5 @@ def do_routes_importing():
     from methods.source_control.file.file_cache_regen import api_file_cache_regen
 
     from methods.video.sequence_preview_create import api_create_sequence_preview
+
+    from methods.ui_schema.ui_schema import ui_schema_new_api
