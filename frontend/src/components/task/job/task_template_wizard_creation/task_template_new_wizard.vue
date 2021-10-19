@@ -1,9 +1,8 @@
 <template>
   <v-container fluid style="width: 100%">
-    <v-stepper v-model="step" :non-linear="true" style="height: 100%;" @change="on_change_step">
+    <v-stepper v-model="step" style="height: 100%;" @change="on_change_step">
       <v-stepper-header class="ma-0 pl-8 pr-8">
         <v-stepper-step
-          editable
           :complete="step > 1"
           step="1"
         >
@@ -11,7 +10,6 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
-          editable
           :complete="step > 2"
           step="2"
         >
@@ -19,24 +17,21 @@
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
-          editable
           :complete="step > 3"
-          step="2"
+          step="3"
         >
           Assign Users
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
-          editable
           :complete="step > 4"
-          step="3">
+          step="4">
           Dataset Binding
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
-          editable
           :complete="step > 5"
-          step="4">
+          step="5">
           Guides & Awards
         </v-stepper-step>
         <v-divider></v-divider>
@@ -54,41 +49,38 @@
         <v-stepper-content step="1" style="height: 100%">
           <step_name_task_template
             :project_string_id="project_string_id"
+            :job="job"
+            @next_step="go_to_step(2)"
           ></step_name_task_template>
+
+        </v-stepper-content>
+        <v-stepper-content step="2" style="height: 100%">
+          <step_label_selection_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            @next_step="go_to_step(3)"
+          ></step_label_selection_task_template>
+        </v-stepper-content>
+        <v-stepper-content step="3" style="height: 100%">
+
         </v-stepper-content>
 
+        <v-stepper-content step="4">
+
+        </v-stepper-content>
+
+        <v-stepper-content step="5">
+
+        </v-stepper-content>
+
+        <v-stepper-content step="6">
+
+        </v-stepper-content>
 
       </v-stepper-items>
 
     </v-stepper>
-    <v-stepper-items style="height: 100%">
-      <v-stepper-content step="1" style="height: 100%">
-        <step_name_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-        ></step_name_task_template>
 
-      </v-stepper-content>
-      <v-stepper-content step="2" style="height: 100%">
-
-      </v-stepper-content>
-      <v-stepper-content step="3" style="height: 100%">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="4">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="5">
-
-      </v-stepper-content>
-
-      <v-stepper-content step="6">
-
-      </v-stepper-content>
-
-    </v-stepper-items>
   </v-container>
 
 </template>
@@ -97,6 +89,7 @@
 
   import axios from 'axios';
   import step_name_task_template from './step_name_task_template'
+  import step_label_selection_task_template from './step_label_selection_task_template'
 
 
   import Vue from "vue";
@@ -104,90 +97,30 @@
   export default Vue.extend({
       name: 'task_template_new_wizard',
       props: {
-        'project_string_id':{
+        'project_string_id': {
           default: null
         },
-        'job':{
+        'job': {
           default: null
         },
-        'job_id_route':{
+        'job_id_route': {
           default: null
         },
       },
 
       components: {
-        step_name_task_template
+        step_name_task_template,
+        step_label_selection_task_template
       },
 
       data() {
         return {
-          show_credentials: false,
-          save_draft_staus: false,
           step: 1,
-          total_steps: 5,
-          error_launch: {},
-          success_launch: false,
-          output_dir: {},
-          latest_dataset: undefined,
-          // Not super happy with this triplicate setup but more for Org (see org_dict below)
-          loading_job_fetch: false,
-          category_list: ['visual'],
-          share_list: [
-            // Training Data by API not yet supported here.
-            /*
-            {
-              'text': 'Training Data by API',
-              'type': 'market'
-            },
-            */],
-          checks: {},
-
-          job_id: null,
-
-          loading: true,
-
-          description: "",
-
-          project_string_id: null
+          total_steps: 4,
+          error: {},
 
         }
       },
-      created() {
-        //this.$store.commit('set_project_string_id', this.project_string_id)
-        if (this.job_id_route) {
-          this.loading_job_fetch = true;
-          this.job_id = this.job_id_route;
-        }
-
-        if (!this.job_id) {
-          /* We assume if no job_id is provided then
-           * we are creating a new job (not editing an existing one)
-           * , which we assume otherwise
-           */
-          this.$store.commit('clear_job')
-        }
-
-        this.project_string_id = this.project_string_id_route
-
-        this.job.share_object.text = this.$store.state.project.current.project_string_id + ' (Project)'
-
-        /* We get the job updated
-         * from the job info component at first run
-         * can't call update_job_info() directly since
-         * it expects to be passed a job
-         *
-         * We now default to loading in data() but then
-         * set it false here in created.
-         * this still feels a bit funny, visually it seems to help though...
-         *
-         * one goal here is so things like the
-         * "silly name" don't show if loading an existing
-         * job
-         */
-        this.loading = false
-
-      },
-
       computed: {
         global_progress: function () {
           return (this.step * 100) / this.total_steps;
@@ -207,184 +140,10 @@
         }
       },
       methods: {
-        on_job_created(job) {
-          this.job_id = job.id
-          this.job.id = job.id
-          this.step = 2;
-          const currPath = this.$route.path;
-          if (currPath.endsWith('/job/new')) {
-            this.$router.push(`/job/new/${this.job_id}`);
-          }
+        go_to_step: function (step) {
+          this.step = step;
         },
-        async create_job_and_redirect() {
-          this.loading = true;
-          this.save_draft_staus = undefined;
-          if (!this.job_id) {
-            // Create the job
-
-            const res_new_job = await this.$refs.job_new_form.job_new();
-            if (!res_new_job || res_new_job.status !== 200) {
-              this.loading = false;
-              this.save_draft_staus = 'error'
-              return false;
-            }
-            // Save any sync directories.
-            const res_update_job = await this.$refs.job_new_form.job_update();
-            if (!res_new_job || res_new_job.status !== 200) {
-              this.loading = false;
-              this.save_draft_staus = 'error'
-              return false;
-            }
-          } else {
-            await this.$refs.job_new_form.job_update();
-          }
-          this.save_draft_staus = 'success'
-          this.loading = false;
-
-        },
-        on_attached_dirs_updated(attached_dirs) {
-          this.latest_dataset = attached_dirs[attached_dirs.length - 1];
-          this.job.attached_directories_dict = {
-            attached_directories_list: attached_dirs.map(elm => elm)
-          }
-        },
-        on_output_dirs_updated(output_dir) {
-          this.output_dir = output_dir
-        },
-        on_job_updated() {
-          if (this.step == 1) {
-            this.step = 2
-          }
-        },
-        update_job_info(job) {
-          this.project_string_id = job.project_string_id
-          // Update existing keys, but avoid losing other keys that were already populated like file_handling
-          const new_dirs = job.attached_directories_dict.attached_directories_list.map(x => x)
-          this.job = {
-            ...this.job,
-            ...job,
-            label_file_list: this.job.label_file_list,
-            attached_directories_dict: {
-              test: 12312,
-              attached_directories_list: new_dirs
-            }
-          }
-          this.job.original_attached_directories_dict = {...job.attached_directories_dict};
-          // For now this is for general info only
-          // ie file stats and communication with components there
-          this.$store.commit('set_job', job)
-          if (this.share_list.length > 0) {
-            for (let share of this.share_list) {
-              if (share.type == job.share_type) {
-                this.job.share_object = share
-                break
-              }
-            }
-          }
-          // If we already have the job created, jump to second step by default?
-          this.step = 2
-
-          this.loading = false
-          this.loading_job_fetch = false;
-        },
-        async add_dirs_to_job_api() {
-          this.loading = true
-          this.show_success = false
-          this.error_launch = {}
-          let dir_list = [];
-          if (this.job && this.job.attached_directories_dict && this.job.attached_directories_dict.attached_directories_list) {
-            dir_list = this.job.attached_directories_dict.attached_directories_list
-          }
-          try {
-            const response = await axios.post(
-              '/api/v1/project/' + this.project_string_id
-              + '/job/dir/attach',
-              {
-                directory_list: dir_list,
-                job_id: parseInt(this.job.id),
-              })
-            return response
-          } catch (error) {
-            if (error.response) {
-              this.error_launch = error.response.data.log.error
-            }
-            this.loading = false
-            return false;
-          }
-        },
-        async add_output_actions_to_job() {
-          this.loading = true
-          this.show_success = false
-          this.error_launch = {}
-          if (this.output_dir.action === 'copy' || this.output_dir.action === 'move') {
-            if (!this.output_dir.directory) {
-              this.error_launch = {
-                output_dir: 'Please select a directory for copy/move after tasks are completed.'
-              }
-              this.loading = false;
-              return false
-            }
-          }
-          try {
-            const response = await axios.post(
-              '/api/v1/project/' + this.project_string_id
-              + '/job/set-output-dir',
-              {
-                output_dir: this.output_dir.directory ? this.output_dir.directory.directory_id.toString() : undefined,
-                output_dir_action: this.output_dir.action,
-                job_id: parseInt(this.job.id),
-              })
-            return response
-          } catch (error) {
-            if (error.response) {
-              this.error = error.response.data.log.error
-            }
-            this.loading = false
-          }
-        },
-        job_launch: async function () {
-
-          this.success_launch = false
-          this.error_launch = {}
-
-          this.loading = true
-
-          try {
-            const response_output_dirs = await this.add_output_actions_to_job();
-            if (!response_output_dirs) {
-              return
-            }
-            const response_dirs_update = await this.add_dirs_to_job_api();
-            if (!response_dirs_update) {
-              return
-            }
-            const response = await axios.post(
-              '/api/v1/job/launch',
-              {
-                job_id: parseInt(this.job_id)
-
-              });
-            // Push to success / stats page?
-            // Show success?
-
-            let launch_flow = response.data.log.info.launch_flow
-
-            if (launch_flow == 'now') {
-              this.$router.push('/job/' + this.job_id + '?success_launch=true')
-            } else if (launch_flow == 'soon') {
-              this.$router.push('/job/list?success_launch=true')
-
-            }
-
-
-            this.loading = false
-
-          } catch (error) {
-
-            this.loading = false
-
-            this.error_launch = this.$route_api_errors(error)
-          }
+        on_change_step: function () {
 
         },
       }
