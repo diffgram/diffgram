@@ -156,10 +156,10 @@
     <!-- EDIT  -->
 
     <v-container v-if="mode == 'edit' ">
-      <v-container class="pa-8">
+      <v-container class="pa-2">
 
-        <v-row class="d-flex align-center">
-          <v-col cols="3">
+
+          <v-layout>
             <!-- KIND -->
             <diffgram_select
               data_cy="attribute_kind_select"
@@ -170,72 +170,42 @@
               @change="api_group_update('UPDATE')"
             >
             </diffgram_select>
-          </v-col>
-          <v-col cols="4">
+          </v-layout>
+
+          <v-layout>
             <v-text-field label="Prompt Shown"
                           data-cy="attribute_prompt"
                           v-model="group.prompt"
                           @change="api_group_update('UPDATE')"
             >
             </v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-text-field label="Internal Tag"
-                          data-cy="attribute_tag"
-                          v-model="group.name"
-                          @change="api_group_update('UPDATE')"
-            >
-            </v-text-field>
-          </v-col>
-          <v-col cols="1">
+          </v-layout>
+         
+          <v-text-field label="Internal Tag"
+                        data-cy="attribute_tag"
+                        v-model="group.name"
+                        @change="api_group_update('UPDATE')"
+          >
+          </v-text-field>
+
+        <v-layout column>
+
+          <h2 class="pb-2"> When Do You Want to Show These Options? </h2>
+
+          <label_select_only
+            ref="label_selector"
+            label_prompt="Visible on the Labels:"
+            datacy="label_select_attribute"
+            :project_string_id="project_string_id"
+            :mode=" 'multiple' "
+            :attribute_group_id="group.id"
+            @label_file="recieve_label_file($event)"
+          >
+          </label_select_only>
+
+        </v-layout>
 
 
-            <!-- Label -->
-
-
-            <!--
-            <v-alert type="info" v-if="group.kind == 'text'">
-
-            </v-alert>
-            -->
-
-            <!-- "Edit" in this context is not about editing the
-              attribute, but the administration process of creating
-              attributes vs actually annotating them
-              TODO adjust wording to make this more clear in code
-
-              Text case
-               * Don't snow "new" for text because we only allow one,
-              and the group level prompt is used as the label.
-
-               For now still show the list of attributes ie if a user
-              wants to change it back.
-              -->
-
-            <button_with_menu
-              tooltip_message="New Attribute"
-              data-cy="new_attribute_option_button"
-              datacyclose="close_button_new_attribute"
-              v-if="group && group.kind != 'text' && group.kind != 'slider' "
-              icon="add"
-              :large="true"
-              color="green"
-              :close_by_button="true"
-            >
-              <template slot="content">
-
-                <attribute_new_or_update
-                  :project_string_id="project_string_id"
-                  :group_id="group.id"
-                >
-
-                </attribute_new_or_update>
-
-              </template>
-
-            </button_with_menu>
-
-          </v-col>
           <v-col col="1">
             <!-- Archive button -->
             <button_with_confirm
@@ -254,7 +224,7 @@
           </v-col>
 
 
-        </v-row>
+
         <v-row v-if="group.kind === 'slider'">
           <v-col cols="3">
             <v-text-field v-model="group.min_value"
@@ -275,23 +245,82 @@
             </v-text-field>
           </v-col>
         </v-row>
-        <v-row>
-          <v-col cols="12">
-            <label_select_only
-              ref="label_selector"
-              datacy="label_select_attribute"
-              :project_string_id="project_string_id"
-              :mode=" 'multiple' "
-              :attribute_group_id="group.id"
-              @label_file="recieve_label_file($event)"
-            >
-            </label_select_only>
-          </v-col>
 
-        </v-row>
+        <v-layout column>
+
+          <v_error_multiple :error="error">
+          </v_error_multiple>
+
+          <h2 v-if="group.attribute_template_list.length > 0"
+              class="pb-2">
+          Options:
+          </h2>
+
+          <div class="pa-2">
+            <button_with_menu
+              tooltip_message="New Option"
+              button_text="New Option"
+              data-cy="new_attribute_option_button"
+              datacyclose="close_button_new_attribute"
+              v-if="group && group.kind != 'text' && group.kind != 'slider' "
+              icon="add"
+              :large="true"
+              color="primary"
+              icon_color="white"
+              :icon_style="false"
+              :left="true"
+              offset="x"
+              :close_by_button="true"
+            >
+              <template slot="content"
+                        slot-scope="props">
+
+                <attribute_new_or_update
+                  :project_string_id="project_string_id"
+                  :group_id="group.id"
+                  :menu_open="props.menu_open"
+                >
+
+                </attribute_new_or_update>
+
+              </template>
+
+            </button_with_menu>
+          </div>
+
+          <v-container container--fluid grid-list-md>
+
+            <draggable
+              v-if="group"
+              v-model="group.attribute_template_list"
+              draggable=false
+            >
+
+              <template
+                v-for="item in group.attribute_template_list">
+
+                <attribute
+                  :project_string_id="project_string_id"
+                  :attribute="item"
+                  :key="item.id"
+                >
+                </attribute>
+
+              </template>
+
+            </draggable>
+
+
+          </v-container>
+
+
+        </v-layout>
 
         <!-- Edit Default  default_id default_value -->
-        <v-row>
+        <v-layout column>
+
+          <h3> Default Option </h3>
+
           <v-col cols="12">
 
             <v-text-field
@@ -361,42 +390,12 @@
             </v-date-picker>
             </div>
           </v-col>
-        </v-row>
-
-
-        <v-layout>
-
-          <v_error_multiple :error="error">
-          </v_error_multiple>
-
-          <v-container container--fluid grid-list-md>
-            <h2 v-if="group.attribute_template_list.length > 0">Options: </h2>
-            <draggable
-              v-if="group"
-              v-model="group.attribute_template_list"
-              draggable=false
-            >
-
-              <template
-                v-for="item in group.attribute_template_list">
-
-                <attribute
-                  :project_string_id="project_string_id"
-                  :attribute="item"
-                  :key="item.id"
-                >
-                </attribute>
-
-              </template>
-
-            </draggable>
-
-
-          </v-container>
-
-
         </v-layout>
 
+
+        <div class="d-flex justify-end">
+          <v-chip class="ma-2" x-small color="secondary">ID: {{group.id}}</v-chip>
+        </div>
 
       </v-container>
 
