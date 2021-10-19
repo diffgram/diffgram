@@ -63,30 +63,6 @@
         </v-expansion-panels>
 
 
-          <v-expansion-panels>
-            <v-expansion-panel>
-
-              <v-expansion-panel-header>
-                Advanced Options
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-                  <v-card>
-                    <v-container>
-                      <h3> Sequence Special Option </h3>
-                      <v-checkbox label="New Sequences Default to Single Frame"
-                                  data-cy="default_sequences_to_single_frame"
-                                  v-model="default_sequences_to_single_frame"
-                                  >
-
-                      </v-checkbox>
-                    </v-container>
-                  </v-card>
-
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
         </v-container>
 
       </v-flex>
