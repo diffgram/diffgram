@@ -141,7 +141,6 @@
       computed: {},
       methods: {
         update_label_file_list_for_all_attributes: function(new_label_file_list){
-          console.log('UPDATEEEE', this.attribute_group_list);
           for(const group of this.attribute_group_list){
             let component = this.$refs[`attribute_group_${group.id}`][0]
             component.update_label_files(new_label_file_list)
