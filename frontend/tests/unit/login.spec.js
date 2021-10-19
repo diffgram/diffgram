@@ -1,13 +1,12 @@
-import { shallowMount, createLocalVue } from "@vue/test-utils";
 import Vuex from "vuex";
+import { shallowMount, createLocalVue } from "@vue/test-utils";
 import login from "@/components/user/login.vue";
 
 const localVue = createLocalVue();
-
 localVue.use(Vuex);
 
-describe("footer.vue", () => {
-  it("Render footer component", () => {
+describe("login.vue", () => {
+  it("Rendered login page has form component", () => {
     const wrapper = shallowMount(login, {
       mocks: {
         $store: {
@@ -20,5 +19,7 @@ describe("footer.vue", () => {
       },
       localVue
     });
+    const hasForm = wrapper.find("form");
+    expect(hasForm.html()).toBeTruthy();
   });
 });
