@@ -35,8 +35,8 @@
     </label_select_only>
 
 
-    <v-container fluid class="mt-8 pa-0 d-flex justify-end" style="width: 100%">
-<!--      <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>-->
+    <v-container fluid class="mt-8 pa-0 d-flex justify-space-between" style="width: 100%">
+      <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>
       <v-btn x-large color="primary" @click="on_next_button_click">Next</v-btn>
     </v-container>
 
@@ -84,9 +84,9 @@
       },
       methods: {
         verify_labels: function(){
-          if(!this.$props.job.label_file_list || this.$props.job.label_file_list.lengh === 0){
+          if(!this.$props.job.label_file_list || this.$props.job.label_file_list.length === 0){
             this.error = {
-              name: 'Labels must not be empty.'
+              name: 'At least 1 user should be assigned to the task template.'
             }
             return false
           }
@@ -94,8 +94,8 @@
         },
         on_next_button_click: function(){
           this.error = {};
-          let name_ok = this.verify_labels();
-          if(name_ok){
+          let labels_ok = this.verify_labels();
+          if(labels_ok){
             this.$emit('next_step');
           }
         },

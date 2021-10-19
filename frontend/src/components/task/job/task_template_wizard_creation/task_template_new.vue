@@ -107,7 +107,7 @@
             td_api_trainer_basic_training: false,
             file_handling: "use_existing",
             interface_connection: undefined,
-            member_list_ids: []
+            member_list_ids: ["all"]
           },
           output_dir: {},
           latest_dataset: undefined,
