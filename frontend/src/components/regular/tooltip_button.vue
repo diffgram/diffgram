@@ -213,7 +213,6 @@ export default Vue.extend( {
     refresh_button_state_from_ui_schema(){
       if (this.$props.ui_schema_name == undefined) { return true } 
       this.visible = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
-      console.log("Running")
     },
     preventdefault(event) {
       // we don't assume this will go anywhere unless opened in new tab

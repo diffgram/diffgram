@@ -535,7 +535,6 @@
 
         let ui_schema = new UI_Schema
         ui_schema.new()
-        console.log(ui_schema)
 
         this.loading = true;
         this.error = {}

@@ -68,7 +68,6 @@ export default Vue.extend( {
     refresh_state_from_ui_schema(){
       if (this.$props.name == undefined) { return true } 
       this.visible = this.$store.getters.get_ui_schema(this.$props.name, 'visible')
-      console.log("Wrapper ran")
     },
     mouseover(event) {
       this.$store.commit('set_ui_schema_event', [this.name, event])
