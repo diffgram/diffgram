@@ -1,20 +1,24 @@
 <template>
   <v-container fluid>
-    <h1 class="font-weight-medium text--primary mb-8">Select Labels</h1>
+    <div class="d-flex mb-8 justify-space-between">
+      <h1 class="font-weight-medium text--primary mr-4">
+        Select Labels
+      </h1>
+      <tooltip_button
+        tooltip_message="Quick Edit Project Level Schema"
+        @click="open_labels_dialog"
+        button_color="primary"
+        icon="mdi-format-paint"
+        button_message="Manage Labels & Attributes"
+        color="white">
+      </tooltip_button>
+    </div>
+
     <v_error_multiple :error="error"></v_error_multiple>
     <p class="text--primary">
       Select The Labels to Use on This Task Template. All are selected by default.
     </p>
-    <div class="pr-4">
-      <tooltip_button
-        tooltip_message="Quick Edit Project Level Schema"
-        @click="open_labels_dialog"
-        icon="mdi-format-paint"
-        :icon_style="true"
-        :large="true"
-        color="primary">
-      </tooltip_button>
-    </div>
+
 
     <h4>Select Labels: </h4>
     <label_select_only
@@ -49,18 +53,20 @@
 
   import axios from 'axios';
   import label_select_only from '../../../label/label_select_only'
+  import label_manager_dialog from '../../../label/label_manager_dialog'
 
   import Vue from "vue";
 
   export default Vue.extend({
-      name: 'step_name_task_template',
+      name: 'step_label_task_template',
       props: [
         'project_string_id',
         'job'
       ],
 
       components: {
-        label_select_only
+        label_select_only,
+        label_manager_dialog
       },
 
       data() {
@@ -93,8 +99,8 @@
             this.$emit('next_step');
           }
         },
-        on_change_label_file: function(){
-
+        on_change_label_file: function(label_file_list){
+          this.job.label_file_list = label_file_list;
         },
         on_label_created: function(){
           this.$refs.label_select.refresh_label_list_from_project();
