@@ -64,12 +64,13 @@
           <v-stepper-content step="1" style="height: 100%">
 
             <diffgram_select
+              v-if="group"
               data_cy="attribute_kind_select"
               :item_list="kind_list"
               v-model="group.kind"
               label="Kind"
               :disabled="loading"
-              @input="$emit('input', $event)"
+              @input="$emit('input', group)"
               @change="$emit('change')"
             >
             </diffgram_select>
