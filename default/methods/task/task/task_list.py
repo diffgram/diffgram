@@ -153,7 +153,7 @@ def task_list_core(session,
         if mode_data == "exam_results":
             serialized = task.serialize_for_exam_results()
         else:
-            serialized = task.serialize_for_list_view_builder()
+            serialized = task.serialize_for_list_view_builder(session=session)
         external_id = get_external_id_to_task(session, task, task_template)
         if external_id:
             serialized['external_id'] = external_id

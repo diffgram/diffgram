@@ -230,7 +230,7 @@ class SystemEvents(Base):
             return
         if not self.kind:
             return
-        if not settings._ANALYTICS_WRITE_KEY or settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+        if not settings._ANALYTICS_WRITE_KEY or settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
             return
         props = {
             'description': self.description,
@@ -266,7 +266,7 @@ class SystemEvents(Base):
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
-        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
             return
         try:
             event_data = self.serialize()
