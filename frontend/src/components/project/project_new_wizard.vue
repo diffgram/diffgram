@@ -44,7 +44,7 @@
         <v-progress-linear
           color="secondary"
           striped
-          v-model="global_progress"
+          value="global_progress"
           height="12"
         >
         </v-progress-linear>
