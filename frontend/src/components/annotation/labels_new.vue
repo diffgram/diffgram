@@ -18,52 +18,17 @@
         </v-text-field>
 
         <v-container>
-          <!-- Maybe hide on mobile? or something... -->
           <slider-picker data-cy="color-slider" v-model="colour" />
         </v-container>
 
-
-        <!-- Advanced stuff-->
-        <v-container>
-
-          <v-expansion-panels>
-            <v-expansion-panel>
-
-              <v-expansion-panel-header>
-                  Advanced Info
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-                <v-card>
-
-                    <v-alert type="info"
-
-                                dismissible>
-
-                      <ul>
-                        <li> Labels are created in the context of the project.
-                          <br> For example, Labels created in the Studio are accessible to the whole project. </li>
-                        <li> Existing tasks are unaffected by new label creation. </li>
-                      </ul>
-
-                        <v-btn
-                              href="https://diffgram.readme.io/docs/create-your-first-label"
-                              target="_blank"
-                              >
-                          <v-icon left>mdi-book</v-icon>
-                          More on Labels
-                          <v-icon right>mdi-open-in-new</v-icon>
-                        </v-btn>
-                      </v-alert>
-
-                </v-card>
-
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
-
-        </v-container>
+        <tooltip_button
+            tooltip_message="Info"
+            href="https://diffgram.readme.io/docs/create-your-first-label"
+            target="_blank"
+            icon="info"
+            :icon_style="true"
+            color="primary">
+        </tooltip_button>
 
       </v-flex>
       <v-flex xs12 sm6>
