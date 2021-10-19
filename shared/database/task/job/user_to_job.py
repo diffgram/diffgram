@@ -34,6 +34,17 @@ class User_To_Job(Base):
         # Trying out a new id only
         return self.user_id
 
+    def get_job_ids_from_user(session,
+                              user_id):
+        valid_job_ids_list = []
+        user_to_job_relations_list = User_To_Job.get_all_by_user_id(
+            session=session,
+            user_id=user_id)
+        for user_to_job in user_to_job_relations_list:
+            valid_job_ids_list.append(user_to_job.job_id)
+
+        return valid_job_ids_list
+
     def get_all_by_user_id(session,
                            user_id,
                            status_is_active=False,
@@ -85,7 +96,8 @@ class User_To_Job(Base):
             session,
             user_id_ignore_list: list = None,
             job=None,
-            serialize=False):
+            serialize=False,
+            user = None):
 
         query = session.query(User_To_Job)
 
@@ -95,6 +107,9 @@ class User_To_Job(Base):
 
         if job:
             query = query.filter(User_To_Job.job == job)
+
+        if user:
+            query = query.filter(User_To_Job.user == user)
 
         if serialize == True:
             # TODO this could be part of generic

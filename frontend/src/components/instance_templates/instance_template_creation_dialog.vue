@@ -44,6 +44,7 @@
           </drawable_canvas>
         </v-container>
       </v-card-text>
+
       <v-card-actions class="flex justify-end pa-0">
         <v-btn color="error" text @click="is_open = false"><v-icon>mdi-close</v-icon>Discard Changes</v-btn>
         <v-btn color="success" data-cy="save_instance_template_button" text @click="save_instance_template">
@@ -52,6 +53,9 @@
       </v-card-actions>
 
     </v-card>
+    <v-snackbar  color="secondary" :timeout="50000" v-if="show_snackbar" v-model="show_snackbar" :multi-line="true">
+      {{snackbar_text}}
+    </v-snackbar>
   </v-dialog>
 </template>
 
@@ -79,8 +83,10 @@
     data: function () {
       return {
         instance_type: 'keypoints',
+        snackbar_text: 'Press Esc to stop drawing Edges/Nodes and got to edit mode.',
         instance_context: new InstanceContext(),
         draw_mode: true ,
+        show_snackbar: false ,
         lock_point_hover_change: false ,
         instance: undefined,
         error: {},
@@ -98,13 +104,20 @@
       }
     },
     mounted() {
-
+      this.open_snackbar(this.snackbar_text)
 
 
     },
 
     methods: {
-
+      open_snackbar: function(msg){
+        this.snackbar_text = msg;
+        this.show_snackbar = true
+      },
+      close_snackbar: function(){
+        this.snackbar_text = '';
+        this.show_snackbar = false
+      },
       open: async function () {
         this.is_open = true;
         await this.$nextTick();
@@ -174,6 +187,12 @@
       },
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
+        if(this.instance_context.draw_mode){
+          this.open_snackbar('Press Esc to stop drawing Edges/Nodes and got to edit mode.');
+        }
+        else{
+          this.close_snackbar()
+        }
       },
       close: function () {
         window.removeEventListener('keydown', this.key_down_handler)
@@ -204,7 +223,6 @@
         return interaction_generator.generate_interaction();
       },
       mouse_move: function (event) {
-
         const interaction = this.generate_interaction_from_event(event);
         if(interaction){
           interaction.process();

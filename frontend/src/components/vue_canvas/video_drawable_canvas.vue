@@ -4,14 +4,14 @@
       <drawable_canvas
         :allow_zoom="allow_zoom"
         :image_bg="html_image"
-        :canvas_height="canvas_height - video_player_height"
+        :canvas_height="canvas_height_computed"
         :canvas_width="canvas_width"
         :editable="editable"
         :auto_scale_bg="true"
         :refresh="refresh"
         :video_mode="true"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
+        :canvas_wrapper_id="canvas_wrapper_id || `canvas_wrapper__${file.id}`"
+        :canvas_id="canvas_id || `canvas__${file.id}`"
         @refresh="refresh = Date.now()"
         ref="drawable_canvas"
       >
@@ -62,7 +62,9 @@
               :view_only_mode="true"
               :has_changed="false"
               :canvas_width_scaled="$refs.drawable_canvas.canvas_width_scaled"
-              ref="video_controllers">
+              ref="video_controllers"
+              :show_video_nav_bar="show_video_nav_bar"
+             >
     </v_video>
   </div>
 </template>
@@ -82,7 +84,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     props: {
       canvas_wrapper_id:{
-        default: 'canvas_wrapper'
+        default: undefined
       },
       project_string_id: {
         default: undefined
@@ -106,7 +108,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         default: undefined,
       },
       canvas_id: {
-        default: 'my_canvas'
+        default: undefined
       },
       canvas_height: {
         default: 800
@@ -121,6 +123,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         default: null
       },
       allow_zoom:{
+        default: true
+      },
+      show_video_nav_bar:{
         default: true
       },
       reticle_colour: {
@@ -428,6 +433,12 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       style_max_width: function () {
         return "max-width:" + this.canvas_width_scaled + "px"
       },
+      canvas_height_computed: function() {
+        if (this.show_video_nav_bar) {
+          return this.canvas_height - this.video_player_height
+        }
+        return this.canvas_height
+      }
     }
   });
 </script>
