@@ -19,6 +19,7 @@
               :icon_style="false"
               small
               icon_color="white"
+              :close_by_button="true"
               color="primary"
               offset="x"
             >
