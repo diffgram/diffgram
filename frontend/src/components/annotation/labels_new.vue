@@ -55,6 +55,8 @@
     <v_error_multiple :error="error">
     </v_error_multiple>
 
+    
+
   </div>
 </template>
 
@@ -64,8 +66,13 @@ import axios from 'axios';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'labels_new',
-  props: [
-  ],
+
+  props: {
+    menu_open: {
+      default: false
+    }
+  },
+
   data() {
     return {
 
@@ -97,7 +104,7 @@ import Vue from "vue"; export default Vue.extend( {
           const pattern = new RegExp("^[a-zA-Z0-9_ ]{1,30}$")
           return pattern.test(value) || 'No special characters. Between 1 - 30 characters.'
         }
-      }
+      },
     }
   },
   mounted: function () {
@@ -142,6 +149,9 @@ import Vue from "vue"; export default Vue.extend( {
     },
 
     hotkeys: function (event) {
+      if (this.$props.menu_open == false){
+        return
+      }
       if (event.key === 'Enter') {
         this.new_label_function()
       }

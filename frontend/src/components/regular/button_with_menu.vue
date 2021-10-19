@@ -12,7 +12,7 @@
 
     {{ tooltip_message }}
 
-    <template v-slot:activator="{on : tooltip}">
+    <template v-slot:activator="{on : tooltip}" >
       <v-menu
         v-model="menu_open"
         :close-on-content-click="close_content_on_click"
@@ -102,7 +102,11 @@
                 -->
 
             <!-- Important, content gets injected here -->
-            <slot name="content"></slot>
+            <slot name="content"
+                  :menu_open="menu_open"
+                  >
+
+            </slot>
 
             <!-- end content -->
 
@@ -138,9 +142,10 @@
 </template>
 
 <script lang="ts">
-  // Jan 7, 2020, it's not liking new store references
   // @ts-nocheck
 
+  // Access menu_open on child via -> <template slot-scope="props">
+  // Then pass prop to child as ->  ` :menu_open="props.menu_open"`
 
   /*
    * Example
