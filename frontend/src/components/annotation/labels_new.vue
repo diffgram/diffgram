@@ -4,14 +4,10 @@
     <v-layout>
       <v-flex>
 
-        <v-card-title>
-          New
-        </v-card-title>
-
         <v-text-field required
                       :counter="30"
                       data-cy="label_name_text_field"
-                      label="Name"
+                      label="Label Name"
                       v-model="new_label_name"
                       :rules="[rules.new_label_name]"
                       :disabled="loading">
@@ -20,18 +16,6 @@
         <v-container>
           <slider-picker data-cy="color-slider" v-model="colour" />
         </v-container>
-
-        <tooltip_button
-            tooltip_message="Info"
-            href="https://diffgram.readme.io/docs/create-your-first-label"
-            target="_blank"
-            icon="info"
-            :icon_style="true"
-            color="primary">
-        </tooltip_button>
-
-      </v-flex>
-      <v-flex xs12 sm6>
 
       </v-flex>
     </v-layout>
@@ -43,10 +27,21 @@
               @click="new_label_function"
               :loading="loading"
               :disabled="loading"
-              large
+              x-large
               >
         Create
       </v-btn>
+
+      <v-spacer> </v-spacer>
+
+      <tooltip_button
+        tooltip_message="Info"
+        href="https://diffgram.readme.io/docs/create-your-first-label"
+        target="_blank"
+        icon="info"
+        :icon_style="true"
+        color="secondary">
+    </tooltip_button>
 
     </v-card-actions>
 
