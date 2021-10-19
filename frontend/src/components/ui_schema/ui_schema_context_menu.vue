@@ -1,5 +1,25 @@
 <template>
-<div>
+<div v-cloak>
+
+  <v-tooltip  v-if="show_re_open_button"
+              left>
+    Edit UI Schema
+    <template v-slot:activator="{ on }">
+      <v-btn
+        style="position: absolute; top: 25px; right: 25px"
+        color="primary"
+        data-cy="file_explorer_button"
+        @click="$emit('start_edit_ui_schema')"
+        fab
+        right
+        absolute
+        v-on="on"
+      >
+        <v-icon> mdi-puzzle-edit-outline</v-icon>
+      </v-btn>
+    </template>
+  </v-tooltip>
+
   <div
     class="context-menu"
     :class="{visible: show_context_menu}"
@@ -270,7 +290,7 @@
   import ui_schema_selector from './ui_schema_selector'
 
   export default Vue.extend({
-    name: 'UI_Schema_context_menu',
+    name: 'UISchemaContextMenu',
     components: {
       ui_schema_selector
     },
@@ -285,7 +305,7 @@
       },
       'show_context_menu':{
         type: Boolean,
-        default: true   // temporary true, false when done
+        default: false
       },
       'show_save' :{
         default: true
@@ -308,6 +328,8 @@
         edit_name: false,
         loading: false,
         error: {},
+
+        show_re_open_button: false,
 
         button_to_add: undefined,
 
@@ -412,6 +434,8 @@
             this.instance_hover_index_locked = null
           }
 
+          this.show_re_open_button = false
+
         } else {
 
           this.top = '-1000px';
@@ -479,12 +503,12 @@
           return
         }
         let event = this.$store.state.ui_schema.event
-        console.log(event)
         this.top = event.clientY - event.offsetY + 'px';
         this.left = event.clientX - event.offsetX + 'px';
         //this.locked_mouse_position = {...this.mouse_position};
       },
       close(){
+        this.show_re_open_button = true
         this.$emit('close_context_menu')
       },
       reset(){
