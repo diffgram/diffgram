@@ -1,10 +1,6 @@
 <template>
   <v-layout class="pa-0 d-flex flex-column" style="min-height: 600px">
-    <v-btn x-small @click="go_to_step(3)" class="text-left ml-auto mb-6" color="secondary">
 
-      <v-icon>mdi-debug-step-over</v-icon>
-      Skip, I will create labels later
-    </v-btn>
     <v-layout>
       <v-row>
 
@@ -12,14 +8,16 @@
           <div class="d-flex align-center ">
             <h2 class="font-weight-medium text--primary flex-grow-1">Labels:</h2>
             <v-btn color="primary" icon @click="fetch_labels"><v-icon>mdi-refresh</v-icon></v-btn>
+
             <button_with_menu
               datacy="new_label_template"
               button_text="Create Label"
               tooltip_message="Create Label"
-              small
               @click="$store.commit('set_user_is_typing_or_menu_open', true)"
               @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
               icon="add"
+              :icon_style="false"
+              small
               icon_color="white"
               color="primary"
               offset="x"
@@ -59,9 +57,35 @@
       </v-row>
 
     </v-layout>
-    <v-btn :disabled="label_file_list.length == 0 && attribute_group_list.length === 0" x-large @click="go_to_step(3)" class="text-left ml-auto mb-6" color="success">
-      Continue
-    </v-btn>
+
+    <v-row>
+      <v-layout column>
+
+        <div class="text-right pa-2 pr-4">
+
+          <v-btn
+            :disabled="label_file_list.length == 0 && attribute_group_list.length === 0"
+            x-large
+            @click="go_to_step(3)"
+            color="success">
+
+            Continue
+          </v-btn>
+  
+          <tooltip_button
+            tooltip_message="Skip, I will create labels later"
+            :bottom="true"
+            button_message="Skip"
+            @click="go_to_step(3)"
+            icon="mdi-debug-step-over"
+            :text_style="true"
+            :left="true"
+            color="secondary">
+          </tooltip_button>
+        </div>
+      </v-layout>
+    </v-row>
+
   </v-layout>
 
 </template>
