@@ -159,6 +159,17 @@
       <v-container class="pa-2">
 
 
+         <attribute_group_wizard
+            v-if="enable_wizard == true"
+            :kind_list="kind_list"
+            :group="group"
+            :loading="loading"
+            @change="api_group_update('UPDATE')"
+                                 >
+
+         </attribute_group_wizard>
+         
+
           <v-layout>
             <!-- KIND -->
             <diffgram_select
@@ -183,7 +194,7 @@
          
         <v-layout column>
 
-          <h2 class="pb-2"> When Do You Want to Show This? </h2>
+          <h3 class="pb-2"> When Do You Want to Show This? </h3>
 
           <label_select_only
             ref="label_selector"
@@ -224,9 +235,8 @@
           <v_error_multiple :error="error">
           </v_error_multiple>
 
-          <h2 v-if="group.attribute_template_list.length > 0"
-              class="pb-2">
-          Options:
+          <h2 class="pb-2">
+          Options
           </h2>
 
           <div class="pa-2">
@@ -261,7 +271,8 @@
             </button_with_menu>
           </div>
 
-          <v-container container--fluid grid-list-md>
+          <v-container v-if="group.attribute_template_list.length > 0"
+                       container--fluid grid-list-md>
 
             <draggable
               v-if="group"
@@ -292,7 +303,7 @@
         <!-- Edit Default  default_id default_value -->
         <v-layout column>
 
-          <h3> Default Option </h3>
+          <h4 class="pa-2"> Default Option </h4>
 
           <v-col cols="12">
 
@@ -426,7 +437,7 @@
   import attribute_new_or_update from './attribute_new_or_update.vue';
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
-
+  import attribute_group_wizard from './attribute_group_wizard';
 
   import Vue from "vue";
 
@@ -439,7 +450,8 @@
         attribute,
         attribute_new_or_update,
         label_select_only,
-        attribute_kind_icons
+        attribute_kind_icons,
+        attribute_group_wizard
 
       },
 
@@ -462,6 +474,10 @@
 
         'view_only_mode': {
           default: false
+        },
+
+        'enable_wizard': {
+          default: true   // default back to false
         }
 
       },
