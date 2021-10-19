@@ -162,7 +162,7 @@
          <attribute_group_wizard
             v-if="enable_wizard == true"
             :kind_list="kind_list"
-            :group="group"
+            v-model="group_internal"
             :loading="loading"
             @change="api_group_update('UPDATE')"
                                  >
@@ -554,7 +554,9 @@
 
           name: null,
 
-          label_file_list: []
+          label_file_list: [],
+
+          group_internal: {}
 
         }
       },
@@ -571,6 +573,8 @@
           // we want a newly created group to be different
           // vue js being a bit fiddly here
           this.original_kind = this.group.kind
+
+          this.group_internal = this.$props.group
         }
 
       },
@@ -580,6 +584,8 @@
         this.set_existing_selected()
 
         this.original_kind = this.group.kind
+
+        this.group_internal = this.$props.group
 
       },
       mounted() {
@@ -937,35 +943,43 @@
           this.error = {}
           this.success = false
 
+          let group
+
+          if (this.group_internal) {
+            group = this.group_internal
+          } else {
+            group = this.group
+          }
+
           if (mode == 'ARCHIVE') {
             // backend validates that a kind exists
             // so doing this as a work around
-            this.group.kind = "ARCHIVE"
+            group.kind = "ARCHIVE"
           }
           let min_value, max_value;
-          if(this.group.kind === 'slider'){
+          if(group.kind === 'slider'){
             min_value = parseInt(this.min_value, 10);
             max_value = parseInt(this.max_value, 10);
-            if(max_value < parseInt(this.group.default_value, 10)){
-              max_value = parseInt(this.group.default_value, 10)
-              this.group.max_value = max_value;
+            if(max_value < parseInt(group.default_value, 10)){
+              max_value = parseInt(group.default_value, 10)
+              group.max_value = max_value;
             }
-            if(min_value > parseInt(this.group.default_value, 10)){
-              min_value = parseInt(this.group.default_value, 10)
-              this.group.min_value = min_value;
+            if(min_value > parseInt(group.default_value, 10)){
+              min_value = parseInt(group.default_value, 10)
+              group.min_value = min_value;
             }
           }
           axios.post(
             '/api/v1/project/' + this.project_string_id +
             '/attribute/group/update',
             {
-              group_id: Number(this.group.id),
-              name: this.group.name,
-              prompt: this.group.prompt,
+              group_id: Number(group.id),
+              name: group.name,
+              prompt: group.prompt,
               label_file_list: this.label_file_list,
-              kind: this.group.kind,
-              default_id: this.group.default_id,
-              default_value: this.group.default_value,
+              kind: group.kind,
+              default_id: group.default_id,
+              default_value: group.default_value,
               min_value: min_value,
               max_value: max_value,
               mode: mode
