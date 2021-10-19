@@ -8,7 +8,7 @@
     >
     </ui_schema_context_menu>
 
-    <v-tooltip v-if="show_edit_schema_button
+    <v-tooltip v-if="enabled_edit_schema
                  && !show_ui_schema_context_menu"
                left>
       Edit UI Schema
@@ -59,7 +59,7 @@
                    :instance_type_list="instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
-                   :show_edit_schema_button="show_edit_schema_button"
+                   :enabled_edit_schema="enabled_edit_schema"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -911,7 +911,7 @@
         'view_only_mode': {
           default: false
         },
-        'show_edit_schema_button' : {}
+        'enabled_edit_schema' : {}
       },
       watch: {
         canvas_scale_global: function(newVal, oldVal){
@@ -2926,7 +2926,7 @@
             this.on_change_current_task();
           }
 
-          if (this.$props.show_edit_schema_button == true) {
+          if (this.$props.enabled_edit_schema == true) {
             this.edit_ui_schema()
           }
 
