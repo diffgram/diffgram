@@ -26,7 +26,7 @@ class GracefulKiller(metaclass = Singleton):
         sys.exit(0)
 
     def set_inputs_with_error_status(self, item_list):
-        from walrus.methods.input.process_media import Process_Media
+        from methods.input.process_media import Process_Media
         with session_scope() as session:
             for item in item_list:
                 if item.input is not None and item.input.id is None and item.input.media_type in ['frame']:
@@ -47,7 +47,7 @@ class GracefulKiller(metaclass = Singleton):
         :param args:
         :return:
         """
-        from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
+        from methods.input.process_media_queue_manager import process_media_queue_manager
 
         logger.info('Exiting gracefully...')
         if self.killing_gracefully:
