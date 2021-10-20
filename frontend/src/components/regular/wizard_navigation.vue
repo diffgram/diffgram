@@ -1,63 +1,62 @@
 <template>
   <div>
 
-    <v-row>
-      <v-layout column>
+    <v-layout>
 
+      <slot name="back">
 
-        <slot name="back">
+      </slot>
+
+      <tooltip_button
+        v-if="back_visible"
+        tooltip_message="Back"
+        :bottom="true"
+        :disabled="disabled_back"
+        button_message="Back"
+        @click="$emit('back')"
+        icon="mdi-arrow-left"
+        :text_style="true"
+        :left="true"
+        color="secondary">
+      </tooltip_button>
+
+      <v-spacer></v-spacer>
+
+      <div class="text-right pa-2 pr-4">
+
+        <v-btn
+          v-if="next_visible"
+          :disabled="disabled_next"
+          x-large
+          @click="$emit('next')"
+          color="success">
+
+          Next
+        </v-btn>
+
+        <slot name="next">
 
         </slot>
-
+  
         <tooltip_button
-          v-if="back_visible"
-          tooltip_message="Back"
+          v-if="skip_visible"
+          tooltip_message="Skip, I will do this later"
           :bottom="true"
-          :disabled="disabled_back"
-          button_message="Back"
-          @click="$emit('back')"
-          icon="mdi-arrow-left"
+          :disabled="disabled_skip"
+          button_message="Skip"
+          @click="$emit('skip')"
+          icon="mdi-debug-step-over"
           :text_style="true"
           :left="true"
           color="secondary">
         </tooltip_button>
-
-        <div class="text-right pa-2 pr-4">
-
-          <v-btn
-            v-if="next_visible"
-            :disabled="disabled_next"
-            x-large
-            @click="$emit('next')"
-            color="success">
-
-            Next
-          </v-btn>
-
-          <slot name="next">
-
-          </slot>
-  
-          <tooltip_button
-            v-if="skip_visible"
-            tooltip_message="Skip, I will do this later"
-            :bottom="true"
-            :disabled="disabled_skip"
-            button_message="Skip"
-            @click="$emit('skip')"
-            icon="mdi-debug-step-over"
-            :text_style="true"
-            :left="true"
-            color="secondary">
-          </tooltip_button>
          
-          <slot name="skip">
+        <slot name="skip">
 
-          </slot>
+        </slot>
 
-        </div>
-      </v-layout>
-    </v-row>
+      </div>
+    </v-layout>
 
   </div>
 </template>
