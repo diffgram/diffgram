@@ -1,10 +1,10 @@
 <template>
-  <v-card elevation="0">
-    <v-card-text>
+
       <v-stepper v-model="step"
                  :non-linear="true"
                  style="height: 100%;"
                  @change="on_change_step">
+
         <v-stepper-header>
           <v-stepper-step
             editable
@@ -57,12 +57,12 @@
           color="secondary"
           striped
           :value="global_progress"
-          height="12"
+          height="6"
         >
         </v-progress-linear>
 
 
-        <v-stepper-items style="height: 100%">
+        <v-stepper-items style="height: 100%" class="pt-4">
 
           <v-stepper-content step="1" style="height: 100%">
 
@@ -116,7 +116,7 @@
 
           <v-stepper-content step="3" style="height: 100%">
 
-            <h3 class="pb-2"> When Do You Want to Show This? </h3>
+            <h2 class="pb-2"> When Do You Want to Show This? </h2>
 
             <label_select_only
               ref="label_selector"
@@ -331,9 +331,22 @@
 
 
             <wizard_navigation
-              @next="go_to_complete()"
+              @next="go_to_step(6)"
+              @skip="go_to_step(6)"
+              @back="go_back_a_step()"
+                               >
+            </wizard_navigation>
+
+          </v-stepper-content>
+
+          <v-stepper-content step="6">
+
+            <h2> Complete! Great work. </h2>
+
+            <wizard_navigation
               @back="go_back_a_step()"
               :skip_visible="false"
+              :next_visible="false"
                                >
             </wizard_navigation>
 
@@ -343,8 +356,7 @@
 
       </v-stepper>
 
-    </v-card-text>
-  </v-card>
+ 
 </template>
 
 <script lang="ts">
@@ -391,14 +403,15 @@ export default Vue.extend( {
   data() {
     return {
       step: 1,
-      global_progress: 0,
       member_invited: false,
 
       group: {}
     }
   },
   computed: {
-
+    global_progress: function () {
+      return 100 * (parseFloat(this.step) / 6);
+    },
   },
   created() {
     this.group = this.value

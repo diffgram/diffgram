@@ -1,5 +1,6 @@
 <template>
   <div>
+
     <v-list class="mt-4" v-if="label_file_list.length > 0">
       <v-list-item class="label-row d-flex justify-start align-center" v-for="label_file in label_file_list">
         <v-icon :color="label_file.colour.hex" class="pr-2">mdi-flag</v-icon>

@@ -155,24 +155,24 @@
 
     <!-- EDIT  -->
 
-    <v-container v-if="mode == 'edit' ">
-      <v-container class="pa-2">
+    <div v-if="mode == 'edit' ">
 
+      <attribute_group_wizard
+        v-if="enable_wizard == true"
+        :kind_list="kind_list"
+        :error="error"
+        :select_format="select_format"
+        v-model="group_internal"
+        :loading="loading"
+        @change="api_group_update('UPDATE')"
+        :project_string_id="project_string_id"
+        @label_file="recieve_label_file($event)"
+                              >
 
-         <attribute_group_wizard
-            v-if="enable_wizard == true"
-            :kind_list="kind_list"
-            :error="error"
-            :select_format="select_format"
-            v-model="group_internal"
-            :loading="loading"
-            @change="api_group_update('UPDATE')"
-            :project_string_id="project_string_id"
-            @label_file="recieve_label_file($event)"
-                                 >
+      </attribute_group_wizard>
 
-         </attribute_group_wizard>
-         
+      <v-container v-if="enable_wizard == false"
+                   class="pa-2">         
 
           <v-layout>
             <!-- KIND -->
@@ -428,7 +428,7 @@
       <!-- On bottom so it doesn't bounce screen when fires -->
       <v-alert v-if="success" type="success" dismissible>Attribute updated successfully.</v-alert>
 
-    </v-container>
+    </div>
 
   </div>
 </template>
@@ -613,7 +613,7 @@
            */
 
           if (this.group.kind == "text") {
-            return
+            return []
           }
 
           let attribute_template_list = []
