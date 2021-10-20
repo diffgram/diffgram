@@ -156,7 +156,6 @@
         auto_open_new_group: function () {
 
           let last_element = this.attribute_group_list.at(-1)
-          console.log(last_element)
           if (last_element) {
                 this.open_panel_by_id(last_element.id)
             }
