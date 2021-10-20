@@ -69,33 +69,7 @@
       :disabled_next="label_file_list.length == 0 && attribute_group_list.length === 0">
     </wizard_navigation>
 
-    <v-row>
-      <v-layout column>
 
-        <div class="text-right pa-2 pr-4">
-
-          <v-btn
-            :disabled="label_file_list.length == 0 && attribute_group_list.length === 0"
-            x-large
-            @click="go_to_step(3)"
-            color="success">
-
-            Continue
-          </v-btn>
-  
-          <tooltip_button
-            tooltip_message="Skip, I will create labels later"
-            :bottom="true"
-            button_message="Skip"
-            @click="go_to_step(3)"
-            icon="mdi-debug-step-over"
-            :text_style="true"
-            :left="true"
-            color="secondary">
-          </tooltip_button>
-        </div>
-      </v-layout>
-    </v-row>
 
   </v-layout>
 
