@@ -426,7 +426,12 @@
       </v-container>
 
       <!-- On bottom so it doesn't bounce screen when fires -->
-      <v-alert v-if="success" type="success" dismissible>Attribute updated successfully.</v-alert>
+      <v-alert v-if="success"
+               type="success"
+               dismissible
+               attach>
+        Saved
+      </v-alert>
 
     </div>
 

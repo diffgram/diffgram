@@ -10,6 +10,7 @@
     <!--
     <v-icon>mdi-collage</v-icon>
     -->
+    <v-spacer></v-spacer>
 
     <tooltip_button
       datacy="new_attribute_button"
