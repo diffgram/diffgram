@@ -162,9 +162,13 @@
          <attribute_group_wizard
             v-if="enable_wizard == true"
             :kind_list="kind_list"
+            :error="error"
+            :select_format="select_format"
             v-model="group_internal"
             :loading="loading"
             @change="api_group_update('UPDATE')"
+            :project_string_id="project_string_id"
+            @label_file="recieve_label_file($event)"
                                  >
 
          </attribute_group_wizard>
@@ -209,26 +213,6 @@
 
         </v-layout>
 
-        <v-row v-if="group.kind === 'slider'">
-          <v-col cols="3">
-            <v-text-field v-model="group.min_value"
-                          @change="api_group_update('UPDATE')"
-                          type="number"
-                          data-cy="min_value"
-                          label="Min Value">
-
-            </v-text-field>
-          </v-col>
-          <v-col cols="3">
-            <v-text-field v-model="group.max_value"
-                          @change="api_group_update('UPDATE')"
-                          type="number"
-                          data-cy="max_value"
-                          label="Max Value">
-
-            </v-text-field>
-          </v-col>
-        </v-row>
 
         <v-layout column>
 
@@ -306,6 +290,27 @@
           <h4 class="pa-2"> Default Option </h4>
 
           <v-col cols="12">
+
+            <v-row v-if="group.kind === 'slider'">
+              <v-col cols="3">
+                <v-text-field v-model="group.min_value"
+                              @change="api_group_update('UPDATE')"
+                              type="number"
+                              data-cy="min_value"
+                              label="Min Value">
+
+                </v-text-field>
+              </v-col>
+              <v-col cols="3">
+                <v-text-field v-model="group.max_value"
+                              @change="api_group_update('UPDATE')"
+                              type="number"
+                              data-cy="max_value"
+                              label="Max Value">
+
+                </v-text-field>
+              </v-col>
+            </v-row>
 
             <v-text-field
               v-if="group.kind == 'text'"
