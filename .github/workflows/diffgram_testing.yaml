@@ -229,15 +229,15 @@ jobs:
       matrix:
         node: [10, 12, 14]
     steps:
-      - run: cd /__w/diffgram/frontend
+      - run: cd /__w/diffgram
       - uses: actions/checkout@v1
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: yarn install
-        run: yarn install
+      - name: yarn install dependencies
+        run: yarn --cwd frontend install
 
       - name: run unit tests
-        run: yarn run test:unit
+        run: yarn --cwd frontend run test:unit
