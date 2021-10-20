@@ -18,7 +18,7 @@
       button_message="Create Attribute"
       @click="api_attribute_group_new"
       icon="add"
-      small
+      :large="true"
       :loading="loading"
       :disabled="loading"
       color="white">
