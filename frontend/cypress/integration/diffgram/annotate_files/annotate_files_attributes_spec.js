@@ -20,6 +20,8 @@ describe('Annotate Files Tests', () => {
 
     context('It Creates And Sets Value of Select Type', () => {
       it('Creates Select Attribute', () => {
+
+        const next_wizard_step = '[data-cy=wizard_navigation_next]'
         cy.wait(3000);
         cy.get('#open_main_menu > .v-btn__content').click({force: true});
         cy.get('[data-cy=main_menu_labels]').click({force:true})
@@ -30,11 +32,17 @@ describe('Annotate Files Tests', () => {
         cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).click({force: true});
         cy.get('[data-cy=attribute_kind_select]').click({force: true});
         cy.get('.v-list.v-select-list div').contains('Select').click({force: true})
+
+        cy.get(next_wizard_step).click({force: true})
+
         cy.get('[data-cy=attribute_prompt]').click();
         cy.get('[data-cy=attribute_prompt]').type(selectAttribute.prompt);
-        cy.get('[data-cy=attribute_tag]').click({force: true});
-        cy.get('[data-cy=attribute_tag]').type(selectAttribute.tag);
-        cy.get('.v-btn__content > .green--text').click({force: true});
+        //cy.get('[data-cy=attribute_tag]').click({force: true});
+        //cy.get('[data-cy=attribute_tag]').type(selectAttribute.tag);
+
+        cy.get(next_wizard_step).click({force: true})
+
+        cy.get('[data-cy=new_attribute_option_button]').click({force: true});
 
         for(let option of selectAttribute.options){
           cy.get('[data-cy=attribute_option_name]').click({force: true});
@@ -44,6 +52,9 @@ describe('Annotate Files Tests', () => {
 
         }
         cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
+
+        cy.get(next_wizard_step).click({force: true})
+
         cy.get('[data-cy=label_select_attribute]').click({force: true});
         cy.get('.v-menu__content .v-list.v-select-list .v-list-item span span').contains(labelsForAttributes[0].name).first().click({force: true})
         cy.get('[data-cy=attribute_kind_select]').click({force: true});
