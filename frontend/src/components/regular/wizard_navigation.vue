@@ -70,14 +70,26 @@
  *  EXAMPLE USAGE:
  *
 
-<wizard_navigation
-    name="my_name">
+<wizard_navigation>
 
    <template name="back">
       // Example of custom back button
     </template>
 
-</ui_schema>
+</wizard_navigation>
+
+<wizard_navigation
+  @next="go_to_step(3)"   // wizard nav doesn't implement this function just an exmaple
+  @skip="go_to_step(3)"
+  @back="$emit('back')"
+  :disabled_next="label_file_list.length == 0">
+</wizard_navigation>
+
+A key assumption here is that we want things like disabled, or skipping back buttons, or renaming etc
+to be different on every or nearly every step
+
+So instead of having a single nav on bottom with ever growing complexity of when to enable or disable,
+we can have this more simplistic and defined thing for each step
 
  */
 
