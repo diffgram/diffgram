@@ -143,6 +143,7 @@
     "semver": "^7.3.2",
     "shelljs": "^0.8.4",
     "strip-loader": "^0.1.2",
+    "ts-jest": "26.4.2",
     "ts-loader": "^6.2.2",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "^3.0.0",
