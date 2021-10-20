@@ -1,23 +1,23 @@
 version: "3.3"
 services:
-  # dispatcher:
-  #   image: gcr.io/diffgram-open-core/local_dispatcher:latest
-  #   ports:
-  #     - "0.0.0.0:8085:8085"
-  #   expose: [8085]
-  #   depends_on:
-  #     - frontend
-  #     - default
-  #     - walrus
-  #   environment:
-  #     SAME_HOST: ${SAME_HOST}
-  # frontend:
-  #   image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
-  #   ports:
-  #     - "0.0.0.0:8081:80"
-  #   expose: [80]
-  #   depends_on:
-  #     - default
+  dispatcher:
+    image: gcr.io/diffgram-open-core/local_dispatcher:latest
+    ports:
+      - "0.0.0.0:8085:8085"
+    expose: [8085]
+    depends_on:
+      - frontend
+      - default
+      - walrus
+    environment:
+      SAME_HOST: ${SAME_HOST}
+  frontend:
+    image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
+    ports:
+      - "0.0.0.0:8081:80"
+    expose: [80]
+    depends_on:
+      - default
   walrus:
     image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
