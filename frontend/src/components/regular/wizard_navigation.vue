@@ -9,6 +9,7 @@
 
       <tooltip_button
         v-if="back_visible"
+        datacy="wizard_navigation_back"
         tooltip_message="Back"
         :bottom="true"
         :disabled="disabled_back"
@@ -29,7 +30,9 @@
           :disabled="disabled_next"
           x-large
           @click="$emit('next')"
-          color="success">
+          color="success"
+          data-cy="wizard_navigation_next"
+               >
 
           Next
         </v-btn>
@@ -41,6 +44,7 @@
         <tooltip_button
           v-if="skip_visible"
           tooltip_message="Skip, I will do this later"
+          datacy="wizard_navigation_skip"
           :bottom="true"
           :disabled="disabled_skip"
           button_message="Skip"
