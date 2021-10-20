@@ -48,19 +48,24 @@
           height="12"
         >
         </v-progress-linear>
+
         <v-stepper-items style="height: 100%">
           <v-stepper-content step="1" style="height: 100%">
             <project_new
               @project_created="on_project_created"
             ></project_new>
           </v-stepper-content>
+
           <v-stepper-content step="2" style="height: 100%">
+
             <labels_attributes_manager
               @skip="go_to_step"
+              @back="go_back_a_step()"
               :project_string_id="project_string_id">
 
             </labels_attributes_manager>
           </v-stepper-content>
+
           <v-stepper-content step="3" style="height: 100%">
             <div class="d-flex justify-end">
               <v-btn x-small
@@ -179,6 +184,9 @@ export default Vue.extend( {
     },
     go_to_step: function(step){
       this.step = step
+    },
+    go_back_a_step: function(){
+      this.step -= 1
     },
     on_change_step: function(){
 

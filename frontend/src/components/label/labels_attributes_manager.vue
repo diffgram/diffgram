@@ -25,7 +25,8 @@
               offset="x"
             >
 
-              <template slot="content" slot-scope="props">
+              <template slot="content"
+                        slot-scope="props">
 
                 <v_labels_new @label_created="on_label_created"
                               :menu_open="props.menu_open">
@@ -60,6 +61,13 @@
       </v-row>
 
     </v-layout>
+
+    <wizard_navigation
+      @next="go_to_step(3)"
+      @skip="go_to_step(3)"
+      @back="$emit('back')"
+      :disabled_next="label_file_list.length == 0 && attribute_group_list.length === 0">
+    </wizard_navigation>
 
     <v-row>
       <v-layout column>
