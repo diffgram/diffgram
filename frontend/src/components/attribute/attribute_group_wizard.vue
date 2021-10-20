@@ -156,7 +156,7 @@
               <button_with_menu
                 tooltip_message="New Option"
                 button_text="New Option"
-                data-cy="new_attribute_option_button"
+                datacy="new_attribute_option_button"
                 datacyclose="close_button_new_attribute"
                 v-if="group && group.kind != 'text' && group.kind != 'slider' "
                 icon="add"
