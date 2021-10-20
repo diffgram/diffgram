@@ -229,8 +229,9 @@ jobs:
       matrix:
         node: [10, 12, 14]
     steps:
+      - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
