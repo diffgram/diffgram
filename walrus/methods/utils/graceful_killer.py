@@ -1,7 +1,7 @@
 import time
 import sys
 import signal
-from walrus.methods.regular.regular_api import logger
+from methods.regular.regular_api import logger
 from shared.helpers.sessionMaker import session_scope
 from shared.utils.singleton import Singleton
 from signal import signal, SIGINT, SIGTERM, SIG_IGN
