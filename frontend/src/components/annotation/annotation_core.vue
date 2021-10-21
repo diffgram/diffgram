@@ -1357,10 +1357,7 @@
             x: 0,
             y: 0
           },
-          canvas_pan_accumulated: {
-            x: 0,
-            y: 0
-          },
+
           zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
@@ -5131,22 +5128,34 @@
             return
           }
 
-          let x = this.canvas_pan_accumulated.x + movementX;
-          let y = this.canvas_pan_accumulated.y + movementY;
-          let pan_position_x = x + this.mouse_position.x;
-          let pan_position_y = y + this.mouse_position.y;
+          // Map Bounds to World
+          var transform = this.canvas_mouse_tools.canvas_ctx.getTransform();
 
-          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width)){
+          let min_point = this.canvas_mouse_tools.map_point_from_matrix(
+            0, 0, transform)
+
+          let max_point = this.canvas_mouse_tools.map_point_from_matrix(
+            this.canvas_width, this.canvas_height, transform)
+ 
+          // Propose Position with Movement
+          let x_min_proposed = 0 + movementX  
+          let y_min_proposed = 0 + movementY
+
+          let x_max_proposed = this.canvas_width + movementX  
+          let y_max_proposed = this.canvas_height + movementY
+
+          // Test if proposed position will break world mapped bounds
+          if ( x_min_proposed > min_point.x
+            && x_max_proposed < max_point.x ){
+
             this.canvas_mouse_tools.pan_x(movementX)
-            this.canvas_pan_accumulated.x = x
-
           }
-          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height)){
+      
+          if ( y_min_proposed > min_point.y
+            && y_max_proposed < max_point.y ){
+
             this.canvas_mouse_tools.pan_y(movementY)
-            this.canvas_pan_accumulated.y = y
-
           }
-
         },
 
         mouse_move: function (event) {
@@ -5167,7 +5176,6 @@
             this.canvas_element.style.cursor = 'move'
             return
           }
-          this.canvas_pan_accumulated = {x:0, y: 0};
           this.move_something(event)
 
           this.update_mouse_style()

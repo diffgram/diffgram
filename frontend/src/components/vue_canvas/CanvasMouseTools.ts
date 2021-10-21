@@ -34,6 +34,7 @@ export class CanvasMouseTools {
     this.canvas_ctx.translate(-point.x, -point.y);
     this.scale *= scale;
   }
+
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
   }
@@ -82,6 +83,14 @@ export class CanvasMouseTools {
 
     return mouse_position;
   }
+
+  public map_point_from_matrix(x, y, matrix){
+    let point = {'x': undefined, 'y': undefined}
+    point.x = x * matrix.a + y * matrix.c + matrix.e;
+    point.y = x * matrix.b + y * matrix.d + matrix.f;
+    return point
+  }
+
   public get_translation(transform){
     return {x: transform.e, y: transform.f}
   }
