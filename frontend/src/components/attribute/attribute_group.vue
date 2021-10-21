@@ -159,6 +159,7 @@
 
       <attribute_group_wizard
         v-if="enable_wizard == true"
+        ref="attribute_group_wizard"
         :kind_list="kind_list"
         :error="error"
         :select_format="select_format"
@@ -172,7 +173,7 @@
       </attribute_group_wizard>
 
       <v-container v-if="enable_wizard == false"
-                   class="pa-2">         
+                   class="pa-2">
 
           <v-layout>
             <!-- KIND -->
@@ -195,7 +196,7 @@
             >
             </v-text-field>
           </v-layout>
-         
+
         <v-layout column>
 
           <h3 class="pb-2"> When Do You Want to Show This? </h3>
@@ -410,7 +411,7 @@
                  <v-alert type="warning">
                     Are you sure? This will remove all options too.
                  </v-alert>
-         
+
               </v-layout>
             </template>
           </button_with_confirm>
@@ -646,7 +647,13 @@
       },
       methods: {
         update_label_files: function(new_label_list){
-          this.$refs.label_selector.set_label_list(new_label_list)
+          if(!this.$props.enable_wizard){
+            this.$refs.label_selector.set_label_list(new_label_list)
+          }
+          else{
+            this.$refs.attribute_group_wizard.update_label_files(new_label_list)
+          }
+
         },
         // group change
         attribute_change: function () {

@@ -220,7 +220,7 @@
               :skip_visible="false"
                                >
             </wizard_navigation>
-          
+
           </v-stepper-content>
 
           <v-stepper-content step="5" style="height: 100%">
@@ -356,7 +356,7 @@
 
       </v-stepper>
 
- 
+
 </template>
 
 <script lang="ts">
@@ -422,6 +422,10 @@ export default Vue.extend( {
     }
   },
   methods: {
+    update_label_files: function(new_label_file_list){
+      this.$refs.label_selector.set_label_list(new_label_file_list)
+
+    },
     go_to_step: function(step){
       this.step = step
     },
