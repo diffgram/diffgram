@@ -5,8 +5,9 @@ export class CanvasMouseTools {
   private canvas_transform: any;
   private canvas_ctx: any;
   private canvas_elm: any;
-  private zoom_stack: {zoom: number}[];
+  private zoom_stack: {point: {x: number, y: number}}[];
   private previous_transform: any;
+  private panned_distance: {x: number, y: number}
   private image: any;
   private scale: number;
   private previous_zoom: number;
@@ -24,6 +25,7 @@ export class CanvasMouseTools {
     this.canvas_scale_global = canvas_scale_global;
     this.translate_acc = {x: 0, y: 0}
     this.zoom_stack = [];
+    this.panned_distance = {x: 0, y: 0}
   }
 
   public zoom_to_point(point, scale){
@@ -55,10 +57,14 @@ export class CanvasMouseTools {
   }
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
+    this.panned_distance.x += movement_x
+
   }
 
   public pan_y(movement_y){
     this.canvas_ctx.translate(0, -movement_y);
+    this.panned_distance.y += movement_y
+
   }
 
   public mouse_transform(event, mouse_position, canvas_element): void {
@@ -116,11 +122,12 @@ export class CanvasMouseTools {
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
     this.zoom_stack = [];
+    this.panned_distance = {x: 0, y: 0}
   }
 
   public perform_zoom_delta(zoom, point){
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-
+    // this.panned_distance = {x: 0, y: 0}
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
       this.reset_transform_with_global_scale();
@@ -164,6 +171,7 @@ export class CanvasMouseTools {
 
     // this is the illusionary point on UI that we wish to stay locked on
     let point = this.raw_point(event);
+
     let zoom_in = true;
     if(zoom < 1){
       zoom_in = false
@@ -177,6 +185,14 @@ export class CanvasMouseTools {
       let elm = this.zoom_stack.pop()
       if(elm){
         point = elm.point
+        let panned_distance = this.panned_distance
+        // Unpan
+        this.canvas_ctx.translate(panned_distance.x, panned_distance.y)
+        this.panned_distance = {x: 0, y: 0};
+        console.log('POINT', point.x, point.y)
+        console.log('pann', panned_distance.x, panned_distance.y)
+        point.x += panned_distance.x;
+        point.y += panned_distance.y;
       }
 
     }
