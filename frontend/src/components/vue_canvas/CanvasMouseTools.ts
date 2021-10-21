@@ -34,7 +34,25 @@ export class CanvasMouseTools {
     this.canvas_ctx.translate(-point.x, -point.y);
     this.scale *= scale;
   }
+  public get_new_bounds_from_translate_x(movement_x, canvas_width, canvas_height){
+    this.canvas_ctx.save();
+    this.canvas_ctx.translate(-movement_x, 0);
+    var transform = this.canvas_ctx.getTransform();
+    let min_point = this.map_point_from_matrix(1, 1, transform)
+    let max_point = this.map_point_from_matrix(canvas_width, canvas_height, transform)
+    this.canvas_ctx.restore();
+    return {x_min: min_point.x, x_max: max_point.x, y_min: min_point.y, y_max: max_point.y}
+  }
 
+  public get_new_bounds_from_translate_y(movement_y, canvas_width, canvas_height){
+    this.canvas_ctx.save();
+    this.canvas_ctx.translate(0, -movement_y);
+    var transform = this.canvas_ctx.getTransform();
+    let min_point = this.map_point_from_matrix(1, 1, transform)
+    let max_point = this.map_point_from_matrix(canvas_width, canvas_height, transform)
+    this.canvas_ctx.restore();
+    return {x_min: min_point.x, x_max: max_point.x, y_min: min_point.y, y_max: max_point.y}
+  }
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
   }
