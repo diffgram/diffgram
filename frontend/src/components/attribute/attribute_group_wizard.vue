@@ -64,7 +64,7 @@
 
         <v-stepper-items style="height: 100%" class="pt-4">
 
-          <v-stepper-content step="1" style="height: 100%">
+          <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
             <h2 class="pb-2"> What Kind of Question? </h2>
 
@@ -91,7 +91,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="2" style="height: 100%">
+          <v-stepper-content step="2" style="height: 100%" data-cy="attribute_wizard_step_2">
 
             <h2> Name Your Question </h2>
 
@@ -104,6 +104,17 @@
             >
             </v-text-field>
 
+            <h4 class="ma-0 mt-6">Internal Tag:</h4>
+            <p class="text--secondary">The internal tag can be used for reference when exporting to JSON or other formats.</p>
+            <v-text-field label="Internal Tag"
+                          data-cy="attribute_tag"
+                          v-model="group.name"
+                          @input="$emit('input', group)"
+                          @change="$emit('change')"
+            >
+            </v-text-field>
+
+
             <wizard_navigation
               @next="go_to_step(3)"
               @back="go_back_a_step()"
@@ -114,7 +125,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="3" style="height: 100%">
+          <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
             <h2 class="pb-2"> When Do You Want to Show This? </h2>
 
@@ -141,7 +152,7 @@
           </v-stepper-content>
 
 
-          <v-stepper-content step="4" style="height: 100%">
+          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
 
           <v-layout column>
 
@@ -223,7 +234,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%">
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
