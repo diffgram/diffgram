@@ -80,7 +80,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.on_instance_updated,
       this.on_instance_selected,
       this.on_instance_deselected,
-      this.mouse_down_delta_event
+      this.mouse_down_delta_event,
+      this.mouse_down_position,
+      this.label_settings,
     );
     let instance_data_to_keep = {
       ...this,
@@ -400,6 +402,41 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.instance_rotate_control_mouse_hover
   }
 
+  private draw_node_label(ctx, node){
+    if(!node.name){
+      return
+    }
+    let prevfillStyle = ctx.fillStyle.toString();
+
+    let font_size = 12 / this.ctx.getTransform().a;
+    ctx.font = font_size + "px Verdana";
+    ctx.textBaseline = 'bottom'
+
+    let message = node.name
+    let text_width = ctx.measureText(message).width;
+
+    ctx.fillStyle = "rgba(" + '255, 255, 255,' + '1' + ")";
+
+    let text_height = font_size;
+    // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+    let padding = 2
+    ctx.fillRect(
+      node.x + 5,
+      node.y + 5 - text_height - padding,
+      text_width + padding,
+      text_height + padding)
+
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillText(message, node.x + 5, node.y + 5);
+
+
+
+    ctx.fillStyle = prevfillStyle
+
+
+
+  }
+
   public draw(ctx): void {
     this.ctx = ctx;
     this.num_hovered_paths = 0;
@@ -445,6 +482,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       y = this.get_scaled_y(node)
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
+
+      this.draw_node_label(ctx, node);
 
       this.draw_left_right_arrows(ctx, node, x, y)
 
@@ -674,6 +713,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.node_hover_index === i){
       ctx.fillStyle = 'green'
     }
+    console.log('color', ctx.fillStyle, ctx.strokeStyle)
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
