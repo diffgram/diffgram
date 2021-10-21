@@ -326,6 +326,20 @@
       >
       </tooltip_button>
     </div>
+    <v-divider vertical />
+    <div>
+      <tooltip_button
+          tooltip_message="Annotation show"
+          v-if="!task && file && file.id"
+          @click="$emit('annotation_show')"
+          :disabled="loading || annotations_loading ||  full_file_loading || !file"
+          color="primary"
+          icon="play_circle"
+          :icon_style="true"
+          :bottom="true"
+      >
+      </tooltip_button>
+    </div>
     <div>
       <tooltip_button
         tooltip_message="Previous Task"

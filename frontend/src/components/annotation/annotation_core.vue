@@ -50,6 +50,7 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
+                   @annotation_show="annotation_show_activate"
                    @canvas_scale_global_changed="on_canvas_scale_global_changed"
                    @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
@@ -811,6 +812,7 @@
   import { sha256 } from 'js-sha256';
   import stringify  from 'json-stable-stringify';
   import PropType from 'vue'
+  import _ from "lodash"
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
@@ -895,6 +897,10 @@
         'enabled_edit_schema' : {}
       },
       watch: {
+        annotation_show_on: function(val) {
+          console.log("Value has changed to: ", val)
+          this.annotation_show()
+        },
         canvas_scale_global: function(newVal, oldVal){
           this.on_canvas_scale_global_changed(newVal)
 
@@ -1189,6 +1195,8 @@
             instance_list: [],     // careful, need this to not be null for vue canvas to work as expected
             id: null
           },
+
+          annotation_show_on: false,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6466,6 +6474,18 @@
             this.$refs.video_controllers.reset_cache();
           }
 
+        },
+        annotation_show_activate(){
+          this.annotation_show_on = !this.annotation_show_on
+        },
+        annotation_show(){
+          this.change_file("next")
+          setTimeout(() => {
+            if (this.annotation_show_on) {
+              this.annotation_show()
+            }
+            return
+          }, 3000)
         },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
