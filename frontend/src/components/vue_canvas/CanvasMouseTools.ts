@@ -189,8 +189,6 @@ export class CanvasMouseTools {
         // Unpan
         this.canvas_ctx.translate(panned_distance.x, panned_distance.y)
         this.panned_distance = {x: 0, y: 0};
-        console.log('POINT', point.x, point.y)
-        console.log('pann', panned_distance.x, panned_distance.y)
         point.x += panned_distance.x;
         point.y += panned_distance.y;
       }
