@@ -5132,22 +5132,21 @@
           var transform = this.canvas_mouse_tools.canvas_ctx.getTransform();
 
           let min_point = this.canvas_mouse_tools.map_point_from_matrix(
-            0, 0, transform)
+            1, 1, transform)
 
           let max_point = this.canvas_mouse_tools.map_point_from_matrix(
-            this.canvas_width, this.canvas_height, transform)
+            this.canvas_width - 1, this.canvas_height- 1, transform)
  
           // Propose Position with Movement
-          let x_min_proposed = 0 + movementX  
-          let y_min_proposed = 0 + movementY
+          let x_min_proposed = Math.max(0 + movementX, 0)  
+          let y_min_proposed = Math.max(0 + movementY, 0)
 
-          let x_max_proposed = this.canvas_width + movementX  
-          let y_max_proposed = this.canvas_height + movementY
+          let x_max_proposed = Math.min(this.canvas_width_scaled + movementX,  this.canvas_width_scaled)
+          let y_max_proposed = Math.min(this.canvas_height_scaled + movementY, this.canvas_height_scaled)
 
           // Test if proposed position will break world mapped bounds
           if ( x_min_proposed > min_point.x
             && x_max_proposed < max_point.x ){
-
             this.canvas_mouse_tools.pan_x(movementX)
           }
       
