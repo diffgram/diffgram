@@ -898,7 +898,6 @@
       },
       watch: {
         annotation_show_on: function(val) {
-          console.log("Value has changed to: ", val)
           this.annotation_show()
         },
         canvas_scale_global: function(newVal, oldVal){
@@ -1197,6 +1196,7 @@
           },
 
           annotation_show_on: false,
+          annotation_show_current_instance: 0,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6479,7 +6479,23 @@
           this.annotation_show_on = !this.annotation_show_on
         },
         annotation_show(){
-          this.change_file("next")
+
+          const number_of_current_instances = this.instance_list.length
+          if (this.annotations_loading) {
+              setTimeout(() => {
+              if (this.annotation_show_on) {
+                this.annotation_show()
+              }
+              return
+            }, 3000)
+          }
+          else if (this.annotation_show_current_instance < number_of_current_instances) {
+            this.focus_instance({index : this.annotation_show_current_instance})
+            this.annotation_show_current_instance = this.annotation_show_current_instance + 1
+          } else {
+            this.annotation_show_current_instance = 0
+            this.change_file("next")
+          }
           setTimeout(() => {
             if (this.annotation_show_on) {
               this.annotation_show()
