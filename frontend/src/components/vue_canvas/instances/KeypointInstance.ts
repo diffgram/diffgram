@@ -94,8 +94,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
     return duplicate_instance
   }
-  public toggle_occluded(){
-    this.occluded = !this.occluded
+  public toggle_occluded(node_index){
+    this.nodes[node_index].occluded = !this.occluded
   }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){

@@ -212,7 +212,8 @@
         if(!this.$props.instance){
           return
         }
-        this.$props.instance.toggle_occluded();
+        this.$props.instance.toggle_occluded(this.node_hover_index_locked);
+        this.$emit('hide_context_menu');
       },
       on_node_updated: function(){
         let instance_update = {
