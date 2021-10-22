@@ -31,6 +31,9 @@ export default Vue.extend( {
     'instance_index':{
       default: null
     },
+    'instance':{
+      default: null
+    }
   },
   data() {
     return {
@@ -50,25 +53,29 @@ export default Vue.extend( {
     this.set_existing_node_name();
   },
   computed: {
-
-  },
-  methods: {
-    set_existing_node_name: function(){
+    current_instance: function(){
+      if(this.$props.instance){
+        return this.$props.instance
+      }
       if(this.node_index == undefined){return}
       if(this.instance_index == undefined){return}
       if(this.instance_list == undefined){return}
+      return this.instance_list[this.instance_index].nodes[this.node_index].name;
+    }
+  },
+  methods: {
+    set_existing_node_name: function(){
+      if(this.current_instance == undefined){return}
 
-      this.node_name = this.instance_list[this.instance_index].nodes[this.node_index].name;
+      this.node_name = this.current_instance.nodes[this.node_index].name;
     },
     on_close_click: function(){
       this.$emit('close')
     },
     set_node_name: function(){
-      if(this.node_index == undefined){return}
-      if(this.instance_index == undefined){return}
-      if(this.instance_list == undefined){return}
-
-      let instance = this.instance_list[this.instance_index];
+      console.log('AAAA', this.current_instance)
+      if(this.current_instance == undefined){return}
+      let instance = this.current_instance;
       let node = instance.nodes[this.node_index];
       node.name = this.node_name;
       this.$emit('node_updated')
