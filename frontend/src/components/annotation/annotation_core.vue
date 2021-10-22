@@ -1907,7 +1907,8 @@
           this.canvas_element_ctx.resetTransform();
           this.canvas_element_ctx.scale(new_scale, new_scale);
           this.canvas_element.width += 0;
-
+          this.canvas_mouse_tools.canvas_width = this.canvas_width
+          this.canvas_mouse_tools.canvas_height = this.canvas_height
 
           await this.$nextTick()
           this.canvas_mouse_tools.reset_transform_with_global_scale();
@@ -2994,7 +2995,9 @@
             this.mouse_position,
             this.canvas_translate,
             this.canvas_element,
-            this.canvas_scale_global
+            this.canvas_scale_global,
+            this.canvas_width,
+            this.canvas_height
           )
           this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
@@ -5136,6 +5139,7 @@
           let max_point = this.canvas_mouse_tools.map_point_from_matrix(
             this.canvas_width - 1, this.canvas_height- 1, transform)
 
+          //console.log(min_point.x, min_point.y)
 
           // Propose Position with Movement
           let x_min_proposed = Math.max(0 + movementX, 0)
@@ -5148,7 +5152,9 @@
           let current_trans_x = transform.e;
           if ( x_min_proposed > min_point.x
             && x_max_proposed < max_point.x){
-            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_x(movementX, this.canvas_width - 1, this.canvas_height - 1)
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_x(
+              movementX, this.canvas_width - 1, this.canvas_height - 1)
+
             if(movementX < 0 && new_bounds.x_min > 0){
               movementX = movementX + new_bounds.x_min
             }
@@ -5160,7 +5166,9 @@
 
           if ( y_min_proposed > min_point.y
             && y_max_proposed < max_point.y ){
-            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_y(movementY, this.canvas_width - 1, this.canvas_height - 1)
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_y(
+              movementY, this.canvas_width - 1, this.canvas_height - 1)
+
             if(movementY < 0 && new_bounds.y_min > 0){
               movementY = movementY + new_bounds.y_min
             }
