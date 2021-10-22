@@ -12,6 +12,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public occluded: boolean = false;
   public is_bounding_box_hovered: boolean = false;
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
@@ -63,6 +64,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
     this.initialized = true;
+    this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
   }
@@ -91,6 +93,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
     return duplicate_instance
+  }
+  public toggle_occluded(){
+    this.occluded = !this.occluded
   }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
@@ -713,7 +718,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.node_hover_index === i){
       ctx.fillStyle = 'green'
     }
-    console.log('color', ctx.fillStyle, ctx.strokeStyle)
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
