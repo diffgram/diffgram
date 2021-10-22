@@ -182,7 +182,6 @@ export class CanvasMouseTools {
     let point = this.raw_point(event);
 
     let bounds_before_zoom
-    let max_border_detection
 
     let zoom_in = true;
     if(zoom < 1){
@@ -198,8 +197,6 @@ export class CanvasMouseTools {
       if(elm){
         point = elm.point
         bounds_before_zoom = this.get_bounds()
-        max_border_detection = this.map_point_from_matrix(
-          this.canvas_width - 50, this.canvas_height - 50, this.canvas_ctx.getTransform())
       }
     }
 
@@ -226,13 +223,8 @@ export class CanvasMouseTools {
         if (Math.abs(bounds_before_zoom.min_point.y) < 50) {
           this.pan_y(Math.abs(bounds_after_zoom.min_point.y))
         }
-        //console.log("Bounds reminaing", Math.abs(bounds_before_zoom.min_point.y),
-        //  "Bounds after", Math.abs(bounds_after_zoom.min_point.y))
-
-        //console.log(Math.abs(bounds_before_zoom.max_point.y) - Math.abs(bounds_after_zoom.max_point.y))
 
         // careful, we use global scale for this comparison not the combined scale
-
         let canvas_width_scaled = this.canvas_width * this.canvas_scale_global
 
         let distance_from_outer_edge_x = Math.abs(
@@ -256,14 +248,8 @@ export class CanvasMouseTools {
 
       }
     }
-
-
-
-
   }
-  private clamp_values (val, min, max) {
-    return Math.min(Math.max(val, min), max)
-  }
+
   private raw_point(event) {
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
