@@ -205,47 +205,50 @@ export class CanvasMouseTools {
     // Auto Align Border Feature
 
     if (zoom_in == false) {
+      this.auto_align_borders_on_zoom_out(bounds_before_zoom)
+    }
+  }
 
-      let bounds_after_zoom = this.get_bounds()
+  private auto_align_borders_on_zoom_out(bounds_before_zoom) {
+    // https://diffgram.readme.io/docs/auto_align_borders_on_zoom_out
 
-      if (bounds_before_zoom != undefined ) {
+    let bounds_after_zoom = this.get_bounds()
 
-        // Check we are near border.
-        // This helps this only fire when near border, and also helps avoid
-        // large movements when heavily zoomed in, since naturally when zoomed in this value will be large.
+    if (bounds_before_zoom != undefined ) {
+
+      // Check we are near border.
+      // This helps this only fire when near border, and also helps avoid
+      // large movements when heavily zoomed in, since naturally when zoomed in this value will be large.
     
-        if (Math.abs(bounds_before_zoom.min_point.x) < 50) {
-          // Move the new border based on new boundry after zooming
-          // This number must always be positive, handling the case of the boundry crossing the mouse
-          this.pan_x(Math.abs(bounds_after_zoom.min_point.x))
-        }
+      if (Math.abs(bounds_before_zoom.min_point.x) < 50) {
+        // Move the new border based on new boundry after zooming
+        // This number must always be positive, handling the case of the boundry crossing the mouse
+        this.pan_x(Math.abs(bounds_after_zoom.min_point.x))
+      }
 
-        if (Math.abs(bounds_before_zoom.min_point.y) < 50) {
-          this.pan_y(Math.abs(bounds_after_zoom.min_point.y))
-        }
+      if (Math.abs(bounds_before_zoom.min_point.y) < 50) {
+        this.pan_y(Math.abs(bounds_after_zoom.min_point.y))
+      }
 
-        // careful, we use global scale for this comparison not the combined scale
-        let canvas_width_scaled = this.canvas_width * this.canvas_scale_global
+      // careful, we use global scale for this comparison not the combined scale
+      let canvas_width_scaled = this.canvas_width * this.canvas_scale_global
 
-        let distance_from_outer_edge_x = Math.abs(
-          bounds_before_zoom.max_point.x - canvas_width_scaled)
+      let distance_from_outer_edge_x = Math.abs(
+        bounds_before_zoom.max_point.x - canvas_width_scaled)
 
-        if (distance_from_outer_edge_x < 50) {
-          this.pan_x(-Math.abs(
-          bounds_after_zoom.max_point.x - canvas_width_scaled))
-        }
+      if (distance_from_outer_edge_x < 50) {
+        this.pan_x(-Math.abs(
+        bounds_after_zoom.max_point.x - canvas_width_scaled))
+      }
 
-        let canvas_height_scaled = this.canvas_height * this.canvas_scale_global
+      let canvas_height_scaled = this.canvas_height * this.canvas_scale_global
 
-        let distance_from_outer_edge_y = Math.abs(
-          bounds_before_zoom.max_point.y - canvas_height_scaled)
+      let distance_from_outer_edge_y = Math.abs(
+        bounds_before_zoom.max_point.y - canvas_height_scaled)
 
-        if (distance_from_outer_edge_y < 50) {
-          this.pan_y(-Math.abs(
-          bounds_after_zoom.max_point.y - canvas_height_scaled))
-        }
-  
-
+      if (distance_from_outer_edge_y < 50) {
+        this.pan_y(-Math.abs(
+        bounds_after_zoom.max_point.y - canvas_height_scaled))
       }
     }
   }
