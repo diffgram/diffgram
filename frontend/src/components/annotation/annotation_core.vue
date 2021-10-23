@@ -41,6 +41,7 @@
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
                    :enabled_edit_schema="enabled_edit_schema"
+                   :annotation_show_on="annotation_show_on"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -51,6 +52,7 @@
                    @save="save()"
                    @change_file="change_file($event)"
                    @annotation_show="annotation_show_activate"
+                   @show_duration_change="set_annotation_show_duration"
                    @canvas_scale_global_changed="on_canvas_scale_global_changed"
                    @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
@@ -1197,6 +1199,7 @@
 
           annotation_show_on: false,
           annotation_show_current_instance: 0,
+          annotation_show_duration_per_instance: 2000,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6479,7 +6482,7 @@
           this.annotation_show_on = !this.annotation_show_on
         },
         annotation_show(){
-
+          console.log(this.annotation_show_duration_per_instance)
           const number_of_current_instances = this.instance_list.length
           if (this.annotations_loading) {
               setTimeout(() => {
@@ -6487,7 +6490,7 @@
                 this.annotation_show()
               }
               return
-            }, 3000)
+            }, this.annotation_show_duration_per_instance)
           }
           else if (this.annotation_show_current_instance < number_of_current_instances) {
             this.focus_instance({index : this.annotation_show_current_instance})
@@ -6501,7 +6504,11 @@
               this.annotation_show()
             }
             return
-          }, 3000)
+          }, this.annotation_show_duration_per_instance)
+        },
+        set_annotation_show_duration(duration){
+          console.log(duration)
+          this.annotation_show_duration_per_instance = duration * 1000
         },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {

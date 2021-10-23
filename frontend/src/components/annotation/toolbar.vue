@@ -328,7 +328,32 @@
     </div>
     <v-divider vertical />
     <div>
-      <tooltip_button
+        <button_with_menu
+          tooltip_message="Annotation show"
+          v-if="view_only_mode != true"
+          color="primary"
+          icon="play_circle"
+          :close_by_button="true"
+        >
+        <template slot="content">
+          <v-btn 
+            @click="$emit('annotation_show')"
+          >
+            <span v-if="annotation_show_on_local !== true">
+              Start
+            </span>
+            <span v-else>
+              Stop
+            </span>
+          </v-btn>
+          <v-text-field 
+            v-model="numberValue" 
+            type="number"
+            label="Duration in seconds"
+            @change="$emit('show_duration_change', $event)"
+          />
+        </template>
+      <!-- <tooltip_button
           tooltip_message="Annotation show"
           v-if="!task && file && file.id"
           @click="$emit('annotation_show')"
@@ -337,8 +362,9 @@
           icon="play_circle"
           :icon_style="true"
           :bottom="true"
-      >
+      > -->
       </tooltip_button>
+      </button_with_menu>
     </div>
     <div>
       <tooltip_button
@@ -959,6 +985,9 @@ export default Vue.extend( {
     'enabled_edit_schema' : {
       default: false,
       type: Boolean
+    },
+    "annotation_show_on": {
+      type: Boolean
     }
 
   },
@@ -968,6 +997,7 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true
       },
       draw_mode_local: true,
+      annotation_show_on_local: false
     }
   },
   watch: {
@@ -982,6 +1012,9 @@ export default Vue.extend( {
     },
     draw_mode(event){
       this.draw_mode_local = event
+    },
+    annotation_show_on(event){
+      this.annotation_show_on_local = event
     }
   },
   mounted() {
