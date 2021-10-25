@@ -434,21 +434,21 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let message = node.name
     let text_width = ctx.measureText(message).width;
 
-    ctx.fillStyle = "rgba(" + '255, 255, 255,' + '1' + ")";
+    ctx.fillStyle = "rgba(" + '255, 255, 255,' + this.label_settings.font_background_opacity + ")";
 
     let text_height = font_size;
     // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
-    let padding = 2
-    let point = this.get_rotated_point({x: node.x + 5, y: node.y + 5 - text_height - padding });
-    let point_text = this.get_rotated_point({x: node.x + 5, y: node.y + 5  });
+    let padding = 2 / this.zoom_value
+    let padding_from_point = 5 / this.zoom_value
+    let point_text = this.get_rotated_point({x: node.x + padding_from_point, y: node.y + padding_from_point  });
     ctx.fillRect(
-      point.x,
-      point.y,
+      point_text.x,
+      point_text.y - text_height - padding,
       text_width + padding,
       text_height + padding)
 
     ctx.fillStyle = "rgba(0,0,0,1)";
-    ctx.fillText(message, point.x, point_text.y);
+    ctx.fillText(message, point_text.x, point_text.y);
 
 
 
