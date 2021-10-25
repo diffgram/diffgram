@@ -1357,10 +1357,7 @@
             x: 0,
             y: 0
           },
-          canvas_pan_accumulated: {
-            x: 0,
-            y: 0
-          },
+
           zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
@@ -1910,7 +1907,8 @@
           this.canvas_element_ctx.resetTransform();
           this.canvas_element_ctx.scale(new_scale, new_scale);
           this.canvas_element.width += 0;
-
+          this.canvas_mouse_tools.canvas_width = this.canvas_width
+          this.canvas_mouse_tools.canvas_height = this.canvas_height
 
           await this.$nextTick()
           this.canvas_mouse_tools.reset_transform_with_global_scale();
@@ -2993,7 +2991,9 @@
             this.mouse_position,
             this.canvas_translate,
             this.canvas_element,
-            this.canvas_scale_global
+            this.canvas_scale_global,
+            this.canvas_width,
+            this.canvas_height
           )
           this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
@@ -5127,22 +5127,53 @@
             return
           }
 
-          let x = this.canvas_pan_accumulated.x + movementX;
-          let y = this.canvas_pan_accumulated.y + movementY;
-          let pan_position_x = x + this.mouse_position.x;
-          let pan_position_y = y + this.mouse_position.y;
+          // Map Bounds to World
+          var transform = this.canvas_mouse_tools.canvas_ctx.getTransform();
 
-          if ( pan_position_x >= 0 && pan_position_x < (this.canvas_width)){
+          let min_point = this.canvas_mouse_tools.map_point_from_matrix(1, 1, transform)
+
+          let max_point = this.canvas_mouse_tools.map_point_from_matrix(
+            this.canvas_width - 1, this.canvas_height- 1, transform)
+
+          //console.log(min_point.x, min_point.y)
+
+          // Propose Position with Movement
+          let x_min_proposed = Math.max(0 + movementX, 0)
+          let y_min_proposed = Math.max(0 + movementY, 0)
+
+          let x_max_proposed = Math.min(this.canvas_width_scaled + movementX,  this.canvas_width_scaled)
+          let y_max_proposed = Math.min(this.canvas_height_scaled + movementY, this.canvas_height_scaled)
+
+          // Test if proposed position will break world mapped bounds
+          let current_trans_x = transform.e;
+          if ( x_min_proposed > min_point.x
+            && x_max_proposed < max_point.x){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_x(
+              movementX, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementX < 0 && new_bounds.x_min > 0){
+              movementX = movementX + new_bounds.x_min
+            }
+            if(movementX > 0 && new_bounds.x_max < x_max_proposed){
+              movementX = movementX - (x_max_proposed - new_bounds.x_max)
+            }
             this.canvas_mouse_tools.pan_x(movementX)
-            this.canvas_pan_accumulated.x = x
-
           }
-          if ( pan_position_y >= 0 && pan_position_y < (this.canvas_height)){
+
+          if ( y_min_proposed > min_point.y
+            && y_max_proposed < max_point.y ){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_y(
+              movementY, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementY < 0 && new_bounds.y_min > 0){
+              movementY = movementY + new_bounds.y_min
+            }
+            if(movementY > 0 && new_bounds.y_max < y_max_proposed){
+              movementY = movementY - (y_max_proposed - new_bounds.y_max)
+            }
+
             this.canvas_mouse_tools.pan_y(movementY)
-            this.canvas_pan_accumulated.y = y
-
           }
-
         },
 
         mouse_move: function (event) {
@@ -5163,7 +5194,6 @@
             this.canvas_element.style.cursor = 'move'
             return
           }
-          this.canvas_pan_accumulated = {x:0, y: 0};
           this.move_something(event)
 
           this.update_mouse_style()
