@@ -896,9 +896,15 @@
         'view_only_mode': {
           default: false
         },
-        'enabled_edit_schema' : {}
+        'enabled_edit_schema' : {},
+        'finish_annotation_show': {
+          default: false
+        }
       },
       watch: {
+        finish_annotation_show: function (val) {
+          this.finish_annotation_show_local = val
+        },
         annotation_show_on: function(val) {
           this.annotation_show()
         },
@@ -1201,6 +1207,7 @@
           annotation_show_type: 'file',
           annotation_show_current_instance: 0,
           annotation_show_duration_per_instance: 2000,
+          finish_annotation_show_local: false,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6484,6 +6491,8 @@
           this.annotation_show_type = show_type
         },
         annotation_show(){
+          if (this.finish_annotation_show_local) return this.annotation_show_on = false
+          
           let changer = () => this.change_file('next')
           if (this.annotation_show_type === "task") changer = () => this.trigger_task_change('next', this.$props.task, true)
           const number_of_current_instances = this.instance_list.length
