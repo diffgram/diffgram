@@ -131,6 +131,7 @@
       },
       'show_context_menu': {
         type: Boolean,
+        default: false
       },
       'instance_hover_index': {
         type: Number,

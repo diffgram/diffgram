@@ -7,6 +7,5 @@ exports[`context_menu_instance_template.vue Renders component correctly. 1`] = `
     <!---->
     <!---->
   </v-card>
-  <share_instance_dialog-stub></share_instance_dialog-stub>
 </div>
 `;
