@@ -36,6 +36,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public angle: number = 0
   public label_settings: any = undefined
   private nearest_points_dict: any = undefined
+  private zoom_value: number = 1
 
 
   public get_instance_data(): object {
@@ -67,6 +68,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
+    this.vertex_size = this.label_settings.vertex_size
+    this.line_width = this.label_settings.spatial_line_size
   }
 
   public duplicate_for_undo(){
@@ -381,9 +384,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   public draw_rotate_point(
-      ctx,
-      is_mouse_in_path,
-      radius): boolean {
+      ctx): boolean {
 
     if(this.template_creation_mode){
       return
@@ -394,10 +395,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return this.instance_rotate_control_mouse_hover
     }
     ctx.beginPath();
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = 'black';
     ctx.fillStyle = 'white';
-    ctx.lineWidth = '4px';
-    ctx.arc(rotate_point.x, rotate_point.y, radius + 5, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 / this.zoom_value;
+    ctx.arc(rotate_point.x, rotate_point.y, (this.vertex_size + 3) / this.zoom_value, 0, 2 * Math.PI);
     ctx.fill()
     ctx.stroke()
     if(this.is_mouse_in_path(ctx)){
@@ -415,12 +416,18 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node_label(ctx, node){
+    if (this.label_settings.show_text != true) {
+      return
+    }
+    if (this.label_settings.show_label_text != true) {
+      return
+    }
     if(!node.name){
       return
     }
     let prevfillStyle = ctx.fillStyle.toString();
 
-    let font_size = 12 / this.ctx.getTransform().a;
+    let font_size = (this.label_settings.font_size * .75) / this.zoom_value;
     ctx.font = font_size + "px Verdana";
     ctx.textBaseline = 'bottom'
 
@@ -453,6 +460,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public draw(ctx): void {
     this.ctx = ctx;
+
+    this.zoom_value = this.ctx.getTransform().a
+
     this.num_hovered_paths = 0;
     let i = 0;
     // Not sure where we want to set this
@@ -463,8 +473,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     this.draw_instance_bounding_box(ctx)
 
-    this.draw_rotate_point(ctx, this.is_mouse_in_path, this.vertex_size)
-    // Draw current edge
     this.draw_currently_drawing_edge(ctx)
 
     this.draw_edges(ctx)
@@ -473,7 +481,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     for (let node of this.nodes) {
       // order of operations
-      ctx.lineWidth = 2;
 
       if (this.label_settings &&
           this.label_settings.show_occluded_keypoints == false &&
@@ -487,7 +494,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.strokeStyle = this.strokeColor;
         ctx.fillStyle = this.fillColor;
       }
-
 
       let x = node.x
       let y = node.y
@@ -503,7 +509,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       i += 1
     }
-    this.draw_rotate_point(ctx, this.is_mouse_in_path, this.vertex_size)
+    this.draw_rotate_point(ctx)
     this.determine_and_set_nearest_node_hovered(ctx)
 
     if (this.num_hovered_paths === 0) {
@@ -541,7 +547,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
-    let radius = this.vertex_size + 10
+    let radius = (this.vertex_size + 10) / this.zoom_value    // detection radius
 
     if (this.point_is_intersecting_circle(
       this.get_scaled_and_rotated_point(point),
@@ -556,12 +562,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.label_settings.show_left_right_arrows == false) {
       return
     }
-    let size = this.vertex_size * 8
+    let size = (this.vertex_size * 4) / this.zoom_value
     if(node.left_or_right == 'left') {
-      this.draw_icon(ctx, x - 5, y, 'arrow_left', size, 'rgb(255,0,0)')
+      this.draw_icon(ctx, x - (10/this.zoom_value), y, 'arrow_left', size, 'rgb(255,0,0)')
     }
     if(node.left_or_right=='right') {
-      this.draw_icon(ctx, x + 5, y, 'arrow_right', size, 'rgb(0,255,0)')
+      this.draw_icon(ctx, x + (10/this.zoom_value), y, 'arrow_right', size, 'rgb(0,255,0)')
     }
   }
 
@@ -675,6 +681,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let height = Math.abs(min_max_obj.max_y - min_max_obj.min_y);
 
     ctx.globalAlpha = 0.4;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value
     ctx.beginPath();
 
     ctx.rect(min_max_obj.min_x, min_max_obj.min_y, width + this.vertex_size, height + this.vertex_size);
@@ -727,7 +734,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.node_hover_index === i){
       ctx.fillStyle = 'green'
     }
-    ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 / this.zoom_value
+    ctx.arc(x, y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
 
@@ -748,7 +756,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     ctx.beginPath();
-    ctx.lineWidth = 2;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
     ctx.moveTo(this.current_node_connection[0].x, this.current_node_connection[0].y);
     ctx.lineTo(this.mouse_position.x, this.mouse_position.y)
@@ -758,7 +766,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_edges(ctx) {
-    ctx.lineWidth = this.line_width;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
 
     for (let edge of this.edges) {
