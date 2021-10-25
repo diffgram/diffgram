@@ -12,6 +12,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public occluded: boolean = false;
   public is_bounding_box_hovered: boolean = false;
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
@@ -63,6 +64,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
     this.initialized = true;
+    this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
   }
@@ -80,7 +82,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.on_instance_updated,
       this.on_instance_selected,
       this.on_instance_deselected,
-      this.mouse_down_delta_event
+      this.mouse_down_delta_event,
+      this.mouse_down_position,
+      this.label_settings,
     );
     let instance_data_to_keep = {
       ...this,
@@ -89,6 +93,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
     return duplicate_instance
+  }
+  public toggle_occluded(node_index){
+    this.nodes[node_index].occluded = !this.occluded
   }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
@@ -241,8 +248,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public calculate_center(){
     // This is the unrotated center.
-    this.center_x = parseInt((this.x_max + this.x_min) / 2)
-    this.center_y = parseInt((this.y_max + this.y_min) / 2)
+    let x = (this.x_max + this.x_min) / 2
+    let y = (this.y_max + this.y_min) / 2
+    this.center_x = parseInt(x.toString())
+    this.center_y = parseInt(y.toString())
     this.center = {x: this.center_x, y: this.center_y};
   }
   private move_node(event): void {
@@ -264,10 +273,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       //TODO handle for case where it's rotated and user pushes bounds (causes whole object to move)
       let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
       let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
-      this.x_min = parseInt(Math.min(...x_node_unrotated_list)) // careful math.min() expects destructured otherwised NaN
-      this.y_min = parseInt(Math.min(...y_node_unrotated_list))
-      this.x_max = parseInt(Math.max(...x_node_unrotated_list))
-      this.y_max = parseInt(Math.max(...y_node_unrotated_list))
+      this.x_min = parseInt(Math.min(...x_node_unrotated_list).toString()) // careful math.min() expects destructured otherwised NaN
+      this.y_min = parseInt(Math.min(...y_node_unrotated_list).toString())
+      this.x_max = parseInt(Math.max(...x_node_unrotated_list).toString())
+      this.y_max = parseInt(Math.max(...y_node_unrotated_list).toString())
     }
   }
 
@@ -306,10 +315,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     // TODO
     let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
     let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
-    let x_min = parseInt(Math.min(...x_node_unrotated_list))
-    let y_min = parseInt(Math.min(...y_node_unrotated_list))
-    let x_max = parseInt(Math.max(...x_node_unrotated_list))
-    let y_max = parseInt(Math.max(...y_node_unrotated_list))
+    let x_min = parseInt(Math.min(...x_node_unrotated_list).toString())
+    let y_min = parseInt(Math.min(...y_node_unrotated_list).toString())
+    let x_max = parseInt(Math.max(...x_node_unrotated_list).toString())
+    let y_max = parseInt(Math.max(...y_node_unrotated_list).toString())
 
     let center_x = (x_max + x_min) / 2;
     let center_y = (y_max +  y_min) / 2;
@@ -400,6 +409,41 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.instance_rotate_control_mouse_hover
   }
 
+  private draw_node_label(ctx, node){
+    if(!node.name){
+      return
+    }
+    let prevfillStyle = ctx.fillStyle.toString();
+
+    let font_size = 12 / this.ctx.getTransform().a;
+    ctx.font = font_size + "px Verdana";
+    ctx.textBaseline = 'bottom'
+
+    let message = node.name
+    let text_width = ctx.measureText(message).width;
+
+    ctx.fillStyle = "rgba(" + '255, 255, 255,' + '1' + ")";
+
+    let text_height = font_size;
+    // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+    let padding = 2
+    ctx.fillRect(
+      node.x + 5,
+      node.y + 5 - text_height - padding,
+      text_width + padding,
+      text_height + padding)
+
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillText(message, node.x + 5, node.y + 5);
+
+
+
+    ctx.fillStyle = prevfillStyle
+
+
+
+  }
+
   public draw(ctx): void {
     this.ctx = ctx;
     this.num_hovered_paths = 0;
@@ -446,6 +490,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
 
+      this.draw_node_label(ctx, node);
+
       this.draw_left_right_arrows(ctx, node, x, y)
 
       i += 1
@@ -472,15 +518,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private determine_and_set_nearest_node_hovered(ctx){
     const sorted_keys = Object.keys(this.nearest_points_dict).map(elm => parseFloat(elm)).sort(function(a,b) { return a - b;})
-    const sorted = sorted_keys.reduce(
-        (obj, key) => {
+    const sorted: any[] =  sorted_keys.reduce(
+        (obj, key): any => {
           obj[key.toString()] = this.nearest_points_dict[key.toString()];
           return obj;
         },
         {}
-      );
+    );
 
-    if(sorted.length === 0){
+    if(!sorted || sorted.length === 0){
       return
     }
     let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
