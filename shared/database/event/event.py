@@ -122,7 +122,8 @@ class Event(Base):
             'service_name': settings.DIFFGRAM_SERVICE_NAME,
         }
 
-    def serialize_for_visit_history(self):
+    def serialize_for_visit_history(self, session):
+
         return {
             'id': self.id,
             'kind': self.kind,
@@ -310,6 +311,8 @@ class Event(Base):
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox']:
+            return
 
         try:
             event_data = self.serialize()

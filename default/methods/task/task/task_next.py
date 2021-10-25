@@ -11,7 +11,8 @@ def task_next(job_id):
     """
     spec_list = [{'task_id': {'type': int, 'required': False}},
                  {'project_string_id': str},
-                 {'direction': str}]
+                 {'direction': str},
+                 {'assign_to_user': bool}]
 
     log, input, untrusted_input = regular_input.master(request=request,
                                                        spec_list=spec_list)
@@ -25,6 +26,10 @@ def task_next(job_id):
                                          task_id=input['task_id'],
                                          input=input)
 
+        if task_serialized is False:
+            log['info']['task'] = "No Task Found"
+            return jsonify(log=log), 200
+
         log['success'] = True
         return jsonify(log=log,
                        task=task_serialized), 200
@@ -36,10 +41,23 @@ def task_next_core(session,
                    project_string_id,
                    task_id,
                    input):
-    task = Task.get_next_previous_task_by_task_id(session=session,
-                                                  task_id=task_id,
-                                                  job_id=job_id,
-                                                  direction=input['direction'])
+
+    assign_to_user = input['assign_to_user']
+
+    if assign_to_user is True:
+        task = Task.get_task_from_job_id(
+            session=session,
+            job_id=job_id,
+            user = User.get(session),
+            direction=input['direction'],
+            assign_to_user=assign_to_user)
+
+    else:
+        task = Task.navigate_tasks_relative_to_given_task(
+            session=session,
+            task_id=task_id,   
+            direction=input['direction']
+            )
 
     if not task:
         return False

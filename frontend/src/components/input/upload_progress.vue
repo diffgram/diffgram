@@ -7,7 +7,7 @@
     <v-progress-linear
       color="secondary"
       striped
-      v-model="progress_percentage ? progress_percentage : percentage"
+      :value="progress_percentage ? progress_percentage : percentage"
       height="85"
     >
     </v-progress-linear>

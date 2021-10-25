@@ -1,12 +1,17 @@
 <template>
   <v-card v-if="task && task.id" :elevation="elevation" class="pa-0">
+
     <v-card-title class="pa-0"><h6 class="pa-0 ma-0">Related Files: </h6></v-card-title>
     <v-container class="pa-0">
-      <div class="d-flex align-center pa-1" style="border: 1px solid dimgrey; border-radius: 5px; background: #f0f0f0 ">
+      <div class="d-flex align-center pa-1"
+           style="border: 1px solid dimgrey; border-radius: 5px; background: #f0f0f0 ">
+
         <v-icon v-if="file && file.ann_is_complete" color="success" size="16">mdi-check-circle</v-icon>
         <v-icon v-if="!file || !file.ann_is_complete" color="warning" size="16" >mdi-clock</v-icon>
         <v-icon color="primary" size="16">mdi-file</v-icon>
-        <a :href="`/file/${file.id}`" target="_blank" style="font-size: 12px" ><strong>{{file.original_filename}} [ID: {{file.id}}]</strong></a>
+
+        <a :href="`/file/${file.id}`" target="_blank" style="font-size: 12px" >
+        <strong>{{file.original_filename}} [ID: {{file.id}}]</strong></a>
       </div>
       <h6 class="pa-0 ma-0">Related Tasks: </h6>
 
@@ -63,7 +68,8 @@
             if(!this.$props.task.file.id != undefined){
               return
             }
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/task/list`, {
+            const response = await axios.post(
+              `/api/v1/project/${this.$props.project_string_id}/task/list`, {
               file_id: this.$props.task.file.id,
               mode_data: 'list'
             })

@@ -3,15 +3,7 @@ from shared.settings import settings
 from shared.data_tools_core_gcp import DataToolsGCP
 from shared.data_tools_core_s3 import DataToolsS3
 from shared.data_tools_core_azure import DataToolsAzure
-
-
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+from shared.utils.singleton import Singleton
 
 
 class Data_tools(metaclass = Singleton):

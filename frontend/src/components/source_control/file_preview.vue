@@ -1,6 +1,12 @@
 <template>
-  <v-card class="ma-2" :elevation="0" style="background: #f6f7f8" :height="file_preview_height">
-    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg" @click="view_file_details(undefined)" >
+
+  <v-card class="ma-2"
+          :elevation="0"
+          style="background: #f6f7f8"
+          :height="file_preview_height">
+
+    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg"
+                 @click="view_file_details(undefined)" >
       <drawable_canvas
         v-if="image_bg"
         ref="drawable_canvas"
@@ -11,9 +17,10 @@
         :editable="false"
         :auto_scale_bg="true"
         :refresh="refresh"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
-      >
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
+        :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
+
+                       >
 
         <instance_list
           slot-scope="props"
@@ -45,8 +52,9 @@
         :auto_scale_bg="true"
         :label_settings="label_settings"
         :refresh="refresh"
-        :canvas_wrapper_id="`canvas_wrapper__${file.id}`"
-        :canvas_id="`canvas__${file.id}`"
+        :show_video_nav_bar="show_video_nav_bar"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
+        :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
         @on_click_details="view_file_details"
         ref="video_drawable_canvas"
         @update_instance_list="set_video_instance_list"
@@ -64,6 +72,7 @@
   import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
   import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+
   export default Vue.extend({
     name: "file_preview",
     components: {
@@ -94,10 +103,16 @@
         default: null
       },
       'show_ground_truth':{
-        default: null
+        default: true
+      },
+      show_video_nav_bar:{
+        default: true
       },
       'video':{
         default: null
+      },
+      'enable_go_to_file_on_click':{
+        default: true
       }
     },
     data: function () {
@@ -118,11 +133,12 @@
         }
       }
     },
+    created() {
+      this.prepare_filtered_instance_list();
+    },
     async mounted() {
       if (this.$props.file) {
         await this.set_bg(this.$props.file);
-
-        this.prepare_filtered_instance_list();
       }
     },
     watch: {
@@ -208,10 +224,12 @@
 
 
         if(this.$props.show_ground_truth){
-          const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
-          for(const inst of ground_truth_instances){
-            let initialized_instance = this.initialize_instance(inst);
-            this.filtered_instance_list.push(initialized_instance)
+          if(this.global_instance_list) { 
+            const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
+            for(const inst of ground_truth_instances){
+              let initialized_instance = this.initialize_instance(inst);
+              this.filtered_instance_list.push(initialized_instance)
+            }
           }
         }
       },
@@ -243,6 +261,9 @@
       },
 
       view_file_details: function(current_frame){
+        if(this.$props.enable_go_to_file_on_click == false) {
+          return
+        }
         let model_runs = [];
         let color_list = [];
         if(this.base_model_run){
@@ -272,8 +293,10 @@
     computed:{
       global_instance_list: function(){
         // This instance list can either be the image instance list of the video instance list at current frame.
-        if(this.$props.file.image){
+        if(this.$props.instance_list) {
+          if(this.$props.file.image){
           return this.$props.instance_list;
+          }
         }
         if(this.$props.file.video){
           return this.video_instance_list;

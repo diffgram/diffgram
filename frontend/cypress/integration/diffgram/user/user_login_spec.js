@@ -32,6 +32,7 @@ describe('Login Flow tests', function () {
       'project',
       'user',
       'clipboard',
-      'video');
+      'video',
+      'ui_schema');
   })
 });

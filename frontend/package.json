@@ -1,20 +1,21 @@
 {
   "name": "diffgram",
   "version": "1.0.0",
+  "private": true,
   "description": "webpack",
   "author": "Diffgram <support@diffgram.com>",
-  "private": true,
   "scripts": {
+    "build": "node build/build.js",
+    "test:unit": "vue-cli-service test:unit --coverage --silent",
+    "lint": "npx eslint './src/**/*.vue'",
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
+    "docs": "rm -rf ./docs/* && npx jsdoc -r -d docs -c ./jsdoc.json; npx http-server ./docs",
+    "e2e": "node test/e2e/runner.js",
+    "lint:fix": "npx eslint --fix './src/**/*.vue'",
+    "snapshots": "mocha --require mocha-snapshots --update",
     "start": "npm run dev",
     "startfortesting": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.test.conf.js",
-    "e2e": "node test/e2e/runner.js",
-    "test": "mochapack --webpack-config ./build/webpack.dev.conf.js --require test/setup.js --require mocha-snapshots src/**/*.spec.js",
-    "snapshots": "mocha --require mocha-snapshots --update",
-    "lint": "npx eslint './src/**/*.vue'",
-    "lint:fix": "npx eslint --fix './src/**/*.vue'",
-    "build": "node build/build.js",
-    "docs": "rm -rf ./docs/* && npx jsdoc -r -d docs -c ./jsdoc.json; npx http-server ./docs"
+    "test": "mochapack --webpack-config ./build/webpack.dev.conf.js --require test/setup.js --require mocha-snapshots src/**/*.spec.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
@@ -36,6 +37,7 @@
     "mathjs": "^7.5.1",
     "mime": "^2.4.7",
     "mime-types": "^2.1.27",
+    "moment-timezone": "^0.5.33",
     "mxgraph": "^4.2.2",
     "npm-check-updates": "^4.1.2",
     "object-sizeof": "^1.6.1",
@@ -77,6 +79,9 @@
     "@typescript-eslint/parser": "^2.34.0",
     "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",
     "@vue/babel-preset-jsx": "^1.2.4",
+    "@vue/cli": "^4.5.14",
+    "@vue/cli-plugin-unit-jest": "~4.5.0",
+    "@vue/cli-service-global": "^4.5.14",
     "@vue/eslint-config-typescript": "^5.1.0",
     "@vue/test-utils": "^1.1.1",
     "autoprefixer": "^9.8.6",
@@ -139,6 +144,7 @@
     "semver": "^7.3.2",
     "shelljs": "^0.8.4",
     "strip-loader": "^0.1.2",
+    "ts-jest": "26.4.2",
     "ts-loader": "^6.2.2",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "^3.0.0",
@@ -153,16 +159,16 @@
     "webpack-merge": "^4.2.2",
     "webpack-node-externals": "^1.7.2"
   },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ],
   "engines": {
     "node": ">= 6.0.0",
     "npm": ">= 3.0.0"
   },
   "resolutions": {
     "prosemirror-model": "1.9.1"
-  },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not ie <= 8"
-  ]
+  }
 }
