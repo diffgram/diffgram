@@ -1,5 +1,6 @@
 <template>
   <div :id="canvas_wrapper_id"
+       style="position: relative"
        class="ma-auto"
        v-bind:style="{width: canvas_width, height: canvas_height}"
        @mousemove="mouse_move"
@@ -29,7 +30,7 @@
       ></v_bg>
 
       <target_reticle target_type="canvas_cross"
-                      v-if="editable"
+                      v-if="editable && !show_context_menu"
                       :ord="2"
                       :x="mouse_position.x"
                       :y="mouse_position.y"
@@ -46,8 +47,9 @@
       </target_reticle>
 
       <slot name="current_instance_drawer"></slot>
-    </canvas>
 
+    </canvas>
+    <slot name="context_menu" :mouse_position="mouse_position"></slot>
   </div>
 </template>
 
@@ -80,6 +82,9 @@
       },
       editable:{
         default: true
+      },
+      show_context_menu:{
+        default: false
       },
       annotations_loading:{
         default: false

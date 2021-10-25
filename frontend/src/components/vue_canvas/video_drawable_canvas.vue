@@ -322,7 +322,8 @@ import {KeypointInstance} from "./instances/KeypointInstance";
             this.trigger_instance_changed,
             this.instance_selected,
             this.instance_deselected,
-            this.mouse_down_delta_event
+            this.mouse_down_delta_event,
+            this.mouse_position,
           );
           initialized_instance.populate_from_instance_obj(instance);
           return initialized_instance

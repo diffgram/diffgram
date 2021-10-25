@@ -57,7 +57,7 @@ describe('Annotate Files Tests', () => {
         cy.mousemovecanvas(nodes[0].x, nodes[0].y);
         cy.dragcanvas(nodes[0].x, nodes[0].y, nodes[0].x + 85, nodes[0].y);
 
-        cy.get('[data-cy=save_instance_template_button]').click();
+        cy.get('[data-cy=save_instance_template_button]').click({force: true});
       })
     })
 
