@@ -26,6 +26,10 @@ export default Vue.extend({
         "label_file_colour_map": {},
         "is_actively_drawing": {
           default: false
+        },
+        "zoom_value": {
+          type: Number,
+          default: 1
         }
       },
       data () {
@@ -209,7 +213,7 @@ export default Vue.extend({
            * */
 
           let points = instance.points
-          let circle_size = 4 / this.canvas_transform['canvas_scale_combined']
+          let circle_size = 4 / this.$props.zoom_value
 
           this.set_color(instance, ctx, 1)
 

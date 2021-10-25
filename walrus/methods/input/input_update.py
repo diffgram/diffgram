@@ -196,7 +196,7 @@ class Update_Input():
 
         self.session.add(self.input)
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY:
-            from walrus.methods.input.process_media import PrioritizedItem, add_item_to_queue
+            from methods.input.process_media import PrioritizedItem, add_item_to_queue
             item = PrioritizedItem(
                 priority = 10000,  # individual frames have a priority here.
                 input_id = self.input.id,
