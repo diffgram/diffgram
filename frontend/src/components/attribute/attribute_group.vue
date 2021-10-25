@@ -1,7 +1,7 @@
 <template>
   <div id="">
 
-    <!-- 
+    <!--
       note for formatting we keep the "annotation" display separate
       from the "administration" thing, different formatting goals
       ie tight space conservation vs seperation for different groups.
@@ -27,7 +27,7 @@
             found out after it not setting it MAY have been unrelated
             something to review later-->
 
-          <!-- 
+          <!--
               v-model here returns an object  -->
 
           <v-radio-group
@@ -155,11 +155,26 @@
 
     <!-- EDIT  -->
 
-    <v-container v-if="mode == 'edit' ">
-      <v-container class="pa-8">
+    <div v-if="mode == 'edit' ">
 
-        <v-row class="d-flex align-center">
-          <v-col cols="3">
+      <attribute_group_wizard
+        v-if="enable_wizard == true"
+        :kind_list="kind_list"
+        :error="error"
+        :select_format="select_format"
+        v-model="group_internal"
+        :loading="loading"
+        @change="api_group_update('UPDATE')"
+        :project_string_id="project_string_id"
+        @label_file="recieve_label_file($event)"
+                              >
+
+      </attribute_group_wizard>
+
+      <v-container v-if="enable_wizard == false"
+                   class="pa-2">         
+
+          <v-layout>
             <!-- KIND -->
             <diffgram_select
               data_cy="attribute_kind_select"
@@ -170,63 +185,67 @@
               @change="api_group_update('UPDATE')"
             >
             </diffgram_select>
-          </v-col>
-          <v-col cols="4">
+          </v-layout>
+
+          <v-layout>
             <v-text-field label="Prompt Shown"
                           data-cy="attribute_prompt"
                           v-model="group.prompt"
                           @change="api_group_update('UPDATE')"
             >
             </v-text-field>
-          </v-col>
-          <v-col cols="2">
-            <v-text-field label="Internal Tag"
-                          data-cy="attribute_tag"
-                          v-model="group.name"
-                          @change="api_group_update('UPDATE')"
-            >
-            </v-text-field>
-          </v-col>
-          <v-col cols="1">
+          </v-layout>
+         
+        <v-layout column>
+
+          <h3 class="pb-2"> When Do You Want to Show This? </h3>
+
+          <label_select_only
+            ref="label_selector"
+            label_prompt="Visible on Annotation with these Labels:"
+            datacy="label_select_attribute"
+            :project_string_id="project_string_id"
+            :mode=" 'multiple' "
+            :attribute_group_id="group.id"
+            @label_file="recieve_label_file($event)"
+          >
+          </label_select_only>
+
+        </v-layout>
 
 
-            <!-- Label -->
+        <v-layout column>
 
+          <v_error_multiple :error="error">
+          </v_error_multiple>
 
-            <!--
-            <v-alert type="info" v-if="group.kind == 'text'">
+          <h2 class="pb-2">
+          Options
+          </h2>
 
-            </v-alert>
-            -->
-
-            <!-- "Edit" in this context is not about editing the
-              attribute, but the administration process of creating
-              attributes vs actually annotating them
-              TODO adjust wording to make this more clear in code
-
-              Text case
-               * Don't snow "new" for text because we only allow one,
-              and the group level prompt is used as the label.
-
-               For now still show the list of attributes ie if a user
-              wants to change it back.
-              -->
-
+          <div class="pa-2">
             <button_with_menu
-              tooltip_message="New Attribute"
+              tooltip_message="New Option"
+              button_text="New Option"
               data-cy="new_attribute_option_button"
               datacyclose="close_button_new_attribute"
               v-if="group && group.kind != 'text' && group.kind != 'slider' "
               icon="add"
               :large="true"
-              color="green"
+              color="primary"
+              icon_color="white"
+              :icon_style="false"
+              :left="true"
+              offset="x"
               :close_by_button="true"
             >
-              <template slot="content">
+              <template slot="content"
+                        slot-scope="props">
 
                 <attribute_new_or_update
                   :project_string_id="project_string_id"
                   :group_id="group.id"
+                  :menu_open="props.menu_open"
                 >
 
                 </attribute_new_or_update>
@@ -234,64 +253,64 @@
               </template>
 
             </button_with_menu>
+          </div>
 
-          </v-col>
-          <v-col col="1">
-            <!-- Archive button -->
-            <button_with_confirm
-              @confirm_click="api_group_update('ARCHIVE')"
-              class="text-right pa-4"
-              icon="archive"
-              color="red"
-              :loading="loading"
-              :disabled="loading"
-              :icon_style="true"
-              tooltip_message="Archive"
+          <v-container v-if="group.attribute_template_list.length > 0"
+                       container--fluid grid-list-md>
+
+            <draggable
+              v-if="group"
+              v-model="group.attribute_template_list"
+              draggable=false
             >
-            </button_with_confirm>
-            <!-- Archive button -->
 
-          </v-col>
+              <template
+                v-for="item in group.attribute_template_list">
+
+                <attribute
+                  :project_string_id="project_string_id"
+                  :attribute="item"
+                  :key="item.id"
+                >
+                </attribute>
+
+              </template>
+
+            </draggable>
 
 
-        </v-row>
-        <v-row v-if="group.kind === 'slider'">
-          <v-col cols="3">
-            <v-text-field v-model="group.min_value"
-                          @change="api_group_update('UPDATE')"
-                          type="number"
-                          data-cy="min_value"
-                          label="Min Value">
+          </v-container>
 
-            </v-text-field>
-          </v-col>
-          <v-col cols="3">
-            <v-text-field v-model="group.max_value"
-                          @change="api_group_update('UPDATE')"
-                          type="number"
-                          data-cy="max_value"
-                          label="Max Value">
 
-            </v-text-field>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12">
-            <label_select_only
-              datacy="label_select_attribute"
-              :project_string_id="project_string_id"
-              :mode=" 'multiple' "
-              :attribute_group_id="group.id"
-              @label_file="recieve_label_file($event)"
-            >
-            </label_select_only>
-          </v-col>
-
-        </v-row>
+        </v-layout>
 
         <!-- Edit Default  default_id default_value -->
-        <v-row>
+        <v-layout column>
+
+          <h4 class="pa-2"> Default Option </h4>
+
           <v-col cols="12">
+
+            <v-row v-if="group.kind === 'slider'">
+              <v-col cols="3">
+                <v-text-field v-model="group.min_value"
+                              @change="api_group_update('UPDATE')"
+                              type="number"
+                              data-cy="min_value"
+                              label="Min Value">
+
+                </v-text-field>
+              </v-col>
+              <v-col cols="3">
+                <v-text-field v-model="group.max_value"
+                              @change="api_group_update('UPDATE')"
+                              type="number"
+                              data-cy="max_value"
+                              label="Max Value">
+
+                </v-text-field>
+              </v-col>
+            </v-row>
 
             <v-text-field
               v-if="group.kind == 'text'"
@@ -360,49 +379,61 @@
             </v-date-picker>
             </div>
           </v-col>
-        </v-row>
+        </v-layout>
 
 
-        <v-layout>
+        <v-layout column>
 
-          <v_error_multiple :error="error">
-          </v_error_multiple>
+          <h2> Settings </h2>
 
-          <v-container container--fluid grid-list-md>
+          <v-text-field label="Internal Tag"
+                        data-cy="attribute_tag"
+                        v-model="group.name"
+                        @change="api_group_update('UPDATE')"
+          >
+          </v-text-field>
 
-            <draggable
-              v-if="group"
-              v-model="group.attribute_template_list"
-              draggable=false
-            >
+          <!-- Archive button -->
+          <button_with_confirm
+            @confirm_click="api_group_update('ARCHIVE')"
+            class="text-right pa-4"
+            icon="archive"
+            color="red"
+            :loading="loading"
+            :disabled="loading"
+            :icon_style="true"
+            tooltip_message="Archive Entire Attribute and All Options"
+          >
+            <template slot="content">
+              <v-layout column>
 
-              <template
-                v-for="item in group.attribute_template_list">
-
-                <attribute
-                  :project_string_id="project_string_id"
-                  :attribute="item"
-                  :key="item.id"
-                >
-                </attribute>
-
-              </template>
-
-            </draggable>
-
-
-          </v-container>
+                 <v-alert type="warning">
+                    Are you sure? This will remove all options too.
+                 </v-alert>
+         
+              </v-layout>
+            </template>
+          </button_with_confirm>
+          <!-- Archive button -->
 
 
         </v-layout>
 
+        <div class="d-flex justify-end">
+          <v-chip class="ma-2" x-small color="secondary">ID: {{group.id}}</v-chip>
+        </div>
 
       </v-container>
 
       <!-- On bottom so it doesn't bounce screen when fires -->
-      <v-alert v-if="success" type="success" dismissible>Attribute updated successfully.</v-alert>
+      <v-alert v-if="success"
+               type="success"
+               dismissible
+               attach>
+        Saved
+      </v-alert>
 
-    </v-container>
+    </div>
 
   </div>
 </template>
@@ -416,7 +447,7 @@
   import attribute_new_or_update from './attribute_new_or_update.vue';
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
-
+  import attribute_group_wizard from './attribute_group_wizard';
 
   import Vue from "vue";
 
@@ -429,7 +460,8 @@
         attribute,
         attribute_new_or_update,
         label_select_only,
-        attribute_kind_icons
+        attribute_kind_icons,
+        attribute_group_wizard
 
       },
 
@@ -452,6 +484,10 @@
 
         'view_only_mode': {
           default: false
+        },
+
+        'enable_wizard': {
+          default: true   // default back to false
         }
 
       },
@@ -528,7 +564,9 @@
 
           name: null,
 
-          label_file_list: []
+          label_file_list: [],
+
+          group_internal: {}
 
         }
       },
@@ -545,6 +583,8 @@
           // we want a newly created group to be different
           // vue js being a bit fiddly here
           this.original_kind = this.group.kind
+
+          this.group_internal = this.$props.group
         }
 
       },
@@ -554,6 +594,8 @@
         this.set_existing_selected()
 
         this.original_kind = this.group.kind
+
+        this.group_internal = this.$props.group
 
       },
       mounted() {
@@ -576,7 +618,7 @@
            */
 
           if (this.group.kind == "text") {
-            return
+            return []
           }
 
           let attribute_template_list = []
@@ -603,7 +645,9 @@
         }
       },
       methods: {
-
+        update_label_files: function(new_label_list){
+          this.$refs.label_selector.set_label_list(new_label_list)
+        },
         // group change
         attribute_change: function () {
 
@@ -668,7 +712,7 @@
         },
 
         set_existing_selected: function () {
-          /* 
+          /*
            * In context of annotation this component is focused
            * on displaying attributes and propogating selections
            * If an instance already has selections then we need to set it,
@@ -909,35 +953,43 @@
           this.error = {}
           this.success = false
 
+          let group
+
+          if (this.group_internal) {
+            group = this.group_internal
+          } else {
+            group = this.group
+          }
+
           if (mode == 'ARCHIVE') {
             // backend validates that a kind exists
             // so doing this as a work around
-            this.group.kind = "ARCHIVE"
+            group.kind = "ARCHIVE"
           }
           let min_value, max_value;
-          if(this.group.kind === 'slider'){
+          if(group.kind === 'slider'){
             min_value = parseInt(this.min_value, 10);
             max_value = parseInt(this.max_value, 10);
-            if(max_value < parseInt(this.group.default_value, 10)){
-              max_value = parseInt(this.group.default_value, 10)
-              this.group.max_value = max_value;
+            if(max_value < parseInt(group.default_value, 10)){
+              max_value = parseInt(group.default_value, 10)
+              group.max_value = max_value;
             }
-            if(min_value > parseInt(this.group.default_value, 10)){
-              min_value = parseInt(this.group.default_value, 10)
-              this.group.min_value = min_value;
+            if(min_value > parseInt(group.default_value, 10)){
+              min_value = parseInt(group.default_value, 10)
+              group.min_value = min_value;
             }
           }
           axios.post(
             '/api/v1/project/' + this.project_string_id +
             '/attribute/group/update',
             {
-              group_id: Number(this.group.id),
-              name: this.group.name,
-              prompt: this.group.prompt,
+              group_id: Number(group.id),
+              name: group.name,
+              prompt: group.prompt,
               label_file_list: this.label_file_list,
-              kind: this.group.kind,
-              default_id: this.group.default_id,
-              default_value: this.group.default_value,
+              kind: group.kind,
+              default_id: group.default_id,
+              default_value: group.default_value,
               min_value: min_value,
               max_value: max_value,
               mode: mode
