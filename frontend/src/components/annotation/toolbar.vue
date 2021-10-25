@@ -331,7 +331,7 @@
         <button_with_menu
           tooltip_message="Annotation show"
           color="primary"
-          icon="play_circle"
+          :icon="anootations_show_icon"
           :close_by_button="true"
         >
         <template slot="content">
@@ -1014,6 +1014,10 @@ export default Vue.extend( {
         return "Editing"
       }
     },
+    anootations_show_icon: function(){
+      if (this.annotation_show_on) return "pause"
+      return "play_circle"
+    }
   },
   methods: {
     on_change_canvas_scale_global: function(){
