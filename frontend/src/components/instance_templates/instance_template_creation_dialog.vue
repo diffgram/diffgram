@@ -128,11 +128,28 @@
     },
     mounted() {
       this.open_snackbar(this.snackbar_text)
+      document.addEventListener('mousedown', this.mouse_events_global_down)
 
-
+    },
+    beforeDestroy() {
+      document.removeEventListener('mousedown', this.mouse_events_global_down)
     },
 
     methods: {
+      detect_clicks_outside_context_menu: function (e) {
+
+        // skip clicks on the actual context menu
+        if (e.target.matches('.context-menu, .context-menu *')){
+          return;
+        }
+        // assume if not on context menu, then it's outside and we want to hide it
+        this.hide_context_menu()
+      },
+      mouse_events_global_down: function(e) {
+
+        this.detect_clicks_outside_context_menu(e)
+
+      },
       mouse_up_limits: function (event) {
         // 1: left, 2: middle, 3: right, could be null
         // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
@@ -140,9 +157,9 @@
           return false
         }
         if (this.show_context_menu == true) {
-          this.hide_context_menu()
           return false
         }
+
         return true
 
       },
@@ -153,7 +170,9 @@
           return false
         }
         if (this.show_context_menu == true) {
-
+          if(!this.instance.is_node_hovered){
+            this.hide_context_menu()
+          }
           return false
         }
         return true
@@ -292,7 +311,6 @@
           return
         }
 
-        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
         if (interaction) {
           interaction.process();
@@ -307,7 +325,6 @@
         if(!this.mouse_up_limits(event)){
           return
         }
-        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
         if (interaction) {
           interaction.process();
