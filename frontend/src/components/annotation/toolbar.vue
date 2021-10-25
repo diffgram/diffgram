@@ -338,7 +338,7 @@
           <v-btn 
             @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
           >
-            <span v-if="annotation_show_on_local !== true">
+            <span v-if="annotation_show_on !== true">
               Start
             </span>
             <span v-else>
@@ -986,7 +986,6 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true
       },
       draw_mode_local: true,
-      annotation_show_on_local: false
     }
   },
   watch: {
@@ -1001,9 +1000,6 @@ export default Vue.extend( {
     },
     draw_mode(event){
       this.draw_mode_local = event
-    },
-    annotation_show_on(event){
-      this.annotation_show_on_local = event
     }
   },
   mounted() {
