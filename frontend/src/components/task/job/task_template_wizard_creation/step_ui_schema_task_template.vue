@@ -42,15 +42,6 @@
       <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>
       <v-btn :disabled="job.attached_directories_dict.attached_directories_list.length === 0" x-large color="primary" @click="on_next_button_click">Next</v-btn>
     </v-container>
-    <upload_wizard_sheet
-      v-if="open_wizard"
-      :project_string_id="project_string_id"
-      :initial_dataset="latest_dataset"
-      ref="upload_wizard_sheet"
-      @closed="on_close_wizard"
-    >
-
-    </upload_wizard_sheet>
   </v-container>
 
 </template>
@@ -65,7 +56,7 @@
   import Vue from "vue";
 
   export default Vue.extend({
-      name: 'step_attach_directories_task_template',
+      name: 'step_ui_schema_task_template',
       props: [
         'project_string_id',
         'job'

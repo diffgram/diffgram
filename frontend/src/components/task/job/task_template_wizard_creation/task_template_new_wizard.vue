@@ -35,13 +35,13 @@
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 6"
-          step="5">
+          step="6">
           Guides & Awards
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 7"
-          step="6">
+          step="7">
           Other Configs
         </v-stepper-step>
         <v-divider></v-divider>
