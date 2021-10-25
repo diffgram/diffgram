@@ -414,6 +414,16 @@
 
             </ghost_canvas_available_alert>
 
+            <v-progress-linear
+              v-if="annotation_show_on === true"
+              v-model="annotation_show_progress"
+              height="25"
+              color="green"
+            >
+              <strong>{{ Math.ceil(annotation_show_progress) }} %</strong>
+            </v-progress-linear>
+            <br />
+
             <canvas
               data-cy="canvas"
               ref="canvas"
@@ -1208,6 +1218,7 @@
           annotation_show_current_instance: 0,
           annotation_show_duration_per_instance: 2000,
           finish_annotation_show_local: false,
+          annotation_show_progress: 0,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6492,7 +6503,7 @@
         },
         annotation_show(){
           if (this.finish_annotation_show_local) return this.annotation_show_on = false
-          
+
           let changer = () => this.change_file('next')
           if (this.annotation_show_type === "task") changer = () => this.trigger_task_change('next', this.$props.task, true)
           const number_of_current_instances = this.instance_list.length
@@ -6505,10 +6516,12 @@
             }, this.annotation_show_duration_per_instance)
           }
           else if (this.annotation_show_current_instance < number_of_current_instances) {
+            this.annotation_show_progress = this.annotation_show_current_instance / number_of_current_instances * 100
             this.focus_instance({index : this.annotation_show_current_instance})
             this.annotation_show_current_instance = this.annotation_show_current_instance + 1
           } else {
             this.annotation_show_current_instance = 0
+            this.annotation_show_progress = 100
             changer()
           }
           setTimeout(() => {
@@ -6546,6 +6559,7 @@
           await this.prepare_canvas_for_new_file();
 
           this.full_file_loading = false;
+          this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
           this.canvas_mouse_tools.reset_transform_with_global_scale()
