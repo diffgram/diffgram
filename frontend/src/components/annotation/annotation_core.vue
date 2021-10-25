@@ -916,7 +916,10 @@
           this.finish_annotation_show_local = val
         },
         annotation_show_on: function(val) {
-          this.annotation_show()
+          if (val) setTimeout(() => {
+            this.annotation_show()
+          }, this.annotation_show_duration_per_instance)
+          else this.annotation_show()
         },
         canvas_scale_global: function(newVal, oldVal){
           this.on_canvas_scale_global_changed(newVal)
