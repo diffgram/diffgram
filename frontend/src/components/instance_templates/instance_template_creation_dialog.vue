@@ -63,11 +63,19 @@
       </v-card-text>
 
       <v-card-actions class="flex justify-end pa-0">
-        <v-btn color="error" text @click="is_open = false">
+        <v-btn color="error"
+               text
+               @click="is_open = false"
+               :disabled="loading"
+               >
           <v-icon>mdi-close</v-icon>
           Discard Changes
         </v-btn>
-        <v-btn color="success" data-cy="save_instance_template_button" text @click="save_instance_template">
+        <v-btn color="success"
+               data-cy="save_instance_template_button"
+               text
+               @click="save_instance_template"
+               :disabled="loading">
           <v-icon>mdi-content-save</v-icon>
           Save Instance Template
         </v-btn>
@@ -360,6 +368,7 @@
       update_instance_template: async function () {
         try {
           this.error = {};
+          this.loading = true;
           const has_empty_instances = this.validate_empty_instance_list();
           if (!has_empty_instances) {
             return
