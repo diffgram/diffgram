@@ -414,14 +414,17 @@
 
             </ghost_canvas_available_alert>
 
-            <v-progress-linear
-              v-if="annotation_show_on === true"
-              v-model="annotation_show_progress"
-              height="25"
-              color="green"
-            >
-              <strong>{{ Math.ceil(annotation_show_progress) }} %</strong>
-            </v-progress-linear>
+            <v-snackbar v-model="annotation_show_on" timeout="0" bottom="true">
+            <template>
+              <v-progress-linear
+                v-model="annotation_show_progress"
+                height="25"
+                color="green"
+              >
+                <strong>{{ Math.ceil(annotation_show_progress) }} %</strong>
+              </v-progress-linear>
+            </template>
+            </v-snackbar>
             <br />
 
             <canvas
@@ -6523,8 +6526,7 @@
               return
             }, this.annotation_show_duration_per_instance)
           }
-
-          if (this.annotation_show_current_instance < number_of_current_instances) {
+          else if (this.annotation_show_current_instance < number_of_current_instances) {
             this.annotation_show_progress = this.annotation_show_current_instance / number_of_current_instances * 100
             this.focus_instance({index : this.annotation_show_current_instance})
             this.annotation_show_current_instance = this.annotation_show_current_instance + 1
