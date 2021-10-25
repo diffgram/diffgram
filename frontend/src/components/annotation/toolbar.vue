@@ -354,6 +354,7 @@
         </template>
       </button_with_menu>
     </div>
+    <v-divider vertical />
     <div>
       <tooltip_button
         tooltip_message="Previous Task"

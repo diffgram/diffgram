@@ -1219,6 +1219,7 @@
           annotation_show_duration_per_instance: 2000,
           finish_annotation_show_local: false,
           annotation_show_progress: 0,
+          annotation_show_timer: null,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6501,14 +6502,17 @@
           this.annotation_show_on = !this.annotation_show_on
           this.annotation_show_type = show_type
         },
-        annotation_show(){
+        annotation_show(direction = "next", instant_transition = false){
+          if (instant_transition) clearTimeout(this.annotation_show_timer)
           if (this.finish_annotation_show_local) return this.annotation_show_on = false
 
-          let changer = () => this.change_file('next')
-          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change('next', this.$props.task, true)
+          let changer = () => this.change_file(direction)
+          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change(direction, this.$props.task, true)
+
           const number_of_current_instances = this.instance_list.length
+
           if (this.annotations_loading) {
-              setTimeout(() => {
+              this.annotation_show_timer = setTimeout(() => {
               if (this.annotation_show_on) {
                 this.annotation_show()
               }
@@ -6524,7 +6528,7 @@
             this.annotation_show_progress = 100
             changer()
           }
-          setTimeout(() => {
+          this.annotation_show_timer = setTimeout(() => {
             if (this.annotation_show_on) {
               this.annotation_show()
             }
@@ -6860,6 +6864,18 @@
 
           this.may_toggle_instance_transparency(event)
           this.may_toggle_show_hide_occlusion(event)
+
+          if (event.keyCode == 37 && this.annotation_show_on) {
+            this.annotation_show('previous', true)
+          }
+
+          if (event.keyCode == 39 && this.annotation_show_on) {
+            this.annotation_show('next', true)
+          }
+
+          if (event.keyCode == 32 && this.annotation_show_on) {
+            this.annotation_show_on = false
+          }
 
           if (event.key === "N") { // shift + n
             if (this.shift_key) {
