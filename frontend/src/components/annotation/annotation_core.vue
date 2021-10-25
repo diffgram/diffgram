@@ -455,6 +455,7 @@
                                 :target_type="target_reticle_type"
                                 :canvas_transform="canvas_transform"
                                 :reticle_size="label_settings.target_reticle_size"
+                                :zoom_value="zoom_value"
               >
               </target_reticle>
 
@@ -488,6 +489,7 @@
                                     :hidden_label_id_list="hidden_label_id_list"
                                     :is_actively_resizing="is_actively_resizing"
                                     :emit_instance_hover="!draw_mode || emit_instance_hover"
+                                    :zoom_value="zoom_value"
               >
               </canvas_instance_list>
 
@@ -512,6 +514,7 @@
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
                 @instance_hover_update="ghost_instance_hover_update($event[0], $event[1], $event[2])"
+                :zoom_value="zoom_value"
               >
               </ghost_instance_list_canvas>
 
@@ -554,7 +557,9 @@
                                         :canvas_transform="canvas_transform"
                                         :draw_mode="draw_mode"
                                         :is_actively_drawing="is_actively_drawing"
-                                        :label_file_colour_map="label_file_colour_map">
+                                        :label_file_colour_map="label_file_colour_map"
+                                        :zoom_value="zoom_value"
+                                       >
 
               </canvas_current_instance>
               <current_instance_template
@@ -3697,7 +3702,7 @@
         point_is_intersecting_circle: function (mouse, point, radius = 8) {
           // Careful this is effected by scale
           // bool, true if point if intersecting circle
-          let radius_scaled = radius / this.canvas_transform['canvas_scale_combined']
+          let radius_scaled = radius / this.zoom_value
           const result = Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) < radius_scaled;  // < number == circle.radius
           return result
         },
