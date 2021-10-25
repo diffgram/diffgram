@@ -208,6 +208,31 @@ export class CanvasMouseTools {
       this.auto_align_borders_on_zoom_out(bounds_before_zoom)
     }
   }
+  public zoom_in() {
+    let zoomIntensity = 0.1;
+    let virtual_wheel = .4
+    let center_point = {x: this.canvas_width / 2 , y: this.canvas_height / 2}
+    let zoom = Math.exp(virtual_wheel * zoomIntensity);
+    this.zoom_stack.push({
+      point: center_point
+    });
+    this.perform_zoom_delta(zoom, center_point)
+  }
+
+  public zoom_out() {
+    let point
+    let bounds_before_zoom
+    let zoomIntensity = 0.1;
+    let virtual_wheel = -.4
+    let zoom = Math.exp(virtual_wheel * zoomIntensity);
+    let elm = this.zoom_stack.pop()
+      if(elm){
+        point = elm.point
+        bounds_before_zoom = this.get_bounds()
+      }
+    this.perform_zoom_delta(zoom, point)
+    this.auto_align_borders_on_zoom_out(bounds_before_zoom)
+  }
 
   private auto_align_borders_on_zoom_out(bounds_before_zoom) {
     // https://diffgram.readme.io/docs/auto_align_borders_on_zoom_out
