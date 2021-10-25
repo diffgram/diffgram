@@ -1198,6 +1198,7 @@
           },
 
           annotation_show_on: false,
+          annotation_show_type: 'file',
           annotation_show_current_instance: 0,
           annotation_show_duration_per_instance: 2000,
 
@@ -6478,11 +6479,13 @@
           }
 
         },
-        annotation_show_activate(){
+        annotation_show_activate(show_type){
           this.annotation_show_on = !this.annotation_show_on
+          this.annotation_show_type = show_type
         },
         annotation_show(){
-          console.log(this.annotation_show_duration_per_instance)
+          let changer = () => this.change_file('next')
+          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change('next', this.$props.task, true)
           const number_of_current_instances = this.instance_list.length
           if (this.annotations_loading) {
               setTimeout(() => {
@@ -6497,7 +6500,7 @@
             this.annotation_show_current_instance = this.annotation_show_current_instance + 1
           } else {
             this.annotation_show_current_instance = 0
-            this.change_file("next")
+            changer()
           }
           setTimeout(() => {
             if (this.annotation_show_on) {
@@ -6507,7 +6510,6 @@
           }, this.annotation_show_duration_per_instance)
         },
         set_annotation_show_duration(duration){
-          console.log(duration)
           this.annotation_show_duration_per_instance = duration * 1000
         },
         change_file(direction, file){

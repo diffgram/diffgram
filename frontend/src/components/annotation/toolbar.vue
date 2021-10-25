@@ -330,14 +330,13 @@
     <div>
         <button_with_menu
           tooltip_message="Annotation show"
-          v-if="view_only_mode != true"
           color="primary"
           icon="play_circle"
           :close_by_button="true"
         >
         <template slot="content">
           <v-btn 
-            @click="$emit('annotation_show')"
+            @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
           >
             <span v-if="annotation_show_on_local !== true">
               Start
@@ -353,17 +352,6 @@
             @change="$emit('show_duration_change', $event)"
           />
         </template>
-      <!-- <tooltip_button
-          tooltip_message="Annotation show"
-          v-if="!task && file && file.id"
-          @click="$emit('annotation_show')"
-          :disabled="loading || annotations_loading ||  full_file_loading || !file"
-          color="primary"
-          icon="play_circle"
-          :icon_style="true"
-          :bottom="true"
-      > -->
-      </tooltip_button>
       </button_with_menu>
     </div>
     <div>
