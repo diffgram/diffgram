@@ -24,6 +24,7 @@
           <v-alert dismissible color="secondary" text icon="mdi-information">
             Right Click on a Point to Name it, or Set Default Occlusion Value.
             Press Esc to stop drawing and go to edit mode.
+            Double click a point to delete it.
           </v-alert>
           <v_error_multiple :error="error">
           </v_error_multiple>
@@ -82,7 +83,13 @@
       </v-card-actions>
 
     </v-card>
-    <v-snackbar color="secondary" :timeout="50000" v-if="show_snackbar" v-model="show_snackbar" :multi-line="true">
+    <v-snackbar color="secondary"
+                :timeout="5000"
+                v-if="show_snackbar"
+                v-model="show_snackbar"
+                :multi-line="true"
+                top
+                >
       {{snackbar_text}}
     </v-snackbar>
   </v-dialog>
@@ -275,7 +282,7 @@
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
         if (this.instance_context.draw_mode) {
-          this.open_snackbar('Press Esc to stop drawing Edges/Nodes and got to edit mode.');
+          this.open_snackbar('Press Esc to stop drawing Lines/Points and go to edit mode.');
         } else {
           this.close_snackbar()
         }
