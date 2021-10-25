@@ -5729,7 +5729,7 @@
           }
         },
 
-        mouse_down_limits: function (event) {
+         function (event) {
           /* not a fan of having a value
        * and a flag... but also have to deal with both
        * mouse up and down firing, but not wanting to rerun this stuff twice
