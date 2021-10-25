@@ -128,6 +128,7 @@
         canvas_width: 600,
         canvas_height: 600,
         is_open: false,
+        loading: false,
         name: undefined,
         label_settings: {
           show_occluded_keypoints: true,
@@ -188,7 +189,6 @@
 
       },
       hide_context_menu: function () {
-        console.log('hidee')
         this.show_context_menu = false;
       },
       open_context_menu: function () {
