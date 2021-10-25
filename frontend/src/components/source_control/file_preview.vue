@@ -168,6 +168,10 @@
         if(instance.type === 'keypoints' && !instance.initialized){
 
           // In this case we can send empty object for mouse position since we don't want drawing controls.
+
+
+
+
           let initialized_instance = new KeypointInstance(
             {},
             {},
@@ -176,7 +180,8 @@
             () =>{},
             () =>{},
             {},
-            this.label_settings
+            this.mouse_position,
+            this.label_settings,
           );
           initialized_instance.populate_from_instance_obj(instance);
           return initialized_instance
@@ -224,7 +229,7 @@
 
 
         if(this.$props.show_ground_truth){
-          if(this.global_instance_list) { 
+          if(this.global_instance_list) {
             const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
             for(const inst of ground_truth_instances){
               let initialized_instance = this.initialize_instance(inst);
