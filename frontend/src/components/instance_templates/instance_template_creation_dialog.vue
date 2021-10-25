@@ -22,7 +22,8 @@
 
           </instance_template_creation_toolbar>
           <v-alert dismissible color="secondary" text icon="mdi-information">
-            Right Click on a Node to Occlude it or give it a name.
+            Right Click on a Point to Name it, or Set Default Occlusion Value.
+            Press Esc to stop drawing and go to edit mode.
           </v-alert>
           <v_error_multiple :error="error">
           </v_error_multiple>
@@ -105,7 +106,7 @@
     data: function () {
       return {
         instance_type: 'keypoints',
-        snackbar_text: 'Press Esc to stop drawing Edges/Nodes and got to edit mode.',
+        snackbar_text: null,
         instance_context: new InstanceContext(),
         draw_mode: true,
         show_snackbar: false,
@@ -127,7 +128,7 @@
       }
     },
     mounted() {
-      this.open_snackbar(this.snackbar_text)
+
       document.addEventListener('mousedown', this.mouse_events_global_down)
 
     },
