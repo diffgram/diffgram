@@ -68,8 +68,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
-    this.vertex_size = this.label_settings.vertex_size
-    this.line_width = this.label_settings.spatial_line_size
+    if (this.label_settings) {
+      this.vertex_size = this.label_settings.vertex_size
+      this.line_width = this.label_settings.spatial_line_size
+    } else {
+      this.label_settings = {}
+      this.label_settings.vertex_size = this.vertex_size
+      this.label_settings.line_width = this.line_width
+      this.label_settings.font_size = 20
+    }
   }
 
   public duplicate_for_undo(){
@@ -416,10 +423,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node_label(ctx, node){
-    if (this.label_settings.show_text != true) {
+    if (this.label_settings.show_text == false) {
       return
     }
-    if (this.label_settings.show_label_text != true) {
+    if (this.label_settings.show_label_text == false) {
       return
     }
     if(!node.name){
