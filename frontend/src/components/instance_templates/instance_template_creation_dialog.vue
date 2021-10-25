@@ -10,6 +10,7 @@
           <v-text-field data-cy="instance_template_name_text_field"
                         label="Name"
                         v-model="name"></v-text-field>
+
           <instance_template_creation_toolbar
             ref="instance_template_creation_toolbar"
             @draw_mode_update="update_draw_mode_on_instances"
@@ -20,6 +21,9 @@
           >
 
           </instance_template_creation_toolbar>
+          <v-alert dismissible color="secondary" text icon="mdi-information">
+            Right Click on a Node to Occlude it or give it a name.
+          </v-alert>
           <v_error_multiple :error="error">
           </v_error_multiple>
           <drawable_canvas
@@ -29,6 +33,7 @@
             @mouseup="mouse_up"
             @contextmenu="contextmenu"
             :canvas_width="canvas_width"
+            :show_context_menu="show_context_menu"
             :canvas_height="canvas_height"
             :image_bg="image_bg"
             :annotations_loading="false"
@@ -41,19 +46,34 @@
               @instance_hover_update="instance_hover_update($event[0], $event[1])"
               :instance_list="instance_list"
             ></instance_drawer>
+            <context_menu_instance_template
+              slot="context_menu"
+              slot-scope="props"
+              :show_context_menu="show_context_menu"
+              :project_string_id="project_string_id"
+              :mouse_position="props.mouse_position"
+              :instance="instance"
+              @hide_context_menu="hide_context_menu"
+            />
           </drawable_canvas>
+
         </v-container>
+
       </v-card-text>
 
       <v-card-actions class="flex justify-end pa-0">
-        <v-btn color="error" text @click="is_open = false"><v-icon>mdi-close</v-icon>Discard Changes</v-btn>
+        <v-btn color="error" text @click="is_open = false">
+          <v-icon>mdi-close</v-icon>
+          Discard Changes
+        </v-btn>
         <v-btn color="success" data-cy="save_instance_template_button" text @click="save_instance_template">
           <v-icon>mdi-content-save</v-icon>
-          Save Instance Template</v-btn>
+          Save Instance Template
+        </v-btn>
       </v-card-actions>
 
     </v-card>
-    <v-snackbar  color="secondary" :timeout="50000" v-if="show_snackbar" v-model="show_snackbar" :multi-line="true">
+    <v-snackbar color="secondary" :timeout="50000" v-if="show_snackbar" v-model="show_snackbar" :multi-line="true">
       {{snackbar_text}}
     </v-snackbar>
   </v-dialog>
@@ -62,6 +82,7 @@
 <script>
   import Vue from "vue";
   import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
+  import context_menu_instance_template from '../context_menu/context_menu_instance_template';
   import {InstanceTemplateCreationInteractionGenerator} from '../vue_canvas/interactions/InstanceTemplateCreationInteractionGenerator';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from 'axios';
@@ -79,15 +100,17 @@
       drawable_canvas: drawable_canvas,
       instance_drawer: instance_drawer,
       instance_template_creation_toolbar: instance_template_creation_toolbar,
+      context_menu_instance_template: context_menu_instance_template,
     },
     data: function () {
       return {
         instance_type: 'keypoints',
         snackbar_text: 'Press Esc to stop drawing Edges/Nodes and got to edit mode.',
         instance_context: new InstanceContext(),
-        draw_mode: true ,
-        show_snackbar: false ,
-        lock_point_hover_change: false ,
+        draw_mode: true,
+        show_snackbar: false,
+        lock_point_hover_change: false,
+        show_context_menu: false,
         instance: undefined,
         error: {},
         bg_color: 'grey',
@@ -110,11 +133,42 @@
     },
 
     methods: {
-      open_snackbar: function(msg){
+      mouse_up_limits: function (event) {
+        // 1: left, 2: middle, 3: right, could be null
+        // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
+        if (event.which == 2 || event.which == 3) {
+          return false
+        }
+        if (this.show_context_menu == true) {
+          return false
+        }
+        return true
+
+      },
+      mouse_down_limits: function (event) {
+        // 1: left, 2: middle, 3: right, could be null
+        // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
+        if (event.which == 2 || event.which == 3) {
+          return false
+        }
+        if (this.show_context_menu == true) {
+          return false
+        }
+        return true
+
+      },
+      hide_context_menu: function () {
+        console.log('hidee')
+        this.show_context_menu = false;
+      },
+      open_context_menu: function () {
+        this.show_context_menu = true;
+      },
+      open_snackbar: function (msg) {
         this.snackbar_text = msg;
         this.show_snackbar = true
       },
-      close_snackbar: function(){
+      close_snackbar: function () {
         this.snackbar_text = '';
         this.show_snackbar = false
       },
@@ -127,9 +181,12 @@
           this.$refs.instance_template_canvas.mouse_position,
           this.$refs.instance_template_canvas.canvas_ctx,
           this.instance_context,
-          () => {},
-          () => {},
-          () => {},
+          () => {
+          },
+          () => {
+          },
+          () => {
+          },
           this.$refs.instance_template_canvas.mouse_down_delta_event,
           this.label_settings
         );
@@ -138,8 +195,8 @@
         // Set this to allow the creation of new nodes and edges.
         this.instance.template_creation_mode = true;
 
-        if(this.$props.instance_template){
-          for(let i = 0; i < this.instance_template.instance_list.length; i++){
+        if (this.$props.instance_template) {
+          for (let i = 0; i < this.instance_template.instance_list.length; i++) {
             nodes = this.$props.instance_template.instance_list[i].nodes;
             edges = this.$props.instance_template.instance_list[i].edges;
             this.name = this.$props.instance_template.name;
@@ -151,7 +208,7 @@
         }
         window.addEventListener('keydown', this.key_down_handler);
 
-        },
+      },
       zoom_in: function () {
         this.$refs.instance_template_canvas.zoom_in();
       },
@@ -164,9 +221,9 @@
         let canvas = this.$refs.instance_template_canvas.canvas_ctx.canvas
 
       },
-      reset_drawing: function(){
+      reset_drawing: function () {
         // TODO: this can become an interaction in the future.
-        if(this.instance.type === 'keypoints'){
+        if (this.instance.type === 'keypoints') {
           this.instance.is_drawing_edge = false;
           this.instance.is_moving = false;
           this.instance.is_node_hovered = false;
@@ -177,7 +234,7 @@
 
         if (e.keyCode === 27) {
           e.preventDefault();
-          if(this.$refs['instance_template_creation_toolbar']){
+          if (this.$refs['instance_template_creation_toolbar']) {
             this.$refs['instance_template_creation_toolbar'].draw_mode = !this.$refs['instance_template_creation_toolbar'].draw_mode;
             this.$refs['instance_template_creation_toolbar'].edit_mode_toggle();
             this.reset_drawing()
@@ -187,10 +244,9 @@
       },
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
-        if(this.instance_context.draw_mode){
+        if (this.instance_context.draw_mode) {
           this.open_snackbar('Press Esc to stop drawing Edges/Nodes and got to edit mode.');
-        }
-        else{
+        } else {
           this.close_snackbar()
         }
       },
@@ -198,21 +254,22 @@
         window.removeEventListener('keydown', this.key_down_handler)
         this.is_open = false;
       },
-      instance_hover_update(index, type){
-        if (this.lock_point_hover_change == true) {return}
+      instance_hover_update(index, type) {
+        if (this.lock_point_hover_change == true) {
+          return
+        }
         // important, we don't change the value if it's locked
         // otherwise it's easy for user to get "off" of the point they want
 
         if (index != null) {
           this.instance_hover_index = parseInt(index)
           this.instance_hover_type = type   // ie polygon, box, etc.
-        }
-        else{
+        } else {
           this.instance_hover_index = null;
           this.instance_hover_type = null;
         }
       },
-      generate_interaction_from_event(event){
+      generate_interaction_from_event(event) {
         const interaction_generator = new InstanceTemplateCreationInteractionGenerator(
           event,
           this.instance_hover_index,
@@ -224,29 +281,40 @@
       },
       mouse_move: function (event) {
         const interaction = this.generate_interaction_from_event(event);
-        if(interaction){
+        if (interaction) {
           interaction.process();
         }
       },
       mouse_down: function (event) {
+        if(!this.mouse_down_limits(event)){
+          return
+        }
 
+        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
-        if(interaction){
+        if (interaction) {
           interaction.process();
         }
 
       },
       double_click: function (event) {
+        this.hide_context_menu()
         this.instance.double_click(event);
       },
       mouse_up: function (event) {
+        if(!this.mouse_up_limits(event)){
+          return
+        }
+        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
-        if(interaction){
+        if (interaction) {
           interaction.process();
         }
       },
       contextmenu: function (event) {
+        event.preventDefault()
         this.instance.contextmenu(event);
+        this.open_context_menu();
       },
       validate_empty_instance_list() {
         // Checks if all the instances in the instance list are non-empty.
@@ -262,11 +330,10 @@
         })
         return result
       },
-      save_instance_template: function(){
-        if(this.$props.instance_template){
+      save_instance_template: function () {
+        if (this.$props.instance_template) {
           this.update_instance_template()
-        }
-        else{
+        } else {
           this.create_instance_template()
         }
       },
@@ -274,14 +341,14 @@
         try {
           this.error = {};
           const has_empty_instances = this.validate_empty_instance_list();
-          if(!has_empty_instances){
+          if (!has_empty_instances) {
             return
           }
-          if(!this.name){
+          if (!this.name) {
             this.error = {'name': 'Please provide a name for the instance template.'}
             return
           }
-          if(!this.$props.instance_template){
+          if (!this.$props.instance_template) {
             return
           }
 
@@ -308,10 +375,10 @@
         try {
           this.error = {};
           const has_empty_instances = this.validate_empty_instance_list();
-          if(!has_empty_instances){
+          if (!has_empty_instances) {
             return
           }
-          if(!this.name){
+          if (!this.name) {
             this.error = {'name': 'Please provide a name for the instance template.'}
             return
           }
@@ -352,7 +419,7 @@
 </script>
 
 <style>
-  .dialog-instance-template{
+  .dialog-instance-template {
     max-height: 100% !important;
     overflow: inherit !important;
   }
