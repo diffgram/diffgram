@@ -140,6 +140,7 @@
           return false
         }
         if (this.show_context_menu == true) {
+          this.hide_context_menu()
           return false
         }
         return true
@@ -152,6 +153,7 @@
           return false
         }
         if (this.show_context_menu == true) {
+
           return false
         }
         return true
