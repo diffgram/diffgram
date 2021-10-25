@@ -136,11 +136,9 @@ def build_input_list(
 
     # parent_file_id is to filter out say
     # an input image for a video file
-    print('LISSSST')
     query = session.query(Input).options(defer('frame_packet_map')).filter(
         Input.project_id == project.id,
         Input.parent_file_id == None)
-    print('FINISH')
     if show_deferred is False:
         # By default we show processing deferred
         # Example reason to set it to False
@@ -179,7 +177,15 @@ def build_input_list(
         query = query.filter(Input.file_id == file_id)
 
     if task_id:
-        query = query.filter(Input.task_id == task_id)
+
+        related_file_ids_list = Task.get_file_ids_related_to_a_task(
+            session = session,
+            task_id = task_id,
+            project_id = project.id)
+
+        query = query.filter(
+            or_(Input.task_id == task_id,
+                Input.file_id.in_(related_file_ids_list)))
 
     input_list = query.order_by(
         Input.id.desc()).limit(limit).all()
