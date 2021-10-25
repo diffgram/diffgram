@@ -327,7 +327,7 @@
             <v-alert type="info"
                      dismissible
             >
-              Once a Task Template is launched the labels for that are "locked" by default.
+              Once Tasks are launched the labels for those Tasks are "locked" by default.
             </v-alert>
 
           </v-card>
