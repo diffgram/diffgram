@@ -1223,6 +1223,7 @@
           finish_annotation_show_local: false,
           annotation_show_progress: 0,
           annotation_show_timer: null,
+          annotation_show_revert: 2,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6505,12 +6506,12 @@
           this.annotation_show_on = !this.annotation_show_on
           this.annotation_show_type = show_type
         },
-        annotation_show(direction = "next", instant_transition = false){
+        annotation_show(instant_transition = false){
           if (instant_transition) clearTimeout(this.annotation_show_timer)
           if (this.finish_annotation_show_local) return this.annotation_show_on = false
 
-          let changer = () => this.change_file(direction)
-          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change(direction, this.$props.task, true)
+          let changer = () => this.change_file("next")
+          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change("next", this.$props.task, true)
 
           const number_of_current_instances = this.instance_list.length
 
@@ -6522,11 +6523,14 @@
               return
             }, this.annotation_show_duration_per_instance)
           }
-          else if (this.annotation_show_current_instance < number_of_current_instances) {
+
+          if (this.annotation_show_current_instance < number_of_current_instances) {
             this.annotation_show_progress = this.annotation_show_current_instance / number_of_current_instances * 100
             this.focus_instance({index : this.annotation_show_current_instance})
             this.annotation_show_current_instance = this.annotation_show_current_instance + 1
-          } else {
+            this.annotation_show_revert = 2
+          }
+          else {
             this.annotation_show_current_instance = 0
             this.annotation_show_progress = 100
             changer()
@@ -6868,12 +6872,8 @@
           this.may_toggle_instance_transparency(event)
           this.may_toggle_show_hide_occlusion(event)
 
-          if (event.keyCode == 37 && this.annotation_show_on) {
-            this.annotation_show('previous', true)
-          }
-
           if (event.keyCode == 39 && this.annotation_show_on) {
-            this.annotation_show('next', true)
+            this.annotation_show(true)
           }
 
           if (event.keyCode == 32 && this.annotation_show_on) {

@@ -53,8 +53,7 @@
     releasing shift.</p>
 
   <h2>Annotation show</h2>
-  <p><kbd>←</kbd> - Switch to previous instance</p>
-  <p><kbd>←</kbd> - Switch to next instance</p>
+  <p><kbd>→</kbd> - Next instance</p>
   <p><kbd>Space</kbd> - Stop annotation show</p>
 
 </v-layout>
