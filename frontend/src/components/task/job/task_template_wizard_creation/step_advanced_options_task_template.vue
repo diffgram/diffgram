@@ -14,12 +14,36 @@
 
     <v-container fluid>
 
+      <userscript_select
+        :project_string_id="project_string_id"
+        @change="job.default_userscript_id = $event.id"
+        label="Choose a Default Userscript"
+      >
+      </userscript_select>
+
+      <v-select :items="type_list"
+                v-model="job.type"
+                data-cy="type-select"
+                label="Type"
+                item-value="text"
+                :disabled="loading">
+      </v-select>
+
+      <diffgram_select
+        :item_list="file_handling_list"
+        data-cy="file-handling-select"
+        v-model="job.file_handling"
+        label="File Handling"
+        :disabled="loading"
+      >
+      </diffgram_select>
+
     </v-container>
 
     <wizard_navigation
       @next="on_next_button_click"
       @back="$emit('previous_step')"
-      :skip_visible="false"
+      :skip_visible="true"
     >
     </wizard_navigation>
   </v-container>
@@ -30,6 +54,7 @@
 
   import axios from 'axios';
   import guide_selector from '../../guide/guide_selector'
+  import userscript_select from '../../../annotation/userscript/userscript_select'
 
   import Vue from "vue";
 
@@ -41,13 +66,31 @@
       ],
 
       components: {
-        guide_selector
+        guide_selector,
+        userscript_select,
       },
 
       data() {
         return {
           error: {},
           show_credentials: false,
+          loading: false,
+          type_list: ['Normal', 'Exam'],
+          share_list: [],
+          file_handling_list: [
+            {
+              'display_name': 'Use Existing (Default)',
+              'name': 'use_existing',
+              'icon': 'mdi-cached',
+              'color': 'primary'
+            },
+            {
+              'display_name': 'Isolate (New Versions of Files)',
+              'name': 'isolate',
+              'icon': 'mdi-ab-testing',
+              'color': 'primary'
+            }
+          ],
         }
       },
       created() {
