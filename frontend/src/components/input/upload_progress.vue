@@ -79,6 +79,7 @@
       methods: {
         close_wizard: function(){
           this.$emit('close_wizard')
+          this.$emit('success_upload')
         }
       }
     }

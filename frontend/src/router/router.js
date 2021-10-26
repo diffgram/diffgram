@@ -521,7 +521,7 @@ const routerOptions = [
   },
   {
     path: '/a/project/new',
-    component: 'project/project_new',
+    component: 'project/project_new_wizard',
     meta: {requiresAuth: true}
   },
   {

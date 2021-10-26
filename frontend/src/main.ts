@@ -107,6 +107,9 @@ Vue.component('connection_select', connection_select)
 import ahref_seo_optimal from './components/regular/ahref_seo_optimal'
 Vue.component('ahref_seo_optimal', ahref_seo_optimal)
 
+import wizard_navigation from './components/regular/wizard_navigation'
+Vue.component('wizard_navigation', wizard_navigation)
+
 /*
  * CONCRETE regular methods
  *

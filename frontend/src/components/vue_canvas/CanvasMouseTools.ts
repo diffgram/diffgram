@@ -1,3 +1,5 @@
+import { size } from "lodash";
+
 export class CanvasMouseTools {
   private mouse_position: any;
   private canvas_translate: any;
@@ -5,17 +7,20 @@ export class CanvasMouseTools {
   private canvas_transform: any;
   private canvas_ctx: any;
   private canvas_elm: any;
-  private zoom_stack: {zoom: number}[];
+  private zoom_stack: {point: {x: number, y: number}}[];
   private previous_transform: any;
+  private panned_distance: {x: number, y: number}
   private image: any;
   private scale: number;
   private previous_zoom: number;
   private canvas_scale_global: number;
   private translate_acc: { x: number, y: number };
   private previous_point: { x: number, y: number };
+  private canvas_width: any;
+  private canvas_height: any;
 
 
-  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global) {
+  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height) {
     this.mouse_position = mouse_position;
     this.canvas_translate = canvas_translate;
     this.canvas_elm = canvas_elm;
@@ -24,6 +29,9 @@ export class CanvasMouseTools {
     this.canvas_scale_global = canvas_scale_global;
     this.translate_acc = {x: 0, y: 0}
     this.zoom_stack = [];
+    this.panned_distance = {x: 0, y: 0}
+    this.canvas_width = canvas_width
+    this.canvas_height = canvas_height
   }
 
   public zoom_to_point(point, scale){
@@ -34,10 +42,36 @@ export class CanvasMouseTools {
     this.canvas_ctx.translate(-point.x, -point.y);
     this.scale *= scale;
   }
+  public get_new_bounds_from_translate_x(movement_x, canvas_width, canvas_height){
+    this.canvas_ctx.save();
+    this.canvas_ctx.translate(-movement_x, 0);
+    var transform = this.canvas_ctx.getTransform();
+    let min_point = this.map_point_from_matrix(1, 1, transform)
+    let max_point = this.map_point_from_matrix(canvas_width, canvas_height, transform)
+    this.canvas_ctx.restore();
+    return {x_min: min_point.x, x_max: max_point.x, y_min: min_point.y, y_max: max_point.y}
+  }
+
+  public get_bounds(){
+    var transform = this.canvas_ctx.getTransform();
+    let min_point = this.map_point_from_matrix(1, 1, transform)
+    let max_point = this.map_point_from_matrix(this.canvas_width -1, this.canvas_height-1, transform)
+    return {min_point: min_point, max_point: max_point}
+  }
+
+  public get_new_bounds_from_translate_y(movement_y, canvas_width, canvas_height){
+    this.canvas_ctx.save();
+    this.canvas_ctx.translate(0, -movement_y);
+    var transform = this.canvas_ctx.getTransform();
+    let min_point = this.map_point_from_matrix(1, 1, transform)
+    let max_point = this.map_point_from_matrix(canvas_width, canvas_height, transform)
+    this.canvas_ctx.restore();
+    return {x_min: min_point.x, x_max: max_point.x, y_min: min_point.y, y_max: max_point.y}
+  }
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
   }
-
+  
   public pan_y(movement_y){
     this.canvas_ctx.translate(0, -movement_y);
   }
@@ -82,6 +116,14 @@ export class CanvasMouseTools {
 
     return mouse_position;
   }
+
+  public map_point_from_matrix(x, y, matrix){
+    let point = {'x': undefined, 'y': undefined}
+    point.x = x * matrix.a + y * matrix.c + matrix.e;
+    point.y = x * matrix.b + y * matrix.d + matrix.f;
+    return point
+  }
+
   public get_translation(transform){
     return {x: transform.e, y: transform.f}
   }
@@ -89,11 +131,12 @@ export class CanvasMouseTools {
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
     this.zoom_stack = [];
+    this.panned_distance = {x: 0, y: 0}
   }
 
   public perform_zoom_delta(zoom, point){
     let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-
+    // this.panned_distance = {x: 0, y: 0}
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
       this.reset_transform_with_global_scale();
@@ -104,26 +147,26 @@ export class CanvasMouseTools {
     if (this.scale >= 30) {
       this.scale = 30
     }
+    let transform = this.canvas_ctx.getTransform();
+    this.canvas_ctx.resetTransform();
+
     this.canvas_ctx.clearRect(
       0,
       0,
       this.canvas_elm.width,
       this.canvas_elm.height
     );
-    let transform = this.canvas_ctx.getTransform();
-    this.canvas_ctx.resetTransform();
 
     this.canvas_ctx.translate(point.x, point.y);
 
     this.canvas_ctx.scale(zoom, zoom);
+
     this.canvas_ctx.translate(-point.x, -point.y);
 
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
-    let transform_new = this.canvas_ctx.getTransform();
 
     this.previous_zoom = zoom;
     this.previous_point = point;
-    this.previous_transform = transform;
   }
 
   public zoom_wheel(event): void {
@@ -137,6 +180,9 @@ export class CanvasMouseTools {
 
     // this is the illusionary point on UI that we wish to stay locked on
     let point = this.raw_point(event);
+
+    let bounds_before_zoom
+
     let zoom_in = true;
     if(zoom < 1){
       zoom_in = false
@@ -150,18 +196,63 @@ export class CanvasMouseTools {
       let elm = this.zoom_stack.pop()
       if(elm){
         point = elm.point
+        bounds_before_zoom = this.get_bounds()
       }
-
     }
 
     this.perform_zoom_delta(zoom, point)
 
+    // Auto Align Border Feature
 
-
-
-
-
+    if (zoom_in == false) {
+      this.auto_align_borders_on_zoom_out(bounds_before_zoom)
+    }
   }
+
+  private auto_align_borders_on_zoom_out(bounds_before_zoom) {
+    // https://diffgram.readme.io/docs/auto_align_borders_on_zoom_out
+
+    let bounds_after_zoom = this.get_bounds()
+
+    if (bounds_before_zoom != undefined ) {
+
+      // Check we are near border.
+      // This helps this only fire when near border, and also helps avoid
+      // large movements when heavily zoomed in, since naturally when zoomed in this value will be large.
+    
+      if (Math.abs(bounds_before_zoom.min_point.x) < 50) {
+        // Move the new border based on new boundry after zooming
+        // This number must always be positive, handling the case of the boundry crossing the mouse
+        this.pan_x(Math.abs(bounds_after_zoom.min_point.x))
+      }
+
+      if (Math.abs(bounds_before_zoom.min_point.y) < 50) {
+        this.pan_y(Math.abs(bounds_after_zoom.min_point.y))
+      }
+
+      // careful, we use global scale for this comparison not the combined scale
+      let canvas_width_scaled = this.canvas_width * this.canvas_scale_global
+
+      let distance_from_outer_edge_x = Math.abs(
+        bounds_before_zoom.max_point.x - canvas_width_scaled)
+
+      if (distance_from_outer_edge_x < 50) {
+        this.pan_x(-Math.abs(
+        bounds_after_zoom.max_point.x - canvas_width_scaled))
+      }
+
+      let canvas_height_scaled = this.canvas_height * this.canvas_scale_global
+
+      let distance_from_outer_edge_y = Math.abs(
+        bounds_before_zoom.max_point.y - canvas_height_scaled)
+
+      if (distance_from_outer_edge_y < 50) {
+        this.pan_y(-Math.abs(
+        bounds_after_zoom.max_point.y - canvas_height_scaled))
+      }
+    }
+  }
+
   private raw_point(event) {
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
