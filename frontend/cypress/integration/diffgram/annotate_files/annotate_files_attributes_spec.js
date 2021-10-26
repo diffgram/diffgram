@@ -23,8 +23,7 @@ describe('Annotate Files Tests', () => {
     const wizard_step_container =  (step) => {return `[data-cy=attribute_wizard_step_${step}]`};
     const selectAttribute = labelsForAttributes[0].attributes.filter(attr => attr.type === 'select')[0];
 
-
-    context('It Creates And Sets Value of Select Type', () => {
+    context('[Select} It Creates And Sets Value of Select Type', () => {
 
        it('Required label for test should exist', () => {
          cy.get(`[data-cy='${labelsForAttributes[0].name}']`).should('exist')
@@ -94,7 +93,7 @@ describe('Annotate Files Tests', () => {
     
      })
 
-    context('It Creates And Sets Value of Free Text Type', () => {
+    context('[Free Text] It Creates And Sets Value of Free Text Type', () => {
 
       const selectAttribute = labelsForAttributes[0].attributes.filter(attr => attr.type === 'text')[0];
 
@@ -157,7 +156,10 @@ describe('Annotate Files Tests', () => {
 
     })
 
-    context('It Creates And Sets Value of Multiple Select Type', () => {
+    context('[Multiple Select] Creates And Sets Value of Multiple Select Type', () => {
+
+      const multipleSelectAttribute = labelsForAttributes[0].attributes.filter(
+          attr => attr.type === 'multiple_select')[0];
 
       it('Creates Multiple Select Attribute', () => {
 
@@ -166,64 +168,34 @@ describe('Annotate Files Tests', () => {
          cy.createAndSelectNewAttributeGroup()
 
          cy.get('[data-cy=attribute_kind_select]').click({force: true});
-         cy.get('.v-list.v-select-list div').contains('Select').click({force: true})
+
+         cy.get('.v-list.v-select-list div').contains('Multiple Select').click({force: true})
     
        })
 
       it('Names Select Attribute', () => {
         cy.get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
 
-        cy.typesAttributePrompt(selectAttribute.prompt)
+        cy.typesAttributePrompt(multipleSelectAttribute.prompt)
       })
 
-      it('Attaches Attributes to Label', () => {
+      it('[Multiple Select] Attaches Attributes to Label', () => {
          cy.get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
          cy.selectLabel(labelsForAttributes[0].name)
       })
 
 
-      it('Creates Free Text Attribute', () => {
-        cy.wait(3000);
-        cy.get('#open_main_menu > .v-btn__content').click({force: true});
-        cy.get('[data-cy=main_menu_labels]').click({force:true});
-        cy.wait(2000)
-        cy.get(`[data-cy='${labelsForAttributes[0].name}']`).should('exist')
-        const selectAttribute = labelsForAttributes[0].attributes.filter(attr => attr.type === 'multiple_select')[0];
-        cy.get(`[data-cy=new_attribute_button]`).click({force: true});
-        cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).click({force: true});
-        cy.get('[data-cy=attribute_kind_select]').click({force: true});
-        cy.get('.v-list.v-select-list div').contains('Multiple Select').click({force: true})
-        cy.get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
-        cy.get('[data-cy=attribute_prompt]').click();
-        cy.get('[data-cy=attribute_prompt]').type(selectAttribute.prompt);
-        cy.get('[data-cy=attribute_tag]').click();
-        cy.get('[data-cy=attribute_tag]').type(selectAttribute.tag);
-        cy.get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
-        cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
-        cy.get('[data-cy=label_select_attribute]').click({force: true});
-        cy.get('.v-menu__content .v-list.v-select-list div span').contains(labelsForAttributes[0].name).first().click({force: true})
-        cy.get('[data-cy=attribute_kind_select]').click({force: true});
-        cy.get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
-        cy.get('.v-btn__content > .green--text').click({force: true});
-        for(let option of selectAttribute.options){
-          cy.get('[data-cy=attribute_option_name]').click({force: true});
-          cy.wait(750)
-          cy.get('[data-cy=attribute_option_name]').type(option);
-          cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
-
-        }
+      it('[Multiple Select] Creates Options ', () => {
+        cy.createAttributeOptions(multipleSelectAttribute.options)
 
         cy.get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
 
       })
 
       it('Sets the value for the multiple select attribute in the studio', () =>{
-        cy.wait(3000);
-        const selectAttribute = labelsForAttributes[0].attributes.filter(attr => attr.type === 'multiple_select')[0];
-        cy.get('#open_main_menu > .v-btn__content').click({force: true});
-        cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
-        cy.wait(2000);
-        cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
+
+        cy.goToStudioFromToolbar()
+
         cy.select_label('car with Attributes');
 
         // Draw a box
@@ -235,9 +207,9 @@ describe('Annotate Files Tests', () => {
         cy.mousedowncanvas(90, 90);
         cy.mouseupcanvas();
         // Select The Attribute
-        cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
-        cy.get(`[data-cy="${selectAttribute.prompt}_value_multiple_select"]`).click({force: true});
-        cy.get('.v-menu__content .v-list.v-select-list div').contains(selectAttribute.options[0]).first().click({force: true})
+        cy.get(`[data-cy="attribute_group_header_${multipleSelectAttribute.prompt}"]`).first().click({force: true});
+        cy.get(`[data-cy="${multipleSelectAttribute.prompt}_value_multiple_select"]`).click({force: true});
+        cy.get('.v-menu__content .v-list.v-select-list div').contains(multipleSelectAttribute.options[0]).first().click({force: true})
         // Save The attribute
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
         cy.get('body').type('{esc}');
@@ -254,49 +226,48 @@ describe('Annotate Files Tests', () => {
 
     })
 
-    context('It Creates And Sets Value of Radio Button Type', () => {
-      it('Creates Radio Button Attribute', () => {
-        cy.wait(3000);
-        cy.get('#open_main_menu > .v-btn__content').click({force: true});
-        cy.get('[data-cy=main_menu_labels]').click({force:true});
-        cy.wait(2000)
-        cy.get(`[data-cy='${labelsForAttributes[1].name}']`).should('exist')
-        const selectAttribute = labelsForAttributes[1].attributes.filter(attr => attr.type === 'radio')[0];
-        cy.get(`[data-cy=new_attribute_button]`).click({force: true});
-        cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).click({force: true});
-        cy.get('[data-cy=attribute_kind_select]').click({force: true});
-        cy.get('.v-list.v-select-list div').contains('Radio Buttons').click({force: true})
+    context('[Radio Button] Creates', () => {
+
+      const selectAttribute = labelsForAttributes[1].attributes.filter(attr => attr.type === 'radio')[0];
+
+      it('[Radio Button] Creates Attribute', () => {
+
+         cy.goToSchemaFromToolbar()
+
+         cy.createAndSelectNewAttributeGroup()
+
+         cy.get('[data-cy=attribute_kind_select]').click({force: true});
+
+         cy.get('.v-list.v-select-list div').contains('Radio').click({force: true})
+    
+       })
+
+      it('[Radio Button] Names', () => {
         cy.get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
-        cy.get('[data-cy=attribute_prompt]').click();
-        cy.get('[data-cy=attribute_prompt]').type(selectAttribute.prompt);
-        cy.get('[data-cy=attribute_tag]').click();
-        cy.get('[data-cy=attribute_tag]').type(selectAttribute.tag);
-        cy.get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
 
-        cy.get('[data-cy=label_select_attribute]').click({force: true});
-        cy.get('.v-menu__content .v-list.v-select-list div span').contains(labelsForAttributes[0].name).first().click({force: true})
-        cy.get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
-
-        cy.get('.v-btn__content > .green--text').click({force: true});
-        for(let option of selectAttribute.options){
-          cy.get('[data-cy=attribute_option_name]').click({force: true});
-          cy.wait(750)
-          cy.get('[data-cy=attribute_option_name]').type(option);
-          cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
-
-        }
-        cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
-        cy.get('[data-cy=attribute_kind_select]').click({force: true});
-        cy.get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
+        cy.typesAttributePrompt(selectAttribute.prompt)
       })
+
+      it('[Radio Button] Attaches Attributes to Label', () => {
+          cy.get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
+          cy.selectLabel(labelsForAttributes[0].name)
+      })
+
+
+      it('[Radio Button] Creates Options ', () => {
+        cy.createAttributeOptions(selectAttribute.options)
+
+        cy.get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
+
+      })
+
 
       it('Sets the value for the radio button attribute in the studio', () =>{
         cy.wait(3000);
         const selectAttribute = labelsForAttributes[1].attributes.filter(attr => attr.type === 'radio')[0];
-        cy.get('#open_main_menu > .v-btn__content').click({force: true});
-        cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
-        cy.wait(2000);
-        cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
+
+        cy.goToStudioFromToolbar()
+
         cy.select_label('car with Attributes');
 
         // Draw a box
