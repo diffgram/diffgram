@@ -19,6 +19,7 @@
                 :loading="loading"
                 :disabled="disabled"
                 :x-small="xSmall"
+                :x-large="xLarge"
                 data-cy="data_cy"
                 :left="left"
                 :icon="icon_style"
@@ -26,12 +27,15 @@
                 :data-cy="datacy"
                 @click="$emit('click', $event)"
                 :large="large"
+                :small="small"
                 :color=button_color
                >
 
           <v-icon :large="large"
                   :size="iconSize"
-                  :color=color>{{icon}}</v-icon>
+                  :color=color
+                  :left="left"
+                  >{{icon}}</v-icon>
 
           {{ button_message }}
 
@@ -107,6 +111,12 @@ export default Vue.extend( {
       default: false
      },
     'xSmall':{
+      default: false
+    },
+    'xLarge':{
+      default: false
+    },
+    'small':{
       default: false
     },
     'iconSize':{

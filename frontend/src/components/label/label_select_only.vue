@@ -292,7 +292,9 @@
       },
 
       methods: {
-
+        set_label_list: function(label_list){
+          this.label_list = label_list;
+        },
         check_select_all_state: function () {
           /* Just do length check,
            * Doing this doesn't work: $vm0.label_list == $vm0.selected

@@ -1,9 +1,6 @@
-try:
-    from methods.regular.regular_api import *
-    from methods.video.video import New_video
-except:
-    from walrus.methods.regular.regular_api import *
-    from walrus.methods.video.video import New_video
+
+from methods.regular.regular_api import *
+from methods.video.video import New_video
 
 try:
     from methods.video.video_preprocess import Video_Preprocess
@@ -79,7 +76,7 @@ class PrioritizedItem:
 
 
 def process_media_unit_of_work(item):
-    from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
+    from methods.input.process_media_queue_manager import process_media_queue_manager
     with sessionMaker.session_scope_threaded() as session:
 
         process_media = Process_Media(
@@ -108,7 +105,7 @@ def process_media_unit_of_work(item):
 # REMOTE queue
 def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-start_queue_check_loop
-    from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
+    from methods.input.process_media_queue_manager import process_media_queue_manager
     if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == False:
         return
 
