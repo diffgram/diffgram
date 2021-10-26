@@ -59,6 +59,10 @@
           type: Boolean,
           default: true
           // if True will run checks for hover, otherwise false to save computation
+        },
+        "zoom_value": {
+          type: Number,
+          default: 1
         }
       },
 
@@ -239,8 +243,8 @@
             return
           }
 
-          this.circle_size = 6 / this.canvas_transform['canvas_scale_combined']
-          let font_size = this.label_settings.font_size / this.canvas_transform['canvas_scale_combined']
+          this.circle_size = 6 / this.$props.zoom_value
+          let font_size = this.label_settings.font_size / this.$props.zoom_value
           ctx.font = font_size + "px Verdana";
 
           this.count_issues_in_ctx_paths = 0   // reset
@@ -523,7 +527,7 @@
         },
 
         get_spatial_line_size: function (){
-          return this.$props.label_settings.spatial_line_size / this.canvas_transform['canvas_scale_combined']
+          return this.$props.label_settings.spatial_line_size / this.$props.zoom_value
         },
 
         // edit circles
@@ -660,7 +664,7 @@
           // Only draw when hovered in
           const point = instance.midpoints_polygon[instance.midpoint_hover];
           if(point == undefined){return}
-          const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+          const radius = (this.$props.vertex_size) / this.$props.zoom_value
           this.draw_single_path_circle(point.x, point.y, radius, ctx);
 
         },
@@ -789,7 +793,7 @@
 
           if (point == null) { return }
 
-          let circle_size = 5 / this.canvas_transform['canvas_scale_combined']
+          let circle_size = 5 / this.$props.zoom_value
 
           if (typeof this.colour == "undefined") {  return  }
           const instance_colour = this.get_instance_colour();
@@ -815,7 +819,7 @@
           let result = false;
           if (this.draw_mode == false) {
             if (this.render_mode != "file_diff" && this.mode == 'default') {
-              const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+              const radius = (this.$props.vertex_size) / this.$props.zoom_value
               this.draw_single_path_circle(instance.front_face.top_left.x  , instance.front_face.top_left.y , radius, ctx)
               if(this.is_mouse_in_path(ctx, i, instance)){ result = true}
               this.draw_single_path_circle(instance.front_face.top_right.x , instance.front_face.top_right.y ,radius, ctx)
@@ -995,7 +999,7 @@
           ctx.stroke()
         },
         draw_control_points_and_detect_hover: function(instance, ctx, i){
-          let circle_size = ( this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+          let circle_size = ( this.$props.vertex_size) / this.$props.zoom_value
           if(circle_size <= 0){
             return
           }
@@ -1062,7 +1066,7 @@
               }
               let a = instance.width;
               let b = instance.height;
-              const radius = ( this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+              const radius = ( this.$props.vertex_size) / this.$props.zoom_value
               this.$ellipse.generate_ellipse_corners(instance, a, b)
 
               //right
@@ -1340,7 +1344,7 @@
           // Careful this is effected by scale
 
             // bool, true if point if intersecting circle
-            let radius = 8 / this.canvas_transform['canvas_scale_combined']
+            let radius = 8 / this.$props.zoom_value
 
             return Math.sqrt(
                 (point.x - mouse.x) ** 2
