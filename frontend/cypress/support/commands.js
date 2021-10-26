@@ -351,6 +351,13 @@ Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(2000)
 });
 
+Cypress.Commands.add('goToStudioFromToolbar', function () {
+  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
+  cy.wait(5000);
+  cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
+});
+
 Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
   cy.get(`[data-cy=new_attribute_button]`).click({force: true});
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
@@ -372,6 +379,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
     cy.get('[data-cy=attribute_option_name]').click({force: true});
     cy.wait(750)
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
+    cy.wait(200)
     cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
     
   }
