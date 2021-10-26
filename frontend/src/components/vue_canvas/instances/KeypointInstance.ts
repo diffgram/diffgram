@@ -432,6 +432,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(!node.name){
       return
     }
+    if(!this.is_hovered) {
+      return
+    }
 
     let prevfillStyle = ctx.fillStyle.toString();
 
