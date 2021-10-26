@@ -14,7 +14,7 @@ describe('Annotate Files Tests', () => {
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(labelsForAttributes)
-      //cy.uploadAndViewSampleImage(testUser.project_string_id);
+      cy.uploadAndViewSampleImage(testUser.project_string_id);
 
       cy.goToSchemaFromToolbar()
 

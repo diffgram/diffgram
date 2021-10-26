@@ -110,7 +110,7 @@
                   tooltip_message="Optional Extra Reference"
                   icon="mdi-tag"
                   :close_by_button="true"
-                  :small="small"
+                  :small="true"
                   color="primary"
                       >
 
