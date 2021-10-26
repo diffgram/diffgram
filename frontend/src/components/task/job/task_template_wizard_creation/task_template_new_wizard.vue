@@ -92,11 +92,21 @@
         </v-stepper-content>
 
         <v-stepper-content step="5">
-
+          <step_ui_schema_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            @previous_step="go_to_step(4)"
+            @next_step="go_to_step(6)"
+          ></step_ui_schema_task_template>
         </v-stepper-content>
 
         <v-stepper-content step="6">
-
+          <step_guides_awards_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            @previous_step="go_to_step(5)"
+            @next_step="create_task_template"
+          ></step_guides_awards_task_template>
         </v-stepper-content>
 
       </v-stepper-items>
@@ -111,7 +121,9 @@
 
   import axios from 'axios';
   import step_name_task_template from './step_name_task_template'
+  import step_guides_awards_task_template from './step_guides_awards_task_template'
   import step_label_selection_task_template from './step_label_selection_task_template'
+  import step_ui_schema_task_template from './step_ui_schema_task_template'
   import step_users_selection from './step_users_selection'
   import step_attach_directories_task_template from './step_attach_directories_task_template'
 
@@ -135,6 +147,8 @@
       components: {
         step_name_task_template,
         step_users_selection,
+        step_ui_schema_task_template,
+        step_guides_awards_task_template,
         step_label_selection_task_template,
         step_attach_directories_task_template
       },
@@ -166,6 +180,9 @@
         }
       },
       methods: {
+        create_task_template: function(){
+
+        },
         go_to_step: function (step) {
           this.step = step;
         },
