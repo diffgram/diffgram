@@ -73,14 +73,6 @@
             @next_step="go_to_step(2)"
           ></step_name_task_template>
 
-          <wizard_navigation
-            @next="go_to_step(1)"   
-            :disabled_next="job.name"
-            :back_visible="false"
-            :skip_visible="false"
-                             >
-          </wizard_navigation>
-
         </v-stepper-content>
         <v-stepper-content step="2" style="height: 100%">
           <step_label_selection_task_template
@@ -90,12 +82,6 @@
             @next_step="go_to_step(3)"
           ></step_label_selection_task_template>
 
-          <wizard_navigation
-              @next="go_to_step(2)"  
-              @skip="go_to_step(2)"
-              @back="$emit('back')"
-                             >
-          </wizard_navigation>
 
         </v-stepper-content>
         <v-stepper-content step="3" style="height: 100%">
@@ -108,37 +94,46 @@
         </v-stepper-content>
 
         <v-stepper-content step="4">
-          <step_attach_directories_task_template
+          <step_upload_files_task_template
             :project_string_id="project_string_id"
             :job="job"
             @previous_step="go_to_step(3)"
             @next_step="go_to_step(5)"
-          ></step_attach_directories_task_template>
+          ></step_upload_files_task_template>
         </v-stepper-content>
 
         <v-stepper-content step="5">
-          <step_ui_schema_task_template
+          <step_attach_directories_task_template
             :project_string_id="project_string_id"
             :job="job"
             @previous_step="go_to_step(4)"
             @next_step="go_to_step(6)"
-          ></step_ui_schema_task_template>
+          ></step_attach_directories_task_template>
         </v-stepper-content>
 
         <v-stepper-content step="6">
-          <step_guides_task_template
+          <step_ui_schema_task_template
             :project_string_id="project_string_id"
             :job="job"
             @previous_step="go_to_step(5)"
             @next_step="go_to_step(7)"
-          ></step_guides_task_template>
+          ></step_ui_schema_task_template>
         </v-stepper-content>
 
         <v-stepper-content step="7">
-          <step_advanced_options_task_template
+          <step_guides_task_template
             :project_string_id="project_string_id"
             :job="job"
             @previous_step="go_to_step(6)"
+            @next_step="go_to_step(8)"
+          ></step_guides_task_template>
+        </v-stepper-content>
+
+        <v-stepper-content step="8">
+          <step_advanced_options_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            @previous_step="go_to_step(7)"
             @next_step="create_task_template"
           ></step_advanced_options_task_template>
         </v-stepper-content>
@@ -157,6 +152,7 @@
   import step_name_task_template from './step_name_task_template'
   import step_advanced_options_task_template from './step_advanced_options_task_template'
   import step_guides_task_template from './step_guides_task_template'
+  import step_upload_files_task_template from './step_upload_files_task_template'
   import step_label_selection_task_template from './step_label_selection_task_template'
   import step_ui_schema_task_template from './step_ui_schema_task_template'
   import step_users_selection from './step_users_selection'
@@ -181,6 +177,7 @@
 
       components: {
         step_name_task_template,
+        step_upload_files_task_template,
         step_guides_task_template,
         step_users_selection,
         step_ui_schema_task_template,
