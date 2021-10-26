@@ -432,6 +432,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(!node.name){
       return
     }
+
     let prevfillStyle = ctx.fillStyle.toString();
 
     let font_size = (this.label_settings.font_size * .75) / this.zoom_value;
@@ -447,7 +448,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
     let padding = 2 / this.zoom_value
     let padding_from_point = 5 / this.zoom_value
-    let point_text = this.get_rotated_point({x: node.x + padding_from_point, y: node.y + padding_from_point  });
+    let point_text = this.get_scaled_and_rotated_point(
+      {x: node.x + padding_from_point, y: node.y + padding_from_point  });
     ctx.fillRect(
       point_text.x,
       point_text.y - text_height - padding,
