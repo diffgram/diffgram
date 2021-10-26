@@ -423,6 +423,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node_label(ctx, node){
+    // label draw_label
+
     if (this.label_settings.show_text == false) {
       return
     }
@@ -432,7 +434,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(!node.name){
       return
     }
-    if(!this.is_hovered) {
+    if(!this.is_hovered && !this.template_creation_mode) {
       return
     }
 
