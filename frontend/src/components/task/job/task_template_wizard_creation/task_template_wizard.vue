@@ -74,10 +74,12 @@
       </v-progress-linear>
 
       <v-stepper-items style="height: 100%">
+        <v_error_multiple :error="error"></v_error_multiple>
         <v-stepper-content step="1" style="height: 100%">
           <step_name_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
 
             @next_step="go_to_step(2)"
           ></step_name_task_template>
@@ -87,6 +89,7 @@
           <step_label_selection_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(1)"
             @next_step="go_to_step(3)"
           ></step_label_selection_task_template>
@@ -97,6 +100,7 @@
           <step_users_selection
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(2)"
             @next_step="go_to_step(4)"
           ></step_users_selection>
@@ -106,6 +110,7 @@
           <step_upload_files_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(3)"
             @next_step="go_to_step(5)"
           ></step_upload_files_task_template>
@@ -115,6 +120,7 @@
           <step_attach_directories_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(4)"
             @next_step="go_to_step(6)"
           ></step_attach_directories_task_template>
@@ -124,6 +130,7 @@
           <step_ui_schema_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(5)"
             @next_step="go_to_step(7)"
           ></step_ui_schema_task_template>
@@ -133,6 +140,7 @@
           <step_guides_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(6)"
             @next_step="go_to_step(8)"
           ></step_guides_task_template>
@@ -142,6 +150,7 @@
           <step_advanced_options_task_template
             :project_string_id="project_string_id"
             :job="job"
+            :loading_steps="loading"
             @previous_step="go_to_step(7)"
             @next_step="create_task_template"
           ></step_advanced_options_task_template>
@@ -194,7 +203,11 @@
         step_label_selection_task_template,
         step_attach_directories_task_template
       },
-
+      mounted: async function(){
+        if(this.$props.job_id_route){
+          await this.fetch_job_api();
+        }
+      },
       data() {
         return {
           step: 1,
@@ -222,6 +235,32 @@
         }
       },
       methods: {
+        job_update: async function () {
+          this.loading = true
+          const job = this.$props.job;
+          this.error = {};
+          try {
+            const response = await axios.post(
+              `/api/v1/project/${this.project_string_id}/job/update`,
+              {
+                ...job,
+                job_id: job.id,
+              }
+            )
+            // Handle job hash / draft / job status
+            if (response.data.log.success == true) {
+              this.loading = false
+              this.$emit('job-updated', job)
+              return response
+            }
+
+          } catch (error) {
+            this.loading = false
+            this.error = this.$route_api_errors(error)
+            return false;
+          }
+
+        },
         create_task_template: function(){
           // 1. Create Task Template Object
 
@@ -233,7 +272,9 @@
 
           // 5. Launch Task Template
         },
-        go_to_step: function (step) {
+
+        go_to_step: async function (step) {
+          await this.job_update();
           this.step = step;
         },
         on_change_step: function () {
