@@ -1,15 +1,15 @@
 <template>
   <div id="">
 
-    <v-card elevation=0>
-      <v-container>
-    
+    <v-list-item dense elevation=0 style="border: 1px solid #e0e0e0" class="pa-0">
+      <v-container class="pa-2">
+
         <v-layout row>
 
           <!-- do we just send the "attribute" to front
               end and not worry about template part -->
 
-        {{ attribute.name }}
+        <h3 class="font-weight-medium ml-6 mt-2 text--primary flex-grow-1">{{ attribute.name }}</h3>
 
         <v_error_multiple :error="error">
         </v_error_multiple>
@@ -34,11 +34,11 @@
               :group_id = "attribute.group_id"
               :mode = " 'UPDATE' "
                   >
-            </attribute_new_or_update>    
+            </attribute_new_or_update>
 
             </v-layout>
           </template>
-          
+
         </button_with_menu>
 
           <!-- Prior we had a more dots icon
@@ -56,13 +56,13 @@
             :icon_style="true"
             :bottom="true"
             color="red">
-        </tooltip_button>   
+        </tooltip_button>
 
 
         </v-layout>
       </v-container>
 
-    </v-card>
+    </v-list-item>
 
 
   </div>
@@ -142,7 +142,7 @@ export default Vue.extend( {
           {
             attribute: this.attribute,
             mode: mode
-            
+
           }).then(response => {
 
             // WIP
