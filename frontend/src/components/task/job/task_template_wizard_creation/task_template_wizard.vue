@@ -5,6 +5,7 @@
         <v-stepper-step
           :complete="step > 1"
           step="1"
+          editable
         >
           Start
         </v-stepper-step>
@@ -12,6 +13,7 @@
         <v-stepper-step
           :complete="step > 2"
           step="2"
+          editable
         >
           Labels
         </v-stepper-step>
@@ -19,6 +21,7 @@
         <v-stepper-step
           :complete="step > 3"
           step="3"
+          editable
         >
           Users
         </v-stepper-step>
@@ -26,30 +29,36 @@
         <v-stepper-step
           :complete="step > 4"
           step="4"
+          editable
         >
           Upload
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 5"
-          step="5">
+          step="5"
+          editable
+        >
           Datasets
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 6"
+          editable
           step="6">
           UI Schema
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 7"
+          editable
           step="7">
           Guides
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 8"
+          editable
           step="8">
           Other Configs
         </v-stepper-step>

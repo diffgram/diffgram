@@ -11,10 +11,13 @@
                   v-model="job.name">
     </v-text-field>
 
-    <v-container fluid class="mt-8 pa-0 d-flex justify-end" style="width: 100%">
-<!--      <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>-->
-      <v-btn x-large color="primary" @click="on_next_button_click">Next</v-btn>
-    </v-container>
+    <wizard_navigation
+      @next="on_next_button_click"
+      @back="$emit('previous_step')"
+      :skip_visible="false"
+    >
+
+    </wizard_navigation>
   </v-container>
 
 </template>

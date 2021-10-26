@@ -37,11 +37,14 @@
       </v-col>
     </v-row>
 
+    <wizard_navigation
+      @next="on_next_button_click"
+      :disabled_next="job.attached_directories_dict.attached_directories_list.length === 0"
+      @back="$emit('previous_step')"
+      :skip_visible="false"
+    >
+    </wizard_navigation>
 
-    <v-container fluid class="mt-8 pa-0 d-flex justify-space-between" style="width: 100%">
-      <v-btn x-large color="primary" @click="$emit('previous_step')">Previous</v-btn>
-      <v-btn :disabled="job.attached_directories_dict.attached_directories_list.length === 0" x-large color="primary" @click="on_next_button_click">Next</v-btn>
-    </v-container>
     <upload_wizard_sheet
       v-if="open_wizard"
       :project_string_id="project_string_id"
