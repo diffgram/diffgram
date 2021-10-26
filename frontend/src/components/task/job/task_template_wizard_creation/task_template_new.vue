@@ -19,11 +19,11 @@
 
     </v-toolbar>
     <v-container fluid class="d-flex justify-center">
-      <task_template_new_wizard
+      <task_template_wizard
         :project_string_id="project_string_id"
         :job="job">
 
-      </task_template_new_wizard>
+      </task_template_wizard>
     </v-container>
 
   </div>
@@ -34,7 +34,7 @@
 
   import axios from 'axios';
   import sillyname from 'sillyname';
-  import task_template_new_wizard from './task_template_new_wizard'
+  import task_template_wizard from './task_template_wizard'
 
 
   import Vue from "vue";
@@ -46,7 +46,7 @@
         'job_id_route'],
 
       components: {
-        task_template_new_wizard: task_template_new_wizard,
+        task_template_wizard: task_template_wizard,
       },
 
       data() {
