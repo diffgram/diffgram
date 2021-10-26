@@ -13,36 +13,39 @@
           :complete="step > 2"
           step="2"
         >
-          Label Selection & Configurations
+          Labels
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 3"
           step="3"
         >
-          Assign Users
+          Users
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 4"
-          step="4">
-          Dataset Binding
+          step="4"
+        >
+          Upload
         </v-stepper-step>
         <v-divider></v-divider>
-        <v-stepper-step :complete="step > 5" step="5">
-          UI Schema
+        <v-stepper-step
+          :complete="step > 5"
+          step="5">
+          Datasets
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 6"
           step="6">
-          Guides
+          UI Schema
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 7"
           step="7">
-          Awards
+          Guides
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
@@ -116,19 +119,10 @@
         </v-stepper-content>
 
         <v-stepper-content step="7">
-          <step_awards_task_template
-            :project_string_id="project_string_id"
-            :job="job"
-            @previous_step="go_to_step(6)"
-            @next_step="go_to_step(8)"
-          ></step_awards_task_template>
-        </v-stepper-content>
-
-        <v-stepper-content step="8">
           <step_advanced_options_task_template
             :project_string_id="project_string_id"
             :job="job"
-            @previous_step="go_to_step(7)"
+            @previous_step="go_to_step(6)"
             @next_step="create_task_template"
           ></step_advanced_options_task_template>
         </v-stepper-content>
@@ -148,7 +142,6 @@
   import step_advanced_options_task_template from './step_advanced_options_task_template'
   import step_guides_task_template from './step_guides_task_template'
   import step_label_selection_task_template from './step_label_selection_task_template'
-  import step_awards_task_template from './step_awards_task_template'
   import step_ui_schema_task_template from './step_ui_schema_task_template'
   import step_users_selection from './step_users_selection'
   import step_attach_directories_task_template from './step_attach_directories_task_template'
@@ -173,7 +166,6 @@
       components: {
         step_name_task_template,
         step_guides_task_template,
-        step_awards_task_template,
         step_users_selection,
         step_ui_schema_task_template,
         step_advanced_options_task_template,
