@@ -167,7 +167,7 @@
             if (response.data.log.success == true) {
               this.success = true
 
-              this.$emit('guide_new_success')
+              this.$emit('guide_new_success', response.data.guide)
             }
             this.loading = false
 
