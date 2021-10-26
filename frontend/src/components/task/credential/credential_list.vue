@@ -6,34 +6,6 @@
         Awards & Credentials
       </v-card-title>
 
-
-      <!-- TODO this component should be split maybe too many if conditions-->
-      <v-alert type="info"
-                v-if="$store.state.builder_or_trainer.mode == 'trainer'
-                 && credential_list.length == 0
-                 && mode_options != 'job_detail'"
-                dismissible>
-
-       Awards are earned from completing Exams and Jobs.
-
-      </v-alert>
-
-      <!-- Not sure if we want this here or in the credential type new thing? -->
-
-      <!-- Builder info-->
-      <v-alert type="info"
-
-                v-if="$store.state.builder_or_trainer.mode == 'builder'
-                      && mode_options != 'job_detail'"
-                dismissible>
-
-        Jobs may grant or require awards.
-
-      </v-alert>
-
-      <!-- TODO seperate trainer info? -->
-
-
       <!-- credential new button -->
 
       <div v-if="['job_edit', 'direct_route'].includes(mode_options)">

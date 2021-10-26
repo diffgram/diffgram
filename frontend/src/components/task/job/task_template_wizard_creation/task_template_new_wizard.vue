@@ -36,12 +36,18 @@
         <v-stepper-step
           :complete="step > 6"
           step="6">
-          Guides & Awards
+          Guides
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 7"
           step="7">
+          Awards
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step
+          :complete="step > 8"
+          step="8">
           Other Configs
         </v-stepper-step>
         <v-divider></v-divider>
@@ -119,12 +125,12 @@
         </v-stepper-content>
 
         <v-stepper-content step="8">
-          <step_guides_task_template
+          <step_advanced_options_task_template
             :project_string_id="project_string_id"
             :job="job"
             @previous_step="go_to_step(7)"
             @next_step="create_task_template"
-          ></step_guides_task_template>
+          ></step_advanced_options_task_template>
         </v-stepper-content>
 
       </v-stepper-items>
@@ -139,7 +145,8 @@
 
   import axios from 'axios';
   import step_name_task_template from './step_name_task_template'
-  import step_guides_awards_task_template from './step_guides_awards_task_template'
+  import step_advanced_options_task_template from './step_advanced_options_task_template'
+  import step_guides_task_template from './step_guides_task_template'
   import step_label_selection_task_template from './step_label_selection_task_template'
   import step_awards_task_template from './step_awards_task_template'
   import step_ui_schema_task_template from './step_ui_schema_task_template'
@@ -165,10 +172,11 @@
 
       components: {
         step_name_task_template,
+        step_guides_task_template,
         step_awards_task_template,
         step_users_selection,
         step_ui_schema_task_template,
-        step_guides_awards_task_template,
+        step_advanced_options_task_template,
         step_label_selection_task_template,
         step_attach_directories_task_template
       },
@@ -201,7 +209,15 @@
       },
       methods: {
         create_task_template: function(){
+          // 1. Create Task Template Object
 
+          // 2. Attach Directories
+
+          // 3. Attach Guides
+
+          // 4. Attach Awards
+
+          // 5. Launch Task Template
         },
         go_to_step: function (step) {
           this.step = step;

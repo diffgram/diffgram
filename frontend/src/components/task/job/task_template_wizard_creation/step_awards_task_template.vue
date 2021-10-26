@@ -2,14 +2,14 @@
   <v-container fluid>
     <div class="d-flex mb-8 justify-space-between">
       <h1 class="font-weight-medium text--primary mr-4">
-        Guides Setup:
+        Awards Setup:
       </h1>
       <tooltip_button
-        tooltip_message="Create Guides"
-        @click="open_guides"
+        tooltip_message="Create Awards"
+        @click="open_awards"
         button_color="primary"
         icon="mdi-plus"
-        button_message="Create Guides"
+        button_message="Create Awards"
         color="white">
       </tooltip_button>
     </div>
@@ -22,11 +22,11 @@
 
     <v-container fluid>
       <h2 class="ma-0">Set Awards (Optional): </h2>
-      <guide_selector
-        :project_string_id="project_string_id"
-      >
 
-      </guide_selector>
+      <credential_type_attach_to_job
+        :job="job"
+        :job_id="job.id">
+      </credential_type_attach_to_job>
     </v-container>
 
     <v-container fluid class="mt-8 pa-0 d-flex justify-space-between" style="width: 100%">
@@ -44,7 +44,7 @@
 <script lang="ts">
 
   import axios from 'axios';
-  import guide_selector from '../../guide/guide_selector'
+  import credential_type_attach_to_job from '../../credential/credential_type_attach_to_job'
 
   import Vue from "vue";
 
@@ -56,7 +56,7 @@
       ],
 
       components: {
-        guide_selector
+        credential_type_attach_to_job
       },
 
       data() {
@@ -73,7 +73,7 @@
         on_next_button_click: function () {
           this.$emit('next_step');
         },
-        open_guides: function(){
+        open_awards: function(){
           let routeData = this.$router.resolve({
             path: `/project/${this.project_string_id}/guide/list`,
             query: {edit_schema: true}
