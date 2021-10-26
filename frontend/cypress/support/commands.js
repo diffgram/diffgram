@@ -379,7 +379,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
     cy.get('[data-cy=attribute_option_name]').click({force: true});
     cy.wait(750)
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
-    cy.wait(200)
+    cy.wait(300)
     cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
     
   }
