@@ -26,6 +26,7 @@
       <guide_selector
         :project_string_id="project_string_id"
         @change="on_change_guide"
+        ref="guide_selector"
       >
 
       </guide_selector>
@@ -37,6 +38,30 @@
       :skip_visible="false"
     >
     </wizard_navigation>
+
+    <v-dialog v-model="dialog_open"
+              :close-on-content-click="false"
+              :nudge-width="200"
+              offset-x>
+
+      <template v-slot:activator="{ on }">
+
+        <v-btn v-on="on"
+               outlined
+               color="success"
+               :disabled="false">
+          <v-icon> add </v-icon>
+          Create
+        </v-btn>
+      </template>
+
+      <v_guide_new_or_edit
+        :project_string_id="project_string_id"
+        :mode="'new'"
+        @guide_new_success="on_guide_created">
+      </v_guide_new_or_edit>
+
+    </v-dialog>
   </v-container>
 
 </template>
@@ -63,6 +88,7 @@
         return {
           error: {},
           show_credentials: false,
+          dialog_open: false,
         }
       },
       created() {
@@ -77,11 +103,10 @@
           this.$emit('next_step');
         },
         open_guides: function(){
-          let routeData = this.$router.resolve({
-            path: `/project/${this.project_string_id}/guide/list`,
-            query: {edit_schema: true}
-          });
-          window.open(routeData.href, '_blank');
+          this.dialog_open = true;
+        },
+        on_guide_created: function(guide){
+          this.$refs.guide_selector.guide_list_api();
         }
       }
     }
