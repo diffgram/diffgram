@@ -285,8 +285,17 @@ const routerOptions = [
 
   // 2 different job new, one has project ...
   {
-    path: '/job/new/:job_id_route',
+    path: '/job/new-legacy/:job_id_route',
     component: 'task/job/job_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
+    path: '/job/new/:job_id_route',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {
       requiresAuth: true,

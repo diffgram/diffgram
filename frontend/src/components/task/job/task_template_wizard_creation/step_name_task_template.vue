@@ -13,6 +13,7 @@
 
     <wizard_navigation
       @next="on_next_button_click"
+      :loading_next="loading"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
@@ -42,7 +43,8 @@
 
       data() {
         return {
-          error: {}
+          error: {},
+          loading: false,
         }
       },
       created() {
@@ -62,11 +64,39 @@
           }
           return true
         },
-        on_next_button_click: function(){
+        on_next_button_click: async function(){
           this.error = {};
           let name_ok = this.verify_name();
           if(name_ok){
+            await this.job_new();
             this.$emit('next_step');
+          }
+        },
+        job_new: async function () {
+          this.loading = true
+          this.job_new_error = {}
+          let job = {...this.$props.job};
+          // QUESTION
+          // Not clear if we want to do this as a computed property or...
+
+          // careful to update with share property that's seperate due to dict thing.
+          const url = `/api/v1/project/${this.project_string_id}/job/new`
+
+          try {
+            const response = await axios.post(url, job)
+            // Handle job hash / draft / job status
+            if (response.data.log.success == true) {
+              this.job.id = response.data.job.id;
+              this.loading = false
+              this.success_action = 'Job created successfully.'
+              return response
+            }
+
+          } catch (error) {
+            console.error(error);
+            this.loading = false
+            this.error = this.$route_api_errors(error)
+            return error;
           }
         },
 

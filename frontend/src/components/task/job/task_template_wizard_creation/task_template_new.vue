@@ -48,43 +48,22 @@
       components: {
         task_template_wizard: task_template_wizard,
       },
+      mounted: async function(){
+        if (this.job_id_route) {
+          this.job_id = this.job_id_route;
+        }
+        if(this.job_id){
+          await this.fetch_job_api();
+        }
+        this.job.share_object.text = this.$store.state.project.current.project_string_id + ' (Project)'
+        //this.$store.commit('set_project_string_id', this.project_string_id)
 
+
+        this.project_string_id = this.project_string_id_route
+        this.loading = false
+      },
       data() {
         return {
-          connectors: [
-            {
-              'display_name': 'Scale AI Account #1',
-              'name': 'scale_ai_1',
-              'icon': 'mdi-cached',
-              'color': 'primary',
-              'credentials': {
-                'name': 'SCALE AI TEST',
-                'secret': '1'
-              }
-            },
-            {
-              'display_name': 'Scale AI Account #2',
-              'name': 'scale_ai_2',
-              'icon': 'mdi-cached',
-              'color': 'primary',
-              'credentials': {
-                'name': 'SCALE AI TEST',
-                'secret': '1'
-              }
-            },
-          ],
-
-          show_credentials: false,
-          save_draft_staus: false,
-
-
-          stepper: 1,
-          error_launch: {},
-          success_launch: false,
-
-          // Caution! We aren't sending job dict back yet
-          // so have to still add this on API side too till we turn this
-          // into a computed property or something
           job: {
             name: sillyname().split(" ")[0],
             label_mode: 'closed_all_available',
@@ -109,67 +88,10 @@
             interface_connection: undefined,
             member_list_ids: ["all"]
           },
-          output_dir: {},
-          latest_dataset: undefined,
-          // Not super happy with this triplicate setup but more for Org (see org_dict below)
-          loading_job_fetch: false,
-          category_list: ['visual'],
-          share_list: [
-            // Training Data by API not yet supported here.
-            /*
-            {
-              'text': 'Training Data by API',
-              'type': 'market'
-            },
-            */],
-          checks: {},
-
           job_id: null,
 
-          loading: true,
-
-          description: "",
-
-          project_string_id: null
-
         }
       },
-      created() {
-        //this.$store.commit('set_project_string_id', this.project_string_id)
-        if (this.job_id_route) {
-          this.loading_job_fetch = true;
-          this.job_id = this.job_id_route;
-        }
-
-        if (!this.job_id) {
-          /* We assume if no job_id is provided then
-           * we are creating a new job (not editing an existing one)
-           * , which we assume otherwise
-           */
-          this.$store.commit('clear_job')
-        }
-
-        this.project_string_id = this.project_string_id_route
-
-        this.job.share_object.text = this.$store.state.project.current.project_string_id + ' (Project)'
-
-        /* We get the job updated
-         * from the job info component at first run
-         * can't call update_job_info() directly since
-         * it expects to be passed a job
-         *
-         * We now default to loading in data() but then
-         * set it false here in created.
-         * this still feels a bit funny, visually it seems to help though...
-         *
-         * one goal here is so things like the
-         * "silly name" don't show if loading an existing
-         * job
-         */
-        this.loading = false
-
-      },
-
       computed: {
         bread_crumb_list: function () {
           return [
@@ -366,6 +288,38 @@
           }
 
         },
+        fetch_job_api: async function() {
+
+          this.loading = true
+          try{
+            const response = await axios.post(
+              `/api/v1/job/${this.job_id}/builder/info`,
+              {
+                'mode_data': 'job_edit'
+              }
+            );
+            if (response.data.log.success == true) {
+
+              this.job = response.data.job
+              this.$emit('job_info', this.job)
+              this.$store.commit('set_job', this.job)
+            }
+
+          }
+          catch(e){
+            if (e.response.status == 403) {
+              this.$store.commit('error_permission')
+            }
+            console.error(e);
+
+          }
+          finally{
+            this.loading = false
+          }
+
+        },
+
+
       }
     }
   ) </script>
