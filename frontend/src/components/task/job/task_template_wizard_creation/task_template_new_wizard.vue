@@ -70,6 +70,14 @@
             @next_step="go_to_step(2)"
           ></step_name_task_template>
 
+          <wizard_navigation
+            @next="go_to_step(1)"   
+            :disabled_next="job.name"
+            :back_visible="false"
+            :skip_visible="false"
+                             >
+          </wizard_navigation>
+
         </v-stepper-content>
         <v-stepper-content step="2" style="height: 100%">
           <step_label_selection_task_template
@@ -78,6 +86,14 @@
             @previous_step="go_to_step(1)"
             @next_step="go_to_step(3)"
           ></step_label_selection_task_template>
+
+          <wizard_navigation
+              @next="go_to_step(2)"  
+              @skip="go_to_step(2)"
+              @back="$emit('back')"
+                             >
+          </wizard_navigation>
+
         </v-stepper-content>
         <v-stepper-content step="3" style="height: 100%">
           <step_users_selection
