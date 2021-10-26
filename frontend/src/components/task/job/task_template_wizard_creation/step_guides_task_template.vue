@@ -25,7 +25,7 @@
       <h2 class="ma-0">Set Your Guide (Optional): </h2>
       <guide_selector
         :project_string_id="project_string_id"
-        @on_change="on_change_guide"
+        @change="on_change_guide"
       >
 
       </guide_selector>

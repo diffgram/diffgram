@@ -2,33 +2,18 @@
   <v-container fluid>
     <div class="d-flex mb-8 justify-space-between">
       <h1 class="font-weight-medium text--primary mr-4">
-        Guides Setup:
+        Advanced Options (You Can Skip This Step):
       </h1>
-      <tooltip_button
-        tooltip_message="Create Guides"
-        @click="open_guides"
-        button_color="primary"
-        icon="mdi-plus"
-        button_message="Create Guides"
-        color="white">
-      </tooltip_button>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>
     <p class="text--primary">
-      Guides are used to explain annotators the requirements for correctly annotating your files.
-      This is an optional step.
+      Optional Configurations.
     </p>
 
 
     <v-container fluid>
-      <h2 class="ma-0">Set Your Guide (Optional): </h2>
-      <guide_selector
-        :project_string_id="project_string_id"
-        @on_change="on_change_guide"
-      >
 
-      </guide_selector>
     </v-container>
 
     <v-container fluid class="mt-8 pa-0 d-flex justify-space-between" style="width: 100%">

@@ -49,6 +49,7 @@
       },
       methods: {
         on_guide_change: function(guide){
+          console.log('aaa', guide)
           this.$emit('change', guide)
         },
         guide_list_api: async function () {
