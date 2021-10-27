@@ -95,25 +95,43 @@
 
             <h2> Name Your Question </h2>
 
-            <v-text-field
-              label="Prompt Shown"
-              data-cy="attribute_prompt"
-              v-model="group.prompt"
-              @input="$emit('input', group)"
-              @change="$emit('change')"
-            >
-            </v-text-field>
+            <v-layout>
+              <v-text-field
+                label="Prompt Shown"
+                data-cy="attribute_prompt"
+                v-model="group.prompt"
+                @input="$emit('input', group)"
+                @change="$emit('change')"
+              >
+              </v-text-field>
 
-            <h4 class="ma-0 mt-6">Internal Tag:</h4>
-            <p class="text--secondary">The internal tag can be used for reference when exporting to JSON or other formats.</p>
-            <v-text-field label="Internal Tag"
-                          data-cy="attribute_tag"
-                          v-model="group.name"
-                          @input="$emit('input', group)"
-                          @change="$emit('change')"
-            >
-            </v-text-field>
 
+              <button_with_menu
+                  tooltip_message="Optional Extra Reference"
+                  icon="mdi-tag"
+                  :close_by_button="true"
+                  :small="true"
+                  color="primary"
+                      >
+
+                  <template slot="content">
+                    <v-layout column>
+
+                      <h4 class="ma-0 mt-6">Optional Extra Reference:</h4>
+                      <p class="text--secondary">Field not shown to Annotators.</p>
+                      <v-text-field label="Reference"
+                                    data-cy="attribute_tag"
+                                    v-model="group.name"
+                                    @input="$emit('input', group)"
+                                    @change="$emit('change')"
+                      >
+                      </v-text-field>
+
+                    </v-layout>
+                  </template>
+
+              </button_with_menu>
+            </v-layout>
 
             <wizard_navigation
               @next="go_to_step(3)"
