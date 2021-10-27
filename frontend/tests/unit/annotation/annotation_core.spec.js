@@ -12,6 +12,7 @@ describe("Test annotation_core", () => {
     props = {
       mocks: {
         $get_sequence_color: () => {},
+        task: 1,
         $store: {
           state: {
             annotation_state: {},
@@ -34,8 +35,8 @@ describe("Test annotation_core", () => {
     };
   });
 
-  it("Test if annotation_core mounted successfully", () => {
+  it("Tests if annotation_core mounts successfully", () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
-    console.log(wrapper);
+    expect(wrapper.html().includes('id="annotation_core"')).toBeTruthy();
   });
 });

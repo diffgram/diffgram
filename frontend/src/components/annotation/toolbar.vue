@@ -360,7 +360,7 @@
           v-else
           tooltip_message="Pause"
           ui_schema_name="stop_shideshow"
-          @click="$emit('change_task', 'previous')"
+          @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
           color="primary"
           icon="pause"
           :icon_style="true"
