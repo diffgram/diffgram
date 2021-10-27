@@ -1,6 +1,7 @@
 <template>
     <v-snackbar 
-        v-model="annotation_show_on" 
+        v-model="annotation_show_on"
+        v-if="annotation_show_on"
         timeout="0" 
         :bottom="true"
     >

@@ -1,5 +1,5 @@
 import Vuex from "vuex";
-import { shallowMount, mount, createLocalVue } from "@vue/test-utils";
+import { shallowMount, createLocalVue } from "@vue/test-utils";
 import toolbar from "@/components/annotation/toolbar.vue";
 
 const localVue = createLocalVue();
