@@ -586,7 +586,7 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
 Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(500)
-  cy.get('[data-cy=new_instance_template]').first().click();
+  cy.get('[data-cy=new_instance_template]').first().click({force: true});
   cy.get('[data-cy=instance_template_name_text_field]').type(name);
   cy.wait(500)
   for(let node of instance_data.nodes){
