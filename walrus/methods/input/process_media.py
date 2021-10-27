@@ -526,6 +526,7 @@ class Process_Media():
             # log['error']['status_text']
             if len(self.log["error"].keys()) >= 1:
                 logger.error('Error downloading media: {}'.format(str(self.log['error'])))
+                self.input.update_log['error'] = self.log['error']
                 return False
 
         if self.input.media_type == "video":
