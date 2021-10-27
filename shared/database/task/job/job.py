@@ -76,6 +76,9 @@ class Job(Base, Caching):
     guide_review = relationship("Guide", foreign_keys=[guide_review_id])
 
 
+    ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
+    ui_schema = relationship("UI_Schema", foreign_keys=[ui_schema_id])
+
     # Primary data storage for job
     directory_id = Column(Integer, ForeignKey('working_dir.id'))
     directory = relationship("WorkingDir",
