@@ -42,9 +42,23 @@
 
     <wizard_navigation
       @next="on_next_button_click"
+      :next_visible="false"
+      :loading_next="loading_steps"
       @back="$emit('previous_step')"
-      :skip_visible="true"
-    >
+      :skip_visible="true">
+
+    <template slot="next">
+      <v-btn
+        x-large
+        @click="on_next_button_click"
+        color="success"
+        data-cy="wizard_navigation_next"
+      >
+        <v-icon>mdi-rocket-launch</v-icon>
+        Launch Task Template
+      </v-btn>
+    </template>
+
     </wizard_navigation>
   </v-container>
 
@@ -62,7 +76,8 @@
       name: 'step_guides_task_template',
       props: [
         'project_string_id',
-        'job'
+        'job',
+        'loading_steps',
       ],
 
       components: {

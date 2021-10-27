@@ -19,7 +19,7 @@
       label="Select Specific Users"
       :member_list="$store.state.project.current.member_list"
       :multiple="true"
-      :init_all_selected="job.id ? false : true"
+      :init_all_selected="mode === 'update' ? false : true"
       :initial_value="job.id != undefined ? job.member_list_ids : ['all']"
       :allow_all_option="true"
     >
@@ -30,6 +30,7 @@
       @next="on_next_button_click"
       @back="$emit('previous_step')"
       :skip_visible="false"
+      :loading_steps="loading_steps"
     >
     </wizard_navigation>
   </v-container>
@@ -48,7 +49,9 @@
       name: 'step_label_task_template',
       props: [
         'project_string_id',
-        'job'
+        'job',
+        'loading_steps',
+        'mode',
       ],
 
       components: {
@@ -62,7 +65,8 @@
           request_refresh_labels: new Date(),
         }
       },
-      created() {
+      mounted() {
+
 
       },
 

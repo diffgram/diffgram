@@ -100,6 +100,7 @@
           <step_users_selection
             :project_string_id="project_string_id"
             :job="job"
+            :mode="mode"
             :loading_steps="loading"
             @previous_step="go_to_step(2)"
             @next_step="go_to_step(4)"
@@ -152,7 +153,7 @@
             :job="job"
             :loading_steps="loading"
             @previous_step="go_to_step(7)"
-            @next_step="create_task_template"
+            @next_step="launch_task_template"
           ></step_advanced_options_task_template>
         </v-stepper-content>
 
@@ -191,6 +192,9 @@
         'job_id_route': {
           default: null
         },
+        'mode':{
+          default: null
+        }
       },
 
       components: {
@@ -262,16 +266,49 @@
           }
 
         },
-        create_task_template: function(){
-          // 1. Create Task Template Object
+        launch_task_template: async function(){
+          this.error = {}
 
-          // 2. Attach Directories
+          this.loading = true
 
-          // 3. Attach Guides
+          try {
+            // const response_output_dirs = await this.add_output_actions_to_job();
+            // if (!response_output_dirs) {
+            //   return
+            // }
+            // const response_dirs_update = await this.add_dirs_to_job_api();
+            // if (!response_dirs_update) {
+            //   return
+            // }
+            const response = await axios.post(
+              '/api/v1/job/launch',
+              {
+                job_id: this.job.id
 
-          // 4. Attach Awards
+              });
+            // Push to success / stats page?
+            // Show success?
 
-          // 5. Launch Task Template
+            let launch_flow = response.data.log.info.launch_flow
+
+            if (launch_flow == 'now') {
+              this.$router.push('/job/' + this.job_id + '?success_launch=true')
+            } else if (launch_flow == 'soon') {
+              this.$router.push('/job/list?success_launch=true')
+
+            }
+
+          } catch (error) {
+            console.error(error)
+            this.error = this.$route_api_errors(error)
+            console.log('errro', this.error)
+            if(this.error.job_id){
+              this.error.info = 'Please complete all the steps to launch the job.'
+            }
+          }
+          finally{
+            this.loading = false
+          }
         },
 
         go_to_step: async function (step) {
