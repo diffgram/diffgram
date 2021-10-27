@@ -2777,11 +2777,7 @@
           }
 
           if (update.mode == 'on_click_update_point_attribute'){
-            if (instance.nodes[update.node_hover_index].occluded == true) {
-              instance.nodes[update.node_hover_index].occluded = false
-            } else {
-              instance.nodes[update.node_hover_index].occluded = true
-            }
+            instance.toggle_occluded(update.node_hover_index)
           }
 
           // instance update
@@ -5763,69 +5759,69 @@
         },
 
         mouse_down_limits: function (event) {
-          /* not a fan of having a value
-       * and a flag... but also have to deal with both
-       * mouse up and down firing, but not wanting to rerun this stuff twice
-       * If there was a way to control the relation of mouse up/down
-       * firing but that feels very unclear
-       *
-       * Also not sure if we don't return will it wait for the function
-       * to complete as expected...
-       *
-       * So the default here is that it's true,
-       * and we expect that if it's true mouse_up will also allow it to continue
-       * It gets reset each time.
-       *
-       * In comparison to running this at save,
-       * it means for current video boxes it will run twice
-       * But the benefit is that then it prevents it from getting into broken state
-       * in first place
-       */
+            /* not a fan of having a value
+         * and a flag... but also have to deal with both
+         * mouse up and down firing, but not wanting to rerun this stuff twice
+         * If there was a way to control the relation of mouse up/down
+         * firing but that feels very unclear
+         *
+         * Also not sure if we don't return will it wait for the function
+         * to complete as expected...
+         *
+         * So the default here is that it's true,
+         * and we expect that if it's true mouse_up will also allow it to continue
+         * It gets reset each time.
+         *
+         * In comparison to running this at save,
+         * it means for current video boxes it will run twice
+         * But the benefit is that then it prevents it from getting into broken state
+         * in first place
+         */
 
-          // default
-          this.mouse_down_limits_result = true
+            // default
+            this.mouse_down_limits_result = true
 
-          // 1: left, 2: middle, 3: right, could be null
-          // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
+            // 1: left, 2: middle, 3: right, could be null
+            // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
 
-          if (event.which == 2 || event.which == 3) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.show_context_menu == true) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // this feels a bit funny
-          if (this.draw_mode == false) { return true }
-
-          if (this.space_bar == true || this.ctrl_key) {
-            // note pattern of needing both... for now this
-            // is so the mouse up respects this too
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // TODO clarify if we could just do this first check
-          if (!this.current_label_file || !this.current_label_file.id) {
-            this.snackbar_warning = true
-            this.snackbar_warning_text = "Please select a label first"
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.video_mode == true) {
-            if (this.validate_sequences() == false) {
+            if (event.which == 2 || event.which == 3) {
               this.mouse_down_limits_result = false
               return false
             }
-          }
 
-          return true
+            if (this.show_context_menu == true) {
+              this.mouse_down_limits_result = false
+              return false
+            }
 
-        },
+            // this feels a bit funny
+            if (this.draw_mode == false) { return true }
+
+            if (this.space_bar == true || this.ctrl_key) {
+              // note pattern of needing both... for now this
+              // is so the mouse up respects this too
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            // TODO clarify if we could just do this first check
+            if (!this.current_label_file || !this.current_label_file.id) {
+              this.snackbar_warning = true
+              this.snackbar_warning_text = "Please select a label first"
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            if (this.video_mode == true) {
+              if (this.validate_sequences() == false) {
+                this.mouse_down_limits_result = false
+                return false
+              }
+            }
+
+            return true
+
+          },
 
         create_instance_events: function (instance_index=this.instance_list.length - 1) {
           this.event_create_instance = {...this.current_instance}
@@ -7246,6 +7242,7 @@
               number: inst.number,
               rating: inst.rating,
               points: inst.points ? inst.points.map(point => {return {...point}}) : inst.points,
+              nodes: inst.nodes ? inst.nodes.map(node => {return {...node}}) : inst.nodes,
               front_face: {...inst.front_face},
               rear_face: {...inst.rear_face},
               soft_delete: inst.soft_delete,
