@@ -17,7 +17,8 @@ describe('Annotate Files Tests', () => {
 
     })
 
-    context('It Creates an Instance Template', () => {
+    context('Creates an Instance Template', () => {
+
       it('Creates Instance Template', () => {
         cy.createInstanceTemplate('instance template 1', {
           nodes: [{x: 100, y: 100}, {x: 300, y: 300}, {x: 400, y: 400}, {x: 75, y: 150}],
@@ -68,13 +69,24 @@ describe('Annotate Files Tests', () => {
         Cypress.Cookies.defaults({
           preserve: ['session']
         })
-        // login before all tests
+        
         cy.loginByForm(testUser.email, testUser.password);
         cy.gotToProject(testUser.project_string_id);
         cy.createLabels(testLabels)
         cy.uploadAndViewSampleImage(testUser.project_string_id);
-
+       
       })
+
+      it('Hides ghost instance info box to ensure out of way for instance templates', () => {
+        cy.wait(3000)
+        cy.goToStudioFromToolbar()
+        cy.get('[data-cy=more_button]').click({force: true});
+        cy.wait(100)
+        cy.get('[data-cy=advanced_setting]').click({force: true})
+        cy.wait(100)
+        cy.get('[data-cy=show_ghost_instances]').click({force: true})
+      })
+
 
       it('Draws a Created Instance Template', () => {
         cy.wait(2000);

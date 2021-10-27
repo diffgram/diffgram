@@ -88,7 +88,7 @@ class Project_permissions():
 
 			project = Project.get(session, project_string_id)
 			if project is None:
-				raise Forbidden(basic_auth_denied_message + " Can't find project")
+				raise Forbidden("Can't find project")
 
 			if Project_permissions.check_if_project_is_public(project, Roles):
 				return True

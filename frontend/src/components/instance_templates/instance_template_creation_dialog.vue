@@ -22,7 +22,9 @@
 
           </instance_template_creation_toolbar>
           <v-alert dismissible color="secondary" text icon="mdi-information">
-            Right Click on a Node to Occlude it or give it a name.
+            Right Click on a Point to Name it, or Set Default Occlusion Value.
+            Press Esc to stop drawing and go to edit mode.
+            Double click a point to delete it.
           </v-alert>
           <v_error_multiple :error="error">
           </v_error_multiple>
@@ -62,18 +64,32 @@
       </v-card-text>
 
       <v-card-actions class="flex justify-end pa-0">
-        <v-btn color="error" text @click="is_open = false">
+        <v-btn color="error"
+               text
+               @click="is_open = false"
+               :disabled="loading"
+               >
           <v-icon>mdi-close</v-icon>
           Discard Changes
         </v-btn>
-        <v-btn color="success" data-cy="save_instance_template_button" text @click="save_instance_template">
+        <v-btn color="success"
+               data-cy="save_instance_template_button"
+               text
+               @click="save_instance_template"
+               :disabled="loading">
           <v-icon>mdi-content-save</v-icon>
           Save Instance Template
         </v-btn>
       </v-card-actions>
 
     </v-card>
-    <v-snackbar color="secondary" :timeout="50000" v-if="show_snackbar" v-model="show_snackbar" :multi-line="true">
+    <v-snackbar color="secondary"
+                :timeout="5000"
+                v-if="show_snackbar"
+                v-model="show_snackbar"
+                :multi-line="true"
+                top
+                >
       {{snackbar_text}}
     </v-snackbar>
   </v-dialog>
@@ -105,7 +121,7 @@
     data: function () {
       return {
         instance_type: 'keypoints',
-        snackbar_text: 'Press Esc to stop drawing Edges/Nodes and got to edit mode.',
+        snackbar_text: null,
         instance_context: new InstanceContext(),
         draw_mode: true,
         show_snackbar: false,
@@ -119,6 +135,7 @@
         canvas_width: 600,
         canvas_height: 600,
         is_open: false,
+        loading: false,
         name: undefined,
         label_settings: {
           show_occluded_keypoints: true,
@@ -127,12 +144,29 @@
       }
     },
     mounted() {
-      this.open_snackbar(this.snackbar_text)
 
+      document.addEventListener('mousedown', this.mouse_events_global_down)
 
+    },
+    beforeDestroy() {
+      document.removeEventListener('mousedown', this.mouse_events_global_down)
     },
 
     methods: {
+      detect_clicks_outside_context_menu: function (e) {
+
+        // skip clicks on the actual context menu
+        if (e.target.matches('.context-menu, .context-menu *')){
+          return;
+        }
+        // assume if not on context menu, then it's outside and we want to hide it
+        this.hide_context_menu()
+      },
+      mouse_events_global_down: function(e) {
+
+        this.detect_clicks_outside_context_menu(e)
+
+      },
       mouse_up_limits: function (event) {
         // 1: left, 2: middle, 3: right, could be null
         // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
@@ -142,6 +176,7 @@
         if (this.show_context_menu == true) {
           return false
         }
+
         return true
 
       },
@@ -152,13 +187,15 @@
           return false
         }
         if (this.show_context_menu == true) {
+          if(!this.instance.is_node_hovered){
+            this.hide_context_menu()
+          }
           return false
         }
         return true
 
       },
       hide_context_menu: function () {
-        console.log('hidee')
         this.show_context_menu = false;
       },
       open_context_menu: function () {
@@ -245,7 +282,7 @@
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
         if (this.instance_context.draw_mode) {
-          this.open_snackbar('Press Esc to stop drawing Edges/Nodes and got to edit mode.');
+          this.open_snackbar('Press Esc to stop drawing Lines/Points and go to edit mode.');
         } else {
           this.close_snackbar()
         }
@@ -290,7 +327,6 @@
           return
         }
 
-        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
         if (interaction) {
           interaction.process();
@@ -305,7 +341,6 @@
         if(!this.mouse_up_limits(event)){
           return
         }
-        this.hide_context_menu()
         const interaction = this.generate_interaction_from_event(event);
         if (interaction) {
           interaction.process();
@@ -340,6 +375,7 @@
       update_instance_template: async function () {
         try {
           this.error = {};
+          this.loading = true;
           const has_empty_instances = this.validate_empty_instance_list();
           if (!has_empty_instances) {
             return

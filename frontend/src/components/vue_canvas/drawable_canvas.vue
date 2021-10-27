@@ -289,6 +289,14 @@
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
 
         this.$forceUpdate();
+      },
+      zoom_in: function() {
+        this.canvas_mouse_tools.zoom_in()
+        this.update_canvas()
+      },
+      zoom_out: function() {
+        this.canvas_mouse_tools.zoom_out()
+        this.update_canvas()
       }
 
 
