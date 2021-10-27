@@ -3249,6 +3249,9 @@
           if (this.$store.state.user.settings.hide_ghost_canvas_available_alert == true) {
             return
           }
+          if (this.label_settings.show_ghost_instances == false) {
+            return
+          }
           if (this.ghost_instance_list.length >= 1) {
             this.canvas_alert_x = this.mouse_position.x
             this.canvas_alert_y = this.mouse_position.y
