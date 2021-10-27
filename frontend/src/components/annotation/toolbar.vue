@@ -329,6 +329,7 @@
     <v-divider vertical />
     <div>
         <button_with_menu
+          v-if="annotation_show_on !== true"
           tooltip_message="Annotation show"
           color="primary"
           :icon="anootations_show_icon"
@@ -338,21 +339,33 @@
           <v-btn 
             @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
           >
-            <span v-if="annotation_show_on !== true">
+            <span>
               Start
             </span>
-            <span v-else>
-              Stop
-            </span>
           </v-btn>
-          <v-text-field 
-            v-model="numberValue" 
-            type="number"
-            label="Duration in seconds"
+          <v-slider
+            v-model="numberValue"
+            :tick-labels="duration_labels"
+            :max="4"
+            step="1"
+            ticks="always"
+            tick-size="4"
+            hint="Duration in seconds"
+            persistent-hint
             @change="$emit('show_duration_change', $event)"
           />
         </template>
       </button_with_menu>
+      <tooltip_button 
+          v-else
+          tooltip_message="Pause"
+          ui_schema_name="stop_shideshow"
+          @click="$emit('change_task', 'previous')"
+          color="primary"
+          icon="pause"
+          :icon_style="true"
+          :bottom="true"
+      />
     </div>
     <v-divider vertical />
     <div>
@@ -986,6 +999,14 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true
       },
       draw_mode_local: true,
+      numberValue: 1,
+      duration_labels: [
+          '1',
+          '2',
+          '3',
+          '4',
+          '5'
+        ]
     }
   },
   watch: {

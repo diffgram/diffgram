@@ -6544,7 +6544,7 @@
           }, this.annotation_show_duration_per_instance)
         },
         set_annotation_show_duration(duration){
-          this.annotation_show_duration_per_instance = duration * 1000
+          this.annotation_show_duration_per_instance = (duration + 1) * 1000
         },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
