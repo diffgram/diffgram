@@ -22,6 +22,7 @@
       <task_template_wizard
         v-if="!loading"
         :project_string_id="project_string_id"
+        :mode="mode"
         :job="job">
       </task_template_wizard>
       <v-progress-circular v-else indeterminate> </v-progress-circular>
@@ -44,14 +45,18 @@
       name: 'task_template_new',
       props: [
         'project_string_id_route',
-        'job_id_route'],
+        'job_id_route',
+        'loading_steps',
+      ],
 
       components: {
         task_template_wizard: task_template_wizard,
       },
       mounted: async function(){
+        this.mode = 'new'
         if (this.job_id_route) {
           this.job_id = this.job_id_route;
+          this.mode = 'update'
         }
         if(this.job_id){
           await this.fetch_job_api();
@@ -71,6 +76,7 @@
         return {
           project_string_id: null,
           loading: false,
+          mode: null,
           job: {
             name: sillyname().split(" ")[0],
             label_mode: 'closed_all_available',

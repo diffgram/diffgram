@@ -44,16 +44,6 @@
               :nudge-width="200"
               offset-x>
 
-      <template v-slot:activator="{ on }">
-
-        <v-btn v-on="on"
-               outlined
-               color="success"
-               :disabled="false">
-          <v-icon> add </v-icon>
-          Create
-        </v-btn>
-      </template>
 
       <v_guide_new_or_edit
         :project_string_id="project_string_id"
@@ -96,18 +86,43 @@
       },
 
       methods: {
-        on_change_guide: function(guide){
+        on_change_guide: function (guide) {
           this.job.guide = guide;
+          console.log('changeee', guide)
+          this.attach_selected(guide.id, 'default', 'update')
         },
         on_next_button_click: function () {
           this.$emit('next_step');
         },
-        open_guides: function(){
+        open_guides: function () {
           this.dialog_open = true;
         },
-        on_guide_created: function(guide){
+        on_guide_created: function (guide) {
           this.$refs.guide_selector.guide_list_api();
-        }
+        },
+        attach_selected: async function (guide_id, attach_kind, update_or_remove) {
+
+
+          this.loading = true
+          this.show_success_attach = false
+          this.error = {}
+          try {
+            const response = await axios.post('/api/v1/guide/attach/job',
+              {
+                'update_or_remove': update_or_remove,
+                'kind': attach_kind,
+                'job_id': this.job.id,
+                'guide_id': guide_id
+
+              })
+
+          } catch (e) {
+            this.error = e.response.data.log.error
+            console.error(e)
+            this.loading = false
+          }
+
+        },
       }
     }
   ) </script>

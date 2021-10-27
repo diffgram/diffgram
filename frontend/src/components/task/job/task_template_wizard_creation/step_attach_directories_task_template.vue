@@ -33,12 +33,13 @@
 
       </v-col>
       <v-col cols="6">
-        <job_pipeline_mxgraph ref="job_pipepline" :job_object="job"></job_pipeline_mxgraph>
+        <job_pipeline_mxgraph ref="job_pipeline" :job_object="job"></job_pipeline_mxgraph>
       </v-col>
     </v-row>
 
     <wizard_navigation
       @next="on_next_button_click"
+      :loading_next="loading_steps"
       :disabled_next="job.attached_directories_dict.attached_directories_list.length === 0"
       @back="$emit('previous_step')"
       :skip_visible="false"
@@ -71,7 +72,8 @@
       name: 'step_attach_directories_task_template',
       props: [
         'project_string_id',
-        'job'
+        'job',
+        'loading_steps',
       ],
 
       components: {
@@ -175,14 +177,18 @@
           this.job.attached_directories_dict = {
             attached_directories_list: attached_dirs.map(elm => elm)
           }
-        },
-        on_output_dirs_updated: async function(output_dir){
-          this.output_dir = output_dir;
           if(!this.$refs.job_pipeline){
             return
           }
-          await this.$refs.job_pipepline.get_directory()
-          this.$refs.job_pipepline.redraw()
+          this.$refs.job_pipeline.redraw()
+        },
+        on_output_dirs_updated: async function(output_dir){
+          this.output_dir = output_dir;
+          console.log('dirs updated', this.$refs.job_pipeline)
+          if(!this.$refs.job_pipeline){
+            return
+          }
+          this.$refs.job_pipeline.redraw()
         },
         open_upload_wizard: async function(){
           this.open_wizard = true;

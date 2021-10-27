@@ -86,7 +86,7 @@
           this.loading = true;
           this.job = this.$props.job_object;
           await this.get_directory();
-
+          console.log('REDRAWWWW', )
           this.draw_pipeline(this.job, this.output_dir)
           this.loading = false;
         },
