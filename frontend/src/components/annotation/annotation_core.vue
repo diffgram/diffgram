@@ -414,23 +414,6 @@
 
             </ghost_canvas_available_alert>
 
-            <v-snackbar v-model="annotation_show_on" timeout="0" bottom="true">
-            <template>
-              <v-progress-linear
-                v-model="annotation_show_progress"
-                height="25"
-                color="green"
-              >
-                <strong>
-                  {{ 
-                    (loading || annotations_loading || full_file_loading) ? 
-                    "Loading..." : 
-                    `${Math.ceil(annotation_show_progress)} %` 
-                  }}
-                </strong>
-              </v-progress-linear>
-            </template>
-            </v-snackbar>
             <br />
 
             <canvas
@@ -792,6 +775,16 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
+    <qa_carousel 
+      :annotation_show_on="annotation_show_on" 
+      :loading="loading || annotations_loading || full_file_loading"
+      :instance_list="instance_list"
+      :annotation_show_duration="annotation_show_duration_per_instance"
+      @focus_instance="(index) => focus_instance({ index })"
+      @change_item="annotation_show_change_item"
+      @stop_carousel="annotation_show_activate"
+    />
+
   </div>
 </template>
 
@@ -837,6 +830,8 @@
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
+  import qa_carousel from "./qa_carousel.vue"
+
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
 
@@ -874,7 +869,8 @@
         userscript,
         toolbar,
         ghost_canvas_available_alert,
-        ui_schema_context_menu
+        ui_schema_context_menu,
+        qa_carousel
       },
       props: {
         'project_string_id': {
@@ -922,13 +918,7 @@
       },
       watch: {
         finish_annotation_show: function (val) {
-          this.finish_annotation_show_local = val
-        },
-        annotation_show_on: function(val) {
-          if (val) setTimeout(() => {
-            this.annotation_show()
-          }, this.annotation_show_duration_per_instance)
-          else this.annotation_show()
+          if (val) this.annotation_show_on = false
         },
         canvas_scale_global: function(newVal, oldVal){
           this.on_canvas_scale_global_changed(newVal)
@@ -6515,33 +6505,9 @@
           this.annotation_show_on = !this.annotation_show_on
           this.annotation_show_type = show_type
         },
-        annotation_show(instant_transition = false){
-          if (instant_transition) clearTimeout(this.annotation_show_timer)
-          if (this.loading || this.annotations_loading || this.full_file_loading) return annotation_show()
-          if (this.finish_annotation_show_local) return this.annotation_show_on = false
-
-          let changer = () => this.change_file("next")
-          if (this.annotation_show_type === "task") 
-            changer = () => this.trigger_task_change("next", this.$props.task, true)
-
-          const number_of_current_instances = this.instance_list.length
-
-          if (this.annotation_show_current_instance < number_of_current_instances) {
-            this.annotation_show_progress = this.annotation_show_current_instance / number_of_current_instances * 100
-            this.focus_instance({index : this.annotation_show_current_instance})
-            this.annotation_show_current_instance = this.annotation_show_current_instance + 1
-          }
-          else {
-            this.annotation_show_current_instance = 0
-            this.annotation_show_progress = 100
-            changer()
-          }
-          this.annotation_show_timer = setTimeout(() => {
-            if (this.annotation_show_on) {
-              this.annotation_show()
-            }
-            return
-          }, this.annotation_show_duration_per_instance)
+        annotation_show_change_item() {
+          if (this.annotation_show_type === "task") return this.trigger_task_change("next", this.$props.task, true)
+          this.change_file("next")
         },
         set_annotation_show_duration(duration){
           this.annotation_show_duration_per_instance = (duration + 1) * 1000
@@ -6872,14 +6838,6 @@
 
           this.may_toggle_instance_transparency(event)
           this.may_toggle_show_hide_occlusion(event)
-
-          if (event.keyCode == 39 && this.annotation_show_on) {
-            this.annotation_show(true)
-          }
-
-          if (event.keyCode == 32 && this.annotation_show_on) {
-            this.annotation_show_on = false
-          }
 
           if (event.key === "N") { // shift + n
             if (this.shift_key) {
