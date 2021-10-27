@@ -160,12 +160,10 @@ import Vue from "vue"; export default Vue.extend( {
   mounted() {
 
     // Label()
-    this.current_label_file.label.name = this.label_file_prop.label.name
-    this.current_label_file.label.default_sequences_to_single_frame = this.label_file_prop.label.default_sequences_to_single_frame
-
-    // File()
-    this.current_label_file.colour = this.label_file_prop.colour
-    this.current_label_file.id = this.label_file_prop.id
+    console.log('label_file_prop', this.label_file_prop)
+    this.current_label_file = {...this.label_file_prop}
+    this.current_label_file.label = {...this.label_file_prop.label}
+    console.log('current_label_file', this.current_label_file)
   },
   methods: {
 
@@ -179,6 +177,7 @@ import Vue from "vue"; export default Vue.extend( {
           })
         this.$store.commit('init_label_refresh')
         this.$emit('request_boxes_refresh')
+        this.$emit('label_updated', {...this.current_label_file})
       }
       catch (error) {
         console.error(error);
