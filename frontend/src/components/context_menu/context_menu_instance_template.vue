@@ -222,7 +222,6 @@
           node_hover_index: this.node_hover_index_locked,
           mode: "node_name_changed"
         }
-        console.log('udpateddd')
         this.emit_update_and_hide_menu(instance_update)
       },
 
