@@ -593,6 +593,7 @@ class Task(Base):
 
     def serialize_for_list_view_builder(self, session=None):
 
+        file = None
         if session:
             file = self.file.serialize_with_type(session=session)
 
