@@ -73,6 +73,9 @@
           }
         },
         job_new: async function () {
+          if(this.job.id != undefined){
+            return
+          }
           this.loading = true
           this.job_new_error = {}
           let job = {...this.$props.job};

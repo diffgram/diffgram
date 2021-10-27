@@ -97,6 +97,62 @@
 
       },
       methods: {
+        async add_output_actions_to_job() {
+          this.loading = true
+          this.show_success = false
+          this.error_launch = {}
+          if (this.output_dir.action === 'copy' || this.output_dir.action === 'move') {
+            if (!this.output_dir.directory) {
+              this.error_launch = {
+                output_dir: 'Please select a directory for copy/move after tasks are completed.'
+              }
+              this.loading = false;
+              return false
+            }
+          }
+          try {
+            const response = await axios.post(
+              '/api/v1/project/' + this.project_string_id
+              + '/job/set-output-dir',
+              {
+                output_dir: this.output_dir.directory ? this.output_dir.directory.directory_id.toString() : undefined,
+                output_dir_action: this.output_dir.action,
+                job_id: parseInt(this.job.id),
+              })
+            return response
+          } catch (error) {
+            if (error.response) {
+              this.error = error.response.data.log.error
+            }
+            this.loading = false
+            return false
+          }
+        },
+        async add_dirs_to_job_api() {
+          this.loading = true
+          this.show_success = false
+          this.error_launch = {}
+          let dir_list = [];
+          if (this.job && this.job.attached_directories_dict && this.job.attached_directories_dict.attached_directories_list) {
+            dir_list = this.job.attached_directories_dict.attached_directories_list
+          }
+          try {
+            const response = await axios.post(
+              '/api/v1/project/' + this.project_string_id
+              + '/job/dir/attach',
+              {
+                directory_list: dir_list,
+                job_id: parseInt(this.job.id),
+              })
+            return response
+          } catch (error) {
+            if (error.response) {
+              this.error_launch = error.response.data.log.error
+            }
+            this.loading = false
+            return false;
+          }
+        },
         verify_labels: function(){
           if(!this.$props.job.label_file_list || this.$props.job.label_file_list.length === 0){
             this.error = {
@@ -106,10 +162,11 @@
           }
           return true
         },
-        on_next_button_click: function(){
+        on_next_button_click: async function(){
           this.error = {};
-          let labels_ok = this.verify_labels();
-          if(labels_ok){
+          let dirs_ok = await this.add_dirs_to_job_api();
+          let out_dirs_ok = await this.add_output_actions_to_job();
+          if(dirs_ok && out_dirs_ok){
             this.$emit('next_step');
           }
         },

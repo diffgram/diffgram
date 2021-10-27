@@ -203,7 +203,7 @@
         step_label_selection_task_template,
         step_attach_directories_task_template
       },
-      mounted: async function(){
+      created: async function(){
         if(this.$props.job_id_route){
           await this.fetch_job_api();
         }
@@ -212,6 +212,7 @@
         return {
           step: 1,
           total_steps: 6,
+          loading: false,
           error: {},
 
         }
