@@ -19,6 +19,7 @@
       label="Select Specific Users"
       :member_list="$store.state.project.current.member_list"
       :multiple="true"
+      :init_all_selected="job.id ? false : true"
       :initial_value="job.id != undefined ? job.member_list_ids : ['all']"
       :allow_all_option="true"
     >
