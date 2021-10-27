@@ -316,9 +316,13 @@
                                    Object.keys(props.item.update_log.error).length">
                           <h4>Log: </h4>
 
-                          <v_error_multiple :error="props.item.update_log">
-                          </v_error_multiple>
+                          <v_error_multiple :error="props.item.update_log.error">
+                          </v_error_multiple>    
+                          
                         </div>
+
+                        <v_info_multiple :info="props.item.update_log.info">
+                        </v_info_multiple>
 
                         <!-- Not showing info messages here yet -->
 
