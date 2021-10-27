@@ -124,6 +124,7 @@
         },
         update_attached_dirs: function () {
           if (this.$props.job && this.$props.job.original_attached_directories_dict && this.$props.job.original_attached_directories_dict.attached_directories_list) {
+            console.log('UPDATED DIRSSS',  this.$props.job.original_attached_directories_dict.attached_directories_list)
             this.attached_dirs = this.$props.job.original_attached_directories_dict.attached_directories_list;
           }
         },

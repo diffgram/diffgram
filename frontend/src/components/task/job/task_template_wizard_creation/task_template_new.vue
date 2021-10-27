@@ -20,10 +20,11 @@
     </v-toolbar>
     <v-container fluid class="d-flex justify-center">
       <task_template_wizard
+        v-if="!loading"
         :project_string_id="project_string_id"
         :job="job">
-
       </task_template_wizard>
+      <v-progress-circular v-else indeterminate> </v-progress-circular>
     </v-container>
 
   </div>
@@ -60,7 +61,7 @@
 
 
         this.project_string_id = this.project_string_id_route
-        console.log('AAAAAAA', this.project_string_id)
+
         if(!this.project_string_id){
           this.project_string_id = this.job.project_string_id;
         }
@@ -69,6 +70,7 @@
       data() {
         return {
           project_string_id: null,
+          loading: false,
           job: {
             name: sillyname().split(" ")[0],
             label_mode: 'closed_all_available',
@@ -254,10 +256,9 @@
 
               this.job = response.data.job
               this.job.label_file_list = this.job.label_file_list.map(elm => ({id: elm}) );
-              this.original_attached_directories_dict = {
-                ...this.attached_directories_dict
+              this.job.original_attached_directories_dict = {
+                ...this.job.attached_directories_dict
               };
-              console.log('AAAA', this.job.label_file_list);
               this.job.share_object = {
                 'type': 'project'
               };
