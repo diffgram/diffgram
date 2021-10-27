@@ -344,6 +344,60 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
   cy.wait(1500);
 });
 
+Cypress.Commands.add('goToSchemaFromToolbar', function () {
+  cy.wait(3000);
+  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=main_menu_labels]').click({force:true})
+  cy.wait(2000)
+});
+
+Cypress.Commands.add('goToStudioFromToolbar', function () {
+  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
+  cy.wait(5000);
+  cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
+});
+
+Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
+  cy.get(`[data-cy=new_attribute_button]`).click({force: true});
+  cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
+});
+
+Cypress.Commands.add('selectLabel', function (name) {
+  cy.wait(2000) // assumes will need to load
+  cy.get('[data-cy=label_select_attribute]').click({force: true});
+  cy.wait(300)
+  cy.get('.v-menu__content .v-list.v-select-list .v-list-item span span').contains(
+    name).first().click({force: true})
+});
+
+Cypress.Commands.add('createAttributeOptions', function (option_list) {
+  cy.get('[data-cy=new_attribute_option_button]').click({force: true});
+    
+  cy.wait(400);
+  for(let option of option_list){
+    cy.get('[data-cy=attribute_option_name]').click({force: true});
+    cy.wait(750)
+    cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
+    cy.wait(300)
+    cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
+    
+  }
+  cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
+});
+
+Cypress.Commands.add('typesAttributePrompt', function (name) {
+  cy.get('[data-cy=attribute_prompt]').click({force: true});
+  cy.get('[data-cy=attribute_prompt]').type(name);
+});
+
+Cypress.Commands.add('typesInternalTagPrompt', function (name) {
+  cy.get('[data-cy=attribute_tag]').click({force: true});
+  cy.get('[data-cy=attribute_tag]').type(selectAttribute.tag);
+});
+
+
+
 Cypress.Commands.add('createLabels', function (labels_list) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(2500)
@@ -531,8 +585,10 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
 
 Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
-  cy.get('[data-cy=new_instance_template]').first().click();
+  cy.wait(500)
+  cy.get('[data-cy=new_instance_template]').first().click({force: true});
   cy.get('[data-cy=instance_template_name_text_field]').type(name);
+  cy.wait(500)
   for(let node of instance_data.nodes){
     cy.mousedowncanvas(node.x, node.y)
     cy.wait(500)
