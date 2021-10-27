@@ -241,8 +241,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public calculate_center(){
     // This is the unrotated center.
-    this.center_x = parseInt((this.x_max + this.x_min) / 2)
-    this.center_y = parseInt((this.y_max + this.y_min) / 2)
+    this.center_x = Math.round((this.x_max + this.x_min) / 2)
+    this.center_y = Math.round((this.y_max + this.y_min) / 2)
     this.center = {x: this.center_x, y: this.center_y};
   }
   private move_node(event): void {
@@ -264,10 +264,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       //TODO handle for case where it's rotated and user pushes bounds (causes whole object to move)
       let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
       let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
-      this.x_min = parseInt(Math.min(...x_node_unrotated_list)) // careful math.min() expects destructured otherwised NaN
-      this.y_min = parseInt(Math.min(...y_node_unrotated_list))
-      this.x_max = parseInt(Math.max(...x_node_unrotated_list))
-      this.y_max = parseInt(Math.max(...y_node_unrotated_list))
+      this.x_min = Math.round(Math.min(...x_node_unrotated_list)) // careful math.min() expects destructured otherwised NaN
+      this.y_min = Math.round(Math.min(...y_node_unrotated_list))
+      this.x_max = Math.round(Math.max(...x_node_unrotated_list))
+      this.y_max = Math.round(Math.max(...y_node_unrotated_list))
     }
   }
 
@@ -306,10 +306,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     // TODO
     let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
     let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
-    let x_min = parseInt(Math.min(...x_node_unrotated_list))
-    let y_min = parseInt(Math.min(...y_node_unrotated_list))
-    let x_max = parseInt(Math.max(...x_node_unrotated_list))
-    let y_max = parseInt(Math.max(...y_node_unrotated_list))
+    let x_min = Math.round(Math.min(...x_node_unrotated_list))
+    let y_min = Math.round(Math.min(...y_node_unrotated_list))
+    let x_max = Math.round(Math.max(...x_node_unrotated_list))
+    let y_max = Math.round(Math.max(...y_node_unrotated_list))
 
     let center_x = (x_max + x_min) / 2;
     let center_y = (y_max +  y_min) / 2;
@@ -480,9 +480,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         {}
       );
 
-    if(sorted.length === 0){
-      return
-    }
     let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
     if(this.nodes[index] == undefined){
       return

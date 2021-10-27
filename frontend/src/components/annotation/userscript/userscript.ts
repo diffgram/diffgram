@@ -39,19 +39,20 @@ export class UserScript {
 
     // Caution code mirror errors if "code" is undefiend
 
-    let userscript = {}
-    userscript.client_creation_ref_id = uuidv4();
-    userscript.client_created_time = new Date().toISOString();
-    userscript.name = "Untitled script";
-    userscript.code = code
-    userscript.archived = false
-    userscript.is_visible = true
-    userscript.is_public = false
-    userscript.language = 'javascript'  // default
-    userscript.use_instructions = null
-    userscript.docs_link = null
-    userscript.star_rating_cache = null
-    userscript.external_src_list = [ ]
+    const userscript = {
+      client_creation_ref_id : uuidv4(),
+      client_created_time: new Date().toISOString(),
+      name : "Untitled script",
+      code : code,
+      archived : false,
+      is_visible : true,
+      is_public : false,
+      language : 'javascript',  // default
+      use_instructions : null,
+      docs_link: null,
+      star_rating_cache : null,
+      external_src_list : [ ],
+    }
     return userscript
 
   }
@@ -359,7 +360,7 @@ export class UserScript {
     }
   }
 
-  public async add_script_multiple (script_url_list) : any{
+  public async add_script_multiple (script_url_list) : Promise<any>{
     // assumes it will only add ones that don't exist
     /* assumes list is ordered as desired
      *
@@ -428,7 +429,7 @@ export class UserScript {
 
   private add_script(
     script_url_string,
-    insertion_node): any {
+    insertion_node): Promise<void> {
 
 
     let userscript_namespace_string = this.userscript_namespace_string    // promise will be different context
@@ -450,7 +451,7 @@ export class UserScript {
       }
       // error
       newScriptTag.onerror = function (error) {
-        reject(error, newScriptTag)
+        reject(error)
       }
       // add script src
       newScriptTag.setAttribute('src', script_url_string)

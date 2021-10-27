@@ -5,7 +5,7 @@ export class CanvasMouseTools {
   private canvas_transform: any;
   private canvas_ctx: any;
   private canvas_elm: any;
-  private zoom_stack: {zoom: number}[];
+  private zoom_stack: any;
   private previous_transform: any;
   private image: any;
   private scale: number;
