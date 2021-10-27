@@ -64,7 +64,7 @@
 
         <v-stepper-items style="height: 100%" class="pt-4">
 
-          <v-stepper-content step="1" style="height: 100%">
+          <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
             <h2 class="pb-2"> What Kind of Question? </h2>
 
@@ -91,18 +91,47 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="2" style="height: 100%">
+          <v-stepper-content step="2" style="height: 100%" data-cy="attribute_wizard_step_2">
 
             <h2> Name Your Question </h2>
 
-            <v-text-field
-              label="Prompt Shown"
-              data-cy="attribute_prompt"
-              v-model="group.prompt"
-              @input="$emit('input', group)"
-              @change="$emit('change')"
-            >
-            </v-text-field>
+            <v-layout>
+              <v-text-field
+                label="Prompt Shown"
+                data-cy="attribute_prompt"
+                v-model="group.prompt"
+                @input="$emit('input', group)"
+                @change="$emit('change')"
+              >
+              </v-text-field>
+
+
+              <button_with_menu
+                  tooltip_message="Optional Extra Reference"
+                  icon="mdi-tag"
+                  :close_by_button="true"
+                  :small="true"
+                  color="primary"
+                      >
+
+                  <template slot="content">
+                    <v-layout column>
+
+                      <h4 class="ma-0 mt-6">Optional Extra Reference:</h4>
+                      <p class="text--secondary">Field not shown to Annotators.</p>
+                      <v-text-field label="Reference"
+                                    data-cy="attribute_tag"
+                                    v-model="group.name"
+                                    @input="$emit('input', group)"
+                                    @change="$emit('change')"
+                      >
+                      </v-text-field>
+
+                    </v-layout>
+                  </template>
+
+              </button_with_menu>
+            </v-layout>
 
             <wizard_navigation
               @next="go_to_step(3)"
@@ -114,7 +143,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="3" style="height: 100%">
+          <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
             <h2 class="pb-2"> When Do You Want to Show This? </h2>
 
@@ -141,7 +170,7 @@
           </v-stepper-content>
 
 
-          <v-stepper-content step="4" style="height: 100%">
+          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
 
           <v-layout column>
 
@@ -220,10 +249,10 @@
               :skip_visible="false"
                                >
             </wizard_navigation>
-          
+
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%">
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -356,7 +385,7 @@
 
       </v-stepper>
 
- 
+
 </template>
 
 <script lang="ts">
@@ -422,6 +451,10 @@ export default Vue.extend( {
     }
   },
   methods: {
+    update_label_files: function(new_label_file_list){
+      this.$refs.label_selector.set_label_list(new_label_file_list)
+
+    },
     go_to_step: function(step){
       this.step = step
     },

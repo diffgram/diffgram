@@ -4,7 +4,6 @@
       <v-stepper v-model="step" :non-linear="true" style="height: 100%;" @change="on_change_step">
         <v-stepper-header class="ma-0 pl-8 pr-8">
           <v-stepper-step
-            editable
             :complete="step > 1"
             step="1"
           >
@@ -12,7 +11,6 @@
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
-            editable
             :complete="step > 2"
             step="2"
           >
@@ -20,21 +18,18 @@
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
-            editable
             :complete="step > 3"
             step="3">
             Upload
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
-            editable
             :complete="step > 4"
             step="4">
             Invite Team
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
-            editable
             :complete="step > 5"
             step="5">
             Tasks
