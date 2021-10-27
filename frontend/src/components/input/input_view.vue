@@ -297,14 +297,28 @@
                     color="error">
                     <template slot="content">
                       <v-layout column>
-                        <h4>Description: </h4>
-                        <p>
-                          {{ props.item.description}}
-                        </p>
-                        <h4>Log: </h4>
 
-                        <v_error_multiple :error="props.item.update_log">
-                        </v_error_multiple>
+                        
+                        <span v-if="props.item.status_text">
+                          <v-alert type="error">
+                            {{props.item.status_text}}
+                          </v-alert>
+                        </span>
+
+                        <div v-if="props.item.description">
+                          <h4>Description: </h4>
+                          <p>
+                            {{ props.item.description}}
+                          </p>
+                        </div>
+
+                        <div v-if="props.item.update_log &&
+                                   Object.keys(props.item.update_log.error).length">
+                          <h4>Log: </h4>
+
+                          <v_error_multiple :error="props.item.update_log">
+                          </v_error_multiple>
+                        </div>
 
                         <!-- Not showing info messages here yet -->
 
