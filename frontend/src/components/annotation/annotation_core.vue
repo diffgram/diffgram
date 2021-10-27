@@ -421,7 +421,13 @@
                 height="25"
                 color="green"
               >
-                <strong>{{ Math.ceil(annotation_show_progress) }} %</strong>
+                <strong>
+                  {{ 
+                    (loading || annotations_loading || full_file_loading) ? 
+                    "Loading..." : 
+                    `${Math.ceil(annotation_show_progress)} %` 
+                  }}
+                </strong>
               </v-progress-linear>
             </template>
             </v-snackbar>
@@ -6511,26 +6517,19 @@
         },
         annotation_show(instant_transition = false){
           if (instant_transition) clearTimeout(this.annotation_show_timer)
+          if (this.loading || this.annotations_loading || this.full_file_loading) return annotation_show()
           if (this.finish_annotation_show_local) return this.annotation_show_on = false
 
           let changer = () => this.change_file("next")
-          if (this.annotation_show_type === "task") changer = () => this.trigger_task_change("next", this.$props.task, true)
+          if (this.annotation_show_type === "task") 
+            changer = () => this.trigger_task_change("next", this.$props.task, true)
 
           const number_of_current_instances = this.instance_list.length
 
-          if (this.annotations_loading) {
-              this.annotation_show_timer = setTimeout(() => {
-              if (this.annotation_show_on) {
-                this.annotation_show()
-              }
-              return
-            }, this.annotation_show_duration_per_instance)
-          }
-          else if (this.annotation_show_current_instance < number_of_current_instances) {
+          if (this.annotation_show_current_instance < number_of_current_instances) {
             this.annotation_show_progress = this.annotation_show_current_instance / number_of_current_instances * 100
             this.focus_instance({index : this.annotation_show_current_instance})
             this.annotation_show_current_instance = this.annotation_show_current_instance + 1
-            this.annotation_show_revert = 2
           }
           else {
             this.annotation_show_current_instance = 0
