@@ -455,6 +455,7 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'job': self.job.serialize_for_task(),
             'project_string_id' : self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,

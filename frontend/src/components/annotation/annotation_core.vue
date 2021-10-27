@@ -6506,6 +6506,14 @@
             this.$emit('request_file_change', direction, file);
           }
         },
+        set_ui_schema(){
+          if(this.$props.task && this.$props.task.job && this.$props.task.job.ui_schema){
+            this.$store.commit('set_ui_schema', this.$props.task.job.ui_schema);
+          }
+          else{
+            this.$store.commit('clear_ui_schema');
+          }
+        },
         on_change_current_task: async function(){
           if (!this.$props.task) { return }
           if (!this.$props.task.id) { return }
@@ -6528,7 +6536,8 @@
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6558,7 +6567,8 @@
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
 
         refresh_attributes_from_current_file: async function (file) {
