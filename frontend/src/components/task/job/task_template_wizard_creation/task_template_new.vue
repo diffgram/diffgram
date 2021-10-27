@@ -60,13 +60,20 @@
 
 
         this.project_string_id = this.project_string_id_route
+        console.log('AAAAAAA', this.project_string_id)
+        if(!this.project_string_id){
+          this.project_string_id = this.job.project_string_id;
+        }
         this.loading = false
       },
       data() {
         return {
+          project_string_id: null,
           job: {
             name: sillyname().split(" ")[0],
             label_mode: 'closed_all_available',
+
+            loading: false,
             passes_per_file: 1,
             share_object: {
               // TODO this may fail for org jobs? double check this.
@@ -157,62 +164,7 @@
             this.stepper = 2
           }
         },
-        update_job_info(job) {
-          this.project_string_id = job.project_string_id
-          // Update existing keys, but avoid losing other keys that were already populated like file_handling
-          const new_dirs = job.attached_directories_dict.attached_directories_list.map(x => x)
-          this.job = {
-            ...this.job,
-            ...job,
-            label_file_list: this.job.label_file_list,
-            attached_directories_dict: {
-              test: 12312,
-              attached_directories_list: new_dirs
-            }
-          }
-          this.job.original_attached_directories_dict = {...job.attached_directories_dict};
-          // For now this is for general info only
-          // ie file stats and communication with components there
-          this.$store.commit('set_job', job)
-          if (this.share_list.length > 0) {
-            for (let share of this.share_list) {
-              if (share.type == job.share_type) {
-                this.job.share_object = share
-                break
-              }
-            }
-          }
-          // If we already have the job created, jump to second step by default?
-          this.stepper = 2
 
-          this.loading = false
-          this.loading_job_fetch = false;
-        },
-        async add_dirs_to_job_api() {
-          this.loading = true
-          this.show_success = false
-          this.error_launch = {}
-          let dir_list = [];
-          if (this.job && this.job.attached_directories_dict && this.job.attached_directories_dict.attached_directories_list) {
-            dir_list = this.job.attached_directories_dict.attached_directories_list
-          }
-          try {
-            const response = await axios.post(
-              '/api/v1/project/' + this.project_string_id
-              + '/job/dir/attach',
-              {
-                directory_list: dir_list,
-                job_id: parseInt(this.job.id),
-              })
-            return response
-          } catch (error) {
-            if (error.response) {
-              this.error_launch = error.response.data.log.error
-            }
-            this.loading = false
-            return false;
-          }
-        },
         async add_output_actions_to_job() {
           this.loading = true
           this.show_success = false
@@ -301,16 +253,25 @@
             if (response.data.log.success == true) {
 
               this.job = response.data.job
+              this.job.label_file_list = this.job.label_file_list.map(elm => ({id: elm}) );
+              this.original_attached_directories_dict = {
+                ...this.attached_directories_dict
+              };
+              console.log('AAAA', this.job.label_file_list);
+              this.job.share_object = {
+                'type': 'project'
+              };
               this.$emit('job_info', this.job)
               this.$store.commit('set_job', this.job)
             }
 
           }
           catch(e){
-            if (e.response.status == 403) {
+            console.error(e);
+            if (e.response && e.response.status == 403) {
               this.$store.commit('error_permission')
             }
-            console.error(e);
+
 
           }
           finally{
