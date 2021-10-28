@@ -56,7 +56,7 @@
         watch: {
             annotation_show_on: {
                 handler(newVal){
-                    if (newVal) this.annotation_show()
+                    if (newVal) setTimeout(() => this.annotation_show(), this.annotation_show_duration)
                 },
             }
         },
