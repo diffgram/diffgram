@@ -508,12 +508,13 @@ class Job(Base, Caching):
         }
 
     def serialize_for_task(self):
-        """
+        """serialize
             Use to send job data in the task context.
         :return:
         """
         data = self.serialize_minimal_info()
-        data['ui_schema'] = self.ui_schema.serialize()
+        if self.ui_schema:
+            data['ui_schema'] = self.ui_schema.serialize()
         return data
 
     # TODO way too much repeating with these serialize functions let's combine it

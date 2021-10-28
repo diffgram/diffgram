@@ -32,27 +32,14 @@
       tile
     >
 
-      <v-list-item
-        link
-        @click="hide"
-        data-cy="hide_target_element"
-        v-if="$store.state.ui_schema.target_element != undefined"
+      <ui_schema_menu_content
+        :target_element="$store.state.ui_schema.target_element"
+        :ui_schema="$store.state.ui_schema.current"
+        @hide="hide"
+        @update_ui_schema="on_update_schema"
       >
 
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Hide"
-            icon="mdi-eye-off"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Hide {{$store.state.ui_schema.target_element}}
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
+      </ui_schema_menu_content>
     </v-card>
 
   </div>
@@ -71,7 +58,7 @@
       <v-card-title>UI Schema: {{$store.state.ui_schema.current.name}}
 
         <v-spacer></v-spacer>
-        
+
         <tooltip_button
             tooltip_message="Edit Name"
             datacy="ui_schema_edit_name"
@@ -191,15 +178,15 @@
 
         <v_error_multiple :error="error">
         </v_error_multiple>
-      
-     
+
+
         <ui_schema_selector
           :project_string_id="project_string_id"
           @change="change($event)"
           :disabled="selector_disabled"
                         >
         </ui_schema_selector>
-    
+
 
         <tooltip_button
             tooltip_message="New Schema"
@@ -290,11 +277,13 @@
   import axios from 'axios';
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
+  import ui_schema_menu_content from './ui_schema_menu_content'
 
   export default Vue.extend({
     name: 'UISchemaContextMenu',
     components: {
-      ui_schema_selector
+      ui_schema_selector,
+      ui_schema_menu_content,
     },
     props: {
       'mouse_position': {
@@ -469,7 +458,7 @@
           return this.$store.state.ui_schema.refresh
         },
         (new_val, old_val) => {
-          
+
         },
       )
     },
@@ -479,6 +468,11 @@
       this.show_ui_schema_refresh()
     },
     methods: {
+      on_update_schema: function(target_element, new_configs){
+
+        this.$store.commit('set_current_schema_element_config', {target_element, new_configs});
+
+      },
       refresh_buttons_list_available: function () {
         let list = []
         for (var button of this.buttons_list_original) {
@@ -589,14 +583,12 @@
       },
 
       change: function (event) {
-
         if(!event) { return }
         if(event.id == this.$store.state.ui_schema.current.id) { return }
-       
-        this.$store.commit('set_ui_schema', event)
 
+        this.$store.commit('set_ui_schema', event)
       },
-      
+
       toggle_is_visible: async function () {
 
         this.$store.commit('set_ui_schema_top_level_key_value',
