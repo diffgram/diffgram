@@ -641,6 +641,9 @@ const ui_schema = {
       }
       let result = state.current[element][string_key]
       return result
+    },
+    get_current_ui_schema: (state) => () => {
+      return state.current;
     }
   },
   mutations: {
@@ -708,6 +711,11 @@ const ui_schema = {
     set_ui_schema_top_level_key_value(state, payload) {
       state.current[payload[0]] = payload[1]
       state.refresh = Date.now()
+    },
+    set_current_schema_element_config(state, {target_element, new_configs}) {
+      state.current[target_element] = new_configs
+      state.refresh = Date.now()
+      console.log('NEW CURRENT', state.current, target_element, new_configs)
     },
   }
 }
