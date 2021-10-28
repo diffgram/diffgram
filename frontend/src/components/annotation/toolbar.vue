@@ -329,6 +329,7 @@
     <v-divider vertical />
     <div>
         <button_with_menu
+          datacy="open-annotation-show-menu"
           v-if="annotation_show_on !== true"
           tooltip_message="Annotation show"
           color="primary"
@@ -336,7 +337,8 @@
           :close_by_button="true"
         >
         <template slot="content">
-          <v-btn 
+          <v-btn
+            data-cy="start-annotation-show"
             @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
           >
             <span>

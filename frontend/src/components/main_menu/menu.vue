@@ -146,6 +146,7 @@
         <v-layout>
 
           <v-btn  text
+                data-cy="go-to-home-page"
                 @click="$router.push('/me')">
             <v-icon left>mdi-home</v-icon>
             Home
