@@ -100,8 +100,9 @@ import Vue from "vue"; export default Vue.extend( {
 
   },
   created() {
-
-
+    if (this.error) {
+      this.show = true
+    }
   },
   methods: {
 
