@@ -3,115 +3,59 @@
 
     <v-layout>
       <v-flex>
-
-        <v-card-title>
-          New
-        </v-card-title>
-
-        <v-text-field required
-                      :counter="30"
-                      data-cy="label_name_text_field"
-                      label="Name"
-                      v-model="new_label_name"
-                      :rules="[rules.new_label_name]"
-                      :disabled="loading">
+        <v-text-field
+            required
+            :counter="30"
+            data-cy="label_name_text_field"
+            label="Label Name"
+            v-model="new_label_name"
+            :rules="[rules.new_label_name]"
+            :disabled="loading"
+            class="pl-2 pr-2"
+            >
         </v-text-field>
 
         <v-container>
-          <!-- Maybe hide on mobile? or something... -->
-          <slider-picker data-cy="color-slider" v-model="colour" />
+          <slider-picker data-cy="color-slider"
+                         v-model="colour" />
         </v-container>
-
-
-        <!-- Advanced stuff-->
-        <v-container>
-
-          <v-expansion-panels>
-            <v-expansion-panel>
-
-              <v-expansion-panel-header>
-                  Advanced Info
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-                <v-card>
-
-                    <v-alert type="info"
-
-                                dismissible>
-
-                      <ul>
-                        <li> Labels are created in the context of the project.
-                          <br> For example, Labels created in the Studio are accessible to the whole project. </li>
-                        <li> Existing tasks are unaffected by new label creation. </li>
-                      </ul>
-
-                        <v-btn
-                              href="https://diffgram.readme.io/docs/create-your-first-label"
-                              target="_blank"
-                              >
-                          <v-icon left>mdi-book</v-icon>
-                          More on Labels
-                          <v-icon right>mdi-open-in-new</v-icon>
-                        </v-btn>
-                      </v-alert>
-
-                </v-card>
-
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
-
-          <v-expansion-panels>
-            <v-expansion-panel>
-
-              <v-expansion-panel-header>
-                Advanced Options
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-                  <v-card>
-                    <v-container>
-                      <h3> Sequence Special Option </h3>
-                      <v-checkbox label="New Sequences Default to Single Frame"
-                                  data-cy="default_sequences_to_single_frame"
-                                  v-model="default_sequences_to_single_frame"
-                                  >
-
-                      </v-checkbox>
-                    </v-container>
-                  </v-card>
-
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
-        </v-container>
-
-      </v-flex>
-      <v-flex xs12 sm6>
 
       </v-flex>
     </v-layout>
 
     <v-card-actions class="pa-2">
 
-      <v-btn color="primary"
-             data-cy="create_label_button"
-              @click="new_label_function"
-              :loading="loading"
-              :disabled="loading"
-              large
-              >
-        Create
-      </v-btn>
+      <tooltip_button
+          button_message="Create"
+          button_color="primary"
+          datacy="create_label_button"
+          @click="new_label_function"
+          :loading="loading"
+          :disabled="!new_label_name || loading"
+          icon="mdi-check"
+          tooltip_message="(Enter)"
+          :bottom="true"
+          :left="true"
+          xLarge>
+      </tooltip_button>
+
+      <v-spacer> </v-spacer>
+
+      <tooltip_button
+        tooltip_message="Info"
+        href="https://diffgram.readme.io/docs/create-your-first-label"
+        target="_blank"
+        icon="info"
+        :icon_style="true"
+        color="secondary">
+    </tooltip_button>
 
     </v-card-actions>
 
     <v_error_multiple :error="error">
     </v_error_multiple>
 
+    
 
   </div>
 </template>
@@ -122,8 +66,13 @@ import axios from 'axios';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'labels_new',
-  props: [
-  ],
+
+  props: {
+    menu_open: {
+      default: false
+    }
+  },
+
   data() {
     return {
 
@@ -155,14 +104,16 @@ import Vue from "vue"; export default Vue.extend( {
           const pattern = new RegExp("^[a-zA-Z0-9_ ]{1,30}$")
           return pattern.test(value) || 'No special characters. Between 1 - 30 characters.'
         }
-      }
+      },
     }
   },
-  computed: {
+  mounted: function () {
+    window.addEventListener('keydown', this.hotkeys);
   },
-  created() {
+  beforeDestroy() {
+    window.removeEventListener('keydown', this.hotkeys);
+  },
 
-  },
   methods: {
 
     new_label_function: function () {
@@ -175,9 +126,7 @@ import Vue from "vue"; export default Vue.extend( {
         '/label/new', {
 
           colour: this.colour,
-          name: this.new_label_name,
-          default_sequences_to_single_frame: this.default_sequences_to_single_frame
-
+          name: this.new_label_name
 
       }).then(response => {
 
@@ -195,11 +144,18 @@ import Vue from "vue"; export default Vue.extend( {
                 this.error = error.response.data.log.error
               }
           }
-
       });
 
-    }
+    },
 
+    hotkeys: function (event) {
+      if (this.$props.menu_open == false){
+        return
+      }
+      if (event.key === 'Enter') {
+        this.new_label_function()
+      }
+    },
   }
 }
 

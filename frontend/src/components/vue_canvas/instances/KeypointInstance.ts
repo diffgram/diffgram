@@ -12,6 +12,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public occluded: boolean = false;
   public is_bounding_box_hovered: boolean = false;
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
@@ -35,6 +36,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public angle: number = 0
   public label_settings: any = undefined
   private nearest_points_dict: any = undefined
+  private zoom_value: number = 1
 
 
   public get_instance_data(): object {
@@ -63,8 +65,18 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
     this.initialized = true;
+    this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
+    if (this.label_settings) {
+      this.vertex_size = this.label_settings.vertex_size
+      this.line_width = this.label_settings.spatial_line_size
+    } else {
+      this.label_settings = {}
+      this.label_settings.vertex_size = this.vertex_size
+      this.label_settings.line_width = this.line_width
+      this.label_settings.font_size = 20
+    }
   }
 
   public duplicate_for_undo(){
@@ -80,7 +92,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.on_instance_updated,
       this.on_instance_selected,
       this.on_instance_deselected,
-      this.mouse_down_delta_event
+      this.mouse_down_delta_event,
+      this.mouse_down_position,
+      this.label_settings,
     );
     let instance_data_to_keep = {
       ...this,
@@ -89,6 +103,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
     return duplicate_instance
+  }
+  public toggle_occluded(node_index){
+    // The intial state may be null that's why not using !value
+    if (this.nodes[node_index].occluded == true) {
+      this.nodes[node_index].occluded = false
+    } else {
+      this.nodes[node_index].occluded = true
+    }
   }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
@@ -367,9 +389,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   public draw_rotate_point(
-      ctx,
-      is_mouse_in_path,
-      radius): boolean {
+      ctx): boolean {
 
     if(this.template_creation_mode){
       return
@@ -380,10 +400,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return this.instance_rotate_control_mouse_hover
     }
     ctx.beginPath();
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = 'black';
     ctx.fillStyle = 'white';
-    ctx.lineWidth = '4px';
-    ctx.arc(rotate_point.x, rotate_point.y, radius + 5, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 / this.zoom_value;
+    ctx.arc(rotate_point.x, rotate_point.y, (this.vertex_size + 3) / this.zoom_value, 0, 2 * Math.PI);
     ctx.fill()
     ctx.stroke()
     if(this.is_mouse_in_path(ctx)){
@@ -400,8 +420,61 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return this.instance_rotate_control_mouse_hover
   }
 
+  private draw_node_label(ctx, node){
+    // label draw_label
+
+    if (this.label_settings.show_text == false) {
+      return
+    }
+    if (this.label_settings.show_label_text == false) {
+      return
+    }
+    if(!node.name){
+      return
+    }
+    if(!this.is_hovered && !this.template_creation_mode) {
+      return
+    }
+
+    let prevfillStyle = ctx.fillStyle.toString();
+
+    let font_size = (this.label_settings.font_size * .75) / this.zoom_value;
+    ctx.font = font_size + "px Verdana";
+    ctx.textBaseline = 'bottom'
+
+    let message = node.name
+    let text_width = ctx.measureText(message).width;
+
+    ctx.fillStyle = "rgba(" + '255, 255, 255,' + this.label_settings.font_background_opacity + ")";
+
+    let text_height = font_size;
+    // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+    let padding = 2 / this.zoom_value
+    let padding_from_point = 5 / this.zoom_value
+    let point_text = this.get_scaled_and_rotated_point(
+      {x: node.x + padding_from_point, y: node.y + padding_from_point  });
+    ctx.fillRect(
+      point_text.x,
+      point_text.y - text_height - padding,
+      text_width + padding,
+      text_height + padding)
+
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillText(message, point_text.x, point_text.y);
+
+
+
+    ctx.fillStyle = prevfillStyle
+
+
+
+  }
+
   public draw(ctx): void {
     this.ctx = ctx;
+
+    this.zoom_value = this.ctx.getTransform().a
+
     this.num_hovered_paths = 0;
     let i = 0;
     // Not sure where we want to set this
@@ -412,8 +485,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     this.draw_instance_bounding_box(ctx)
 
-    this.draw_rotate_point(ctx, this.is_mouse_in_path, this.vertex_size)
-    // Draw current edge
     this.draw_currently_drawing_edge(ctx)
 
     this.draw_edges(ctx)
@@ -422,7 +493,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     for (let node of this.nodes) {
       // order of operations
-      ctx.lineWidth = 2;
 
       if (this.label_settings &&
           this.label_settings.show_occluded_keypoints == false &&
@@ -437,7 +507,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.fillStyle = this.fillColor;
       }
 
-
       let x = node.x
       let y = node.y
 
@@ -446,11 +515,13 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
 
+      this.draw_node_label(ctx, node);
+
       this.draw_left_right_arrows(ctx, node, x, y)
 
       i += 1
     }
-    this.draw_rotate_point(ctx, this.is_mouse_in_path, this.vertex_size)
+    this.draw_rotate_point(ctx)
     this.determine_and_set_nearest_node_hovered(ctx)
 
     if (this.num_hovered_paths === 0) {
@@ -472,20 +543,23 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private determine_and_set_nearest_node_hovered(ctx){
     const sorted_keys = Object.keys(this.nearest_points_dict).map(elm => parseFloat(elm)).sort(function(a,b) { return a - b;})
-    const sorted = sorted_keys.reduce(
-        (obj, key) => {
+    const sorted: any[] =  sorted_keys.reduce(
+        (obj, key): any => {
           obj[key.toString()] = this.nearest_points_dict[key.toString()];
           return obj;
         },
         {}
-      );
+    );
 
+    if(!sorted || sorted.length === 0){
+      return
+    }
     let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
     if(this.nodes[index] == undefined){
       return
     }
     let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
-    let radius = this.vertex_size + 10
+    let radius = (this.vertex_size + 10) / this.zoom_value    // detection radius
 
     if (this.point_is_intersecting_circle(
       this.get_scaled_and_rotated_point(point),
@@ -500,12 +574,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.label_settings.show_left_right_arrows == false) {
       return
     }
-    let size = this.vertex_size * 8
+    let size = (this.vertex_size * 4) / this.zoom_value
     if(node.left_or_right == 'left') {
-      this.draw_icon(ctx, x - 5, y, 'arrow_left', size, 'rgb(255,0,0)')
+      this.draw_icon(ctx, x - (10/this.zoom_value), y, 'arrow_left', size, 'rgb(255,0,0)')
     }
     if(node.left_or_right=='right') {
-      this.draw_icon(ctx, x + 5, y, 'arrow_right', size, 'rgb(0,255,0)')
+      this.draw_icon(ctx, x + (10/this.zoom_value), y, 'arrow_right', size, 'rgb(0,255,0)')
     }
   }
 
@@ -619,6 +693,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let height = Math.abs(min_max_obj.max_y - min_max_obj.min_y);
 
     ctx.globalAlpha = 0.4;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value
     ctx.beginPath();
 
     ctx.rect(min_max_obj.min_x, min_max_obj.min_y, width + this.vertex_size, height + this.vertex_size);
@@ -671,7 +746,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(this.node_hover_index === i){
       ctx.fillStyle = 'green'
     }
-    ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
+    ctx.lineWidth = 2 / this.zoom_value
+    ctx.arc(x, y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
 
@@ -692,7 +768,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     ctx.beginPath();
-    ctx.lineWidth = 2;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
     ctx.moveTo(this.current_node_connection[0].x, this.current_node_connection[0].y);
     ctx.lineTo(this.mouse_position.x, this.mouse_position.y)
@@ -702,7 +778,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_edges(ctx) {
-    ctx.lineWidth = this.line_width;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
 
     for (let edge of this.edges) {

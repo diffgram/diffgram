@@ -25,6 +25,10 @@
         "label_settings": {
           default: null
         },
+        "zoom_value": {
+          type: Number,
+          default: 1
+        }
       },
       methods: {
         draw: function (ctx, done) {
@@ -63,7 +67,7 @@
 
                   this.draw_text(ctx, x, y, this.$props.target_text, this.$props.text_color)
                   ctx.beginPath()
-                  ctx.lineWidth = (1.5 / this.canvas_transform['canvas_scale_combined']).toString()
+                  ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
                   //ctx.strokeStyle = 'white',
                   // x and y are where the mouse is at
                   // top left of canvas is 0,0
@@ -95,11 +99,11 @@
                 // to "shade" it so it still shows up, but poorly. (it makes it seem like we can't see it)
                 // This dynamically scales it
 
-                ctx.lineWidth = (1.5 / this.canvas_transform['canvas_scale_combined']).toString()
+                ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
                 //console.log(ctx.lineWidth)
 
 
-                let line_length = this.$props.reticle_size / this.$props.canvas_transform['canvas_scale_combined']
+                let line_length = this.$props.reticle_size / this.$props.zoom_value
                 //console.log(line_length)
                 ctx.setLineDash([]) // solid
                 ctx.moveTo(x - 1, y)
