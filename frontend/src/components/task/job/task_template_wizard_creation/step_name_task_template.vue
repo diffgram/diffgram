@@ -1,13 +1,13 @@
 <template>
-  <v-container fluid>
-    <h1 class="font-weight-medium text--primary mb-8"><v-icon color="primary" class="mr-4" size="48">mdi-brush</v-icon>Task Template Creation</h1>
+  <v-container fluid data-cy="task-template-step-name">
+    <h1 data-cy="wizard-title"class="font-weight-medium text--primary mb-8"><v-icon color="primary" class="mr-4" size="48">mdi-brush</v-icon>Task Template Creation</h1>
     <v_error_multiple :error="error"></v_error_multiple>
     <p class="text--primary">
       The following steps will guide you on the creation of a new task template
     </p>
-    <h4>Give a name to your Task Template: </h4>
+    <h4 data-cy="wizard-name-subtitle">Give a name to your Task Template: </h4>
     <v-text-field label="Name"
-                  data-cy="name-input"
+                  data-cy="task-template-name-input"
                   v-model="job.name">
     </v-text-field>
 

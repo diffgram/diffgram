@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-users-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 data-cy="task-template-users-step-title" class="font-weight-medium text--primary mr-4">
         Select Users
       </h1>
     </div>
@@ -13,8 +13,9 @@
     </p>
 
 
-    <h4>Select Users: </h4>
+    <h4 data-cy="task-template-users-step-subtitle">Select Users: </h4>
     <member_select
+      datacy="member-select"
       v-model="job.member_list_ids"
       label="Select Specific Users"
       :member_list="$store.state.project.current.member_list"

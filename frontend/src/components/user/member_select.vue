@@ -5,6 +5,7 @@
       <v-select :items="member_list_internal"
                 v-model="item_internal"
                 :label="label"
+                :data-cy="datacy"
                 item-value="member_id"
                 :multiple="multiple"
                 :disabled="loading || view_only"
@@ -18,6 +19,7 @@
         <template v-slot:prepend-item>
           <v-list-item
             ripple
+            :data-cy="`${datacy}__select-all`"
             @click="toggle"
           >
             <v-list-item-action>
@@ -134,6 +136,9 @@ Where is a dict in data() eg  member: {}
         },
         'label': {
           default: 'Select Members'
+        },
+        'datacy':{
+          default: 'member-select'
         }
       },
 

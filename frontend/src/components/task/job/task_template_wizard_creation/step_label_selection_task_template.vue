@@ -1,10 +1,11 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-labels-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 data-cy="step-labels-title" class="font-weight-medium text--primary mr-4">
         Select Labels
       </h1>
       <tooltip_button
+        data-cy="manage-labels-button"
         tooltip_message="Quick Edit Project Level Schema"
         @click="open_labels_dialog"
         button_color="primary"
@@ -25,7 +26,7 @@
       :project_string_id="project_string_id"
       label_prompt="Schema Selected For Tasks"
       :mode=" 'multiple' "
-      data-cy="label-select"
+      datacy="label-select"
       @label_file="on_change_label_file($event)"
       :load_selected_id_list="job.label_file_list"
       :select_all_at_load="true"
