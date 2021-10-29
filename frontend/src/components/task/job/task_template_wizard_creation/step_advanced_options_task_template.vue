@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-advanced-options-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 class="font-weight-medium text--primary mr-4" data-cy="task-template-advanced-options-step-title">
         Advanced Options (You Can Skip This Step):
       </h1>
     </div>
@@ -15,6 +15,7 @@
     <v-container fluid>
 
       <userscript_select
+        data-cy="userscrips-select"
         :project_string_id="project_string_id"
         @change="job.default_userscript_id = $event.id"
         label="Choose a Default Userscript"
@@ -23,7 +24,7 @@
 
       <v-select :items="type_list"
                 v-model="job.type"
-                data-cy="type-select"
+                data-cy="jobtype-select"
                 label="Type"
                 item-value="text"
                 :disabled="loading">

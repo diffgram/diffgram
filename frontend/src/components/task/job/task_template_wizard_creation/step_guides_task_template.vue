@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-guide-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 data-cy="task-template-guide-step-title" class="font-weight-medium text--primary mr-4">
         Guides Setup:
       </h1>
       <tooltip_button
@@ -22,8 +22,9 @@
 
 
     <v-container fluid>
-      <h2 class="ma-0">Set Your Guide (Optional): </h2>
+      <h2 class="ma-0" data-cy="task-template-guide-step-subtitle">Set Your Guide (Optional): </h2>
       <guide_selector
+        data-cy="guide-selector"
         :project_string_id="project_string_id"
         @change="on_change_guide"
         ref="guide_selector"
