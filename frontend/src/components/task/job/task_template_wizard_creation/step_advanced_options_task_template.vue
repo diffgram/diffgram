@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid data-cy="task-template-advanced-options-step">
+  <v-container fluid data-cy="task-template-advanced-options-step" v-if="job">
     <div class="d-flex mb-8 justify-space-between">
       <h1 class="font-weight-medium text--primary mr-4" data-cy="task-template-advanced-options-step-title">
         Advanced Options (You Can Skip This Step):
