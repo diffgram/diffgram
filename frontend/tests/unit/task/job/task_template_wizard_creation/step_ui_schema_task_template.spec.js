@@ -1,8 +1,11 @@
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import Vuex from 'vuex'
-import step_advanced_options_task_template
-  from "../../../../../src/components/task/job/task_template_wizard_creation/step_advanced_options_task_template";
+import axios from 'axios'
+import step_ui_schema_task_template
+  from "../../../../../src/components/task/job/task_template_wizard_creation/step_ui_schema_task_template";
 import VueRouter from 'vue-router'
+import step_guides_task_template
+  from "../../../../../src/components/task/job/task_template_wizard_creation/step_guides_task_template";
 
 const localVue = createLocalVue();
 localVue.use(Vuex)
@@ -35,7 +38,7 @@ let job = {
   interface_connection: undefined,
   member_list_ids: ["all"]
 }
-describe("step_advanced_options_task_template.vue", () => {
+describe("step_ui_schema_task_template.vue", () => {
   let actions;
   let store;
 
@@ -51,7 +54,7 @@ describe("step_advanced_options_task_template.vue", () => {
 
 
   it("Renders component correctly.", () => {
-    const wrapper = shallowMount(step_advanced_options_task_template, {
+    const wrapper = shallowMount(step_ui_schema_task_template, {
       store,
       localVue,
       propsData: {
@@ -61,20 +64,46 @@ describe("step_advanced_options_task_template.vue", () => {
     expect(wrapper).toMatchSnapshot();
   });
 
-
-
-  it("Emits event when calling on_next_button_click()", () => {
-    const wrapper = shallowMount(step_advanced_options_task_template, {
+  it("changes schema when calling  on_change_schema()", () => {
+    const wrapper = shallowMount(step_ui_schema_task_template, {
       store,
       localVue,
       propsData: {
         job: job
       }
     });
+    wrapper.vm.on_change_schema({id: 'test'})
+    expect(wrapper.vm.$props.job.ui_schema_id).toEqual('test')
 
+  });
+
+  it("Emits event when calling on_next_button_click()", () => {
+    const wrapper = shallowMount(step_ui_schema_task_template, {
+      store,
+      localVue,
+      propsData: {
+        job: job
+      }
+    });
     wrapper.vm.on_next_button_click()
     expect(wrapper.emitted().next_step.length).toBe(1);
   });
+
+  it("Resolver route when calling open_ui_schema_creation()", () => {
+    const wrapper = shallowMount(step_ui_schema_task_template, {
+      store,
+      localVue,
+      router,
+      propsData: {
+        job: job
+      }
+    });
+    const spy = jest.spyOn(wrapper.vm.$router, 'resolve')
+    wrapper.vm.open_ui_schema_creation()
+    expect(spy).toHaveBeenCalled()
+  });
+
+
 
 
 

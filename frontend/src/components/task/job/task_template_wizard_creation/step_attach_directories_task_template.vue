@@ -33,7 +33,7 @@
 
       </v-col>
       <v-col cols="6">
-        <job_pipeline_mxgraph ref="job_pipeline" :job_object="job"></job_pipeline_mxgraph>
+        <job_pipeline_mxgraph v-if="show_graph" ref="job_pipeline" :job_object="job"></job_pipeline_mxgraph>
       </v-col>
     </v-row>
 
@@ -70,11 +70,20 @@
 
   export default Vue.extend({
       name: 'step_attach_directories_task_template',
-      props: [
-        'project_string_id',
-        'job',
-        'loading_steps',
-      ],
+      props: {
+        'project_string_id':{
+          default: null
+        },
+        'job':{
+          default: null,
+        },
+        'loading_steps': {
+          default: null
+        },
+        'show_graph': {
+          default: true
+        }
+      },
 
       components: {
         job_file_routing,
@@ -114,8 +123,7 @@
           }
           try {
             const response = await axios.post(
-              '/api/v1/project/' + this.project_string_id
-              + '/job/set-output-dir',
+              `/api/v1/project/${this.project_string_id}/job/set-output-dir`,
               {
                 output_dir: this.output_dir.directory ? this.output_dir.directory.directory_id.toString() : undefined,
                 output_dir_action: this.output_dir.action,

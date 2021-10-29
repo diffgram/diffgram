@@ -1,7 +1,8 @@
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import Vuex from 'vuex'
-import step_advanced_options_task_template
-  from "../../../../../src/components/task/job/task_template_wizard_creation/step_advanced_options_task_template";
+import axios from 'axios'
+import step_name_task_template
+  from "../../../../../src/components/task/job/task_template_wizard_creation/step_name_task_template";
 import VueRouter from 'vue-router'
 
 const localVue = createLocalVue();
@@ -10,7 +11,7 @@ localVue.use(VueRouter)
 const router = new VueRouter()
 
 let job = {
-  name: 'test',
+  name: '',
   label_mode: 'closed_all_available',
 
   loading: false,
@@ -35,7 +36,7 @@ let job = {
   interface_connection: undefined,
   member_list_ids: ["all"]
 }
-describe("step_advanced_options_task_template.vue", () => {
+describe("step_name_task_template.vue", () => {
   let actions;
   let store;
 
@@ -51,7 +52,7 @@ describe("step_advanced_options_task_template.vue", () => {
 
 
   it("Renders component correctly.", () => {
-    const wrapper = shallowMount(step_advanced_options_task_template, {
+    const wrapper = shallowMount(step_name_task_template, {
       store,
       localVue,
       propsData: {
@@ -61,19 +62,52 @@ describe("step_advanced_options_task_template.vue", () => {
     expect(wrapper).toMatchSnapshot();
   });
 
-
-
-  it("Emits event when calling on_next_button_click()", () => {
-    const wrapper = shallowMount(step_advanced_options_task_template, {
+  it("Populates error data when calling verify_name().", () => {
+    const wrapper = shallowMount(step_name_task_template, {
       store,
       localVue,
       propsData: {
         job: job
       }
     });
+    wrapper.vm.verify_name();
+    expect(wrapper.vm.error).toMatchObject({
+      name: 'Name must not be empty.'
+    })
+  });
 
-    wrapper.vm.on_next_button_click()
+  it("Emits event when calling on_next_button_click()", async () => {
+    const wrapper = shallowMount(step_name_task_template, {
+      store,
+      localVue,
+      propsData: {
+        job: {
+          ...job,
+          id: 5,
+          name: 'test'
+        }
+      }
+    });
+    await wrapper.vm.on_next_button_click()
     expect(wrapper.emitted().next_step.length).toBe(1);
+  });
+
+  it("Makes request to /job/new when calling job_new()", () => {
+    jest.mock('axios', () => ({
+      post: jest.fn(() => {})
+    }))
+    const wrapper = shallowMount(step_name_task_template, {
+      store,
+      localVue,
+      propsData: {
+        job: job,
+        project_string_id: 'test'
+      }
+    });
+    let url = `/api/v1/project/test/job/new`;
+    const spy = jest.spyOn(axios, 'post')
+    wrapper.vm.job_new()
+    expect(spy).toHaveBeenCalledWith(url, job);
   });
 
 
