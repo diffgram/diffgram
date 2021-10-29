@@ -11,7 +11,7 @@
                 height="25"
                 color="green"
             >
-                <strong>
+                <strong data-cy="show-progress-bar">
                   {{ 
                     loading ? 
                     "Loading..." : 
