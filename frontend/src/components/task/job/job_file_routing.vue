@@ -62,12 +62,10 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
   import label_select_only from '../../label/label_select_only.vue'
   import upload_wizard_sheet from '../../input/upload_wizard_sheet'
   import directory_icon_selector from '../../source_control/directory_icon_selector.vue'
   import job_output_dir_selector from './job_output_dir_selector.vue'
-  import {route_errors} from '../../regular/regular_error_handling'
   import Vue from "vue";
 
 

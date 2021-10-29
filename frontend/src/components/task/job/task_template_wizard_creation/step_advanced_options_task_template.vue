@@ -114,18 +114,8 @@
       },
 
       methods: {
-        on_change_guide: function(guide){
-          this.job.guide = guide;
-        },
         on_next_button_click: function () {
           this.$emit('next_step');
-        },
-        open_guides: function(){
-          let routeData = this.$router.resolve({
-            path: `/project/${this.project_string_id}/guide/list`,
-            query: {edit_schema: true}
-          });
-          window.open(routeData.href, '_blank');
         }
       }
     }

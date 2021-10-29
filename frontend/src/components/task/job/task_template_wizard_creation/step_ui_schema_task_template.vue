@@ -46,8 +46,6 @@
 
   import axios from 'axios';
   import ui_schema_selector from '../../../ui_schema/ui_schema_selector'
-  import job_file_routing from '../job_file_routing'
-  import job_pipeline_mxgraph from '../job_pipeline_mxgraph'
 
   import Vue from "vue";
 
@@ -60,8 +58,6 @@
       ],
 
       components: {
-        job_file_routing,
-        job_pipeline_mxgraph,
         ui_schema_selector,
       },
 

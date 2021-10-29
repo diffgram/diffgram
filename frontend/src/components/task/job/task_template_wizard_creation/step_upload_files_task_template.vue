@@ -87,35 +87,9 @@
 
       },
       methods: {
-        verify_labels: function(){
-          if(!this.$props.job.label_file_list || this.$props.job.label_file_list.length === 0){
-            this.error = {
-              name: 'At least 1 user should be assigned to the task template.'
-            }
-            return false
-          }
-          return true
-        },
         on_next_button_click: function(){
           this.error = {};
-          let labels_ok = this.verify_labels();
-          if(labels_ok){
-            this.$emit('next_step');
-          }
-        },
-        on_attached_dirs_updated: function(attached_dirs){
-          this.latest_dataset = attached_dirs[attached_dirs.length - 1];
-          this.job.attached_directories_dict = {
-            attached_directories_list: attached_dirs.map(elm => elm)
-          }
-        },
-        on_output_dirs_updated: async function(output_dir){
-          this.output_dir = output_dir;
-          if(!this.$refs.job_pipeline){
-            return
-          }
-          await this.$refs.job_pipepline.get_directory()
-          this.$refs.job_pipepline.redraw()
+          this.$emit('next_step');
         },
         open_upload_wizard: async function(){
           this.open_wizard = true;
