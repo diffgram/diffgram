@@ -130,7 +130,7 @@
                  v-if="show_default_navigation == true"
                  >
       <ahref_seo_optimal :href="route_home">
-        <v-toolbar-title class="ml-0 pt-2 pr-3 clickable"
+        <v-toolbar-title data-cy="navbar-logo" class="ml-0 pt-2 pr-3 clickable"
                          @click.ctrl="route_home_new_tab">
 
           <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"

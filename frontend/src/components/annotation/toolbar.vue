@@ -360,6 +360,7 @@
       </button_with_menu>
       <tooltip_button 
           v-else
+          data-cy="pause-annotation-show"
           tooltip_message="Pause"
           ui_schema_name="stop_shideshow"
           @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
