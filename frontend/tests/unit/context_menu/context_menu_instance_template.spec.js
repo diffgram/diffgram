@@ -24,7 +24,8 @@ describe("context_menu_instance_template.vue", () => {
     const wrapper = shallowMount(context_menu_instance_template, {
       store,
       localVue,
-      propsData: {}
+      propsData: {
+      }
     });
     expect(wrapper).toMatchSnapshot();
   });

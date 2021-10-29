@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`step_advanced_options_task_template.vue Renders component correctly. 1`] = `
+<v-container fluid="" data-cy="task-template-advanced-options-step">
+  <div class="d-flex mb-8 justify-space-between">
+    <h1 data-cy="task-template-advanced-options-step-title" class="font-weight-medium text--primary mr-4">
+      Advanced Options (You Can Skip This Step):
+    </h1>
+  </div>
+  <v_error_multiple error="[object Object]"></v_error_multiple>
+  <p class="text--primary">
+    Optional Configurations.
+  </p>
+  <v-container fluid="">
+    <userscript_select-stub label="Choose a Default Userscript" data-cy="userscrips-select"></userscript_select-stub>
+    <v-select items="Normal,Exam" data-cy="jobtype-select" label="Type" item-value="text"></v-select>
+    <diffgram_select item_list="[object Object],[object Object]" data-cy="file-handling-select" label="File Handling"></diffgram_select>
+  </v-container>
+  <wizard_navigation skip_visible="true"><template></template></wizard_navigation>
+</v-container>
+`;
