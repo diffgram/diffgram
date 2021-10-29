@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-dataset-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 data-cy="task-template-dataset-step-title" class="font-weight-medium text--primary mr-4">
         Attach Directories
       </h1>
       <tooltip_button

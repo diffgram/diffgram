@@ -17,6 +17,7 @@ describe('Task Template Creation', () => {
       cy.createLabels(testLabels)
     })
     let url = '/api/v1/project/*/job/update'
+    let url_launch = '/api/v1/job/launch'
     it('Correctly Shows the First Step In the wizard', () => {
       cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/job/new`);
       cy.get('[data-cy="wizard-title"]').should('be.visible')
@@ -64,11 +65,87 @@ describe('Task Template Creation', () => {
     })
 
     it('Correctly Selects a User and goes to next step', () => {
+      cy.intercept(url).as('update_job')
       cy.get('[data-cy="member-select"]').click({force: true})
       cy.get('[data-cy="member-select__select-all"]').click({force: true})
       cy.get('.v-list-item.v-list-item--link').contains(testUser.first_name + ' ' + testUser.last_name).click({force: true})
+      cy.get('[data-cy="task-template-users-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
 
     })
+
+    it('Correctly Shows Upload Step', () => {
+      cy.get('[data-cy="upload_button"]').should('be.visible')
+
+    })
+
+    it('Correctly Goes from upload step to next step', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="task-template-upload-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
+
+
+    })
+
+    it('Correctly Shows Dataset Attachment Step', () => {
+      cy.get('[data-cy="task-template-dataset-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-dataset-step-title"]').should('be.visible')
+      cy.get('[data-cy="mxgraphcontainer"]').should('be.visible')
+      cy.get('[data-cy="job-file-routing"]').should('be.visible')
+      cy.get('[data-cy="directory-selector"]').should('be.visible')
+      cy.get('[data-cy="job-output-dir-selector"]').should('be.visible')
+    })
+
+    it('Correctly Attaches a dataset and goes to next step', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="directory_select"]').first().click({force: true});
+      cy.get('.v-menu__content .v-list .v-list-item').contains(' Default').click({force: true})
+
+      cy.get('[data-cy="task-template-dataset-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
+
+
+    })
+
+    it('Correctly Shows UI Schema Select Step', () => {
+      cy.get('[data-cy="task-template-ui-schema-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-ui-schema-step-title"]').should('be.visible')
+      cy.get('[data-cy="ui-schema-selector"]').should('be.visible')
+    })
+
+    it('Correctly goes from ui schema step to next step', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="task-template-ui-schema-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
+    })
+
+    it('Correctly Shows Guide Select Step', () => {
+      cy.get('[data-cy="task-template-guide-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-guide-step-title"]').should('be.visible')
+      cy.get('[data-cy="task-template-guide-step-subtitle"]').should('be.visible')
+      cy.get('[data-cy="guide-selector"]').should('be.visible')
+    })
+
+    it('Correctly goes from Guide step to next step', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="task-template-guide-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
+    })
+
+    it('Correctly Shows Advanced Options Step', () => {
+      cy.get('[data-cy="task-template-advanced-options-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-advanced-options-step-title"]').should('be.visible')
+      cy.get('[data-cy="userscrips-select"]').should('be.visible')
+      cy.get('[data-cy="jobtype-select"]').should('be.visible')
+      cy.get('[data-cy="file-handling-select"]').should('be.visible')
+    })
+
+    it('Correctly goes from Advanced Options step to next step', () => {
+      cy.intercept(url_launch).as('launch_job')
+      cy.get('[data-cy="task-template-advanced-options-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@launch_job').its('response').should('have.property', 'statusCode', 200)
+    })
+
   })
 
 })

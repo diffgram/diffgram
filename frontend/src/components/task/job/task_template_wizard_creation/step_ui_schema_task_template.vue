@@ -1,7 +1,7 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-ui-schema-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 class="font-weight-medium text--primary mr-4">
+      <h1 data-cy="task-template-ui-schema-step-title" class="font-weight-medium text--primary mr-4">
         Select UI Schema:
       </h1>
       <tooltip_button
@@ -22,6 +22,7 @@
 
     <v-container fluid>
       <ui_schema_selector
+        data-cy="ui-schema-selector"
         :project_string_id="project_string_id"
         :show_default_option="true"
         @change="on_change_schema">

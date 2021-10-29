@@ -1,5 +1,5 @@
 <template>
-  <v-container class="ma-0">
+  <v-container class="ma-0" data-cy="job-file-routing">
     <v-row>
       <v-col cols="12">
 
@@ -32,6 +32,7 @@
         </v-card-title>
 
         <directory_icon_selector
+          data-cy="directory-selector"
           layout_type="small"
           :job="job"
           :project_string_id="project_string_id"
@@ -48,6 +49,7 @@
         </v-card-title>
 
         <job_output_dir_selector
+          data-cy="job-output-dir-selector"
           :job="job"
           :project_string_id="project_string_id"
           @output_dir_actions_update="on_output_dir_actions_update">

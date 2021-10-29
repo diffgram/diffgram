@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid data-cy="task-template-upload-step">
     <div class="d-flex mb-8 justify-space-between">
       <h1 class="font-weight-medium text--primary mr-4">
         Upload Files
@@ -18,6 +18,7 @@
         tooltip_message="Upload File"
         @click="open_upload_wizard"
         button_color="success"
+        data-cy="upload_button"
         icon="mdi-upload"
         button_message="Upload Files"
         color="white">
