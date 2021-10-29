@@ -12,6 +12,7 @@ describe("Test set for QA slideshow", () => {
     cy.gotToProject(testUser.project_string_id);
     cy.createLabels(testLabels);
     cy.uploadAndViewSampleImage(testUser.project_string_id);
+    cy.wait(3000);
     for (let i = 0; i < 3; i++) {
       cy.select_label("car");
       cy.mousedowncanvas(75, 75);
