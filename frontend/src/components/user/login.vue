@@ -75,6 +75,7 @@
                 </v-btn>
 
                 <v-btn @click="start_magic_login_api"
+                       v-if="allow_magic == true"
                        color="primary"
                        :loading="loading"
                        @click.native="loader = 'loading'"
@@ -218,12 +219,13 @@ import Vue from "vue"; export default Vue.extend( {
   data () {
   return {
     loading: false,
+    allow_magic: process.env.mail_gun,
 
     e1: true,
 
     email: null,
 
-    mode: "magic_auth",
+    mode: process.env.mail_gun ? "magic_auth" : "password",
     show_logging_in_messsage: false,
 
     error: {
@@ -255,8 +257,6 @@ import Vue from "vue"; export default Vue.extend( {
   },
   created() {
     window.addEventListener('keyup', this.keyboard_events);
-
-    console.log(process.env)
 
     if (this.magic_auth) {
       if (this.$store.state.user.logged_in != true) {
