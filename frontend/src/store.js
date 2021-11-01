@@ -715,7 +715,6 @@ const ui_schema = {
     set_current_schema_element_config(state, {target_element, new_configs}) {
       state.current[target_element] = new_configs
       state.refresh = Date.now()
-      console.log('NEW CURRENT', state.current, target_element, new_configs)
     },
   }
 }
