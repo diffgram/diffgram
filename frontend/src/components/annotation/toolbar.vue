@@ -326,6 +326,51 @@
       >
       </tooltip_button>
     </div>
+    <v-divider vertical />
+    <div>
+        <button_with_menu
+          datacy="open-annotation-show-menu"
+          v-if="annotation_show_on !== true"
+          tooltip_message="Annotation show"
+          color="primary"
+          :icon="anootations_show_icon"
+          :close_by_button="true"
+        >
+        <template slot="content">
+          <v-btn
+            data-cy="start-annotation-show"
+            @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
+          >
+            <span>
+              Start
+            </span>
+          </v-btn>
+          <v-slider
+            v-model="numberValue"
+            :tick-labels="duration_labels"
+            :max="4"
+            step="1"
+            ticks="always"
+            tick-size="4"
+            hint="Duration in seconds"
+            persistent-hint
+            @change="$emit('show_duration_change', $event)"
+          />
+        </template>
+      </button_with_menu>
+      <tooltip_button 
+          v-else
+          data-cy="pause-annotation-show"
+          tooltip_message="Pause"
+          ui_schema_name="stop_shideshow"
+          @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
+          color="primary"
+          icon="pause"
+          :icon_style="true"
+          :bottom="true"
+      />
+    </div>
+    <v-divider vertical />
     <div>
       <tooltip_button
         tooltip_message="Previous Task"
@@ -945,6 +990,9 @@ export default Vue.extend( {
     'enabled_edit_schema' : {
       default: false,
       type: Boolean
+    },
+    "annotation_show_on": {
+      type: Boolean
     }
 
   },
@@ -954,6 +1002,14 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true
       },
       draw_mode_local: true,
+      numberValue: 1,
+      duration_labels: [
+          '1',
+          '2',
+          '3',
+          '4',
+          '5'
+        ]
     }
   },
   watch: {
@@ -982,6 +1038,10 @@ export default Vue.extend( {
         return "Editing"
       }
     },
+    anootations_show_icon: function(){
+      if (this.annotation_show_on) return "pause"
+      return "play_circle"
+    }
   },
   methods: {
     on_change_canvas_scale_global: function(){

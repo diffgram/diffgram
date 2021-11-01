@@ -18,6 +18,7 @@
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
           :enabled_edit_schema="enabled_edit_schema"
+          :finish_annotation_show="show_snackbar"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
