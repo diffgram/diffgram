@@ -187,6 +187,7 @@
           :project_string_id="project_string_id"
           @change="change($event)"
           :disabled="selector_disabled"
+          :current_ui_schema_prop="newly_created_schema"
                         >
         </ui_schema_selector>
 
@@ -327,6 +328,8 @@
         error: {},
 
         show_re_open_button: false,
+
+        newly_created_schema: undefined,
 
         button_to_add: undefined,
 
@@ -558,6 +561,7 @@
 
             this.change(result.data.ui_schema)
             this.edit_name = true // assume a user wants to edit name of new script
+            this.newly_created_schema = result.data.ui_schema
           }
 
         }
