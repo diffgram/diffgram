@@ -82,7 +82,10 @@
         open_ui_schema_creation: function () {
           let routeData = this.$router.resolve({
             path: `/studio/annotate/${this.project_string_id}`,
-            query: {edit_schema: true}
+            query: {
+              edit_schema: true,
+              create_new_on_load: true
+              }
           });
           window.open(routeData.href, '_blank');
         },
