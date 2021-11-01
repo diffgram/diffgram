@@ -304,6 +304,9 @@
       'show_save' :{
         default: true
       },
+      'create_new_on_load' :{
+        default: false
+      },
 
     },
     data() {
@@ -441,6 +444,11 @@
     created() {
     },
     mounted() {
+
+      if (this.$route.query.create_new_on_load == 'true'
+        || this.$props.create_new_on_load) {
+        this.new_ui_schema_with_servercall()
+      }
 
       var self = this
       this.get_target_element_watcher = this.$store.watch((state) => {
