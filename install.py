@@ -467,6 +467,15 @@ class DiffgramInstallTool:
                     bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
                     valid = False
 
+    def mailgun_config(self):
+        need_mailgun = bcolors.inputcolor(
+            'Do you want to add Mailgun to Diffgram?[Y/n] ')
+        if need_mailgun.lower() == 'y' or need_mailgun.lower() == 'yes':
+            mailgun_key = bcolors.inputcolor('Please provide the Mailgun key: ')
+            email_domain = bcolors.inputcolor('Please provide the email domain: ')
+            return
+        return
+
     def install(self):
         self.print_logo()
         print('')
@@ -508,6 +517,7 @@ class DiffgramInstallTool:
 
         self.set_diffgram_version()
         self.database_config()
+        self.mailgun_config()
         self.populate_env()
         self.launch_dockers()
 
