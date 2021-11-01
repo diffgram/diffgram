@@ -54,13 +54,13 @@
             shaped
             elevation="5"
             >
-      <v-card-title>
+      <v-card-title class="pb-0">
 
         <div v-if="edit_name == false" @dblclick="edit_name=true">
           {{$store.state.ui_schema.current.name}}
         </div>
 
-        <div class="pa-2">
+        <div class="pb-0">
           <v-text-field
             v-if="edit_name == true"
             v-model="$store.state.ui_schema.current.name"
@@ -403,12 +403,6 @@
     },
 
     computed: {
-      ui_schema_exists: function () {
-           if (this.get_ui_schema().client_created_time ||   // frontend
-               this.get_ui_schema().id) { // backend
-               return true
-           }
-       },
       public_not_super_admin: function () {
            if (this.$store.state.ui_schema.current.is_public == true
             && this.$store.state.user.current.is_super_admin != true) {
@@ -479,6 +473,15 @@
       this.show_ui_schema_refresh()
     },
     methods: {
+
+      ui_schema_exists: function () {
+        if (this.get_ui_schema().client_created_time ||   // frontend
+            this.get_ui_schema().id) { // backend
+            return true
+        }
+        return false
+      },
+
       on_update_schema: function(target_element, new_configs){
 
         this.$store.commit('set_current_schema_element_config', {target_element, new_configs});
