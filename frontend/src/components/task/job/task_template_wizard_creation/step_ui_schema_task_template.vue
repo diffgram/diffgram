@@ -34,6 +34,7 @@
     <wizard_navigation
       @next="on_next_button_click"
       :loading_next="loading_steps"
+      :disabled_next="loading_steps"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >

@@ -35,6 +35,8 @@
 
     <wizard_navigation
       @next="on_next_button_click"
+      :disabled_next="loading"
+      :loading_next="loading"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
@@ -80,6 +82,7 @@
           error: {},
           show_credentials: false,
           dialog_open: false,
+          loading: false,
         }
       },
       created() {

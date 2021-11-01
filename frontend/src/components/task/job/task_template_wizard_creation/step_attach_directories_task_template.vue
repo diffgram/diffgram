@@ -40,7 +40,8 @@
     <wizard_navigation
       @next="on_next_button_click"
       :loading_next="loading_steps"
-      :disabled_next="job.attached_directories_dict.attached_directories_list.length === 0"
+      :disabled_next="loading_steps ||
+                      job.attached_directories_dict.attached_directories_list.length === 0"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
