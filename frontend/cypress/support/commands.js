@@ -321,7 +321,6 @@ Cypress.Commands.add('loginByForm', function (email, password) {
       cy.get('[data-cy=email]')
         .type(email)
         .should('have.value', email)
-      cy.get('#show_pass').click();
       cy.get('[data-cy=password]')
         .type(password)
         .should('have.value', password)
