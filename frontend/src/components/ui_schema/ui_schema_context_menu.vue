@@ -53,9 +53,25 @@
     <v-card outlined
             shaped
             elevation="5"
-            color="blue lighten-4"
             >
-      <v-card-title>UI Schema: {{$store.state.ui_schema.current.name}}
+      <v-card-title>
+
+        <div v-if="edit_name == false" @dblclick="edit_name=true">
+          {{$store.state.ui_schema.current.name}}
+        </div>
+
+        <div class="pa-2">
+          <v-text-field
+            v-if="edit_name == true"
+            v-model="$store.state.ui_schema.current.name"
+            @input="has_changes = true"
+            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+            label="Schema Name:"
+            flat
+              >
+          </v-text-field>
+        </div>
 
         <v-spacer></v-spacer>
 
@@ -70,19 +86,6 @@
                         >
         </tooltip_button>
       </v-card-title>
-
-      <div class="pa-2">
-        <v-text-field
-          v-if="edit_name == true"
-          v-model="$store.state.ui_schema.current.name"
-          @input="has_changes = true"
-          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-          label="Schema Name:"
-          flat
-            >
-        </v-text-field>
-      </div>
 
       <v-alert
             type="info"
