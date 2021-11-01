@@ -31,7 +31,8 @@
       @next="on_next_button_click"
       @back="$emit('previous_step')"
       :skip_visible="false"
-      :loading_steps="loading_steps"
+      :loading_next="loading_steps"
+      :disabled_next="loading_steps"
     >
     </wizard_navigation>
   </v-container>

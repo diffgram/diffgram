@@ -45,6 +45,7 @@
       @next="on_next_button_click"
       :next_visible="false"
       :loading_next="loading_steps"
+      :disabled_next="loading_steps"
       @back="$emit('previous_step')"
       :skip_visible="true">
 
@@ -54,8 +55,10 @@
         @click="on_next_button_click"
         color="success"
         data-cy="wizard_navigation_next"
+        :disabled="loading_steps"
+        :loading="loading_steps"
       >
-        <v-icon>mdi-rocket-launch</v-icon>
+        <v-icon left>mdi-rocket-launch</v-icon>
         Launch Task Template
       </v-btn>
     </template>
