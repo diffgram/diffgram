@@ -256,6 +256,8 @@ import Vue from "vue"; export default Vue.extend( {
   created() {
     window.addEventListener('keyup', this.keyboard_events);
 
+    console.log(process.env)
+
     if (this.magic_auth) {
       if (this.$store.state.user.logged_in != true) {
         this.mode = "magic_auth_redeem"
