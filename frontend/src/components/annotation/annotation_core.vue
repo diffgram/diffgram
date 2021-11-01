@@ -41,6 +41,7 @@
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
                    :enabled_edit_schema="enabled_edit_schema"
+                   :annotation_show_on="annotation_show_on"
                    @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
@@ -50,6 +51,8 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
+                   @annotation_show="annotation_show_activate"
+                   @show_duration_change="set_annotation_show_duration"
                    @canvas_scale_global_changed="on_canvas_scale_global_changed"
                    @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
@@ -410,6 +413,8 @@
             >
 
             </ghost_canvas_available_alert>
+
+            <br />
 
             <canvas
               data-cy="canvas"
@@ -775,6 +780,16 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
+    <qa_carousel 
+      :annotation_show_on="annotation_show_on" 
+      :loading="loading || annotations_loading || full_file_loading"
+      :instance_list="instance_list"
+      :annotation_show_duration="annotation_show_duration_per_instance"
+      @focus_instance="(index) => focus_instance({ index })"
+      @change_item="annotation_show_change_item"
+      @stop_carousel="annotation_show_activate"
+    />
+
   </div>
 </template>
 
@@ -816,9 +831,12 @@
   import { sha256 } from 'js-sha256';
   import stringify  from 'json-stable-stringify';
   import PropType from 'vue'
+  import _ from "lodash"
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
+  import qa_carousel from "./qa_carousel.vue"
+
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
 
@@ -856,7 +874,8 @@
         userscript,
         toolbar,
         ghost_canvas_available_alert,
-        ui_schema_context_menu
+        ui_schema_context_menu,
+        qa_carousel
       },
       props: {
         'project_string_id': {
@@ -897,9 +916,15 @@
         'view_only_mode': {
           default: false
         },
-        'enabled_edit_schema' : {}
+        'enabled_edit_schema' : {},
+        'finish_annotation_show': {
+          default: false
+        }
       },
       watch: {
+        finish_annotation_show: function (val) {
+          if (val) this.annotation_show_on = false
+        },
         canvas_scale_global: function(newVal, oldVal){
           this.on_canvas_scale_global_changed(newVal)
 
@@ -1194,6 +1219,15 @@
             instance_list: [],     // careful, need this to not be null for vue canvas to work as expected
             id: null
           },
+
+          annotation_show_on: false,
+          annotation_show_type: 'file',
+          annotation_show_current_instance: 0,
+          annotation_show_duration_per_instance: 2000,
+          finish_annotation_show_local: false,
+          annotation_show_progress: 0,
+          annotation_show_timer: null,
+          annotation_show_revert: 2,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -6501,6 +6535,17 @@
           }
 
         },
+        annotation_show_activate(show_type){
+          this.annotation_show_on = !this.annotation_show_on
+          this.annotation_show_type = show_type
+        },
+        annotation_show_change_item() {
+          if (this.annotation_show_type === "task") return this.trigger_task_change("next", this.$props.task, true)
+          this.change_file("next")
+        },
+        set_annotation_show_duration(duration){
+          this.annotation_show_duration_per_instance = (duration + 1) * 1000
+        },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
             this.$emit('request_file_change', direction, file);
@@ -6526,6 +6571,7 @@
           await this.prepare_canvas_for_new_file();
 
           this.full_file_loading = false;
+          this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
           this.canvas_mouse_tools.reset_transform_with_global_scale()
