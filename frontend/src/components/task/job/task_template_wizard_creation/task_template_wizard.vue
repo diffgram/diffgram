@@ -60,7 +60,7 @@
           :complete="step > 8"
           editable
           step="8">
-          Other Configs
+          Other
         </v-stepper-step>
         <v-divider></v-divider>
       </v-stepper-header>

@@ -2,7 +2,7 @@
   <v-container fluid data-cy="task-template-dataset-step">
     <div class="d-flex mb-8 justify-space-between">
       <h1 data-cy="task-template-dataset-step-title" class="font-weight-medium text--primary mr-4">
-        Attach Directories
+        What datasets are these tasks for?
       </h1>
       <tooltip_button
         tooltip_message="Upload File"

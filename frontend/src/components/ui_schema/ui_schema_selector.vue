@@ -159,7 +159,7 @@ export default Vue.extend({
       default: false
     },
     'label': {
-      default: null
+      default: "Select a Schema"
     },
     'current_ui_schema_prop': {  //eg for when external thing creates a new one
       default: null

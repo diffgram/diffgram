@@ -2,7 +2,7 @@
   <v-container fluid data-cy="task-template-upload-step">
     <div class="d-flex mb-8 justify-space-between">
       <h1 class="font-weight-medium text--primary mr-4">
-        Upload Files
+        Do you have fresh data to upload?
       </h1>
 
     </div>

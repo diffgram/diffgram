@@ -2,7 +2,7 @@
   <v-container fluid data-cy="task-template-labels-step">
     <div class="d-flex mb-8 justify-space-between">
       <h1 data-cy="step-labels-title" class="font-weight-medium text--primary mr-4">
-        Select Labels
+        What labels should be visible?
       </h1>
       <tooltip_button
         data-cy="manage-labels-button"
@@ -19,9 +19,6 @@
     <p class="text--primary">
       Select The Labels to Use on This Task Template. All are selected by default.
     </p>
-
-
-    <h4>Select Labels: </h4>
     <label_select_only
       :project_string_id="project_string_id"
       label_prompt="Schema Selected For Tasks"
