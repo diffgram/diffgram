@@ -32,27 +32,10 @@
       tile
     >
 
-      <v-list-item
-        link
-        @click="hide"
-        data-cy="hide_target_element"
-        v-if="$store.state.ui_schema.target_element != undefined"
+      <ui_schema_menu_content
+        @hide="hide"
       >
-
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Hide"
-            icon="mdi-eye-off"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Hide {{$store.state.ui_schema.target_element}}
-          </v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
+      </ui_schema_menu_content>
     </v-card>
 
   </div>
@@ -66,12 +49,28 @@
     <v-card outlined
             shaped
             elevation="5"
-            color="blue lighten-4"
             >
-      <v-card-title>UI Schema: {{$store.state.ui_schema.current.name}}
+      <v-card-title class="pb-0">
+
+        <div v-if="edit_name == false" @dblclick="edit_name=true">
+          {{$store.state.ui_schema.current.name}}
+        </div>
+
+        <div class="pb-0">
+          <v-text-field
+            v-if="edit_name == true"
+            v-model="$store.state.ui_schema.current.name"
+            @input="has_changes = true"
+            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+            label="Schema Name:"
+            flat
+              >
+          </v-text-field>
+        </div>
 
         <v-spacer></v-spacer>
-        
+
         <tooltip_button
             tooltip_message="Edit Name"
             datacy="ui_schema_edit_name"
@@ -83,19 +82,6 @@
                         >
         </tooltip_button>
       </v-card-title>
-
-      <div class="pa-2">
-        <v-text-field
-          v-if="edit_name == true"
-          v-model="$store.state.ui_schema.current.name"
-          @input="has_changes = true"
-          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-          label="Schema Name:"
-          flat
-            >
-        </v-text-field>
-      </div>
 
       <v-alert
             type="info"
@@ -191,15 +177,16 @@
 
         <v_error_multiple :error="error">
         </v_error_multiple>
-      
-     
+
+
         <ui_schema_selector
           :project_string_id="project_string_id"
           @change="change($event)"
           :disabled="selector_disabled"
+          :current_ui_schema_prop="newly_created_schema"
                         >
         </ui_schema_selector>
-    
+
 
         <tooltip_button
             tooltip_message="New Schema"
@@ -290,11 +277,13 @@
   import axios from 'axios';
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
+  import ui_schema_menu_content from './ui_schema_menu_content'
 
   export default Vue.extend({
     name: 'UISchemaContextMenu',
     components: {
-      ui_schema_selector
+      ui_schema_selector,
+      ui_schema_menu_content,
     },
     props: {
       'mouse_position': {
@@ -311,6 +300,9 @@
       },
       'show_save' :{
         default: true
+      },
+      'create_new_on_load' :{
+        default: false
       },
 
     },
@@ -332,6 +324,8 @@
         error: {},
 
         show_re_open_button: false,
+
+        newly_created_schema: undefined,
 
         button_to_add: undefined,
 
@@ -408,12 +402,6 @@
     },
 
     computed: {
-      ui_schema_exists: function () {
-           if (this.get_ui_schema().client_created_time ||   // frontend
-               this.get_ui_schema().id) { // backend
-               return true
-           }
-       },
       public_not_super_admin: function () {
            if (this.$store.state.ui_schema.current.is_public == true
             && this.$store.state.user.current.is_super_admin != true) {
@@ -450,6 +438,11 @@
     },
     mounted() {
 
+      if (this.$route.query.create_new_on_load == 'true'
+        || this.$props.create_new_on_load) {
+        this.new_ui_schema_with_servercall()
+      }
+
       var self = this
       this.get_target_element_watcher = this.$store.watch((state) => {
           return this.$store.state.ui_schema.target_element
@@ -469,7 +462,7 @@
           return this.$store.state.ui_schema.refresh
         },
         (new_val, old_val) => {
-          
+
         },
       )
     },
@@ -479,6 +472,15 @@
       this.show_ui_schema_refresh()
     },
     methods: {
+
+      ui_schema_exists: function () {
+        if (this.get_ui_schema().client_created_time ||   // frontend
+            this.get_ui_schema().id) { // backend
+            return true
+        }
+        return false
+      },
+
       refresh_buttons_list_available: function () {
         let list = []
         for (var button of this.buttons_list_original) {
@@ -550,6 +552,7 @@
 
             this.change(result.data.ui_schema)
             this.edit_name = true // assume a user wants to edit name of new script
+            this.newly_created_schema = result.data.ui_schema
           }
 
         }
@@ -589,14 +592,12 @@
       },
 
       change: function (event) {
-
         if(!event) { return }
         if(event.id == this.$store.state.ui_schema.current.id) { return }
-       
-        this.$store.commit('set_ui_schema', event)
 
+        this.$store.commit('set_ui_schema', event)
       },
-      
+
       toggle_is_visible: async function () {
 
         this.$store.commit('set_ui_schema_top_level_key_value',

@@ -61,6 +61,12 @@ job_new_spec_list = [
         'kind': str
     }
     },
+    {"ui_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
+    }
+    },
     {"td_api_trainer_basic_training": {
         'default': False,
         'kind': bool,
@@ -148,6 +154,12 @@ update_job_spec_list = [
     {"file_handling": {
         'kind': str,
         'default': None
+    }
+    },
+    {"ui_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
     }
     },
     {"instance_type": {
@@ -383,6 +395,7 @@ def job_update_core(session, job, project, input: dict, log: dict):
             job_type=input['type'],
             member_list_ids=input['member_list_ids'],
             default_userscript_id=input.get('default_userscript_id'),
+            ui_schema_id=input.get('ui_schema_id'),
             job=job
         )
         return job, log
@@ -587,6 +600,7 @@ def new_or_update_core(session,
                        output_dir_action='nothing',
                        completion_directory_id=None,
                        interface_connection_id=None,
+                       ui_schema_id=None,
                        job_type=None,
                        job=None,
                        member_list_ids=None,
@@ -692,6 +706,7 @@ def new_or_update_core(session,
         'permission': permission,
         'label_mode': label_mode,
         'passes_per_file': passes_per_file,
+        'ui_schema_id': ui_schema_id,
         'instance_type': instance_type,
         'file_handling': file_handling,
         'output_dir_action': output_dir_action,

@@ -255,11 +255,17 @@ class Task(Base):
     def get_last_task(
             session,
             user,
-            status_allow_list = ["available", "in_progress"]):
+            status_allow_list = ["available", "in_progress"],
+            job=None):
 
         last_task = user.last_task
 
         if last_task:
+
+            if job:
+                if last_task.job_id != job.id:
+                    return None
+
             if last_task.status in status_allow_list:
                 return last_task
 
@@ -455,6 +461,7 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'job': self.job.serialize_for_task(),
             'project_string_id' : self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,

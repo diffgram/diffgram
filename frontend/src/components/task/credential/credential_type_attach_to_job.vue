@@ -1,24 +1,20 @@
 <template>
-  <div id="">
 
-    <v-card>
-      <v-container>
 
-        <v-layout column>
+  <v-container fluid>
 
-          <!-- LIST -->
-          <v_credential_list :job_id="job_id"
-                             :mode_options="'job_edit'"
-                             :mode_view="'list'">
-          </v_credential_list>
-          <!-- LIST -->
+    <v-layout column>
 
-        </v-layout>
-      </v-container>
+      <!-- LIST -->
+      <v_credential_list :job_id="job_id"
+                         :mode_options="'job_edit'"
+                         :mode_view="'list'">
+      </v_credential_list>
+      <!-- LIST -->
 
-    </v-card>
+    </v-layout>
+  </v-container>
 
-  </div>
 </template>
 
 <script lang="ts">

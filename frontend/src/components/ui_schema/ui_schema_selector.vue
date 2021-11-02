@@ -146,6 +146,9 @@ export default Vue.extend({
     'project_string_id': {
       default: null
     },
+    'show_default_option': {
+      default: false
+    },
     'clearable': {
       default: null
     },
@@ -156,7 +159,7 @@ export default Vue.extend({
       default: false
     },
     'label': {
-      default: null
+      default: "Select a Schema"
     },
     'current_ui_schema_prop': {  //eg for when external thing creates a new one
       default: null
@@ -168,7 +171,7 @@ export default Vue.extend({
   data() {
     return {
       current_ui_schema: {},
-
+      default_ui_schema: {id: undefined, name: 'Diffgram Default UI'},
       date: undefined,
       name_search: undefined,
       archived_search: false,
@@ -236,6 +239,10 @@ export default Vue.extend({
         })
         if (result.status === 200) {
           this.internal_ui_schema_list = result.data.ui_schema_list
+          if(this.$props.show_default_option){
+            this.internal_ui_schema_list.unshift(this.default_ui_schema)
+            this.current_ui_schema = this.default_ui_schema
+          }
         }
       } catch (error) {
         this.error = this.$route_api_errors(error)

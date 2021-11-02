@@ -76,6 +76,9 @@ class Job(Base, Caching):
     guide_review = relationship("Guide", foreign_keys=[guide_review_id])
 
 
+    ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
+    ui_schema = relationship("UI_Schema", foreign_keys=[ui_schema_id])
+
     # Primary data storage for job
     directory_id = Column(Integer, ForeignKey('working_dir.id'))
     directory = relationship("WorkingDir",
@@ -504,6 +507,16 @@ class Job(Base, Caching):
             'time_created': self.time_created
         }
 
+    def serialize_for_task(self):
+        """serialize
+            Use to send job data in the task context.
+        :return:
+        """
+        data = self.serialize_minimal_info()
+        if self.ui_schema:
+            data['ui_schema'] = self.ui_schema.serialize()
+        return data
+
     # TODO way too much repeating with these serialize functions let's combine it
 
     def get_attached_dirs(self, session, sync_types=['sync']):
@@ -576,6 +589,7 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'type': self.type,
+            'ui_schema_id': self.ui_schema_id,
             'share_type': self.share_type,
             'member_list_ids': member_list_ids,
             'status': self.status,

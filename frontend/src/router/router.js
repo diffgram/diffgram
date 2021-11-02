@@ -21,6 +21,14 @@ const routerOptions = [
     }
   },
   {
+    path: '/white_label_customization/edit',
+    component: 'ui_schema/edit_overview_page',
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: false
+    }
+  },
+  {
     path: '/file/:file_id_prop',
     component: 'annotation/annotation_ui_factory',
     props: true,
@@ -285,7 +293,25 @@ const routerOptions = [
 
   // 2 different job new, one has project ...
   {
+    path: '/job/new-legacy/:job_id_route',
+    component: 'task/job/job_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
     path: '/job/new/:job_id_route',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
+    path: '/project/:project_string_id_route/job/new-legacy',
     component: 'task/job/job_new',
     props: true,
     meta: {
@@ -295,7 +321,7 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id_route/job/new',
-    component: 'task/job/job_new',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {
       requiresAuth: true,
