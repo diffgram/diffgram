@@ -5,7 +5,7 @@
         <v-stepper-step
           :complete="step > 1"
           step="1"
-          editable
+          :editable="job.id != undefined"
         >
           Start
         </v-stepper-step>
@@ -13,7 +13,7 @@
         <v-stepper-step
           :complete="step > 2"
           step="2"
-          editable
+          :editable="job.id != undefined"
         >
           Labels
         </v-stepper-step>
@@ -21,7 +21,7 @@
         <v-stepper-step
           :complete="step > 3"
           step="3"
-          editable
+          :editable="job.id != undefined"
         >
           Users
         </v-stepper-step>
@@ -29,7 +29,7 @@
         <v-stepper-step
           :complete="step > 4"
           step="4"
-          editable
+          :editable="job.id != undefined"
         >
           Upload
         </v-stepper-step>
@@ -37,28 +37,28 @@
         <v-stepper-step
           :complete="step > 5"
           step="5"
-          editable
+          :editable="job.id != undefined"
         >
           Datasets
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 6"
-          editable
+          :editable="job.id != undefined"
           step="6">
           UI Schema
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 7"
-          editable
+          :editable="job.id != undefined"
           step="7">
           Guides
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
           :complete="step > 8"
-          editable
+          :editable="job.id != undefined"
           step="8">
           Other
         </v-stepper-step>
