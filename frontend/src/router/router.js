@@ -21,6 +21,14 @@ const routerOptions = [
     }
   },
   {
+    path: '/white_label_customization/edit',
+    component: 'ui_schema/edit_overview_page',
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: false
+    }
+  },
+  {
     path: '/file/:file_id_prop',
     component: 'annotation/annotation_ui_factory',
     props: true,
