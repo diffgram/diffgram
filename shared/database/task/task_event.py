@@ -36,7 +36,13 @@ class TaskEvent(Base, SerializerMixin):
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
     def serialize(self):
-        return self.to_dict()
+        return self.to_dict(rules=(
+            '-member_created',
+            '-member_updated',
+            '-job',
+            '-task',
+            '-project'))
+
 
     @staticmethod
     def generate_task_creation_event(task) -> 'TaskEvent':
