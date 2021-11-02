@@ -1,7 +1,8 @@
 <template>
 <div v-cloak>
 
-  <v-layout class="d-flex flex-column" v-if="target_element === 'instance_selector'">
+  <v-layout class="d-flex flex-column"
+            v-if="get_target_element() === 'instance_selector'">
     <v-list-item
       link
       @click="hide"
@@ -17,7 +18,7 @@
       </v-list-item-icon>
       <v-list-item-content>
         <v-list-item-title class="pr-4">
-          Hide {{target_element}}
+          Hide {{get_target_element()}}
         </v-list-item-title>
 
       </v-list-item-content>
@@ -52,7 +53,7 @@
       </v-list-item-icon>
       <v-list-item-content>
         <v-list-item-title class="pr-4">
-          Hide {{target_element}}
+          Hide {{get_target_element()}}
         </v-list-item-title>
       </v-list-item-content>
     </v-list-item>
@@ -78,10 +79,7 @@
       instance_type_multiple_select
     },
     props: {
-      'target_element': {
-        type: String,
-        default: null,
-      }
+
     },
     data() {
       // move context menu off the page out of view when hidden
@@ -141,6 +139,10 @@
     methods: {
       hide: function(){
         this.$emit('hide');
+      },
+      get_target_element: function () {
+        // careful target is stored on ui_schema generally not `current`
+        return this.$store.state.ui_schema.target_element
       },
       initial_selected_types: function(){
         if(!this.get_ui_schema()){

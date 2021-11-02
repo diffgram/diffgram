@@ -33,10 +33,8 @@
     >
 
       <ui_schema_menu_content
-        :target_element="$store.state.ui_schema.target_element"
         @hide="hide"
       >
-
       </ui_schema_menu_content>
     </v-card>
 
