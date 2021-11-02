@@ -53,6 +53,9 @@ import Vue from "vue";
 export default Vue.extend({
   name: 'step_ui_schema_task_template',
   props: [
+    'project_string_id',
+    'job',
+    'loading_steps',
   ],
 
   components: {
