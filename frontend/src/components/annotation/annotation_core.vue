@@ -3545,13 +3545,8 @@
 
           let point = this.get_focus_point_of_instance(instance)
 
-          let move = {
-            x: point.x,
-            y: point.y
-          }
-
           let scale = this.get_zoom_region_of_instance(instance);
-          this.canvas_mouse_tools.zoom_to_point(move, scale)
+          this.canvas_mouse_tools.zoom_to_point(point, scale)
           this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
