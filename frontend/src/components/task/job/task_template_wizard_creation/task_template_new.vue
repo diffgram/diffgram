@@ -5,7 +5,7 @@
 
     </main_menu>
     <v-toolbar
-      class="mt-4"
+      class="mt-4 d-flex justify-space-between"
       dense
       elevation="0"
       fixed
@@ -16,7 +16,16 @@
       <bread_crumbs
         :item_list=bread_crumb_list>
       </bread_crumbs>
-
+      <button_with_confirm
+        @confirm_click="cancel_job_api('archive')"
+        color="error"
+        icon="archive"
+        :icon_style="true"
+        tooltip_message="Archive"
+        confirm_message="Archive"
+        :disabled="job.id == undefined || loading"
+        :loading="loading">
+      </button_with_confirm>
     </v-toolbar>
     <v-container fluid class="d-flex justify-center">
       <task_template_wizard
@@ -123,6 +132,48 @@
         }
       },
       methods: {
+        cancel_job_api: function (mode) {
+
+          this.loading = true
+          this.error = {}
+          this.success = false
+
+          this.mode = mode
+
+          // todo would prefer this to be computed maybe
+          this.job_id = null
+          if (this.job) {
+            this.job_id = this.job.id
+          }
+
+          axios.post('/api/v1/job/cancel',
+            {
+              'job_id': this.job_id,
+              'job_list': this.job_list,
+              'mode': this.mode
+            })
+            .then(response => {
+              if (response.data.log.success == true) {
+
+                this.success = true
+
+                this.$emit('cancel_job_success')
+                this.$router.push(`/job/list/`);
+
+              }
+              this.loading = false
+
+            })
+            .catch(error => {
+
+              if (error.response.status == 403) {
+                this.$store.commit('error_permission')
+              }
+
+              this.error = error.response.data.log.error
+              this.loading = false
+            });
+        },
         on_job_created(job) {
           this.job_id = job.id
           this.job.id = job.id
