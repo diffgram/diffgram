@@ -5,6 +5,8 @@ export const is_mailgun_set = async () => {
         const { data } = await axios.get('/api/configs/is-mailer-set')
         return data
     } catch(e) {
-        return false
+        return {
+            mailgun: false
+        }
     }
 }

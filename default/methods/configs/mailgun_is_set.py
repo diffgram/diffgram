@@ -11,5 +11,5 @@ def mailgun_is_set():
     is_set = settings.MAILGUN_KEY and settings.EMAIL_DOMAIN_NAME and settings != 'localhost'
     
     if is_set:
-        return jsonify({"mailgun": "true"})
-    return jsonify({"mailgun": "false"})
+        return jsonify({"mailgun": True})
+    return jsonify({"mailgun": False})

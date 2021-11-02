@@ -243,9 +243,9 @@ export default Vue.extend({
   },
   async created() {
     window.addEventListener("keyup", this.keyboard_events);
-    const can_use_magic_link = await is_mailgun_set();
-    this.mailgun = can_use_magic_link;
-    this.mode = can_use_magic_link ? "magic_auth" : "password";
+    const { mailgun } = await is_mailgun_set();
+    this.mailgun = mailgun;
+    this.mode = mailgun ? "magic_auth" : "password";
 
     if (this.magic_auth) {
       if (this.$store.state.user.logged_in != true) {
