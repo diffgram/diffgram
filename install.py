@@ -371,7 +371,6 @@ class DiffgramInstallTool:
 
     def populate_env(self):
         env_file = ''
-        frontend_env_file = 'VUE_APP_MAILGUN={}\n'.format("false")
         bcolors.printcolor('Generating Environment Variables file...', bcolors.OKBLUE)
         if self.static_storage_provider == 'gcp':
             env_file = 'GCP_SERVICE_ACCOUNT_FILE_PATH={}\n'.format(self.gcp_credentials_path)
@@ -420,18 +419,11 @@ class DiffgramInstallTool:
         if self.mailgun:
             env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
             env_file += 'EMAIL_DOMAIN_NAME={}\n'.format(self.email_domain)
-            frontend_env_file = 'VUE_APP_MAILGUN={}\n'.format("true")
 
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
-        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)
-
-        frontend_text_file = open("./frontend/.env", "w")
-        frontend_text_file.write(frontend_env_file)
-        frontend_text_file.close()
-        bcolors.printcolor('✓ Frontend environment file written to: {}'.format(os.path.abspath(frontend_text_file.name)), bcolors.OKGREEN)
-        
+        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)        
 
 
     def launch_dockers(self):

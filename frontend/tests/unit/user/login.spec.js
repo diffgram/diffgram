@@ -6,17 +6,6 @@ const localVue = createLocalVue();
 localVue.use(Vuex);
 
 describe("login.vue", () => {
-  const OLD_ENV = process.env;
-
-  beforeEach(() => {
-    jest.resetModules();
-    process.env = { ...OLD_ENV };
-  });
-
-  afterAll(() => {
-    process.env = OLD_ENV;
-  });
-
   it("Rendered login page has form component", () => {
     const wrapper = shallowMount(login, {
       mocks: {
@@ -52,37 +41,4 @@ describe("login.vue", () => {
     expect(showedMessage).toMatch(message);
   });
 
-  it("Does not render magic link login option if Mailgun is not set", () => {
-    process.env.mail_gun = false;
-    const wrapper = shallowMount(login, {
-      mocks: {
-        $store: {
-          state: {
-            user: {
-              logged_in: false
-            }
-          }
-        }
-      },
-      localVue
-    });
-    expect(wrapper.text().toLowerCase()).not.toContain("magic link");
-  });
-
-  it("Renders magic link login option if Mailgun is set", () => {
-    process.env.mail_gun = true;
-    const wrapper = shallowMount(login, {
-      mocks: {
-        $store: {
-          state: {
-            user: {
-              logged_in: false
-            }
-          }
-        }
-      },
-      localVue
-    });
-    expect(wrapper.text().toLowerCase()).toContain("magic link");
-  });
 });
