@@ -4,7 +4,7 @@ exports[`step_advanced_options_task_template.vue Renders component correctly. 1`
 <v-container fluid="" data-cy="task-template-advanced-options-step">
   <div class="d-flex mb-8 justify-space-between">
     <h1 data-cy="task-template-advanced-options-step-title" class="font-weight-medium text--primary mr-4">
-      Advanced Options (You Can Skip This Step):
+      Advanced Options:
     </h1>
   </div>
   <v_error_multiple error="[object Object]"></v_error_multiple>
@@ -16,6 +16,6 @@ exports[`step_advanced_options_task_template.vue Renders component correctly. 1`
     <v-select items="Normal,Exam" data-cy="jobtype-select" label="Type" item-value="text"></v-select>
     <diffgram_select item_list="[object Object],[object Object]" data-cy="file-handling-select" label="File Handling"></diffgram_select>
   </v-container>
-  <wizard_navigation skip_visible="true"><template></template></wizard_navigation>
+  <wizard_navigation><template></template></wizard_navigation>
 </v-container>
 `;

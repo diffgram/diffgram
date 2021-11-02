@@ -14,7 +14,7 @@ exports[`step_ui_schema_task_template.vue Renders component correctly. 1`] = `
     what you want the annotators to see.
   </p>
   <v-container fluid="">
-    <ui_schema_selector-stub show_default_option="true" data-cy="ui-schema-selector"></ui_schema_selector-stub>
+    <ui_schema_selector-stub show_default_option="true" label="Select a Schema" data-cy="ui-schema-selector"></ui_schema_selector-stub>
   </v-container>
   <wizard_navigation></wizard_navigation>
 </v-container>

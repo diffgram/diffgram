@@ -4,7 +4,7 @@ exports[`step_label_selection_task_template.vue Renders component correctly. 1`]
 <v-container fluid="" data-cy="task-template-labels-step">
   <div class="d-flex mb-8 justify-space-between">
     <h1 data-cy="step-labels-title" class="font-weight-medium text--primary mr-4">
-      Select Labels
+      What labels should be visible?
     </h1>
     <tooltip_button data-cy="manage-labels-button" tooltip_message="Quick Edit Project Level Schema" button_color="primary" icon="mdi-format-paint" button_message="Manage Labels &amp; Attributes" color="white"></tooltip_button>
   </div>
@@ -12,7 +12,6 @@ exports[`step_label_selection_task_template.vue Renders component correctly. 1`]
   <p class="text--primary">
     Select The Labels to Use on This Task Template. All are selected by default.
   </p>
-  <h4>Select Labels: </h4>
   <label_select_only-stub mode="multiple" datacy="label-select" select_all_at_load="true" show_select_all="true" label_prompt="Schema Selected For Tasks"></label_select_only-stub>
   <wizard_navigation></wizard_navigation>
   <label_manager_dialog-stub></label_manager_dialog-stub>
