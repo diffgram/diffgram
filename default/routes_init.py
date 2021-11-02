@@ -124,3 +124,5 @@ def do_routes_importing():
     from methods.video.sequence_preview_create import api_create_sequence_preview
 
     from methods.ui_schema.ui_schema import ui_schema_new_api
+
+    from methods.configs.mailgun_is_set import mailgun_is_set

@@ -68,6 +68,7 @@
                 </v-btn>
 
                 <v-btn
+                  v-if="mailgun"
                   @click="start_magic_login_api"
                   color="primary"
                   :loading="loading"
@@ -188,6 +189,7 @@
 
 <script lang="ts">
 import axios from "axios";
+import { is_mailgun_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -207,8 +209,9 @@ export default Vue.extend({
       e1: true,
 
       email: null,
+      mailgun: undefined,
 
-      mode: "magic_auth",
+      mode: "loading",
       show_logging_in_messsage: false,
 
       error: {
@@ -238,8 +241,11 @@ export default Vue.extend({
       },
     };
   },
-  created() {
+  async created() {
     window.addEventListener("keyup", this.keyboard_events);
+    const can_use_magic_link = await is_mailgun_set();
+    this.mailgun = can_use_magic_link;
+    this.mode = can_use_magic_link ? "magic_auth" : "password";
 
     if (this.magic_auth) {
       if (this.$store.state.user.logged_in != true) {
