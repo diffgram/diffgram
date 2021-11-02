@@ -6557,8 +6557,26 @@
           this.annotation_show_type = show_type
         },
         annotation_show_change_item() {
-          if (this.annotation_show_type === "task") return this.trigger_task_change("next", this.$props.task, true)
-          this.change_file("next")
+          let do_change_item
+
+          if (this.file.type == "video"){
+            if (this.$refs.video_controllers.at_end_of_video == true) {
+              do_change_item = true
+            }
+            else {
+              this.$refs.video_controllers.move_frame(1)
+            }           
+          }
+          if (this.file.type == "image") {
+            do_change_item = true
+          }
+
+          if (do_change_item == true) {
+            if (this.annotation_show_type === "task") {
+              return this.trigger_task_change("next", this.$props.task, true)
+            }
+            this.change_file("next")
+          }
         },
         set_annotation_show_duration(duration){
           this.annotation_show_duration_per_instance = (duration + 1) * 1000
