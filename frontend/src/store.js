@@ -641,6 +641,9 @@ const ui_schema = {
       }
       let result = state.current[element][string_key]
       return result
+    },
+    get_current_ui_schema: (state) => () => {
+      return state.current;
     }
   },
   mutations: {
@@ -690,6 +693,10 @@ const ui_schema = {
       state.refresh_mouse_over_event = Date.now()
     },
     set_ui_schema_element_value(state, payload) {
+      // use example
+      // this.$emit('set_ui_schema_element_value',
+      //  [this.target_element, 'allowed_instance_types', new_type_list])
+
       const element = payload[0]
       if (element === undefined) {
         throw new Error("set_ui_schema_element_value element is undefined")
@@ -701,14 +708,13 @@ const ui_schema = {
       }
       state.current[element][key] = value
       state.refresh = Date.now()
-      console.log(key, value)
 
     },
 
     set_ui_schema_top_level_key_value(state, payload) {
       state.current[payload[0]] = payload[1]
       state.refresh = Date.now()
-    },
+    }
   }
 }
 

@@ -362,9 +362,9 @@ Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
 });
 
-Cypress.Commands.add('selectLabel', function (name) {
+Cypress.Commands.add('selectLabel', function (name, alternate_selector = 'label_select_attribute') {
   cy.wait(2000) // assumes will need to load
-  cy.get('[data-cy=label_select_attribute]').click({force: true});
+  cy.get(`[data-cy=${alternate_selector}]`).click({force: true});
   cy.wait(300)
   cy.get('.v-menu__content .v-list.v-select-list .v-list-item span span').contains(
     name).first().click({force: true})
@@ -372,7 +372,7 @@ Cypress.Commands.add('selectLabel', function (name) {
 
 Cypress.Commands.add('createAttributeOptions', function (option_list) {
   cy.get('[data-cy=new_attribute_option_button]').click({force: true});
-    
+
   cy.wait(400);
   for(let option of option_list){
     cy.get('[data-cy=attribute_option_name]').click({force: true});
@@ -380,7 +380,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
     cy.wait(300)
     cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
-    
+
   }
   cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
 });

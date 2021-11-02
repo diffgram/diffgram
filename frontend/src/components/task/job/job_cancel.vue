@@ -36,8 +36,7 @@
       :loading="loading">
 
       <template slot="content">
-        <v-alert type="info"
-                 >
+        <v-alert type="info">
 
           Careful!
           Already completed tasks will not be effected.
@@ -89,7 +88,7 @@ import Vue from "vue";
   * Jan 20, 2020
   *    Question, directionally, should this be out generic
   *    "updates to job" abstraction?
-  * 
+  *
   *
   *
   */
@@ -110,7 +109,7 @@ export default Vue.extend( {
     data() {
       return {
 
-    
+
         loading: false,
         error: {},
         success: false,

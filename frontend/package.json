@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node build/build.js",
     "test:unit": "vue-cli-service test:unit --coverage --silent",
+    "test:unit-update": "vue-cli-service test:unit --coverage --silent -u",
     "lint": "npx eslint './src/**/*.vue'",
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",
     "docs": "rm -rf ./docs/* && npx jsdoc -r -d docs -c ./jsdoc.json; npx http-server ./docs",
@@ -25,7 +26,7 @@
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
-    "cypress": "8.3.1",
+    "cypress": "8.7.0",
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
     "highlight.js": "^10.6.0",
