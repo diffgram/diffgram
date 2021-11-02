@@ -34,9 +34,7 @@
 
       <ui_schema_menu_content
         :target_element="$store.state.ui_schema.target_element"
-        :ui_schema="$store.state.ui_schema.current"
         @hide="hide"
-        @update_ui_schema="on_update_schema"
       >
 
       </ui_schema_menu_content>
@@ -485,11 +483,6 @@
         return false
       },
 
-      on_update_schema: function(target_element, new_configs){
-
-        this.$store.commit('set_current_schema_element_config', {target_element, new_configs});
-
-      },
       refresh_buttons_list_available: function () {
         let list = []
         for (var button of this.buttons_list_original) {

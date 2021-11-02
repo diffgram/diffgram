@@ -693,6 +693,10 @@ const ui_schema = {
       state.refresh_mouse_over_event = Date.now()
     },
     set_ui_schema_element_value(state, payload) {
+      // use example
+      // this.$emit('set_ui_schema_element_value',
+      //  [this.target_element, 'allowed_instance_types', new_type_list])
+
       const element = payload[0]
       if (element === undefined) {
         throw new Error("set_ui_schema_element_value element is undefined")
@@ -711,11 +715,7 @@ const ui_schema = {
     set_ui_schema_top_level_key_value(state, payload) {
       state.current[payload[0]] = payload[1]
       state.refresh = Date.now()
-    },
-    set_current_schema_element_config(state, {target_element, new_configs}) {
-      state.current[target_element] = new_configs
-      state.refresh = Date.now()
-    },
+    }
   }
 }
 
