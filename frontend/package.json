@@ -25,7 +25,7 @@
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
-    "cypress": "8.3.1",
+    "cypress": "8.7.0",
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
     "highlight.js": "^10.6.0",
