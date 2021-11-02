@@ -2,18 +2,15 @@
   <v-container fluid data-cy="task-template-users-step">
     <div class="d-flex mb-8 justify-space-between">
       <h1 data-cy="task-template-users-step-title" class="font-weight-medium text--primary mr-4">
-        Select Users
+        Who is assigned to work on these tasks?
       </h1>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>
-    <p class="text--primary">
-      Select The Users assigned to the the task template. This users will be able to see and annotate
-      the tasks inside this task template.
+    <p data-cy="task-template-users-step-subtitle" class="text--primary">
+      Select the Users assigned to the tasks.
     </p>
 
-
-    <h4 data-cy="task-template-users-step-subtitle">Select Users: </h4>
     <member_select
       datacy="member-select"
       v-model="job.member_list_ids"

@@ -708,7 +708,6 @@ const ui_schema = {
       }
       state.current[element][key] = value
       state.refresh = Date.now()
-      console.log(key, value)
 
     },
 
