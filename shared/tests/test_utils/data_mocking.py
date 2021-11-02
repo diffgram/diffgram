@@ -21,6 +21,7 @@ from shared.database.connection.connection import Connection
 from shared.database.discussion.discussion import Discussion
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
+from shared.database.task.task_event import TaskEvent
 import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
@@ -164,6 +165,19 @@ def create_userscript(event_data, session):
     session.add(event)
     regular_methods.commit_with_rollback(session)
     return event
+
+
+def create_task_event(task_event_data: dict, session: 'Session'):
+    task_event = TaskEvent(
+        project_id = task_event_data.get('project_id'),
+        job_id = task_event_data.get('job_id'),
+        task_id = task_event_data.get('task_id'),
+        event_type = task_event_data.get('event_type'),
+        member_created_id = task_event_data.get('member_created_id'),
+    )
+    session.add(task_event)
+    regular_methods.commit_with_rollback(session)
+    return task_event
 
 
 def create_directory(dir_data, session):

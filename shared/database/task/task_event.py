@@ -9,7 +9,7 @@ class TaskEvent(Base, SerializerMixin):
         TaskEvents track all the actions or occurences related with a task. For example a change of status,
         archiving a task, creating a task or any other action related with a task object.
     """
-    __tablename__ = 'sync_event'
+    __tablename__ = 'task_event'
     id = Column(BIGINT, primary_key = True)
 
     # The job context on where this sync happened.
