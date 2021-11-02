@@ -381,7 +381,9 @@
 
       -->
 
-          <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
+          <div  contenteditable="true"
+                id="canvas_wrapper"
+                style="position: relative;"
 
                 @mousemove="mouse_move"
                 @mousedown="mouse_down"
@@ -413,8 +415,6 @@
             >
 
             </ghost_canvas_available_alert>
-
-            <br />
 
             <canvas
               data-cy="canvas"
@@ -780,8 +780,9 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
-    <qa_carousel 
-      :annotation_show_on="annotation_show_on" 
+    <qa_carousel
+      v-if="annotation_show_on"
+      :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
       :instance_list="instance_list"
       :annotation_show_duration="annotation_show_duration_per_instance"

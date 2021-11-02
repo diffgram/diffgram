@@ -173,6 +173,8 @@
           this.task = {
             ...UI_SCHEMA_TASK_MOCK
           }
+          this.$refs.file_manager_sheet.set_file_list([this.task.file])
+          this.$refs.file_manager_sheet.hide_file_manager_sheet();
         }
         else{
           if (this.$props.task_id_prop) {
