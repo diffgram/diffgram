@@ -108,7 +108,7 @@ export class CanvasMouseTools {
     return mouse_position;
   }
 
-  public map_point_from_matrix(x, y, matrix){
+  public map_point_from_matrix(x, y, matrix=this.canvas_ctx.getTransform()){
     let point = {'x': undefined, 'y': undefined}
     point.x = x * matrix.a + y * matrix.c + matrix.e;
     point.y = x * matrix.b + y * matrix.d + matrix.f;
