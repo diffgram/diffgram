@@ -36,6 +36,7 @@
           :project_string_id="computed_project_string_id"
           :task="task"
           :view_only="view_only"
+          :enabled_edit_schema="enabled_edit_schema"
           :show_explorer_full_screen="show_explorer_full_screen"
           :file_id_prop="file_id_prop"
           :job_id="job_id"
@@ -66,6 +67,7 @@
 <script lang="ts">
   import axios from 'axios';
   import {create_event} from "../event/create_event";
+  import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock"
   import file_manager_sheet from "../source_control/file_manager_sheet";
   import Vue from "vue";
 
@@ -167,16 +169,25 @@
         if (this.$route.query.view_only) {
           this.view_only = true;
         }
-
-        if (this.$props.task_id_prop) {
-          await this.fetch_single_task(this.$props.task_id_prop);
-        }
-        else if (this.$props.file_id_prop) {
-          await this.fetch_single_file();
+        if(this.enabled_edit_schema){
+          this.task = {
+            ...UI_SCHEMA_TASK_MOCK
+          }
+          this.$refs.file_manager_sheet.set_file_list([this.task.file])
+          this.$refs.file_manager_sheet.hide_file_manager_sheet();
         }
         else{
-          await this.fetch_project_file_list();
+          if (this.$props.task_id_prop) {
+            await this.fetch_single_task(this.$props.task_id_prop);
+          }
+          else if (this.$props.file_id_prop) {
+            await this.fetch_single_file();
+          }
+          else{
+            await this.fetch_project_file_list();
+          }
         }
+
       },
       computed: {
         file_id: function () {
