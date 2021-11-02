@@ -3522,9 +3522,9 @@
 
         get_zoom_region_of_instance: function (instance){
           let max_zoom = 10
-          let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
-          let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y) * this.canvas_scale_global
+          let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
           let padding = -2
           return max_zoom_to_show_all + padding
         },
