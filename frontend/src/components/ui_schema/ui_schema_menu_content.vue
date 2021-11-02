@@ -24,12 +24,13 @@
     </v-list-item>
     <v-divider></v-divider>
     <h4 class="mt-3 ml-2">Allowed Types: </h4>
+
     <instance_type_multiple_select
       :instance_type_list="instance_type_list"
       :multiple="true"
-      :initial_value="initial_selected_types"
-      :init_all_selected="initial_selected_types ? false : true"
-      @change="on_change_instance_select"
+      :initial_value="initial_selected_types()"
+      :init_all_selected="initial_selected_types() ? false : true"
+      @input="on_change_instance_select($event)"
     >
 
     </instance_type_multiple_select>
@@ -80,12 +81,7 @@
       'target_element': {
         type: String,
         default: null,
-      },
-      'ui_schema':{
-        type: Object,
-        default: null
       }
-
     },
     data() {
       // move context menu off the page out of view when hidden
@@ -128,18 +124,7 @@
     },
 
     computed: {
-      initial_selected_types: function(){
-        if(!this.ui_schema){
-          return
-        }
-        if(!this.ui_schema.instance_selector){
-          return
-        }
-        if(!this.ui_schema.instance_selector.allowed_instance_types){
-          return
-        }
-        return this.ui_schema.instance_selector.allowed_instance_types
-      }
+
     },
 
     watch: {
@@ -157,15 +142,30 @@
       hide: function(){
         this.$emit('hide');
       },
+      initial_selected_types: function(){
+        if(!this.get_ui_schema()){
+          return []
+        }
+        if(!this.get_ui_schema().instance_selector){
+          return []
+        }
+        if(!this.get_ui_schema().instance_selector.allowed_instance_types){
+          return []
+        }
+        return this.get_ui_schema().instance_selector.allowed_instance_types
+      },
+      get_ui_schema: function () {
+        if (this.$store.state.ui_schema.current == undefined) {
+          throw new Error("this.$store.state.ui_schema.current is undefined")
+        }
+        return this.$store.state.ui_schema.current
+      },
+
       on_change_instance_select: function(new_type_list){
-        let old_configs = {
-          ...this.ui_schema[this.target_element]
-        }
-        let new_configs = {
-          ...old_configs,
-          allowed_instance_types: new_type_list
-        }
-        this.$emit('update_ui_schema', this.target_element, new_configs)
+        this.$store.commit('set_ui_schema_element_value',
+          ['instance_selector', 'allowed_instance_types', new_type_list])
+        this.$store.commit('set_ui_schema_element_value',
+          ['instance_selector','visible', true])
       }
     }
 
