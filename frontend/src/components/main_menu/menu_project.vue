@@ -52,6 +52,18 @@
             </v-btn>
           </v-flex>
 
+          <v-flex>
+
+            <ahref_seo_optimal href="/white_label_customization/edit">
+              <v-btn color="primary"
+                    text style="text-transform: none !important;">
+                <v-icon left> mdi-puzzle-edit</v-icon>
+                White-label Customization
+              </v-btn>
+            </ahref_seo_optimal>
+
+          </v-flex>
+
           <v-divider></v-divider>
 
           <v-flex>
