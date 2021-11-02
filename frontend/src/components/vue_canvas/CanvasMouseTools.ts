@@ -6,7 +6,6 @@ export class CanvasMouseTools {
   private canvas_rectangle: any;
   private canvas_ctx: any;
   private canvas_elm: any;
-  private zoom_stack: {point: {x: number, y: number}}[];
   private scale: number;
   private canvas_scale_global: number;
   private canvas_width: any;
@@ -20,7 +19,6 @@ export class CanvasMouseTools {
     this.canvas_ctx = this.canvas_elm.getContext('2d')
     this.scale = 1;
     this.canvas_scale_global = canvas_scale_global;
-    this.zoom_stack = [];
     this.canvas_width = canvas_width
     this.canvas_height = canvas_height
   }
@@ -121,7 +119,6 @@ export class CanvasMouseTools {
   public reset_transform_with_global_scale(){
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
-    this.zoom_stack = [];
   }
 
   public perform_zoom_delta(zoom, point){
@@ -175,16 +172,9 @@ export class CanvasMouseTools {
       zoom_in = false
     }
     if(zoom_in){
-      this.zoom_stack.push({
-        point: point
-      });
     }
     else{
-      let elm = this.zoom_stack.pop()
-      if(elm){
-        point = elm.point
-        bounds_before_zoom = this.get_bounds()
-      }
+      bounds_before_zoom = this.get_bounds()
     }
 
     this.perform_zoom_delta(zoom, point)
@@ -200,9 +190,6 @@ export class CanvasMouseTools {
     let virtual_wheel = .4
     let center_point = {x: this.canvas_width / 2 , y: this.canvas_height / 2}
     let zoom = Math.exp(virtual_wheel * zoomIntensity);
-    this.zoom_stack.push({
-      point: center_point
-    });
     this.perform_zoom_delta(zoom, center_point)
   }
 
@@ -212,11 +199,7 @@ export class CanvasMouseTools {
     let zoomIntensity = 0.1;
     let virtual_wheel = -.4
     let zoom = Math.exp(virtual_wheel * zoomIntensity);
-    let elm = this.zoom_stack.pop()
-      if(elm){
-        point = elm.point
-        bounds_before_zoom = this.get_bounds()
-      }
+    bounds_before_zoom = this.get_bounds()
     this.perform_zoom_delta(zoom, point)
     this.auto_align_borders_on_zoom_out(bounds_before_zoom)
   }
