@@ -36,17 +36,17 @@ class TaskEvent(Base, SerializerMixin):
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
     def serialize(self):
-        return self.to_dict(rules=(
+        return self.to_dict(rules = (
             '-member_created',
             '-member_updated',
             '-job',
             '-task',
             '-project'))
 
-
     @staticmethod
-    def generate_task_creation_event(task) -> 'TaskEvent':
+    def generate_task_creation_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
+            session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -54,8 +54,9 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_completion_event(task) -> 'TaskEvent':
+    def generate_task_completion_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
+            session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -63,8 +64,9 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_review_start_event(task) -> 'TaskEvent':
+    def generate_task_review_start_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
+            session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -72,8 +74,9 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_request_change_event(task) -> 'TaskEvent':
+    def generate_task_request_change_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
+            session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -81,11 +84,24 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def new(project_id: int,
+    def new(session: 'Session',
+            project_id: int,
             job_id: int,
             task_id: int,
             event_type: str,
+            add_to_session: bool = True,
+            flush_session: bool = True
             ) -> 'TaskEvent':
-        return TaskEvent(
 
+        task_event = TaskEvent(
+            project_id = project_id,
+            job_id = job_id,
+            task_id = task_id,
+            event_type = event_type,
         )
+
+        if add_to_session:
+            session.add(task_id)
+        if flush_session:
+            session.flush()
+        return task_event
