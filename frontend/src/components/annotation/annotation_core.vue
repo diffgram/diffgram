@@ -3513,7 +3513,7 @@
 
         auto_revert_snapped_to_instance_if_unchanged: function (instance) {
           if (this.snapped_to_instance == instance) {
-            this.reset_to_full()
+            this.focus_instance_show_all()
             this.snapped_to_instance = undefined
             return true
           }
@@ -3537,6 +3537,9 @@
           if (this.auto_revert_snapped_to_instance_if_unchanged(instance) == true) {
             return
           }
+
+          this.$refs.instance_detail_list.focus_mode = true
+          this.$refs.instance_detail_list.change_instance(instance, this.instance_focused_index)
 
           this.snapped_to_instance = instance
 
