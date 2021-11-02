@@ -317,7 +317,7 @@ Cypress.Commands.add('loginByForm', function (email, password) {
   getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
 
     if (user_logged_in == false) {
-      cy.wait(3000);
+      cy.wait(10000);
       cy.get('[data-cy=email]')
         .type(email)
         .should('have.value', email)
