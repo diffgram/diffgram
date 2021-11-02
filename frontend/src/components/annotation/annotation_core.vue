@@ -781,7 +781,6 @@
     </v-alert>
 
     <qa_carousel
-      v-if="annotation_show_on"
       :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
       :instance_list="instance_list"
