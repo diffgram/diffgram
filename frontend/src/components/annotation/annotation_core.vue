@@ -37,7 +37,7 @@
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
-                   :instance_type_list="instance_type_list"
+                   :instance_type_list="filtered_instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
                    :enabled_edit_schema="enabled_edit_schema"
@@ -1409,6 +1409,23 @@
         }
       },
       computed: {
+        filtered_instance_type_list: function(){
+          if(!this.$props.task){
+            return this.instance_type_list
+          }
+          if(!this.$props.task.job.ui_schema){
+            return this.instance_type_list
+          }
+          let ui_schema = this.$props.task.job.ui_schema;
+          let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+          if(!allowed_types){
+            return this.instance_type_list
+          }
+          else{
+            return this.instance_type_list.filter(elm => allowed_types.includes(elm.name))
+          }
+
+        },
         clipboard: function() {
           return this.$store.getters.get_clipboard
         },
@@ -6551,6 +6568,14 @@
             this.$emit('request_file_change', direction, file);
           }
         },
+        set_ui_schema(){
+          if(this.$props.task && this.$props.task.job && this.$props.task.job.ui_schema){
+            this.$store.commit('set_ui_schema', this.$props.task.job.ui_schema);
+          }
+          else{
+            this.$store.commit('clear_ui_schema');
+          }
+        },
         on_change_current_task: async function(){
           if (!this.$props.task) { return }
           if (!this.$props.task.id) { return }
@@ -6574,7 +6599,8 @@
           this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6604,7 +6630,8 @@
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
 
         refresh_attributes_from_current_file: async function (file) {
