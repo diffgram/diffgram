@@ -100,6 +100,19 @@
 
           <v-stepper-content step="5" style="height: 100%">
 
+            
+            <h1 class="font-weight-medium text--primary">Create Tasks</h1>
+            
+
+            <p class="pt-3 text--primary">
+              All of your work is saved.
+              The next step is to create tasks for human workflow.
+              The task creation process will re-use all of the work done so far.
+              As you progress through using Diffgram you will likely have many sets of tasks.
+              These will all re-use the same project resources, and you will only need to revisit
+              this project creation process if you have a majorly different project.
+            </p>
+
             <wizard_navigation
               @skip="go_to_home()"
               @back="go_back_a_step()"
