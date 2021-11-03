@@ -83,6 +83,7 @@
                   v-if="mode != 'password'"
                   color="blue darken-1"
                   id="show_pass"
+                  data-cy="type-password-btn"
                   :disabled="loading"
                   text
                   @click="mode = 'password'"
