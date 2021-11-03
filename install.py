@@ -66,6 +66,9 @@ class DiffgramInstallTool:
     diffgram_version = None
     database_url = None
     local_database = None
+    mailgun = None
+    mailgun_key = None
+    email_domain = None
 
     def set_static_storage_option(self, option_number):
         if option_number == 1:
@@ -413,10 +416,15 @@ class DiffgramInstallTool:
             env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
             env_file += 'DATABASE_URL={}\n'.format(self.database_url)
 
+        if self.mailgun:
+            env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
+            env_file += 'EMAIL_DOMAIN_NAME={}\n'.format(self.email_domain)
+
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
-        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)
+        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)        
+
 
     def launch_dockers(self):
         try:
@@ -467,6 +475,18 @@ class DiffgramInstallTool:
                     bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
                     valid = False
 
+    def mailgun_config(self):
+        need_mailgun = bcolors.inputcolor(
+            'Do you want to add Mailgun to Diffgram?[Y/n] ')
+        if need_mailgun.lower() == 'y' or need_mailgun.lower() == 'yes':
+            mailgun_key = bcolors.inputcolor('Please provide the Mailgun key: ')
+            email_domain = bcolors.inputcolor('Please provide the email domain: ')
+            self.mailgun = True
+            self.mailgun_key = mailgun_key
+            self.email_domain = email_domain
+            return
+        return
+
     def install(self):
         self.print_logo()
         print('')
@@ -508,6 +528,7 @@ class DiffgramInstallTool:
 
         self.set_diffgram_version()
         self.database_config()
+        self.mailgun_config()
         self.populate_env()
         self.launch_dockers()
 
