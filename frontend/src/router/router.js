@@ -514,7 +514,12 @@ const routerOptions = [
   },
   {
     path: '/studio/upload/:project_string_id',
-    component: 'upload_large', props: true
+    component: 'upload_large',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Upload"
+    }
   },
   {
     path: '/review/ai/new/:string_ai_id', component: 'review_ai', props: true,
@@ -556,7 +561,10 @@ const routerOptions = [
     path: '/project/:project_string_id/export',
     component: 'export/export_home',
     props: true,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Export"
+    }
   },
   {
     path: '/',
