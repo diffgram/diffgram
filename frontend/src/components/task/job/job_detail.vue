@@ -1,7 +1,5 @@
 <template>
   <div class="job-detail-container">
-    <stats_panel />
-
     <h1 class="pa-2">
       <v-layout>
         <div
@@ -18,6 +16,15 @@
         </div>
       </v-layout>
     </h1>
+    <v-btn
+      @click="api_get_next_task_scoped_to_job(job_id)"
+      :loading="next_task_loading"
+      :disabled="next_task_loading"
+      color="primary"
+      large
+    >
+      Start Annotating
+    </v-btn>
 
     <v-tabs v-model="tab" color="primary">
       <v-tab v-for="item in items" :key="item.text">
@@ -26,6 +33,7 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
+          <stats_panel />
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -315,6 +323,24 @@ export default Vue.extend({
   },
   computed: {},
   methods: {
+    api_get_next_task_scoped_to_job: async function (job_id) {
+      try {
+        this.next_task_loading = true;
+        const response = await axios.post(
+          `/api/v1/job/${job_id}/task/next`,
+          {}
+        );
+        if (response.status === 200) {
+          let task = response.data.task;
+          const routeData = `/task/${task.id}`;
+          this.$router.push(routeData);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        this.next_task_loading = false;
+      }
+    },
     api_update_job: function () {
       /*
        * Assumes one job at a time
