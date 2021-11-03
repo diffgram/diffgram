@@ -85,7 +85,8 @@ export default Vue.extend({
         path:  `/task/-1`,
         query: {
           edit_schema: true,
-          create_new_on_load: true
+          create_new_on_load: true,
+          view_only: true
           }
       });
       window.open(routeData.href, '_blank');
