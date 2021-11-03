@@ -1,7 +1,7 @@
 <template>
   <v-layout class="d-flex flex-column">
-    <h1 class="font-weight-medium text--primary">Project Members</h1>
-    <p class="text--primary">Manage & Add New Member to your project.</p>
+    <h1 class="font-weight-medium text--primary">Invite Your Team</h1>
+    <p class="text--primary">Add people to your project.</p>
     <v-row >
       <v-col cols="12">
         <share_new_member
