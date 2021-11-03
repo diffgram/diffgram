@@ -243,6 +243,9 @@ export default Vue.extend({
     };
   },
   async created() {
+    if (window.Cypress) {
+      window.LoginComponent = this;
+    }
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
     this.mailgun = mailgun;
