@@ -59,7 +59,6 @@
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
               :disabled="!project_string"
               :icon_style="true"
-              :large="true"
               color="primary"
               @click="open_pipelines_dialog"
             >
@@ -72,7 +71,6 @@
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
               :disabled="!project_string"
               :icon_style="true"
-              :large="true"
               color="primary"
               @click="$router.push('/job/launches')"
             >
@@ -88,7 +86,6 @@
               @click="open_confirm_dialog_sample_data"
               icon="mdi-apps-box"
               :bottom="true"
-              :large="true"
               :loading="loading_create_sample_data"
               color="primary"
               :icon_style="true">
@@ -102,7 +99,6 @@
               :disabled="loading"
               :loading="loading"
               :icon_style="true"
-              :large="true"
               color="primary"
               @click="job_list_api"
             >
