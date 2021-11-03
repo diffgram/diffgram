@@ -3522,11 +3522,13 @@
 
         get_zoom_region_of_instance: function (instance){
           let max_zoom = 10
+          let padding = -2
           let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
           let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
-          let padding = -2
-          return max_zoom_to_show_all + padding
+          let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y)
+          max_zoom_to_show_all += padding
+          max_zoom_to_show_all = this.clamp_values(max_zoom_to_show_all, this.canvas_scale_global, max_zoom)
+          return max_zoom_to_show_all
         },
 
         snap_to_instance: function (instance){
@@ -6557,7 +6559,8 @@
         annotation_show_change_item() {
           let do_change_item
 
-          if (this.file.type == "video"){
+          let file = this.file || this.task.file
+          if (file.type == "video"){
             if (this.$refs.video_controllers.at_end_of_video == true) {
               do_change_item = true
             }
@@ -6565,7 +6568,7 @@
               this.$refs.video_controllers.move_frame(1)
             }           
           }
-          if (this.file.type == "image") {
+          if (file.type == "image") {
             do_change_item = true
           }
 
