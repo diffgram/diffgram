@@ -112,7 +112,10 @@ const routerOptions = [
       // why do we need this "override" again?
       project_string_id: route.params.project_string_id
     }),
-    meta: {requiresAuth: true},
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Schema " + route.params.project_string_id
+    }),
     name: 'labels'
   },
 
@@ -171,11 +174,13 @@ const routerOptions = [
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
     component: 'annotation/annotation_ui_factory',
-    props: true, meta: {
+    props: true,
+    meta: (route) => ({
       requiresAuth: true,
       available_on_public_project: true,
-      hide_default_menu: true
-    },
+      hide_default_menu: true,
+      title: "Studio " + route.params.project_string_id
+    }),
     name: 'studio'
   },
   {
@@ -353,7 +358,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Tasks List"
     }
   },
   {
@@ -393,7 +399,10 @@ const routerOptions = [
     path: '/job/:job_id',
     component: 'task/job/job_detail',
     props: true,
-    meta: {requiresAuth: true},
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Job #" + route.params.job_id
+    }),
     name: "job_detail"
   },
   {
@@ -449,10 +458,11 @@ const routerOptions = [
     path: '/connection/list',
     alias: ['/connections/list'],  // plural
     component: 'connection/connection_list',
-    meta: {
+    meta: (route) => ({
       requiresAuth: true,
-      hide_default_menu: true
-    }
+      hide_default_menu: true,
+      title: "Connections"
+    })
   },
   /*
    */
@@ -644,7 +654,11 @@ router.afterEach((to, from) => {
     // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
     Vue.nextTick(() => {
         console.log(to)
-        document.title = to.meta(to).title || DEFAULT_TITLE;
+        if (typeof(to.meta) === 'function') {
+          document.title = to.meta(to).title || DEFAULT_TITLE;
+        } else {
+          document.title = to.meta.title || DEFAULT_TITLE;
+        }
     });
 });
 
