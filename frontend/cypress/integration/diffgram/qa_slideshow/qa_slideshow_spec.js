@@ -25,6 +25,14 @@ describe("Test set for QA slideshow", () => {
     }
   });
 
+  it('[In Studio] Hides ghost instance info box to ensure out of way for instance templates', () => {
+      cy.get('[data-cy=more_button]').click({force: true});
+      cy.wait(100)
+      cy.get('[data-cy=advanced_setting]').click({force: true})
+      cy.wait(100)
+      cy.get('[data-cy=show_ghost_instances]').click({force: true})
+  })
+
   it("Tests if slideshow focuses on annotations correctly", () => {
     cy.get('[data-cy="open-annotation-show-menu"]').click();
     cy.wait(100);
