@@ -89,7 +89,8 @@ job_new_spec_list = [
     },
     {"label_file_list": {
         'default': None,
-        'kind': list
+        'kind': list,
+        'allow_empty': True,
         }
     },
     {"file_handling": {
@@ -214,7 +215,8 @@ update_job_spec_list = [
     },
     {"label_file_list": {
         'default': None,
-        'kind': list
+        'kind': list,
+        'allow_empty': True
         }
     },
     {"member_list_ids": {
@@ -648,20 +650,21 @@ def new_or_update_core(session,
 
         job.default_userscript_id = default_userscript.id
 
-    # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
-    job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)
-    if is_updating:
-        # Recreate labels information dict an update all tasks accordingly
-        """
-        The build label file list just does the raw IDs
-        job_label_attach does all the other magic
-        ie color maps, and also in future expansion the
-        label mode handling (like the "closed all availble")
+    if label_file_list:
+        # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
+        job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)
+        if is_updating:
+            # Recreate labels information dict an update all tasks accordingly
+            """
+            The build label file list just does the raw IDs
+            job_label_attach does all the other magic
+            ie color maps, and also in future expansion the
+            label mode handling (like the "closed all availble")
 
-        """
-        # Not really sure if tasks can exist while in draft mode but might be good idea to update anyways.
-        task_template_label_attach(session, job)
-        log = update_tasks(job, session, log)
+            """
+            # Not really sure if tasks can exist while in draft mode but might be good idea to update anyways.
+            task_template_label_attach(session, job)
+            log = update_tasks(job, session, log)
 
     if is_updating and job.share_type != share:
         job.share_type = share
