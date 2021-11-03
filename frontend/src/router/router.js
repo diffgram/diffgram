@@ -68,10 +68,11 @@ const routerOptions = [
     path: '/task/:task_id_prop',
     component: 'annotation/annotation_ui_factory',
     props: true,
-    meta: {
+    meta: (route) => ({
       requiresAuth: true,
-      hide_default_menu: true
-    },
+      hide_default_menu: true,
+      title: "#" + route.params.task_id_prop
+    }),
     name: "task_annotation"
   },
   {
@@ -575,10 +576,13 @@ const fetch_public_project = async function(project_string_id){
   }
   return false;
 }
+
+
 const routes = routerOptions.map(route => {
   return {
     ...route,
     component: () => import(`@/components/${route.component}.vue`),
+
     beforeEnter: async (to, from, next) => {
 
       if (to.matched.some(record => record.meta.requiresAuth)) {
@@ -629,12 +633,21 @@ const routes = routerOptions.map(route => {
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes,
   mode: 'history'
 })
 
+const DEFAULT_TITLE = 'Diffgram';
+router.afterEach((to, from) => {
+    // Use next tick to handle router history correctly
+    // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
+    Vue.nextTick(() => {
+        console.log(to)
+        document.title = to.meta(to).title || DEFAULT_TITLE;
+    });
+});
 
-
+export default router;
 
 
