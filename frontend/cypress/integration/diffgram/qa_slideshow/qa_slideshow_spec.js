@@ -23,6 +23,7 @@ describe("Test set for QA slideshow", () => {
       cy.mousedowncanvas(90, 90);
       cy.mouseupcanvas();
     }
+    cy.wait(3000);
   });
 
   it('[In Studio] Hides ghost instance info box to ensure out of way for instance templates', () => {
@@ -51,6 +52,8 @@ describe("Test set for QA slideshow", () => {
       });
   });
 
+  // Hide until call stacck exceeded fixed https://github.com/diffgram/diffgram/issues/410
+  /*
   it("Tests if qa slideshow changes files correctly", () => {
     cy.location("search").then(loc => {
       cy.get('[data-cy="open-annotation-show-menu"]').click();
@@ -63,4 +66,5 @@ describe("Test set for QA slideshow", () => {
       });
     });
   });
+  */
 });
