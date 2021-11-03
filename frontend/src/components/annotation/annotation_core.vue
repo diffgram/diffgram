@@ -1410,7 +1410,7 @@
       },
       computed: {
         filtered_instance_type_list: function(){
-          if(!this.$props.task){
+          if(!this.$props.task || !this.$props.task.job){
             return this.instance_type_list
           }
           if(!this.$props.task.job.ui_schema){
