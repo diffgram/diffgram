@@ -14,7 +14,7 @@ class TaskEvent(Base, SerializerMixin):
 
     # The job context on where this sync happened.
     job_id = Column(Integer, ForeignKey('job.id'))
-    job = relationship("Job")
+    job = relationship("Job", foreign_keys = [job_id])
 
     # For knowing in what project did the sync occurred.
     project_id = Column(Integer, ForeignKey('project.id'))
@@ -91,6 +91,16 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_complete',
+        )
+
+    @staticmethod
+    def generate_task_in_progress_event(session, task) -> 'TaskEvent':
+        return TaskEvent.new(
+            session = session,
+            project_id = task.project_id,
+            job_id = task.job_id,
+            task_id = task.id,
+            event_type = 'task_in_progress',
         )
 
     @staticmethod

@@ -2,7 +2,7 @@
 from methods.regular.regular_api import *
 from shared.database.task.task import Task
 from shared.utils.task.task_new import create_review_sub_task
-
+from shared.database.task.task_event import TaskEvent
 
 @routes.route('/api/v1/task/update',
               methods = ['POST'])
@@ -90,19 +90,35 @@ class Task_Update():
         self.log = regular_log.default()
 
     def main(self):
-
+        old_status = self.task.status
         if self.mode == 'toggle_deferred':
             self.defer()
         if self.status and self.status != 'complete':  # We don't allow to completed tasks here, use task_complete.
             self.change_status()
         regular_methods.try_to_commit(self)
+        self.emit_task_event_based_on_status(old_status, self.task)
         self.task.job.refresh_stat_count_tasks(self.session)
         return
+
+    def emit_task_event_based_on_status(self, old_status, task):
+        if task.status == 'complete':
+            if old_status != 'completed':
+                TaskEvent.generate_task_creation_event(self.session, task)
+        if task.status == 'in_progress':
+            if old_status != 'in_progress':
+                TaskEvent.generate_task_in_progress_event(self.session, task)
+        if task.status == 'in_review':
+            if old_status != 'in_review':
+                TaskEvent.generate_task_review_start_event(self.session, task)
+        if task.status == 'in_progress':
+            if old_status == 'in_review':
+                TaskEvent.gene(self.session, task)
 
     def change_status(self):
         if self.task.status != 'archived' and self.status == 'archived':
             self.task.job.stat_count_tasks -= 1
             self.session.add(self.task.job)
+
         self.task.status = self.status
 
     def defer(self):
