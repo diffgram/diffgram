@@ -12,26 +12,33 @@
           <v-divider></v-divider>
           <v-stepper-step
             :complete="step > 2"
-            step="2"
+            step="2"                          
+            :editable="project_string_id != undefined"
           >
             Label Schema
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             :complete="step > 3"
-            step="3">
+            step="3"
+            :editable="project_string_id != undefined"
+                          >
             Upload
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             :complete="step > 4"
-            step="4">
+            step="4"
+            :editable="project_string_id != undefined"
+                          >
             Invite Team
           </v-stepper-step>
           <v-divider></v-divider>
           <v-stepper-step
             :complete="step > 5"
-            step="5">
+            step="5"
+            :editable="project_string_id != undefined"
+                          >
             Tasks
           </v-stepper-step>
 
@@ -62,64 +69,55 @@
           </v-stepper-content>
 
           <v-stepper-content step="3" style="height: 100%">
-            <div class="d-flex justify-end">
-              <v-btn x-small
-                     @click="go_to_step(4)"
-                     class="text-right ml-auto"
-                     color="secondary">
 
-                <v-icon>mdi-debug-step-over</v-icon>
-                Skip, I will upload files later
-              </v-btn>
-            </div>
             <upload_step_wizard
               @upload_success="on_upload_success"
               :project_string_id="project_string_id">
 
             </upload_step_wizard>
 
+            <wizard_navigation
+              @next="go_to_step(4)"
+              @skip="go_to_step(4)"
+              @back="go_back_a_step()">
+            </wizard_navigation>
+
           </v-stepper-content>
           <v-stepper-content step="4" style="height: 100%">
-            <div class="d-flex justify-end">
-              <v-btn x-small
-                     @click="go_to_step(5)"
-                     class="text-right ml-auto"
-                     color="secondary">
 
-                <v-icon>mdi-debug-step-over</v-icon>
-                Skip, I will invite members later
-              </v-btn>
-            </div>
             <project_members_step
               @member_invited="on_member_invited"
               :project_string_id="project_string_id">
             </project_members_step>
-            <div class="d-flex justify-end">
-              <v-btn x-large
-                     @click="go_to_step(5)"
-                     :disabled="!member_invited"
-                     class="text-right ml-auto"
-                     color="secondary">
-                Continue
-              </v-btn>
-            </div>
+
+            <wizard_navigation
+              @next="go_to_step(5)"
+              @skip="go_to_step(5)"
+              @back="go_back_a_step()">
+            </wizard_navigation>
+
           </v-stepper-content>
 
           <v-stepper-content step="5" style="height: 100%">
-            <div class="d-flex justify-end">
-              <v-btn x-small
-                     @click="go_to_home"
-                     class="text-right ml-auto"
-                     color="secondary">
 
-                <v-icon>mdi-debug-step-over</v-icon>
-                Skip, I'll create the task template later
-              </v-btn>
-            </div>
-            <welcome_builder
+            <wizard_navigation
+              @skip="go_to_home()"
+              @back="go_back_a_step()"
+              :next_visible="false">
 
-            >
-            </welcome_builder>
+              <template slot="next">
+
+                <v-btn
+                  x-large
+                  @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/job/new')"
+                  color="success"
+                  data-cy="wizard_navigation_next"
+                       >
+                  Create Tasks
+                </v-btn>
+     
+              </template>
+            </wizard_navigation>
 
           </v-stepper-content>
 
@@ -154,10 +152,11 @@ export default Vue.extend( {
     return {
       step: 1,
       global_progress: 0,
-      project_string_id: null,
+      project_string_id: undefined,
       member_invited: false,
     }
   },
+
   computed: {
 
   },
@@ -175,7 +174,7 @@ export default Vue.extend( {
     },
     on_project_created: function(project){
       this.project_string_id = project.project_string_id;
-      this.step = 2;
+      this.go_to_step(2);
     },
     go_to_step: function(step){
       this.step = step
