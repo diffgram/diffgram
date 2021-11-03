@@ -271,7 +271,6 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(new_job.instance_type, 'box')
         self.assertEqual(new_job.launch_datetime, now)
         self.assertEqual(new_job.file_count, 0)
-        self.assertEqual(new_job.label_dict['label_file_list'], [])
         self.assertEqual(new_job.file_handling, 'isolate')
         self.assertEqual(new_job.type, 'exam')
         # Now testing job update
