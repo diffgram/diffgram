@@ -76,7 +76,7 @@
 
 <wizard_navigation>
 
-   <template name="back">
+   <template slot="back">
       // Example of custom back button
     </template>
 
