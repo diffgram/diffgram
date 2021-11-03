@@ -335,6 +335,7 @@
           color="primary"
           :icon="anootations_show_icon"
           :close_by_button="true"
+          :disabled="loading || annotations_loading || full_file_loading"
         >
         <template slot="content">
           <v-btn
