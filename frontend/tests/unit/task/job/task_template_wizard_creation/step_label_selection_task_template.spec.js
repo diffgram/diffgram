@@ -73,7 +73,7 @@ describe("step_label_selection_task_template.vue", () => {
     });
     wrapper.vm.verify_labels()
     expect(wrapper.vm.error).toMatchObject({
-      name: 'At least 1 user should be assigned to the task template.'
+      name: 'At least 1 label should be assigned to the task template.'
     })
   });
 
