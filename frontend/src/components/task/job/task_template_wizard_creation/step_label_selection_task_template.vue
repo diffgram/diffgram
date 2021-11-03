@@ -88,7 +88,7 @@
         verify_labels: function(){
           if(!this.$props.job.label_file_list || this.$props.job.label_file_list.length === 0){
             this.error = {
-              name: 'At least 1 user should be assigned to the task template.'
+              name: 'At least 1 label should be assigned to the task template.'
             }
             return false
           }

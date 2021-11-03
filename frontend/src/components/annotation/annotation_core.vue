@@ -1410,7 +1410,7 @@
       },
       computed: {
         filtered_instance_type_list: function(){
-          if(!this.$props.task){
+          if(!this.$props.task || !this.$props.task.job){
             return this.instance_type_list
           }
           if(!this.$props.task.job.ui_schema){
@@ -3513,7 +3513,7 @@
 
         auto_revert_snapped_to_instance_if_unchanged: function (instance) {
           if (this.snapped_to_instance == instance) {
-            this.reset_to_full()
+            this.focus_instance_show_all()
             this.snapped_to_instance = undefined
             return true
           }
@@ -3522,11 +3522,13 @@
 
         get_zoom_region_of_instance: function (instance){
           let max_zoom = 10
-          let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
-          let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y) * this.canvas_scale_global
           let padding = -2
-          return max_zoom_to_show_all + padding
+          let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y)
+          max_zoom_to_show_all += padding
+          max_zoom_to_show_all = this.clamp_values(max_zoom_to_show_all, this.canvas_scale_global, max_zoom)
+          return max_zoom_to_show_all
         },
 
         snap_to_instance: function (instance){
@@ -3538,17 +3540,15 @@
             return
           }
 
+          this.$refs.instance_detail_list.focus_mode = true
+          this.$refs.instance_detail_list.change_instance(instance, this.instance_focused_index)
+
           this.snapped_to_instance = instance
 
           let point = this.get_focus_point_of_instance(instance)
 
-          let move = {
-            x: point.x,
-            y: point.y
-          }
-
           let scale = this.get_zoom_region_of_instance(instance);
-          this.canvas_mouse_tools.zoom_to_point(move, scale)
+          this.canvas_mouse_tools.zoom_to_point(point, scale)
           this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
@@ -6557,8 +6557,27 @@
           this.annotation_show_type = show_type
         },
         annotation_show_change_item() {
-          if (this.annotation_show_type === "task") return this.trigger_task_change("next", this.$props.task, true)
-          this.change_file("next")
+          let do_change_item
+
+          let file = this.file || this.task.file
+          if (file.type == "video"){
+            if (this.$refs.video_controllers.at_end_of_video == true) {
+              do_change_item = true
+            }
+            else {
+              this.$refs.video_controllers.move_frame(1)
+            }           
+          }
+          if (file.type == "image") {
+            do_change_item = true
+          }
+
+          if (do_change_item == true) {
+            if (this.annotation_show_type === "task") {
+              return this.trigger_task_change("next", this.$props.task, true)
+            }
+            this.change_file("next")
+          }
         },
         set_annotation_show_duration(duration){
           this.annotation_show_duration_per_instance = (duration + 1) * 1000
