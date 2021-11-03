@@ -56,7 +56,6 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result['member_created_id'], task_event.member_created_id)
         self.assertEqual(result['event_type'], task_event.event_type)
 
-
     def test_generate_task_creation_event(self):
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
@@ -64,7 +63,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         task = data_mocking.create_task({'name': 'test task', 'file': file, 'job_id': job.id}, self.session)
-        task_event = TaskEvent.generate_task_creation_event(task, self.session)
+        task_event = TaskEvent.generate_task_creation_event(self.session, task)
 
         result = task_event.serialize()
 
@@ -73,3 +72,37 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result['project_id'], task_event.project_id)
         self.assertEqual(result['member_created_id'], task_event.member_created_id)
         self.assertEqual(result['event_type'], 'task_created')
+
+    def test_generate_task_completion_event(self):
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task = data_mocking.create_task({'name': 'test task', 'file': file, 'job_id': job.id}, self.session)
+        task_event = TaskEvent.generate_task_completion_event(self.session, task)
+
+        result = task_event.serialize()
+
+        self.assertEqual(result['task_id'], task_event.task_id)
+        self.assertEqual(result['job_id'], task_event.job_id)
+        self.assertEqual(result['project_id'], task_event.project_id)
+        self.assertEqual(result['member_created_id'], task_event.member_created_id)
+        self.assertEqual(result['event_type'], 'task_completed')
+
+    def test_generate_task_review_complete(self):
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task = data_mocking.create_task({'name': 'test task', 'file': file, 'job_id': job.id}, self.session)
+        task_event = TaskEvent.generate_task_review_complete_event(self.session, task)
+
+        result = task_event.serialize()
+
+        self.assertEqual(result['task_id'], task_event.task_id)
+        self.assertEqual(result['job_id'], task_event.job_id)
+        self.assertEqual(result['project_id'], task_event.project_id)
+        self.assertEqual(result['member_created_id'], task_event.member_created_id)
+        self.assertEqual(result['event_type'], 'task_review_complete')

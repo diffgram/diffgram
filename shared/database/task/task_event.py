@@ -46,7 +46,7 @@ class TaskEvent(Base, SerializerMixin):
     @staticmethod
     def generate_task_creation_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
-            session,
+            session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -56,7 +56,7 @@ class TaskEvent(Base, SerializerMixin):
     @staticmethod
     def generate_task_completion_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
-            session,
+            session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -66,7 +66,7 @@ class TaskEvent(Base, SerializerMixin):
     @staticmethod
     def generate_task_review_start_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
-            session,
+            session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
@@ -76,11 +76,21 @@ class TaskEvent(Base, SerializerMixin):
     @staticmethod
     def generate_task_request_change_event(session, task) -> 'TaskEvent':
         return TaskEvent.new(
-            session,
+            session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_request_changes',
+        )
+
+    @staticmethod
+    def generate_task_review_complete_event(session, task) -> 'TaskEvent':
+        return TaskEvent.new(
+            session = session,
+            project_id = task.project_id,
+            job_id = task.job_id,
+            task_id = task.id,
+            event_type = 'task_review_complete',
         )
 
     @staticmethod
@@ -101,7 +111,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
         if add_to_session:
-            session.add(task_id)
+            session.add(task_event)
         if flush_session:
             session.flush()
         return task_event
