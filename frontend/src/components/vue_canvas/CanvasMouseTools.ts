@@ -24,6 +24,11 @@ export class CanvasMouseTools {
   }
 
   public zoom_to_point(point, scale){
+    if (scale <= this.canvas_scale_global) {
+      this.reset_transform_with_global_scale();
+      this.scale = this.canvas_scale_global;
+      return
+    }
     this.reset_transform_with_global_scale();
     this.scale = this.canvas_scale_global;
     this.canvas_ctx.translate(point.x, point.y);
