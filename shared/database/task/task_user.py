@@ -6,7 +6,7 @@ class TaskUser(Base, SerializerMixin):
     """
         For Management of Assignees and Reviewers.
     """
-    __tablename__ = 'task_member'
+    __tablename__ = 'task_user'
     id = Column(BIGINT, primary_key = True)
 
     # The job context on where this sync happened.

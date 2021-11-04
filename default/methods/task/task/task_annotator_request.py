@@ -1,5 +1,5 @@
 from methods.regular.regular_api import *
-
+from methods.task.task.task_update import Task_Update
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/task/next',
@@ -56,7 +56,12 @@ def get_next_task_by_project(
 
     if task:
         task.add_assignee(session, user)
-        task.status = 'in_progress'
+        task_update_manager = Task_Update(
+            session = session,
+            task = task,
+            status = 'in_progress'
+        )
+        task_update_manager.main()  # This updates the task status
         session.add(task)
         session.add(user)
 
@@ -83,7 +88,13 @@ def get_next_task_by_job(
 
     if task:
         task.add_assignee(session, user)
-        task.status = 'in_progress'
+        task_update_manager = Task_Update(
+            session = session,
+            task = task,
+            status = 'in_progress'
+        )
+        # set status
+        task_update_manager.main()  # This updates the task status
         session.add(task)
         session.add(user)
 

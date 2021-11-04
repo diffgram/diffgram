@@ -200,7 +200,7 @@ class Task(Base):
         direction = 'next',
         assign_to_user = False,
         skip_locked = True):
-
+        from methods.task.task.task_update import Task_Update
         query = session.query(Task).filter(
             Task.status == 'available',
             Task.job_id == job_id)
@@ -215,16 +215,21 @@ class Task(Base):
             query = query.with_for_update(skip_locked = True)
 
         task = query.first()
-
+        print('AAA', task)
         if assign_to_user is True:
 
             # TODO check if job has open status, or user is assigned to job
             # For now this assumes that the user is already on correct job
 
             if task:
-                Task.assign_task_to_user(
+                task.add_assignee(session, user)
+                task_update_manager = Task_Update(
+                    session = session,
                     task = task,
-                    user = user)
+                    status = 'in_progress'
+                )
+                # set status
+                task_update_manager.main()
                 session.add(task)
                 session.add(user)
 

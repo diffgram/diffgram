@@ -218,7 +218,11 @@ def create_instance_template(instance_template_data, session):
     regular_methods.commit_with_rollback(session)
     return instance_template
 
+def create_user(user_data, session):
 
+    user = User(
+
+    )
 def create_file(file_data, session):
     file = File(
         project_id = file_data.get('project_id'),

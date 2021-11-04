@@ -7,7 +7,7 @@ except:
 from shared.utils.task import task_file_observers
 
 from shared.utils.sync_events_manager import SyncEventManager
-
+from shared.database.task.task_event import TaskEvent
 
 def task_complete(session,
                   task,
@@ -59,7 +59,7 @@ def task_complete(session,
 
     else:
         task.status = 'complete'
-
+        TaskEvent.generate_task_creation_event(session, task)
         job = task.job
 
         # Careful, this is only relevant for normal
