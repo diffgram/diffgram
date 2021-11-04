@@ -528,7 +528,9 @@ const routerOptions = [
   {
     path: '/user/login/:magic_auth?',
     component: 'user/login',
-    props: true
+    props: true,
+    meta: (route) => ({
+    })
   },
   {
     path: '/user/account/password/set',
@@ -550,7 +552,9 @@ const routerOptions = [
   {
     path: '/user/edit',
     component: 'user/edit',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true
+      }
   },
   {
     path: '/a/project/new',
@@ -595,56 +599,35 @@ const fetch_public_project = async function(project_string_id){
   return false;
 }
 
+const try_load_public_project = async function(available_on_public_project){
+
+  if(available_on_public_project == true){
+    const project_string_id = to.params.project_string_id;
+    const project = await fetch_public_project(project_string_id);
+    if(project){
+      // If project exists, this is a public project and we can see it
+      store.commit('set_current_public_project', project);
+      return true
+    }
+    return false
+  }
+  return false
+}
+
+const get_meta = function(route){
+  if (typeof(route.meta) === 'function') {
+    return route.meta(route)
+  } else {
+    return route.meta
+  }
+}
+
+
 
 const routes = routerOptions.map(route => {
   return {
     ...route,
-    component: () => import(`@/components/${route.component}.vue`),
-
-    beforeEnter: async (to, from, next) => {
-
-      if (to.matched.some(record => record.meta.requiresAuth)) {
-        // this route requires auth, check if logged in
-        // if not, redirect to login page.
-
-        if (store.state.user.logged_in !== true) {
-
-          // Test if the route can be accessed on a public project
-          if(to.matched.some(record => record.meta.available_on_public_project)){
-            const project_string_id = to.params.project_string_id;
-            const project = await fetch_public_project(project_string_id);
-            if(project){
-              // If project exists, this is a public project and we can see it
-              store.commit('set_current_public_project', project);
-              next();
-            }
-            else{
-              // Otherwise redirect to login
-              next({
-                path: '/user/login',
-                query: {redirect: to.fullPath}
-              })
-            }
-          }
-          else{
-            next({
-              path: '/user/login',
-              query: {redirect: to.fullPath}
-            })
-          }
-        }
-        else {
-          next()
-        }
-      }
-
-
-
-        else {
-        next() // make sure to always call next()!
-      }
-    }
-
+    component: () => import(`@/components/${route.component}.vue`)
   }
 })
 
@@ -656,17 +639,41 @@ const router = new Router({
   mode: 'history'
 })
 
+router.beforeEach((to, from, next) => {
+
+  const meta = get_meta(to)
+
+  // No Auth Required
+  if (!meta.requiresAuth) {
+    return next()
+  }
+
+  // User is logged in already
+  if (store.state.user.logged_in == true) {
+    return next()
+  }
+
+  // If user is not logged in
+  const loaded_valid_public_project = try_load_public_project(meta.available_on_public_project)
+  if (loaded_valid_public_project == true) {
+    return next()
+  } else {
+    // redirect
+    return next({
+      path: '/user/login',
+      query: {redirect: to.fullPath}
+    })
+  }
+
+})
+
 const DEFAULT_TITLE = 'Diffgram';
 router.afterEach((to, from) => {
     // Use next tick to handle router history correctly
     // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
     Vue.nextTick(() => {
-        console.log(to)
-        if (typeof(to.meta) === 'function') {
-          document.title = to.meta(to).title || DEFAULT_TITLE;
-        } else {
-          document.title = to.meta.title || DEFAULT_TITLE;
-        }
+        const meta = get_meta(to)
+        document.title = meta.title || DEFAULT_TITLE;
     });
 });
 
