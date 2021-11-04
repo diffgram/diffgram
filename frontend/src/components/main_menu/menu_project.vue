@@ -11,6 +11,7 @@
         <v-btn  v-on="on"
                 color="primary"
                 id="open_main_menu"
+                data-cy="project_menu_dropdown_toggle"
                 text
                 :disabled="false">
           <v-icon left> mdi-lightbulb </v-icon>

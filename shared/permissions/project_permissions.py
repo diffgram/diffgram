@@ -174,8 +174,8 @@ class Project_permissions():
 			if project is None:
 				raise Forbidden(user_denied_message + " Failed to Get Project ")
 
-			if Project_permissions.check_if_project_is_public(project, Roles):
-				return True
+		if Project_permissions.check_if_project_is_public(project, Roles):
+			return True
 
 		# Must come after public project check, otherwise blocks public projects since auth is None
 		# Must come before a human user based check like LoggedIn()
