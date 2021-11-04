@@ -10,7 +10,7 @@ describe('UI Schema', () => {
 
       it('Creates New', () => {
 
-        cy.visit(`http://localhost:8085/task/1/?edit_schema=true`);
+        cy.visit(`http://localhost:8085/task/-1/?edit_schema=true`);
 
         cy.get('[data-cy="ui_schema_new"]').click({force: true})
         cy.wait(1000)
