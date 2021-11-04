@@ -311,10 +311,14 @@ import Vue from "vue"; export default Vue.extend( {
       this.tab = 1;
     }
     this.job_name = this.$store.state.job.current.name
+    this.set_document_title()
   },
   computed: {
   },
   methods: {
+      set_document_title() {
+        document.title = this.job_name
+      },
       api_update_job: function () {
       /*
         * Assumes one job at a time
@@ -343,7 +347,7 @@ import Vue from "vue"; export default Vue.extend( {
         this.has_changes = false
         this.update_label_file_list = null
         this.$store.commit('set_job', response.data.job)
-
+        this.set_document_title()
       })
       .catch(error => {
         this.loading = false
