@@ -8,10 +8,54 @@
              @click="$router.push('/job/list')">
           {{$store.state.project.current.name}} / 
         </div>
-        <div v-if="$store.state.job.current.id == this.job_id"
-             class="font-weight-normal pl-2">
-        {{ $store.state.job.current.name }}
+
+        <div v-if="$store.state.job.current.id == this.job_id
+                && edit_name != true"
+             class="font-weight-normal pl-2"
+             @dblclick="edit_name=true"
+             >
+            {{ job_name }}
         </div>
+
+
+        <v-text-field
+          v-if="edit_name == true"
+          v-model="job_name"
+          @input="has_changes = true"
+          @keyup.enter="edit_name=false, api_update_job()"
+          solo
+          flat
+          style="font-size: 22pt"
+                >
+        </v-text-field>
+
+        <div>
+          <button_with_confirm
+            v-if="edit_name == true"
+            @confirm_click="api_update_job()"
+            color="primary"
+            icon="save"
+            :icon_style="true"
+            tooltip_message="Save Name Updates"
+            confirm_message="Confirm"
+            :loading="loading"
+            :disabled="loading">
+          </button_with_confirm>
+        </div>
+
+        <tooltip_button
+          v-if="edit_name == true"
+          tooltip_message="Cancel Name Edit"
+          datacy="cancel_edit_name"
+          @click="edit_name = false"
+          icon="mdi-cancel"
+          :icon_style="true"
+          color="primary"
+          :disabled="loading"
+                        >
+        </tooltip_button>
+
+
       </v-layout>
     </h1>
 
@@ -137,38 +181,16 @@
           <v_info_multiple :info="info">
           </v_info_multiple>
 
-          <v-text-field
-            v-if="edit_job == true"
-            v-model="job_name"
-            @input="has_changes = true"
-            solo
-            flat
-            style="font-size: 18pt"
-                  >
-          </v-text-field>
-
           <tooltip_button
-              v-if="edit_job == false"
+              v-if="edit_name == false"
               tooltip_message="Edit Name"
               tooltip_direction="bottom"
-              @click="edit_job = true"
+              @click="edit_name = true"
               icon="edit"
               :icon_style="true"
               color="primary">
           </tooltip_button>  
 
-          <button_with_confirm
-            v-if="edit_job == true"
-            @confirm_click="api_update_job()"
-            color="primary"
-            icon="save"
-            :icon_style="true"
-            :large="true"
-            tooltip_message="Save Name Updates"
-            confirm_message="Confirm"
-            :loading="loading"
-            :disabled="loading">
-          </button_with_confirm>
 
           <v-layout>
 
@@ -257,7 +279,7 @@ import Vue from "vue"; export default Vue.extend( {
       update_label_file_list: null,
       has_changes: false,
 
-      edit_job: false,
+      edit_name: false,
 
       job_name: undefined,
 
@@ -311,10 +333,14 @@ import Vue from "vue"; export default Vue.extend( {
       this.tab = 1;
     }
     this.job_name = this.$store.state.job.current.name
+    this.set_document_title()
   },
   computed: {
   },
   methods: {
+      set_document_title() {
+        document.title = this.job_name
+      },
       api_update_job: function () {
       /*
         * Assumes one job at a time
@@ -339,11 +365,11 @@ import Vue from "vue"; export default Vue.extend( {
 
         this.loading = false
         this.info = response.data.log.info
-        this.edit_job = false
+        this.edit_name = false
         this.has_changes = false
         this.update_label_file_list = null
         this.$store.commit('set_job', response.data.job)
-
+        this.set_document_title()
       })
       .catch(error => {
         this.loading = false

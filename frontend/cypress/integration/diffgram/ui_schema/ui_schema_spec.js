@@ -10,7 +10,7 @@ describe('UI Schema', () => {
 
       it('Creates New', () => {
 
-        cy.visit(`http://localhost:8085/task/1/?edit_schema=true`);
+        cy.visit(`http://localhost:8085/task/-1/?edit_schema=true`);
 
         cy.get('[data-cy="ui_schema_new"]').click({force: true})
         cy.wait(1000)
@@ -26,7 +26,7 @@ describe('UI Schema', () => {
 
         // Triggers mouse move away
         cy.get('[data-cy="toolbar_zoom_info"]').trigger('mouseover')
-        cy.wait(400)
+        cy.wait(1000)
 
         const getStore = () => cy.window().its('app.$store')
 
