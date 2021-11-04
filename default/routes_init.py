@@ -129,3 +129,5 @@ def do_routes_importing():
     from methods.task.credential.credential_list import credential_list_api
     from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api
     from methods.task.credential.credential_type_update import update_credential_type_image_api
+
+    from methods.task.stats.v2.task_stats import job_stat
