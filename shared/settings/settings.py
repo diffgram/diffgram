@@ -80,8 +80,8 @@ EXPORT_DIR = "export/"
 # Email Settings
 DEFAULT_ENGINEERING_EMAIL = os.environ.get('DEFAULT_ENGINEERING_EMAIL', "")
 EMAIL_VALIDATION = env_adapter.bool(os.environ.get('EMAIL_VALIDATION', False))
-MAILGUN_KEY = os.environ.get('MAILGUN_KEY')
-EMAIL_DOMAIN_NAME = os.environ.get('EMAIL_DOMAIN_NAME')
+MAILGUN_KEY = os.getenv('MAILGUN_KEY')
+EMAIL_DOMAIN_NAME = os.getenv('EMAIL_DOMAIN_NAME')
 
 
 # Walrus Settings

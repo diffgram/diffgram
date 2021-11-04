@@ -680,6 +680,11 @@ export default Vue.extend( {
           'icon': 'mdi-file',
           'color': 'orange'
         },
+        {'display_name': 'Task Status',
+          'name': 'task_status',
+          'icon': 'mdi-list-status',
+          'color': 'green'
+        },
       ],
 
       scope_icon_list : [

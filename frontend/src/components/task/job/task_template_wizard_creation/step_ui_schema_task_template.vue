@@ -82,10 +82,11 @@ export default Vue.extend({
     },
     open_ui_schema_creation: function () {
       let routeData = this.$router.resolve({
-        path: `/studio/annotate/${this.project_string_id}`,
+        path:  `/task/-1`,
         query: {
           edit_schema: true,
-          create_new_on_load: true
+          create_new_on_load: true,
+          view_only: true
           }
       });
       window.open(routeData.href, '_blank');

@@ -125,6 +125,7 @@ def do_routes_importing():
 
     from methods.ui_schema.ui_schema import ui_schema_new_api
 
+    from methods.configs.mailgun_is_set import mailgun_is_set
     from methods.task.credential.credential_type_new import new_credential_type_api
     from methods.task.credential.credential_list import credential_list_api
     from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api

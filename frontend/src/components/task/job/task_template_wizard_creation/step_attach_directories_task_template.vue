@@ -193,7 +193,6 @@
         },
         on_output_dirs_updated: async function(output_dir){
           this.output_dir = output_dir;
-          console.log('dirs updated', this.$refs.job_pipeline)
           if(!this.$refs.job_pipeline){
             return
           }

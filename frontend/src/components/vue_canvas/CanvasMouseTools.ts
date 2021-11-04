@@ -4,18 +4,10 @@ export class CanvasMouseTools {
   private mouse_position: any;
   private canvas_translate: any;
   private canvas_rectangle: any;
-  private canvas_transform: any;
   private canvas_ctx: any;
   private canvas_elm: any;
-  private zoom_stack: {point: {x: number, y: number}}[];
-  private previous_transform: any;
-  private panned_distance: {x: number, y: number}
-  private image: any;
   private scale: number;
-  private previous_zoom: number;
   private canvas_scale_global: number;
-  private translate_acc: { x: number, y: number };
-  private previous_point: { x: number, y: number };
   private canvas_width: any;
   private canvas_height: any;
 
@@ -27,14 +19,16 @@ export class CanvasMouseTools {
     this.canvas_ctx = this.canvas_elm.getContext('2d')
     this.scale = 1;
     this.canvas_scale_global = canvas_scale_global;
-    this.translate_acc = {x: 0, y: 0}
-    this.zoom_stack = [];
-    this.panned_distance = {x: 0, y: 0}
     this.canvas_width = canvas_width
     this.canvas_height = canvas_height
   }
 
   public zoom_to_point(point, scale){
+    if (scale <= this.canvas_scale_global) {
+      this.reset_transform_with_global_scale();
+      this.scale = this.canvas_scale_global;
+      return
+    }
     this.reset_transform_with_global_scale();
     this.scale = this.canvas_scale_global;
     this.canvas_ctx.translate(point.x, point.y);
@@ -117,7 +111,7 @@ export class CanvasMouseTools {
     return mouse_position;
   }
 
-  public map_point_from_matrix(x, y, matrix){
+  public map_point_from_matrix(x, y, matrix=this.canvas_ctx.getTransform()){
     let point = {'x': undefined, 'y': undefined}
     point.x = x * matrix.a + y * matrix.c + matrix.e;
     point.y = x * matrix.b + y * matrix.d + matrix.f;
@@ -130,13 +124,10 @@ export class CanvasMouseTools {
   public reset_transform_with_global_scale(){
     this.canvas_ctx.resetTransform();
     this.canvas_ctx.scale(this.canvas_scale_global, this.canvas_scale_global);
-    this.zoom_stack = [];
-    this.panned_distance = {x: 0, y: 0}
   }
 
   public perform_zoom_delta(zoom, point){
-    let point_changed = this.previous_point && (this.previous_point.x !== point.x || this.previous_point.y !== point.y)
-    // this.panned_distance = {x: 0, y: 0}
+
     this.scale = this.scale * zoom;
     if (this.scale <= this.canvas_scale_global) {
       this.reset_transform_with_global_scale();
@@ -165,8 +156,6 @@ export class CanvasMouseTools {
 
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
 
-    this.previous_zoom = zoom;
-    this.previous_point = point;
   }
 
   public zoom_wheel(event): void {
@@ -188,16 +177,9 @@ export class CanvasMouseTools {
       zoom_in = false
     }
     if(zoom_in){
-      this.zoom_stack.push({
-        point: point
-      });
     }
     else{
-      let elm = this.zoom_stack.pop()
-      if(elm){
-        point = elm.point
-        bounds_before_zoom = this.get_bounds()
-      }
+      bounds_before_zoom = this.get_bounds()
     }
 
     this.perform_zoom_delta(zoom, point)
@@ -213,9 +195,6 @@ export class CanvasMouseTools {
     let virtual_wheel = .4
     let center_point = {x: this.canvas_width / 2 , y: this.canvas_height / 2}
     let zoom = Math.exp(virtual_wheel * zoomIntensity);
-    this.zoom_stack.push({
-      point: center_point
-    });
     this.perform_zoom_delta(zoom, center_point)
   }
 
@@ -225,11 +204,7 @@ export class CanvasMouseTools {
     let zoomIntensity = 0.1;
     let virtual_wheel = -.4
     let zoom = Math.exp(virtual_wheel * zoomIntensity);
-    let elm = this.zoom_stack.pop()
-      if(elm){
-        point = elm.point
-        bounds_before_zoom = this.get_bounds()
-      }
+    bounds_before_zoom = this.get_bounds()
     this.perform_zoom_delta(zoom, point)
     this.auto_align_borders_on_zoom_out(bounds_before_zoom)
   }
