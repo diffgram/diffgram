@@ -14,7 +14,7 @@ class TaskUser(Base, SerializerMixin):
     task = relationship("Task", foreign_keys = [task_id])
 
     # For knowing in what project did the sync occurred.
-    user_id = Column(Integer, ForeignKey('user.id'))
+    user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User", foreign_keys = [user_id])
 
     relation = Column(String())  # ["assignee", "reviewer"]

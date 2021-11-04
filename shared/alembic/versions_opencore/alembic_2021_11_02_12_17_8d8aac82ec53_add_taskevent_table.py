@@ -35,7 +35,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index('index__task_event_task_id', 'instance')
-    op.drop_index('index__task_event_project_id', 'instance')
-    op.drop_index('index__task_event_job_id', 'instance')
+    op.drop_index('index__task_event_task_id', 'task_event')
+    op.drop_index('index__task_event_project_id', 'task_event')
+    op.drop_index('index__task_event_job_id', 'task_event')
     op.drop_table('task_event')

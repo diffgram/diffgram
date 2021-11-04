@@ -55,11 +55,11 @@ def get_next_task_by_project(
         user = user)
 
     if task:
-        Task.assign_task_to_user(
-            task = task,
-            user = user)
+        task.add_assignee(session, user)
+        task.status = 'in_progress'
         session.add(task)
         session.add(user)
+
 
     return task
 
@@ -82,9 +82,8 @@ def get_next_task_by_job(
                                           user = user)
 
     if task:
-        Task.assign_task_to_user(
-            task = task,
-            user = user)
+        task.add_assignee(session, user)
+        task.status = 'in_progress'
         session.add(task)
         session.add(user)
 

@@ -7,6 +7,8 @@ import shared.database.discussion.discussion_relation as dr
 import shared.database.discussion.discussion as discussion
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
+from shared.database.task.task_user import TaskUser
+from shared.database.user import User
 
 
 class Task(Base):
@@ -22,9 +24,9 @@ class Task(Base):
     """
 
     __tablename__ = 'task'
-    id = Column(BIGINT, primary_key=True)
+    id = Column(BIGINT, primary_key = True)
 
-    is_live = Column(Boolean, default=True)
+    is_live = Column(Boolean, default = True)
 
     # NEW
     """
@@ -69,19 +71,19 @@ class Task(Base):
     # Not sure if we need this...
     child_primary_id = Column(Integer, ForeignKey('task.id'))
     child_primary = relationship("Task",
-                                 uselist=False,
-                                 foreign_keys=[child_primary_id],
-                                 cascade="all, delete-orphan")
+                                 uselist = False,
+                                 foreign_keys = [child_primary_id],
+                                 cascade = "all, delete-orphan")
 
-    job_id = Column(Integer, ForeignKey('job.id'), index=True)
+    job_id = Column(Integer, ForeignKey('job.id'), index = True)
     job = relationship("Job")
 
-    kind = Column(String, default='human')  # human, machine, other?  or store "master" here...
-    task_type = Column(String(), default='draw')  # may be inherited from job?
+    kind = Column(String, default = 'human')  # human, machine, other?  or store "master" here...
+    task_type = Column(String(), default = 'draw')  # may be inherited from job?
     # draw, review, "master"
     job_type = Column(String)  # inherited from job ['Normal', 'Exam', 'Learning']
 
-    status = Column(String(), default='created', index=True)
+    status = Column(String(), default = 'created', index = True)
     # available vs created?
     # A a review task may get created but is not available
     # "active"
@@ -91,17 +93,17 @@ class Task(Base):
     # Maybe reported should be seperate
 
     file_original_id = Column(BIGINT, ForeignKey('file.id'))
-    file_original = relationship("File", foreign_keys=[file_original_id])
+    file_original = relationship("File", foreign_keys = [file_original_id])
 
-    file_id = Column(BIGINT, ForeignKey('file.id'), index=True)
-    file = relationship("File", foreign_keys=[file_id])
+    file_id = Column(BIGINT, ForeignKey('file.id'), index = True)
+    file = relationship("File", foreign_keys = [file_id])
 
     completion_directory_id = Column(Integer, ForeignKey('working_dir.id'))
-    completion_directory = relationship("WorkingDir", foreign_keys=[completion_directory_id])
+    completion_directory = relationship("WorkingDir", foreign_keys = [completion_directory_id])
 
     # The dir where the file for the task is coming from.
     incoming_directory_id = Column(Integer, ForeignKey('working_dir.id'))
-    incoming_directory = relationship("WorkingDir", foreign_keys=[incoming_directory_id])
+    incoming_directory = relationship("WorkingDir", foreign_keys = [incoming_directory_id])
 
     # TODO may need a "source" directory too
 
@@ -114,7 +116,7 @@ class Task(Base):
     # Rates get inherited from job
     # And don't want to cache here since can have multiple rates!
 
-    project_id = Column(Integer, ForeignKey('project.id'), index=True)
+    project_id = Column(Integer, ForeignKey('project.id'), index = True)
     project = relationship("Project")
 
     # label_file_id_list is stored in job, so
@@ -129,8 +131,8 @@ class Task(Base):
     # May be different for each task
     # Depending on settings ie from label_mode
     label_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default={'label_file_list_serialized': [],
-                                 'label_file_colour_map': {}})
+                        default = {'label_file_list_serialized': [],
+                                   'label_file_colour_map': {}})
     # NOTE this also has 'label_file_list' that is an ID list
     # gets populated at job creation?
 
@@ -146,8 +148,9 @@ class Task(Base):
     assignee_user_id = Column(Integer, ForeignKey('userbase.id'))
     # assignee_user = relationship("User", back_populates = "task_list" )
     assignee_user = relationship("User",
-                                 foreign_keys=[assignee_user_id],
-                                 post_update=True)
+                                 foreign_keys = [assignee_user_id],
+                                 post_update = True)
+
     # Why post_update=True
     # see https://stackoverflow.com/questions/18284464/sqlalchemy-exc-circulardependencyerror-circular-dependency-detected
 
@@ -158,9 +161,9 @@ class Task(Base):
     # Tracking history, if it gets re assigned
     previous_assignees = Column((ARRAY(Integer)))
 
-    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_completed = Column(DateTime)
-    time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     # For billing
 
@@ -181,26 +184,26 @@ class Task(Base):
     # on it existing (as 0).
     # I think we can rely on other things like the "state" for example to deteremine
     # if it has been reviewed or not (if that's even needed).
-    gold_standard_missing = Column(Integer, default=0)
+    gold_standard_missing = Column(Integer, default = 0)
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))
     default_external_map = relationship("ExternalMap",
-                                        uselist=False,
-                                        foreign_keys=[default_external_map_id])
+                                        uselist = False,
+                                        foreign_keys = [default_external_map_id])
 
     @staticmethod
     def get_task_from_job_id(
-            session,
-            job_id,
-            user,
-            direction='next',
-            assign_to_user=False,
-            skip_locked=True):
+        session,
+        job_id,
+        user,
+        direction = 'next',
+        assign_to_user = False,
+        skip_locked = True):
 
         query = session.query(Task).filter(
-                Task.status == 'available',
-                Task.job_id == job_id)
+            Task.status == 'available',
+            Task.job_id == job_id)
 
         if direction == 'next':
             query = query.order_by(Task.time_created)
@@ -209,7 +212,7 @@ class Task(Base):
             query = query.order_by(Task.time_created.desc())
 
         if skip_locked == True:
-            query = query.with_for_update(skip_locked=True)
+            query = query.with_for_update(skip_locked = True)
 
         task = query.first()
 
@@ -227,18 +230,17 @@ class Task(Base):
 
         return task
 
-
     def navigate_tasks_relative_to_given_task(
-            session,
-            task_id,
-            direction='next'
-        ):
+        session,
+        task_id,
+        direction = 'next'
+    ):
 
-        known_task = Task.get_by_id(session, task_id=task_id)
+        known_task = Task.get_by_id(session, task_id = task_id)
 
         query = session.query(Task).filter(
-                Task.status != 'archived',
-                Task.job_id == known_task.job_id)
+            Task.status != 'archived',
+            Task.job_id == known_task.job_id)
 
         if direction == 'next':
             query = query.filter(Task.time_created > known_task.time_created)
@@ -251,11 +253,10 @@ class Task(Base):
         discovered_task = query.first()
         return discovered_task
 
-
     def get_last_task(
-            session,
-            user,
-            status_allow_list = ["available", "in_progress"]):
+        session,
+        user,
+        status_allow_list = ["available", "in_progress"]):
 
         last_task = user.last_task
 
@@ -263,15 +264,28 @@ class Task(Base):
             if last_task.status in status_allow_list:
                 return last_task
 
+    def add_reviewer(self, session, user):
 
-    def assign_task_to_user(
-            task,
-            user):
+        self.assignee_user = user
+        rel = TaskUser.new(
+            session = session,
+            user_id = user.id,
+            task_id = self.id,
+            relation = 'reviewer'
+        )
+        return rel
 
-        task.assignee_user = user
-        user.last_task = task
-        task.status = "in_progress"
+    def add_assignee(self, session, user):
 
+        self.assignee_user = user
+        rel = TaskUser.new(
+            session = session,
+            user_id = user.id,
+            task_id = self.id,
+            relation = 'assignee'
+        )
+        user.last_task = self
+        return rel
 
     @staticmethod
     def get_related_files(session, task_id):
@@ -305,8 +319,8 @@ class Task(Base):
                                                  Task.job_id == task.job_id)
         tasks = tasks_query.all()
         task_ids = [task.id for task in tasks]
-        discussions = session.query(dr.DiscussionRelation)\
-            .join(discussion.Discussion, dr.DiscussionRelation.discussion_id == discussion.Discussion.id)\
+        discussions = session.query(dr.DiscussionRelation) \
+            .join(discussion.Discussion, dr.DiscussionRelation.discussion_id == discussion.Discussion.id) \
             .filter(dr.DiscussionRelation.task_id.isnot(None)) \
             .filter(dr.DiscussionRelation.task_id.in_(task_ids), discussion.Discussion.status == 'open') \
             .order_by(discussion.Discussion.created_time.desc())
@@ -328,15 +342,14 @@ class Task(Base):
             index_current = task_ids_with_issues.index(task_id)
             return task_ids_with_issues[index_current + 1]
 
-
     def request_next_task_by_project(
-            session,
-            project,
-            user,
-            ignore_task_IDS_list=None,
-            status='available',
-            skip_locked=True,
-            task_type=None):
+        session,
+        project,
+        user,
+        ignore_task_IDS_list = None,
+        status = 'available',
+        skip_locked = True,
+        task_type = None):
 
         from shared.database.task.job.user_to_job import User_To_Job
         from shared.database.task.job.job import Job
@@ -348,8 +361,8 @@ class Task(Base):
             Task.project_id == project.id)
 
         job_ids_user_is_assigned = User_To_Job.get_job_ids_from_user(
-            session=session,
-            user_id=user.id)
+            session = session,
+            user_id = user.id)
 
         job_ids_open_to_all_users = Job.get_job_IDS_open_to_all(
             session = session,
@@ -360,7 +373,7 @@ class Task(Base):
         query = query.filter(Task.job_id.in_(job_ids_allowed))
 
         if skip_locked == True:
-            query = query.with_for_update(skip_locked=True)
+            query = query.with_for_update(skip_locked = True)
 
         if status:
             query = query.filter(Task.status == status)
@@ -373,12 +386,11 @@ class Task(Base):
 
         return query.first()
 
-
     @staticmethod
     def get_file_ids_related_to_a_task(
-            session, 
-            task_id,
-            project_id):
+        session,
+        task_id,
+        project_id):
 
         related_tasks_list = session.query(Task).filter(
             Task.id == task_id,
@@ -386,13 +398,12 @@ class Task(Base):
         allowed_file_id_list = [task.file_id for task in related_tasks_list]
         return allowed_file_id_list
 
-
     def get_next_available_task_by_job_id(
-            session,
-            job_id,
-            task_type=None,
-            status='available',
-            ignore_task_IDS_list=None):
+        session,
+        job_id,
+        task_type = None,
+        status = 'available',
+        ignore_task_IDS_list = None):
         """
         Assumption is we only get tasks == to the status we set
         ie we ignore all other statuses (like archived)
@@ -426,11 +437,11 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
-            'project_id' : self.project_id,
+            'project_id': self.project_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'status': self.job_type,
-            'file': self.file.serialize_with_annotations(session=session),
+            'file': self.file.serialize_with_annotations(session = session),
             'guide': guide,
             'label_dict': self.label_dict,
             'assignee_user_id': self.assignee_user_id
@@ -455,10 +466,10 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
-            'project_string_id' : self.project.project_string_id,
+            'project_string_id': self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
-            'file': self.file.serialize_with_type(session=session),
+            'file': self.file.serialize_with_type(session = session),
             'gold_standard_file': gold_standard_file,
             'guide': guide,
             'label_dict': self.label_dict,
@@ -470,10 +481,10 @@ class Task(Base):
         }
 
     def get_by_job_and_file(
-            session,
-            job,
-            file,
-            return_type='first'):
+        session,
+        job,
+        file,
+        return_type = 'first'):
 
         query = session.query(Task).filter(
             Task.job_id == job.id,
@@ -484,17 +495,17 @@ class Task(Base):
 
     @staticmethod
     def list(session,
-             task_ids=None,
-             status=None,
-             date_from=None,
-             date_to=None,
-             job_id=None,
-             incoming_directory_id=None,
-             file_id=None,
-             project_id=None,
-             mode_data=None,
-             issues_filter=None,
-             return_mode=None,
+             task_ids = None,
+             status = None,
+             date_from = None,
+             date_to = None,
+             job_id = None,
+             incoming_directory_id = None,
+             file_id = None,
+             project_id = None,
+             mode_data = None,
+             issues_filter = None,
+             return_mode = None,
              limit_count = 25,
              ):
 
@@ -591,11 +602,11 @@ class Task(Base):
 
         return task
 
-    def serialize_for_list_view_builder(self, session=None):
+    def serialize_for_list_view_builder(self, session = None):
 
         file = None
         if session:
-            file = self.file.serialize_with_type(session=session)
+            file = self.file.serialize_with_type(session = session)
 
         return {
             'id': self.id,
@@ -655,10 +666,10 @@ class Task(Base):
             guide_id,
             label_dict,
             file_original_id,
-            kind='human',
-            task_type='draw',
-            incoming_directory=None,
-            flush_session=True):
+            kind = 'human',
+            task_type = 'draw',
+            incoming_directory = None,
+            flush_session = True):
         task = Task()
         session.add(task)
 
@@ -691,18 +702,18 @@ class Task(Base):
         # Have defaults
         task.kind = kind
         task.task_type = task_type
-        
+
         if job.stat_count_tasks is None:
             job.stat_count_tasks = 1
         else:
             job.stat_count_tasks += 1
 
         Event.new_deferred(
-            session=session,
-            kind='task_created',
-            project_id=task.project_id,
-            task_id=task.id,
-            wait_for_commit=True
+            session = session,
+            kind = 'task_created',
+            project_id = task.project_id,
+            task_id = task.id,
+            wait_for_commit = True
         )
         session.add(job)
         return task
