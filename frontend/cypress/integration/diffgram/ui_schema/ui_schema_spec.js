@@ -26,7 +26,7 @@ describe('UI Schema', () => {
 
         // Triggers mouse move away
         cy.get('[data-cy="toolbar_zoom_info"]').trigger('mouseover')
-        cy.wait(400)
+        cy.wait(1000)
 
         const getStore = () => cy.window().its('app.$store')
 
