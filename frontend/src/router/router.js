@@ -10,14 +10,18 @@ const routerOptions = [
   {
     path: '/me',
     component: 'user/home/annotator_dashboard',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "My Home"
+    }
   },
   {
     path: '/projects',
     component: 'project/project_manager',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Projects"
     }
   },
   {
@@ -331,7 +335,8 @@ const routerOptions = [
     props: true,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "New Tasks"
     }
   },
   {
@@ -359,7 +364,7 @@ const routerOptions = [
     meta: {
       requiresAuth: true,
       hide_default_menu: true,
-      title: "Tasks List"
+      title: "Tasks"
     }
   },
   {
@@ -369,7 +374,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Launch Events"
     }
   },
   {
@@ -378,7 +384,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Pipeline Events"
     }
   },
   {
@@ -421,7 +428,10 @@ const routerOptions = [
     path: '/software',
     component: 'marketing/software_marketing_unbounce',
     props: false,
-    meta: {requiresAuth: false}
+    meta: {
+      requiresAuth: false,
+      title: "Software"
+    }
   },
   {
     path: '/data_platform',
@@ -441,7 +451,10 @@ const routerOptions = [
     path: '/user/new',
     component: 'user/account/user_data_platform_new',
     props: false,
-    meta: {requiresAuth: false }
+    meta: {
+      requiresAuth: false,
+      title: "Signup Now"
+    }
   },
 
 
@@ -449,7 +462,10 @@ const routerOptions = [
     path: '/user/builder/signup',
     component: 'user/builder/builder_signup',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Signup Now"
+    }
   },
 
   // This should come before connection single because otherwise "list" matches
@@ -473,7 +489,8 @@ const routerOptions = [
     component: 'connection/connection_page',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Connection"
     }
   },
 
@@ -486,7 +503,8 @@ const routerOptions = [
     component: 'report/report_list',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Report List"
     }
   },
   /*
@@ -503,7 +521,8 @@ const routerOptions = [
     component: 'report/report',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Report"
     }
   },
 
@@ -518,7 +537,7 @@ const routerOptions = [
     props: true,
     meta: {
       requiresAuth: true,
-      title: "Upload"
+      title: "Import"
     }
   },
   {
@@ -530,6 +549,7 @@ const routerOptions = [
     component: 'user/login',
     props: true,
     meta: (route) => ({
+      title: "Login"
     })
   },
   {
@@ -547,19 +567,26 @@ const routerOptions = [
   {
     path: '/user/edit/2fa',
     component: 'user/one_time_pass/otp',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Edit 2FA"
+    }
   },
   {
     path: '/user/edit',
     component: 'user/edit',
     meta: {
-      requiresAuth: true
+      requiresAuth: true,
+      title: "Edit self"
       }
   },
   {
     path: '/a/project/new',
     component: 'project/project_new_wizard',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "New Project"
+    }
   },
   {
     path: '/project/:project_string_id/export',
@@ -574,11 +601,18 @@ const routerOptions = [
     path: '/',
     component: 'user/home/dashboard',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Dashboard"
+    }
   },
   {
     path: '*',
-    component: 'other/NotFound'
+    component: 'other/NotFound',
+    meta: {
+      requiresAuth: false,
+      title: "404 Not Found"
+    }
   }
 ]
 
