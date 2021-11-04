@@ -355,13 +355,13 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 
 Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(3000);
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy=main_menu_labels]').click({force:true})
   cy.wait(2000)
 });
 
 Cypress.Commands.add('goToStudioFromToolbar', function () {
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
   cy.wait(5000);
   cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
