@@ -175,6 +175,7 @@
       v-model="show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
+      data-cy="auto_border_first_point_selected_usage_prompt"
     >
       Select the second point of the same polygon for autobordering (or press "x" key to cancel)
 

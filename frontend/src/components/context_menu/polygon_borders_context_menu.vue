@@ -98,6 +98,7 @@
     class="context-menu"
     :class="{visible: show_context_menu}"
     :style="{top: top, left: left}"
+    data-cy="auto_border_path_prompt"
   >
     <!-- Instance context -->
     <v-card
@@ -111,6 +112,7 @@
       <v-list-item
         link
         @click="on_click_short_path"
+        data-cy="auto_border_path_prompt_short"
       >
 
         <v-list-item-icon>
