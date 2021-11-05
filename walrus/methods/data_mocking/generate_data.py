@@ -34,10 +34,17 @@ data_gen_spec_list = [
         },
     },
     {
-
         'structure': {
             'default': None,
             'kind': str,
+            'required': False,
+            'valid_values_list': ['1_pass', '2_pass', '2_input_1_output']
+        }
+    },
+    {
+        'num_files': {
+            'default': 3,
+            'kind': int,
             'required': False
         }
     }
@@ -74,7 +81,7 @@ def generate_data_new_project_api():
 
 
 
-@routes.route('/api/test/gen-data', methods = ['POST'])
+@routes.route('/api/walrus/test/gen-data', methods = ['POST'])
 def mock_generate_data_api():
     if settings.DIFFGRAM_SYSTEM_MODE not in ['testing_e2e', 'testing', 'sandbox']:
         return jsonify(message='Invalid System Mode'), 403
@@ -84,7 +91,7 @@ def mock_generate_data_api():
     if regular_log.log_has_error(log): return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-        project = Project.get("diffgram-testing-e2e", session)
+        project = Project.get(session, "diffgram-testing-e2e")
         shared_data_gen(session, project, input)
 
         out = jsonify(success = True)
@@ -105,7 +112,7 @@ def shared_data_gen(session, project, input):
 
     elif input['data_type'] == 'task_template':
         data_mocker.generate_test_data_for_task_templates(
-            project=project, structure=input.get('structure'))
+            project=project, structure=input.get('structure'), num_files=input.get('num_files'))
         
 
 
@@ -115,38 +122,54 @@ class DiffgramDataMocker:
 
     NUM_IMAGES = 3
 
-    def generate_test_data_on_dataset(self, dataset):
+    def generate_test_data_on_dataset(self, dataset, num_files=NUM_IMAGES):
         inputs_data = []
-        for i in range(0, self.NUM_IMAGES):
-            diffgram_input = enqueue_packet(project_string_id=dataset.project.project_string_id,
-                                            session=self.session,
-                                            media_url='https://picsum.photos/1000',
-                                            media_type='image',
-                                            original_filename="example.jpg",
-                                            directory_id=dataset.id,
-                                            commit_input=True,
-                                            task_id=None,
-                                            type='from_url',
-                                            task_action=None,
-                                            external_map_id=None,
-                                            external_map_action=None,
-                                            enqueue_immediately=True,
-                                            mode=None,
-                                            allow_duplicates=True)
+        for i in range(0, num_files):
+            diffgram_input = enqueue_packet(
+                project_string_id=dataset.project.project_string_id,
+                session=self.session,
+                media_url='https://picsum.photos/1000',
+                media_type='image',
+                original_filename="example.jpg",
+                directory_id=dataset.id,
+                commit_input=True,
+                task_id=None,
+                type='from_url',
+                task_action=None,
+                external_map_id=None,
+                external_map_action=None,
+                enqueue_immediately=True,
+                mode=None,
+                allow_duplicates=True)
 
             inputs_data.append(diffgram_input)
         return inputs_data
 
-    def generate_test_data_on_dataset_copy_file(self, dataset):
 
+    def generate_test_data_on_dataset_copy_file(self, dataset, num_files=NUM_IMAGES):
+
+        mock_dir_name = '$$_diffgram_working_dir_mock_dataset'
         mock_dataset = self.session.query(WorkingDir).filter(
-            WorkingDir.nickname == '$$_diffgram_working_dir_mock_dataset'
+            WorkingDir.nickname == mock_dir_name
         ).first()
+        if mock_dataset is None:
+            project = Project()
+            self.session.add(project)
+            self.session.flush()
+            print(project)
+            mock_dataset = WorkingDir.new_blank_directory(
+                self.session, project_id=project.id, nickname=mock_dir_name)
+            self.generate_test_data_on_dataset(dataset=mock_dataset, num_files=num_files)
+
+        elif num_files > self.NUM_IMAGES:
+            print("gen new ones")
+            self.generate_test_data_on_dataset(dataset=mock_dataset, num_files=num_files)
+
         files_list = WorkingDirFileLink.file_list(
             self.session,
             working_dir_id=mock_dataset.id,
             root_files_only=True,
-            limit=None,
+            limit=num_files,
         )
 
         for file in files_list:
@@ -168,6 +191,7 @@ class DiffgramDataMocker:
             file = File.get_by_id(self.session, file_id)
             file.project = dataset.project
             self.session.add(file)
+
 
     def generate_sample_label_files(self, project):
         NUM_LABELS = 3
@@ -345,15 +369,16 @@ class DiffgramDataMocker:
                               )
         self.generate_test_data_for_task_templates(project, structure='1_pass')
 
-    def generate_test_data_for_task_templates(self, project, structure='1_pass'):
+
+    def generate_test_data_for_task_templates(self, project, structure='1_pass', num_files=NUM_IMAGES):
 
         if structure == '1_pass':
             task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project)
             # Try to get the default dataset.
-            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass]', project=project)
+            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[:3], project=project)
 
             if not input_dir_exists:
-                self.generate_test_data_on_dataset_copy_file(input_dir)
+                self.generate_test_data_on_dataset_copy_file(input_dir, num_files)
 
             output_dir, output_dir_exists = self.generate_sample_dataset('Completed [1st pass]', project=project)
             task_template.output_dir_action = 'copy'
