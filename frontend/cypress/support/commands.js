@@ -28,6 +28,7 @@ import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
+import {get_transformed_coordinates} from '../../../support/utils'
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -267,6 +268,42 @@ Cypress.Commands.add('signupPro', function () {
     cy.wait(1500);
 
   })
+
+
+Cypress.Commands.add('drawPolygon', function (points) {
+
+  for (var point of points) {
+    cy.mousedowncanvas(points.x, points.y);
+    cy.mouseupcanvas()
+  }
+  cy.wait(1000)
+
+})
+
+Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
+  cy.document().then((doc) => {
+    cy.window().then((window) => {
+      const canvas_wrapper = doc.getElementById('canvas_wrapper');
+      const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
+      const annCore = window.AnnotationCore;
+      expect(annCore.instance_list[1]).to.exist;
+
+      // We want to skip the last point since that is the initial point. That's why its length - 1
+      for(let i = 0; i < points.length - 1; i++){
+        const point = points[i];
+        const clientX = point.x + canvas_client_box.x;
+        const clientY = point.y + canvas_client_box.y;
+        const box_point = get_transformed_coordinates({x: clientX, y: clientY},
+          canvas_client_box,
+          annCore.canvas_element,
+          canvas_wrapper,
+          annCore.canvas_element_ctx)
+
+        expect(annCore.instance_list[1].points[i].x).to.equal(box_point.x);
+        expect(annCore.instance_list[1].points[i].y).to.equal(box_point.y);
+      }
+  })
+})
 
 Cypress.Commands.add('registerProTestUser', function () {
 
