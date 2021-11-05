@@ -51,11 +51,12 @@
           <!-- Filters -->
           <button_with_menu
             tooltip_message="Filters"
-            data-cy="task_list_filters"
             icon="mdi-filter"
             :close_by_button="true"
             offset="x"
             color="primary"
+            datacy="task_list_filters"
+            datacyclose="task_list_close_filters"
           >
 
             <template slot="content">
@@ -83,6 +84,15 @@
                              :initialize_empty="true">
                 </date_picker>
 
+                 <v-select
+                  data-cy="task_list_per_page_limit_selector"
+                  :items="per_page_limit_options"
+                  v-model="per_page_limit"
+                  label="Per Page"
+                  item-value="text"
+                  :disabled="loading"
+                  @change="page_number = 0"></v-select>
+
                 <v_directory_list
                   class="ml-4 mr-8"
                   :project_string_id="project_string_id"
@@ -98,7 +108,9 @@
 
                 <v-btn @click="refresh_task_list"
                         :loading="loading"
-                        color="primary">
+                        color="primary"
+                        data-cy="task_list_refresh_task_list"
+                       >
                   Refresh
                 </v-btn>
 
@@ -112,7 +124,7 @@
 
             <div v-if="!loading
                  && page_end_index > $store.state.job.current.file_count_statistic
-                 && $store.state.job.current.file_count_statistic > api_limit_count
+                 && $store.state.job.current.file_count_statistic > per_page_limit
                 ">
                 <v-chip color="white"
                     text-color="primary"
@@ -148,7 +160,7 @@
 
             <tooltip_button
               v-show="page_end_index < $store.state.job.current.file_count_statistic
-                     && $store.state.job.current.file_count_statistic > api_limit_count"
+                     && $store.state.job.current.file_count_statistic > per_page_limit"
               tooltip_message="Next Page"
               datacy="task_list_next_page"
               @click="next_page()"
@@ -563,6 +575,8 @@
           ],
 
           page_number: 0,
+          per_page_limit: 25,
+          per_page_limit_options: [10, 25, 100, 250],
 
           selected: [],
           dialog_confirm_archive: false,
@@ -575,7 +589,6 @@
           loading_archive: false,
           snackbar_success: false,
           selected_action: undefined,
-          api_limit_count: 25,
 
           date: undefined,   // TODO use date as a prop to sync with stats?
 
@@ -734,11 +747,11 @@
       computed: {
 
         page_start_index: function () {
-          return (this.page_number * this.api_limit_count) + 1
+          return (this.page_number * this.per_page_limit) + 1
         },
 
         page_end_index: function () {
-          let count = (this.page_number * this.api_limit_count) + this.api_limit_count
+          let count = (this.page_number * this.per_page_limit) + this.per_page_limit
           if (count > this.$store.state.job.current.file_count_statistic) {
             count = this.$store.state.job.current.file_count_statistic
           }
@@ -941,7 +954,7 @@
               'incoming_directory_id': this.incoming_directory ? this.incoming_directory.directory_id : undefined,
               'status': this.task_status,
               'issues_filter': this.issues_filter,
-              'limit_count': this.api_limit_count
+              'limit_count': this.per_page_limit
             })
 
             if (response.data.log.success == true) {

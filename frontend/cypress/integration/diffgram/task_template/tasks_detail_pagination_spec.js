@@ -5,7 +5,7 @@ describe('tasks_detail_pagination', () => {
   context('something', () => {
     before(function () {
 
-      cy.createSampleTasksUsingBackend()
+      cy.createSampleTasksUsingBackend(12)
 
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({
@@ -19,8 +19,18 @@ describe('tasks_detail_pagination', () => {
 
       cy.visit(`http://localhost:8085/job/list`);
       cy.get('[data-cy="view_button"]').first().click({force: true})
-      cy.wait(1000)
+      cy.wait(3000)
 
+    })
+
+    it('Limits results', () => {
+
+      cy.wait(5000)
+      cy.get('[data-cy="task_list_filters"]').click({force: true})
+      cy.get('[data-cy="task_list_per_page_limit_selector"]').first().click({force: true})    
+      cy.get('.v-list.v-select-list div').contains('10').first().click({force: true})
+      cy.get('[data-cy="task_list_refresh_task_list"]').click({force: true})
+      cy.get('[data-cy="task_list_close_filters"]').click({force: true})
     })
 
     it('Goes to next page', () => {

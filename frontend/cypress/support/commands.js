@@ -268,14 +268,14 @@ Cypress.Commands.add('signupPro', function () {
 
   })
 
-Cypress.Commands.add('createSampleTasksUsingBackend', function () {
+Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
   cy.request({
     method: 'POST',
     url: `localhost:8085/api/walrus/test/gen-data`,
     body:  {
       'data_type' : 'task_template',
       'structure': '1_pass',
-      'num_files': 10
+      'num_files': num_files
     },
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
