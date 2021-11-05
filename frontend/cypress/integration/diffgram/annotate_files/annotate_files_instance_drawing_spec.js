@@ -81,50 +81,8 @@ describe('Annotate Files Tests', () => {
           {x: 200, y: 25},
         ]
 
-
-        cy.mousedowncanvas(points[0].x, points[0].y);
-        cy.mouseupcanvas()
-
-
-        cy.mousedowncanvas(200, 60);
-        cy.mouseupcanvas()
-
-        cy.mousedowncanvas(180, 40);
-        cy.mouseupcanvas()
-
-        cy.mousedowncanvas(160, 10);
-        cy.mouseupcanvas()
-
-        cy.mousedowncanvas(200, 25);
-        cy.mouseupcanvas()
-
-        cy.wait(1000)
-
-
-        cy.document().then((doc) => {
-          cy.window().then((window) => {
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-            const annCore = window.AnnotationCore;
-            expect(annCore.instance_list[1]).to.exist;
-
-            // We want to skip the last point since that is the initial point. That's why its length - 1
-            for(let i = 0; i < points.length - 1; i++){
-              const point = points[i];
-              const clientX = point.x + canvas_client_box.x;
-              const clientY = point.y + canvas_client_box.y;
-              const box_point = get_transformed_coordinates({x: clientX, y: clientY},
-                canvas_client_box,
-                annCore.canvas_element,
-                canvas_wrapper,
-                annCore.canvas_element_ctx)
-
-              expect(annCore.instance_list[1].points[i].x).to.equal(box_point.x);
-              expect(annCore.instance_list[1].points[i].y).to.equal(box_point.y);
-            }
-
-
-          })
+        cy.drawPolygon(points)
+        cy.isValidPolygonTestOracle(points)
 
         })
 
