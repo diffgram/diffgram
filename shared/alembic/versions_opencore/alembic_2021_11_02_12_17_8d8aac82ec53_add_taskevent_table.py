@@ -23,6 +23,7 @@ def upgrade():
                     sa.Column('project_id', sa.Integer(), sa.ForeignKey('project.id')),
                     sa.Column('task_id', sa.Integer(), sa.ForeignKey('task.id')),
                     sa.Column('event_type', sa.String()),
+                    sa.Column('comment_id', sa.Integer(), sa.ForeignKey('discussion_comment.id')),
                     sa.Column('member_created_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('member_updated_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('time_created', sa.DateTime, default = datetime.datetime.utcnow),

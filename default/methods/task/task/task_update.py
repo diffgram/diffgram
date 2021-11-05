@@ -86,9 +86,11 @@ class Task_Update():
     member: 'Member' = None
 
     """
-    This is clearly over burdening for setting flag,
-    but the point is more that we want to expand along this axis as
-    other types of task update stuff get added.
+        Controls the changing of the task status and generation of the appropriate events depending
+        on the status.
+        
+        Notes:
+            - For completing a task use task_complete() function in task.py. that function uses this class eventually.
 
     """
 
@@ -104,7 +106,7 @@ class Task_Update():
         old_status = self.task.status
         if self.mode == 'toggle_deferred':
             self.defer()
-        if self.status and self.status != 'complete':  # We don't allow to completed tasks here, use task_complete.
+        if self.status:
             self.change_status()
         regular_methods.try_to_commit(self)
         self.emit_task_event_based_on_status(old_status, self.task)
@@ -131,6 +133,7 @@ class Task_Update():
             self.session.add(self.task.job)
 
         self.task.status = self.status
+        self.session.add(self.task)
 
     def defer(self):
 

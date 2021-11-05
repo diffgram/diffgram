@@ -24,7 +24,10 @@ class TaskEvent(Base, SerializerMixin):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
-    event_type = Column(String())  # ["completed", "archived",  "in_review", "created"]
+    event_type = Column(String())  # ["completed", "archived",  "in_review", "created", "comment"]
+
+    comment_id = Column(Integer, ForeignKey('discussion_comment.id'))
+    comment = relationship("DiscussionComment", foreign_keys = [comment_id])
 
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
@@ -36,12 +39,17 @@ class TaskEvent(Base, SerializerMixin):
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
     def serialize(self):
-        return self.to_dict(rules = (
+        data = self.to_dict(rules = (
             '-member_created',
             '-member_updated',
             '-job',
             '-task',
+            '-comment',
             '-project'))
+
+        if self.comment_id:
+            data['comment'] = self.comment.serialize()
+        return data
 
     @staticmethod
     def generate_task_creation_event(session, task, member) -> 'TaskEvent':
@@ -51,6 +59,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_created',
+            member_created_id = member.id
         )
 
     @staticmethod
@@ -61,6 +70,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_completed',
+            member_created_id = member.id
         )
 
     @staticmethod
@@ -71,6 +81,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_start',
+            member_created_id = member.id
         )
 
     @staticmethod
@@ -81,6 +92,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_request_changes',
+            member_created_id = member.id
         )
 
     @staticmethod
@@ -91,6 +103,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_complete',
+            member_created_id = member.id
         )
 
     @staticmethod
@@ -101,6 +114,20 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_in_progress',
+            member_created_id = member.id
+        )
+
+    @staticmethod
+    def generate_task_comment_event(session, task, member, comment) -> 'TaskEvent':
+        return TaskEvent.new(
+            session = session,
+            project_id = task.project_id,
+            job_id = task.job_id,
+            task_id = task.id,
+            event_type = 'comment',
+            member_created_id = member.id,
+            comment_id = comment.id
+
         )
 
     @staticmethod
@@ -109,6 +136,8 @@ class TaskEvent(Base, SerializerMixin):
             job_id: int,
             task_id: int,
             event_type: str,
+            member_created_id: int = None,
+            comment_id: int = None,
             add_to_session: bool = True,
             flush_session: bool = True
             ) -> 'TaskEvent':
@@ -118,6 +147,8 @@ class TaskEvent(Base, SerializerMixin):
             job_id = job_id,
             task_id = task_id,
             event_type = event_type,
+            member_created_id = member_created_id,
+            comment_id = comment_id
         )
 
         if add_to_session:

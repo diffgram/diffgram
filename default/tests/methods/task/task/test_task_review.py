@@ -5,7 +5,7 @@ from base64 import b64encode
 from methods.task.task import task_next_issue
 from unittest.mock import patch
 import flask
-
+from shared.database.hashing_functions import make_secure_val
 
 class TestTaskReview(testing_setup.DiffgramBaseTestCase):
     """
@@ -37,7 +37,7 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
             'username': 'test_user',
             'email': 'test@test.com',
             'password': 'diffgram123',
-            'project_string_id': 'myproject',
+            'project_string_id': self.project.project_string_id,
             'member_id': self.member.id
         }, self.session)
         job = data_mocking.create_job({
@@ -61,12 +61,15 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
             'username': 'test_user',
             'email': 'test@test.com',
             'password': 'diffgram123',
-            'project_string_id': 'myproject',
+            'project_string_id': self.project.project_string_id,
             'member_id': self.member.id
         }, self.session)
         self.task.add_reviewer(self.session, auth_api.member.user)
         self.session.commit()
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        with self.client.session_transaction() as session:
+            session['user_id'] = make_secure_val(auth_api.member.user.id)
+            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
@@ -76,6 +79,7 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
             }
         )
         data = response.json
+        print('AAAA', response.data)
         print('AAAA', data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['status'], 'complete')
+        self.assertEqual(data['task']['status'], 'complete')

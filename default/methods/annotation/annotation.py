@@ -74,11 +74,18 @@ def task_annotation_update_api(task_id):
 
     # MAIN
     with sessionMaker.session_scope() as session:
-
+        user = User.get(session)
+        if user:
+            member = user.member
+        else:
+            client_id = request.authorization.get('username', None)
+            auth = Auth_api.get(session, client_id)
+            member = auth.member
         new_file, annotation_update = task_annotation_update(
             session = session,
             task_id = task_id,
             input = input,
+            member = member,
             untrusted_input = untrusted_input,
             log = log)
 

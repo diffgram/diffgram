@@ -52,7 +52,7 @@ def register_member(user, session):
     return new_member
 
 
-def register_user(user_data, session):
+def register_user(user_data: dict, session):
     """
 
     :param user_data:
@@ -89,7 +89,9 @@ def register_user(user_data, session):
 
     )
 
-    new_user.permissions_projects = {}  # I don't like having this here but alternative of committing object seems worse
+    new_user.permissions_projects = {
+        user_data.get('project_string_id'): ['admin']
+    }
     session.add(new_user)
 
     if 'project_string_id' in user_data:

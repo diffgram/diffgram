@@ -819,7 +819,8 @@ class Process_Media():
                 session = self.session,
                 task = input.task,
                 new_file = input.file,
-                project = self.project)
+                project = self.project,
+                member = self.member)
 
     def __update_existing_video(self):
 
@@ -1579,6 +1580,7 @@ class Process_Media():
                 video_data = video_data,
                 task = task,
                 complete_task = should_complete_task,
+                member = self.input.member_created,
                 do_init_existing_instances = init_existing_instances,
                 external_map = self.input.external_map,
                 external_map_action = self.input.external_map_action,

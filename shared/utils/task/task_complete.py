@@ -8,11 +8,14 @@ from shared.utils.task import task_file_observers
 
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.task.task_event import TaskEvent
+from methods.task.task.task_update import Task_Update
+
 
 def task_complete(session,
                   task,
                   new_file,
-                  project):
+                  project,
+                  member):
     """
 
     Also handles new_file here,
@@ -29,53 +32,34 @@ def task_complete(session,
 
     # Check child tasks
     # Should create the event listeners before changing status
+    trigger_sync_event = True
 
-
-    child_list = task.child_list(session)
     if task.status == 'complete':
         return True, new_file
 
-    if child_list:
-        for child in child_list:
-            if child.task_type == "review":
-                # Unlock review task
-                child.status = 'available'
-                session.add(child)
-
-                # task.status = 'in_review'
-
-                # Currently removing the in-review concept since there is now way to get out of it
-                task.status = 'complete'
-
-                """
-                this is not supported yet, but if we did 
-                want to copy in advance it could go here.
-
-                Note that we would need to call 
-                File.update_file_from_existing()
-                directly, as we already have the review TASK created
-                just not the file changed.
-                """
-
     else:
         job = task.job
+        task_update_manager = Task_Update(
+            session = session,
+            task = task,
+            member = member
+        )
         if job.allow_reviews:
-            task.status = 'in_review'
-            TaskEvent.generate_task_review_start_event(session, task)
+            task_update_manager.status = 'in_review'
+            task_update_manager.main()
+            trigger_sync_event = False  # In review Mode We do not want to complete the task
         else:
             task.status = 'complete'
             TaskEvent.generate_task_creation_event(session, task)
 
         # Careful, this is only relevant for normal
         # tasks, not exams?
-        if task.job_type == 'Normal' \
-                and job.file_handling == "isolation":
-            merge_task(session=session,
-                       job=job,
-                       task=task)
+        if task.job_type == 'Normal' and job.file_handling == "isolation":
+            merge_task(session = session,
+                       job = job,
+                       task = task)
 
         # this stuff could be applicable to exams and normal maybe
-
         new_file = new_file.toggle_flag_shared(session)
 
         # Only assign this here
@@ -91,12 +75,6 @@ def task_complete(session,
 
     job.stat_count_complete += 1
 
-    # Record member completed?
-
-    ##### Handle transactions
-
-    # TODO "If transactions enabled?"
-
     # QUESTION Cache from file here?
 
     if task.job_type == 'Normal':
@@ -104,52 +82,52 @@ def task_complete(session,
         if job.share_type == "Market":
 
             if task.is_live == True:
-                result = task_complete_transaction_normal(session=session,
-                                                          task=task)
+                result = task_complete_transaction_normal(session = session,
+                                                          task = task)
 
     if task.job_type == 'Exam':
-        result = task_complete_exam(session=session,
-                                    task=task)
+        result = task_complete_exam(session = session,
+                                    task = task)
     # QUESTION
     # Notify Observers of task completion
     log = regular_log.default()
-    sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-        session=session,
-        dataset_source_id=None,
-        dataset_destination=None,
-        description=None,
-        file=task.file,
-        job=task.job,
-        input=None,
-        project=task.job.project,
-        created_task=None,
-        completed_task=task,
-        new_file_copy=None,
-        transfer_action=None,
-        event_effect_type='',
-        event_trigger_type='task_completed',
-        status='init',
-        member_created=None
-    )
-    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
-    if job.completion_directory and job.output_dir_action in ['copy', 'move']:
-        job_observable = task_file_observers.JobObservable(session=session,
-                                                           log=log,
-                                                           job=job,
-                                                           task=task,
-                                                           sync_events_manager=sync_event_manager)
-        job_observable.notify_all_observers(defer=True)
+    if trigger_sync_event:
+        sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+            session = session,
+            dataset_source_id = None,
+            dataset_destination = None,
+            description = None,
+            file = task.file,
+            job = task.job,
+            input = None,
+            project = task.job.project,
+            created_task = None,
+            completed_task = task,
+            new_file_copy = None,
+            transfer_action = None,
+            event_effect_type = '',
+            event_trigger_type = 'task_completed',
+            status = 'init',
+            member_created = None
+        )
+        logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+        if job.completion_directory and job.output_dir_action in ['copy', 'move']:
+            job_observable = task_file_observers.JobObservable(session = session,
+                                                               log = log,
+                                                               job = job,
+                                                               task = task,
+                                                               sync_events_manager = sync_event_manager)
+            job_observable.notify_all_observers(defer = True)
 
-
-    Event.new_deferred(
-        session=session,
-        kind='task_completed',
-        project_id=task.project_id,
-        member_id=get_member(session).id if get_member(session) else None,
-        task_id=task.id,
-        wait_for_commit=True
-    )
-    job.job_complete_core(session)
+        Event.new_deferred(
+            session = session,
+            kind = 'task_completed',
+            project_id = task.project_id,
+            member_id = get_member(session).id if get_member(session) else None,
+            task_id = task.id,
+            wait_for_commit = True
+        )
+        job.job_complete_core(session)
 
     return True, new_file
 
@@ -182,9 +160,9 @@ def merge_task(session,
 
     file_id = task.file_original_id
 
-    link = WorkingDirFileLink.file_link(session=session,
-                                        working_dir_id=directory_id,
-                                        file_id=file_id)
+    link = WorkingDirFileLink.file_link(session = session,
+                                        working_dir_id = directory_id,
+                                        file_id = file_id)
     session.add(link)
 
     # TODO consider how this effects committed
@@ -196,7 +174,6 @@ def merge_task(session,
 
 def task_complete_transaction_normal(session,
                                      task):
-
     task.count_instances_changed = task.file.count_instances_changed
 
     # TODO more reflection on handling None vs 0 for this case

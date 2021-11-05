@@ -65,19 +65,19 @@ class Permission_Task():
                                       task_id = task_id)
 
                 if task is None:
-                    raise Forbidden("No access.")
+                    raise Forbidden("No access to this task.")
 
                 # For testing we may want to pass a user id
                 if not user_id:
                     user_id = getUserID()
                     if user_id is None:
-                        raise Forbidden("Please login.")
+                        raise Forbidden("Please login [No user_id].")
 
                 user = User.get_by_id(session = session,
                                       user_id = user_id)
 
                 if user is None:
-                    raise Forbidden("Please login.")
+                    raise Forbidden("Please login [No user Found].")
 
                 if user.is_super_admin == True:
                     return True
@@ -112,6 +112,9 @@ class Permission_Task():
 
                 if task.has_user(session = session, user = user):
                     return True
+
+                raise Forbidden("No access by_task_id_core().")
+
 
 # TODO share with job permissions
 

@@ -90,14 +90,8 @@ class Task(Base):
     job_type = Column(String)  # inherited from job ['Normal', 'Exam', 'Learning']
 
     status = Column(String(), default = 'created', index = True)
-    # Possible Statuses: ['created', 'completed', 'in_progress', 'requires_changes', 'deferred']
-    # available vs created?
-    # A a review task may get created but is not available
-    # "active"
-    # created, in_progress, in_review,
-    #  reported, save_for_later, complete, failed
-
-    # Maybe reported should be seperate
+    # Possible Statuses:
+    # ['created', 'in_progress', 'review_requested', 'pending_review', 'requires_changes' 'deferred']
 
     file_original_id = Column(BIGINT, ForeignKey('file.id'))
     file_original = relationship("File", foreign_keys = [file_original_id])
