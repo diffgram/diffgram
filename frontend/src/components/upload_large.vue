@@ -308,10 +308,9 @@
         create_sample_dataset: async function(){
           this.loading_create_sample_data = true;
           try{
-            const response = await axios.post('/api/walrus/v1/gen-data', {
+            const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
               data_type: 'dataset',
-              dataset_id: this.current_directory.directory_id,
-              project_id: this.$store.state.project.current.id,
+              dataset_id: this.current_directory.directory_id
             })
             if(response.status === 200){
               this.request_refresh = Date.now();

@@ -1,16 +1,3 @@
-# OPENCORE - ADD
-# Mock spec for sending instance data to save function.
-
-
-"""
- mock pseduo code starter
-
- For each task in job
- TODO Get task id
- TODO Call test_task_annotation_update()
-	With and_complete set to True
-
-"""
 
 from methods.annotation.annotation_mock import mock_task_annotation_update
 
