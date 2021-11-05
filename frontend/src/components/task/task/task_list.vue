@@ -51,6 +51,7 @@
           <!-- Filters -->
           <button_with_menu
             tooltip_message="Filters"
+            data-cy="task_list_filters"
             icon="mdi-filter"
             :close_by_button="true"
             offset="x"
@@ -737,7 +738,11 @@
         },
 
         page_end_index: function () {
-          return (this.page_number * this.api_limit_count) + this.api_limit_count
+          let count = (this.page_number * this.api_limit_count) + this.api_limit_count
+          if (count > this.$store.state.job.current.file_count_statistic) {
+            count = this.$store.state.job.current.file_count_statistic
+          }
+          return count
         },
         header_view: function () {
           if (this.mode_data == "exam_results") {
