@@ -268,6 +268,26 @@ Cypress.Commands.add('signupPro', function () {
 
   })
 
+Cypress.Commands.add('createSampleTasksUsingBackend', function () {
+  cy.request({
+    method: 'POST',
+    url: `localhost:8085/api/walrus/test/gen-data`,
+    body:  {
+      'data_type' : 'task_template',
+      'structure': '1_pass',
+      'num_files': 10
+    },
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    failOnStatusCode: true
+  }).then((response) =>{
+    if(response.body.success){
+      return true
+    }
+  })
+})
+
 Cypress.Commands.add('registerProTestUser', function () {
 
   cy.visit('http://localhost:8085/user/pro/new');
