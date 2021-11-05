@@ -49,7 +49,7 @@ def get_next_task_by_project(
     if task:
         return task
 
-    task = Task.request_next_task_by_project( 
+    task = Task.request_next_task_by_project(
         session = session,
         project = project,
         user = user)

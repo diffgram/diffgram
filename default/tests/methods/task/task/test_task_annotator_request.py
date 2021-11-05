@@ -1,11 +1,9 @@
 from methods.regular.regular_api import *
-from default.tests.test_utils import testing_setup
+from tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from base64 import b64encode
-from methods.task.task import task_next_issue
 from unittest.mock import patch
-import flask
 from methods.task.task.task_annotator_request import get_next_task_by_project
+import methods.task.task.task_annotator_request as task_annotator_request
 
 
 class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
@@ -41,20 +39,22 @@ class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
             'project_string_id': 'myproject',
             'member_id': self.member.id
         }, self.session)
-
-    def test_get_next_task_by_project(self):
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
-        task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                         self.session)
-        task2 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                         self.session)
+        self.task = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                             self.session)
+
+    def test_get_next_task_by_project(self):
+        self.member.user.last_task_id = None
+        self.member.user.last_task = None
+        self.session.add(self.member.user)
+        self.session.commit()
 
         with patch.object(Task, 'get_last_task', return_value = None) as mock_1:
-            with patch.object(Task, 'request_next_task_by_project') as mock_2:
+            with patch.object(Task, 'request_next_task_by_project', return_value = self.task) as mock_2:
                 task_result = get_next_task_by_project(
                     session = self.session,
                     user = self.member.user,
@@ -62,5 +62,27 @@ class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
                 )
 
                 self.assertIsNotNone(task_result)
+                self.assertEqual(task_result, self.task)
                 mock_1.assert_called_once()
                 mock_2.assert_called_once()
+
+    def test_get_next_task_by_job(self):
+        self.member.user.last_task_id = None
+        self.member.user.last_task = None
+        self.session.add(self.member.user)
+        self.session.commit()
+
+        with patch.object(Task, 'get_last_task', return_value = None) as mock_1:
+            with patch.object(task_annotator_request, 'recursively_get_next_available',
+                              return_value = self.task) as mock_2:
+                with patch.object(self.task, 'add_assignee',
+                                  return_value = self.task) as mock_3:
+                    task_result = get_next_task_by_project(
+                        session = self.session,
+                        user = self.member.user,
+                        project = self.project
+                    )
+
+                    self.assertIsNotNone(task_result)
+                    self.assertEqual(task_result.id, self.task.id)
+                    mock_1.assert_called_once()
