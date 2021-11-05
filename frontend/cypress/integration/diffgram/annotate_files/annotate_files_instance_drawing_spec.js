@@ -69,22 +69,8 @@ describe('Annotate Files Tests', () => {
       })
 
       it('Correctly creates a polygon.', () => {
-        cy.get('[data-cy="instance-type-select"]').click({force: true})
-        cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
-        cy.select_label()
-        cy.wait(1000);
-        const points = [
-          {x: 200, y: 25},
-          {x: 200, y: 60},
-          {x: 180, y: 40},
-          {x: 160, y: 10},
-          {x: 200, y: 25},
-        ]
 
-        cy.drawPolygon(points)
-        cy.isValidPolygonTestOracle(points)
-
-        })
+        cy.selectDrawValidatePolygon()
 
       })
 

@@ -280,6 +280,36 @@ Cypress.Commands.add('drawPolygon', function (points) {
 
 })
 
+
+Cypress.Commands.add('selectPolygonType', function (points) {
+  cy.get('[data-cy="instance-type-select"]').click({force: true})
+  cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
+})
+
+Cypress.Commands.add('selectDrawValidatePolygon', function (points=undefined) {
+
+  if (points == undefined) {
+    points = [
+    {x: 200, y: 25},
+    {x: 200, y: 60},
+    {x: 180, y: 40},
+    {x: 160, y: 10},
+    {x: 200, y: 25},
+    ]
+  }
+
+  cy.selectPolygonType()
+
+  cy.select_label()
+  cy.wait(1000);
+
+  cy.drawPolygon(points)
+
+  cy.isValidPolygonTestOracle(points)
+
+})
+
+
 Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
