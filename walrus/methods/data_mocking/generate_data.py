@@ -17,62 +17,103 @@ import uuid
 import uuid
 from shared.regular import regular_log
 
+data_gen_spec_list = [
+    {
+        'data_type': {
+            'default': 'dataset',
+            'kind': str,
+            'required': False
+        },
 
-@routes.route('/api/walrus/v1/gen-data', methods=['POST'])
+    },
+    {
+        'dataset_id': {
+            'default': None,
+            'kind': int,
+            'required': False
+        },
+    },
+    {
+        'structure': {
+            'default': None,
+            'kind': str,
+            'required': False,
+            'valid_values_list': ['1_pass', '2_pass', '2_input_1_output']
+        }
+    },
+    {
+        'num_files': {
+            'default': 3,
+            'kind': int,
+            'required': False
+        }
+    }
+]
+
+@routes.route('/api/walrus/v1/project/<string:project_string_id>/gen-data', 
+              methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def generate_data_api(project_string_id):
+
+    log, input, untrusted_input = regular_input.master(
+        request=request, spec_list=data_gen_spec_list)
+    if regular_log.log_has_error(log): return jsonify(log = log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+        shared_data_gen(session, project, input)
+
+    return jsonify({'message': 'OK.'})
+
+
+
+@routes.route('/api/walrus/v1/new_project/gen-data', 
+              methods=['POST'])
 @General_permissions.grant_permission_for(
     Roles=['normal_user'],
     apis_user_list=["builder_or_trainer"])
-def generate_data():
-    spec_list = [
-        {
-            'data_type': {
-                'default': 'dataset',
-                'kind': str,
-                'required': False
-            },
+def generate_data_new_project_api():
 
-        },
-        {
-            'dataset_id': {
-                'default': None,
-                'kind': int,
-                'required': False
-            },
-        },
-        {
-
-            'project_id': {
-                'default': None,
-                'kind': int,
-                'required': False
-            }
-        },
-        {
-
-            'structure': {
-                'default': None,
-                'kind': str,
-                'required': False
-            }
-        }
-    ]
-    log, input, untrusted_input = regular_input.master(request=request, spec_list=spec_list)
     with sessionMaker.session_scope() as session:
-        data_mocker = DiffgramDataMocker(session=session)
-        if input['data_type'] == 'dataset':
-            dataset = WorkingDir.get(session=session, directory_id=input['dataset_id'], project_id=input['project_id'])
-            data_mocker.generate_test_data_on_dataset(dataset=dataset)
-        elif input['data_type'] == 'label':
-            project = Project.get_by_id(session, id=input['project_id'])
-            data_mocker.generate_sample_label_files(project=project)
-        elif input['data_type'] == 'task_template':
-            project = Project.get_by_id(session, id=input['project_id'])
-            data_mocker.generate_test_data_for_task_templates(project=project, structure=input.get('structure'))
-        elif input['data_type'] == 'project':
-            user = User.get(session=session)
-            data_mocker.generate_sample_project(user=user)
-
+        user = User.get(session=session)
+        data_mocker.generate_sample_project(user=user)
     return jsonify({'message': 'OK.'})
+
+
+
+@routes.route('/api/walrus/test/gen-data', methods = ['POST'])
+def mock_generate_data_api():
+    if settings.DIFFGRAM_SYSTEM_MODE not in ['testing_e2e', 'testing', 'sandbox']:
+        return jsonify(message='Invalid System Mode'), 403
+
+    log, input, untrusted_input = regular_input.master(
+        request=request, spec_list=data_gen_spec_list)
+    if regular_log.log_has_error(log): return jsonify(log = log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, "diffgram-testing-e2e")
+        shared_data_gen(session, project, input)
+
+        out = jsonify(success = True)
+
+        return out, 200
+
+
+def shared_data_gen(session, project, input):
+    data_mocker = DiffgramDataMocker(session=session)
+    if input['data_type'] == 'dataset':
+        dataset = WorkingDir.get(session=session,
+                                    directory_id=input['dataset_id'], 
+                                    project_id=project.id)
+        data_mocker.generate_test_data_on_dataset(dataset=dataset)
+        
+    elif input['data_type'] == 'label':
+        data_mocker.generate_sample_label_files(project=project)
+
+    elif input['data_type'] == 'task_template':
+        data_mocker.generate_test_data_for_task_templates(
+            project=project, structure=input.get('structure'), num_files=input.get('num_files'))
+        
 
 
 @dataclass
@@ -81,38 +122,54 @@ class DiffgramDataMocker:
 
     NUM_IMAGES = 3
 
-    def generate_test_data_on_dataset(self, dataset):
+    def generate_test_data_on_dataset(self, dataset, num_files=NUM_IMAGES):
         inputs_data = []
-        for i in range(0, self.NUM_IMAGES):
-            diffgram_input = enqueue_packet(project_string_id=dataset.project.project_string_id,
-                                            session=self.session,
-                                            media_url='https://picsum.photos/1000',
-                                            media_type='image',
-                                            original_filename="example.jpg",
-                                            directory_id=dataset.id,
-                                            commit_input=True,
-                                            task_id=None,
-                                            type='from_url',
-                                            task_action=None,
-                                            external_map_id=None,
-                                            external_map_action=None,
-                                            enqueue_immediately=True,
-                                            mode=None,
-                                            allow_duplicates=True)
+        for i in range(0, num_files):
+            diffgram_input = enqueue_packet(
+                project_string_id=dataset.project.project_string_id,
+                session=self.session,
+                media_url='https://picsum.photos/1000',
+                media_type='image',
+                original_filename="example.jpg",
+                directory_id=dataset.id,
+                commit_input=True,
+                task_id=None,
+                type='from_url',
+                task_action=None,
+                external_map_id=None,
+                external_map_action=None,
+                enqueue_immediately=True,
+                mode=None,
+                allow_duplicates=True)
 
             inputs_data.append(diffgram_input)
         return inputs_data
 
-    def generate_test_data_on_dataset_copy_file(self, dataset):
 
+    def generate_test_data_on_dataset_copy_file(self, dataset, num_files=NUM_IMAGES):
+
+        mock_dir_name = '$$_diffgram_working_dir_mock_dataset'
         mock_dataset = self.session.query(WorkingDir).filter(
-            WorkingDir.nickname == '$$_diffgram_working_dir_mock_dataset'
+            WorkingDir.nickname == mock_dir_name
         ).first()
+        if mock_dataset is None:
+            project = Project()
+            self.session.add(project)
+            self.session.flush()
+            print(project)
+            mock_dataset = WorkingDir.new_blank_directory(
+                self.session, project_id=project.id, nickname=mock_dir_name)
+            self.generate_test_data_on_dataset(dataset=mock_dataset, num_files=num_files)
+
+        elif num_files > self.NUM_IMAGES:
+            print("gen new ones")
+            self.generate_test_data_on_dataset(dataset=mock_dataset, num_files=num_files)
+
         files_list = WorkingDirFileLink.file_list(
             self.session,
             working_dir_id=mock_dataset.id,
             root_files_only=True,
-            limit=None,
+            limit=num_files,
         )
 
         for file in files_list:
@@ -134,6 +191,7 @@ class DiffgramDataMocker:
             file = File.get_by_id(self.session, file_id)
             file.project = dataset.project
             self.session.add(file)
+
 
     def generate_sample_label_files(self, project):
         NUM_LABELS = 3
@@ -311,15 +369,16 @@ class DiffgramDataMocker:
                               )
         self.generate_test_data_for_task_templates(project, structure='1_pass')
 
-    def generate_test_data_for_task_templates(self, project, structure='1_pass'):
+
+    def generate_test_data_for_task_templates(self, project, structure='1_pass', num_files=NUM_IMAGES):
 
         if structure == '1_pass':
             task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project)
             # Try to get the default dataset.
-            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass]', project=project)
+            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[-5:], project=project)
 
             if not input_dir_exists:
-                self.generate_test_data_on_dataset_copy_file(input_dir)
+                self.generate_test_data_on_dataset_copy_file(input_dir, num_files)
 
             output_dir, output_dir_exists = self.generate_sample_dataset('Completed [1st pass]', project=project)
             task_template.output_dir_action = 'copy'
