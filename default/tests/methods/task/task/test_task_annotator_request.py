@@ -1,22 +1,24 @@
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from shared.database.task.task_event import TaskEvent
+from base64 import b64encode
+from methods.task.task import task_next_issue
 from unittest.mock import patch
-from methods.task.task.task_update import Task_Update
-import analytics
-import requests
+import flask
+from methods.task.task.task_annotator_request import get_next_task_by_project
 
 
-class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
+class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
     """
-
+        
+        
+        
     """
 
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestTaskEvent, self).setUp()
+        super(TestTaskAnnotatorRequest, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
@@ -27,9 +29,9 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
                 ]
             },
             self.session
+
         )
         self.project = project_data['project']
-        self.project_data = project_data
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
         self.member.user = data_mocking.register_user({
@@ -40,7 +42,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
 
-    def test_get_task_from_job_id(self):
+    def test_get_next_task_by_project(self):
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
             'project': self.project
@@ -51,18 +53,14 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         task2 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
                                          self.session)
 
-        with patch.object(Task, 'add_assignee') as mock_1:
-            with patch.object(Task_Update, 'main') as mock_2:
-                next_task = Task.get_task_from_job_id(
+        with patch.object(Task, 'get_last_task', return_value = None) as mock_1:
+            with patch.object(Task, 'request_next_task_by_project') as mock_2:
+                task_result = get_next_task_by_project(
                     session = self.session,
-                    job_id = job.id,
                     user = self.member.user,
-                    direction = 'next',
-                    assign_to_user = True,
-                    skip_locked = True
-
+                    project = self.project
                 )
+
+                self.assertIsNotNone(task_result)
                 mock_1.assert_called_once()
                 mock_2.assert_called_once()
-
-                self.assertEqual(task1.id, next_task.id)

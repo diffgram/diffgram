@@ -215,7 +215,6 @@ class Task(Base):
             query = query.with_for_update(skip_locked = True)
 
         task = query.first()
-        print('AAA', task)
         if assign_to_user is True:
 
             # TODO check if job has open status, or user is assigned to job

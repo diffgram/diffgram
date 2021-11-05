@@ -122,4 +122,4 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result['job_id'], task_event.job_id)
         self.assertEqual(result['project_id'], task_event.project_id)
         self.assertEqual(result['member_created_id'], task_event.member_created_id)
-        self.assertEqual(result['event_type'], 'task_review_complete')
+        self.assertEqual(result['event_type'], 'task_in_progress')
