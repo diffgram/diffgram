@@ -906,10 +906,9 @@
         create_sample_task_template: async function () {
           this.loading_create_sample_data = true;
           try {
-            const response = await axios.post('/api/walrus/v1/gen-data', {
+            const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
               data_type: 'task_template',
-              structure: this.structure,
-              project_id: this.$store.state.project.current.id,
+              structure: this.structure
             })
             if (response.status === 200) {
               this.request_refresh = Date.now();
