@@ -17,62 +17,96 @@ import uuid
 import uuid
 from shared.regular import regular_log
 
+data_gen_spec_list = [
+    {
+        'data_type': {
+            'default': 'dataset',
+            'kind': str,
+            'required': False
+        },
 
-@routes.route('/api/walrus/v1/gen-data', methods=['POST'])
+    },
+    {
+        'dataset_id': {
+            'default': None,
+            'kind': int,
+            'required': False
+        },
+    },
+    {
+
+        'structure': {
+            'default': None,
+            'kind': str,
+            'required': False
+        }
+    }
+]
+
+@routes.route('/api/walrus/v1/project/<string:project_string_id>/gen-data', 
+              methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def generate_data_api(project_string_id):
+
+    log, input, untrusted_input = regular_input.master(
+        request=request, spec_list=data_gen_spec_list)
+    if regular_log.log_has_error(log): return jsonify(log = log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+        shared_data_gen(session, project, input)
+
+    return jsonify({'message': 'OK.'})
+
+
+
+@routes.route('/api/walrus/v1/new_project/gen-data', 
+              methods=['POST'])
 @General_permissions.grant_permission_for(
     Roles=['normal_user'],
     apis_user_list=["builder_or_trainer"])
-def generate_data():
-    spec_list = [
-        {
-            'data_type': {
-                'default': 'dataset',
-                'kind': str,
-                'required': False
-            },
+def generate_data_new_project_api():
 
-        },
-        {
-            'dataset_id': {
-                'default': None,
-                'kind': int,
-                'required': False
-            },
-        },
-        {
-
-            'project_id': {
-                'default': None,
-                'kind': int,
-                'required': False
-            }
-        },
-        {
-
-            'structure': {
-                'default': None,
-                'kind': str,
-                'required': False
-            }
-        }
-    ]
-    log, input, untrusted_input = regular_input.master(request=request, spec_list=spec_list)
     with sessionMaker.session_scope() as session:
-        data_mocker = DiffgramDataMocker(session=session)
-        if input['data_type'] == 'dataset':
-            dataset = WorkingDir.get(session=session, directory_id=input['dataset_id'], project_id=input['project_id'])
-            data_mocker.generate_test_data_on_dataset(dataset=dataset)
-        elif input['data_type'] == 'label':
-            project = Project.get_by_id(session, id=input['project_id'])
-            data_mocker.generate_sample_label_files(project=project)
-        elif input['data_type'] == 'task_template':
-            project = Project.get_by_id(session, id=input['project_id'])
-            data_mocker.generate_test_data_for_task_templates(project=project, structure=input.get('structure'))
-        elif input['data_type'] == 'project':
-            user = User.get(session=session)
-            data_mocker.generate_sample_project(user=user)
-
+        user = User.get(session=session)
+        data_mocker.generate_sample_project(user=user)
     return jsonify({'message': 'OK.'})
+
+
+
+@routes.route('/api/test/gen-data', methods = ['POST'])
+def mock_generate_data_api():
+    if settings.DIFFGRAM_SYSTEM_MODE not in ['testing_e2e', 'testing', 'sandbox']:
+        return jsonify(message='Invalid System Mode'), 403
+
+    log, input, untrusted_input = regular_input.master(
+        request=request, spec_list=data_gen_spec_list)
+    if regular_log.log_has_error(log): return jsonify(log = log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get("diffgram-testing-e2e", session)
+        shared_data_gen(session, project, input)
+
+        out = jsonify(success = True)
+
+        return out, 200
+
+
+def shared_data_gen(session, project, input):
+    data_mocker = DiffgramDataMocker(session=session)
+    if input['data_type'] == 'dataset':
+        dataset = WorkingDir.get(session=session,
+                                    directory_id=input['dataset_id'], 
+                                    project_id=project.id)
+        data_mocker.generate_test_data_on_dataset(dataset=dataset)
+        
+    elif input['data_type'] == 'label':
+        data_mocker.generate_sample_label_files(project=project)
+
+    elif input['data_type'] == 'task_template':
+        data_mocker.generate_test_data_for_task_templates(
+            project=project, structure=input.get('structure'))
+        
 
 
 @dataclass
