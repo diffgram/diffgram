@@ -59,7 +59,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_created',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -70,7 +70,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_completed',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -81,7 +81,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_start',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -92,7 +92,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_request_changes',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -103,7 +103,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_complete',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -114,7 +114,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_in_progress',
-            member_created_id = member.id
+            member_created_id = member.id if member else None
         )
 
     @staticmethod
@@ -125,7 +125,7 @@ class TaskEvent(Base, SerializerMixin):
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'comment',
-            member_created_id = member.id,
+            member_created_id = member.id if member else None,
             comment_id = comment.id
 
         )

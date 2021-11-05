@@ -11,11 +11,51 @@ from shared.database.task.task_event import TaskEvent
 from methods.task.task.task_update import Task_Update
 
 
+def trigger_task_complete_sync_event(session, task, job, log):
+    sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+        session = session,
+        dataset_source_id = None,
+        dataset_destination = None,
+        description = None,
+        file = task.file,
+        job = task.job,
+        input = None,
+        project = task.job.project,
+        created_task = None,
+        completed_task = task,
+        new_file_copy = None,
+        transfer_action = None,
+        event_effect_type = '',
+        event_trigger_type = 'task_completed',
+        status = 'init',
+        member_created = None
+    )
+    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    if job.completion_directory and job.output_dir_action in ['copy', 'move']:
+        job_observable = task_file_observers.JobObservable(session = session,
+                                                           log = log,
+                                                           job = job,
+                                                           task = task,
+                                                           sync_events_manager = sync_event_manager)
+        job_observable.notify_all_observers(defer = True)
+
+    Event.new_deferred(
+        session = session,
+        kind = 'task_completed',
+        project_id = task.project_id,
+        member_id = get_member(session).id if get_member(session) else None,
+        task_id = task.id,
+        wait_for_commit = True
+    )
+    job.job_complete_core(session)
+
+
 def task_complete(session,
                   task,
                   new_file,
                   project,
-                  member):
+                  member,
+                  post_review = False):
     """
 
     Also handles new_file here,
@@ -47,10 +87,11 @@ def task_complete(session,
         if job.allow_reviews:
             task_update_manager.status = 'in_review'
             task_update_manager.main()
-            trigger_sync_event = False  # In review Mode We do not want to complete the task
+            if not post_review:
+                trigger_sync_event = False  # In review Mode no sync event, unless completed after review.
         else:
-            task.status = 'complete'
-            TaskEvent.generate_task_creation_event(session, task)
+            task_update_manager.status = 'complete'
+            task_update_manager.main()
 
         # Careful, this is only relevant for normal
         # tasks, not exams?
@@ -92,42 +133,12 @@ def task_complete(session,
     # Notify Observers of task completion
     log = regular_log.default()
     if trigger_sync_event:
-        sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+        trigger_task_complete_sync_event(
             session = session,
-            dataset_source_id = None,
-            dataset_destination = None,
-            description = None,
-            file = task.file,
-            job = task.job,
-            input = None,
-            project = task.job.project,
-            created_task = None,
-            completed_task = task,
-            new_file_copy = None,
-            transfer_action = None,
-            event_effect_type = '',
-            event_trigger_type = 'task_completed',
-            status = 'init',
-            member_created = None
+            task = task,
+            job = job,
+            log = log
         )
-        logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
-        if job.completion_directory and job.output_dir_action in ['copy', 'move']:
-            job_observable = task_file_observers.JobObservable(session = session,
-                                                               log = log,
-                                                               job = job,
-                                                               task = task,
-                                                               sync_events_manager = sync_event_manager)
-            job_observable.notify_all_observers(defer = True)
-
-        Event.new_deferred(
-            session = session,
-            kind = 'task_completed',
-            project_id = task.project_id,
-            member_id = get_member(session).id if get_member(session) else None,
-            task_id = task.id,
-            wait_for_commit = True
-        )
-        job.job_complete_core(session)
 
     return True, new_file
 

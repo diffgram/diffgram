@@ -4,6 +4,8 @@ from shared.database.task.task_event import TaskEvent
 from methods.task.task.task_update import Task_Update
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.utils.task import task_complete
+
+
 @routes.route('/api/v1/task/<int:task_id>/review', methods = ['POST'])
 @Permission_Task.by_task_id(apis_user_list = ["builder_or_trainer"])
 def task_review_api(task_id):
@@ -61,17 +63,15 @@ def task_review_core(session,
         member = member,
     )
     if action == 'approve':
-        TaskEvent.generate_task_review_complete_event(session = session, task = task, member = member)
         task_complete.task_complete(
             session = session,
             task = task,
             new_file = task.file,
-            project = task.project)
-        print('new statusss0', task.status)
+            project = task.project,
+            post_review = True)
     if action == 'request_change':
         task_update_manager.status = TASK_STATUSES['requires_changes']
         task_update_manager.main()
-
 
     if comment_text:
         discussion_comment = DiscussionComment.new(

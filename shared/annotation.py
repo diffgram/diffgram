@@ -1887,6 +1887,7 @@ def task_annotation_update(
         task = task,
         file = file,
         project = project,
+        member = member,
         instance_list_new = instance_list_new,
         video_data = input['video_data'],
         do_init_existing_instances = True

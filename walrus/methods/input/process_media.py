@@ -1580,7 +1580,7 @@ class Process_Media():
                 video_data = video_data,
                 task = task,
                 complete_task = should_complete_task,
-                member = self.input.member_created,
+                member = self.member,
                 do_init_existing_instances = init_existing_instances,
                 external_map = self.input.external_map,
                 external_map_action = self.input.external_map_action,
