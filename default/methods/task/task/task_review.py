@@ -68,6 +68,7 @@ def task_review_core(session,
             task = task,
             new_file = task.file,
             project = task.project,
+            member = member,
             post_review = True)
     if action == 'request_change':
         task_update_manager.status = TASK_STATUSES['requires_changes']
