@@ -44,7 +44,7 @@ class TaskEvent(Base, SerializerMixin):
             '-project'))
 
     @staticmethod
-    def generate_task_creation_event(session, task) -> 'TaskEvent':
+    def generate_task_creation_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -54,7 +54,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_completion_event(session, task) -> 'TaskEvent':
+    def generate_task_completion_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -64,7 +64,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_review_start_event(session, task) -> 'TaskEvent':
+    def generate_task_review_start_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -74,7 +74,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_request_change_event(session, task) -> 'TaskEvent':
+    def generate_task_request_change_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -84,7 +84,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_review_complete_event(session, task) -> 'TaskEvent':
+    def generate_task_review_complete_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -94,7 +94,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_in_progress_event(session, task) -> 'TaskEvent':
+    def generate_task_in_progress_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,

@@ -58,9 +58,13 @@ def task_complete(session,
                 """
 
     else:
-        task.status = 'complete'
-        TaskEvent.generate_task_creation_event(session, task)
         job = task.job
+        if job.allow_reviews:
+            task.status = 'in_review'
+            TaskEvent.generate_task_review_start_event(session, task)
+        else:
+            task.status = 'complete'
+            TaskEvent.generate_task_creation_event(session, task)
 
         # Careful, this is only relevant for normal
         # tasks, not exams?

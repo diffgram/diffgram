@@ -10,7 +10,13 @@ from shared.database.discussion.discussion import Discussion
 from shared.database.task.task_user import TaskUser
 from shared.database.user import User
 
-
+TASK_STATUSES = {
+    'created': 'created',
+    'complete': 'complete',
+    'in_progress': 'in_progress',
+    'requires_changes': 'requires_changes',
+    'deferred': 'deferred',
+}
 class Task(Base):
     """
     A single unit of work.
@@ -84,6 +90,7 @@ class Task(Base):
     job_type = Column(String)  # inherited from job ['Normal', 'Exam', 'Learning']
 
     status = Column(String(), default = 'created', index = True)
+    # Possible Statuses: ['created', 'completed', 'in_progress', 'requires_changes', 'deferred']
     # available vs created?
     # A a review task may get created but is not available
     # "active"
@@ -278,6 +285,15 @@ class Task(Base):
             relation = 'reviewer'
         )
         return rel
+
+    def has_user(self, session, user):
+
+        result = session.query(TaskUser).filter(
+            TaskUser.task_id == self.id
+        ).all()
+        user_id_list = [elm.user_id for elm in result]
+        print('user_id_list', user_id_list)
+        return user.id in user_id_list
 
     def add_assignee(self, session, user):
 

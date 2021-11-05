@@ -96,6 +96,7 @@ class Job(Base, Caching):
     # Review settings
     # can't seem to make up mind on "file" vs "pass"
     review_by_human_freqeuncy = Column(String(), default="every_3rd_pass")
+    allow_reviews = Column(Boolean(), default=False)
     # ['every_pass', 'every_3rd_pass', 'every_10th_pass', 'none']
 
     # Label  / quality settings

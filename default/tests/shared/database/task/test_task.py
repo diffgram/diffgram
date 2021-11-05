@@ -102,3 +102,17 @@ class TestTask(testing_setup.DiffgramBaseTestCase):
                 task_id = task1.id,
                 relation = 'reviewer'
             )
+
+    def test_has_user(self):
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                         self.session)
+
+        task1.add_reviewer(session = self.session, user = self.member.user)
+        self.session.commit()
+        result = task1.has_user(session = self.session, user = self.member.user)
+        self.assertTrue(result)

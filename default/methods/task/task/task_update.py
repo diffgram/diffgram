@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
-from shared.database.task.task import Task
+from shared.database.task.task import Task, TASK_STATUSES
 from shared.utils.task.task_new import create_review_sub_task
 from shared.database.task.task_event import TaskEvent
 
@@ -42,6 +42,14 @@ def task_update_api():
 
     with sessionMaker.session_scope() as session:
         task_list = []
+        user = User.get(session)
+        if user:
+            member = user.member
+        else:
+            client_id = request.authorization.get('username', None)
+            auth = Auth_api.get(session, client_id)
+            member = auth.member
+
         if input['task_id']:
             task = Task.get_by_id(session = session,
                                   task_id = input['task_id'])
@@ -57,7 +65,9 @@ def task_update_api():
                 session = session,
                 task = task,
                 mode = input['mode'],
-                status = input['status'])
+                member = member,
+                status = input['status']
+            )
 
             task_update.main()
 
@@ -73,6 +83,7 @@ class Task_Update():
     task: Task
     mode: str = None
     status: str = None
+    member: 'Member' = None
 
     """
     This is clearly over burdening for setting flag,
@@ -103,16 +114,16 @@ class Task_Update():
     def emit_task_event_based_on_status(self, old_status, task):
         if task.status == 'complete':
             if old_status != 'completed':
-                TaskEvent.generate_task_creation_event(self .session, task)
+                TaskEvent.generate_task_creation_event(self .session, task, self.member)
         if task.status == 'in_progress':
             if old_status != 'in_progress':
-                TaskEvent.generate_task_in_progress_event(self.session, task)
+                TaskEvent.generate_task_in_progress_event(self.session, task, self.member)
         if task.status == 'in_review':
             if old_status != 'in_review':
-                TaskEvent.generate_task_review_start_event(self.session, task)
-        if task.status == 'in_progress':
-            if old_status == 'in_review':
-                TaskEvent.gene(self.session, task)
+                TaskEvent.generate_task_review_start_event(self.session, task, self.member)
+        if task.status == 'requires_changes':
+            if old_status != 'requires_changes':
+                TaskEvent.generate_task_request_change_event(self.session, task, self.member)
 
     def change_status(self):
         if self.task.status != 'archived' and self.status == 'archived':
@@ -134,7 +145,7 @@ class Task_Update():
             self.log['error']['deferred'] = "Review tasks cannot be deferred"
             return
 
-        self.task.status = 'deferred'
+        self.task.status = TASK_STATUSES['deferred']
 
         review_task = create_review_sub_task(
             session = self.session,
