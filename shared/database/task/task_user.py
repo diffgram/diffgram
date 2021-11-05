@@ -25,7 +25,7 @@ class TaskUser(Base, SerializerMixin):
     def serialize(self):
         return self.to_dict(rules = (
             '-task',
-            '-member'))
+            '-user'))
 
     @staticmethod
     def new(session: 'Session',

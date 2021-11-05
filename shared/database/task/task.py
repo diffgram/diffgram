@@ -263,7 +263,7 @@ class Task(Base):
         status_allow_list = ["available", "in_progress"]):
 
         last_task = user.last_task
-
+        print('LASTTT', last_task)
         if last_task:
             if last_task.status in status_allow_list:
                 return last_task

@@ -8,7 +8,7 @@ import analytics
 import requests
 
 
-class TestTask(testing_setup.DiffgramBaseTestCase):
+class TestTaskUser(testing_setup.DiffgramBaseTestCase):
     """
 
     """
@@ -16,7 +16,7 @@ class TestTask(testing_setup.DiffgramBaseTestCase):
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestTask, self).setUp()
+        super(TestTaskUser, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
@@ -40,34 +40,7 @@ class TestTask(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
 
-    def test_get_task_from_job_id(self):
-        job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
-            'project': self.project
-        }, self.session)
-        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
-        task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                         self.session)
-        task2 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                         self.session)
-
-        with patch.object(Task, 'add_assignee') as mock_1:
-            with patch.object(Task_Update, 'main') as mock_2:
-                next_task = Task.get_task_from_job_id(
-                    session = self.session,
-                    job_id = job.id,
-                    user = self.member.user,
-                    direction = 'next',
-                    assign_to_user = True,
-                    skip_locked = True
-
-                )
-                mock_1.assert_called_once()
-                mock_2.assert_called_once()
-
-                self.assertEqual(task1.id, next_task.id)
-
-    def test_add_assignee(self):
+    def test_new(self):
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
             'project': self.project
@@ -76,16 +49,18 @@ class TestTask(testing_setup.DiffgramBaseTestCase):
         task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
                                          self.session)
 
-        with patch.object(TaskUser, 'new', return_value = None) as mock_1:
-            task1.add_assignee(session = self.session, user = self.member.user)
-            mock_1.assert_called_with(
-                session = self.session,
-                user_id = self.member.user.id,
-                task_id = task1.id,
-                relation = 'assignee'
-            )
+        task_user = TaskUser.new(
+            session = self.session,
+            task_id = task1.id,
+            user_id = self.member.user.id,
+            relation = 'test'
+        )
 
-    def test_add_reviewer(self):
+        self.assertEqual(task_user.task_id, task1.id)
+        self.assertEqual(task_user.user_id, self.member.user.id)
+        self.assertEqual(task_user.relation, 'test')
+
+    def test_serialize(self):
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
             'project': self.project
@@ -94,11 +69,15 @@ class TestTask(testing_setup.DiffgramBaseTestCase):
         task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
                                          self.session)
 
-        with patch.object(TaskUser, 'new', return_value = None) as mock_1:
-            task1.add_reviewer(session = self.session, user = self.member.user)
-            mock_1.assert_called_with(
-                session = self.session,
-                user_id = self.member.user.id,
-                task_id = task1.id,
-                relation = 'reviewer'
-            )
+        task_user = TaskUser.new(
+            session = self.session,
+            task_id = task1.id,
+            user_id = self.member.user.id,
+            relation = 'test'
+        )
+
+        result = task_user.serialize()
+
+        self.assertEqual(result['task_id'], task1.id)
+        self.assertEqual(result['user_id'], self.member.user.id)
+        self.assertEqual(result['relation'], 'test')

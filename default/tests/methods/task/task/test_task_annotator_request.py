@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from unittest.mock import patch
-from methods.task.task.task_annotator_request import get_next_task_by_project
+from methods.task.task.task_annotator_request import get_next_task_by_project, get_next_task_by_job
 import methods.task.task.task_annotator_request as task_annotator_request
 
 
@@ -55,16 +55,19 @@ class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
 
         with patch.object(Task, 'get_last_task', return_value = None) as mock_1:
             with patch.object(Task, 'request_next_task_by_project', return_value = self.task) as mock_2:
-                task_result = get_next_task_by_project(
-                    session = self.session,
-                    user = self.member.user,
-                    project = self.project
-                )
+                with patch.object(self.task, 'add_assignee',
+                                  return_value = self.task) as mock_3:
+                    task_result = get_next_task_by_project(
+                        session = self.session,
+                        user = self.member.user,
+                        project = self.project
+                    )
 
-                self.assertIsNotNone(task_result)
-                self.assertEqual(task_result, self.task)
-                mock_1.assert_called_once()
-                mock_2.assert_called_once()
+                    self.assertIsNotNone(task_result)
+                    self.assertEqual(task_result, self.task)
+                    mock_1.assert_called_once()
+                    mock_2.assert_called_once()
+                    mock_3.assert_called_once()
 
     def test_get_next_task_by_job(self):
         self.member.user.last_task_id = None
@@ -77,12 +80,14 @@ class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
                               return_value = self.task) as mock_2:
                 with patch.object(self.task, 'add_assignee',
                                   return_value = self.task) as mock_3:
-                    task_result = get_next_task_by_project(
+                    task_result = get_next_task_by_job(
                         session = self.session,
                         user = self.member.user,
-                        project = self.project
+                        job = self.task.job
                     )
 
                     self.assertIsNotNone(task_result)
                     self.assertEqual(task_result.id, self.task.id)
                     mock_1.assert_called_once()
+                    mock_2.assert_called_once()
+                    mock_3.assert_called_once()

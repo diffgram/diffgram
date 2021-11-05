@@ -76,7 +76,7 @@ class Task_Update():
 
     """
     This is clearly over burdening for setting flag,
-    but the point is more that we want to expand along this axis as 
+    but the point is more that we want to expand along this axis as
     other types of task update stuff get added.
 
     """
@@ -103,7 +103,7 @@ class Task_Update():
     def emit_task_event_based_on_status(self, old_status, task):
         if task.status == 'complete':
             if old_status != 'completed':
-                TaskEvent.generate_task_creation_event(self.session, task)
+                TaskEvent.generate_task_creation_event(self .session, task)
         if task.status == 'in_progress':
             if old_status != 'in_progress':
                 TaskEvent.generate_task_in_progress_event(self.session, task)
