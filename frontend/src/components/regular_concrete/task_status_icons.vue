@@ -1,5 +1,5 @@
 <template>
-<div>
+<div data-cy="task_status_icons">
 
   <tooltip_icon
       v-if="status == 'complete'"
