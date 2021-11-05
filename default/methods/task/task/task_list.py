@@ -88,7 +88,7 @@ def _task_list_api(project_id, input=input, log = regular_log.default()):
                                    mode_data=input['mode_data'],
                                    issues_filter = input['issues_filter'],
                                    limit_count=input['limit_count'],
-                                   page_number=input['page_number'])
+                                   page_number=input.get('page_number'))
         initial_dir_sync = None
         if input.get('job_id'):
             job = Job.get_by_id(session, input['job_id'])
