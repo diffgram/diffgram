@@ -2,10 +2,10 @@ import testUser from '../../../fixtures/users.json';
 
 describe('tasks_detail_pagination', () => {
 
-  context('something', () => {
+  context('tasks_detail_pagination', () => {
     before(function () {
 
-      cy.createSampleTasksUsingBackend(12)
+      cy.createSampleTasksUsingBackend(15)
 
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({
