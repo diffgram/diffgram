@@ -5994,7 +5994,8 @@
 
             let points = polygon.points;
             let figure_list = this.get_polygon_figures(polygon);
-            if(figure_list === 0){
+
+            if(figure_list.length === 0){
               let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
               if(autoborder_point_exists){
                 found_point = true;
