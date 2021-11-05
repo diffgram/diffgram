@@ -2,9 +2,9 @@ import testUser from '../../../fixtures/users.json';
 import testLabels from '../../../fixtures/labels.json';
 
 
-describe('Annotate Files Tests', () => {
+describe('File Info', () => {
 
-  context('Test Annotate files Main Features', () => {
+  context('File Info', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({
