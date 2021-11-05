@@ -322,8 +322,8 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
       // We want to skip the last point since that is the initial point. That's why its length - 1
       for(let i = 0; i < points.length - 1; i++){
         const point = points[i];
-        const clientX = point.x + canvas_client_box.x;
-        const clientY = point.y + canvas_client_box.y;
+        const clientX = point.x + canvas_client_box.x
+        const clientY = point.y + canvas_client_box.y
         const box_point = get_transformed_coordinates({x: clientX, y: clientY},
           canvas_client_box,
           annCore.canvas_element,
