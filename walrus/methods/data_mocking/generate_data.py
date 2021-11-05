@@ -375,7 +375,7 @@ class DiffgramDataMocker:
         if structure == '1_pass':
             task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project)
             # Try to get the default dataset.
-            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[:3], project=project)
+            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[-5:], project=project)
 
             if not input_dir_exists:
                 self.generate_test_data_on_dataset_copy_file(input_dir, num_files)
