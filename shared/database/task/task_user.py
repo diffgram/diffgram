@@ -49,17 +49,26 @@ class TaskUser(Base, SerializerMixin):
         return task_event
 
     @staticmethod
-    def list(session: 'Session', task_id: int = None, user_id: int = None, relation: str = None):
+    def list(session: 'Session',
+             task_id: int = None,
+             user_id: int = None,
+             job_id: int = None,
+             relation: str = None):
 
         query = session.query(TaskUser)
-
         if task_id:
-            query.filter(TaskUser.task_id == task_id)
+            query = query.filter(TaskUser.task_id == task_id)
 
         if user_id:
-            query.filter(TaskUser.user_id == user_id)
+            query = query.filter(TaskUser.user_id == user_id)
 
         if relation:
-            query.filter(TaskUser.relation == relation)
+            query = query.filter(TaskUser.relation == relation)
+
+        if job_id:
+            from shared.database.task.task import Task
+            query = query.join(Task).filter(
+                Task.job_id == job_id
+            )
 
         return query.all()
