@@ -63,14 +63,14 @@
                   <v-icon dark> mdi-account-circle </v-icon>
                 </v-avatar>
                 <span v-on="on" style="cursor: pointer">
-                  {{ full_name() }}
+                  {{ full_name }}
                 </span>
                 <v-icon> arrow_drop_down </v-icon>
               </div>
               <div v-else>
                 <span v-on="on" style="cursor: pointer">
                   Getting data for
-                  {{ full_name() }}
+                  {{ full_name }}
                   ...
                 </span>
               </div>
@@ -84,7 +84,7 @@
                   <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
                     <v-icon dark> mdi-account-circle </v-icon>
                   </v-avatar>
-                  {{ full_name(member.id) }}
+                  {{ member.first_name }} {{ member.last_name }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -118,14 +118,14 @@ export default Vue.extend({
   watch: {
     update_user_cart: {
       async handler(value) {
-        if (value) this.update_user_cahrt();
+        if (value) this.update_user_chart();
       },
     },
   },
   computed: {
-    full_name: (id = null) => {
-      const { first_name, last_name } = member_list.find(
-        (item) => item.id === (id || show_member_stat)
+    full_name() {
+      const { first_name, last_name } = this.member_list.find(
+        (item) => item.id === this.show_member_stat
       );
       return `${first_name} ${last_name}`;
     },
@@ -135,7 +135,7 @@ export default Vue.extend({
       this.stats_visibility = !this.stats_visibility;
       localStorage.setItem("diff_stats_task_visibility", this.stats_visibility);
     },
-    async update_user_cahrt() {
+    async update_user_chart() {
       const { job_id } = this.$route.params;
       const userStats = await getJobStatsForUser(job_id, this.show_member_stat);
       this.user_stats.chartData.datasets[0].data = [
@@ -151,7 +151,7 @@ export default Vue.extend({
       }
       this.update_user_cart = false;
     },
-    switch_user: (id) => {
+    switch_user(id) {
       this.show_member_stat = id;
       this.update_user_cart = true;
     },
@@ -169,7 +169,7 @@ export default Vue.extend({
     const { completed, total } = await getJobStats(job_id);
     this.job_chart.chartData.datasets[0].data = [completed, total - completed];
 
-    await this.update_user_cahrt();
+    await this.update_user_chart();
 
     this.job_data_fetched = true;
 
