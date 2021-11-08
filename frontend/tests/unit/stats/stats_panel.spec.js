@@ -53,4 +53,9 @@ describe("Test stats panel component", () => {
         await wrapper.find('v-btn').trigger('click')
         expect(localStorage.setItem).toHaveBeenCalled();
     })
+
+    it("Renders right content", () => {
+        const wrapper = shallowMount(stats_panel, props, localVue);
+        console.log(wrapper.html())
+    })
 })
