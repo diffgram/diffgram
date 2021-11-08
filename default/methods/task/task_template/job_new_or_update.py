@@ -219,6 +219,13 @@ update_job_spec_list = [
         'required': False
         }
     },
+    {"reviewer_list_ids": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+    }
+    },
     {"pro_network": {
         'kind': bool,
         'required': False
@@ -389,7 +396,7 @@ def job_update_core(session, job, project, input: dict, log: dict):
             interface_connection_id=input.get('interface_connection_id'),
             job_type=input['type'],
             member_list_ids=input['member_list_ids'],
-            reviewer_list_ids=input['reviewer_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             default_userscript_id=input.get('default_userscript_id'),
             job=job
         )
@@ -517,7 +524,7 @@ def new_web(project_string_id):
             job_type=input['type'],
             interface_connection_id=input.get('interface_connection_id'),
             member_list_ids=input['member_list_ids'],
-            reviewer_list_ids=input['reviewer_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             attached_directories_dict=input['attached_directories_dict'],
             pro_network=input['pro_network'],         
             default_userscript_id=input['default_userscript_id']
@@ -659,10 +666,11 @@ def new_or_update_core(session,
         label mode handling (like the "closed all availble")
 
         """
+        print('IS UPDATIIIINNNG', log)
         # Not really sure if tasks can exist while in draft mode but might be good idea to update anyways.
         task_template_label_attach(session, job)
         log = update_tasks(job, session, log)
-
+        print('IS log', log)
     if is_updating and job.share_type != share:
         job.share_type = share
         if not job.share_type: job.share_type = 'project'
@@ -679,7 +687,7 @@ def new_or_update_core(session,
 
     # What about validation on other inputs???
     # Look at actions or other part of system for options here...
-
+    print('IS log', log)
     job.launch_datetime = launch_datetime
     # We expect this to be a valid datetime object,
     # but otherwise don't validate, ie a date in the past
@@ -727,7 +735,7 @@ def new_or_update_core(session,
                 user = member.user)
         except:
             logger.info("Failed to email about new pro job")
-
+    print('IS log2', log)
     # Update sync dirs and completion directory ID
     if isinstance(attached_directories_dict, dict):
         job.update_attached_directories(session,
@@ -751,6 +759,7 @@ def new_or_update_core(session,
             member=member,
             success=True
         )
+    print('IS log final', log)
     return job, log
 
 

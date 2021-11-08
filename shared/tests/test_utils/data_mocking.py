@@ -86,6 +86,7 @@ def register_user(user_data: dict, session):
         api_enabled_trainer = True,
         security_email_verified = True,
         last_builder_or_trainer_mode = 'builder',
+        member_id = user_data.get('member_id'),
         permissions_general = {'general': ['normal_user']}
 
     )

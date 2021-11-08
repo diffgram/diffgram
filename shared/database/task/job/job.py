@@ -8,7 +8,9 @@ from shared.database.source_control.file import File
 from shared.database.user import User
 from shared.database.event.event import Event
 from shared.regular.regular_member import get_member
+from shared.shared_logger import get_shared_logger
 
+logger = get_shared_logger()
 
 class Job(Base, Caching):
     """
@@ -283,6 +285,11 @@ class Job(Base, Caching):
                 return attribute_template
         return None
 
+    def get_reviewers(self, session):
+        rels = User_To_Job.list(session = session, job = self, relation = 'reviewer')
+        users = [rel.user for rel in rels]
+        return users
+
     def check_existing_user_relationship(
             self,
             session,
@@ -375,6 +382,11 @@ class Job(Base, Caching):
         :param log:
         :return:
         """
+        if reviewer_list_ids is None:
+            data_str = 'reviewer_list_ids must not be None, skipping update_reviewer_list()'
+            logger.warning(data_str)
+            log['info']['reviewer_list_ids'] = data_str
+            return log
         user_list = []
         log['info']['reviewer_list'] = {}
 
@@ -444,6 +456,7 @@ class Job(Base, Caching):
             cache_key='reviewer_list_ids',
             value=reviewer_list_ids)
         session.add(self)
+        return log
 
     def update_member_list(
             self,
