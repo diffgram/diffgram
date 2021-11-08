@@ -1,16 +1,11 @@
 <template>
-  <v-container class="grey lighten-5">
+  <div>
     <v-btn @click="change_stats_visibility" text
       >{{ stats_visibility ? "Hide" : "Show job" }} satistics</v-btn
     >
     <v-row v-if="stats_visibility">
       <v-col cols="12" sm="4">
-        <v-card
-          class="mx-auto info-style"
-          height="250px"
-          max-width="100%"
-          outlined
-        >
+        <v-card class="mx-auto info-style" outlined>
           <h3>Job progress:</h3>
           <div v-if="job_data_fetched" style="width: 50%">
             <pie-chart
@@ -21,12 +16,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" sm="4">
-        <v-card
-          class="mx-auto info-style"
-          height="250px"
-          max-width="100%"
-          outlined
-        >
+        <v-card class="mx-auto info-style" outlined>
           <h3>My progress:</h3>
           <br />
           <br />
@@ -50,12 +40,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" sm="4">
-        <v-card
-          class="mx-auto info-style"
-          height="250px"
-          max-width="100%"
-          outlined
-        >
+        <v-card class="mx-auto info-style" outlined>
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
               <div v-if="!update_user_cart && job_data_fetched">
@@ -98,7 +83,7 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script>
@@ -233,5 +218,12 @@ export default Vue.extend({
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 350px;
+}
+
+@media screen and (max-width: 1500px) {
+  .info-style {
+    height: 250px;
+  }
 }
 </style>
