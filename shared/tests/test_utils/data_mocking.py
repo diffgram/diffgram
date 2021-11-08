@@ -30,6 +30,7 @@ from shared.database.video.video import Video
 from shared.database.image import Image
 from shared.database.export import Export
 from shared.database.video.sequence import Sequence
+from shared.database.task.job.user_to_job import User_To_Job
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -220,11 +221,13 @@ def create_instance_template(instance_template_data, session):
     regular_methods.commit_with_rollback(session)
     return instance_template
 
-def create_user(user_data, session):
 
+def create_user(user_data, session):
     user = User(
 
     )
+
+
 def create_file(file_data, session):
     file = File(
         project_id = file_data.get('project_id'),
@@ -304,6 +307,17 @@ def new_system_event(system_event_data, session):
     session.add(system_event)
     session.commit()
     return system_event
+
+
+def create_user_to_job(rel_data: dict, session: 'Session'):
+    rel = User_To_Job()
+    rel.job_id = rel_data.get('job_id')
+    rel.user_id = rel_data.get('user_id')
+    rel.relation = rel_data.get('relation')
+    rel.status = rel_data.get('status')
+    session.add(rel)
+    regular_methods.commit_with_rollback(session)
+    return rel
 
 
 def create_job(job_data, session):
