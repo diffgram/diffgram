@@ -146,6 +146,9 @@ export default Vue.extend({
       "diff_stats_task_visibility"
     );
 
+    if (stats_visibility_status)
+      this.stats_visibility = JSON.parse(stats_visibility_status);
+
     const user_id = this.$store.state.user.current.id;
     const { job_id } = this.$route.params;
     this.member_list = [...this.$store.state.project.current.member_list];
@@ -157,9 +160,6 @@ export default Vue.extend({
     await this.update_user_chart();
 
     this.job_data_fetched = true;
-
-    if (stats_visibility_status)
-      this.stats_visibility = JSON.parse(stats_visibility_status);
   },
   data() {
     return {
