@@ -165,5 +165,5 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
             serialize = False,
             user = self.member.user
         )
-        
+
         self.assertTrue(user_to_job in result)

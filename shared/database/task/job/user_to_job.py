@@ -20,7 +20,7 @@ class User_To_Job(Base):
 
     status = Column(String(), default="active")
 
-    relation = Column(String(), default="annotator")
+    relation = Column(String(), default="annotator", primary_key=True)
     #  [ Active / accepted, in approval, completed, hidden etc. ]
     # More advanced "Application" class in the future maybe?
 

@@ -363,6 +363,52 @@ class Job(Base, Caching):
         user_to_job.archived = True
         session.add(user_to_job)
 
+    def update_reviewer_list(self, session: 'Session', reviewer_list_ids: list, log: dict):
+        user_list = []
+        if 'all' in reviewer_list_ids:
+            user_list = self.project.users
+        else:
+            for member_id in reviewer_list_ids:
+
+                user = User.get_by_member_id(
+                    session=session,
+                    member_id=member_id)
+                user_list.append(user)
+                if not user:
+                    log['error']['reviewer_list'] = {}
+                    log['error']['reviewer_list'][member_id] = "Invalid member_id " + str(member_id)
+                    return log
+
+        user_added_id_list = []
+        for user in user_list:
+
+            user_added_id_list.append(user.id)
+
+            existing_user_to_job = User_To_Job.get_single_by_ids(
+                session=session,
+                user_id=user.id,
+                job_id=self.id
+            )
+
+            if existing_user_to_job:
+                # Add user back into job
+                if existing_user_to_job.status == 'removed':
+                    existing_user_to_job.status = 'active'
+                    log['info']['update_member_list'][user.member_id] = "Added"
+                    if add_to_session is True:
+                        session.add(existing_user_to_job)
+                else:
+                    log['info']['update_member_list'][user.member_id] = "Unchanged."
+                continue
+
+            user_to_job = self.attach_user_to_job(
+                session=session,
+                user=user,
+                add_to_session=add_to_session)
+
+            log['info']['update_member_list'][user.member_id] = "Added"
+
+
     def update_member_list(
             self,
             member_list_ids: list,
