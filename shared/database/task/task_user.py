@@ -47,3 +47,19 @@ class TaskUser(Base, SerializerMixin):
         if flush_session:
             session.flush()
         return task_event
+
+    @staticmethod
+    def list(session: 'Session', task_id: int = None, user_id: int = None, relation: str = None):
+
+        query = session.query(TaskUser)
+
+        if task_id:
+            query.filter(TaskUser.task_id == task_id)
+
+        if user_id:
+            query.filter(TaskUser.user_id == user_id)
+
+        if relation:
+            query.filter(TaskUser.relation == relation)
+
+        return query.all()

@@ -93,6 +93,7 @@ def task_complete(session,
             else:
                 trigger_sync_event = False  # In review Mode no sync event (unless post_review=True)
                 task_update_manager.status = TASK_STATUSES['review_requested']
+
                 task_update_manager.main()
 
         else:
