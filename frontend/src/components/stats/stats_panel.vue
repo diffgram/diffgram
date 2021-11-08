@@ -76,33 +76,40 @@
         >
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
-              <div v-if="!update_user_cart">
+              <div v-if="!update_user_cart && job_data_fetched">
                 <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
                   <v-icon dark> mdi-account-circle </v-icon>
                 </v-avatar>
                 <span v-on="on" style="cursor: pointer">
                   {{
-                    items.find((item) => item.id === current_user_stat).title
+                    member_list.find((item) => item.id === show_member_stat)
+                      .first_name
+                  }}
+                  {{
+                    member_list.find((item) => item.id === show_member_stat)
+                      .last_name
                   }}
                 </span>
+                <v-icon> arrow_drop_down </v-icon>
               </div>
               <div v-else>
                 <span v-on="on" style="cursor: pointer">
                   Getting data for
                   {{
-                    items.find((item) => item.id === current_user_stat).title
+                    member_list.find((item) => item.id === show_member_stat)
+                      .first_name
                   }}
                   ...
                 </span>
               </div>
             </template>
             <v-list>
-              <v-list-item v-for="(item, index) in items" :key="index">
+              <v-list-item v-for="(member, index) in member_list" :key="index">
                 <v-list-item-title
                   style="cursor: pointer"
                   @click="
                     () => {
-                      current_user_stat = item.id;
+                      show_member_stat = member.id;
                       update_user_cart = true;
                     }
                   "
@@ -110,16 +117,15 @@
                   <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
                     <v-icon dark> mdi-account-circle </v-icon>
                   </v-avatar>
-                  {{ item.title }}
+                  {{ member.first_name }} {{ member.last_name }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
-          <div style="width: 50%">
+          <div v-if="!update_user_cart && job_data_fetched" style="width: 50%">
             <pie-chart
-              v-if="!update_user_cart"
-              :data="user_stats[current_user_stat].chartData2"
-              :options="user_stats[current_user_stat].chartOptions2"
+              :data="user_stats.chartData"
+              :options="user_stats.chartOptions"
             />
           </div>
         </v-card>
@@ -144,8 +150,19 @@ export default Vue.extend({
   store,
   watch: {
     update_user_cart: {
-      handler(value) {
-        if (value) setTimeout(() => (this.update_user_cart = false), 2000);
+      async handler(value) {
+        if (value) {
+          const { job_id } = this.$route.params;
+          const userStats = await getJobStatsForUser(
+            job_id,
+            this.show_member_stat
+          );
+          this.user_stats.chartData.datasets[0].data = [
+            userStats.completed,
+            userStats.total - userStats.completed,
+          ];
+          this.update_user_cart = false;
+        }
       },
     },
   },
@@ -163,6 +180,10 @@ export default Vue.extend({
     const user_id = this.$store.state.user.current.id;
     const { job_id } = this.$route.params;
 
+    const member_list = [...this.$store.state.project.current.member_list];
+    this.member_list = member_list;
+    this.show_member_stat = user_id;
+
     const { completed, total } = await getJobStats(job_id);
     const userStats = await getJobStatsForUser(job_id, user_id);
     this.current_user_performance = {
@@ -171,6 +192,10 @@ export default Vue.extend({
       completed: userStats.completed,
     };
     this.job_chart.chartData.datasets[0].data = [completed, total - completed];
+    this.user_stats.chartData.datasets[0].data = [
+      userStats.completed,
+      userStats.total - userStats.completed,
+    ];
     this.job_data_fetched = true;
 
     if (stats_visibility_status)
@@ -182,6 +207,7 @@ export default Vue.extend({
       current_user_stat: "two",
       update_user_cart: false,
       job_data_fetched: false,
+      show_member_stat: null,
       current_user_performance: {
         instances: 0,
         total: 0,
@@ -194,7 +220,7 @@ export default Vue.extend({
         chartData: {
           hoverBackgroundColor: "red",
           hoverBorderWidth: 10,
-          labels: ["Completed", "Un done"],
+          labels: ["Completed", "Pending"],
           datasets: [
             {
               label: "Data One",
@@ -205,63 +231,22 @@ export default Vue.extend({
         },
       },
       user_stats: {
-        one: {
-          chartOptions2: {
-            hoverBorderWidth: 20,
-          },
-          chartData2: {
-            hoverBackgroundColor: "red",
-            hoverBorderWidth: 10,
-            labels: ["Completed", "QA", "Un done"],
-            datasets: [
-              {
-                label: "Data One",
-                backgroundColor: ["#41B883", "#E46651", "#00D8FF"],
-                data: [2, 4, 3],
-              },
-            ],
-          },
+        chartOptions: {
+          hoverBorderWidth: 20,
         },
-        two: {
-          chartOptions2: {
-            hoverBorderWidth: 20,
-          },
-          chartData2: {
-            hoverBackgroundColor: "red",
-            hoverBorderWidth: 10,
-            labels: ["Completed", "QA", "Un done"],
-            datasets: [
-              {
-                label: "Data One",
-                backgroundColor: ["#41B883", "#E46651", "#00D8FF"],
-                data: [4, 4, 4],
-              },
-            ],
-          },
-        },
-        three: {
-          chartOptions2: {
-            hoverBorderWidth: 20,
-          },
-          chartData2: {
-            hoverBackgroundColor: "red",
-            hoverBorderWidth: 10,
-            labels: ["Completed", "QA", "Un done"],
-            datasets: [
-              {
-                label: "Data One",
-                backgroundColor: ["#41B883", "#E46651", "#00D8FF"],
-                data: [1, 3, 2],
-              },
-            ],
-          },
+        chartData: {
+          hoverBackgroundColor: "red",
+          hoverBorderWidth: 10,
+          labels: ["Completed", "Pending"],
+          datasets: [
+            {
+              label: "Data One",
+              backgroundColor: ["#41B883", "#E46651"],
+              data: [],
+            },
+          ],
         },
       },
-      items: [
-        { title: "Anthony Sarkis", id: "one" },
-        { title: "Pablo Estrada", id: "two" },
-        { title: "Vitalii Buyzhyn", id: "three" },
-      ],
     };
   },
 });
