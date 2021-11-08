@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-btn @click="change_stats_visibility" text
-      >{{ stats_visibility ? "Hide" : "Show job" }} satistics</v-btn
+      >{{ stats_visibility ? "Hide" : "Show job" }} statistics</v-btn
     >
     <v-row v-if="stats_visibility">
       <v-col cols="12" sm="4">
