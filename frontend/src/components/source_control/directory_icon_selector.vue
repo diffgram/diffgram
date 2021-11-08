@@ -125,6 +125,9 @@
       'layout_type': {
         default: 'large'
       },
+      'datacy': {
+          default: 'directory-icon-selector'
+      },
 
     },
     components: {

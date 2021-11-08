@@ -164,6 +164,8 @@ class Project_permissions():
             # TODO merge None checks from other thing up top here.
             raise Forbidden(user_denied_message + "project_string_id is None")
 
+		if Project_permissions.check_if_project_is_public(project, Roles):
+			return True
         if 'allow_anonymous' in Roles:
             return True
 

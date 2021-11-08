@@ -78,7 +78,8 @@ def get_next_task_by_job(
     task = Task.get_last_task(
         session = session,
         user = user,
-        status_allow_list = ["available", "in_progress"])
+        status_allow_list = ["available", "in_progress"],
+        job=job)
 
     if task:
         return task

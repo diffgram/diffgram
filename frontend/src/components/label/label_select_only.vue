@@ -102,6 +102,7 @@
        && !view_only_mode
        && show_select_all == true">
         <v-checkbox
+          data-cy="select-all-labels"
           v-model="select_all_state"
           label="Select All"
           :disabled="label_refresh_loading"

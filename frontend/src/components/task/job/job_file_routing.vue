@@ -1,10 +1,10 @@
 <template>
-  <v-container class="ma-0">
+  <v-container class="ma-0" data-cy="job-file-routing">
     <v-row>
       <v-col cols="12">
 
         <v-card-title>
-            Choose Diffgram Datasets for Tasks
+            1. Choose Diffgram Datasets for Tasks
 
             <button_with_menu
               tooltip_message="Streaming Info"
@@ -32,6 +32,7 @@
         </v-card-title>
 
         <directory_icon_selector
+          data-cy="directory-selector"
           layout_type="small"
           :job="job"
           :project_string_id="project_string_id"
@@ -44,56 +45,27 @@
     <v-row>
       <v-col cols="12">
         <v-card-title>
-          After Tasks are Completed (Optional)
+          2. After Tasks are Completed (Optional)
         </v-card-title>
 
         <job_output_dir_selector
+          data-cy="job-output-dir-selector"
           :job="job"
           :project_string_id="project_string_id"
-          @output_dir_actions_update="on_output_dir_actions_update"
-        >
-
+          @output_dir_actions_update="on_output_dir_actions_update">
         </job_output_dir_selector>
       </v-col>
     </v-row>
-
-    <v-card-title>
-      Quick Import External Data (Optional)
-    </v-card-title>
-
-    <div class="pb-4">
-
-      <tooltip_button
-          tooltip_message="Open Quick Import Window"
-          @click="open_import_data_sheet"
-          icon="mdi-application-import"
-          :icon_style="true"
-          :large="true"
-          :bottom="true"
-          color="primary">
-      </tooltip_button>
-
-    </div>
-    <upload_wizard_sheet
-      v-if="open_wizard"
-      @closed="on_close_wizard"
-      :project_string_id="project_string_id"
-      :initial_dataset="latest_dataset"
-      ref="upload_wizard_sheet">
-
-    </upload_wizard_sheet>
   </v-container>
 
 </template>
 
 <script lang="ts">
 
-  import axios from 'axios';
   import label_select_only from '../../label/label_select_only.vue'
   import upload_wizard_sheet from '../../input/upload_wizard_sheet'
   import directory_icon_selector from '../../source_control/directory_icon_selector.vue'
   import job_output_dir_selector from './job_output_dir_selector.vue'
-  import {route_errors} from '../../regular/regular_error_handling'
   import Vue from "vue";
 
 

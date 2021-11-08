@@ -183,7 +183,7 @@
           thumbnailWidth: 150,
           maxFilesize: 30,
           dictDefaultMessage: "Drop icon here to upload. Small images work best.",
-          header: {
+          headers: {
             "credential_type_id": this.credential_type.id
           }
         }

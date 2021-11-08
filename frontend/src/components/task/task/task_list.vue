@@ -55,19 +55,23 @@
             :close_by_button="true"
             offset="x"
             color="primary"
+            datacy="task_list_filters"
+            datacyclose="task_list_close_filters"
           >
 
             <template slot="content">
-
+              
                 <task_status_select
                   :clearable="true"
                   v-model="task_status"
                   label="Status"
+                  @change="page_number = 0"
                   :disabled="loading">
                 </task_status_select>
 
                 <v-select
                   v-model="issues_filter"
+                  @change="page_number = 0"
                   :items="issue_filter_options"
                   :clearable="true"
                   label="Filer by Issues"
@@ -75,8 +79,19 @@
                   item-value="value"
                 ></v-select>
 
-                <date_picker @date="date = $event" :with_spacer="false" :initialize_empty="true">
+                <date_picker @date="date = $event, page_number = 0"
+                             :with_spacer="false"
+                             :initialize_empty="true">
                 </date_picker>
+
+                 <v-select
+                  data-cy="task_list_per_page_limit_selector"
+                  :items="per_page_limit_options"
+                  v-model="per_page_limit"
+                  label="Per Page"
+                  item-value="text"
+                  :disabled="loading"
+                  @change="page_number = 0"></v-select>
 
                 <v_directory_list
                   class="ml-4 mr-8"
@@ -88,12 +103,14 @@
                   :update_from_state="false"
                   :set_current_dir_on_change="false"
                   :initial_dir_from_state="false"
-                  @change_directory="on_change_dir"
+                  @change_directory="on_change_dir, page_number = 0"
                 ></v_directory_list>
 
                 <v-btn @click="refresh_task_list"
                         :loading="loading"
-                        color="primary">
+                        color="primary"
+                        data-cy="task_list_refresh_task_list"
+                       >
                   Refresh
                 </v-btn>
 
@@ -101,6 +118,60 @@
           </button_with_menu>
 
           <v-spacer></v-spacer>
+
+          <v-row class="pt-3"
+                 v-if="$store.state.job.current.file_count_statistic">
+
+            <div v-if="!loading
+                 && page_end_index > $store.state.job.current.file_count_statistic
+                 && $store.state.job.current.file_count_statistic > per_page_limit
+                ">
+                <v-chip color="white"
+                    text-color="primary"
+                    >No more pages.</v-chip>
+            </div>
+            <div>
+
+              <v-chip color="white"
+                      text-color="primary">
+               {{ page_start_index }}  to
+               {{ page_end_index }}
+              </v-chip>
+  
+              <v-chip class="pl-2 pr-2"
+                      color="white"
+                      text-color="primary"
+                  >of {{ $store.state.job.current.file_count_statistic }}
+              </v-chip>
+
+            </div>
+
+            <tooltip_button
+              v-show="page_number != 0"
+              datacy="task_list_previous_page"
+              tooltip_message="Previous Page"
+              @click="previous_page()"
+              :disabled="loading"
+              :icon_style="true"
+              icon="mdi-chevron-left-box"
+              color="primary"
+            >
+            </tooltip_button>
+
+            <tooltip_button
+              v-show="page_end_index < $store.state.job.current.file_count_statistic
+                     && $store.state.job.current.file_count_statistic > per_page_limit"
+              tooltip_message="Next Page"
+              datacy="task_list_next_page"
+              @click="next_page()"
+              :disabled="loading || page_end_index > $store.state.job.current.file_count_statistic"
+              :icon_style="true"
+              icon="mdi-chevron-right-box"
+              color="primary"
+            >
+            </tooltip_button>
+          </v-row>
+
 
           <button_with_menu
               tooltip_message="Show/Hide Columns"
@@ -187,6 +258,7 @@
               :header_list="header_list"
               :column_list="column_list"
               v-model="selected"
+              :hidedefaultfooter="true"
               @rowclick="rowclick($event)"
               >
 
@@ -502,6 +574,10 @@
             {name: 'Archive', value: 'archive'}
           ],
 
+          page_number: 0,
+          per_page_limit: 25,
+          per_page_limit_options: [10, 25, 100, 250],
+
           selected: [],
           dialog_confirm_archive: false,
           issues_filter: undefined,
@@ -513,7 +589,6 @@
           loading_archive: false,
           snackbar_success: false,
           selected_action: undefined,
-          api_limit_count: 1000,
 
           date: undefined,   // TODO use date as a prop to sync with stats?
 
@@ -534,8 +609,6 @@
           show_success_attach: false,
           pending_initial_dir_sync: true,
 
-
-          request_next_page_flag: false,
           request_next_page_available: true,
 
           headers_selected_backup : [],  // copied from headers_selected during mounted
@@ -672,6 +745,18 @@
       },
 
       computed: {
+
+        page_start_index: function () {
+          return (this.page_number * this.per_page_limit) + 1
+        },
+
+        page_end_index: function () {
+          let count = (this.page_number * this.per_page_limit) + this.per_page_limit
+          if (count > this.$store.state.job.current.file_count_statistic) {
+            count = this.$store.state.job.current.file_count_statistic
+          }
+          return count
+        },
         header_view: function () {
           if (this.mode_data == "exam_results") {
             return this.header_exam_results
@@ -724,7 +809,7 @@
             return this.job.interface_connection.integration_name;
           }
           return undefined;
-        }
+        },
 
       },
       created() {
@@ -739,6 +824,16 @@
       },
       methods: {
 
+        async next_page() {
+            this.page_number += 1
+            await this.task_list_api();
+        },
+
+        async previous_page() {
+          this.page_number -= 1
+          await this.task_list_api();
+
+        },
         api_get_next_task_scoped_to_job: async function(job_id){
           try{
             this.next_task_loading = true
@@ -851,6 +946,7 @@
           this.loading = true
           try {
             const response = await axios.post(`/api/v1/job/${this.job_id}/task/list`, {
+              'page_number': this.page_number,
               'date_from': this.date ? this.date.from : undefined,
               'date_to': this.date ? this.date.to : undefined,
               'job_id': this.job_id,
@@ -858,7 +954,7 @@
               'incoming_directory_id': this.incoming_directory ? this.incoming_directory.directory_id : undefined,
               'status': this.task_status,
               'issues_filter': this.issues_filter,
-              'limit_count': this.api_limit_count
+              'limit_count': this.per_page_limit
             })
 
             if (response.data.log.success == true) {
@@ -867,6 +963,7 @@
               this.pending_initial_dir_sync = response.data.pending_initial_dir_sync;
 
               this.update_tasks_with_file_annotations(this.task_list)
+
             }
             return response
           } catch (error) {

@@ -261,13 +261,19 @@ class Task(Base):
         return discovered_task
 
     def get_last_task(
-        session,
-        user,
-        status_allow_list = ["available", "in_progress"]):
+            session,
+            user,
+            status_allow_list = ["available", "in_progress"],
+            job=None):
 
         last_task = user.last_task
         print('LASTTT', last_task)
         if last_task:
+
+            if job:
+                if last_task.job_id != job.id:
+                    return None
+
             if last_task.status in status_allow_list:
                 return last_task
 
@@ -482,7 +488,8 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
-            'project_string_id': self.project.project_string_id,
+            'job': self.job.serialize_for_task(),
+            'project_string_id' : self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'file': self.file.serialize_with_type(session = session),
@@ -523,6 +530,7 @@ class Task(Base):
              issues_filter = None,
              return_mode = None,
              limit_count = 25,
+             page_number = 0  # 0 is same as no offset
              ):
 
         query = session.query(Task)
@@ -575,10 +583,13 @@ class Task(Base):
         if return_mode == "count":
             return query.count()
 
-        print('limit_count', limit_count)
         query = query.options(joinedload(Task.incoming_directory))
         query = query.options(joinedload(Task.job))
         query = query.order_by(Task.time_created)
+
+        if page_number:
+            if page_number < 0: page_number = 0
+            query = query.offset(page_number * limit_count)
 
         task_list = query.limit(limit_count).all()
 

@@ -186,12 +186,11 @@
       <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
         <!-- instance_selector -->
         <diffgram_select
-            v-if="view_only_mode != true"
             :item_list="instance_type_list"
             data_cy="instance-type-select"
             v-model="instance_type"
             label="New Instance Type"
-            :disabled="loading || loading_instance_templates"
+            :disabled="loading || loading_instance_templates || view_only_mode"
             @change="$emit('change_instance_type', instance_type)"
             >
         </diffgram_select>
@@ -335,6 +334,7 @@
           color="primary"
           :icon="anootations_show_icon"
           :close_by_button="true"
+          :disabled="loading || annotations_loading || full_file_loading"
         >
         <template slot="content">
           <v-btn

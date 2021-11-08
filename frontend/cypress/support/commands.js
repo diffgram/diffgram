@@ -268,6 +268,26 @@ Cypress.Commands.add('signupPro', function () {
 
   })
 
+Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
+  cy.request({
+    method: 'POST',
+    url: `localhost:8085/api/walrus/test/gen-data`,
+    body:  {
+      'data_type' : 'task_template',
+      'structure': '1_pass',
+      'num_files': num_files
+    },
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    failOnStatusCode: true
+  }).then((response) =>{
+    if(response.body.success){
+      return true
+    }
+  })
+})
+
 Cypress.Commands.add('registerProTestUser', function () {
 
   cy.visit('http://localhost:8085/user/pro/new');
@@ -318,20 +338,29 @@ Cypress.Commands.add('loginByForm', function (email, password) {
 
     if (user_logged_in == false) {
       cy.wait(3000);
-      cy.get('[data-cy=email]')
-        .type(email)
-        .should('have.value', email)
-      cy.get('#show_pass').click();
-      cy.get('[data-cy=password]')
-        .type(password)
-        .should('have.value', password)
-      cy.get('[data-cy=login]').click();
-      cy.wait(3000);
-      Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-        localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-      });
-      const getStore = () => cy.window().its('app.$store')
-      getStore().its('state.user.logged_in').should('eq', true);
+      cy.window().then(window => {
+
+
+        cy.get('[data-cy=email]')
+          .type(email)
+          .should('have.value', email)
+        cy.wait(1000);
+        if(window.LoginComponent.mailgun){
+          cy.get('[data-cy=type-password-btn]').click({force: true})
+        }
+        cy.get('[data-cy=password]')
+          .type(password)
+          .should('have.value', password)
+        cy.get('[data-cy=login]').click();
+        cy.wait(3000);
+        Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+          localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+        });
+        const getStore = () => cy.window().its('app.$store')
+        getStore().its('state.user.logged_in').should('eq', true);
+
+      })
+
     }
 
   })
@@ -346,13 +375,13 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 
 Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(3000);
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy=main_menu_labels]').click({force:true})
   cy.wait(2000)
 });
 
 Cypress.Commands.add('goToStudioFromToolbar', function () {
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
   cy.wait(5000);
   cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
@@ -363,9 +392,9 @@ Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
 });
 
-Cypress.Commands.add('selectLabel', function (name) {
+Cypress.Commands.add('selectLabel', function (name, alternate_selector = 'label_select_attribute') {
   cy.wait(2000) // assumes will need to load
-  cy.get('[data-cy=label_select_attribute]').click({force: true});
+  cy.get(`[data-cy=${alternate_selector}]`).click({force: true});
   cy.wait(300)
   cy.get('.v-menu__content .v-list.v-select-list .v-list-item span span').contains(
     name).first().click({force: true})
@@ -373,7 +402,7 @@ Cypress.Commands.add('selectLabel', function (name) {
 
 Cypress.Commands.add('createAttributeOptions', function (option_list) {
   cy.get('[data-cy=new_attribute_option_button]').click({force: true});
-    
+
   cy.wait(400);
   for(let option of option_list){
     cy.get('[data-cy=attribute_option_name]').click({force: true});
@@ -381,7 +410,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
     cy.wait(300)
     cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
-    
+
   }
   cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
 });
