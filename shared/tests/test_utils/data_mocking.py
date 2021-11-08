@@ -350,6 +350,7 @@ def create_job(job_data, session):
     job.name = job_data.get('name', None)
     job.output_dir_action = job_data.get('output_dir_action', 'nothing')
     job.share_type = job_data.get('name', 'project')
+    job.allow_reviews = job_data.get('allow_reviews', False)
 
     job.share_type = job.share_type.lower()
 

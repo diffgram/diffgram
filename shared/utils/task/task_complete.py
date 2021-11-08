@@ -79,16 +79,22 @@ def task_complete(session,
 
     else:
         job = task.job
+        print('AAAAAAA', job.allow_reviews)
         task_update_manager = Task_Update(
             session = session,
             task = task,
             member = member
         )
         if job.allow_reviews:
-            task_update_manager.status = 'in_review'
-            task_update_manager.main()
-            if not post_review:
-                trigger_sync_event = False  # In review Mode no sync event, unless completed after review.
+
+            if post_review:
+                task_update_manager.status = 'complete'
+                task_update_manager.main()
+            else:
+                trigger_sync_event = False  # In review Mode no sync event (unless post_review=True)
+                task_update_manager.status = 'in_review'
+                task_update_manager.main()
+
         else:
             task_update_manager.status = 'complete'
             task_update_manager.main()

@@ -6,6 +6,13 @@ from methods.task.task import task_next_issue
 from unittest.mock import patch
 import flask
 from shared.database.hashing_functions import make_secure_val
+from methods.task.task import task_review
+from shared.utils.task import task_complete
+from shared.database.discussion.discussion_comment import DiscussionComment
+from shared.database.task.task_event import TaskEvent
+from methods.task.task.task_update import Task_Update
+from shared.database.task.task import TASK_STATUSES
+
 
 class TestTaskReview(testing_setup.DiffgramBaseTestCase):
     """
@@ -42,7 +49,8 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         job = data_mocking.create_job({
             'name': 'my-test-job-{}'.format(1),
-            'project': self.project
+            'project': self.project,
+            'allow_reviews': True
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         self.task = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
@@ -79,7 +87,107 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
             }
         )
         data = response.json
-        print('AAAA', response.data)
-        print('AAAA', data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['task']['status'], 'complete')
+
+        # 400 Case
+        request_data = {
+            'action': 'wrong_value'
+        }
+        response = self.client.post(
+            endpoint,
+            data = json.dumps(request_data),
+            headers = {
+                'directory_id': str(self.project.directory_default_id),
+                'Authorization': 'Basic {}'.format(credentials)
+            }
+        )
+        data = response.json
+        self.assertEqual(response.status_code, 400)
+
+    def test_task_review_core(self):
+        # Approve & No comment case
+        with patch.object(task_complete, 'task_complete') as mock:
+            task_review.task_review_core(
+                session = self.session,
+                task_id = self.task.id,
+                action = 'approve',
+                member = self.member,
+                comment_text = None
+            )
+            mock.assert_called_once_with(
+                session = self.session,
+                task = self.task,
+                new_file = self.task.file,
+                project = self.task.project,
+                member = self.member,
+                post_review = True
+            )
+        # Assert return
+        result = task_review.task_review_core(
+            session = self.session,
+            task_id = self.task.id,
+            action = 'approve',
+            member = self.member,
+            comment_text = None
+        )
+        self.assertEqual(result['id'], self.task.id)
+        self.assertEqual(result['status'], TASK_STATUSES['complete'])
+
+        # Approve & comment case
+        with patch.object(task_complete, 'task_complete') as mock:
+            with patch.object(DiscussionComment, 'new', return_value = 'discussion_comment_result') as new_mock:
+                with patch.object(TaskEvent, 'generate_task_comment_event') as task_event_mock:
+                    comment_text = 'comment'
+                    result = task_review.task_review_core(
+                        session = self.session,
+                        task_id = self.task.id,
+                        action = 'approve',
+                        member = self.member,
+                        comment_text = comment_text,
+                    )
+                    mock.assert_called_once_with(
+                        session = self.session,
+                        task = self.task,
+                        new_file = self.task.file,
+                        project = self.task.project,
+                        member = self.member,
+                        post_review = True
+                    )
+
+                    new_mock.assert_called_once_with(
+                        session = self.session,
+                        content = comment_text,
+                        member_created_id = self.member.id,
+                        project_id = self.task.project.id,
+                        user_id = self.member.user_id
+                    )
+
+                    task_event_mock.assert_called_once_with(
+                        session = self.session,
+                        task = self.task,
+                        member = self.member,
+                        comment = 'discussion_comment_result'
+                    )
+
+        # Request Changes Case & No comment case
+        with patch.object(Task_Update, 'main') as mock:
+            task_review.task_review_core(
+                session = self.session,
+                task_id = self.task.id,
+                action = 'request_change',
+                member = self.member,
+                comment_text = None
+            )
+            mock.assert_called_once()
+
+        result = task_review.task_review_core(
+            session = self.session,
+            task_id = self.task.id,
+            action = 'request_change',
+            member = self.member,
+            comment_text = None
+        )
+        mock.assert_called_once()
+        self.assertEqual(result['id'], self.task.id)
+        self.assertEqual(result['status'], TASK_STATUSES['requires_changes'])
