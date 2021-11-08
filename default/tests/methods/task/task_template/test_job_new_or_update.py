@@ -298,7 +298,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
                 reviewer_list_ids = reviewer_list_ids,
                 log = log
             )
-            
+
         new_job, log_result = job_new_or_update.new_or_update_core(
             self.session,
             log = log,

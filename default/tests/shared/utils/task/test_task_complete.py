@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.utils.task import task_complete
-
+from shared.database.task.task import TASK_STATUSES
 
 class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
     """
@@ -45,7 +45,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
         task.job.stat_count_complete = 0
         task_complete.task_complete(session=self.session, task=task, new_file=task.file, project=self.project, member = self.member)
 
-        self.assertEqual(task.status, 'complete')
+        self.assertEqual(task.status, TASK_STATUSES['complete'])
         # Now job should have +1 in completed col
         self.assertEqual(task.job.stat_count_complete, 1)
 
@@ -68,7 +68,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
                                     new_file=task2.file,
                                     project=self.project,
                                     member = self.member)
-        self.assertEqual(task2.status, 'in_review')
+        self.assertEqual(task2.status, TASK_STATUSES['review_requested'])
 
     def test_cost_per_task(self):
         result = task_complete.cost_per_task(5, 10)
