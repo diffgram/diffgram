@@ -79,7 +79,6 @@ def task_complete(session,
 
     else:
         job = task.job
-        print('AAAAAAA', job.allow_reviews)
         task_update_manager = Task_Update(
             session = session,
             task = task,
@@ -119,8 +118,6 @@ def task_complete(session,
 
     job = task.job
     session.add(job)
-
-    job.stat_count_complete += 1
 
     # QUESTION Cache from file here?
 
