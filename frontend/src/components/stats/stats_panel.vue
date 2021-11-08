@@ -6,13 +6,7 @@
     <v-row v-if="stats_visibility">
       <v-col cols="12" sm="4">
         <v-card
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          "
-          class="mx-auto"
+          class="mx-auto info-style"
           height="250px"
           max-width="100%"
           outlined
@@ -22,19 +16,13 @@
             <pie-chart
               :data="job_chart.chartData"
               :options="job_chart.chartOptions"
-            ></pie-chart>
+            />
           </div>
         </v-card>
       </v-col>
       <v-col cols="12" sm="4">
         <v-card
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          "
-          class="mx-auto"
+          class="mx-auto info-style"
           height="250px"
           max-width="100%"
           outlined
@@ -63,13 +51,7 @@
       </v-col>
       <v-col cols="12" sm="4">
         <v-card
-          style="
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          "
-          class="mx-auto"
+          class="mx-auto info-style"
           height="250px"
           max-width="100%"
           outlined
@@ -81,24 +63,14 @@
                   <v-icon dark> mdi-account-circle </v-icon>
                 </v-avatar>
                 <span v-on="on" style="cursor: pointer">
-                  {{
-                    member_list.find((item) => item.id === show_member_stat)
-                      .first_name
-                  }}
-                  {{
-                    member_list.find((item) => item.id === show_member_stat)
-                      .last_name
-                  }}
+                  {{ full_name() }}
                 </span>
                 <v-icon> arrow_drop_down </v-icon>
               </div>
               <div v-else>
                 <span v-on="on" style="cursor: pointer">
                   Getting data for
-                  {{
-                    member_list.find((item) => item.id === show_member_stat)
-                      .first_name
-                  }}
+                  {{ full_name() }}
                   ...
                 </span>
               </div>
@@ -107,17 +79,12 @@
               <v-list-item v-for="(member, index) in member_list" :key="index">
                 <v-list-item-title
                   style="cursor: pointer"
-                  @click="
-                    () => {
-                      show_member_stat = member.id;
-                      update_user_cart = true;
-                    }
-                  "
+                  @click="() => switch_user(member.id)"
                 >
                   <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
                     <v-icon dark> mdi-account-circle </v-icon>
                   </v-avatar>
-                  {{ member.first_name }} {{ member.last_name }}
+                  {{ full_name(member.id) }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -151,25 +118,42 @@ export default Vue.extend({
   watch: {
     update_user_cart: {
       async handler(value) {
-        if (value) {
-          const { job_id } = this.$route.params;
-          const userStats = await getJobStatsForUser(
-            job_id,
-            this.show_member_stat
-          );
-          this.user_stats.chartData.datasets[0].data = [
-            userStats.completed,
-            userStats.total - userStats.completed,
-          ];
-          this.update_user_cart = false;
-        }
+        if (value) this.update_user_cahrt();
       },
+    },
+  },
+  computed: {
+    full_name: (id = null) => {
+      const { first_name, last_name } = member_list.find(
+        (item) => item.id === (id || show_member_stat)
+      );
+      return `${first_name} ${last_name}`;
     },
   },
   methods: {
     change_stats_visibility() {
       this.stats_visibility = !this.stats_visibility;
       localStorage.setItem("diff_stats_task_visibility", this.stats_visibility);
+    },
+    async update_user_cahrt() {
+      const { job_id } = this.$route.params;
+      const userStats = await getJobStatsForUser(job_id, this.show_member_stat);
+      this.user_stats.chartData.datasets[0].data = [
+        userStats.completed,
+        userStats.total - userStats.completed,
+      ];
+      if (!this.job_data_fetched) {
+        this.current_user_performance = {
+          instances: userStats.instaces_created,
+          total: userStats.total,
+          completed: userStats.completed,
+        };
+      }
+      this.update_user_cart = false;
+    },
+    switch_user: (id) => {
+      this.show_member_stat = id;
+      this.update_user_cart = true;
     },
   },
   async created() {
@@ -179,23 +163,14 @@ export default Vue.extend({
 
     const user_id = this.$store.state.user.current.id;
     const { job_id } = this.$route.params;
-
-    const member_list = [...this.$store.state.project.current.member_list];
-    this.member_list = member_list;
+    this.member_list = [...this.$store.state.project.current.member_list];
     this.show_member_stat = user_id;
 
     const { completed, total } = await getJobStats(job_id);
-    const userStats = await getJobStatsForUser(job_id, user_id);
-    this.current_user_performance = {
-      instances: userStats.instaces_created,
-      total: userStats.total,
-      completed: userStats.completed,
-    };
     this.job_chart.chartData.datasets[0].data = [completed, total - completed];
-    this.user_stats.chartData.datasets[0].data = [
-      userStats.completed,
-      userStats.total - userStats.completed,
-    ];
+
+    await this.update_user_cahrt();
+
     this.job_data_fetched = true;
 
     if (stats_visibility_status)
@@ -251,3 +226,12 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style scoped>
+.info-style {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+</style>
