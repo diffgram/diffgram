@@ -344,11 +344,13 @@ class Job(Base, Caching):
             self,
             session,
             user,
-            add_to_session: bool = False):
+            add_to_session: bool = False,
+            relation: str = 'annotator'):
 
         user_to_job = User_To_Job(
-            job=self,
-            user=user)
+            job = self,
+            user = user,
+            relation = relation)
 
         if add_to_session:
             session.add(user_to_job)
@@ -364,7 +366,19 @@ class Job(Base, Caching):
         session.add(user_to_job)
 
     def update_reviewer_list(self, session: 'Session', reviewer_list_ids: list, log: dict):
+        """
+            Updates the reviewer list of the job to the list provided in
+            reviewer_list_ids. All other members not in the list will be removed as reviewers
+            from the job.
+        :param session:
+        :param reviewer_list_ids:
+        :param log:
+        :return:
+        """
         user_list = []
+        log['info']['reviewer_list'] = {}
+
+        # Populate User List
         if 'all' in reviewer_list_ids:
             user_list = self.project.users
         else:
@@ -379,6 +393,7 @@ class Job(Base, Caching):
                     log['error']['reviewer_list'][member_id] = "Invalid member_id " + str(member_id)
                     return log
 
+        # Now create user_to_job relations.
         user_added_id_list = []
         for user in user_list:
 
@@ -394,20 +409,41 @@ class Job(Base, Caching):
                 # Add user back into job
                 if existing_user_to_job.status == 'removed':
                     existing_user_to_job.status = 'active'
-                    log['info']['update_member_list'][user.member_id] = "Added"
-                    if add_to_session is True:
-                        session.add(existing_user_to_job)
+                    log['info']['reviewer_list'][user.member_id] = "Added"
+                    session.add(existing_user_to_job)
                 else:
-                    log['info']['update_member_list'][user.member_id] = "Unchanged."
+                    log['info']['reviewer_list'][user.member_id] = "Unchanged."
                 continue
 
-            user_to_job = self.attach_user_to_job(
+            self.attach_user_to_job(
                 session=session,
                 user=user,
-                add_to_session=add_to_session)
+                add_to_session=True,
+                relation = 'reviewer'
+            )
 
-            log['info']['update_member_list'][user.member_id] = "Added"
+            log['info']['reviewer_list'][user.member_id] = "Added"
 
+        # Marked all relations not provided as removed.
+        remaining_user_to_job_list = User_To_Job.list(
+            session=session,
+            user_id_ignore_list=user_added_id_list,
+            relation = 'reviewer'
+        )
+
+        for user_to_job in remaining_user_to_job_list:
+            if user_to_job.status != 'removed':
+                user_to_job.status = 'removed'
+                session.add(user_to_job)
+                # TODO this should be uniform, it's not right now
+                # this is update_user_list but we need to add member_id to user_to_job
+                # it sounds like this needed to be member_list for current tests so just leaving it for now.
+                log['info']['reviewer_list'][user_to_job.user_id] = "Removed"
+
+        self.set_cache_by_key(
+            cache_key='reviewer_list_ids',
+            value=reviewer_list_ids)
+        session.add(self)
 
     def update_member_list(
             self,
@@ -476,7 +512,8 @@ class Job(Base, Caching):
             user_to_job = self.attach_user_to_job(
                 session=session,
                 user=user,
-                add_to_session=add_to_session)
+                add_to_session=add_to_session,
+                relation = 'annotator')
 
             log['info']['update_member_list'][user.member_id] = "Added"
 
@@ -507,6 +544,17 @@ class Job(Base, Caching):
         member_list_ids = User_To_Job.list(
             session=session,
             job=self,
+            relation = 'annotator',
+            serialize=True)
+        return member_list_ids
+
+    def regenerate_reviewer_list_ids(
+            self,
+            session):
+        member_list_ids = User_To_Job.list(
+            session=session,
+            job=self,
+            relation = 'reviewer',
             serialize=True)
         return member_list_ids
 
@@ -613,6 +661,11 @@ class Job(Base, Caching):
                 cache_miss_function=self.regenerate_member_list_ids,
                 session=session,
                 miss_function_args={'session': session})
+            reviewer_list_ids = self.get_with_cache(
+                cache_key='reviewer_list_ids',
+                cache_miss_function=self.regenerate_reviewer_list_ids,
+                session=session,
+                miss_function_args={'session': session})
         external_mappings_serialized = [x.serialize() for x in external_mappings]
 
         default_userscript = None
@@ -625,6 +678,7 @@ class Job(Base, Caching):
             'type': self.type,
             'share_type': self.share_type,
             'member_list_ids': member_list_ids,
+            'reviewer_list_ids': reviewer_list_ids,
             'status': self.status,
             'time_created': self.time_created,
             'time_completed': self.time_completed,
@@ -676,12 +730,18 @@ class Job(Base, Caching):
                 cache_miss_function=self.regenerate_member_list_ids,
                 session=session,
                 miss_function_args={'session': session})
+            reviewer_list_ids = self.get_with_cache(
+                cache_key='reviewer_list_ids',
+                cache_miss_function=self.regenerate_reviewer_list_ids,
+                session=session,
+                miss_function_args={'session': session})
         return {
             'id': self.id,
             'name': self.name,
             'type': self.type,
             'status': self.status,
             'member_list_ids': member_list_ids,
+            'reviewer_list_ids': reviewer_list_ids,
             'time_created': self.time_created,
             'time_completed': self.time_completed,
 

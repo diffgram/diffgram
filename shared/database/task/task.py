@@ -14,6 +14,8 @@ TASK_STATUSES = {
     'created': 'created',
     'complete': 'complete',
     'in_progress': 'in_progress',
+    'review_requested': 'review_requested',
+    'in_review': 'in_review',
     'requires_changes': 'requires_changes',
     'deferred': 'deferred',
 }

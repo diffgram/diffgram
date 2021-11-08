@@ -626,10 +626,14 @@ def new_or_update_core(session,
     else:
         is_updating = True
 
-
     log = job.update_member_list(
         member_list_ids = member_list_ids,
         session = session,
+        log = log)
+
+    log = job.update_reviewer_list(
+        session = session,
+        reviewer_list_ids = reviewer_list_ids,
         log = log)
 
     if default_userscript_id:

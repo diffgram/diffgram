@@ -101,6 +101,7 @@ class User_To_Job(Base):
             session,
             user_id_ignore_list: list = None,
             job=None,
+            relation: str = None,
             serialize=False,
             user = None):
 
@@ -115,6 +116,9 @@ class User_To_Job(Base):
 
         if user:
             query = query.filter(User_To_Job.user == user)
+
+        if relation:
+            query = query.filter(User_To_Job.relation == relation)
 
         if serialize == True:
             # TODO this could be part of generic

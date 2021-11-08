@@ -17,6 +17,33 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
         super(TestJobNewUpdate, self).setUp()
+        project_data = data_mocking.create_project_with_context(
+            {
+                'users': [
+                    {'username': 'Test',
+                     'email': 'test@test.com',
+                     'password': 'diffgram123',
+                     }
+                ]
+            },
+            self.session
+
+        )
+        self.project = project_data['project']
+        self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
+        self.member = self.auth_api.member
+        self.member.user = data_mocking.register_user({
+            'username': 'test_user',
+            'email': 'test@test.com',
+            'password': 'diffgram123',
+            'project_string_id': self.project.project_string_id,
+            'member_id': self.member.id
+        }, self.session)
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project,
+            'allow_reviews': True
+        }, self.session)
 
     def test_job_update_api(self):
         # Create mock job.
@@ -28,6 +55,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             'name': 'new name',
             'instance_type': 'polygon',
             'share_type': 'project',
+            'reviewer_list_ids': [self.member.id],
             'type': 'exam',
             'label_file_list': [{'id': file.id}],
             'file_handling': 'isolate',
@@ -35,8 +63,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         }
 
         endpoint = "/api/v1/project/" + job.project.project_string_id + "/job/update"
-        auth_api = common_actions.create_project_auth(project=job.project, session=self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data=json.dumps(request_data),

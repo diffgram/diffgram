@@ -9,7 +9,7 @@ from shared.utils.task import task_file_observers
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.task.task_event import TaskEvent
 from shared.utils.task.task_update_manager import Task_Update
-
+from shared.database.task.task import TASK_STATUSES
 
 
 def trigger_task_complete_sync_event(session, task, job, log):
@@ -88,11 +88,11 @@ def task_complete(session,
         if job.allow_reviews:
 
             if post_review:
-                task_update_manager.status = 'complete'
+                task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
             else:
                 trigger_sync_event = False  # In review Mode no sync event (unless post_review=True)
-                task_update_manager.status = 'in_review'
+                task_update_manager.status = TASK_STATUSES['review_requested']
                 task_update_manager.main()
 
         else:
