@@ -1,5 +1,6 @@
 from methods.regular.regular_api import *
-from methods.task.task.task_update import Task_Update
+from shared.utils.task.task_update_manager import Task_Update
+
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/task/next',

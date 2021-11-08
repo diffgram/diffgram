@@ -10,7 +10,7 @@ from methods.task.task import task_review
 from shared.utils.task import task_complete
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.task.task_event import TaskEvent
-from methods.task.task.task_update import Task_Update
+from shared.utils.task.task_update_manager import Task_Update
 from shared.database.task.task import TASK_STATUSES
 
 

@@ -8,7 +8,8 @@ from shared.utils.task import task_file_observers
 
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.task.task_event import TaskEvent
-from methods.task.task.task_update import Task_Update
+from shared.utils.task.task_update_manager import Task_Update
+
 
 
 def trigger_task_complete_sync_event(session, task, job, log):

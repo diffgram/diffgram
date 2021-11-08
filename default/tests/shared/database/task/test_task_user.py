@@ -3,7 +3,6 @@ from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.database.task.task_user import TaskUser
 from unittest.mock import patch
-from methods.task.task.task_update import Task_Update
 import analytics
 import requests
 

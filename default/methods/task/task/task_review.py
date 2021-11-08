@@ -1,7 +1,7 @@
 from methods.regular.regular_api import *
 from shared.database.task.task import Task, TASK_STATUSES
 from shared.database.task.task_event import TaskEvent
-from methods.task.task.task_update import Task_Update
+from shared.utils.task.task_update_manager import Task_Update
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.utils.task import task_complete
 
