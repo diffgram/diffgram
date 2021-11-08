@@ -1,30 +1,32 @@
 <template>
   <div class="job-detail-container">
-    <h1 class="pa-2">
-      <v-layout>
-        <div
-          class="font-weight-light clickable"
-          @click="$router.push('/job/list')"
-        >
-          {{ $store.state.project.current.name }} /
-        </div>
-        <div
-          v-if="$store.state.job.current.id == this.job_id"
-          class="font-weight-normal pl-2"
-        >
-          {{ $store.state.job.current.name }}
-        </div>
-      </v-layout>
-    </h1>
-    <v-btn
-      @click="api_get_next_task_scoped_to_job(job_id)"
-      :loading="next_task_loading"
-      :disabled="next_task_loading"
-      color="primary"
-      large
-    >
-      Start Annotating
-    </v-btn>
+    <div class="d-flex justify-space-between align-center mb-6">
+      <h1 class="pa-2">
+        <v-layout>
+          <div
+            class="font-weight-light clickable"
+            @click="$router.push('/job/list')"
+          >
+            {{ $store.state.project.current.name }} /
+          </div>
+          <div
+            v-if="$store.state.job.current.id == this.job_id"
+            class="font-weight-normal pl-2"
+          >
+            {{ $store.state.job.current.name }}
+          </div>
+        </v-layout>
+      </h1>
+      <v-btn
+        @click="api_get_next_task_scoped_to_job(job_id)"
+        :loading="next_task_loading"
+        :disabled="next_task_loading"
+        color="primary"
+        large
+      >
+        Start Annotating
+      </v-btn>
+    </div>
 
     <v-tabs v-model="tab" color="primary">
       <v-tab v-for="item in items" :key="item.text">
