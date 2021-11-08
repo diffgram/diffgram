@@ -4,18 +4,17 @@ from shared.database.user import User
 from shared.database.task.task import Task
 from shared.database.annotation.instance import Instance
 
-@routes.route('/api/v2/job/<job_id>/stat', methods=["GET"])
+@routes.route('/api/job/<job_id>/stat', methods=["GET"])
 def job_stat(job_id):
     with sessionMaker.session_scope() as session:
         job = Job.get_by_id(session, job_id).__dict__
-        print(job)
         job.pop('_sa_instance_state', None)
         return jsonify({
             "total": job["stat_count_tasks"],
             "completed": job["stat_count_complete"]
             })
 
-@routes.route('/api/v2/job/<job_id>/user/<user_id>/stats', methods=["GET"])
+@routes.route('/api/job/<job_id>/user/<user_id>/stats', methods=["GET"])
 def jon_user_stats(job_id, user_id):
     with sessionMaker.session_scope() as session:
         tasks = Task.list(
