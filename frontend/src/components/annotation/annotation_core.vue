@@ -1,6 +1,13 @@
 <template>
   <div id="annotation_core">
 
+    <ui_schema_context_menu
+      :show_context_menu="show_ui_schema_context_menu"
+      :project_string_id="project_string_id"
+      @close_context_menu="show_ui_schema_context_menu = false"
+      @start_edit_ui_schema="edit_ui_schema()"
+    >
+    </ui_schema_context_menu>
 
     <div style="position: relative">
 
@@ -21,12 +28,21 @@
                    :project_string_id="project_string_id"
                    :task="task"
                    :file="file"
-                   :canvas_scale_local="canvas_scale_local"
+                   :canvas_scale_local="zoom_value"
                    :has_changed="has_changed"
                    :label_list="label_list"
                    :draw_mode="draw_mode"
                    :label_file_colour_map="label_file_colour_map"
-                   @label_settings_change="label_settings = $event, refresh = Date.now()"
+                   :full_file_loading="full_file_loading"
+                   :instance_template_selected="instance_template_selected"
+                   :instance_type="instance_type"
+                   :loading_instance_templates="loading_instance_templates"
+                   :instance_type_list="filtered_instance_type_list"
+                   :view_issue_mode="view_issue_mode"
+                   :is_keypoint_template="is_keypoint_template"
+                   :enabled_edit_schema="enabled_edit_schema"
+                   :annotation_show_on="annotation_show_on"
+                   @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
                    @change_instance_type="change_instance_type($event)"
@@ -35,7 +51,10 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
-                   @change_task="trigger_task_change($event, task)"
+                   @annotation_show="annotation_show_activate"
+                   @show_duration_change="set_annotation_show_duration"
+                   @canvas_scale_global_changed="on_canvas_scale_global_changed"
+                   @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
@@ -43,12 +62,9 @@
                    @clear__new_and_no_ids="clear__new_and_no_ids()"
                    @new_tag_instance="insert_tag_type()"
                    @replace_file="$emit('replace_file', $event)"
-                   :full_file_loading="full_file_loading"
-                   :instance_template_selected="instance_template_selected"
-                   :instance_type="instance_type"
-                   :loading_instance_templates="loading_instance_templates"
-                   :instance_type_list="instance_type_list"
-                   :view_issue_mode="view_issue_mode"
+                   @open_instance_template_dialog="open_instance_template_dialog()"
+                   @copy_all_instances="copy_all_instances"
+
           >
           </toolbar>
 
@@ -85,6 +101,34 @@
 
 
     </div>
+    <v-snackbar
+      v-if="snackbar_merge_polygon"
+      v-model="snackbar_merge_polygon"
+      :multi-line="true"
+      :timeout="-1"
+    >
+      Please select the Polygons to merge with.
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="red"
+          text
+          v-bind="attrs"
+          @click="cancel_merge"
+        >
+         Cancel
+        </v-btn>
+        <v-btn
+          :disabled="instances_to_merge.length === 0"
+          color="success"
+          text
+          v-bind="attrs"
+          @click="merge_polygons"
+        >
+          Merge Polygons
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-snackbar
       v-if="snackbar_issues"
       v-model="snackbar_issues"
@@ -339,7 +383,9 @@
 
       -->
 
-          <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
+          <div  contenteditable="true"
+                id="canvas_wrapper"
+                style="position: relative;"
 
                 @mousemove="mouse_move"
                 @mousedown="mouse_down"
@@ -380,6 +426,7 @@
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
+              :mouse_position="mouse_position"
               :canvas_transform="canvas_transform">
 
 
@@ -387,7 +434,9 @@
                     :current_file="file"
                     :refresh="refresh"
                     @update_canvas="update_canvas"
+                    :canvas_transform="canvas_transform"
                     :canvas_filters="canvas_filters"
+                    :canvas_element="canvas_element"
                     :ord="1"
                     :annotations_loading="any_loading"
               >
@@ -402,6 +451,10 @@
                                 :mouse_position="mouse_position"
                                 :height="canvas_height"
                                 :width="canvas_width"
+                                :canvas_element="canvas_element"
+                                :width_scaled="canvas_width_scaled"
+                                :height_scaled="canvas_height_scaled"
+                                :canvas_mouse_tools="canvas_mouse_tools"
                                 :show="show_target_reticle"
                                 :target_colour="current_label_file ? current_label_file.colour : undefined"
                                 :text_color="this.$get_sequence_color(this.current_instance.sequence_id)"
@@ -409,6 +462,7 @@
                                 :target_type="target_reticle_type"
                                 :canvas_transform="canvas_transform"
                                 :reticle_size="label_settings.target_reticle_size"
+                                :zoom_value="zoom_value"
               >
               </target_reticle>
 
@@ -426,10 +480,12 @@
                                     :label_settings="label_settings"
                                     :current_instance="current_instance"
                                     :is_actively_drawing="is_actively_drawing"
+                                    :height="canvas_height"
+                                    :width="canvas_width"
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
-                                    @instance_hover_update="instance_hover_update($event[0], $event[1])"
+                                    @instance_hover_update="instance_hover_update($event[0], $event[1], $event[2], $event[3])"
                                     @cuboid_face_hover_update="cuboid_face_hover_update"
                                     @issue_hover_update="issue_hover_update"
                                     :canvas_transform="canvas_transform"
@@ -440,6 +496,7 @@
                                     :hidden_label_id_list="hidden_label_id_list"
                                     :is_actively_resizing="is_actively_resizing"
                                     :emit_instance_hover="!draw_mode || emit_instance_hover"
+                                    :zoom_value="zoom_value"
               >
               </canvas_instance_list>
 
@@ -463,7 +520,8 @@
                 :hidden_label_id_list="hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
-                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1])"
+                @instance_hover_update="ghost_instance_hover_update($event[0], $event[1], $event[2])"
+                :zoom_value="zoom_value"
               >
               </ghost_instance_list_canvas>
 
@@ -506,7 +564,9 @@
                                         :canvas_transform="canvas_transform"
                                         :draw_mode="draw_mode"
                                         :is_actively_drawing="is_actively_drawing"
-                                        :label_file_colour_map="label_file_colour_map">
+                                        :label_file_colour_map="label_file_colour_map"
+                                        :zoom_value="zoom_value"
+                                       >
 
               </canvas_current_instance>
               <current_instance_template
@@ -524,6 +584,7 @@
               </current_instance_template>
 
             </canvas>
+
             <polygon_borders_context_menu
               :show_context_menu="show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -531,6 +592,7 @@
               @start_auto_bordering="perform_auto_bordering"
               @close_context_menu="show_polygon_border_context_menu = false"
             ></polygon_borders_context_menu>
+
             <context_menu :mouse_position="mouse_position"
                           :show_context_menu="show_context_menu"
                           :instance_clipboard="instance_clipboard"
@@ -540,12 +602,15 @@
                           :polygon_point_hover_index="polygon_point_hover_index"
                           :task="task"
                           :instance_hover_index="instance_hover_index"
+                          :hovered_figure_id="hovered_figure_id"
                           :instance_list="instance_list"
                           :sequence_list="sequence_list_local_copy"
                           :video_mode="video_mode"
                           @instance_update="instance_update($event)"
                           @share_dialog_open="open_share_dialog"
                           @open_issue_panel="open_issue_panel"
+                          @on_click_polygon_unmerge="polygon_unmerge"
+                          @on_click_polygon_merge="start_polygon_select_for_merge"
                           @delete_polygon_point="polygon_delete_point"
                           @copy_instance="on_context_menu_copy_instance"
                           @paste_instance="paste_instance"
@@ -663,18 +728,6 @@
   </v-navigation-drawer>
   -->
 
-    <!-- I would like to have a second sheet here for video stuff
-     but wondering if we should just attach the video thing to the image
-     This may need lot of fiddling to get it to load right under other sheet
-     -->
-    <!--
-  <v-bottom-sheet :value="true">
-
-    <h2 class="text-center"> BOTTOM </h2>
-
-  </v-bottom-sheet>
-  -->
-
 
     <!-- Media core -->
 
@@ -693,16 +746,10 @@
 
     https://vuetifyjs.com/en/components/bottom-sheets
 
-      TODO explore 'fullscreen' flag
-      may be useful if more files...
-
       https://github.com/vuetifyjs/vuetify/issues/8640
       needs :retain-focus="false" (but shouldn't)
 
     -->
-
-
-
 
     <instance_template_creation_dialog
       :project_string_id="project_string_id"
@@ -735,6 +782,16 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
+    <qa_carousel
+      :annotation_show_on="annotation_show_on"
+      :loading="loading || annotations_loading || full_file_loading"
+      :instance_list="instance_list"
+      :annotation_show_duration="annotation_show_duration_per_instance"
+      @focus_instance="(index) => focus_instance({ index })"
+      @change_item="annotation_show_change_item"
+      @stop_carousel="annotation_show_activate"
+    />
+
   </div>
 </template>
 
@@ -756,6 +813,7 @@
   import task_status_icons from '../regular_concrete/task_status_icons'
   import context_menu from '../context_menu/context_menu.vue';
   import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
+  import ui_schema_context_menu from '../ui_schema/ui_schema_context_menu.vue';
   import issues_sidepanel from '../discussions/issues_sidepanel.vue';
   import current_instance_template from '../vue_canvas/current_instance_template.vue';
   import instance_template_creation_dialog from '../instance_templates/instance_template_creation_dialog';
@@ -775,9 +833,12 @@
   import { sha256 } from 'js-sha256';
   import stringify  from 'json-stable-stringify';
   import PropType from 'vue'
+  import _ from "lodash"
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
+  import qa_carousel from "./qa_carousel.vue"
+
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
 
@@ -814,7 +875,9 @@
         context_menu,
         userscript,
         toolbar,
-        ghost_canvas_available_alert
+        ghost_canvas_available_alert,
+        ui_schema_context_menu,
+        qa_carousel
       },
       props: {
         'project_string_id': {
@@ -855,9 +918,20 @@
 
         'view_only_mode': {
           default: false
+        },
+        'enabled_edit_schema' : {},
+        'finish_annotation_show': {
+          default: false
         }
       },
       watch: {
+        finish_annotation_show: function (val) {
+          if (val) this.annotation_show_on = false
+        },
+        canvas_scale_global: function(newVal, oldVal){
+          this.on_canvas_scale_global_changed(newVal)
+
+        },
         file: {
           handler(newVal, oldVal){
             if(newVal != oldVal){
@@ -884,6 +958,7 @@
         mouse_computed(newval, oldval){
           // We don't want to create a new object here since the reference is used on all instance types.
           // If we create a new object we'll lose the reference on our class InstanceTypes
+
           this.mouse_down_delta_event.x = parseInt(newval.delta_x - oldval.delta_x)
           this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
         },
@@ -899,6 +974,22 @@
           }
           else{
             this.snackbar_issues = false;
+          }
+        },
+        instance_select_for_merge(newval, oldval) {
+          if(newval){
+            this.update_canvas();
+            this.snackbar_merge_polygon = true;
+            this.draw_mode = false;
+            this.instances_to_merge = [];
+            this.label_settings.allow_multiple_instance_select = true;
+          }
+          else{
+            this.snackbar_merge_polygon = false;
+            this.label_settings.allow_multiple_instance_select = false;
+            this.instances_to_merge = [];
+            this.clear_selected();
+
           }
         },
         current_version_prop() {
@@ -936,6 +1027,10 @@
       data() {
         return {
 
+          instance_rotate_control_mouse_hover: null,
+
+          snapped_to_instance: undefined,
+
           current_global_instance: null,
           global_instance_list: [],
 
@@ -945,8 +1040,15 @@
           model_run_list: null,
           ghost_instance_hover_type: null,
           ghost_instance_list: [],
+          selected_instance_list: [],
 
           show_default_navigation: true,
+          snackbar_merge_polygon: false,
+
+          parent_merge_instance: null,
+          hovered_figure_id: null,
+          parent_merge_instance_index: null,
+          instances_to_merge: [],
 
           userscript_minimized: true,
 
@@ -990,6 +1092,8 @@
           ellipse_hovered_instance: undefined,
           ellipse_hovered_instance_index: undefined,
 
+          show_ui_schema_context_menu: false,
+
           drawing_curve: false,
           curve_hovered_point: undefined,
 
@@ -1024,7 +1128,7 @@
           lock_point_hover_change: false,
           save_warning: {},
 
-          magic_nav_spacer: 40,
+          magic_nav_spacer: 80,
 
 
           hidden_label_id_list: [],
@@ -1037,6 +1141,7 @@
           instance_buffer_dict: {},
           instance_buffer_metadata: {},
 
+          is_editing_ui_schema: true,
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
           lateral_edges : {
@@ -1076,11 +1181,15 @@
           loading: false,
 
           label_settings: {
+            font_background_opacity: .75,
+            enable_snap_to_instance: true,
             show_ghost_instances: true,
             show_text: true,
             show_label_text: true,
             show_attribute_text: true,
             show_list: true,
+            show_occluded_keypoints: true,
+            show_left_right_arrows: true,
             allow_multiple_instance_select: false,
             font_size: 20,
             spatial_line_size: 2,
@@ -1116,6 +1225,15 @@
             instance_list: [],     // careful, need this to not be null for vue canvas to work as expected
             id: null
           },
+
+          annotation_show_on: false,
+          annotation_show_type: 'file',
+          annotation_show_current_instance: 0,
+          annotation_show_duration_per_instance: 2000,
+          finish_annotation_show_local: false,
+          annotation_show_progress: 0,
+          annotation_show_timer: null,
+          annotation_show_revert: 2,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -1260,9 +1378,11 @@
           instance_template_list: [],
           auto_border_polygon_p1: undefined,
           auto_border_polygon_p1_index: undefined,
+          auto_border_polygon_p1_figure: undefined,
           auto_border_polygon_p1_instance_index: undefined,
           auto_border_polygon_p2: undefined,
           auto_border_polygon_p2_index: undefined,
+          auto_border_polygon_p2_figure: undefined,
           auto_border_polygon_p2_instance_index: undefined,
           show_polygon_border_context_menu: false,
           has_changed: false,
@@ -1270,11 +1390,14 @@
           full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
           canvas_scale_local: 1,  // for actually scaling dimensions within canvas
+          zoom_value: 1,  // for display only
 
           canvas_translate: {
             x: 0,
             y: 0
           },
+
+          zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
           shift_key: false,
@@ -1291,6 +1414,26 @@
         }
       },
       computed: {
+        filtered_instance_type_list: function(){
+          if(!this.$props.task || !this.$props.task.job){
+            return this.instance_type_list
+          }
+          if(!this.$props.task.job.ui_schema){
+            return this.instance_type_list
+          }
+          let ui_schema = this.$props.task.job.ui_schema;
+          let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+          if(!allowed_types){
+            return this.instance_type_list
+          }
+          else{
+            return this.instance_type_list.filter(elm => allowed_types.includes(elm.name))
+          }
+
+        },
+        clipboard: function() {
+          return this.$store.getters.get_clipboard
+        },
         instance_template_dict: function(){
           let result = {};
           for(let i = 0; i < this.instance_template_list.length; i++){
@@ -1377,12 +1520,18 @@
         instance_select_for_issue: function(){
           return this.$store.getters.get_instance_select_for_issue;
         },
+        instance_select_for_merge: function(){
+          return this.$store.getters.get_instance_select_for_merge;
+        },
         hovered_instance: function(){
           if(!this.instance_list){ return }
           if(this.instance_hover_index != undefined){ return }
         },
         selected_instance: function(){
           if(!this.instance_list){return}
+          if(this.selected_instance_list && this.selected_instance_list.length > 0) {
+            return this.selected_instance_list[0]
+          }
           for(let i=0; i < this.instance_list.length; i ++){
             if(this.instance_list[i].selected){
               return this.instance_list[i]
@@ -1468,6 +1617,7 @@
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+
           let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
           let toolbar_height = 80
@@ -1475,6 +1625,11 @@
           // get media core height
           if (document.getElementById("media_core")){
             this.media_core_height = document.getElementById("media_core").__vue__.height
+          } else {
+            this.media_core_height = 0 // reset eg for task mode
+          }
+          if (this.task) {
+            this.magic_nav_spacer = 0
           }
 
           let middle_pane_height = this.window_height_from_listener - toolbar_height
@@ -1503,7 +1658,6 @@
 
           this.label_settings.canvas_scale_global_setting = new_size
 
-
           return new_size
 
 
@@ -1527,7 +1681,8 @@
             'canvas_scale_global': this.canvas_scale_global,
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
-            'translate': this.canvas_translate
+            'translate': this.canvas_translate,
+            'zoom': this.zoom_canvas
           }
         },
 
@@ -1684,6 +1839,7 @@
             }
 
           }
+
           let instance_data = {
             x_min: x_min,
             y_min: y_min,
@@ -1787,6 +1943,98 @@
       },
 
       methods: {
+        on_canvas_scale_global_changed: async function(new_scale){
+          if(!new_scale){
+            return
+          }
+          // Force a canvas reset when changing global scale.
+          if(!this.canvas_element){
+            return
+          }
+          this.label_settings.canvas_scale_global_setting = new_scale;
+          this.canvas_mouse_tools.canvas_scale_global = new_scale;
+          this.canvas_mouse_tools.scale = new_scale;
+          this.canvas_element_ctx.clearRect(
+            0,
+            0,
+            this.canvas_element.width,
+            this.canvas_element.height
+          );
+          this.canvas_element_ctx.resetTransform();
+          this.canvas_element_ctx.scale(new_scale, new_scale);
+          this.canvas_element.width += 0;
+          this.canvas_mouse_tools.canvas_width = this.canvas_width
+          this.canvas_mouse_tools.canvas_height = this.canvas_height
+
+          await this.$nextTick()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
+        },
+        edit_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+        },
+        add_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+          this.$store.commit('set_ui_schema_add_menu', true);
+        },
+
+        update_label_settings: function (event) {
+          this.label_settings = event
+          this.refresh = Date.now()
+        },
+        cancel_merge: function(){
+          this.$store.commit('set_instance_select_for_merge', false);
+        },
+        delete_instances_and_add_to_merged_instance: function(parent_instance, instances_to_merge){
+          // For instance to merge, delete it and add al points to parent instance with a new figure ID.
+          for(const instance of instances_to_merge){
+            let figure_id = uuidv4();
+            let new_points = parent_instance.points.map(p => p);
+            for(const point of instance.points){
+              let new_figure_id = figure_id;
+              if(point.figure_id){
+                new_figure_id = point.figure_id;
+              }
+              new_points.push({
+                ...point,
+                figure_id: new_figure_id
+              })
+            }
+
+            let instance_index = this.instance_list.indexOf(instance);
+            if(instance_index > -1){
+              this.delete_single_instance(instance_index);
+            }
+            parent_instance.points = new_points;
+
+          }
+        },
+        merge_polygons: function(){
+          let parent_instance = this.parent_merge_instance;
+          let instances_to_merge = this.instances_to_merge;
+          let has_multiple_figures = parent_instance.points.filter(p => p.figure_id != undefined).length > 0;
+          if(has_multiple_figures){
+            // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
+            this.delete_instances_and_add_to_merged_instance(parent_instance, instances_to_merge);
+          }
+          else{
+            // Add a figure ID for parent instance points
+            let figure_id = uuidv4();
+            parent_instance.points = parent_instance.points.map(p => {
+              return {
+                ...p,
+                figure_id:  figure_id
+              }
+            })
+            // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
+            this.delete_instances_and_add_to_merged_instance(parent_instance, instances_to_merge);
+          }
+          this.$store.commit('set_instance_select_for_merge', false);
+        },
+
         get_save_loading: function(frame_number){
           if(this.video_mode){
             if(!this.save_loading_frame[frame_number]){
@@ -1811,6 +2059,9 @@
         },
         // userscript (to be placed in class once context figured)
         set_instance_human_edited: function(instance){
+          if(!instance){
+            return
+          }
           instance.change_source = 'ui_diffgram_frontend'
           instance.machine_made = false;
         },
@@ -2205,9 +2456,11 @@
           this.snackbar_message = message;
           this.show_custom_snackbar = true
         },
+
         open_instance_template_dialog: function(){
           this.$refs.instance_template_creation_dialog.open();
         },
+
         trigger_instance_changed(){
           // Callback for when an instance is changed
           // This is a WIP that will be used for all the class Instance Types
@@ -2401,6 +2654,36 @@
 
           }
         },
+        polygon_unmerge(unmerge_instance_index, figure_id){
+          let instance = this.instance_list[unmerge_instance_index];
+          // Remove All points from the polygon with the give figure id
+          let figure_points = instance.points.filter(p => p.figure_id == figure_id).map(p => ({...p, figure_id: undefined}))
+          instance.points = instance.points.filter(p => p.figure_id != figure_id)
+
+          // Check if only 1 figure remains, and delete figure id.
+          let figure_list = this.get_polygon_figures(instance)
+          if(figure_list.length === 1){
+            instance.points = instance.points.map(p => ({...p, figure_id: undefined}))
+          }
+
+          // Create the previously merged figure as a new instance.
+          let instance_to_unmerge = this.duplicate_instance(instance);
+          // Remove point and just leave the points in the figure
+          instance_to_unmerge.points = figure_points;
+          this.push_instance_to_instance_list_and_buffer(instance_to_unmerge, this.current_frame);
+          // Auto select on label view detail for inmediate attribute edition.
+          this.create_instance_events()
+        },
+        start_polygon_select_for_merge(merge_instance_index){
+          // Close context menu and set select instance mode
+          if(merge_instance_index == undefined){
+            return
+          }
+          this.parent_merge_instance = this.instance_list[merge_instance_index];
+          this.parent_merge_instance_index = merge_instance_index;
+          this.show_context_menu = false;
+          this.$store.commit('set_instance_select_for_merge', true);
+        },
         open_issue_panel(mouse_position){
           // This boolean controls if issues create/edit panel is shown or hidden.
           this.show_issue_panel = true;
@@ -2524,10 +2807,14 @@
 
           // careful can't use id, since newly created instances won't have an ID!
           this.instance_focused_index = focus.index
+          this.selected_instance_list = [this.instance_list[this.instance_focused_index]]
+          this.snap_to_instance(this.selected_instance)
         },
 
         focus_instance_show_all() {
           this.instance_focused_index = null
+          this.selected_instance_list = []
+          this.reset_to_full()
         },
 
         instance_update: function (update) {
@@ -2552,7 +2839,8 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-
+          let initial_instance = {...this.instance_list[index], initialized: false}
+          initial_instance = this.initialize_instance(initial_instance);
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2572,6 +2860,10 @@
 
           if (update.mode == 'pause_object'){
             instance.pause_object = true
+          }
+
+          if (update.mode == 'on_click_update_point_attribute'){
+            instance.toggle_occluded(update.node_hover_index)
           }
 
           // instance update
@@ -2649,17 +2941,20 @@
             let value = update.payload[1]
 
             // we assume this represents a group
+            initial_instance.prev_attribute = {
+              group: group.id,
+              value: {...instance.attribute_groups[group.id]}
+            }
             instance.attribute_groups[group.id] = value
             //console.debug(group, value)
           }
 
           // end instance update
 
-          let insert_instance_result = this.insert_instance(index, instance, update)
+          let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
 
           this.has_changed = true;
           this.trigger_refresh_with_delay()
-
 
         },
 
@@ -2670,36 +2965,14 @@
           return new_instance
         },
 
-        insert_instance(index, instance, update) {
+        insert_instance(index, instance, initial_instance, update) {
           // Use index = ` -1 ` if New instnace
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
+          const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+          this.command_manager.executeCommand(command);
 
-          if (!update.list_type || update.list_type == "default") {
-            if (index === -1){
-              this.instance_list.push(instance)
-            } else {
-              this.instance_list.splice(index, 1, instance)
-            }
-            // update instance buffer
-            if (this.video_mode == true)  {
-              if (this.current_frame in this.instance_buffer_dict){
-                // Updating existing reference
-                if (index === -1){
-                  this.instance_buffer_dict[this.current_frame].push(instance)
-                } else {
-                  this.instance_buffer_dict[this.current_frame].splice(index, 1, instance)
-                }
-              }
-              else{
-                // This is ok ONLY becuase we already checked that the reference to instance_list
-                // did not exist
-                this.instance_buffer_dict[this.current_frame] = [instance]
-              }
-            }
-
-          }
           if (update.list_type == "gold_standard") {
             this.gold_standard_file.instance_list.splice(index, 1, instance)
           }
@@ -2718,6 +2991,11 @@
           else if(this.$props.task){
             this.on_change_current_task();
           }
+
+          if (this.$props.enabled_edit_schema == true) {
+            this.edit_ui_schema()
+          }
+
         },
 
         update_user_settings_from_store() {
@@ -2784,23 +3062,29 @@
         },
 
         async mounted() {
-          this.canvas_mouse_tools = new CanvasMouseTools(
-            this.mouse_position,
-            this.canvas_translate,
-          )
+
           //console.debug("mounted")
           // Reset issue mode
           this.$store.commit('set_instance_select_for_issue', false);
+          this.$store.commit('set_instance_select_for_merge', false);
           this.$store.commit('set_view_issue_mode', false);
           this.$store.commit('set_user_is_typing_or_menu_open', false)
           this.add_event_listeners()
           this.fetch_model_run_list();
           this.fetch_instance_template();
 
-          this.update_canvas()
-
+          this.canvas_mouse_tools = new CanvasMouseTools(
+            this.mouse_position,
+            this.canvas_translate,
+            this.canvas_element,
+            this.canvas_scale_global,
+            this.canvas_width,
+            this.canvas_height
+          )
+          this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
-          this.canvas_wrapper.style.display = ""
+          this.canvas_wrapper.style.display = "";
+
 
           var self = this
           this.get_instances_watcher = this.$store.watch((state) => {
@@ -3047,6 +3331,9 @@
           if (this.$store.state.user.settings.hide_ghost_canvas_available_alert == true) {
             return
           }
+          if (this.label_settings.show_ghost_instances == false) {
+            return
+          }
           if (this.ghost_instance_list.length >= 1) {
             this.canvas_alert_x = this.mouse_position.x
             this.canvas_alert_y = this.mouse_position.y
@@ -3211,13 +3498,94 @@
 
         zoom_wheel_scroll_canvas_transform_update: function (event) {
 
-          this.hide_context_menu()    // context of position updating looks funny if it stays
+          this.hide_context_menu()
+          this.canvas_mouse_tools.zoom_wheel(event);
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
 
-          this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-            event, this.canvas_scale_local)
+        },
 
-          this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event, this.canvas_scale_local)
+        reset_to_full: function () {
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.canvas_mouse_tools.scale = this.canvas_mouse_tools.canvas_scale_global;
+          this.update_canvas();
+        },
+
+        get_center_point_of_instance:function (instance) {
+          let x = instance.x_max - (instance.width / 2)
+          let y = instance.y_max - (instance.height / 2)
+          return {'x' : x, 'y' : y}
+        },
+
+        get_focus_point_of_instance: function (instance){
+          let point = {'x': 0, 'y': 0}
+          let center_point = this.get_center_point_of_instance(instance)
+          let center_of_frame = {'x': this.canvas_width/2, 'y': this.canvas_height/2}
+
+          if (this.point_is_intersecting_circle(center_point, center_of_frame, 100)) {
+            return center_point
+          }
+
+          if (instance.x_max > (this.canvas_width / 2)) {
+            point.x = instance.x_max
+          }
+          else {
+            point.x = instance.x_min
+          }
+          if (instance.y_max > (this.canvas_height / 2)) {
+            point.y = instance.y_max
+          }
+          else {
+            point.y = instance.y_min
+          }
+          return point
+
+        },
+
+        clamp_values(val, min, max) {
+          return Math.min(Math.max(val, min), max)
+        },
+
+        auto_revert_snapped_to_instance_if_unchanged: function (instance) {
+          if (this.snapped_to_instance == instance) {
+            this.focus_instance_show_all()
+            this.snapped_to_instance = undefined
+            return true
+          }
+          return false
+        },
+
+        get_zoom_region_of_instance: function (instance){
+          let max_zoom = 10
+          let padding = -2
+          let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y)
+          max_zoom_to_show_all += padding
+          max_zoom_to_show_all = this.clamp_values(max_zoom_to_show_all, this.canvas_scale_global, max_zoom)
+          return max_zoom_to_show_all
+        },
+
+        snap_to_instance: function (instance){
+          if (this.label_settings.enable_snap_to_instance == false) {
+            return
+          }
+
+          if (this.auto_revert_snapped_to_instance_if_unchanged(instance) == true) {
+            return
+          }
+
+          this.$refs.instance_detail_list.focus_mode = true
+          this.$refs.instance_detail_list.change_instance(instance, this.instance_focused_index)
+
+          this.snapped_to_instance = instance
+
+          let point = this.get_focus_point_of_instance(instance)
+
+          let scale = this.get_zoom_region_of_instance(instance);
+          this.canvas_mouse_tools.zoom_to_point(point, scale)
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
         },
 
         update_label_file_visible: function (label_file) {
@@ -3244,7 +3612,7 @@
           this.cuboid_face_hover = cuboid_face;
         },
 
-        ghost_instance_hover_update: function (index: Number, type : String) {
+        ghost_instance_hover_update: function (index: Number, type : String, figure_id: String) {
           //if (this.lock_point_hover_change == true) {return}
           if (index != null) {
             this.ghost_instance_hover_index = parseInt(index)
@@ -3257,7 +3625,12 @@
 
         },
 
-        instance_hover_update: function (index: Number, type : String) {
+        instance_hover_update: function (
+            index: Number,
+            type : String,
+            figure_id: String,
+            instance_rotate_control_mouse_hover: Boolean
+            ) {
 
           if (this.lock_point_hover_change == true) {return}
           // important, we don't change the value if it's locked
@@ -3265,11 +3638,15 @@
 
           if (index != null) {
             this.instance_hover_index = parseInt(index)
+            this.hovered_figure_id = figure_id;
             this.instance_hover_type = type   // ie polygon, box, etc.
+            this.instance_rotate_control_mouse_hover = instance_rotate_control_mouse_hover
           }
           else{
             this.instance_hover_index = null;
+            this.hovered_figure_id = null;
             this.instance_hover_type = null;
+            this.instance_rotate_control_mouse_hover = null
           }
         },
 
@@ -3414,7 +3791,7 @@
         point_is_intersecting_circle: function (mouse, point, radius = 8) {
           // Careful this is effected by scale
           // bool, true if point if intersecting circle
-          let radius_scaled = radius / this.canvas_transform['canvas_scale_combined']
+          let radius_scaled = radius / this.zoom_value
           const result = Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) < radius_scaled;  // < number == circle.radius
           return result
         },
@@ -3463,6 +3840,7 @@
             return
           }
           if(this.instance_select_for_issue){return}
+          if(this.instance_select_for_merge){return}
           if(!this.instance_list){return}
           // avoid having a check for every point?
           let instance_index = this.instance_hover_index;
@@ -3537,6 +3915,7 @@
           if(!result){
             this.ellipse_hovered_corner = undefined;
           }
+
           return result;
         },
 
@@ -3663,18 +4042,11 @@
           return false
 
         },
-        detect_hover_polygon_midpoints: function(){
-          // https://diffgram.teamwork.com/#/tasks/23511334
-
-          if(!this.selected_instance){return}
-          const instance = this.selected_instance
-          if(!instance.selected){return}
-          if (!instance.midpoints_polygon ) {return }
-
-          // Check for hover on any middle point
+        find_midpoint_index: function(instance, midpoints_polygon){
           let midpoint_hover = undefined;
           let count = 0;
-          for(const point of instance.midpoints_polygon){
+
+          for(const point of midpoints_polygon){
             // TODO use user set param here
             let result = this.point_is_intersecting_circle(
               this.mouse_position,
@@ -3690,11 +4062,37 @@
           }
           if(midpoint_hover != undefined){
             instance.midpoint_hover = midpoint_hover
+
             this.instance_list.splice(this.selected_instance_index, 1, instance);
           }
           else{
             instance.midpoint_hover = undefined;
           }
+          return midpoint_hover
+        },
+        detect_hover_polygon_midpoints: function(){
+          // https://diffgram.teamwork.com/#/tasks/23511334
+
+          if(!this.selected_instance){return}
+          const instance = this.selected_instance
+          if(!instance.selected){return}
+          if (!instance.midpoints_polygon ) {return }
+
+          // Check for hover on any middle point
+          let midpoints_polygon = instance.midpoints_polygon;
+          if(!Array.isArray(midpoints_polygon)){
+            for(let figure_id of Object.keys(midpoints_polygon)){
+              let figure_midpoints = midpoints_polygon[figure_id]
+              let midpoint_hovered_point = this.find_midpoint_index(instance, figure_midpoints)
+              if(midpoint_hovered_point != undefined){
+                break
+              }
+            }
+          }
+          else{
+            this.find_midpoint_index(instance, midpoints_polygon)
+          }
+
 
         },
         detect_other_polygon_points: function(){
@@ -3743,10 +4141,17 @@
 
             this.detect_issue_hover();
 
+            this.style_mouse_if_rotation()
 
 
           } else {
             this.canvas_element.style.cursor = 'default'
+          }
+        },
+
+        style_mouse_if_rotation: function () {
+          if(this.instance_rotate_control_mouse_hover == true) {
+            this.canvas_element.style.cursor = 'help'
           }
         },
         detect_issue_hover: function(){
@@ -3771,7 +4176,18 @@
           }
 
         },
+        check_polygon_intersection_on_points: function(instance, points){
+          for (var j in points) {
+            let result = this.point_is_intersecting_circle(this.mouse_position, instance['points'][j])
 
+            if (result == true) {
+              this.canvas_element.style.cursor = 'all-scroll'
+              this.polygon_point_hover_index = parseInt(j)
+              return true
+            }
+          }
+          return false
+        },
         detect_nearest_polygon_point: function () {
           /*
          * Caution updates mouse cursor as side effect.
@@ -3798,20 +4214,31 @@
             var instance = this.instance_list[this.instance_hover_index]
           }
 
-          // April 1, 2020 not clera why needed selected here seems to work better without it
 
           if (instance != undefined) {
+            let has_figures = instance.points.filter(p => p.figure_id != undefined).length > 0;
             if (!this.hidden_label_id_list.includes(instance.label_file_id)) {
 
-              for (var j in instance['points']) {
-                let result = this.point_is_intersecting_circle(this.mouse_position, instance['points'][j])
-
-                if (result == true) {
-                  this.canvas_element.style.cursor = 'all-scroll'
-                  this.polygon_point_hover_index = parseInt(j)
-                  break
+              // Polygon might have multiple figures.
+              if(!has_figures){
+                this.check_polygon_intersection_on_points(instance, instance.points)
+              }
+              else{
+                let figures_list = [];
+                for(const p of instance.points){
+                  if(!figures_list.includes(p.figure_id)){
+                    figures_list.push(p.figure_id)
+                  }
+                }
+                for(const figure_id of figures_list){
+                  let points = instance.points.filter(p => p.figure_id === figure_id)
+                  let intersects = this.check_polygon_intersection_on_points(instance, points);
+                  if (intersects){
+                    break
+                  }
                 }
               }
+
             }
           }
         },
@@ -3821,9 +4248,38 @@
           if (!this.issues_list[this.issue_hover_index]) { return }
           if( this.draw_mode ){ return }
           if( this.view_issue_mode && this.instance_select_for_issue ){ return }
+          if( this.view_issue_mode && this.instance_select_for_merge ){ return }
           const issue = this.issues_list[this.issue_hover_index];
           this.open_view_edit_panel(issue);
         },
+
+        update_instances_to_merge: function(instance_to_select){
+          if(instance_to_select.selected){
+            this.instances_to_merge.push(instance_to_select)
+          }
+          else{
+            let index = this.instances_to_merge.indexOf(instance_to_select)
+            if (index > -1) {
+              this.instances_to_merge.splice(index, 1)
+            }
+
+          }
+
+        },
+        is_allowed_instance_to_merge: function(instance_to_select){
+          if(this.parent_merge_instance.id === instance_to_select.id){
+            return false
+          }
+          if(this.parent_merge_instance.label_file_id !== instance_to_select.label_file_id){
+            return false
+          }
+
+          if(this.parent_merge_instance.type !== instance_to_select.type){
+            return false
+          }
+          return true
+        },
+
         select_something: function () {
 
           if (this.view_only_mode == true) { return }
@@ -3840,6 +4296,13 @@
             this.clear_selected()
           }
           const instance_to_select =  this.instance_list[this.instance_hover_index];
+          if(this.instance_select_for_merge){
+            // Allow only selection of polygon with the same label file ID.
+            if(!this.is_allowed_instance_to_merge(instance_to_select)){
+              return
+            }
+          }
+
           if(instance_to_select){
             instance_to_select.selected = !instance_to_select.selected;
             instance_to_select.status = 'updated';
@@ -3849,7 +4312,10 @@
               instance_to_select.box_edit_point_hover = this.box_edit_point_hover;
             }
           }
-
+          if(this.instance_select_for_merge){
+            // Allow only selection of polygon with the same label file ID.
+            this.update_instances_to_merge(instance_to_select)
+          }
 
 
         },
@@ -3967,36 +4433,7 @@
           }
 
           if(['rotate'].includes(this.ellipse_hovered_corner_key)){
-            // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
-            let a = instance.width;
-            let b = instance.height;
-            let t = Math.atan(-(b) *  Math.tan(0))/ (a);
-            let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
-            let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
-            let A = {x: centered_x, y: centered_y}
-            let B = {x: instance.center_x, y: instance.center_y}
-            let C = {x: this.mouse_position.x, y: this.mouse_position.y}
-            let BA = {x: A.x - B.x, y: A.y - B.y}
-            let BC = {x: C.x - B.x, y: C.y - B.y}
-            let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
-            let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
-            let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
-            let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
-            let angle = 0;
-            if(this.mouse_position.y < B.y){
-              angle = (Math.PI /2)  - theta
-            }
-            else{
-              if(theta <= (Math.PI/2) && theta > 0){
-                // First cuadrant.
-                angle = (Math.PI /2)  + theta
-              }
-              else if(theta > (Math.PI/2) && theta > 0){
-                // Second Cuadrant
-                angle = (Math.PI /2)  + theta
-              }
-            }
-            instance.angle = angle;
+            instance.angle = this.get_angle_of_rotated_ellipse(instance);
           }
 
           // Translation
@@ -4014,6 +4451,40 @@
           this.instance_list.splice(instance_index, 1, instance);
           return true
         },
+
+        get_angle_of_rotated_ellipse: function (instance) {
+          // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
+          let a = instance.width;
+          let b = instance.height;
+          let t = Math.atan(-(b) *  Math.tan(0))/ (a);
+          let centered_x = this.$ellipse.get_x_of_rotated_ellipse(t, instance, 0)
+          let centered_y = this.$ellipse.get_y_of_rotated_ellipse(t, instance, 0)
+          let A = {x: centered_x, y: centered_y}
+          let B = {x: instance.center_x, y: instance.center_y}
+          let C = {x: this.mouse_position.x, y: this.mouse_position.y}
+          let BA = {x: A.x - B.x, y: A.y - B.y}
+          let BC = {x: C.x - B.x, y: C.y - B.y}
+          let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
+          let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
+          let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+          let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
+          let angle = 0;
+          if(this.mouse_position.y < B.y){
+            angle = (Math.PI /2)  - theta
+          }
+          else{
+            if(theta <= (Math.PI/2) && theta > 0){
+              // First cuadrant.
+              angle = (Math.PI /2)  + theta
+            }
+            else if(theta > (Math.PI/2) && theta > 0){
+              // Second Cuadrant
+              angle = (Math.PI /2)  + theta
+            }
+          }
+          return angle;
+        },
+
         move_cuboid: function (event) {
 
           // Would prefer this to be part of general "move" something thing.
@@ -4214,13 +4685,25 @@
             };
             this.original_edit_instance_index = this.polygon_click_index;
           }
+          let points = instance.points;
+          if(this.hovered_figure_id){
+            points = instance.points.filter(p => p.figure_id === this.hovered_figure_id)
+          }
           let x_move = this.mouse_down_delta_event.x
           let y_move = this.mouse_down_delta_event.y
-          for(const point of instance.points){
+          for(const point of points){
             point.x += x_move
             point.y += y_move
           }
-          this.instance_list.splice(this.instance_hover_index, 1, instance);
+          if(!this.hovered_figure_id){
+            this.instance_list.splice(this.instance_hover_index, 1, instance);
+          }
+          else{
+            let rest_of_points = instance.points.filter(p => p.figure_id !== this.hovered_figure_id);
+            instance.points = points.concat(rest_of_points);
+            this.instance_list.splice(this.instance_hover_index, 1, instance);
+          }
+
           return true
         },
 
@@ -4256,6 +4739,9 @@
           }
         },
         calculate_min_max_points: function(instance){
+          if(!instance){
+            return
+          }
           if(['polygon', 'point'].includes(instance.type)){
             instance.x_min = Math.min(...instance.points.map(p => p.x))
             instance.y_min = Math.min(...instance.points.map(p => p.y))
@@ -4317,11 +4803,27 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.x_min = Math.min(...instance.nodes.map(p => p.x))
-            instance.y_min = Math.min(...instance.nodes.map(p => p.y))
-            instance.x_max = Math.max(...instance.nodes.map(p => p.x))
-            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
+            // instance.calculate_min_max_points()
           }
+          else{
+            instance.x_min = parseInt(instance.x_min)
+            instance.y_min = parseInt(instance.y_min)
+            instance.x_max = parseInt(instance.x_max)
+            instance.y_max = parseInt(instance.y_max)
+          }
+
+        },
+        move_keypoints: function(){
+          let key_points_did_move = false;
+          let instance = this.instance_list[this.instance_hover_index];
+          if(instance && this.is_actively_resizing){
+            if(!this.original_edit_instance){
+              this.original_edit_instance = instance.duplicate_for_undo();
+              this.original_edit_instance_index = this.instance_hover_index;
+            }
+            key_points_did_move = instance.move();
+          }
+          return key_points_did_move
         },
         move_something: function (event) {
 
@@ -4333,6 +4835,7 @@
           if (this.draw_mode == true ) { return }
           if (this.$props.view_only_mode == true) { return }
           if (this.instance_select_for_issue == true) { return }
+          if (this.instance_select_for_merge == true) { return }
           if (this.view_issue_mode) { return }
           let cuboid_did_move = false;
           let ellipse_did_move = false;
@@ -4347,10 +4850,6 @@
           }
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'curve') {
             curve_did_move = this.move_curve(event)
-          }
-
-          if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.instance_list[this.instance_hover_index].move();
           }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
@@ -4693,8 +5192,6 @@
 
         onRendered: function (ctx) {
 
-          // IMPORTANT   restore canvas from various transform operations
-          ctx.restore()
         },
 
         test: function () {
@@ -4704,36 +5201,68 @@
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
           return this.canvas_mouse_tools.mouse_transform(
-            event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
+            event,
+            mouse_position,
+            this.canvas_element,
+            this.update_canvas,
+            this.canvas_transform)
         },
 
         helper_difference_absolute: function (a, b) { return Math.abs(a - b) },
 
 
         move_position_based_on_mouse: function (movementX, movementY) {
-
-          // using local could work if we also "dragged" it... but feels funny for free move
-          // let x = this.canvas_translate.x + (movementX / this.canvas_scale_local)
-          // let y = this.canvas_translate.y + (movementY / this.canvas_scale_local)
-          let x = this.canvas_translate.x + movementX
-          let y = this.canvas_translate.y + movementY
-
-          /* Below are Locks so it doesn't go out of bounds.
-       * if it goes out of boudnds (ie negative or greater then image actual)
-       * then it causes severe rendering error.
-       *
-       * careful, we assume we need to compare to scaled value
-       * base on rest of context
-       * This is wishy washy answer but basically console logged
-       * and it was clear neeeded scaled value from that.
-       */
-          if (x >= 0 && x < this.canvas_width_scaled){
-            this.canvas_translate.x = x
-          }
-          if (y >= 0 && y < this.canvas_height_scaled){
-            this.canvas_translate.y = y
+          if(this.canvas_mouse_tools.scale === this.canvas_scale_global){
+            return
           }
 
+          // Map Bounds to World
+          var transform = this.canvas_mouse_tools.canvas_ctx.getTransform();
+
+          let min_point = this.canvas_mouse_tools.map_point_from_matrix(1, 1, transform)
+
+          let max_point = this.canvas_mouse_tools.map_point_from_matrix(
+            this.canvas_width - 1, this.canvas_height- 1, transform)
+
+          //console.log(min_point.x, min_point.y)
+
+          // Propose Position with Movement
+          let x_min_proposed = Math.max(0 + movementX, 0)
+          let y_min_proposed = Math.max(0 + movementY, 0)
+
+          let x_max_proposed = Math.min(this.canvas_width_scaled + movementX,  this.canvas_width_scaled)
+          let y_max_proposed = Math.min(this.canvas_height_scaled + movementY, this.canvas_height_scaled)
+
+          // Test if proposed position will break world mapped bounds
+          let current_trans_x = transform.e;
+          if ( x_min_proposed > min_point.x
+            && x_max_proposed < max_point.x){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_x(
+              movementX, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementX < 0 && new_bounds.x_min > 0){
+              movementX = movementX + new_bounds.x_min
+            }
+            if(movementX > 0 && new_bounds.x_max < x_max_proposed){
+              movementX = movementX - (x_max_proposed - new_bounds.x_max)
+            }
+            this.canvas_mouse_tools.pan_x(movementX)
+          }
+
+          if ( y_min_proposed > min_point.y
+            && y_max_proposed < max_point.y ){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_y(
+              movementY, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementY < 0 && new_bounds.y_min > 0){
+              movementY = movementY + new_bounds.y_min
+            }
+            if(movementY > 0 && new_bounds.y_max < y_max_proposed){
+              movementY = movementY - (y_max_proposed - new_bounds.y_max)
+            }
+
+            this.canvas_mouse_tools.pan_y(movementY)
+          }
         },
 
         mouse_move: function (event) {
@@ -4747,9 +5276,11 @@
         window.focus()
       }
       */
+
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
-          if (this.ctrl_key == true) {
+          if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)
+            this.canvas_element.style.cursor = 'move'
             return
           }
           this.move_something(event)
@@ -4780,7 +5311,10 @@
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
-            mouse_move_interaction.process();
+            let did_move_instance = mouse_move_interaction.process();
+            if(did_move_instance){
+              this.has_changed = true;
+            }
           }
           //console.debug(this.mouse_position)
         },
@@ -4819,9 +5353,11 @@
           return current_point;
         },
         perform_auto_bordering: function(path_type){
-          const latest_point = this.current_polygon_point_list[this.current_polygon_point_list.length - 1];
           const auto_border_polygon = this.instance_list[this.auto_border_polygon_p2_instance_index];
-
+          let points = auto_border_polygon.points;
+          if(this.auto_border_polygon_p1_figure){
+            points = auto_border_polygon.points.filter(p => p.figure_id === this.auto_border_polygon_p1_figure)
+          }
 
           // Forward Path
           let current_index = this.auto_border_polygon_p1_index;
@@ -4832,7 +5368,7 @@
             if(current_index !== this.auto_border_polygon_p1_index){
               forward_index_list.push(current_index);
             }
-            if(current_index >= auto_border_polygon.points.length){
+            if(current_index >= points.length){
               current_index = 0;
               forward_count += 1;
               continue
@@ -4840,7 +5376,6 @@
             current_index += 1;
             forward_count += 1;
           }
-          console.debug('forward_index_list', forward_index_list)
 
           // Backwards path
           current_index = this.auto_border_polygon_p1_index;
@@ -4852,7 +5387,7 @@
               backward_index_list.push(current_index);
             }
             if(current_index < 0){
-              current_index = auto_border_polygon.points.length ;
+              current_index = points.length ;
               backward_count += 1;
               continue
             }
@@ -4864,40 +5399,42 @@
           if(path_type === 'long_path'){
             if(longest === 'forward'){
               for(const index of forward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                if(points[index] == undefined){continue}
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
             else{
               for(const index of backward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                if(points[index] == undefined){continue}
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
           }
           else{
             if(shortest === 'forward'){
               for(const index of forward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
+                if(points[index] == undefined){continue}
                 //console.debug('indexx2', index, auto_border_polygon.points[index]);
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
             else{
               for(const index of backward_index_list){
-                if(auto_border_polygon.points[index] == undefined){continue}
+                if(points[index] == undefined){continue}
                 //console.debug('indexx', index, auto_border_polygon.points[index]);
-                this.current_polygon_point_list.push({...auto_border_polygon.points[index]})
+                this.current_polygon_point_list.push({...points[index], figure_id: undefined})
               }
             }
           }
 
-          this.current_polygon_point_list.push({...this.auto_border_polygon_p2})
+          this.current_polygon_point_list.push({...this.auto_border_polygon_p2, figure_id: undefined})
           this.auto_border_polygon_p1 = undefined;
           this.auto_border_polygon_p1_index = undefined;
+          this.auto_border_polygon_p1_figure = undefined;
           this.auto_border_polygon_p1_instance_index = undefined;
           this.auto_border_polygon_p2 = undefined;
           this.auto_border_polygon_p2_index = undefined;
+          this.auto_border_polygon_p2_figure = undefined;
           this.auto_border_polygon_p2_instance_index = undefined;
           this.show_polygon_border_context_menu = false;
 
@@ -5025,6 +5562,20 @@
           this.original_edit_instance = undefined;
           this.original_edit_instance_index = undefined;
         },
+        keypoint_mouse_up_edit: function(){
+          if(!this.original_edit_instance){ return }
+          if(this.original_edit_instance.type != 'keypoints'){ return }
+          if(this.original_edit_instance_index == undefined){ return }
+
+          const command = new UpdateInstanceCommand(
+            this.instance_list[this.original_edit_instance_index],
+            this.original_edit_instance_index,
+            this.original_edit_instance,
+            this)
+          this.command_manager.executeCommand(command);
+          this.original_edit_instance = undefined;
+          this.original_edit_instance_index = undefined;
+        },
         polygon_delete_point: function(polygon_point_index){
           if(this.draw_mode){return}
           if(!this.selected_instance){return}
@@ -5045,9 +5596,30 @@
 
           this.instance_list.splice(this.selected_instance_index, 1, this.selected_instance)
         },
+
+        get_node_hover_index: function () {
+          if (!this.instance_hover_index) { return }
+          let instance = this.instance_list[this.instance_hover_index]
+          if (!instance.node_hover_index) { return }
+          return instance.node_hover_index
+        },
+
+        double_click_keypoint_special_action: function(){
+          let node_hover_index = this.get_node_hover_index()
+          if (node_hover_index == undefined) {return }
+          let update = {
+            index: this.instance_hover_index,
+            node_hover_index: node_hover_index,
+            mode: "on_click_update_point_attribute"
+          }
+          this.instance_update(update)
+
+        },
+
         double_click: function($event){
           this.mouse_position = this.mouse_transform($event, this.mouse_position)
           this.polygon_delete_point();
+          this.double_click_keypoint_special_action()
         },
 
         mouse_up: function () {
@@ -5064,7 +5636,6 @@
               this.is_actively_resizing = false
             }
           }
-
           this.$store.commit('mouse_state_up')
 
           this.polygon_click_index = null
@@ -5082,6 +5653,7 @@
               this.bounding_box_mouse_up_edit()
               this.cuboid_mouse_up_edit();
               this.curve_mouse_up_edit();
+              this.keypoint_mouse_up_edit()
             }
           }
 
@@ -5273,69 +5845,69 @@
         },
 
         mouse_down_limits: function (event) {
-          /* not a fan of having a value
-       * and a flag... but also have to deal with both
-       * mouse up and down firing, but not wanting to rerun this stuff twice
-       * If there was a way to control the relation of mouse up/down
-       * firing but that feels very unclear
-       *
-       * Also not sure if we don't return will it wait for the function
-       * to complete as expected...
-       *
-       * So the default here is that it's true,
-       * and we expect that if it's true mouse_up will also allow it to continue
-       * It gets reset each time.
-       *
-       * In comparison to running this at save,
-       * it means for current video boxes it will run twice
-       * But the benefit is that then it prevents it from getting into broken state
-       * in first place
-       */
+            /* not a fan of having a value
+         * and a flag... but also have to deal with both
+         * mouse up and down firing, but not wanting to rerun this stuff twice
+         * If there was a way to control the relation of mouse up/down
+         * firing but that feels very unclear
+         *
+         * Also not sure if we don't return will it wait for the function
+         * to complete as expected...
+         *
+         * So the default here is that it's true,
+         * and we expect that if it's true mouse_up will also allow it to continue
+         * It gets reset each time.
+         *
+         * In comparison to running this at save,
+         * it means for current video boxes it will run twice
+         * But the benefit is that then it prevents it from getting into broken state
+         * in first place
+         */
 
-          // default
-          this.mouse_down_limits_result = true
+            // default
+            this.mouse_down_limits_result = true
 
-          // 1: left, 2: middle, 3: right, could be null
-          // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
+            // 1: left, 2: middle, 3: right, could be null
+            // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
 
-          if (event.which == 2 || event.which == 3) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.show_context_menu == true) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // this feels a bit funny
-          if (this.draw_mode == false) { return true }
-
-          if (this.space_bar == true || this.ctrl_key) {
-            // note pattern of needing both... for now this
-            // is so the mouse up respects this too
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // TODO clarify if we could just do this first check
-          if (!this.current_label_file || !this.current_label_file.id) {
-            this.snackbar_warning = true
-            this.snackbar_warning_text = "Please select a label first"
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.video_mode == true) {
-            if (this.validate_sequences() == false) {
+            if (event.which == 2 || event.which == 3) {
               this.mouse_down_limits_result = false
               return false
             }
-          }
 
-          return true
+            if (this.show_context_menu == true) {
+              this.mouse_down_limits_result = false
+              return false
+            }
 
-        },
+            // this feels a bit funny
+            if (this.draw_mode == false) { return true }
+
+            if (this.space_bar == true || this.ctrl_key) {
+              // note pattern of needing both... for now this
+              // is so the mouse up respects this too
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            // TODO clarify if we could just do this first check
+            if (!this.current_label_file || !this.current_label_file.id) {
+              this.snackbar_warning = true
+              this.snackbar_warning_text = "Please select a label first"
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            if (this.video_mode == true) {
+              if (this.validate_sequences() == false) {
+                this.mouse_down_limits_result = false
+                return false
+              }
+            }
+
+            return true
+
+          },
 
         create_instance_events: function (instance_index=this.instance_list.length - 1) {
           this.event_create_instance = {...this.current_instance}
@@ -5359,50 +5931,118 @@
           if(!this.is_actively_resizing){return}
 
           const instance = {...this.selected_instance};
+
+          if(!instance){return}
           if(instance.type !== 'polygon'){return}
           if(instance.midpoint_hover == undefined){return}
 
-          instance.points.splice(instance.midpoint_hover + 1, 0, instance.midpoints_polygon[instance.midpoint_hover])
+          let points = instance.points.map(p => ({...p}));
+
+          let rest_of_points = [];
+          if(this.hovered_figure_id){
+            points = instance.points.filter(p => p.figure_id === this.hovered_figure_id);
+            rest_of_points = instance.points.filter(p => p.figure_id !== this.hovered_figure_id)
+          }
+          let midpoints_polygon = instance.midpoints_polygon;
+          if(this.hovered_figure_id){
+            midpoints_polygon = instance.midpoints_polygon[this.hovered_figure_id]
+          }
+
+          let new_point_to_add = midpoints_polygon[instance.midpoint_hover];
+          if(new_point_to_add == undefined){
+            return
+          }
+          points.splice(instance.midpoint_hover + 1, 0, {...new_point_to_add, figure_id: this.hovered_figure_id})
           this.polygon_point_hover_index = instance.midpoint_hover + 1;
           this.polygon_point_click_index = instance.midpoint_hover + 1;
           this.polygon_click_index = this.selected_instance_index;
-          instance.points[this.polygon_point_hover_index].selected = true;
+
+          let hovered_point = points[this.polygon_point_hover_index];
+          if(!hovered_point){
+            return
+          }
+          hovered_point.selected = true;
           this.lock_point_hover_change = true;
           instance.midpoint_hover = undefined;
           instance.selected = true;
+          if(this.hovered_figure_id){
+            instance.points = points.concat(rest_of_points);
+          }
+          else{
+            instance.points = points;
+          }
           this.instance_list.splice(this.selected_instance_index, 1, instance);
+        },
+        get_polygon_figures: function(polygon_instance){
+          let figure_list = [];
+          if(!polygon_instance || polygon_instance.type !== 'polygon'){
+            return []
+          }
+          for(const p of polygon_instance.points){
+            if(!p.figure_id){
+              continue
+            }
+            if(!figure_list.includes(p.figure_id)){
+              figure_list.push(p.figure_id)
+            }
+          }
+          return figure_list;
+        },
+        find_auto_border_point: function(polygon, points, instance_index){
+          let found_point = false;
+          let point_index = 0;
+          for (const point of points){
+            if(point.hovered_while_drawing){
+              if(!this.auto_border_polygon_p1){
+                this.auto_border_polygon_p1 = point;
+                this.auto_border_polygon_p1_index = point_index;
+                this.auto_border_polygon_p1_figure = point.figure_id;
+                this.auto_border_polygon_p1_instance_index = instance_index;
+                point.point_set_as_auto_border = true;
+                found_point = true;
+                this.show_snackbar_auto_border = true;
+                break;
+              }
+              else if(!this.auto_border_polygon_p2 && point != this.auto_border_polygon_p1 && instance_index === this.auto_border_polygon_p1_instance_index){
+                this.auto_border_polygon_p2 = point;
+                this.auto_border_polygon_p2_index = point_index;
+                this.auto_border_polygon_p2_figure = point.figure_id;
+                point.point_set_as_auto_border = true;
+                this.auto_border_polygon_p2_instance_index = instance_index;
+                this.show_snackbar_auto_border = false;
+                found_point = true;
+                break;
+              }
+            }
+            point_index += 1;
+          }
+          return found_point;
         },
         polygon_auto_border_mouse_down: function(){
           if(!this.draw_mode){return}
           if(!this.is_actively_drawing){return}
           if(!this.auto_border_polygon_p1 && this.auto_border_polygon_p2){return}
           let found_point = false;
-          for(let i =0;i < this.instance_list.length; i++){
-            const polygon = this.instance_list[i];
+          for(let instance_index =0; instance_index < this.instance_list.length; instance_index++){
+            const polygon = this.instance_list[instance_index];
             if(polygon.type !== 'polygon' || polygon.soft_delete){continue}
-            let point_index = 0;
-            for (const point of polygon.points){
-              if(point.hovered_while_drawing){
-                if(!this.auto_border_polygon_p1){
-                  this.auto_border_polygon_p1 = point;
-                  this.auto_border_polygon_p1_index = point_index;
-                  this.auto_border_polygon_p1_instance_index = i;
-                  point.point_set_as_auto_border = true;
+
+            let points = polygon.points;
+            let figure_list = this.get_polygon_figures(polygon);
+            if(figure_list === 0){
+              let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
+              if(autoborder_point_exists){
+                found_point = true;
+              }
+            }
+            else{
+              for(const figure_id of figure_list){
+                points = polygon.points.filter(p => p.figure_id === figure_id)
+                let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
+                if(autoborder_point_exists){
                   found_point = true;
-                  this.show_snackbar_auto_border = true;
-                  break;
-                }
-                else if(!this.auto_border_polygon_p2 && point != this.auto_border_polygon_p1 && i === this.auto_border_polygon_p1_instance_index){
-                  this.auto_border_polygon_p2 = point;
-                  this.auto_border_polygon_p2_index = point_index;
-                  point.point_set_as_auto_border = true;
-                  this.auto_border_polygon_p2_instance_index = i;
-                  this.show_snackbar_auto_border = false;
-                  found_point = true;
-                  break;
                 }
               }
-              point_index += 1;
             }
             if(found_point){
               break;
@@ -5442,9 +6082,9 @@
               });
 
             }
-
-            // Push one to the buffer dict an the other one to the actual instance_list.
             this.push_instance_to_instance_list_and_buffer(new_instance, this.current_frame)
+            //const command = new CreateInstanceCommand(new_instance, this);
+            //this.command_manager.executeCommand(command);
 
           })
         },
@@ -5500,6 +6140,7 @@
 
           // TODO new method ie
           // this.is_actively_drawing = true
+          this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
           if (this.$props.view_only_mode == true) {
             return
@@ -5530,6 +6171,7 @@
               this.ellipse_mouse_down()
             }
             if (this.instance_type == "box") {
+
               this.bounding_box_mouse_down();
             }
             if (this.instance_type == "keypoints") {
@@ -5558,16 +6200,13 @@
           this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
           this.mouse_down_position.request_time = Date.now()
           this.lock_polygon_corner();
-
-
+          this.polygon_mid_point_mouse_down()
 
 
         },
         lock_polygon_corner: function(){
           this.polygon_point_click_index = this.polygon_point_hover_index
           this.polygon_click_index = this.instance_hover_index
-
-          this.polygon_mid_point_mouse_down()
 
         },
         get_instances_core: function (response) {
@@ -5889,6 +6528,7 @@
           // bottom of https://www.sitepoint.com/delay-sleep-pause-wait/
           // use aysnc in front of function
         },
+
         next_issue_task: async function(task){
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -5919,7 +6559,7 @@
             this.loading = false;
           }
         },
-        trigger_task_change: async function(direction, task){
+        trigger_task_change: async function(direction, task, assign_to_user=False){
           // Keyboard shortcuts case
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -5932,7 +6572,7 @@
           this.reset_for_file_change_context()
 
           // Ask parent for a new task
-          this.$emit('request_new_task', direction, task)
+          this.$emit('request_new_task', direction, task, assign_to_user)
         },
 
         reset_for_file_change_context: function (){
@@ -5950,9 +6590,47 @@
           }
 
         },
+        annotation_show_activate(show_type){
+          this.annotation_show_on = !this.annotation_show_on
+          this.annotation_show_type = show_type
+        },
+        annotation_show_change_item() {
+          let do_change_item
+
+          let file = this.file || this.task.file
+          if (file.type == "video"){
+            if (this.$refs.video_controllers.at_end_of_video == true) {
+              do_change_item = true
+            }
+            else {
+              this.$refs.video_controllers.move_frame(1)
+            }           
+          }
+          if (file.type == "image") {
+            do_change_item = true
+          }
+
+          if (do_change_item == true) {
+            if (this.annotation_show_type === "task") {
+              return this.trigger_task_change("next", this.$props.task, true)
+            }
+            this.change_file("next")
+          }
+        },
+        set_annotation_show_duration(duration){
+          this.annotation_show_duration_per_instance = (duration + 1) * 1000
+        },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
             this.$emit('request_file_change', direction, file);
+          }
+        },
+        set_ui_schema(){
+          if(this.$props.task && this.$props.task.job && this.$props.task.job.ui_schema){
+            this.$store.commit('set_ui_schema', this.$props.task.job.ui_schema);
+          }
+          else{
+            this.$store.commit('clear_ui_schema');
           }
         },
         on_change_current_task: async function(){
@@ -5975,8 +6653,11 @@
           await this.prepare_canvas_for_new_file();
 
           this.full_file_loading = false;
+          this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
-
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6004,6 +6685,9 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
 
         refresh_attributes_from_current_file: async function (file) {
@@ -6086,11 +6770,7 @@
                 this.snackbar_success = true
                 this.snackbar_success_text = "Deferred for review. Moved to next."
 
-                //
-                // Question, change_file() seems to save by default here
-                // do we want that?
-                // maybe a good idea since a deferred task could still have work done
-                this.trigger_task_change('next', this.$props.task)
+                this.trigger_task_change('next', this.$props.task, true)
 
               }
 
@@ -6126,23 +6806,25 @@
 
         },
 
+        set_control_key: function (event){
+          // Caution used name commands here to that when multiple keys are pressed it still works
+          if (event.ctrlKey == false || event.metaKey == false) { // ctrlKey cmd key
+            this.ctrl_key = false
+          }
+          if (event.ctrlKey == true || event.metaKey == true) { // ctrlKey cmd key
+            this.ctrl_key = true
+          }
+        },
+
         // hotkey hotkeys
         keyboard_events_global_up: function (event) {
-          /*
-       *  So one thing to think about is having all annotation
-       *  hotkeys in one place
-       *  -> Things like the new label lock
-       *  -> ease of reference / **preventing overlap**
-       *  -> Event listeners are not great to have to setup and take down
-       *  in each component
-       *
-       *  BUT that's not for context relevant things I guess
-       *  Was thinking in context of where to add a hotkey for
-       *  sequences and at first thinking there and then realizing
-       *  maybe not.
-       *
-       */
-          var   ctrlKey = 17;
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return    // Caution must be near top to prevent when typing
+          }
+
+          this.set_control_key(event)
+
           if(this.show_context_menu){
             return
           }
@@ -6150,19 +6832,9 @@
             //
             this.shift_key = false
           }
-          if(event.keyCode === 91){ // cmd key
-            this.ctrl_key = false;
-          }
-          if (event.keyCode === ctrlKey) { // ctrlKey
-            this.ctrl_key = false
-          }
 
           if (event.keyCode === 72) { // h key
             this.show_annotations = !this.show_annotations;
-          }
-
-          if (this.$store.state.user.is_typing_or_menu_open == true) {
-            return
           }
 
           if (event.key === "f") {
@@ -6171,10 +6843,6 @@
 
           if (event.key === "g") {
             this.label_settings.show_ghost_instances = !this.label_settings.show_ghost_instances
-          }
-
-          if (event.keyCode === 83) { // save
-            this.save();
           }
 
           if (event.keyCode === 13) {  // enter
@@ -6195,36 +6863,7 @@
 
         },
 
-        // more hotkeys
-        keyboard_events_global_down: function (event) {
-          var ctrlKey = 17,
-            cmdKey = 91,
-            shiftKey = 16,
-            vKey = 86,
-            cKey = 67;
-          if (event.keyCode == ctrlKey || event.keyCode == cmdKey) {this.ctrl_key = true;}
-          if (event.keyCode === shiftKey) { // shift
-            //
-            this.shift_key = true
-          }
-          if(event.keyCode === 17){
-            this.ctrl_key = true;
-            this.canvas_element.style.cursor = 'move'
-          }
-
-          if (this.$store.state.user.is_typing_or_menu_open == true) {
-            //console.debug("Blocked by is_typing_or_menu_open")
-            return
-          }
-
-          if (event.keyCode === 37 || event.key === "a") { // left arrow or A
-            if (this.shift_key) {
-              this.change_file("previous");
-            } else {
-              this.shift_frame_via_store(-1)
-            }
-          }
-
+        may_toggle_instance_transparency: function (event) {
           if (event.keyCode === 84) { // shift + t
             if (this.shift_key) {
               if(this.default_instance_opacity === 1){
@@ -6235,7 +6874,25 @@
               }
             }
           }
+        },
 
+        may_toggle_file_change_left: function (event) {
+          if (event.keyCode === 37 || event.key === "a") { // left arrow or A
+            if (this.shift_key) {
+              this.change_file("previous");
+            } else {
+              this.shift_frame_via_store(-1)
+            }
+          }
+        },
+
+        may_snap_to_instance: function (event) {
+          if (this.shift_key == true && event.key === "F") {
+            this.snap_to_instance(this.selected_instance)
+          }
+        },
+
+        may_toggle_file_change_right: function (event) {
           if (event.keyCode === 39 || event.key === "d") { // right arrow
             if (this.shift_key) {
               this.change_file("next");
@@ -6243,6 +6900,61 @@
               this.shift_frame_via_store(1)
             }
           }
+        },
+
+        may_toggle_show_hide_occlusion: function (event) {
+          if (event.key === "o" || event.key === "O") {
+            this.label_settings.show_occluded_keypoints = !this.label_settings.show_occluded_keypoints
+            this.refresh = new Date();
+          }
+        },
+
+        may_toggle_escape_key: function (event) {
+          if (event.keyCode === 27) { // Esc
+            if (this.$props.view_only_mode == true) { return }
+            if(this.instance_select_for_issue || this.view_issue_mode){return}
+            if(this.instance_select_for_merge){return}
+
+            this.draw_mode = !this.draw_mode
+            this.edit_mode_toggle( this.draw_mode)
+            this.is_actively_drawing = false
+          }
+        },
+
+        may_save: function (event) {
+          if (event.key === "s" && this.shift_key == false) { // save
+            this.save();
+          }
+        },
+
+        keyboard_events_global_down: function (event) {
+          var ctrlKey = 17,
+            cmdKey = 91,
+            shiftKey = 16,
+            vKey = 86,
+            cKey = 67;
+
+          this.set_control_key(event)
+
+          if (this.$store.state.user.is_typing_or_menu_open == true) {
+            return    // this guard should be at highest level
+          }
+
+          if (event.keyCode === shiftKey) { // shift
+            //
+            this.shift_key = true
+          }
+
+          this.may_save(event)
+
+          this.may_snap_to_instance(event)
+
+
+          this.may_toggle_file_change_left(event)
+          this.may_toggle_file_change_right(event)
+
+          this.may_toggle_instance_transparency(event)
+          this.may_toggle_show_hide_occlusion(event)
 
           if (event.key === "N") { // shift + n
             if (this.shift_key) {
@@ -6261,16 +6973,7 @@
             this.save(true);  // and_complete == true
           }
 
-          if (event.keyCode === 27) { // Esc
-            if (this.$props.view_only_mode == true) { return }
-            if(this.instance_select_for_issue || this.view_issue_mode){return}
-
-            this.draw_mode = !this.draw_mode
-            this.edit_mode_toggle( this.draw_mode)
-            this.is_actively_drawing = false
-            // careful, can't include this direclty in edit_mode_toggle
-            // since veutify switch does this behaviour too
-          }
+          this.may_toggle_escape_key(event)
 
           if (event.keyCode === 32) { // space
 
@@ -6320,9 +7023,11 @@
           this.current_polygon_point_list = []
           this.auto_border_polygon_p1 = undefined;
           this.auto_border_polygon_p1_index = undefined;
+          this.auto_border_polygon_p1_figure = undefined;
           this.auto_border_polygon_p1_instance_index = undefined;
           this.auto_border_polygon_p2 = undefined;
           this.auto_border_polygon_p2_index = undefined;
+          this.auto_border_polygon_p2_figure = undefined;
           this.auto_border_polygon_p2_instance_index = undefined;
           this.instance_template_draw_started = false;
           this.is_actively_drawing = false;
@@ -6337,7 +7042,6 @@
           this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
         },
         initialize_instance: function(instance){
-          // TODO: add other instance types as they are migrated to classes.
           if(instance.type === 'keypoints' && !instance.initialized){
             let initialized_instance = new KeypointInstance(
               this.mouse_position,
@@ -6346,7 +7050,9 @@
               this.trigger_instance_changed,
               this.instance_selected,
               this.instance_deselected,
-              this.mouse_down_delta_event
+              this.mouse_down_delta_event,
+              this.mouse_down_position,
+              this.label_settings
             );
             initialized_instance.populate_from_instance_obj(instance);
             return initialized_instance
@@ -6374,66 +7080,63 @@
             console.error(error);
           }
         },
-        paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
-          if(!this.instance_clipboard && instance_hover_index == undefined){return}
-          if(instance_hover_index != undefined){
-            this.copy_instance(false, instance_hover_index)
+        add_pasted_instance_to_instance_list: async function(instance_clipboard, next_frames, original_file_id){
+          let on_new_frame_or_file = false;
+          if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
+            on_new_frame_or_file = true;
           }
-          // We need to duplicate on each paste to avoid double ID's on the instance list.
-          this.instance_clipboard = this.duplicate_instance(this.instance_clipboard);
-          let on_new_frame = false;
-          if(this.instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
-            on_new_frame = true;
+          if(this.$props.file && this.$props.file.id != original_file_id){
+            on_new_frame_or_file = true;
           }
-          if(this.instance_clipboard.type === 'point' && !on_new_frame){
-            this.instance_clipboard.points[0].x += 50
-            this.instance_clipboard.points[0].y += 50
+          if(this.$props.task && this.$props.task.file.id != original_file_id){
+            on_new_frame_or_file = true;
           }
-          else if(this.instance_clipboard.type === 'box' && !on_new_frame){
-            this.instance_clipboard.x_min += 50
-            this.instance_clipboard.x_max += 50
-            this.instance_clipboard.y_min += 50
-            this.instance_clipboard.y_max += 50
+          if(instance_clipboard.type === 'point' && !on_new_frame_or_file){
+            instance_clipboard.points[0].x += 50
+            instance_clipboard.points[0].y += 50
           }
-          else if((this.instance_clipboard.type === 'line' || this.instance_clipboard.type === 'polygon') && !on_new_frame){
-            for(const point of this.instance_clipboard.points){
+          else if(instance_clipboard.type === 'box' && !on_new_frame_or_file){
+            instance_clipboard.x_min += 50
+            instance_clipboard.x_max += 50
+            instance_clipboard.y_min += 50
+            instance_clipboard.y_max += 50
+          }
+          else if((instance_clipboard.type === 'line' || instance_clipboard.type === 'polygon') && !on_new_frame_or_file){
+            for(const point of instance_clipboard.points){
               point.x += 50;
               point.y += 50;
             }
           }
-          else if((this.instance_clipboard.type === 'keypoints') && !on_new_frame){
-            for(const node of this.instance_clipboard.nodes){
+          else if((instance_clipboard.type === 'keypoints') && !on_new_frame_or_file){
+            for(const node of instance_clipboard.nodes){
               node.x += 50;
               node.y += 50;
             }
           }
-          else if(this.instance_clipboard.type === 'cuboid'  && !on_new_frame){
-            for(let key in this.instance_clipboard.front_face){
+          else if(instance_clipboard.type === 'cuboid'  && !on_new_frame_or_file){
+            for(let key in instance_clipboard.front_face){
               if(['width', 'height'].includes(key)){continue}
-              this.instance_clipboard.front_face[key].x += 85
-              this.instance_clipboard.front_face[key].y += 85
-              this.instance_clipboard.rear_face[key].x += 85
-              this.instance_clipboard.rear_face[key].y += 85
+              instance_clipboard.front_face[key].x += 85
+              instance_clipboard.front_face[key].y += 85
+              instance_clipboard.rear_face[key].x += 85
+              instance_clipboard.rear_face[key].y += 85
             }
           }
-          else if(this.instance_clipboard.type === 'ellipse'  && !on_new_frame){
-            this.instance_clipboard.center_y += 50
-            this.instance_clipboard.center_x += 50
+          else if(instance_clipboard.type === 'ellipse'  && !on_new_frame_or_file){
+            instance_clipboard.center_y += 50
+            instance_clipboard.center_x += 50
           }
-          else if(this.instance_clipboard.type === 'curve'  && !on_new_frame){
-            this.instance_clipboard.p1.x += 50
-            this.instance_clipboard.p1.y += 50
-            this.instance_clipboard.p2.x += 50
-            this.instance_clipboard.p2.y += 50
-
+          else if(instance_clipboard.type === 'curve'  && !on_new_frame_or_file){
+            instance_clipboard.p1.x += 50
+            instance_clipboard.p1.y += 50
+            instance_clipboard.p2.x += 50
+            instance_clipboard.p2.y += 50
           }
           // Deselect instances.
           for(const instance of this.instance_list){
             instance.selected = false;
           }
-
-          let pasted_instance = this.initialize_instance(this.instance_clipboard);
-
+          let pasted_instance = this.initialize_instance(instance_clipboard);
           if(next_frames != undefined){
             let next_frames_to_add = parseInt(next_frames, 10);
             const frames_to_save = [];
@@ -6442,7 +7145,6 @@
               // It will move on all the other frames.
               let new_frame_instance = this.duplicate_instance(pasted_instance);
               new_frame_instance = this.initialize_instance(new_frame_instance);
-
               // Set the last argument to true, to prevent to push to the instance_list here.
               this.add_instance_to_frame_buffer(new_frame_instance, i);
               frames_to_save.push(i);
@@ -6458,6 +7160,31 @@
             this.create_instance_events()
           }
 
+        },
+        paste_instance: async function(next_frames = undefined, instance_hover_index = undefined){
+          const clipboard = this.clipboard;
+          if(!clipboard && instance_hover_index == undefined){return}
+          if(instance_hover_index != undefined){
+            this.copy_instance(false, instance_hover_index)
+          }
+          // We need to duplicate on each paste to avoid double ID's on the instance list.
+          const new_clipboard_instance_list = [];
+          for(const instance_clipboard of this.clipboard.instance_list){
+            let instance_clipboard_dup = this.duplicate_instance(instance_clipboard);
+            await this.add_pasted_instance_to_instance_list(instance_clipboard_dup, next_frames, this.clipboard.file_id)
+            new_clipboard_instance_list.push(instance_clipboard_dup)
+          }
+          this.set_clipboard(new_clipboard_instance_list)
+        },
+        set_clipboard: function(instance_list){
+          let file_id = undefined;
+          if(this.$props.file && this.$props.file.id){
+            file_id = this.$props.file.id
+          }
+          if(this.$props.task && this.$props.task.file && this.$props.task.file.id){
+            file_id = this.$props.task.file.id;
+          }
+          this.$store.commit('set_clipboard',{instance_list: instance_list, file_id: file_id})
         },
         on_context_menu_copy_instance: function(instance_index){
           this.copy_instance(false, instance_index);
@@ -6512,19 +7239,37 @@
           result = this.initialize_instance(result);
           return result
         },
+        copy_all_instances: function(){
+          let new_instance_list = []
+          for(const instance of this.instance_list){
+            if(instance.soft_delete){
+              continue
+            }
+            let instance_clipboard = this.duplicate_instance(instance);
+            instance_clipboard.selected = false;
+            instance_clipboard.original_frame_number = this.current_frame;
+            new_instance_list.push(instance_clipboard)
+
+          }
+          this.set_clipboard(new_instance_list);
+          this.show_snackbar('All Instances copied into clipboard.')
+        },
         copy_instance: function(hotkey_triggered = false, instance_index = undefined){
           if(this.draw_mode){return}
-          if(!this.selected_instance && instance_index == undefined){return}
-
-          if(this.hotkey_triggered && !this.selected_instance){ return }
-
-          const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
-          this.instance_clipboard = this.duplicate_instance(instance_to_copy);
-          this.instance_clipboard.selected = true;
-          this.instance_clipboard.original_frame_number = this.current_frame;
-
-
-
+          if(!this.label_settings.allow_multiple_instance_select){
+            if(!this.selected_instance && instance_index == undefined){return}
+            if(this.hotkey_triggered && !this.selected_instance){ return }
+            const instance_to_copy = this.selected_instance ? this.selected_instance : this.instance_list[instance_index];
+            this.instance_clipboard = this.duplicate_instance(instance_to_copy);
+            this.instance_clipboard.selected = true;
+            this.instance_clipboard.original_frame_number = this.current_frame;
+            this.set_clipboard([this.instance_clipboard]);
+          }
+          else{
+            alert('Copy paste not implemented for multiple instnaces.')
+            // TODO implement flag limit conditions for multi selects.
+            if(!this.selected_instance && instance_index == undefined){return}
+          }
         },
         update_draw_mode_on_instances: function(draw_mode){
           this.instance_context.draw_mode = draw_mode;
@@ -6630,6 +7375,7 @@
               number: inst.number,
               rating: inst.rating,
               points: inst.points ? inst.points.map(point => {return {...point}}) : inst.points,
+              nodes: inst.nodes ? inst.nodes.map(node => {return {...node}}) : inst.nodes,
               front_face: {...inst.front_face},
               rear_face: {...inst.rear_face},
               soft_delete: inst.soft_delete,
@@ -6862,13 +7608,12 @@
               this.snackbar_success = true
               this.snackbar_success_text = "Saved and completed. Moved to next."
 
-              if(this.task && this.task.id){   // props
-                this.trigger_task_change('next', this.task)
+              if(this.$props.task && this.$props.task.id){
+                this.trigger_task_change('next', this.$props.task, true)
               }
               else{
-                this.trigger_task_change('next', 'none')    // important
+                this.trigger_task_change('next', 'none', true)    // important
               }
-
 
             }
             this.check_if_pending_created_instance();

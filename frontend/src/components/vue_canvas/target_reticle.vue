@@ -14,17 +14,25 @@
         "y": {},
         "show": {},
         "canvas_transform": {},
+        "width_scaled": {},
+        "height_scaled": {},
         "target_colour": {},
         "text_color": {},
+        "canvas_element": {},
         "target_text": {},
         "target_type": '', // "canvas_cross" or "small_cross"
         "reticle_size": null,
         "label_settings": {
           default: null
         },
+        "zoom_value": {
+          type: Number,
+          default: 1
+        }
       },
       methods: {
         draw: function (ctx, done) {
+          if(!this.$props.canvas_element){return}
           if (this.show == true) {
               //var canvas = ctx.canvas;
               if (this.width == 0) {
@@ -48,9 +56,18 @@
                 //ctx.font = font_size + "px Verdana";
               }
               if (this.$props.target_type === 'canvas_cross') {
+                  if(x < 0 || y < 0){
+                    done();
+                    return
+                  }
+                  if(x >= this.$props.width || y >= this.$props.height){
+                    done();
+                    return
+                  }
+
                   this.draw_text(ctx, x, y, this.$props.target_text, this.$props.text_color)
                   ctx.beginPath()
-                  ctx.lineWidth = (1.5 / this.canvas_transform['canvas_scale_combined']).toString()
+                  ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
                   //ctx.strokeStyle = 'white',
                   // x and y are where the mouse is at
                   // top left of canvas is 0,0
@@ -61,7 +78,7 @@
                   ctx.lineTo(0, y)  // (end)
 
                   ctx.moveTo(x + 1, y)
-                  ctx.lineTo(this.width, y) // use original height here
+                  ctx.lineTo(this.$props.width, y) // use original height here
                   // since if we use the canvas it will be off when scaled
                   // ie canvas.width is 320, which is correct,
                   // however this is absolute cordinates, so the mouse position
@@ -71,7 +88,7 @@
                   ctx.lineTo(x, 0)  //  (end)
 
                   ctx.moveTo(x, y + 1) // line x, y start
-                  ctx.lineTo(x, this.height)
+                  ctx.lineTo(x, this.$props.height)
 
               }
 
@@ -82,11 +99,11 @@
                 // to "shade" it so it still shows up, but poorly. (it makes it seem like we can't see it)
                 // This dynamically scales it
 
-                ctx.lineWidth = (1.5 / this.canvas_transform['canvas_scale_combined']).toString()
+                ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
                 //console.log(ctx.lineWidth)
 
 
-                let line_length = this.$props.reticle_size / this.$props.canvas_transform['canvas_scale_combined']
+                let line_length = this.$props.reticle_size / this.$props.zoom_value
                 //console.log(line_length)
                 ctx.setLineDash([]) // solid
                 ctx.moveTo(x - 1, y)

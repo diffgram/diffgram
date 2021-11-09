@@ -37,6 +37,49 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.credentials = b64encode("{}:{}".format(self.auth_api.client_id,
                                                     self.auth_api.client_secret).encode()).decode('utf-8')
 
+    def test_check_polygon_points_and_build_bounds(self):
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            do_init_existing_instances = False
+        )
+        ann_update.instance = data_mocking.create_instance(
+            {'creation_ref_id': str(uuid.uuid4()),
+             'type': 'polygon',
+             'file_id': file1.id,
+             'label_file_id': label_file.id
+            },
+            self.session
+        )
+        result = ann_update.check_polygon_points_and_build_bounds()
+        self.assertFalse(result)
+        self.assertTrue('filtered_points' in ann_update.log['error'])
+        self.assertEqual(ann_update.log['error']['filtered_points'], '1 or less points.')
+        ann_update.instance = data_mocking.create_instance(
+            {'creation_ref_id': str(uuid.uuid4()),
+             'type': 'polygon',
+             'points': {'points':  [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'}, {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
+             'file_id': file1.id,
+             'label_file_id': label_file.id
+            },
+            self.session
+        )
+        result = ann_update.check_polygon_points_and_build_bounds()
+        self.assertTrue(result)
+        self.assertEqual(ann_update.instance.points['points'][0]['figure_id'], 'a')
+        self.assertEqual(ann_update.instance.points['points'][1]['figure_id'], 'a')
+        self.assertEqual(ann_update.instance.points['points'][2]['figure_id'], 'b')
+        self.assertEqual(ann_update.instance.points['points'][3]['figure_id'], 'b')
+
     def test_update_sequence_id_in_cache_list(self):
         label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
         file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)

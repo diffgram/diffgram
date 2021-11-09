@@ -345,7 +345,7 @@ class WorkingDir(Base):
 
     @staticmethod
     def new_blank_directory(session,
-                            project=None,
+                            project=None, # deprecated arg pending removal
                             user=None,
                             latest_version=None,
                             prior_working_dir_id=None,

@@ -1,5 +1,6 @@
 <template>
   <div :id="canvas_wrapper_id"
+       style="position: relative"
        class="ma-auto"
        v-bind:style="{width: canvas_width, height: canvas_height}"
        @mousemove="mouse_move"
@@ -29,7 +30,7 @@
       ></v_bg>
 
       <target_reticle target_type="canvas_cross"
-                      v-if="editable"
+                      v-if="editable && !show_context_menu"
                       :ord="2"
                       :x="mouse_position.x"
                       :y="mouse_position.y"
@@ -38,6 +39,7 @@
                       :width="canvas_width"
                       :show="show_target_reticle"
                       :target_colour="reticle_colour"
+                      :canvas_element="canvas_element"
                       ref="reticle"
                       :text_color="text_color"
                       :target_text="this.instance.number"
@@ -45,8 +47,9 @@
       </target_reticle>
 
       <slot name="current_instance_drawer"></slot>
-    </canvas>
 
+    </canvas>
+    <slot name="context_menu" :mouse_position="mouse_position"></slot>
   </div>
 </template>
 
@@ -79,6 +82,9 @@
       },
       editable:{
         default: true
+      },
+      show_context_menu:{
+        default: false
       },
       annotations_loading:{
         default: false
@@ -175,7 +181,9 @@
           x: 0,
           y: 0
         },
+        zoom_canvas: 1,
         canvas_scale_local: 1,
+        canvas_element: null,
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
@@ -192,11 +200,15 @@
 
       }
     },
-    mounted() {
-      this.loading = true
+    async mounted() {
+      this.loading = true;
+      this.canvas_element =  document.getElementById(this.$props.canvas_id);
+      await this.$nextTick();
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,
+        this.canvas_element,
+        this.canvas_scale_global
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       if(this.$props.allow_zoom){
@@ -205,9 +217,12 @@
 
       window.addEventListener('resize', this.update_window_size_from_listener)
       this.update_window_size_from_listener();
-      this.canvas_element.width += 0;
+
       this.loading = false;
+      this.canvas_ctx = this.canvas_element.getContext('2d');
+
       this.update_canvas();
+
     },
 
     beforeDestroy() {
@@ -236,19 +251,9 @@
         }
         await this.$nextTick();
       },
-      zoom_in: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_in(this.canvas_transform);
-      },
-      zoom_out: function(){
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_out(this.canvas_transform);
-      },
       zoom_wheel_scroll_canvas_transform_update: function (event) {
-
-        this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-          event, this.canvas_scale_local)
-
-        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-          event, this.canvas_scale_local)
+        this.canvas_translate = this.canvas_mouse_tools.zoom_wheel(event);
+        this.update_canvas();
       },
       mouse_transform: function (event, mouse_position) {
         return this.canvas_mouse_tools.mouse_transform(event, mouse_position, this.canvas_element, () => {}, this.canvas_transform)
@@ -276,13 +281,22 @@
       },
       onRendered: function (ctx) {
         this.canvas_ctx = ctx;
-        ctx.restore()
+
+
       },
       update_canvas: function(){
         this.refresh = new Date();
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
 
         this.$forceUpdate();
+      },
+      zoom_in: function() {
+        this.canvas_mouse_tools.zoom_in()
+        this.update_canvas()
+      },
+      zoom_out: function() {
+        this.canvas_mouse_tools.zoom_out()
+        this.update_canvas()
       }
 
 
@@ -291,7 +305,7 @@
 
 
       canvas_width_scaled: function () {
-        return this.canvas_width * this.canvas_scale_global
+        return this.canvas_width  * this.canvas_scale_global
       },
 
       canvas_height_scaled: function () {
@@ -314,10 +328,7 @@
           delta_y : delta_y
         }
       },
-      canvas_element: function () {
-        return document.getElementById(this.$props.canvas_id)
 
-      },
       canvas_transform: function () {
         return {
           'canvas_scale_global_x': this.canvas_scale_global_x,
@@ -325,7 +336,9 @@
           'canvas_scale_global': this.canvas_scale_global,
           'canvas_scale_local': this.canvas_scale_local,
           'canvas_scale_combined': this.canvas_scale_local * this.canvas_scale_global,
-          'translate': this.canvas_translate
+          'translate': this.canvas_translate,
+          'translate_previous': this.canvas_translate,
+          'zoom_canvas': this.zoom_canvas
         }
       },
     }

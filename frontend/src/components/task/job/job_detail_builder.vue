@@ -65,21 +65,7 @@
     >
     </v_task_list>
 
-   
-    <v_stats_task :job_id="job_id">
-    </v_stats_task>
-
-    <v_credential_list :job_id="job_id"
-                       :mode_options="'job_detail'"
-                       :mode_view="'list'">
-    </v_credential_list>
-
-    <v-card>
-      <v-container>
-        <h2> Actions </h2>
-        <v_job_cancel :job="job"></v_job_cancel>
-      </v-container>
-    </v-card>
+ 
 
   </div>
 

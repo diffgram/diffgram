@@ -136,14 +136,12 @@
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
   import query_suggestion_menu from "./query_suggestion_menu";
-  import file_preview from "./file_preview";
 
   export default Vue.extend({
     name: "dataset_explorer",
     components:{
       model_run_selector,
       directory_icon_selector,
-      file_preview,
       query_suggestion_menu,
     },
     props: [

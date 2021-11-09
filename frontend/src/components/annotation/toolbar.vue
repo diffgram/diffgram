@@ -13,22 +13,41 @@
     <v-chip v-if="file && file.state === 'removed'" color="error" small class="mt-3"><v-icon small>mdi-archive</v-icon>Archived</v-chip>
     <div v-show="task && task.id">
       <v-layout>
-        <ahref_seo_optimal :href="'/home/dashboard'">
-          <div class="pt-2 pr-3 clickable">
+        <ui_schema name="logo">
+          <ahref_seo_optimal
+            v-if="$store.getters.get_ui_schema('logo', 'visible')"
+            :href="'/me'">
+            <div class="pt-2 pr-3 clickable"
+                 >
 
-            <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                  height="30px" />
+              <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+                    height="30px" />
 
-          </div>
-        </ahref_seo_optimal>
+            </div>
+          </ahref_seo_optimal>
+        </ui_schema>
 
         <tooltip_button
+          ui_schema_name="home"
           color="primary"
+          datacy="toolbar_home_button"
           :icon_style="true"
           icon="mdi-home"
           tooltip_message="Home"
+          @click="$router.push('/me')"
+          :bottom="true"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+          ui_schema_name="task_list"
+          color="primary"
+          :icon_style="true"
+          icon="mdi-playlist-play"
+          tooltip_message="Task List"
           @click="$router.push('/job/' + task.job_id)"
-          :bottom="true">
+          :bottom="true"
+                        >
         </tooltip_button>
 
         <v-divider
@@ -47,7 +66,9 @@
         icon="mdi-undo"
         tooltip_message="Undo (ctrl+z)"
         @click="$emit('undo')"
-        :bottom="true">
+        :bottom="true"
+        ui_schema_name="undo"
+                      >
       </tooltip_button>
 
       <tooltip_button
@@ -58,7 +79,9 @@
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
         @click="$emit('redo')"
-        :bottom="true">
+        :bottom="true"
+        ui_schema_name="redo"
+                      >
       </tooltip_button>
     </div>
 
@@ -86,7 +109,10 @@
     <!-- Defer, In Task Context Only -->
     <div>
       <tooltip_button
-        v-if="task && task.id"
+        v-if="task
+              && task.id
+              && task.status == 'available'"
+        ui_schema_name="defer"
         @click="$emit('task_update_toggle_deferred')"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (file == undefined && task == undefined)"
@@ -102,71 +128,76 @@
       vertical
     ></v-divider>
 
-    <div class="pt-3 pl-2 pr-2">
+    <ui_schema name="zoom"
+               data-cy="toolbar_zoom_info">
+      <div class="pt-3 pl-2 pr-2">
 
-      <v-tooltip bottom
-                  color="info"
-                  >
-        <template v-slot:activator="{ on }">
-          <v-chip v-on="on"
-                  color="white"
-                  small
-                  text-color="primary">
-            <h3> {{Math.round((canvas_scale_local) * 100)}}% </h3>
-          </v-chip>
-        </template>
+        <v-tooltip bottom
+                   color="info"
+                    >
+          <template v-slot:activator="{ on }">
+            <v-chip v-on="on"
+                    color="white"
+                    small
+                    text-color="primary">
+              <h3> {{Math.round((canvas_scale_local) * 100)}}% </h3>
+            </v-chip>
+          </template>
 
-        <v-alert type="info"
-                  >
-          While over image <kbd>Scroll</kbd> to Zoom.
-        </v-alert>
+          <v-alert type="info"
+                    >
+            While over image <kbd>Scroll</kbd> to Zoom.
+          </v-alert>
 
-      </v-tooltip>
+        </v-tooltip>
 
-    </div>
+      </div>
+    </ui_schema>
 
     <v-divider
       vertical
     ></v-divider>
 
-    <div style="width: 310px">
-      <div class="pl-2 pr-3 pt-4">
-        <label_select_annotation
-            :project_string_id="project_string_id"
-            :label_file_list="label_list"
-            :label_file_colour_map="label_file_colour_map"
-            @change="$emit('change_label_file', $event)"
-            :loading="loading"
-            :request_refresh_from_project="true"
-            :show_visibility_toggle="true"
-            @update_label_file_visible="$emit('update_label_file_visibility', $event)"
-        >
-        </label_select_annotation>
+    <ui_schema name="label_selector">
+      <div style="width: 310px">
+        <div class="pl-2 pr-3 pt-4">
+          <label_select_annotation
+              :project_string_id="project_string_id"
+              :label_file_list="label_list"
+              :label_file_colour_map="label_file_colour_map"
+              @change="$emit('change_label_file', $event)"
+              :loading="loading"
+              :request_refresh_from_project="true"
+              :show_visibility_toggle="true"
+              @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+          >
+          </label_select_annotation>
+        </div>
       </div>
-    </div>
+    </ui_schema>
 
     <!-- TODO @get_next_instance="request_next_instance" -->
 
     <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
-    <v-flex xs2>
-      <div class="pl-3 pr-3 pt-4">
+    <ui_schema name="instance_selector">
 
+      <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
         <!-- instance_selector -->
         <diffgram_select
-            v-if="view_only_mode != true"
             :item_list="instance_type_list"
             data_cy="instance-type-select"
             v-model="instance_type"
             label="New Instance Type"
-            :disabled="loading || loading_instance_templates"
+            :disabled="loading || loading_instance_templates || view_only_mode"
             @change="$emit('change_instance_type', instance_type)"
             >
         </diffgram_select>
 
-      </div>
-    </v-flex>
+      </div>   
+
+    </ui_schema>
 
     <tooltip_button
       v-if="instance_type == 'tag'"
@@ -178,22 +209,35 @@
       :bottom="true">
     </tooltip_button>
 
+    <ui_schema name="edit_instance_template">
+      <tooltip_button
+        tooltip_message="Edit Instance Template"
+        v-if="instance_template_selected && is_keypoint_template"
+        @click="$emit('open_instance_template_dialog')"
+        color="primary"
+        icon="mdi-vector-polyline-edit"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </ui_schema>
+
     <v-divider
       vertical
     ></v-divider>
 
-
-    <div class="pl-3 pt-3 pr-2">
-      <v-switch v-if="view_only_mode != true"
-                :label_file="mode_text"
-                data-cy="edit_toggle"
-                :disabled="view_issue_mode"
-                v-model="draw_mode_local"
-                @change="$emit('edit_mode_toggle', draw_mode_local)"
-                :label="mode_text">
-      </v-switch>
-    </div>
-
+    <ui_schema name="draw_edit">
+      <div class="pl-3 pt-3 pr-2">
+        <v-switch v-if="view_only_mode != true"
+                  :label_file="mode_text"
+                  data-cy="edit_toggle"
+                  :disabled="view_issue_mode"
+                  v-model="draw_mode_local"
+                  @change="$emit('edit_mode_toggle', draw_mode_local)"
+                  :label="mode_text">
+        </v-switch>
+      </div>
+    </ui_schema>
 
     <v-divider
       vertical
@@ -203,6 +247,7 @@
 
     <div>
       <tooltip_button
+          ui_schema_name="save"
           @click="$emit('save')"
           datacy="save_button"
           :loading="save_loading"
@@ -247,18 +292,6 @@
 
     <!-- Caution, the item-text here seems to define the return type to
             v-model, which we use for important things.-->
-    <div>
-      <tooltip_button
-        tooltip_message="Edit Instance Template"
-        v-if="instance_template_selected && is_keypoint_template"
-        @click="open_instance_template_dialog"
-        color="primary"
-        icon="mdi-vector-polyline-edit"
-        :icon_style="true"
-        :bottom="true"
-      >
-      </tooltip_button>
-    </div>
 
 
   <!--  without this div the order of the two buttons randomly swaps
@@ -292,10 +325,58 @@
       >
       </tooltip_button>
     </div>
+    <v-divider vertical />
+    <div>
+        <button_with_menu
+          datacy="open-annotation-show-menu"
+          v-if="annotation_show_on !== true"
+          tooltip_message="Annotation show"
+          color="primary"
+          :icon="anootations_show_icon"
+          :close_by_button="true"
+          :disabled="loading || annotations_loading || full_file_loading"
+        >
+        <template slot="content">
+          <v-btn
+            data-cy="start-annotation-show"
+            @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
+          >
+            <span>
+              Start
+            </span>
+          </v-btn>
+          <v-slider
+            v-model="numberValue"
+            :tick-labels="duration_labels"
+            :max="4"
+            step="1"
+            ticks="always"
+            tick-size="4"
+            hint="Duration in seconds"
+            persistent-hint
+            @change="$emit('show_duration_change', $event)"
+          />
+        </template>
+      </button_with_menu>
+      <tooltip_button 
+          v-else
+          data-cy="pause-annotation-show"
+          tooltip_message="Pause"
+          ui_schema_name="stop_shideshow"
+          @click="$emit('annotation_show', !task && file && file.id ? 'file': 'task')"
+          color="primary"
+          icon="pause"
+          :icon_style="true"
+          :bottom="true"
+      />
+    </div>
+    <v-divider vertical />
     <div>
       <tooltip_button
         tooltip_message="Previous Task"
         v-if="task"
+        ui_schema_name="previous_task"
+        datacy="previous_task"
         @click="$emit('change_task', 'previous')"
         :disabled="loading || annotations_loading ||  full_file_loading || !task"
         color="primary"
@@ -304,11 +385,29 @@
         :bottom="true"
       >
       </tooltip_button>
+
+      <!-- This is a WIP example of injecting a tombstone button to help positionally
+        make it easier for user.-->
+      <!-- 
+      <tooltip_button
+        tooltip_message="Add Button"
+        ui_schema_name="add_button"
+        v-if="!$store.getters.get_ui_schema('previous_task', 'visible')"
+        @click="$emit('add_ui_schema')"
+        color="primary"
+        icon="add"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+      -->
     </div>
     <div>
       <tooltip_button
         tooltip_message="Next Task"
         v-if="task"
+        ui_schema_name="next_task"
+        datacy="next_task"
         @click="$emit('change_task', 'next')"
         :disabled="loading || annotations_loading || full_file_loading || !task"
         color="primary"
@@ -354,38 +453,39 @@
   -->
 
 
+ <ui_schema name="brightness_contrast_filters">
+   <button_with_menu
+      tooltip_message="Brightness, Contrast, Filters"
+      color="primary"
+      icon="exposure"
+          >
+      <template slot="content">
 
- <button_with_menu
-    tooltip_message="Brightness, Contrast, Filters"
-    color="primary"
-    icon="exposure"
-        >
-    <template slot="content">
+        <v-layout column>
 
-      <v-layout column>
+          <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
+                    min="50"
+                    max="200">
+          </v-slider>
 
-        <v-slider v-model="label_settings_local.filter_brightness" prepend-icon="brightness_4"
-                  min="50"
-                  max="200">
-        </v-slider>
+          <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
+                    min="50"
+                    max="200"></v-slider>
 
-        <v-slider v-model="label_settings_local.filter_contrast" prepend-icon="exposure"
-                  min="50"
-                  max="200"></v-slider>
+          <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
+                    min="0"
+                    max="100"></v-slider>
 
-        <v-slider v-model="label_settings_local.filter_grayscale" prepend-icon="gradient"
-                  min="0"
-                  max="100"></v-slider>
+          <v-btn icon @click="filter_reset()">
+            <v-icon color="primary"> autorenew </v-icon>
+          </v-btn>
 
-        <v-btn icon @click="filter_reset()">
-          <v-icon color="primary"> autorenew </v-icon>
-        </v-btn>
+        </v-layout>
 
-      </v-layout>
+      </template>
 
-    </template>
-
-  </button_with_menu>
+    </button_with_menu>
+  </ui_schema>
 
   <button_with_menu
     tooltip_message="Hotkeys"
@@ -570,7 +670,8 @@
                   step=.05
                   thumb-label="always"
                   ticks
-                  @change="label_settings_local.canvas_scale_global_is_automatic = false"
+                  @change="on_change_canvas_scale_global"
+                  @click="on_change_canvas_scale_global"
                   v-model="label_settings_local.canvas_scale_global_setting">
                 </v-slider>
 
@@ -645,12 +746,40 @@
                           v-model="label_settings_local.allow_multiple_instance_select">
               </v-checkbox>
 
-              <v-slider label="Text Font Size"
-                        min=10
-                        max=30
-                        thumb-label
-                        ticks
-                        v-model="label_settings_local.font_size">
+              <v-checkbox label="Show Occluded Keypoints"
+                          data-cy="show_occluded_keypoints"
+                          v-model="label_settings_local.show_occluded_keypoints">
+              </v-checkbox>
+
+              <v-checkbox label="Show Left Right Icons Keypoints"
+                          data-cy="show_left_right_arrows"
+                          v-model="label_settings_local.show_left_right_arrows">
+              </v-checkbox>
+
+              <v-checkbox label="Enable Snap to Instance"
+                          data-cy="enable_snap_to_instance"
+                          v-model="label_settings_local.enable_snap_to_instance">
+              </v-checkbox>
+
+              <v-slider
+                  label="Text Font Size"
+                  min=10
+                  max=30
+                  thumb-label
+                  ticks
+                  v-model="label_settings_local.font_size"
+                  prepend-icon="mdi-format-size">
+              </v-slider>
+
+              <v-slider
+                  label="Text Background Opacity"
+                  v-model="label_settings_local.font_background_opacity"
+                  prepend-icon="brightness_4"
+                  thumb-label
+                  ticks
+                  min=0.0
+                  step=.05
+                  max=1.0>
               </v-slider>
 
               <v-slider label="Target Reticle Size"
@@ -743,6 +872,19 @@
               :icon_style="true"
               :bottom="true"
               color="primary">
+          </tooltip_button>
+        </v-layout>
+
+        <v-layout>
+          <tooltip_button
+            tooltip_message="Copy All Instances"
+            @click="$emit('copy_all_instances')"
+            :disabled="loading || annotations_loading"
+            color="primary"
+            icon="mdi-content-duplicate"
+            :icon_style="true"
+            :bottom="true"
+          >
           </tooltip_button>
         </v-layout>
 
@@ -843,7 +985,16 @@ export default Vue.extend( {
     'instance_type': {},
     'loading_instance_templates': {},
     'instance_type_list': {},
-    'view_issue_mode': {}
+    'view_issue_mode': {},
+    'is_keypoint_template': {},
+    'enabled_edit_schema' : {
+      default: false,
+      type: Boolean
+    },
+    "annotation_show_on": {
+      type: Boolean
+    }
+
   },
   data() {
     return {
@@ -851,11 +1002,22 @@ export default Vue.extend( {
         canvas_scale_global_is_automatic: true
       },
       draw_mode_local: true,
+      numberValue: 1,
+      duration_labels: [
+          '1',
+          '2',
+          '3',
+          '4',
+          '5'
+        ]
     }
   },
   watch: {
-    label_settings_local(event) {
-      this.$emit('label_settings_change', event)
+    'label_settings_local': {
+        deep: true,
+        handler: function (event) {
+          this.$emit('label_settings_change', event)
+        }
     },
     label_settings(event){
       this.label_settings_local = event
@@ -876,14 +1038,22 @@ export default Vue.extend( {
         return "Editing"
       }
     },
+    anootations_show_icon: function(){
+      if (this.annotation_show_on) return "pause"
+      return "play_circle"
+    }
   },
   methods: {
-
+    on_change_canvas_scale_global: function(){
+      this.label_settings_local.canvas_scale_global_is_automatic = false;
+      this.$emit('canvas_scale_global_changed', this.label_settings_local.canvas_scale_global_setting)
+    },
     filter_reset: function () {
       this.label_settings_local.filter_brightness = 100
       this.label_settings_local.filter_contrast = 100
       this.label_settings_local.filter_grayscale = 0
     },
+
 
   }
 }

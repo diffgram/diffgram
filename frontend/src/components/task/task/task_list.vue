@@ -2,85 +2,97 @@
   <div v-cloak>
     <v-card>
 
-      <v-card-title>
-        Task List
-      </v-card-title>
+      <v-layout>
 
-      <!-- Temporary button -->
-      <v-btn  @click="$router.push('/task/' + task_list[0].id )"
-              :loading="loading"
-              color="primary"
-              large
-      >
-        Start Annotating
-      </v-btn>
+        <!-- Temporary button -->
+        <v-btn  @click="api_get_next_task_scoped_to_job(job_id)"
+                :loading="next_task_loading"
+                :disabled="next_task_loading"
+                color="primary"
+                large
+        >
+          Start Annotating
+        </v-btn>
 
-      <v-layout v-if="external_interface === 'labelbox' && !pending_initial_dir_sync && task_list.length > 0">
-        <v-row>
-          <v-col cols="12" class="d-flex align-center justify-center">
-            <h3 class="mr-4">Start labeling with</h3>
-            <img width="100px" height="80px" src="https://labelbox.com/static/images/logo-v3.svg" alt="">
-            <a :href='`https://editor.labelbox.com/?project=${labelbox_project_id}`' target="_blank">
-              <v-btn type="primary" color="primary" class="ml-4">
-                <v-icon>mdi-play</v-icon>
-                Start Labeling
-              </v-btn>
-            </a>
-          </v-col>
-        </v-row>
-      </v-layout>
-      <v-layout v-else-if="external_interface === 'datasaur' && !pending_initial_dir_sync && task_list.length > 0">
-        <v-row>
-          <v-col cols="12" class="d-flex align-center justify-center">
-            <h3 class="mr-4">Start labeling with</h3>
-            <img width="150px" height="100px"
-                 src="https://venturebeat.com/wp-content/uploads/2020/02/datasaur.png?w=1200&strip=all" alt="">
-            <a :href='`https://datasaur.ai/projects/${datasaur_project_id}/`' target="_blank">
-              <v-btn type="primary" color="primary" class="ml-4">
-                <v-icon>mdi-play</v-icon>
-                Start Labeling
-              </v-btn>
-            </a>
-          </v-col>
-        </v-row>
-      </v-layout>
-      <!-- TODO show date picker if null ?-->
+        <v-layout v-if="external_interface === 'labelbox' && !pending_initial_dir_sync && task_list.length > 0">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center justify-center">
+              <h3 class="mr-4">Start labeling with</h3>
+              <img width="100px" height="80px" src="https://labelbox.com/static/images/logo-v3.svg" alt="">
+              <a :href='`https://editor.labelbox.com/?project=${labelbox_project_id}`' target="_blank">
+                <v-btn type="primary" color="primary" class="ml-4">
+                  <v-icon>mdi-play</v-icon>
+                  Start Labeling
+                </v-btn>
+              </a>
+            </v-col>
+          </v-row>
+        </v-layout>
+        <v-layout v-else-if="external_interface === 'datasaur' && !pending_initial_dir_sync && task_list.length > 0">
+          <v-row>
+            <v-col cols="12" class="d-flex align-center justify-center">
+              <h3 class="mr-4">Start labeling with</h3>
+              <img width="150px" height="100px"
+                   src="https://venturebeat.com/wp-content/uploads/2020/02/datasaur.png?w=1200&strip=all" alt="">
+              <a :href='`https://datasaur.ai/projects/${datasaur_project_id}/`' target="_blank">
+                <v-btn type="primary" color="primary" class="ml-4">
+                  <v-icon>mdi-play</v-icon>
+                  Start Labeling
+                </v-btn>
+              </a>
+            </v-col>
+          </v-row>
+        </v-layout>
 
-      <!--
-      <date_picker @date="date = $event">
-      </date_picker>
-      -->
-
-      <!-- start list view -->
-      <div v-if="mode_view=='list'">
-
-        <v-container class="ma-0">
+        <v-container>
           <v-layout>
 
-            <div v-if="['direct_route', 'exam_results'].includes(mode_data)">
 
-              <!--
-              <v-checkbox v-model="my_stuff_only"
-                          label="My tasks Only">
-              </v-checkbox>
-              -->
-              <v-layout class="d-flex justify-start align-center">
+          <!-- Filters -->
+          <button_with_menu
+            tooltip_message="Filters"
+            icon="mdi-filter"
+            :close_by_button="true"
+            offset="x"
+            color="primary"
+            datacy="task_list_filters"
+            datacyclose="task_list_close_filters"
+          >
+
+            <template slot="content">
+              
                 <task_status_select
                   :clearable="true"
                   v-model="task_status"
                   label="Status"
+                  @change="page_number = 0"
                   :disabled="loading">
                 </task_status_select>
+
                 <v-select
                   v-model="issues_filter"
+                  @change="page_number = 0"
                   :items="issue_filter_options"
                   :clearable="true"
                   label="Filer by Issues"
                   item-text="name"
                   item-value="value"
                 ></v-select>
-                <date_picker @date="date = $event" :with_spacer="false" :initialize_empty="true">
+
+                <date_picker @date="date = $event, page_number = 0"
+                             :with_spacer="false"
+                             :initialize_empty="true">
                 </date_picker>
+
+                 <v-select
+                  data-cy="task_list_per_page_limit_selector"
+                  :items="per_page_limit_options"
+                  v-model="per_page_limit"
+                  label="Per Page"
+                  item-value="text"
+                  :disabled="loading"
+                  @change="page_number = 0"></v-select>
+
                 <v_directory_list
                   class="ml-4 mr-8"
                   :project_string_id="project_string_id"
@@ -91,43 +103,139 @@
                   :update_from_state="false"
                   :set_current_dir_on_change="false"
                   :initial_dir_from_state="false"
-                  @change_directory="on_change_dir"
+                  @change_directory="on_change_dir, page_number = 0"
                 ></v_directory_list>
+
                 <v-btn @click="refresh_task_list"
-                       :loading="loading"
-                       color="primary">
+                        :loading="loading"
+                        color="primary"
+                        data-cy="task_list_refresh_task_list"
+                       >
                   Refresh
                 </v-btn>
-                <v-layout class="ml-6 d-flex justify-self-end align-center">
-                  <v-select
-                    :clearable="true"
-                    :items="actions_list"
-                    v-model="selected_action"
-                    item-value="value"
-                    item-text="name"
-                    label="Actions"
-                    class="mr-4"
-                    :disabled="selected_tasks.length === 0">
-                  </v-select>
-                  <v-btn @click="show_confirm_archive_model"
-                         v-if="selected_action === 'archive' && selected_tasks.length > 0"
-                         :loading="loading"
 
-                         :disabled="selected_tasks.length === 0"
-                         color="error">
-                    <v-icon>mdi-archive</v-icon>
-                    Archive
-                  </v-btn>
-                </v-layout>
-              </v-layout>
+            </template>
+          </button_with_menu>
+
+          <v-spacer></v-spacer>
+
+          <v-row class="pt-3"
+                 v-if="$store.state.job.current.file_count_statistic">
+
+            <div v-if="!loading
+                 && page_end_index > $store.state.job.current.file_count_statistic
+                 && $store.state.job.current.file_count_statistic > per_page_limit
+                ">
+                <v-chip color="white"
+                    text-color="primary"
+                    >No more pages.</v-chip>
+            </div>
+            <div>
+
+              <v-chip color="white"
+                      text-color="primary">
+               {{ page_start_index }}  to
+               {{ page_end_index }}
+              </v-chip>
+  
+              <v-chip class="pl-2 pr-2"
+                      color="white"
+                      text-color="primary"
+                  >of {{ $store.state.job.current.file_count_statistic }}
+              </v-chip>
 
             </div>
 
-          </v-layout>
+            <tooltip_button
+              v-show="page_number != 0"
+              datacy="task_list_previous_page"
+              tooltip_message="Previous Page"
+              @click="previous_page()"
+              :disabled="loading"
+              :icon_style="true"
+              icon="mdi-chevron-left-box"
+              color="primary"
+            >
+            </tooltip_button>
+
+            <tooltip_button
+              v-show="page_end_index < $store.state.job.current.file_count_statistic
+                     && $store.state.job.current.file_count_statistic > per_page_limit"
+              tooltip_message="Next Page"
+              datacy="task_list_next_page"
+              @click="next_page()"
+              :disabled="loading || page_end_index > $store.state.job.current.file_count_statistic"
+              :icon_style="true"
+              icon="mdi-chevron-right-box"
+              color="primary"
+            >
+            </tooltip_button>
+          </v-row>
+
+
+          <button_with_menu
+              tooltip_message="Show/Hide Columns"
+              icon="mdi-format-columns"
+              :close_by_button="true"
+              v-if="!view_only"
+              offset="x"
+              color="primary">
+
+              <template slot="content">
+
+                <v-select :items="column_list_all"
+                          v-model="column_list"
+                          multiple
+                          label="Columns"
+                          :disabled="loading">
+                </v-select>
+
+                <tooltip_button
+                  tooltip_message="Reset"
+                  @click="column_list = column_list_backup"
+                  v-if="column_list != column_list_backup"
+                  icon="autorenew"
+                  color="primary">
+                </tooltip_button>
+
+              </template>
+
+            </button_with_menu>
+
+          <v-select
+            v-if="selected_tasks.length !== 0"
+            :clearable="true"
+            :items="actions_list"
+            v-model="selected_action"
+            item-value="value"
+            item-text="name"
+            label="Actions"
+            class="mr-4">
+          </v-select>
+          <v-btn @click="show_confirm_archive_model"
+                  v-if="selected_action === 'archive' && selected_tasks.length > 0"
+                  :loading="loading"
+
+                  :disabled="selected_tasks.length === 0"
+                  color="error">
+            <v-icon>mdi-archive</v-icon>
+            Archive
+          </v-btn>
+
+          <!--
+          <v-checkbox v-model="my_stuff_only"
+                      label="My tasks Only">
+          </v-checkbox>
+          -->
+        </v-layout>
         </v-container>
 
+        </v-layout>
 
         <v_error_multiple :error="error_attach">
+        </v_error_multiple>
+
+        <v_error_multiple :error="get_annotations_error">
         </v_error_multiple>
 
         <v-alert type="success"
@@ -138,167 +246,202 @@
 
         <v_error_multiple :error="error_send_task">
         </v_error_multiple>
-        <v-data-table v-bind:headers="header_view"
-                      v-if="task_list.length > 0"
-                      :items="task_list"
-                      item-key="id"
-                      :loading="loading"
-                      :options.sync="options"
-                      footer-props.prev-icon="mdi-menu-left"
-                      footer-props.next-icon="mdi-menu-right">
 
-          <!-- review rows-per-page-items setting-->
-          <!-- appears to have to be item for vuetify syntax-->
-          <template slot="item"
-                    slot-scope="props">
+        <v-skeleton-loader
+            :loading="loading"
+            type="table"
+            data-cy="skeletonloader"
+          >
 
-            <tr>
-              <td>
-                <v-checkbox v-model="props.item.is_selected">
-                </v-checkbox>
+          <regular_table
+              :item_list="task_list"
+              :header_list="header_list"
+              :column_list="column_list"
+              v-model="selected"
+              :hidedefaultfooter="true"
+              @rowclick="rowclick($event)"
+              >
 
-              </td>
-              <td>
-                {{props.item.id}}
+            <template slot="Select" slot-scope="props">
+              <v-checkbox v-model="props.item.is_selected">
+              </v-checkbox>
+            </template>
 
-              </td>
-              <td>
-                <v-btn @click="open_input_log_dialog(props.item.id)" type="primary" small color="primary" outlined>
+            <template slot="Status" slot-scope="props">
+              <task_status_icons
+                :status="props.item.status"
+              >
+              </task_status_icons> 
+            </template>
+
+            <template slot="Preview" slot-scope="props">
+              <file_preview_with_hover_expansion
+                :file="props.item.file"
+                :project_string_id="project_string_id"
+                tooltip_direction="right"
+                @view_file_detail="route_task(item.id)"
+                :file_preview_width="100"
+                :file_preview_height="100"
+                                                  >
+              </file_preview_with_hover_expansion>
+            </template>
+
+            <template slot="ID" slot-scope="props">
+              {{props.item.id}}
+            </template>
+
+          
+            <template slot="AnnotationCount" slot-scope="props">
+             <div v-if="props.item.file
+                          && props.item.file.instance_list">
+                    {{props.item.file.instance_list.length}}
+              </div>        
+            </template>
+
+            <template slot="DataUpdateLog" slot-scope="props">
+              <v-btn @click.stop.prevent="open_input_log_dialog(props.item.id)"
+                     type="primary"
+                     small
+                     color="primary"
+                     outlined>
                   <v-icon color="primary">mdi-format-list-bulleted</v-icon>
-                </v-btn>
+              </v-btn>
+            </template>
 
-              </td>
-              <td>
+            <template slot="IncomingDataset" slot-scope="props">
                 <v-icon color="primary">mdi-folder</v-icon>
                 {{props.item.incoming_directory.nickname}}
+      
+            </template>
 
-              </td>
-              <td>
-                <task_status_icons
-                  :status="props.item.status"
-                >
-                </task_status_icons>
-              </td>
-              <td v-if="mode_data!='exam_results'">
-                {{props.item.task_type}}
-              </td>
-              <td>
-                <div v-if="props.item.time_updated">
-                  {{props.item.time_updated | moment("ddd, MMM Do H:mm:ss a")}}
-                </div>
-              </td>
-              <td>
-                <div v-if="props.item.time_created">
-                  {{props.item.time_created | moment("ddd, MMM Do H:mm:ss a")}}
-                </div>
-              </td>
-              <td v-if="mode_data!='exam_results' && show_detail_button">
-                <v-container v-if="!props.item.loading && props.item.status === 'available'"
-                             class="d-flex justify-center align-center">
+            <template slot="AssignedUser" slot-scope="props">
+              <v_user_icon :user_id="props.item.assignee_user_id">
+              </v_user_icon>      
+            </template>
 
-                  <v-btn v-if="integration_name === 'scale_ai'"
-                         @click="send_to_external(props.item)"
-                         :loading="loading"
-                         class="d-flex align-center mr-4"
-                         :outlined=true
-                         color="primary">
-                    <span>Send To:</span>
-                    <v-img style="margin-bottom: 5px" width="80px" height="45px"
-                           src="https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png">
+            <template slot="LastUpdated" slot-scope="props">
+              <div v-if="props.item.time_updated">
+                {{props.item.time_updated | moment("subtract", "7 hours", "from")}}
+              </div>
+            </template>
+
+            <template slot="Created" slot-scope="props">
+              <div v-if="props.item.time_created">
+                {{props.item.time_created | moment("ddd, MMM Do H:mm:ss a")}}
+              </div>
+            </template>
+
+            <template slot="Action" slot-scope="props">
+
+            <tooltip_button
+                tooltip_message="Review"
+                @click.stop.prevent="route_task(props.item.id)"
+                v-if="!integration_name"
+                icon="mdi-file-find"
+                :icon_style="true"
+                :disabled="loading"
+                :large="true"
+                color="primary">
+            </tooltip_button>
+
+              <v-container v-if="!props.item.loading && props.item.status === 'available'"
+                            class="d-flex justify-center align-center">
+
+                <v-btn v-if="integration_name === 'scale_ai'"
+                        @click.stop.prevent="send_to_external(props.item)"
+                        :loading="loading"
+                        class="d-flex align-center mr-4"
+                        :outlined=true
+                        color="primary">
+                  <span>Send To:</span>
+                  <v-img style="margin-bottom: 5px" width="80px" height="45px"
+                          src="https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png">
+
+                  </v-img>
+
+                </v-btn>
+
+              </v-container>
+
+              <v-container class="d-flex justify-center align-center"
+                            v-if="integration_name&&
+                                !props.item.loading
+                                && props.item.status === 'in_progress'">
+                <p class="primary--text font-weight-bold">
+                  <v-icon color="primary">mdi-refresh</v-icon>
+                  Task is being processed by external provider.
+                </p>
+              </v-container>
+              <v-container class="d-flex justify-center align-center"
+                            v-else-if="!props.item.loading && props.item.status === 'complete'">
+
+                <a
+                  v-if="integration_name === 'labelbox' && props.item.external_id"
+                  :href='`https://editor.labelbox.com/?project=${labelbox_project_id}&label=${props.item.external_id}`'
+                  target="_blank">
+
+                  <v-btn
+                    @click.stop.prevent="send_to_external(props.item)"
+                    :loading="loading"
+                    class="d-flex align-center mr-4 justify-center"
+                    :outlined=true
+                    color="primary">
+                    <v-img style="margin-bottom: 0px" width="32px" height="32px"
+                            src="https://cdn.theorg.com/e1e775ca-6ad1-4c9e-847e-44856cfc75a4_thumb.jpg">
 
                     </v-img>
+                    <span>View On Labelbox:</span>
 
                   </v-btn>
-
-
-                  <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
-                         color="primary">
-                    View
-                  </v-btn>
-                </v-container>
-                <v-container class="d-flex justify-center align-center"
-                             v-else-if="!props.item.loading && props.item.status === 'in_progress'">
-                  <p class="primary--text font-weight-bold">
-                    <v-icon color="primary">mdi-refresh</v-icon>
-                    Task is being processed by external provider.
-                  </p>
-                </v-container>
-                <v-container class="d-flex justify-center align-center"
-                             v-else-if="!props.item.loading && props.item.status === 'complete'">
-
-                  <a
-                    v-if="integration_name === 'labelbox' && props.item.external_id"
-                    :href='`https://editor.labelbox.com/?project=${labelbox_project_id}&label=${props.item.external_id}`'
-                    target="_blank">
-
-                    <v-btn
-                      @click="send_to_external(props.item)"
-                      :loading="loading"
-                      class="d-flex align-center mr-4 justify-center"
-                      :outlined=true
-                      color="primary">
-                      <v-img style="margin-bottom: 0px" width="32px" height="32px"
-                             src="https://cdn.theorg.com/e1e775ca-6ad1-4c9e-847e-44856cfc75a4_thumb.jpg">
-
-                      </v-img>
-                      <span>View On Labelbox:</span>
-
-                    </v-btn>
-                  </a>
-
-                  <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
-                         color="primary">
-                    View
-                  </v-btn>
-                </v-container>
-                <v-container class="d-flex justify-center align-center"
-                             v-else-if="!props.item.loading">
-                  <v-btn @click="route_task(props.item.id)"
-                         :loading="loading"
-                         color="primary">
-                    View
-                  </v-btn>
-                </v-container>
-
-                <v-progress-circular v-else color="primary" :indeterminate="true"></v-progress-circular>
-
-                <!-- TODO review this function -->
-
-                <!--
-                <v-btn v-if="props.item.task_type == 'review' &&
-                       props.item.status == 'complete' &&
-                       props.item.job_type != 'Exam'
-                       "
-                       @click="route_task_diff(props.item.id)"
-                       :loading="loading"
-                       color="green">
-                  Review
+                </a>
+              </v-container>
+     
+              <v-container class="d-flex justify-center align-center"
+                            v-if="integration_name && !props.item.loading">
+                <v-btn @click.stop.prevent="route_task(props.item.id)"
+                        :disabled="loading"
+                        color="primary">
+                  View
                 </v-btn>
-                    -->
-              </td>
-              <td v-if="mode_data=='exam_results'">
-                <v-rating v-model="props.item.review_star_rating_average"
+              </v-container>
+
+              <v-progress-linear v-if="integration_name && loading"
+                                    color="primary"
+                                    :indeterminate="true"></v-progress-linear>
+
+            
+              <!--
+              <v-btn v-if="props.item.task_type == 'review' &&
+                      props.item.status == 'complete' &&
+                      props.item.job_type != 'Exam'
+                      "
+                      @click.stop.prevent="route_task_diff(props.item.id)"
+                      :loading="loading"
+                      color="green">
+                Review
+              </v-btn>
+                  -->
+       
+            </template>
+
+            <template slot="Rating" slot-scope="props">
+               <v-rating v-model="props.item.review_star_rating_average"
                           readonly
-                >
-                </v-rating>
-              </td>
-              <td v-if="mode_data=='exam_results'">
-                {{props.item.gold_standard_missing}}
-              </td>
+                  >
+               </v-rating>     
+            </template>
 
-            </tr>
-          </template>
+            <template slot="GoldStandardMissing" slot-scope="props">
+              {{props.item.gold_standard_missing}} 
+            </template>
 
-          <div v-if="!loading">
-            <v-alert slot="no-data" color="error" icon="warning">
-              No results found.
-            </v-alert>
-          </div>
+          </regular_table>
 
-        </v-data-table>
-        <v-container v-else-if="task_list.length === 0 && has_filters_applied">
+        </v-skeleton-loader>
+
+        <v-container v-if="!loading
+                     && task_list.length === 0
+                     && has_filters_applied">
           <v-row>
             <v-col cols="12" class="d-flex flex-column align-center justify-center">
               <h2>No tasks available for current criteria.</h2>
@@ -308,7 +451,9 @@
             </v-col>
           </v-row>
         </v-container>
-        <v-container v-else-if="task_list.length === 0 && !has_filters_applied">
+        <v-container v-if="task_list.length === 0
+                        && !has_filters_applied
+                        && !loading">
           <v-row>
             <v-col cols="12" class="d-flex flex-column align-center justify-center">
               <h2>We are syncing tasks from the attached Datasets...</h2>
@@ -317,8 +462,7 @@
             </v-col>
           </v-row>
         </v-container>
-      </div>
-      <!-- end list view -->
+        <!-- end list view -->
 
     </v-card>
 
@@ -386,6 +530,7 @@
   import task_status_select from '../../regular_concrete/task_status_select'
   import task_input_list_dialog from '../../input/task_input_list_dialog'
 
+  import pLimit from 'p-limit';
 
   import Vue from "vue";
 
@@ -428,6 +573,11 @@
           actions_list: [
             {name: 'Archive', value: 'archive'}
           ],
+
+          page_number: 0,
+          per_page_limit: 25,
+          per_page_limit_options: [10, 25, 100, 250],
+
           selected: [],
           dialog_confirm_archive: false,
           issues_filter: undefined,
@@ -439,7 +589,6 @@
           loading_archive: false,
           snackbar_success: false,
           selected_action: undefined,
-          api_limit_count: 1000,
 
           date: undefined,   // TODO use date as a prop to sync with stats?
 
@@ -451,11 +600,8 @@
 
           loading: false,
           incoming_directory: undefined,
-          options: {
-            'sortBy': ['column2'],
-            'sortDesc': [true],
-            'itemsPerPage': 20
-          },
+
+          get_annotations_error: {},
 
           error_attach: {},
           error_send_task: {},
@@ -463,86 +609,123 @@
           show_success_attach: false,
           pending_initial_dir_sync: true,
 
-
-          request_next_page_flag: false,
           request_next_page_available: true,
 
-          header: [
+          headers_selected_backup : [],  // copied from headers_selected during mounted
+
+          column_list: [
+            "Status",
+            "Preview",
+            "AnnotationCount",
+            "AssignedUser",
+            "LastUpdated",
+            "Action",
+          ],
+
+          column_list_all: [
+            "Select",
+            "Status",
+            "Preview",
+            "ID",
+            "AnnotationCount",
+            "DataUpdateLog",
+            "IncomingDataset",
+            "AssignedUser",
+            "LastUpdated",
+            "Action",
+          ],
+
+          header_list: [
             {
               text: "Select",
+              header_string_id: "Select",
               align: 'left',
               sortable: false,
               value: 'is_selected'
             },
             {
+              text: "Status",
+              header_string_id: "Status",
+              align: 'center',
+              sortable: true,
+              value: 'status',
+              width: "25px"
+            },
+            {
+              text: "Preview",
+              header_string_id: "Preview",
+              align: 'center',
+              sortable: false,
+              width: "100px",
+              value: ''
+            },
+            {
               text: "ID",
+              header_string_id: "ID",
               align: 'left',
               sortable: true,
               value: 'id'
             },
             {
+              text: "Annotation Count",
+              header_string_id: "AnnotationCount",
+              align: 'center',
+              sortable: true,
+              value: 'annotation_count',
+              width: "25px"
+            },
+            {
               text: "Data Update Log",
+              header_string_id: "DataUpdateLog",
               align: 'left',
               sortable: true,
               value: 'id'
             },
             {
               text: "Incoming Dataset",
+              header_string_id: "IncomingDataset",
               align: 'left',
               sortable: true,
               value: 'incoming_directory.nickname'
             },
             {
-              text: "Status",
-              align: 'left',
-              sortable: true,
-              value: 'status'
+              text: "Assigned User",
+              header_string_id: "AssignedUser",
+              align: 'center',
+              sortable: false,
+              value: ''
             },
             {
               text: "Type",
+              header_string_id: "Type",
               align: 'left',
               sortable: true,
               value: 'task_type'
             },
             {
-              text: "Last updated",
+              text: "Last Updated",
+              header_string_id: "LastUpdated",
               align: 'left',
               sortable: true,
               value: 'time_updated'
             },
             {
               text: "Created",
+              header_string_id: "Created",
               align: 'left',
               sortable: true,
               value: 'time_created'
             },
             {
               text: "Action",
-              align: 'center',
+              header_string_id: "Action",
+              align: 'left',
               sortable: false,
               value: ''
             }
           ],
 
           header_exam_results: [
-            {
-              text: "ID",
-              align: 'left',
-              sortable: true,
-              value: 'id'
-            },
-            {
-              text: "Status",
-              align: 'left',
-              sortable: true,
-              value: 'status'
-            },
-            {
-              text: "Last updated",
-              align: 'left',
-              sortable: true,
-              value: 'time_updated'
-            },
             {
               text: "Average Star Rating",
               align: 'left',
@@ -555,12 +738,25 @@
               sortable: true,
               value: ''
             }
-          ]
-
+          ],
+          view_only: false,
+          next_task_loading: false
         }
       },
 
       computed: {
+
+        page_start_index: function () {
+          return (this.page_number * this.per_page_limit) + 1
+        },
+
+        page_end_index: function () {
+          let count = (this.page_number * this.per_page_limit) + this.per_page_limit
+          if (count > this.$store.state.job.current.file_count_statistic) {
+            count = this.$store.state.job.current.file_count_statistic
+          }
+          return count
+        },
         header_view: function () {
           if (this.mode_data == "exam_results") {
             return this.header_exam_results
@@ -613,8 +809,11 @@
             return this.job.interface_connection.integration_name;
           }
           return undefined;
-        }
+        },
 
+      },
+      created() {
+        this.column_list_backup = this.column_list
       },
       mounted() {
         if (this.job) {
@@ -624,6 +823,42 @@
 
       },
       methods: {
+
+        async next_page() {
+            this.page_number += 1
+            await this.task_list_api();
+        },
+
+        async previous_page() {
+          this.page_number -= 1
+          await this.task_list_api();
+
+        },
+        api_get_next_task_scoped_to_job: async function(job_id){
+          try{
+            this.next_task_loading = true
+            const response = await axios.post(
+              `/api/v1/job/${job_id}/task/next`, {
+            });
+            if(response.status === 200){
+              let task = response.data.task
+              const routeData = `/task/${task.id}`;
+              this.$router.push(routeData)
+            }
+          }
+          catch (e) {
+            console.error(e);
+          }
+          finally {
+            this.next_task_loading = false;
+          }
+        },
+
+        rowclick(task){
+          if (!this.column_list.includes("Select")) {
+            this.route_task(task.id)
+          }
+        },
         async send_to_external(task) {
           task.loading = true;
           this.error_send_task = {};
@@ -711,6 +946,7 @@
           this.loading = true
           try {
             const response = await axios.post(`/api/v1/job/${this.job_id}/task/list`, {
+              'page_number': this.page_number,
               'date_from': this.date ? this.date.from : undefined,
               'date_to': this.date ? this.date.to : undefined,
               'job_id': this.job_id,
@@ -718,13 +954,15 @@
               'incoming_directory_id': this.incoming_directory ? this.incoming_directory.directory_id : undefined,
               'status': this.task_status,
               'issues_filter': this.issues_filter,
-              'limit_count': this.api_limit_count
+              'limit_count': this.per_page_limit
             })
 
             if (response.data.log.success == true) {
 
               this.task_list = response.data.task_list
               this.pending_initial_dir_sync = response.data.pending_initial_dir_sync;
+
+              this.update_tasks_with_file_annotations(this.task_list)
 
             }
             return response
@@ -736,6 +974,43 @@
           }
 
         },
+
+        update_tasks_with_file_annotations: async function(task_list){
+          const limit = pLimit(7); // Max concurrent request.
+          try {
+            const promises = task_list.map(task => {
+              return limit(() => this.get_file_with_annotations(task))
+            });
+            const result = await Promise.all(promises);
+            return result
+
+          } catch (error) {
+            this.file_update_error = this.$route_api_errors(error);
+            console.error(error);
+          }
+        },
+
+        async get_file_with_annotations(task) {
+
+          if (task.file.type != 'image') { return }
+
+          let url = '/api/v1/task/' + task.id + '/annotation/list';
+          this.get_annotations_error = {}
+          this.get_annotations_loading = true
+
+          try{
+            const response = await axios.post(url, {})     
+            task.file = response.data.file_serialized
+          }
+          catch(error){
+            console.debug(error);
+            this.get_annotations_error = this.$route_api_errors(error)
+          }
+          finally{
+            this.get_annotations_loading = false
+          }
+        },
+
         async refresh_task_list() {
           this.loading = true
           const result = await this.trigger_connection_interface_refresh()

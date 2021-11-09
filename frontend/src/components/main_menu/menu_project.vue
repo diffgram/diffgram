@@ -11,6 +11,7 @@
         <v-btn  v-on="on"
                 color="primary"
                 id="open_main_menu"
+                data-cy="project_menu_dropdown_toggle"
                 text
                 :disabled="false">
           <v-icon left> mdi-lightbulb </v-icon>
@@ -50,6 +51,18 @@
               <v-icon left>mdi-format-paint</v-icon>
               Schema - Labels, Attributes, Templates
             </v-btn>
+          </v-flex>
+
+          <v-flex>
+
+            <ahref_seo_optimal href="/white_label_customization/edit">
+              <v-btn color="primary"
+                    text style="text-transform: none !important;">
+                <v-icon left> mdi-puzzle-edit</v-icon>
+                White-label Customization
+              </v-btn>
+            </ahref_seo_optimal>
+
           </v-flex>
 
           <v-divider></v-divider>

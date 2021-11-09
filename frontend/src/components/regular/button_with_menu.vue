@@ -12,7 +12,7 @@
 
     {{ tooltip_message }}
 
-    <template v-slot:activator="{on : tooltip}">
+    <template v-slot:activator="{on : tooltip}" >
       <v-menu
         v-model="menu_open"
         :close-on-content-click="close_content_on_click"
@@ -46,7 +46,8 @@
                  @click="$emit('click', $event), click()"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color="icon_color_computed">
+              {{icon}}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->
@@ -60,21 +61,27 @@
                  :loading="loading"
                  :disabled="disabled"
                  :data-cy="datacy"
+                 :icon="icon_style"
+                 :text="text_style"
                  :large="large"
                  :color="color"
                  :outlined="outlined"
                  :small="small"
                  @click="$emit('click', $event), click()"
-                 :class="{'ml-4':true, [background]:true}"
+                 :class="{[background]:true}"
           >
             <v-icon :large="large"
-                    :color=color>{{icon}}
+                    :color="icon_color_computed"
+                    left>
+              {{icon}}
             </v-icon>
             {{ button_text }}
+
             <!-- Text Style thing is WIP here -->
             <div v-if="text_style==true">
               {{ tooltip_message}}
             </div>
+
           </v-btn>
 
         </template>
@@ -95,7 +102,11 @@
                 -->
 
             <!-- Important, content gets injected here -->
-            <slot name="content"></slot>
+            <slot name="content"
+                  :menu_open="menu_open"
+                  >
+
+            </slot>
 
             <!-- end content -->
 
@@ -131,9 +142,10 @@
 </template>
 
 <script lang="ts">
-  // Jan 7, 2020, it's not liking new store references
   // @ts-nocheck
 
+  // Access menu_open on child via -> <template slot-scope="props">
+  // Then pass prop to child as ->  ` :menu_open="props.menu_open"`
 
   /*
    * Example
@@ -226,6 +238,9 @@
         },
         'color': { // button color (not menu)
           default: 'red'
+        },
+        'icon_color': { // icon color
+          default: undefined
         },
         'button_text': {
           default: undefined,
@@ -374,7 +389,17 @@
           this.menu_open = event
         }
       },
+      computed: {
+        icon_color_computed: function () {
 
+          if (this.$props.icon_color != undefined) {
+            return this.$props.icon_color
+          } else {
+            return this.$props.color;
+          }
+
+        },
+      },
       methods: {
         close_menu: function () {
           this.menu_open = false;

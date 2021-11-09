@@ -102,6 +102,7 @@
        && !view_only_mode
        && show_select_all == true">
         <v-checkbox
+          data-cy="select-all-labels"
           v-model="select_all_state"
           label="Select All"
           :disabled="label_refresh_loading"
@@ -236,7 +237,7 @@
           this.selected = this.label_list.find(obj => {
             return obj.id == this.select_this_id_at_load
           })
-          this.emit_selected() // in case something relies on this,
+          // this.emit_selected() // in case something relies on this,
           // ie the data circles back / watching $event
           // TODO consider v-model for selected in this context.
         }
@@ -292,7 +293,9 @@
       },
 
       methods: {
-
+        set_label_list: function(label_list){
+          this.label_list = label_list;
+        },
         check_select_all_state: function () {
           /* Just do length check,
            * Doing this doesn't work: $vm0.label_list == $vm0.selected
@@ -417,7 +420,6 @@
         },
 
         emit_selected: function () {
-
           // ie if we unselect a single one
           // then need to update state.
           this.check_select_all_state()

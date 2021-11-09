@@ -9,7 +9,7 @@ from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
-
+import traceback
 
 class Sequence(Base):
     """
@@ -441,7 +441,11 @@ class Sequence(Base):
         for sequence in sequence_list:
             sequence.regenerate_keyframe_list(session = session)
             if regenerate_preview_images:
-                sequence.build_instance_preview_dict(session = session)
+                try:
+                    sequence.build_instance_preview_dict(session = session)
+                except Exception as e:
+                    logger.error('Could not regenerate sequence preview image')
+                    logger.error(traceback.format_exc())
             session.add(sequence)
             print(sequence.keyframe_list)
 
@@ -498,7 +502,7 @@ class Sequence(Base):
             # saving maybe? but it was suprisingly glaring bug
             # on front end
 
-            if instance.frame_number not in frame_number_list:
+            if instance.frame_number not in frame_number_list and instance.frame_number is not None:
                 # binary search based insertion
                 bisect.insort(frame_number_list, instance.frame_number)
         elif instance.soft_delete and not default_sequences_to_single_frame:

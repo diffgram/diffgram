@@ -32,7 +32,8 @@ export const user_module = {
     },
     current_project_permission_level: null,
     is_typing_or_menu_open: false,
-    settings: default_user_settings
+    settings: default_user_settings,
+    history: undefined
 	},
 
 	mutations: {
@@ -46,6 +47,7 @@ export const user_module = {
       state.current = {}
       state.is_typing_or_menu_open = false
       state.settings = default_user_settings
+      state.history = undefined
     },
     restore_default_user_settings(state) {
       state.settings = default_user_settings
@@ -66,6 +68,11 @@ export const user_module = {
       let key = key_value_array[0]
       let value = key_value_array[1]
       state.current[key] = value
+    },
+    set_user_state(state, payload) {
+      let key = payload[0]
+      let value = payload[1]
+      state[key] = value
     },
     set_user_setting(state, payload) {
       // eg $store.commit('set_user_setting', ['studio_box_info', false])
@@ -95,6 +102,7 @@ export const user_module = {
     log_out({commit}) {
 
       commit('log_out')  // rename to clear_user when possible
+      commit('clear_clipboard')
       commit('clear_project')
       commit('clear_ai')
       commit('clear_annotation')
@@ -107,6 +115,7 @@ export const user_module = {
       commit('clear_org')
       commit('clear_job')
       commit('clear_connection')
+      commit('clear_ui_schema')
 
     },
 
@@ -472,11 +481,13 @@ const annotation_state = {
     save: null,
     save_and_complete: null,
     instance_select_for_issue: false,
+    instance_select_for_merge: false,
     view_issue_mode: false,
 
   },
   getters:{
     get_instance_select_for_issue: state => state.instance_select_for_issue,
+    get_instance_select_for_merge: state => state.instance_select_for_merge,
     get_view_issue_mode: state => state.view_issue_mode
   },
   mutations: {
@@ -487,6 +498,7 @@ const annotation_state = {
     init_draw: state => state.draw = true,
     finish_draw: state => state.draw = false,
     set_instance_select_for_issue: (state, value) => state.instance_select_for_issue = value,
+    set_instance_select_for_merge: (state, value) => state.instance_select_for_merge = value,
     set_view_issue_mode: (state, value) => state.view_issue_mode = value,
 
     clear_annotation(state) {
@@ -594,6 +606,118 @@ const builder_or_trainer = {
   }
 }
 
+const clipboard = {
+  state: {
+    clipboard_data: undefined,
+  },
+  getters:{
+    get_clipboard: state => {
+      return state.clipboard_data;
+    }
+  },
+  mutations: {
+    set_clipboard(state, data) {
+      state.clipboard_data = data
+    },
+    clear_clipboard(state) {
+      state.clipboard_data = undefined;
+    }
+  }
+}
+
+const ui_schema = {
+  state: {
+    current: {},
+    schema_dict: {},    // many schemas
+    event: undefined,
+    target_element: undefined,
+    refresh: undefined,
+    refresh_mouse_over_event: undefined
+  },
+  getters:{
+    get_ui_schema: (state) => (element, string_key) => {
+      if (state.current[element] == undefined) {
+        return "element is undefined"
+      }
+      let result = state.current[element][string_key]
+      return result
+    },
+    get_current_ui_schema: (state) => () => {
+      return state.current;
+    }
+  },
+  mutations: {
+    set_ui_schema(state, current) {
+      // Doing this to keep the watchers, so the root pointer in theory is the same
+      for (const [key, value] of Object.entries(current)) {
+        state.current[key] = value
+      }
+      state.refresh = Date.now()
+    },
+    reset_ui_schema(state, current){  // restore
+      const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
+        "defer", "zoom", "label_selector", "instance_selector", "edit_instance_template",
+        "draw_edit", "save", "next_task", "previous_task", "guide", "brightness_contrast_filters"
+        ]
+      for (const [key, value] of Object.entries(state.current)) {
+        if (allow_list.includes(key)) {
+          state.current[key] = {'visible' : true}
+        }
+      }
+      state.refresh = Date.now()
+    },
+    clear_ui_schema(state) {
+      for (const [key, value] of Object.entries(state.current)) {
+        state.current[key] = undefined
+      }
+      state.event = undefined;
+      state.target_element = undefined;
+      state.editing = false
+      state.ui_schema_add_menu = false
+      state.refresh = Date.now()
+    },
+    clear_ui_schema_event(state) {
+      state.event = undefined;
+      state.target_element = undefined;
+      state.refresh = Date.now()
+    },
+    set_ui_schema_editing_state(state, editing) {
+      state.editing = editing
+    },
+    set_ui_schema_add_menu(state, bool) {
+      state.ui_schema_add_menu = bool
+    },
+    set_ui_schema_event(state, payload) {
+      state.target_element = payload[0]
+      state.event = payload[1]
+      state.refresh_mouse_over_event = Date.now()
+    },
+    set_ui_schema_element_value(state, payload) {
+      // use example
+      // this.$emit('set_ui_schema_element_value',
+      //  [this.target_element, 'allowed_instance_types', new_type_list])
+
+      const element = payload[0]
+      if (element === undefined) {
+        throw new Error("set_ui_schema_element_value element is undefined")
+      }
+      const key = payload[1]
+      const value = payload[2]
+      if (state.current[element] == undefined) {
+        state.current[element] = {}
+      }
+      state.current[element][key] = value
+      state.refresh = Date.now()
+
+    },
+
+    set_ui_schema_top_level_key_value(state, payload) {
+      state.current[payload[0]] = payload[1]
+      state.refresh = Date.now()
+    }
+  }
+}
+
 const video = {
   state: {
     current: {},
@@ -644,7 +768,9 @@ const my_store = new Vuex.Store({
     job: job,
     connection: connection,
     input: input,
-    public_project: public_project
+    clipboard: clipboard,
+    public_project: public_project,
+    ui_schema: ui_schema
   },
   plugins: [createPersistedState({
 

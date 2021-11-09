@@ -2,14 +2,22 @@
   <div id="input_view">
 
     <v-card elevation="0">
+      
       <v-container fluid>
+
+        <v-progress-linear
+          v-if="loading"
+          indeterminate
+          rounded
+          absolute
+          height="5"
+          attach
+        ></v-progress-linear>
 
         <v-card-title>
           <h3> {{ title }} </h3>
 
           <v-btn @click="get_input_list"
-                 :loading="loading"
-                 @click.native="loader = 'loading'"
                  :disabled="loading"
                  color="primary"
                  data-cy="refresh-input-icon"
@@ -32,9 +40,13 @@
           >
           </diffgram_select>
 
-          <date_picker @date="date = $event"
-                       :with_spacer="true"
-                       :initialize_empty="true">
+          <date_picker
+            @date="date = $event"
+            :with_spacer="true"
+            :initialize_empty="true"
+            :disabled="loading"
+            @change="get_input_list"
+                       >
           </date_picker>
 
           <v-select
@@ -42,21 +54,36 @@
             v-model="metadata_limit"
             label="Limit"
             item-value="text"
-            :disabled="loading"></v-select>
+            :disabled="loading"
+            @change="get_input_list">
+          </v-select>
 
           <v-text-field
             type="number"
             clearable
             v-model="batch_id_filter"
-            label="Filter by Batch ID">
+            label="Filter by Batch ID"
+            :disabled="loading"
+            @change="get_input_list"
+                        >
           </v-text-field>
 
+          <v-text-field
+            type="number"
+            clearable
+            v-model="task_id_filter"
+            label="Filter by Task ID"
+            @change="get_input_list"
+                        >
+          </v-text-field>
 
           <v-text-field
             type="number"
             clearable
             v-model="file_id_filter"
-            label="Filter by File ID">
+            label="Filter by File ID"
+            @change="get_input_list"
+                        >
           </v-text-field>
 
 
@@ -68,7 +95,6 @@
             tooltip_message="Retry Selected Inputs"
             @click="update_import(null, 'RETRY')"
             icon="mdi-redo-variant"
-            :loading="loading"
             :disabled="loading || selected.length == 0"
             :text_style="true"
             color="primary">
@@ -82,7 +108,6 @@
             icon="archive"
             tooltip_message="Archive and remove associated file."
             :icon_style="true"
-            :loading="loading"
             :disabled="loading || selected.length == 0">
           </button_with_confirm>
 
@@ -196,10 +221,13 @@
 
                     <template slot="content">
                       <v-layout column>
+                        <h4 >Description: </h4>
+                        <p class="text--error">
+                          {{ props.item.description}}
+                        </p>
+                        <h4>Log: </h4>
 
-                        <v-card-title> Log</v-card-title>
-
-                        <v_error_multiple :error="props.item.update_log['error']">
+                        <v_error_multiple :error="props.item.update_log">
                         </v_error_multiple>
 
                         <!-- Not showing info messages here yet -->
@@ -263,12 +291,45 @@
 
 <!--                  <p  v-if="props.item.log && props.item.status == 'failed'" class="error&#45;&#45;text">{{JSON.stringify(props.item.log)}}</p>-->
 <!--                  <p  v-if="props.item.status == 'failed'" class="error&#45;&#45;text">{{props.item.status_text}}</p>-->
-                  <tooltip_icon
+                  <button_with_menu
                     v-if="props.item.status == 'failed'"
-                    :tooltip_message="props.item.status_text"
                     icon="error"
                     color="error">
-                  </tooltip_icon>
+                    <template slot="content">
+                      <v-layout column>
+
+                        
+                        <span v-if="props.item.status_text">
+                          <v-alert type="error">
+                            {{props.item.status_text}}
+                          </v-alert>
+                        </span>
+
+                        <div v-if="props.item.description">
+                          <h4>Description: </h4>
+                          <p>
+                            {{ props.item.description}}
+                          </p>
+                        </div>
+
+                        <div v-if="props.item.update_log &&
+                                   Object.keys(props.item.update_log.error).length">
+                          <h4>Log: </h4>
+
+                          <v_error_multiple :error="props.item.update_log.error">
+                          </v_error_multiple>    
+                          
+                        </div>
+
+                        <v_info_multiple :info="props.item.update_log.info">
+                        </v_info_multiple>
+
+                        <!-- Not showing info messages here yet -->
+
+                      </v-layout>
+
+                    </template>
+                  </button_with_menu>
 
                   <tooltip_icon
                     v-if="props.item.status == 'success'"
@@ -293,7 +354,8 @@
                              && props.item.processing_deferred != true"
                            bottom>
                   <template v-slot:activator="{ on }">
-                    <v-progress-linear v-model="props.item.percent_complete"
+                    <v-progress-linear :value="props.item.percent_complete"
+
                                        v-on="on"
                     >
                     </v-progress-linear>
@@ -564,6 +626,7 @@
 
           file_id_filter: null,
           batch_id_filter: null,
+          task_id_filter: undefined,
 
           metadata_limit_options: [10, 25, 50, 100, 250, 500],
           metadata_limit: 10,
@@ -738,6 +801,12 @@
 
           this.error = {}
           this.error_video = null
+          this.loading = true
+
+          let task_id_to_use = this.$props.task_id
+          if(this.task_id_filter) {
+            task_id_to_use = parseInt(this.task_id_filter)
+          }
           try {
             const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
               + '/input/view/list', {
@@ -749,17 +818,12 @@
               date_to: this.date ? this.date.to : undefined,
               file_id: parseInt(this.file_id_filter),
               batch_id: parseInt(this.batch_id_filter),
-              task_id: this.$props.task_id
+              task_id: task_id_to_use
             })
 
             if (response.data.success == true) {
 
               this.input_list = response.data.input_list
-
-              // Just check most recent one
-              // Otherwise when this updates it keeps pulling message
-
-              //for (let input of this.input_list) {}
 
               if (this.input_list[0]) {
 
@@ -774,8 +838,6 @@
                   }
                 }
               }
-
-
             }
           } catch (error) {
             this.error = this.$route_api_errors(error)

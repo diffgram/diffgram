@@ -1,8 +1,8 @@
 <template>
   <div v-cloak>
 
-    <v-card>
-      <v-card-title>
+    <v-card :elevation="elevation">
+      <v-card-title v-if="show_sdk_share">
 
         <!--
 
@@ -13,7 +13,7 @@
           so want to be clear the user is sharing the PROJECT not the org
 
         -->
-        <h3 class="headline">Share Project</h3>
+        <h3 class="headline" v-if="show_sdk_share">Share Project</h3>
 
         <v-spacer>
         </v-spacer>
@@ -21,7 +21,7 @@
         <!-- All this button does is toggle the member_kind
             instead of user having to "know" to do it in select.
             -->
-         <v-btn v-if="member_kind == 'User'"
+         <v-btn v-if="member_kind == 'User' && show_sdk_share"
                color="primary"
                outlined
                 :loading="loading"
@@ -38,7 +38,7 @@
           {{errors}}
         </v-alert>
 
-        <h2> Add members </h2>
+        <h2> <v-icon color="primary">mdi-plus</v-icon> Add members </h2>
 
         <v-select :items="member_kind_list"
                   v-model="member_kind"
@@ -92,7 +92,7 @@
 
       <v_error_multiple :error="error">
       </v_error_multiple>
-        
+
       </v-container>
 
       <v-alert type="success" v-if="result">
@@ -114,9 +114,19 @@ import auth_api_new from '../auth/api/auth_api_new'
 import Vue from "vue"; export default Vue.extend( {
   name: 'share_new',
   components: {
-    auth_api_new 
+    auth_api_new
   },
-  props: ['project_string_id'],
+  props:{
+    'project_string_id':{
+      default: null
+    },
+    'show_sdk_share':{
+      default: true
+    },
+    'elevation':{
+      default: 1
+    }
+  },
   data() {
     return {
 
@@ -177,6 +187,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.note = null
 
           this.$store.commit('auth_members_refresh')
+          this.$emit('member_invited')
 
         } else {
           this.errors = response.data['errors'],

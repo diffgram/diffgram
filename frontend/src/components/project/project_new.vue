@@ -1,23 +1,18 @@
 <template>
-  <div v-cloak>
 
-   <v-col cols="9">
-
+   <v-container>
       <v-alert type="success"
                :value="builder_api_enabled_success">
         Success! The first step to get started is to create a project.
       </v-alert>
-
-
-      <v-card>
-
+      <v-card elevation="0">
         <v-card-title>
-          <h3 class="headline">Create new project</h3>
+          <h1 class="headline">Name Your New Project</h1>
         </v-card-title>
 
         <v-card-text>
-          A project is a top level organizing object.
-          It has many datasets, users, task templates, labels and more.
+          A project is a big deal.
+          It has many Datasets, Users, Tasks, Schema and more.
         </v-card-text>
 
         <v-container>
@@ -46,10 +41,10 @@
             {{ project_string_id_text }}
           </v-card-text>
 
-          <v-btn color="primary"
+          <v-btn  color="success"
                   data-cy="create_project_button"
                   :loading="loading"
-                  large
+                  x-large
                   @click.native="loader = 'loading'"
                   @click="new_project"
                   :disabled="loading">
@@ -74,9 +69,8 @@
         </v-card>
       </div>
 
-    </v-col>
+    </v-container>
 
-  </div>
 </template>
 
 <script lang="ts">
@@ -141,8 +135,7 @@ import Vue from "vue"; export default Vue.extend( {
 
           this.$store.commit('set_project', response.data.project)
 
-          this.$router.push('/welcome/builder');
-
+          this.$emit('project_created', response.data.project);
         } else {
 
           this.loading = false

@@ -289,8 +289,9 @@ import attribute_group_new from './attribute_group_new'
 
           }).then(response => {
 
-            this.attribute_group_list = response.data.attribute_group_list
-
+            let attribute_group_list = response.data.attribute_group_list
+            this.attribute_group_list = attribute_group_list.sort(
+              (a, b) => b.id - a.id);
 
             this.success = true
             this.loading = false

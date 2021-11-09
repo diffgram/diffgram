@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`step_name_task_template.vue Renders component correctly. 1`] = `
+<v-container fluid="" data-cy="task-template-step-name">
+  <h1 data-cy="wizard-title" class="font-weight-medium text--primary mb-8">
+    <v-icon color="primary" size="48" class="mr-4">mdi-brush</v-icon>
+    New Tasks
+  </h1>
+  <v_error_multiple error="[object Object]"></v_error_multiple>
+  <p data-cy="wizard-name-subtitle" class="text--primary">
+    The following steps will guide you on the creation of a new task group.
+    Give a name to your Tasks:
+  </p>
+  <v-text-field label="Name" data-cy="task-template-name-input"></v-text-field>
+  <wizard_navigation></wizard_navigation>
+</v-container>
+`;

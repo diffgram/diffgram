@@ -130,7 +130,7 @@
                  v-if="show_default_navigation == true"
                  >
       <ahref_seo_optimal :href="route_home">
-        <v-toolbar-title class="ml-0 pt-2 pr-3 clickable"
+        <v-toolbar-title data-cy="navbar-logo" class="ml-0 pt-2 pr-3 clickable"
                          @click.ctrl="route_home_new_tab">
 
           <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
@@ -145,10 +145,15 @@
 
         <v-layout>
 
+          <v-btn  text
+                data-cy="go-to-home-page"
+                @click="$router.push('/me')">
+            <v-icon left>mdi-home</v-icon>
+            Home
+          </v-btn>
 
           <main_menu_project v-if=" $store.state.builder_or_trainer.mode == 'builder'">
           </main_menu_project>
-
 
           <v-btn v-if="$store.state.builder_or_trainer.mode == 'builder'"
                   :disabled="!$store.state.project.current.project_string_id"
@@ -165,6 +170,8 @@
             <v-icon left>mdi-brush</v-icon>
             Tasks
           </v-btn>
+
+
 
           <!-- <v-icon right color="primary"> mdi-new-box </v-icon> -->
 

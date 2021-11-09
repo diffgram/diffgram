@@ -54,7 +54,7 @@ def api_label_new(project_string_id):
         if not label_file:
             return jsonify(log = log), 400
 
-        return jsonify(log = log, label = label_file.serialize()), 200
+        return jsonify(log = log, label = label_file.serialize_with_label_and_colour(session)), 200
 
 
 def new_label_file_object_core(session, input, project_string_id, log):

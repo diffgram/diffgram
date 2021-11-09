@@ -31,6 +31,8 @@ describe('Login Flow tests', function () {
       'org',
       'project',
       'user',
-      'video');
+      'clipboard',
+      'video',
+      'ui_schema');
   })
 });

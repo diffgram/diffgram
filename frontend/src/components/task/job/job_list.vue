@@ -1,6 +1,6 @@
 <template>
   <div v-cloak class="job_list_container">
-    <main_menu height="130px">
+    <main_menu style="border-bottom: 1px solid #e1e4e8" height="130px">
       <template slot="second_row">
 
         <v-toolbar
@@ -9,9 +9,9 @@
           fixed
           style="width: 100%;"
           height="30px"
-                   >
+        >
 
-         <v-progress-linear
+          <v-progress-linear
             :active="loading"
             :indeterminate="loading"
             absolute
@@ -24,196 +24,165 @@
 
           </bread_crumbs>
 
-          <div >
 
-            <tooltip_button
-              tooltip_message="Cards View"
-              @click="set_view_mode('cards')"
-              icon="mdi-view-grid-plus"
-              :icon_style="true"
-              value="card"
-              :color="view_mode === 'cards' ? 'primary' : undefined"
-              :bottom="true"
-            >
-            </tooltip_button>
-
-            <tooltip_button
-              tooltip_message="Table View"
-              @click="set_view_mode('table')"
-              icon="mdi-table"
-              :icon_style="true"
-              value="table"
-              :color="view_mode === 'table' ? 'primary' : undefined"
-              :bottom="true"
-            >
-            </tooltip_button>
-
-          </div>
-
-          <div>
-          </div>
         </v-toolbar>
 
       </template>
 
 
-  <template slot="third_row" >
-    <v-toolbar fixed
-               height="50px"
-               elevation="0">
+      <template slot="third_row">
+        <v-toolbar fixed
+                   height="50px"
+                   elevation="0">
 
 
-      <v-toolbar-items class="pt-2">
-        <tooltip_button
-          datacy='new_tasks'
-          tooltip_message="New Tasks"
-          icon="add"
-          :bottom="true"
-          v-if="$store.state.builder_or_trainer.mode == 'builder'"
-          :disabled="!project_string"
-          color="primary"
-          :icon_style="true"
-          :large="true"
-          :href="'/project/' + project_string + '/job/new'"
-          @click="$router.push('/project/' + project_string + '/job/new')">
-        </tooltip_button>
+          <v-toolbar-items class="pt-2">
+            <tooltip_button
+              datacy='new_tasks'
+              tooltip_message="New Tasks"
+              icon="add"
+              :bottom="true"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              :disabled="!project_string"
+              color="primary"
+              :icon_style="true"
+              :large="true"
+              :href="'/project/' + project_string + '/job/new'"
+              @click="$router.push('/project/' + project_string + '/job/new')">
+            </tooltip_button>
 
-        <tooltip_button
-          tooltip_message="Project Job Pipelines"
-          icon="mdi-file-tree-outline"
-          :text_style="false"
-          :bottom="true"
-          v-if="$store.state.builder_or_trainer.mode == 'builder'"
-          :disabled="!project_string"
-          :icon_style="true"
-          :large="true"
-          color="primary"
-          @click="open_pipelines_dialog"
-        >
-        </tooltip_button>
-        <tooltip_button
-          tooltip_message="Job Launches Log"
-          icon="list"
-          :text_style="false"
-          :bottom="true"
-          v-if="$store.state.builder_or_trainer.mode == 'builder'"
-          :disabled="!project_string"
-          :icon_style="true"
-          :large="true"
-          color="primary"
-          @click="$router.push('/job/launches')"
-        >
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Project Job Pipelines"
+              icon="mdi-file-tree-outline"
+              :text_style="false"
+              :bottom="true"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              :disabled="!project_string"
+              :icon_style="true"
+              color="primary"
+              @click="open_pipelines_dialog"
+            >
+            </tooltip_button>
+            <tooltip_button
+              tooltip_message="Job Launches Log"
+              icon="list"
+              :text_style="false"
+              :bottom="true"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              :disabled="!project_string"
+              :icon_style="true"
+              color="primary"
+              @click="$router.push('/job/launches')"
+            >
+            </tooltip_button>
 
-        <v_job_cancel :job_list="selected"
-                      @cancel_job_success="job_list_api"
-        >
-        </v_job_cancel>
+            <v_job_cancel :job_list="selected"
+                          @cancel_job_success="job_list_api"
+            >
+            </v_job_cancel>
 
-        <tooltip_button
-          tooltip_message="Generate Samples"
-          @click="open_confirm_dialog_sample_data"
-          icon="mdi-apps-box"
-          :bottom="true"
-          :large="true"
-          :loading="loading_create_sample_data"
-          color="primary"
-          :icon_style="true">
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Generate Samples"
+              @click="open_confirm_dialog_sample_data"
+              icon="mdi-apps-box"
+              :bottom="true"
+              :loading="loading_create_sample_data"
+              color="primary"
+              :icon_style="true">
+            </tooltip_button>
 
-        <tooltip_button
-          tooltip_message="Refresh"
-          icon="refresh"
-          :text_style="false"
-          :bottom="true"
-          :disabled="loading"
-          :loading="loading"
-          :icon_style="true"
-          :large="true"
-          color="primary"
-          @click="job_list_api"
-        >
-        </tooltip_button>
+            <tooltip_button
+              tooltip_message="Refresh"
+              icon="refresh"
+              :text_style="false"
+              :bottom="true"
+              :disabled="loading"
+              :loading="loading"
+              :icon_style="true"
+              color="primary"
+              @click="job_list_api"
+            >
+            </tooltip_button>
 
-        </v-toolbar-items>
+          </v-toolbar-items>
 
-        <!-- Enterprise feature -->
-        <!--
-          <project_org_select
-            class="ml-4"
-            v-if="$store.state.builder_or_trainer.mode == 'builder'"
-            v-model="share_type"
-            label="Share type"
-            :disabled="loading">
-          </project_org_select>
-        -->
-
-      <v-toolbar-items class="pt-4 pl-4 pr-4">
-
-          <v-text-field v-model="text_search"
-                        @input="search_jobs"
-                        label="Search"
-                        clearable>
-
-          </v-text-field>
-
-          <job_status_select
-            class="ml-4"
-            v-model="status"
-            label="Status"
-            @change="search_jobs"
-            :disabled="loading || $store.state.builder_or_trainer.mode == 'trainer'"
-          >
-          </job_status_select>
-
-
-          <job_type_select
-            class="ml-4"
-            v-model="type"
-            label="Normal or Exam"
-            @change="search_jobs"
-            :disabled="loading">
-          </job_type_select>
-
-        <!-- WIP Feature-->
-        <!--
-          <v-select
-            class="ml-4"
-                    :items="instance_type_list"
-                    v-model="instance_type"
-                    label="Instance type"
-                    item-value="text"
-                    :disabled="loading"
-                    @change="">
-          </v-select>
-        -->
-
-          <member_select
-            style="max-width: 18%;"
-            class="ml-4"
-            v-model="selected_member_list_ids"
-            :member_list="project_member_list"
-            :show_names_on_selected="false"
-            :multiple="true"
-          >
-          </member_select>
-
-          <v-checkbox v-model="my_jobs_only"
-                      label="My Jobs Only">
-          </v-checkbox>
-
-
-              <!-- Future release -->
-              <!--
-          # TODO Credential requirements
-          (ie option to show Exams if don't yet have credential?')
+          <!-- Enterprise feature -->
+          <!--
+            <project_org_select
+              class="ml-4"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              v-model="share_type"
+              label="Share type"
+              :disabled="loading">
+            </project_org_select>
           -->
-        </v-toolbar-items>
 
-      </v-toolbar>
-  </template>
+          <v-toolbar-items class="pt-4 pl-4 pr-4">
 
-  </main_menu>
+            <v-text-field v-model="text_search"
+                          @input="search_jobs"
+                          label="Search"
+                          clearable>
+
+            </v-text-field>
+
+            <job_status_select
+              class="ml-4"
+              v-model="status"
+              label="Status"
+              @change="search_jobs"
+              :disabled="loading || $store.state.builder_or_trainer.mode == 'trainer'"
+            >
+            </job_status_select>
+
+
+            <job_type_select
+              class="ml-4"
+              v-model="type"
+              label="Normal or Exam"
+              @change="search_jobs"
+              :disabled="loading">
+            </job_type_select>
+
+            <!-- WIP Feature-->
+            <!--
+              <v-select
+                class="ml-4"
+                        :items="instance_type_list"
+                        v-model="instance_type"
+                        label="Instance type"
+                        item-value="text"
+                        :disabled="loading"
+                        @change="">
+              </v-select>
+            -->
+
+            <member_select
+              style="max-width: 18%;"
+              class="ml-4"
+              v-model="selected_member_list_ids"
+              :member_list="project_member_list"
+              :show_names_on_selected="false"
+              :multiple="true"
+            >
+            </member_select>
+
+            <v-checkbox v-model="my_jobs_only"
+                        label="My Jobs Only">
+            </v-checkbox>
+
+
+            <!-- Future release -->
+            <!--
+        # TODO Credential requirements
+        (ie option to show Exams if don't yet have credential?')
+        -->
+          </v-toolbar-items>
+
+        </v-toolbar>
+      </template>
+
+    </main_menu>
 
     <v-alert v-if="!loading && Job_list.length == 0"
              type="info"
@@ -251,7 +220,35 @@
       Launching! Tasks will populate over time. See Launch Log for more info.
     </v-alert>
 
+    <v-layout class="d-flex flex-column">
+      <div class="d-flex align-center mt-1" >
+        <div style="border: 1px solid #e1e4e8" class="d-flex">
+          <tooltip_button
+            style="border-right: 1px solid #e1e4e8"
+            tooltip_message="Cards View"
+            @click="set_view_mode('cards')"
+            icon="mdi-view-grid-plus"
+            :icon_style="true"
+            value="card"
+            :color="view_mode === 'cards' ? 'secondary' : undefined"
+            :bottom="true"
+          >
+          </tooltip_button>
 
+          <tooltip_button
+            tooltip_message="Table View"
+            @click="set_view_mode('table')"
+            icon="mdi-table"
+            :icon_style="true"
+            value="table"
+            :color="view_mode === 'table' ? 'secondary' : undefined"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </div>
+
+
+      </div>
       <job_list_card_display
         v-if="view_mode === 'cards'"
         :project_string_id="project_string"
@@ -358,7 +355,7 @@
                 :label_file_list_prop="props.item.label_dict.label_file_list_serialized"
                 :load_selected_id_list="props.item.label_dict.label_file_list"
                 :limit="3"
-                                  >
+              >
               </label_select_only>
 
             </td>
@@ -376,7 +373,7 @@
              -->
 
               <member_inline_view
-                  :member_list_ids="props.item.member_list_ids">
+                :member_list_ids="props.item.member_list_ids">
               </member_inline_view>
 
             </td>
@@ -390,8 +387,10 @@
             </td> <!-- end TYPE -->
 
             <td>
-              <div  style="max-width: 200px" class="d-flex flex-wrap" v-if="props && props.item && props.item.attached_directories_dict && props.item.attached_directories_dict.attached_directories_list">
-                <div class="dir d-flex align-center  justify-center ml-1" v-for="dir in props.item.attached_directories_dict.attached_directories_list">
+              <div style="max-width: 200px" class="d-flex flex-wrap"
+                   v-if="props && props.item && props.item.attached_directories_dict && props.item.attached_directories_dict.attached_directories_list">
+                <div class="dir d-flex align-center  justify-center ml-1"
+                     v-for="dir in props.item.attached_directories_dict.attached_directories_list">
                   <v-icon color="primary">mdi-folder</v-icon>
                   <p class="ma-0">{{ dir.nickname }}</p>
                 </div>
@@ -399,7 +398,8 @@
               </div>
             </td>
             <td>
-              <div  style="max-width: 200px" class="d-flex flex-wrap" v-if="props && props.item && props.item.completion_directory">
+              <div style="max-width: 200px" class="d-flex flex-wrap"
+                   v-if="props && props.item && props.item.completion_directory">
                 <div class="dir d-flex align-center  justify-center" v-if="props.item.completion_directory.nickname">
                   <v-icon color="primary">mdi-folder</v-icon>
                   <p class="ma-0">{{ props.item.completion_directory.nickname }}</p>
@@ -408,21 +408,21 @@
             </td>
 
             <td>
-                <icon_from_regular_list
-                  v-if="props.item.interface_connection"
-                  :item_list="$store.state.connection.integration_spec_list"
-                  :value="props.item.interface_connection.integration_name"
-                >
-                </icon_from_regular_list>
+              <icon_from_regular_list
+                v-if="props.item.interface_connection"
+                :item_list="$store.state.connection.integration_spec_list"
+                :value="props.item.interface_connection.integration_name"
+              >
+              </icon_from_regular_list>
               <!-- Default case,. hard code value to diffgram
                    because we currently aren't store Diffgram as a "connection"
                 -->
-                <icon_from_regular_list
-                  v-if="!props.item.interface_connection"
-                  :item_list="$store.state.connection.integration_spec_list"
-                  value="diffgram"
-                >
-                </icon_from_regular_list>
+              <icon_from_regular_list
+                v-if="!props.item.interface_connection"
+                :item_list="$store.state.connection.integration_spec_list"
+                value="diffgram"
+              >
+              </icon_from_regular_list>
             </td>
 
             <td>
@@ -507,10 +507,11 @@
 
 
       </v-data-table>
+    </v-layout>
 
 
     <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
-      <v-card >
+      <v-card>
         <v-card-title class="headline">
           Create sample data
         </v-card-title>
@@ -797,15 +798,14 @@
         }
       },
       computed: {
-        project_string: function(){
-          if(this.$props.project_string_id){
+        project_string: function () {
+          if (this.$props.project_string_id) {
             return this.$props.project_string_id;
-          }
-          else{
+          } else {
             return this.$store.state.project.current.project_string_id
           }
         },
-        project_member_list: function(){
+        project_member_list: function () {
           return this.$store.state.project.current.member_list
         },
         bread_crumb_list: function () {
@@ -888,11 +888,11 @@
 
       },
       methods: {
-        set_view_mode: function(new_mode){
+        set_view_mode: function (new_mode) {
           this.view_mode = new_mode;
         },
 
-        add_visit_history_event: async function(){
+        add_visit_history_event: async function () {
           const event_data = await create_event(this.project_string, {
             page_name: 'job_list',
             object_type: 'page',
@@ -900,32 +900,29 @@
           })
         },
 
-        open_pipelines_dialog: function(){
+        open_pipelines_dialog: function () {
           this.$refs.project_pipelines_dialog.open();
         },
-        create_sample_task_template: async function(){
+        create_sample_task_template: async function () {
           this.loading_create_sample_data = true;
-          try{
-            const response = await axios.post('/api/walrus/v1/gen-data', {
+          try {
+            const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
               data_type: 'task_template',
-              structure: this.structure,
-              project_id: this.$store.state.project.current.id,
+              structure: this.structure
             })
-            if(response.status === 200){
+            if (response.status === 200) {
               this.request_refresh = Date.now();
               this.dialog_confirm_sample_data = false;
               this.snackbar_success = true;
               this.job_list_api();
             }
-          }
-          catch (error) {
+          } catch (error) {
             this.error_sample_data = this.$route_api_errors(error);
-          }
-          finally {
+          } finally {
             this.loading_create_sample_data = false;
           }
         },
-        open_confirm_dialog_sample_data: function(){
+        open_confirm_dialog_sample_data: function () {
           this.dialog_confirm_sample_data = true;
         },
         mount() {
@@ -935,7 +932,7 @@
         item_changed() {
           this.request_next_page_available = false
         },
-        search_jobs: debounce(async function(){
+        search_jobs: debounce(async function () {
           this.job_list_api();
         }, 200),
         job_list_api() {
@@ -993,13 +990,15 @@
     }
   ) </script>
 <style>
-  .job_list_container{
+  .job_list_container {
     padding: 0.5rem 2rem;
   }
-  .v-data-table__wrapper{
+
+  .v-data-table__wrapper {
     overflow: visible;
   }
-  html{
+
+  html {
     overflow: auto;
   }
 </style>

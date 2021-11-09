@@ -1,7 +1,7 @@
 <template>
 
 
-  <v-container class="pa-0">
+  <v-container class="pa-0 mt-8">
     <v-alert type="success" :dismissible="true" v-model="show_success_alert">Instance template created successfully.
     </v-alert>
     <v-card style="overflow-y:auto; max-height: 700px" elevation="3" class="pr-4">

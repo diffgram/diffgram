@@ -17,21 +17,6 @@ app.app_context()
 sslify = SSLify(app, subdomains=True)
 
 
-
-@app.errorhandler(500)
-def server_error(e):
-    logging.exception('An error occurred during a request.')
-
-    if app.debug == False:
-        return "Please try again later", 500
-
-    if app.debug == True:
-        return """
-		An internal error occurred: <pre>{}</pre>
-		See logs for full stacktrace.
-		""".format(e), 500
-
-
 # This is so all the ORM can map the shared modules
 # Appears to be needed even if not directly using them
 # Maybe a setting we can look into
@@ -55,7 +40,7 @@ from methods.connectors.labelbox_connector import labelbox_web_hook_manager
 from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_completed_scaleai
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
-from methods.data_mocking.generate_data import generate_data
+from methods.data_mocking.generate_data import generate_data_api
 
 from methods import routes as routes_blueprint
 
@@ -101,11 +86,16 @@ from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
 from shared.helpers.security import limiter
 from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
 from methods.connectors.datasaur_connector import DatasaurSyncManager
+from methods.input.process_media_queue_manager import ProcessMediaQueueManager
 limiter.init_app(app)
 
 settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
 startup_checker = WalrusServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
+
+# This starts the queue loop for processing media uploads.
+process_media_queue_manager = ProcessMediaQueueManager()
+process_media_queue_manager.start_process_media_threads()
 
 # This starts the thread for checking job launches queue.
 job_launcher_thread = TaskTemplateLauncherThread(
@@ -118,6 +108,8 @@ sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min=settings.SY
 datasaur_sync_manager = DatasaurSyncManager(thread_sleep_time_min=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MIN,
                                             thread_sleep_time_max=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX)
 datasaur_sync_manager.start_sync_loop()
+
+
 
 
 print("Startup in", time.time() - start_time)
@@ -135,7 +127,7 @@ if __name__ == '__main__':
     limiter.enabled = False
     # os.environ['test'] = "test_os_environ"
 
-    app.run(host='0.0.0.0', port=8082, debug=True)
+    app.run(host='0.0.0.0', port=8082, debug=True, use_reloader=True)
     # CAUTION . app.run() is BLOCKING
     # code below app.run will not execute!!!
 else:

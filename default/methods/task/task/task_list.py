@@ -20,6 +20,10 @@ def task_list_by_job_api(job_id):
                          'required': False,
                          'kind': int
                      }},
+                     {'page_number': {
+                         'required': False,
+                         'kind': int
+                     }},
                      {'incoming_directory_id': None},
                      {'limit_count': {'required': False, 'kind': int, 'default': 25}},
                      {'mode_data': str}]
@@ -83,7 +87,8 @@ def _task_list_api(project_id, input=input, log = regular_log.default()):
                                    file_id=input['file_id'],
                                    mode_data=input['mode_data'],
                                    issues_filter = input['issues_filter'],
-                                   limit_count=input['limit_count'])
+                                   limit_count=input['limit_count'],
+                                   page_number=input.get('page_number'))
         initial_dir_sync = None
         if input.get('job_id'):
             job = Job.get_by_id(session, input['job_id'])
@@ -123,7 +128,8 @@ def task_list_core(session,
                    file_id,
                    mode_data,
                    issues_filter,
-                   limit_count = 25):
+                   limit_count = 25,
+                   page_number = 0):
     # if using time created
 
     if limit_count is None:
@@ -139,7 +145,8 @@ def task_list_core(session,
         file_id = file_id,
         incoming_directory_id = incoming_directory_id,
         issues_filter = issues_filter,
-        limit_count=limit_count
+        limit_count=limit_count,
+        page_number=page_number
 
     )
 
@@ -153,7 +160,7 @@ def task_list_core(session,
         if mode_data == "exam_results":
             serialized = task.serialize_for_exam_results()
         else:
-            serialized = task.serialize_for_list_view_builder()
+            serialized = task.serialize_for_list_view_builder(session=session)
         external_id = get_external_id_to_task(session, task, task_template)
         if external_id:
             serialized['external_id'] = external_id

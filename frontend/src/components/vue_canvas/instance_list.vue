@@ -21,6 +21,8 @@
         },
         "instance_list": {},
         "issues_list": undefined,
+        "width": undefined,
+        "height": undefined,
         "compare_to_instance_list_set": {
           default: null
         },
@@ -66,6 +68,10 @@
         "default_instance_opacity":{
           type: Number,
           default: 0.25
+        },
+        "zoom_value": {
+          type: Number,
+          default: 1
         }
       },
 
@@ -82,6 +88,7 @@
         return {
           colour: null,
           circle_size: null,
+          hovered_figure_id: null,
 
           count_instance_in_ctx_paths: 0,
           cuboid_hovered_face: undefined,
@@ -94,6 +101,8 @@
           previous_issue_hover_index: -2,
 
           instance_hover_type: null,
+
+          instance_rotate_control_mouse_hover: null
 
         }
       },
@@ -259,8 +268,8 @@
             done()
             return
           }
-          this.circle_size = 6 / this.canvas_transform['canvas_scale_combined']
-          let font_size = this.label_settings.font_size / this.canvas_transform['canvas_scale_combined']
+          this.circle_size = 6 / this.$props.zoom_value
+          let font_size = this.label_settings.font_size / this.$props.zoom_value
           ctx.font = font_size + "px Verdana";
 
           this.count_issues_in_ctx_paths = 0   // reset
@@ -284,7 +293,6 @@
 
 
         draw_single_instance_limits: function (instance, i) {
-
 
           if (instance.type == 'tag') { // tag is whole image so nothing to draw.
             return false
@@ -554,6 +562,20 @@
               this.count_instance_in_ctx_paths +=1;
               this.instance_hover_type = instance.type;
             }
+            const radius = (this.$props.vertex_size) / this.$props.zoom_value
+
+            this.instance_rotate_control_mouse_hover = instance.draw_rotate_point(
+              ctx,
+              this.is_mouse_in_path,
+              radius
+            )
+
+            if (this.instance_rotate_control_mouse_hover == true){
+              this.instance_hover_index = i   // becuase rotate point may not be in instance
+              this.count_instance_in_ctx_paths +=1;
+              this.instance_hover_type = instance.type
+            }
+
           }
 
           // TODO we may want to add the edit circle things
@@ -584,7 +606,7 @@
         },
 
         get_spatial_line_size: function (){
-          return this.$props.label_settings.spatial_line_size / this.canvas_transform['canvas_scale_combined']
+          return this.$props.label_settings.spatial_line_size / this.$props.zoom_value
         },
 
         // edit circles
@@ -615,21 +637,21 @@
           ctx.strokeStyle = strokeStyle;
         },
 
-        draw_polygon_lines: function (instance, ctx) {
+        draw_polygon_lines: function (instance, ctx, points) {
 
           // All lines after first
           // excluding last line
           // because the last line "loops" back to the first element
 
-          for (var j = 0; j < instance.points.length - 1; j++) {
+          for (var j = 0; j < points.length - 1; j++) {
             // for example if points.length is 11, we do
             // up to j = 9 so j + 1 = 10 which is last index
-            ctx.lineTo(instance.points[j + 1].x, instance.points[j + 1].y)
+            ctx.lineTo(points[j + 1].x, points[j + 1].y)
           }
 
         },
 
-        is_mouse_in_path: function (ctx, i, instance) {
+        is_mouse_in_path: function (ctx, i, instance, figure_id = undefined) {
           if(!this.mouse_position){
             return false
           }
@@ -641,6 +663,7 @@
             if (this.instance_hover_index != i){
               this.instance_hover_index = i
               this.instance_hover_type = instance.type
+              this.hovered_figure_id = figure_id;
             }
             this.count_instance_in_ctx_paths += 1
             return true;
@@ -667,7 +690,10 @@
               this.previous_instance_hover_index = this.instance_hover_index
 
               this.$emit('instance_hover_update',
-                [this.instance_hover_index, this.instance_hover_type])
+                [this.instance_hover_index,
+                 this.instance_hover_type,
+                 this.hovered_figure_id,
+                 this.instance_rotate_control_mouse_hover])
             }
             if(this.instance_hover_type === 'cuboid' && this.prev_cuboid_hovered_face != this.cuboid_hovered_face){
               this.prev_cuboid_hovered_face = this.cuboid_hovered_face;
@@ -691,7 +717,7 @@
             if (this.instance_hover_index != null) { // only update on change
               this.instance_hover_index = null   // careful need to reset this here too
               this.instance_hover_type = null
-              this.cuboid_hovered_face = undefined   // reset
+              this.hovered_figure_id = null   // reset
             }
           }
           // Do the same for issues.
@@ -702,28 +728,47 @@
             }
           }
         },
-        generate_polygon_mid_points(instance, ctx, i){
+        generate_polygon_mid_points(instance, ctx, i, points, figure_id = undefined){
           const midpoints_polygon = []
-          for(let i = 1; i < instance.points.length; i++){
-            const prev = instance.points[i - 1];
-            const current = instance.points[i];
+          for(let i = 1; i < points.length; i++){
+            const prev = points[i - 1];
+            const current = points[i];
             midpoints_polygon.push({
               x: (prev.x + current.x) / 2,
-              y: (prev.y + current.y) / 2
+              y: (prev.y + current.y) / 2,
+              figure_id: figure_id
             })
           }
           midpoints_polygon.push({
-            x: (instance.points[0].x + instance.points[instance.points.length - 1].x) / 2,
-            y: (instance.points[0].y + instance.points[instance.points.length - 1].y) / 2
+            x: (points[0].x + points[points.length - 1].x) / 2,
+            y: (points[0].y + points[points.length - 1].y) / 2
           })
-          instance.midpoints_polygon = midpoints_polygon;
+          if(figure_id){
+            if(!instance.midpoints_polygon){
+              instance.midpoints_polygon = {
+                [figure_id]: midpoints_polygon
+              }
+            }
+            else{
+              instance.midpoints_polygon[figure_id] = midpoints_polygon
+            }
+
+          }
+          else{
+            instance.midpoints_polygon = midpoints_polygon;
+          }
+
         },
-        draw_polygon_midpoints(instance, ctx, i){
-          if(!instance.midpoint_hover == undefined){return}
+        draw_polygon_midpoints(instance, ctx, i, figure_id = undefined){
+          let midpoints_polygon = instance.midpoints_polygon
+          if(figure_id){
+            midpoints_polygon = instance.midpoints_polygon[figure_id]
+          }
+          if(instance.midpoint_hover == undefined){return}
           // Only draw when hovered in
-          const point = instance.midpoints_polygon[instance.midpoint_hover];
+          const point = midpoints_polygon[instance.midpoint_hover];
           if(point == undefined){return}
-          const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+          const radius = (this.$props.vertex_size) / this.$props.zoom_value
           this.draw_single_path_circle(point.x, point.y, radius, ctx);
 
         },
@@ -732,19 +777,17 @@
           let result = this.draw_polygon_main_section(instance, ctx, i)
                        this.draw_polygon_control_points(instance, ctx, i)
         },
-        draw_polygon_main_section: function (instance, ctx, i) {
-          const preStrokeStyle = ctx.strokeStyle;
+        draw_polygon_figure: function(instance, ctx, i, points, figure_id = undefined){
           if(instance.type === 'polygon' && instance.selected){
-            this.generate_polygon_mid_points(instance, ctx, i)
-            this.draw_polygon_midpoints(instance, ctx, i)
+            this.generate_polygon_mid_points(instance, ctx, i, points, figure_id)
+            this.draw_polygon_midpoints(instance, ctx, i, figure_id)
           }
           ctx.beginPath();
           const instance_colour = this.get_instance_colour();
           let r = instance_colour.rgba.r
           let g = instance_colour.rgba.g
           let b = instance_colour.rgba.b
-
-          let points = instance.points
+          const preStrokeStyle = ctx.strokeStyle;
           ctx.strokeStyle = preStrokeStyle;
           // 1) draw primary path
           if (points.length >= 1) {
@@ -756,11 +799,11 @@
           }
 
           if (points.length >= 2) {
-            this.draw_polygon_lines(instance, ctx)
+            this.draw_polygon_lines(instance, ctx, points)
             ctx.lineTo(points[0].x, points[0].y)
           }
 
-          this.is_mouse_in_path(ctx, i, instance) // must be seperate from when circles are drawn
+          this.is_mouse_in_path(ctx, i, instance, figure_id) // must be seperate from when circles are drawn
 
           let spatial_line_size = this.get_spatial_line_size()
           if (spatial_line_size != 0) {
@@ -785,6 +828,32 @@
           if (instance.type == "line") {
             ctx.lineWidth *= 2
           }
+        },
+        draw_polygon_main_section: function (instance, ctx, i) {
+
+          let figure_id_list = [];
+
+          for (const point of instance.points){
+            if(!point.figure_id){
+              continue
+            }
+            if(!figure_id_list.includes(point.figure_id)){
+              figure_id_list.push(point.figure_id)
+            }
+          }
+          if(figure_id_list.length === 0){
+            let points = instance.points;
+            this.draw_polygon_figure(instance, ctx, i, points)
+          }
+          else{
+            for(const figure_id of figure_id_list){
+              let points = instance.points.filter(p => p.figure_id === figure_id);
+              this.draw_polygon_figure(instance, ctx, i, points, figure_id)
+            }
+          }
+
+
+
           return true
         },
         draw_polygon_control_points: function (instance, ctx, i) {
@@ -852,7 +921,7 @@
 
           if (point == null) { return }
 
-          let circle_size = 5 / this.canvas_transform['canvas_scale_combined']
+          let circle_size = 5 / this.$props.zoom_value
 
           if (typeof this.colour == "undefined") {  return  }
           const instance_colour = this.get_instance_colour();
@@ -878,7 +947,7 @@
           let result = false;
           if (this.draw_mode == false) {
             if (this.mode == 'default') {
-              const radius = (this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+              const radius = (this.$props.vertex_size) / this.$props.zoom_value
               this.draw_single_path_circle(instance.front_face.top_left.x  , instance.front_face.top_left.y , radius, ctx)
               if(this.is_mouse_in_path(ctx, i, instance)){ result = true}
               this.draw_single_path_circle(instance.front_face.top_right.x , instance.front_face.top_right.y ,radius, ctx)
@@ -1064,7 +1133,7 @@
           ctx.stroke()
         },
         draw_control_points_and_detect_hover: function(instance, ctx, i){
-          let circle_size = ( this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+          let circle_size = ( this.$props.vertex_size) / this.$props.zoom_value
           if(circle_size <= 0){
             return
           }
@@ -1131,7 +1200,7 @@
               }
               let a = instance.width;
               let b = instance.height;
-              const radius = ( this.$props.vertex_size) / this.canvas_transform['canvas_scale_combined']
+              const radius = ( this.$props.vertex_size) / this.$props.zoom_value
               this.$ellipse.generate_ellipse_corners(instance, a, b)
 
               //right
@@ -1274,6 +1343,32 @@
 
           ctx.fillStyle = this.$get_sequence_color(instance.sequence_id)
 
+          this.draw_text(ctx, message, x, y, ctx.font,
+            '255, 255, 255,',
+            this.$props.label_settings.font_background_opacity);
+        },
+
+        draw_text(ctx, message, x, y, font, background_color, background_opacity) {
+
+          ctx.textBaseline = 'bottom'
+          ctx.font = font
+
+          let text_width = ctx.measureText(message).width;
+
+          let previous_style = ctx.fillStyle
+          ctx.fillStyle = "rgba(" + background_color + background_opacity + ")";
+
+          let text_height = parseInt(font, 10)
+          // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+          let padding = 2
+          ctx.fillRect(
+            x - 1,
+            y - text_height - padding,
+            text_width + padding,
+            text_height + padding)
+
+          ctx.fillStyle = previous_style
+
           ctx.fillText(message, x, y);
 
         },
@@ -1411,7 +1506,7 @@
           // Careful this is effected by scale
 
             // bool, true if point if intersecting circle
-            let radius = 8 / this.canvas_transform['canvas_scale_combined']
+            let radius = 8 / this.$props.zoom_value
 
             return Math.sqrt(
                 (point.x - mouse.x) ** 2

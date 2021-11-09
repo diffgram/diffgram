@@ -14,6 +14,7 @@
 
   import user_icon from '../user/user_icon.vue';
   import share_instance_dialog from '../share/share_instance_dialog.vue';
+  import node_name_editor_keypoint_instance from '../annotation/node_name_editor_keypoint_instance';
   import sequence_select from '../video/sequence_select.vue'
 
   export default Vue.extend({
@@ -21,6 +22,7 @@
     components: {
       user_icon,
       share_instance_dialog,
+      node_name_editor_keypoint_instance,
       sequence_select
     },
     props: {
@@ -28,30 +30,30 @@
         type: Object,
         default: null,
       },
-      'task':{
+      'task': {
         type: Object,
         default: null,
 
       },
-      'draw_mode':{
+      'draw_mode': {
         type: Boolean,
         default: null,
       },
-      'selected_instance_index':{
+      'selected_instance_index': {
         type: Number,
         default: null,
 
       },
-      'instance_clipboard':{
+      'instance_clipboard': {
         type: Object,
         default: null,
 
       },
-      'project_string_id':{
+      'project_string_id': {
         type: String,
         default: null
       },
-      'polygon_point_hover_index':{
+      'polygon_point_hover_index': {
         type: Number,
         default: null
       },
@@ -62,18 +64,22 @@
         type: Number,
         default: null,
       },
+      'hovered_figure_id':{
+        type: String,
+        default: null,
+      },
       'instance_list': {
         type: Array,
         default: null,
       },
       'video_mode': {
-          type: Boolean,
-          default: null,
-       },
+        type: Boolean,
+        default: null,
+      },
       'sequence_list': {
-          type: Array,
-          default: null,
-       }
+        type: Array,
+        default: null,
+      }
 
     },
     data() {
@@ -82,26 +88,30 @@
         top: '-1000px',
         left: '-1000px',
         instance_hover_index_locked: null,
+        hovered_figure_id_locked: null,
         polygon_point_hover_locked: null,
         instance_template_name: null,
         instance_index_to_paste: null,
         instance_index_to_create_instance_template: null,
         show_share_instance_menu: false,
+        show_merge_polygon_menu: false,
         show_instance_template_menu: false,
+        show_set_node_name_menu: false,
         show_paste_menu: false,
         x: 0,
         y: 0,
         num_frames: 1,
         locked_mouse_position: undefined,
         show_issue_panel: false,
+        node_hover_index_locked: undefined
 
       }
     },
 
     computed: {
-      selected_instance: function(){
+      selected_instance: function () {
         let selected = this.instance_list[this.instance_hover_index_locked]
-        if (selected){
+        if (selected) {
           return selected
         } else {
           return {}
@@ -137,7 +147,9 @@
           // lock mouse position on click only
           this.get_mouse_position();
           this.instance_hover_index_locked = this.instance_hover_index
+          this.hovered_figure_id_locked = this.hovered_figure_id;
           this.polygon_point_hover_locked = this.$props.polygon_point_hover_index
+          this.node_hover_index_locked = this.selected_instance.node_hover_index
 
           // We want to free condition on null in template so "normalize" it here.
           if (isNaN(this.instance_hover_index_locked)) {
@@ -149,7 +161,9 @@
           this.top = '-1000px';
           this.left = '-1000px';
           this.instance_hover_index_locked = null
+          this.node_hover_index_locked = undefined
           this.show_paste_menu = false;
+          this.show_set_node_name_menu = false;
           this.show_instance_template_menu = false;
         }
       },
@@ -167,13 +181,62 @@
 
     },
     methods: {
-      show_instance_history_panel: function(){
-        this.$emit('open_instance_history_panel',  this.instance_hover_index_locked);
+      on_node_updated: function(){
+        let instance_update = {
+          index: this.instance_hover_index_locked,
+          node_hover_index: this.node_hover_index_locked,
+          mode: "node_name_changed"
+        }
+        this.emit_update_and_hide_instance(instance_update)
       },
-      close_instance_history_panel: function(){
-        this.$emit('close_instance_history_panel',  this.instance_hover_index_locked);
+      on_close_node_name_menu: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', false);
+        this.show_set_node_name_menu = false;
       },
-      display_paste_menu: function(e){
+      on_click_set_node_name: function(){
+        this.$store.commit('set_user_is_typing_or_menu_open', true);
+        this.show_set_node_name_menu = true;
+      },
+      on_click_update_point_attribute: function () {
+         let instance_update = {
+          index: this.instance_hover_index_locked,
+          node_hover_index: this.node_hover_index_locked,
+          mode: "on_click_update_point_attribute"
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
+
+      is_unmerged_instance: function(instance_index){
+        if(instance_index == undefined){
+          return false
+        }
+        const instance = this.instance_list[instance_index];
+        if(instance.type !== 'polygon'){
+          return
+        }
+        const figure_list = [];
+        for(const p of instance.points){
+          if(!p.figure_id){
+            continue
+          }
+          if(!figure_list.includes(p.figure_id)){
+            figure_list.push(p)
+          }
+        }
+        if(figure_list.length === 0){
+          return true
+        }
+        else{
+          return false
+        }
+      },
+      show_instance_history_panel: function () {
+        this.$emit('open_instance_history_panel', this.instance_hover_index_locked);
+      },
+      close_instance_history_panel: function () {
+        this.$emit('close_instance_history_panel', this.instance_hover_index_locked);
+      },
+      display_paste_menu: function (e) {
         this.show_paste_menu = false
         this.x = e.clientX
         this.y = e.clientY
@@ -181,21 +244,31 @@
         this.instance_index_to_paste = hovered_instance_index;
         this.show_paste_menu = true
       },
-      on_click_create_instance_template: function(e){
+      on_click_create_instance_template: function (e) {
         this.show_instance_template_menu = false
         const hovered_instance_index = this.instance_hover_index_locked;
         this.instance_index_to_create_instance_template = hovered_instance_index;
         this.show_instance_template_menu = true
       },
-      open_issue_panel(){
+      on_click_unmerge_polygon: function(){
+        this.$emit('on_click_polygon_unmerge',
+          this.instance_hover_index_locked,
+          this.hovered_figure_id_locked);
+      },
+      on_click_merge_polygon: function(){
+        const hovered_instance_index = this.instance_hover_index_locked;
+        this.$emit('on_click_polygon_merge', hovered_instance_index);
+      },
+      open_issue_panel() {
         this.$emit('open_issue_panel', this.locked_mouse_position);
 
       },
-      close(){
+      close() {
         this.$emit('close_context_menu');
         this.$store.commit('set_user_is_typing_or_menu_open', false)
+        this.show_set_node_name_menu = false;
       },
-      close_issue_dialog(){
+      close_issue_dialog() {
         this.show_issue_dialog = false;
       },
       get_mouse_position: function () {
@@ -218,7 +291,6 @@
           mode: "change_sequence",
           sequence: event
         }
-        //console.log(instance_update)
         this.emit_update_and_hide_instance(instance_update)
 
       },
@@ -236,24 +308,24 @@
         this.$emit('share_dialog_open');
 
       },
-      on_click_copy_instance(){
+      on_click_copy_instance() {
         this.$emit('copy_instance', this.instance_hover_index_locked);
         this.close();
       },
-      emit_paste_to_next_frames(){
+      emit_paste_to_next_frames() {
         this.$emit('paste_instance_on_next_frames', this.num_frames, this.instance_index_to_paste);
         this.close();
         this.show_paste_menu = false;
         this.num_frames = 1;
         this.instance_index_to_paste = undefined;
       },
-      create_instance_template(){
+      create_instance_template() {
         this.$emit('create_instance_template', this.instance_index_to_create_instance_template, this.instance_template_name);
         this.close();
         this.show_instance_template_menu = false;
         this.instance_index_to_paste = undefined;
       },
-      on_click_paste_instance(){
+      on_click_paste_instance() {
         this.$emit('paste_instance');
         this.close();
       },
@@ -263,7 +335,7 @@
         this.$emit('share_dialog_close')
 
       },
-      on_click_delete_polygon_point(){
+      on_click_delete_polygon_point() {
         this.$emit('delete_polygon_point', this.polygon_point_hover_locked);
       },
       emit_update_and_hide_instance(instance_update: Object) {
@@ -385,21 +457,22 @@
         :z-index="999999"
       >
         <v-card>
-          <v-card-title>Paste Instances: </v-card-title>
+          <v-card-title>Paste Instances:</v-card-title>
           <v-card-text>
             Paste instance to the next
             <v-text-field
-                data-cy="paste_frame_count"
-                v-model="num_frames"
-                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                          ></v-text-field>
+              data-cy="paste_frame_count"
+              v-model="num_frames"
+              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+              @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+            ></v-text-field>
             Frames ahead.
 
           </v-card-text>
           <v-card-actions>
             <v-btn @click="show_paste_menu = false,
-                           $store.commit('set_user_is_typing_or_menu_open', false)">Close</v-btn>
+                           $store.commit('set_user_is_typing_or_menu_open', false)">Close
+            </v-btn>
             <v-btn data-cy="paste_next_frames" @click="emit_paste_to_next_frames" color="success">Paste</v-btn>
           </v-card-actions>
         </v-card>
@@ -458,18 +531,19 @@
         :close-on-content-click="false"
       >
         <v-card>
-          <v-card-title>Create Instance Template: </v-card-title>
+          <v-card-title>Create Instance Template:</v-card-title>
           <v-card-text>
             Name:
             <v-text-field
-                v-model="instance_template_name"
-                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                          ></v-text-field>
+              v-model="instance_template_name"
+              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+              @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+            ></v-text-field>
           </v-card-text>
           <v-card-actions>
             <v-btn @click="show_instance_template_menu = false,
-                           $store.commit('set_user_is_typing_or_menu_open', false)">Close</v-btn>
+                           $store.commit('set_user_is_typing_or_menu_open', false)">Close
+            </v-btn>
             <v-btn @click="create_instance_template" color="success">Create Instance Template</v-btn>
           </v-card-actions>
         </v-card>
@@ -496,11 +570,67 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+      <v-list-item
+        link
+        dense
+        data-cy="merge_polygon"
+        v-if="instance_hover_index_locked != undefined
+           && is_unmerged_instance(instance_hover_index_locked)
+           && selected_instance.type == 'polygon' // only polygon supported for now
+           "
+        @click="on_click_merge_polygon"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Merge Polygon"
+            icon="mdi-merge"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Merge With Existing Polygon
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item
+        link
+        dense
+        data-cy="unmerge_polygon"
+        v-if="instance_hover_index_locked != undefined
+            && !is_unmerged_instance(instance_hover_index_locked)
+            && selected_instance.type == 'polygon' // only polygon supported for now
+             "
+        @click="on_click_unmerge_polygon"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Unmerge Polygon"
+            icon="mdi-source-branch-remove"
+            color="primary"
+          />
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Unmerge Polygon
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-menu
+        v-model="show_merge_polygon_menu"
+        :attach="true"
+        :close-on-click="false"
+        :close-on-content-click="false"
+      >
+        <merge_polygon_menu></merge_polygon_menu>
+      </v-menu>
 
       <v-list-item
         link
         dense
-        data-cy="delete_instance"
+        data-cy="delete_polygon_point"
         v-if="polygon_point_hover_locked"
         @click="on_click_delete_polygon_point"
       >
@@ -508,7 +638,7 @@
         <v-list-item-icon>
           <tooltip_icon
 
-            tooltip_message="Delete Instance"
+            tooltip_message="Delete"
             icon="mdi-vector-polyline-minus"
             color="primary"
           />
@@ -519,6 +649,71 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
+      <v-list-item
+        link
+        dense
+        data-cy="set_node_name_dialog_button"
+        v-if="node_hover_index_locked != undefined"
+        @click="on_click_set_node_name()"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Set Node Name"
+            icon="mdi-rename-box"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Set Node Name
+          </v-list-item-title>
+        </v-list-item-content>
+
+
+      </v-list-item>
+      <v-menu
+        v-if="show_set_node_name_menu"
+        v-model="show_set_node_name_menu"
+        :allow-overflow="true"
+        :offset-overflow="true"
+        :close-on-click="false"
+        :close-on-content-click="false"
+        :attach="true"
+        :z-index="99999999"
+      >
+        <node_name_editor_keypoint_instance
+          :node_index="node_hover_index_locked"
+          :instance_list="instance_list"
+          :instance_index="instance_hover_index_locked"
+          @close="on_close_node_name_menu"
+          @node_updated="on_node_updated"
+        ></node_name_editor_keypoint_instance>
+      </v-menu>
+      <v-list-item
+        link
+        dense
+        data-cy="mark_occluded_button"
+        v-if="node_hover_index_locked != undefined"
+        @click="on_click_update_point_attribute()"
+      >
+
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Mark Occluded"
+            icon="mdi-vector-polyline-minus"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Mark Occluded
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+
       <v-list-item
         link
         dense
@@ -581,7 +776,6 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-
 
 
       <v-list-item
@@ -650,17 +844,17 @@
         dense
         v-if="instance_hover_index_locked != undefined &&
               member && member.first_name"
-                   >
-      <v-list-item-icon>
-        <user_icon
-          :size="25"
-          class="pb-2"
-          :user="member"/>
-      </v-list-item-icon>
+      >
+        <v-list-item-icon>
+          <user_icon
+            :size="25"
+            class="pb-2"
+            :user="member"/>
+        </v-list-item-icon>
 
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-              By: {{member.first_name}} {{member.last_name}}
+            By: {{member.first_name}} {{member.last_name}}
           </v-list-item-title>
         </v-list-item-content>
 
@@ -668,6 +862,7 @@
 
 
     </v-card>
+
     <share_instance_dialog :show_share_instance_menu="show_share_instance_menu"
                            :project_string_id="project_string_id"
                            @share_dialog_close="close_share_dialog"

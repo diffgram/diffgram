@@ -8,6 +8,7 @@ import shared.database.discussion.discussion as discussion
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
 
+
 class Task(Base):
     """
     A single unit of work.
@@ -189,32 +190,94 @@ class Task(Base):
                                         foreign_keys=[default_external_map_id])
 
     @staticmethod
-    def get_next_previous_task_by_task_id(session, task_id, job_id, direction='next'):
-        if task_id is not None:
-            task = Task.get_by_id(session, task_id=task_id)
-        else:
-            task = session.query(Task).filter(
+    def get_task_from_job_id(
+            session,
+            job_id,
+            user,
+            direction='next',
+            assign_to_user=False,
+            skip_locked=True):
+
+        query = session.query(Task).filter(
                 Task.status == 'available',
-                Task.job_id == job_id,
-            ).order_by(Task.time_created).first()
-            return task
+                Task.job_id == job_id)
 
         if direction == 'next':
-            query = session.query(Task).filter(Task.time_created > task.time_created,
-                                               Task.status != 'archived',
-                                               Task.job_id == job_id)
             query = query.order_by(Task.time_created)
-        elif direction == 'previous':
-            query = session.query(Task).filter(Task.time_created < task.time_created,
-                                               Task.status != 'archived',
-                                               Task.job_id == job_id)
-            query = query.order_by(Task.time_created.desc())
-        else:
-            return False
 
-        if query.first():
-            return query.first()
+        elif direction == 'previous':
+            query = query.order_by(Task.time_created.desc())
+
+        if skip_locked == True:
+            query = query.with_for_update(skip_locked=True)
+
+        task = query.first()
+
+        if assign_to_user is True:
+
+            # TODO check if job has open status, or user is assigned to job
+            # For now this assumes that the user is already on correct job
+
+            if task:
+                Task.assign_task_to_user(
+                    task = task,
+                    user = user)
+                session.add(task)
+                session.add(user)
+
         return task
+
+
+    def navigate_tasks_relative_to_given_task(
+            session,
+            task_id,
+            direction='next'
+        ):
+
+        known_task = Task.get_by_id(session, task_id=task_id)
+
+        query = session.query(Task).filter(
+                Task.status != 'archived',
+                Task.job_id == known_task.job_id)
+
+        if direction == 'next':
+            query = query.filter(Task.time_created > known_task.time_created)
+            query = query.order_by(Task.time_created)
+
+        elif direction == 'previous':
+            query = query.filter(Task.time_created < known_task.time_created)
+            query = query.order_by(Task.time_created.desc())
+
+        discovered_task = query.first()
+        return discovered_task
+
+
+    def get_last_task(
+            session,
+            user,
+            status_allow_list = ["available", "in_progress"],
+            job=None):
+
+        last_task = user.last_task
+
+        if last_task:
+
+            if job:
+                if last_task.job_id != job.id:
+                    return None
+
+            if last_task.status in status_allow_list:
+                return last_task
+
+
+    def assign_task_to_user(
+            task,
+            user):
+
+        task.assignee_user = user
+        user.last_task = task
+        task.status = "in_progress"
+
 
     @staticmethod
     def get_related_files(session, task_id):
@@ -272,6 +335,63 @@ class Task(Base):
             return task_ids_with_issues[index_current + 1]
 
 
+    def request_next_task_by_project(
+            session,
+            project,
+            user,
+            ignore_task_IDS_list=None,
+            status='available',
+            skip_locked=True,
+            task_type=None):
+
+        from shared.database.task.job.user_to_job import User_To_Job
+        from shared.database.task.job.job import Job
+
+        if project is None:
+            return False
+
+        query = session.query(Task).filter(
+            Task.project_id == project.id)
+
+        job_ids_user_is_assigned = User_To_Job.get_job_ids_from_user(
+            session=session,
+            user_id=user.id)
+
+        job_ids_open_to_all_users = Job.get_job_IDS_open_to_all(
+            session = session,
+            project = project)
+
+        job_ids_allowed = job_ids_user_is_assigned + job_ids_open_to_all_users
+
+        query = query.filter(Task.job_id.in_(job_ids_allowed))
+
+        if skip_locked == True:
+            query = query.with_for_update(skip_locked=True)
+
+        if status:
+            query = query.filter(Task.status == status)
+
+        if task_type:
+            query = query.filter(Task.task_type == task_type)
+
+        if ignore_task_IDS_list:
+            query = query.filter(Task.id.notin_(ignore_task_IDS_list))
+
+        return query.first()
+
+
+    @staticmethod
+    def get_file_ids_related_to_a_task(
+            session, 
+            task_id,
+            project_id):
+
+        related_tasks_list = session.query(Task).filter(
+            Task.id == task_id,
+            Task.project_id == project_id).all()
+        allowed_file_id_list = [task.file_id for task in related_tasks_list]
+        return allowed_file_id_list
+
 
     def get_next_available_task_by_job_id(
             session,
@@ -312,12 +432,14 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'project_id' : self.project_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'status': self.job_type,
-            'file': self.file.serialize_with_type(session=session),
+            'file': self.file.serialize_with_annotations(session=session),
             'guide': guide,
-            'label_dict': self.label_dict
+            'label_dict': self.label_dict,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def serialize_builder_view_by_id(self, session):
@@ -339,6 +461,8 @@ class Task(Base):
         return {
             'id': self.id,
             'job_id': self.job_id,
+            'job': self.job.serialize_for_task(),
+            'project_string_id' : self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'file': self.file.serialize_with_type(session=session),
@@ -348,7 +472,8 @@ class Task(Base):
             'status': self.status,
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
-            'default_userscript': default_userscript
+            'default_userscript': default_userscript,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def get_by_job_and_file(
@@ -378,6 +503,7 @@ class Task(Base):
              issues_filter=None,
              return_mode=None,
              limit_count = 25,
+             page_number = 0  # 0 is same as no offset
              ):
 
         query = session.query(Task)
@@ -430,10 +556,13 @@ class Task(Base):
         if return_mode == "count":
             return query.count()
 
-        print('limit_count', limit_count)
         query = query.options(joinedload(Task.incoming_directory))
         query = query.options(joinedload(Task.job))
         query = query.order_by(Task.time_created)
+
+        if page_number:
+            if page_number < 0: page_number = 0
+            query = query.offset(page_number * limit_count)
 
         task_list = query.limit(limit_count).all()
 
@@ -473,10 +602,11 @@ class Task(Base):
 
         return task
 
-    def serialize_for_list_view_builder(self):
+    def serialize_for_list_view_builder(self, session=None):
 
-        # could also do isoformat()
-        # but then need a None check...
+        file = None
+        if session:
+            file = self.file.serialize_with_type(session=session)
 
         return {
             'id': self.id,
@@ -492,7 +622,9 @@ class Task(Base):
             },
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
-            'time_created': self.time_created.isoformat()
+            'time_created': self.time_created.isoformat(),
+            'assignee_user_id': self.assignee_user_id,
+            'file': file
 
         }
 
@@ -506,7 +638,8 @@ class Task(Base):
             'time_updated': self.time_updated,
             'time_completed': self.time_completed,
             'review_star_rating_average': self.review_star_rating_average,
-            'gold_standard_missing': self.gold_standard_missing
+            'gold_standard_missing': self.gold_standard_missing,
+            'assignee_user_id': self.assignee_user_id
         }
 
     def get_gold_standard_file(self):
