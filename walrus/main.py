@@ -40,7 +40,7 @@ from methods.connectors.labelbox_connector import labelbox_web_hook_manager
 from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_completed_scaleai
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
-from methods.data_mocking.generate_data import generate_data
+from methods.data_mocking.generate_data import generate_data_api
 
 from methods import routes as routes_blueprint
 
@@ -127,7 +127,7 @@ if __name__ == '__main__':
     limiter.enabled = False
     # os.environ['test'] = "test_os_environ"
 
-    app.run(host='0.0.0.0', port=8082, debug=True, use_reloader= False)
+    app.run(host='0.0.0.0', port=8082, debug=True, use_reloader=True)
     # CAUTION . app.run() is BLOCKING
     # code below app.run will not execute!!!
 else:

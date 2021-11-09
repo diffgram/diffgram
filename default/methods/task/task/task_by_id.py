@@ -7,7 +7,7 @@ from shared.database.task.job.job import Job
 from shared.database.task.task import Task
 
 from methods.source_control import working_dir  # rename new to directory in the future
-
+from shared.regular import regular_log
 
 # Assumption this is a view?
 @routes.route('/api/v1/task',
@@ -22,8 +22,7 @@ def task_by_id_api():
 
 	log, input, untrusted_input = regular_input.master(request=request,
 													   spec_list=spec_list)
-	if len(log["error"].keys()) >= 1:
-		return jsonify(log=log), 400
+	if regular_log.log_has_error(log): return jsonify(log = log), 400
 
 	with sessionMaker.session_scope() as session:
 

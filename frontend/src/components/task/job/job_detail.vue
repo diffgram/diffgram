@@ -1,32 +1,61 @@
 <template>
   <div class="job-detail-container">
-    <div class="d-flex justify-space-between align-center mb-6">
-      <h1 class="pa-2">
-        <v-layout>
-          <div
-            class="font-weight-light clickable"
-            @click="$router.push('/job/list')"
+    <h1 class="pa-2">
+      <v-layout>
+        <div
+          class="font-weight-light clickable"
+          @click="$router.push('/job/list')"
+        >
+          {{ $store.state.project.current.name }} /
+        </div>
+
+        <div
+          v-if="$store.state.job.current.id == this.job_id && edit_name != true"
+          class="font-weight-normal pl-2"
+          @dblclick="edit_name = true"
+        >
+          {{ job_name }}
+        </div>
+
+        <v-text-field
+          v-if="edit_name == true"
+          v-model="job_name"
+          @input="has_changes = true"
+          @keyup.enter="(edit_name = false), api_update_job()"
+          solo
+          flat
+          style="font-size: 22pt"
+        >
+        </v-text-field>
+
+        <div>
+          <button_with_confirm
+            v-if="edit_name == true"
+            @confirm_click="api_update_job()"
+            color="primary"
+            icon="save"
+            :icon_style="true"
+            tooltip_message="Save Name Updates"
+            confirm_message="Confirm"
+            :loading="loading"
+            :disabled="loading"
           >
-            {{ $store.state.project.current.name }} /
-          </div>
-          <div
-            v-if="$store.state.job.current.id == this.job_id"
-            class="font-weight-normal pl-2"
-          >
-            {{ $store.state.job.current.name }}
-          </div>
-        </v-layout>
-      </h1>
-      <v-btn
-        @click="api_get_next_task_scoped_to_job(job_id)"
-        :loading="next_task_loading"
-        :disabled="next_task_loading"
-        color="primary"
-        large
-      >
-        Start Annotating
-      </v-btn>
-    </div>
+          </button_with_confirm>
+        </div>
+
+        <tooltip_button
+          v-if="edit_name == true"
+          tooltip_message="Cancel Name Edit"
+          datacy="cancel_edit_name"
+          @click="edit_name = false"
+          icon="mdi-cancel"
+          :icon_style="true"
+          color="primary"
+          :disabled="loading"
+        >
+        </tooltip_button>
+      </v-layout>
+    </h1>
 
     <v-tabs v-model="tab" color="primary">
       <v-tab v-for="item in items" :key="item.text">
@@ -35,7 +64,6 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
-          <stats_panel />
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -153,40 +181,16 @@
           <!-- Settings -->
           <v_info_multiple :info="info"> </v_info_multiple>
 
-          <v-text-field
-            v-if="edit_job == true"
-            v-model="job_name"
-            @input="has_changes = true"
-            solo
-            flat
-            style="font-size: 18pt"
-          >
-          </v-text-field>
-
           <tooltip_button
-            v-if="edit_job == false"
+            v-if="edit_name == false"
             tooltip_message="Edit Name"
             tooltip_direction="bottom"
-            @click="edit_job = true"
+            @click="edit_name = true"
             icon="edit"
             :icon_style="true"
             color="primary"
           >
           </tooltip_button>
-
-          <button_with_confirm
-            v-if="edit_job == true"
-            @confirm_click="api_update_job()"
-            color="primary"
-            icon="save"
-            :icon_style="true"
-            :large="true"
-            tooltip_message="Save Name Updates"
-            confirm_message="Confirm"
-            :loading="loading"
-            :disabled="loading"
-          >
-          </button_with_confirm>
 
           <v-layout>
             <v-spacer> </v-spacer>
@@ -239,7 +243,6 @@ import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
 import axios from "axios";
 import job_type from "./job_type";
-import stats_panel from "../../stats/stats_panel.vue";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -252,7 +255,6 @@ export default Vue.extend({
     job_pipeline_mxgraph,
     label_select_only,
     job_type,
-    stats_panel,
   },
 
   data() {
@@ -269,7 +271,7 @@ export default Vue.extend({
       update_label_file_list: null,
       has_changes: false,
 
-      edit_job: false,
+      edit_name: false,
 
       job_name: undefined,
 
@@ -322,26 +324,12 @@ export default Vue.extend({
       this.tab = 1;
     }
     this.job_name = this.$store.state.job.current.name;
+    this.set_document_title();
   },
   computed: {},
   methods: {
-    api_get_next_task_scoped_to_job: async function (job_id) {
-      try {
-        this.next_task_loading = true;
-        const response = await axios.post(
-          `/api/v1/job/${job_id}/task/next`,
-          {}
-        );
-        if (response.status === 200) {
-          let task = response.data.task;
-          const routeData = `/task/${task.id}`;
-          this.$router.push(routeData);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        this.next_task_loading = false;
-      }
+    set_document_title() {
+      document.title = this.job_name;
     },
     api_update_job: function () {
       /*
@@ -370,10 +358,11 @@ export default Vue.extend({
         .then((response) => {
           this.loading = false;
           this.info = response.data.log.info;
-          this.edit_job = false;
+          this.edit_name = false;
           this.has_changes = false;
           this.update_label_file_list = null;
           this.$store.commit("set_job", response.data.job);
+          this.set_document_title();
         })
         .catch((error) => {
           this.loading = false;

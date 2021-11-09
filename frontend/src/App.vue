@@ -2,14 +2,14 @@
   <div id="app">
     <v-app>
 
-      <main_menu v-if="$route.meta.hide_default_menu != true">
+      <main_menu v-if="get_meta($route).hide_default_menu != true">
       </main_menu>
 
       <v-main>
           <router-view></router-view>
       </v-main>
 
-      <v_footer v-if="$route.meta.external_page == true">
+      <v_footer v-if="get_meta($route).external_page == true">
 
       </v_footer>
 
@@ -38,6 +38,15 @@ export default Vue.extend({
     },
     components: {
       v_footer: v_footer
+    },
+    methods: {
+      get_meta: function (route) {
+        if (typeof(route.meta) === 'function') {
+          return route.meta(route)
+        } else {
+          return route.meta
+        }
+      }
     }
   })
 </script>

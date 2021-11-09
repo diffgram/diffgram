@@ -268,6 +268,26 @@ Cypress.Commands.add('signupPro', function () {
 
   })
 
+Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
+  cy.request({
+    method: 'POST',
+    url: `localhost:8085/api/walrus/test/gen-data`,
+    body:  {
+      'data_type' : 'task_template',
+      'structure': '1_pass',
+      'num_files': num_files
+    },
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    failOnStatusCode: true
+  }).then((response) =>{
+    if(response.body.success){
+      return true
+    }
+  })
+})
+
 Cypress.Commands.add('registerProTestUser', function () {
 
   cy.visit('http://localhost:8085/user/pro/new');
@@ -355,13 +375,13 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 
 Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(3000);
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy=main_menu_labels]').click({force:true})
   cy.wait(2000)
 });
 
 Cypress.Commands.add('goToStudioFromToolbar', function () {
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
   cy.wait(5000);
   cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});

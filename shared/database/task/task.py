@@ -503,6 +503,7 @@ class Task(Base):
              issues_filter=None,
              return_mode=None,
              limit_count = 25,
+             page_number = 0  # 0 is same as no offset
              ):
 
         query = session.query(Task)
@@ -555,10 +556,13 @@ class Task(Base):
         if return_mode == "count":
             return query.count()
 
-        print('limit_count', limit_count)
         query = query.options(joinedload(Task.incoming_directory))
         query = query.options(joinedload(Task.job))
         query = query.order_by(Task.time_created)
+
+        if page_number:
+            if page_number < 0: page_number = 0
+            query = query.offset(page_number * limit_count)
 
         task_list = query.limit(limit_count).all()
 
