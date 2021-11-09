@@ -27,7 +27,7 @@ describe('Autoborder', () => {
       cy.selectDrawValidatePolygon(points)
     })
 
-    it('[UI] Shows AutoBorder General Info Prompt', () => {
+    it('[UI] Shows General Info Prompt', () => {
       cy.get('[data-cy="ok_autoborder"]').click({force: true})
     })
 
@@ -39,8 +39,14 @@ describe('Autoborder', () => {
       cy.mouseupcanvas()
     })
 
-    it('[UI] Shows AutoBorder Point Selected Usage Prompt', () => {
-      cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+    it('[UI] Shows Point Selected Usage Prompt', () => {
+     cy.get('[data-cy="minimize-file-explorer-button"]')
+      .then($button => {
+          console.log($button)
+          if ($button.is(':visible')) {
+              $button.click()
+            }
+          })
       cy.wait(300)
       cy.get('[data-cy="auto_border_first_point_selected_usage_prompt"]').should('be.visible')
     })
@@ -50,7 +56,7 @@ describe('Autoborder', () => {
       cy.mouseupcanvas()
     })
 
-    it('[UI] Shows Second AutoBorder Prompt', () => {
+    it('[UI] Shows Second Prompt', () => {
       cy.get('[data-cy="auto_border_path_prompt"]').should('be.visible')
     })
 
