@@ -59,7 +59,6 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         }
 
         endpoint = "/api/v1/project/" + job.project.project_string_id + "/job/update"
-        print('aaaa', job.project_id, self.project.id)
         credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
@@ -69,7 +68,6 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
                 'Authorization': 'Basic {}'.format(credentials)
             }
         )
-        print('qweqweqwe', response.data)
         self.assertEqual(response.status_code, 200)
         new_session = sessionMaker.session_factory()
         updated_job = Job.get_by_id(new_session, job.id)

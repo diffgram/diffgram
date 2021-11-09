@@ -267,7 +267,6 @@ class Task(Base):
             job=None):
 
         last_task = user.last_task
-        print('LASTTT', last_task)
         if last_task:
 
             if job:
@@ -294,7 +293,6 @@ class Task(Base):
             TaskUser.task_id == self.id
         ).all()
         user_id_list = [elm.user_id for elm in result]
-        print('user_id_list', user_id_list)
         return user.id in user_id_list
 
     def add_assignee(self, session, user):

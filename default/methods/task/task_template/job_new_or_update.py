@@ -701,9 +701,7 @@ def new_or_update_core(session,
         log['error']['kind'] = "Invalid share_type, valid options are: ['market', 'org', 'project']"
         return False, log
 
-    # What about validation on other inputs???
-    # Look at actions or other part of system for options here...
-    print('IS log', log)
+
     job.launch_datetime = launch_datetime
     # We expect this to be a valid datetime object,
     # but otherwise don't validate, ie a date in the past
@@ -752,7 +750,6 @@ def new_or_update_core(session,
                 user = member.user)
         except:
             logger.info("Failed to email about new pro job")
-    print('IS log2', log)
     # Update sync dirs and completion directory ID
     if isinstance(attached_directories_dict, dict):
         job.update_attached_directories(session,
@@ -776,7 +773,6 @@ def new_or_update_core(session,
             member=member,
             success=True
         )
-    print('IS log final', log)
     return job, log
 
 

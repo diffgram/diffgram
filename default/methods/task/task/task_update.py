@@ -42,13 +42,8 @@ def task_update_api():
 
     with sessionMaker.session_scope() as session:
         task_list = []
-        user = User.get(session)
-        if user:
-            member = user.member
-        else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
+        
+        member = get_member(session = session)
 
         if input['task_id']:
             task = Task.get_by_id(session = session,

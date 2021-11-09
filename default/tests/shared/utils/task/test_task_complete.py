@@ -3,6 +3,9 @@ from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.utils.task import task_complete
 from shared.database.task.task import TASK_STATUSES
+from shared.utils.task import task_assign_reviewer
+from unittest.mock import patch
+
 
 class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
     """
@@ -43,14 +46,15 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
         task = data_mocking.create_task({'name': 'test task', 'file': file}, self.session)
         task.job.stat_count_tasks = 0
         task.job.stat_count_complete = 0
-        task_complete.task_complete(session=self.session, task=task, new_file=task.file, project=self.project, member = self.member)
+        task_complete.task_complete(session = self.session, task = task, new_file = task.file, project = self.project,
+                                    member = self.member)
 
         self.assertEqual(task.status, TASK_STATUSES['complete'])
         # Now job should have +1 in completed col
         self.assertEqual(task.job.stat_count_complete, 1)
 
-
-        task_complete.task_complete(session=self.session, task=task, new_file=task.file, project=self.project, member = self.member)
+        task_complete.task_complete(session = self.session, task = task, new_file = task.file, project = self.project,
+                                    member = self.member)
         # Count should still be one since task has already been completed.
         self.assertEqual(task.job.stat_count_complete, 1)
 
@@ -62,13 +66,53 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         task2 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                             self.session)
-        task_complete.task_complete(session=self.session,
-                                    task=task2,
-                                    new_file=task2.file,
-                                    project=self.project,
+                                         self.session)
+        task_complete.task_complete(session = self.session,
+                                    task = task2,
+                                    new_file = task2.file,
+                                    project = self.project,
                                     member = self.member)
-        self.assertEqual(task2.status, TASK_STATUSES['review_requested'])
+
+        # Test Auto Assign call
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project,
+            'allow_reviews': True
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task3 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                         self.session)
+        with patch.object(task_assign_reviewer, 'auto_assign_reviewer_to_task') as auto_assign_mock:
+            task_complete.task_complete(session = self.session,
+                                        task = task3,
+                                        new_file = task3.file,
+                                        project = self.project,
+                                        member = self.member)
+            auto_assign_mock.asser_called_once_with(session = self.session, task = task)
+            self.assertEqual(task3.status, TASK_STATUSES['review_requested'])
+
+        # Test Auto Assign call with reviewer
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project,
+            'allow_reviews': True
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task4 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                         self.session)
+        job.update_reviewer_list(
+            session = self.session,
+            reviewer_list_ids = [self.member.id],
+            log = regular_log.default()
+        )
+
+        task_complete.task_complete(session = self.session,
+                                    task = task4,
+                                    new_file = task4.file,
+                                    project = self.project,
+                                    member = self.member)
+        auto_assign_mock.asser_called_once_with(session = self.session, task = task)
+        self.assertEqual(task4.status, TASK_STATUSES['in_review'])
 
     def test_cost_per_task(self):
         result = task_complete.cost_per_task(5, 10)
@@ -99,4 +143,3 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
             WorkingDirFileLink.file_id == task.file_id
         ).all()
         self.assertEqual(len(file_link), 1)
-

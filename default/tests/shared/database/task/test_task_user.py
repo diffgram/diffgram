@@ -80,3 +80,40 @@ class TestTaskUser(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result['task_id'], task1.id)
         self.assertEqual(result['user_id'], self.member.user.id)
         self.assertEqual(result['relation'], 'test')
+
+    def test_list(self):
+        job = data_mocking.create_job({
+            'name': 'my-test-job-{}'.format(1),
+            'project': self.project
+        }, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        task1 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                         self.session)
+        task2 = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
+                                         self.session)
+
+        task_user = TaskUser.new(
+            session = self.session,
+            task_id = task1.id,
+            user_id = self.member.user.id,
+            relation = 'test'
+        )
+
+        task_user2 = TaskUser.new(
+            session = self.session,
+            task_id = task2.id,
+            user_id = self.member.user.id,
+            relation = 'test'
+        )
+
+        result = TaskUser.list(
+            session = self.session,
+            user_id = self.member.user.id
+        )
+
+        self.assertEqual(len(result), 2)
+
+        id_list = [elm.id for elm in result]
+
+        self.assertTrue(task_user.id in id_list)
+        self.assertTrue(task_user2.id in id_list)

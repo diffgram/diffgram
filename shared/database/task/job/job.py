@@ -410,6 +410,7 @@ class Job(Base, Caching):
 
         # Now create user_to_job relations.
         user_added_id_list = []
+        print('user_list', user_list)
         for user in user_list:
 
             user_added_id_list.append(user.id)
