@@ -4803,7 +4803,10 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            // instance.calculate_min_max_points()
+            instance.x_min = Math.min(...instance.nodes.map(p => p.x))
+            instance.y_min = Math.min(...instance.nodes.map(p => p.y))
+            instance.x_max = Math.max(...instance.nodes.map(p => p.x))
+            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
           }
           else{
             instance.x_min = parseInt(instance.x_min)

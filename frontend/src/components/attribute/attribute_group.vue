@@ -290,41 +290,29 @@
 
           <h4 class="pa-2"> Default Option </h4>
 
-          <v-col cols="12">
+          <v-row v-if="group.kind === 'slider'">
+            <v-col cols="3">
+              <v-text-field v-model="group.min_value"
+                            @change="api_group_update('UPDATE')"
+                            type="number"
+                            data-cy="min_value"
+                            label="Min Value">
 
-            <v-row v-if="group.kind === 'slider'">
-              <v-col cols="3">
-                <v-text-field v-model="group.min_value"
-                              @change="api_group_update('UPDATE')"
-                              type="number"
-                              data-cy="min_value"
-                              label="Min Value">
+              </v-text-field>
+            </v-col>
 
-                </v-text-field>
+            <v-col cols="3">
+              <v-text-field v-model="group.max_value"
+                            @change="api_group_update('UPDATE')"
+                            type="number"
+                            data-cy="max_value"
+                            label="Max Value">
+
+              </v-text-field>
               </v-col>
-              <v-col cols="3">
-                <v-text-field v-model="group.max_value"
-                              @change="api_group_update('UPDATE')"
-                              type="number"
-                              data-cy="max_value"
-                              label="Max Value">
+          </v-row>
 
-            </v-text-field>
-          </v-col>
-        </v-row>
         <v-row>
-          <v-col cols="12">
-            <label_select_only
-              datacy="label_select_attribute"
-              :project_string_id="project_string_id"
-              :mode=" 'multiple' "
-              :attribute_group_id="group.id"
-              @label_file="recieve_label_file($event)"
-              label_prompt="Show on these labels:"
-            >
-            </label_select_only>
-          </v-col>
-
             <!-- Globals -->
           <div class="pt-0 ">
             <v-checkbox
@@ -339,7 +327,6 @@
         </v-row>
 
         <!-- Edit Default  default_id default_value -->
-        <v-row>
           <v-col cols="12">
 
             <v-text-field
