@@ -62,17 +62,20 @@ def send_to_review_randomly(session, task, task_update_manager):
     # Review chance is a number betwen 0-1
     review_chance = task.job.review_chance
     rand_num = random.uniform(0, 1)
+
     if rand_num <= review_chance:
-        trigger_sync_event = False  # In review Mode no sync event (unless post_review=True)
+        # In review Mode no sync event (unless post_review=True)
         task_update_manager.status = TASK_STATUSES['review_requested']
         task_update_manager.main()
         task_assign_reviewer.auto_assign_reviewer_to_task(
             session = session,
             task = task
         )
+        return False
     else:
         task_update_manager.status = TASK_STATUSES['complete']
         task_update_manager.main()
+        return True
 
 def task_complete(session,
                   task,
@@ -114,8 +117,11 @@ def task_complete(session,
                 task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
             else:
-
-
+                trigger_sync_event = send_to_review_randomly(
+                    session = session,
+                    task = task,
+                    task_update_manager = task_update_manager
+                )
         else:
             task_update_manager.status = 'complete'
             task_update_manager.main()
