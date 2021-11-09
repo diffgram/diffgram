@@ -127,6 +127,10 @@ export default Vue.extend({
         userStats.completed,
         userStats.total - userStats.completed,
       ];
+      this.user_stats.chartData.labels = [
+        `Completed ${userStats.completed}`,
+        `Pending ${userStats.total - userStats.completed}`,
+      ];
       if (!this.job_data_fetched) {
         this.current_user_performance = {
           instances: userStats.instaces_created,
@@ -156,6 +160,10 @@ export default Vue.extend({
 
     const { completed, total } = await getJobStats(job_id);
     this.job_chart.chartData.datasets[0].data = [completed, total - completed];
+    this.job_chart.chartData.labels = [
+      `Completed ${completed}`,
+      `Pending ${total - completed}`,
+    ];
 
     await this.update_user_chart();
 
@@ -176,6 +184,9 @@ export default Vue.extend({
       job_chart: {
         chartOptions: {
           hoverBorderWidth: 20,
+          tooltips: {
+            enabled: false,
+          },
         },
         chartData: {
           hoverBackgroundColor: "red",
@@ -183,7 +194,6 @@ export default Vue.extend({
           labels: ["Completed", "Pending"],
           datasets: [
             {
-              label: "Data One",
               backgroundColor: ["#41B883", "#00D8FF"],
               data: [],
             },
@@ -193,6 +203,9 @@ export default Vue.extend({
       user_stats: {
         chartOptions: {
           hoverBorderWidth: 20,
+          tooltips: {
+            enabled: false,
+          },
         },
         chartData: {
           hoverBackgroundColor: "red",

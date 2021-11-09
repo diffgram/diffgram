@@ -9,7 +9,8 @@ export default {
       borderWidth: "10px",
       hoverBackgroundColor: "red",
       hoverBorderWidth: "10px",
-      radius: '30px'
+      radius: '30px',
+      ... this.options
     });
   }
 };
