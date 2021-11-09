@@ -287,6 +287,8 @@ class File(Base, Caching):
             return session.query(File).filter(
                 File.video_parent_file_id == video_parent_file_id,
                 File.frame_number.in_(frame_number_list)).all()
+
+
     def serialize(self):
         # Careful this is just basic stuff
         # Use serialize_with_type() for example

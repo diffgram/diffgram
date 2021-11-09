@@ -101,7 +101,8 @@
 
             {{group.prompt}}
 
-            <div v-if="!group.prompt" :data-cy="`attribute_group_header_Untitled Attribute Group`">
+            <div v-if="!group.prompt"
+                 :data-cy="`attribute_group_header_Untitled Attribute Group`">
               Untitled Attribute Group
             </div>
 

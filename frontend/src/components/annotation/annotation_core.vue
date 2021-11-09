@@ -196,7 +196,7 @@
             </v-alert>
           </div>
 
-          <instance_detail_list_view  class="pl-4 pr-4"
+          <instance_detail_list_view  class="pt-3 pl-2 pr-4"
                                       ref="instance_detail_list"
                                       v-if="!task_error.task_request"
                                       :instance_list="instance_list"
@@ -4320,7 +4320,7 @@
             instance.x_min = Math.min(...instance.nodes.map(p => p.x))
             instance.y_min = Math.min(...instance.nodes.map(p => p.y))
             instance.x_max = Math.max(...instance.nodes.map(p => p.x))
-            instance.t_max = Math.max(...instance.nodes.map(p => p.y))
+            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
           }
         },
         move_something: function (event) {

@@ -164,7 +164,7 @@ class Attribute_Template_Group(Base):
 
 
     @staticmethod
-    def get_is_globals(
+    def get_globals(
             session,
             project_id,
             is_global = True):
