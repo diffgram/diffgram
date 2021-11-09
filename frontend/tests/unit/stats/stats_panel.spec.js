@@ -54,8 +54,51 @@ describe("Test stats panel component", () => {
         expect(localStorage.setItem).toHaveBeenCalled();
     })
 
-    it("Renders right content", () => {
-        const wrapper = shallowMount(stats_panel, props, localVue);
-        console.log(wrapper.html())
+    it("Renders show stats button when the stats is hidden", () => {
+        const wrapper = shallowMount(stats_panel, {
+          data: function() {
+          return {
+            stats_visibility: false,
+            
+          }
+        },
+        ...props
+      }, localVue);
+
+      expect(wrapper.text().toLowerCase()).toContain("show")
+    })
+
+    it("Should render all the headers of the stats elements correctly", () => {
+      const wrapper = shallowMount(stats_panel, props, localVue);
+
+      const wrapper_text = wrapper.text().toLowerCase()
+      expect(wrapper_text).toContain('job progress')
+      expect(wrapper_text).toContain('my progress')
+    })
+
+    it("Should render two pie charts and user stats", () => {
+      const wrapper = shallowMount(stats_panel, {
+          data: function() {
+          return {
+            job_data_fetched: true,
+          }
+        },
+        ...props
+      }, localVue);
+
+      expect(wrapper.findAll('pie-chart-stub').length).toBe(2)
+    })
+
+    it("Should render user list if data is fetched", () => {
+      const wrapper = shallowMount(stats_panel, {
+          data: function() {
+          return {
+            job_data_fetched: true,
+          }
+        },
+        ...props
+      }, localVue);
+
+      expect(wrapper.findAll('v-menu').length).toBe(1)
     })
 })
