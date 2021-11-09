@@ -28,13 +28,7 @@ def task_review_api(task_id):
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-        user = User.get(session)
-        if user:
-            member = user.member
-        else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
+        member = get_member(session = session)
 
         task_serialized = task_review_core(session = session,
                                            task_id = task_id,
