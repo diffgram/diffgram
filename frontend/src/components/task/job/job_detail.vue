@@ -1,61 +1,75 @@
 <template>
   <div class="job-detail-container">
-    <h1 class="pa-2">
-      <v-layout>
-        <div
-          class="font-weight-light clickable"
-          @click="$router.push('/job/list')"
-        >
-          {{ $store.state.project.current.name }} /
-        </div>
+    <div class="d-flex justify-space-between align-center mb-6">
+      <h1 class="pa-2">
+        <v-layout>
+          <div
+            class="font-weight-light clickable"
+            @click="$router.push('/job/list')"
+          >
+            {{ $store.state.project.current.name }} /
+          </div>
 
-        <div
-          v-if="$store.state.job.current.id == this.job_id && edit_name != true"
-          class="font-weight-normal pl-2"
-          @dblclick="edit_name = true"
-        >
-          {{ job_name }}
-        </div>
+          <div
+            v-if="
+              $store.state.job.current.id == this.job_id && edit_name != true
+            "
+            class="font-weight-normal pl-2"
+            @dblclick="edit_name = true"
+          >
+            {{ job_name }}
+          </div>
 
-        <v-text-field
-          v-if="edit_name == true"
-          v-model="job_name"
-          @input="has_changes = true"
-          @keyup.enter="(edit_name = false), api_update_job()"
-          solo
-          flat
-          style="font-size: 22pt"
-        >
-        </v-text-field>
-
-        <div>
-          <button_with_confirm
+          <v-text-field
             v-if="edit_name == true"
-            @confirm_click="api_update_job()"
-            color="primary"
-            icon="save"
+            v-model="job_name"
+            @input="has_changes = true"
+            @keyup.enter="(edit_name = false), api_update_job()"
+            solo
+            flat
+            style="font-size: 22pt"
+          >
+          </v-text-field>
+
+          <div>
+            <button_with_confirm
+              v-if="edit_name == true"
+              @confirm_click="api_update_job()"
+              color="primary"
+              icon="save"
+              :icon_style="true"
+              tooltip_message="Save Name Updates"
+              confirm_message="Confirm"
+              :loading="loading"
+              :disabled="loading"
+            >
+            </button_with_confirm>
+          </div>
+
+          <tooltip_button
+            v-if="edit_name == true"
+            tooltip_message="Cancel Name Edit"
+            datacy="cancel_edit_name"
+            @click="edit_name = false"
+            icon="mdi-cancel"
             :icon_style="true"
-            tooltip_message="Save Name Updates"
-            confirm_message="Confirm"
-            :loading="loading"
+            color="primary"
             :disabled="loading"
           >
-          </button_with_confirm>
-        </div>
+          </tooltip_button>
+        </v-layout>
+      </h1>
 
-        <tooltip_button
-          v-if="edit_name == true"
-          tooltip_message="Cancel Name Edit"
-          datacy="cancel_edit_name"
-          @click="edit_name = false"
-          icon="mdi-cancel"
-          :icon_style="true"
-          color="primary"
-          :disabled="loading"
-        >
-        </tooltip_button>
-      </v-layout>
-    </h1>
+      <v-btn
+        @click="api_get_next_task_scoped_to_job(job_id)"
+        :loading="next_task_loading"
+        :disabled="next_task_loading"
+        color="primary"
+        large
+      >
+        Start Annotating
+      </v-btn>
+    </div>
 
     <v-tabs v-model="tab" color="primary">
       <v-tab v-for="item in items" :key="item.text">
@@ -64,6 +78,7 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
+          <stats_panel />
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -243,6 +258,7 @@ import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
 import axios from "axios";
 import job_type from "./job_type";
+import stats_panel from "../../stats/stats_panel.vue";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -255,6 +271,7 @@ export default Vue.extend({
     job_pipeline_mxgraph,
     label_select_only,
     job_type,
+    stats_panel,
   },
 
   data() {

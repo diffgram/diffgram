@@ -3,15 +3,6 @@
     <v-card>
       <v-layout>
         <!-- Temporary button -->
-        <v-btn
-          @click="api_get_next_task_scoped_to_job(job_id)"
-          :loading="next_task_loading"
-          :disabled="next_task_loading"
-          color="primary"
-          large
-        >
-          Start Annotating
-        </v-btn>
 
         <v-layout
           v-if="
