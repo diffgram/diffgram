@@ -7,6 +7,7 @@ import shared.database.discussion.discussion_relation as dr
 import shared.database.discussion.discussion as discussion
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
+from shared.database.annotation.instance import Instance
 
 
 class Task(Base):
@@ -593,6 +594,35 @@ class Task(Base):
                 task_list = session.query(Task).filter(Task.id.in_(task_with_issues_id_list))
 
         return task_list
+
+    @staticmethod
+    def stats(session, job_id, user_id=None):
+
+        
+        query = session.query(Task)
+
+        if user_id:
+            query = query.filter(Task.assignee_user_id == user_id)
+
+        total = query.filter(Task.job_id == job_id).count()
+        completed = query.filter(Task.job_id == job_id).filter(Task.status == 'complete').count()
+
+        instaces_created = 0
+        if user_id:
+            all_the_tasks = query.all()
+            for task in all_the_tasks:
+                instance = session.query(Instance).filter(Instance.file_id == task.file_id).count()
+                instaces_created += instance
+
+
+        tasks_stats = {
+            "total": total,
+            "completed": completed,
+            "instaces_created": instaces_created
+        }
+
+        return tasks_stats
+    
 
     def get_by_id(session,
                   task_id):
