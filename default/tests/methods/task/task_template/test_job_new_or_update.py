@@ -17,17 +17,41 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
         super(TestJobNewUpdate, self).setUp()
+        project_data = data_mocking.create_project_with_context(
+            {
+                'users': [
+                    {'username': 'Test',
+                     'email': 'test@test.com',
+                     'password': 'diffgram123',
+                     }
+                ]
+            },
+            self.session
+
+        )
+        self.project = project_data['project']
+        self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
+        self.member = self.auth_api.member
+        self.member.user = data_mocking.register_user({
+            'username': 'test_user',
+            'email': 'test@test.com',
+            'password': 'diffgram123',
+            'project_string_id': self.project.project_string_id,
+            'member_id': self.member.id
+        }, self.session)
 
     def test_job_update_api(self):
         # Create mock job.
         job = data_mocking.create_job({
-            'name': 'my-test-job'
+            'name': 'my-test-job',
+            'project': self.project,
         }, self.session)
         file = data_mocking.create_file({'project_id': job.project.id, 'job_id': job.id}, self.session)
         request_data = {
             'name': 'new name',
             'instance_type': 'polygon',
             'share_type': 'project',
+            'reviewer_list_ids': [self.member.id],
             'type': 'exam',
             'label_file_list': [{'id': file.id}],
             'file_handling': 'isolate',
@@ -35,8 +59,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         }
 
         endpoint = "/api/v1/project/" + job.project.project_string_id + "/job/update"
-        auth_api = common_actions.create_project_auth(project=job.project, session=self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data=json.dumps(request_data),
@@ -48,6 +71,9 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(response.status_code, 200)
         new_session = sessionMaker.session_factory()
         updated_job = Job.get_by_id(new_session, job.id)
+        reviewers = job.get_reviewers(session = self.session)
+        user_ids = [r.id for r in reviewers]
+        self.assertTrue(self.member.user_id in user_ids)
         self.assertEqual(updated_job.name, request_data['name'])
         self.assertEqual(updated_job.instance_type, request_data['instance_type'])
         self.assertEqual(updated_job.share_type, request_data['share_type'])
@@ -244,23 +270,51 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         job_name = data_mocking.get_random_string(8)
         now = datetime.datetime.now()
         # Testing job creation
+        with patch.object(Job, 'update_reviewer_list') as mock_reviewer_update:
+            reviewer_list_ids = [self.member.id]
+            new_job, log_result = job_new_or_update.new_or_update_core(
+                self.session,
+                log=log,
+                member=None,
+                project=project,
+                name=job_name,
+                share='project',
+                permission='all_secure_users',
+                label_mode='closed_all_available',
+                passes_per_file=1,
+                instance_type='box',
+                launch_datetime=now,
+                file_count=0,
+                label_file_list=[],
+                reviewer_list_ids=reviewer_list_ids,
+                file_handling='isolate',
+                job_type='exam',
+                job=None
+            )
+            mock_reviewer_update.assert_called_once_with(
+                session = self.session,
+                reviewer_list_ids = reviewer_list_ids,
+                log = log
+            )
+
         new_job, log_result = job_new_or_update.new_or_update_core(
             self.session,
-            log=log,
-            member=None,
-            project=project,
-            name=job_name,
-            share='project',
-            permission='all_secure_users',
-            label_mode='closed_all_available',
-            passes_per_file=1,
-            instance_type='box',
-            launch_datetime=now,
-            file_count=0,
-            label_file_list=[],
-            file_handling='isolate',
-            job_type='exam',
-            job=None
+            log = log,
+            member = None,
+            project = project,
+            name = job_name,
+            share = 'project',
+            permission = 'all_secure_users',
+            label_mode = 'closed_all_available',
+            passes_per_file = 1,
+            instance_type = 'box',
+            launch_datetime = now,
+            file_count = 0,
+            label_file_list = [],
+            reviewer_list_ids = reviewer_list_ids,
+            file_handling = 'isolate',
+            job_type = 'exam',
+            job = None
         )
         self.assertEqual(new_job.project, project)
         self.assertEqual(new_job.name, job_name)
