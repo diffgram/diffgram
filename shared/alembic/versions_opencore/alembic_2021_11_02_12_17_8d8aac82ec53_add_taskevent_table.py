@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.create_table('task_event',
                     sa.Column('id', sa.Integer(), nullable = False),
-                    sa.Column('job_id', sa.Integer(), sa.ForeignKey('member.id')),
+                    sa.Column('job_id', sa.Integer(), sa.ForeignKey('job.id')),
                     sa.Column('project_id', sa.Integer(), sa.ForeignKey('project.id')),
                     sa.Column('task_id', sa.Integer(), sa.ForeignKey('task.id')),
                     sa.Column('event_type', sa.String()),

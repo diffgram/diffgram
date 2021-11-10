@@ -695,6 +695,7 @@ class Task(Base):
             task_type = 'draw',
             incoming_directory = None,
             flush_session = True):
+        from shared.database.task.task_event import TaskEvent
         task = Task()
         session.add(task)
 
@@ -740,5 +741,6 @@ class Task(Base):
             task_id = task.id,
             wait_for_commit = True
         )
+        TaskEvent.generate_task_creation_event(session = session, task = task, member = task.job.member_created)
         session.add(job)
         return task

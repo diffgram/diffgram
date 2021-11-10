@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.add_column('user_to_job', sa.Column('relation', sa.String(), default = 'annotator', nullable = True))
-    op.execute("alter table user_to_job drop constraint user_to_job_pkey")
+    op.execute("alter table user_to_job drop constraint IF EXISTS user_to_job_pkey")
     op.execute("UPDATE user_to_job SET relation = 'annotator' WHERE relation IS NULL")
     op.alter_column('user_to_job', 'relation', nullable=False)
     op.create_primary_key('user_to_job_pkey', 'user_to_job', ['job_id', 'user_id', 'relation'])
