@@ -11,6 +11,35 @@ from shared.database.task.task_event import TaskEvent
 from shared.utils.task.task_update_manager import Task_Update
 from shared.database.task.task import TASK_STATUSES
 from shared.utils.task import task_assign_reviewer
+import random
+
+def trigger_task_complete_sync_event(session, task, job, log):
+    sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+        session = session,
+        dataset_source_id = None,
+        dataset_destination = None,
+        description = None,
+        file = task.file,
+        job = task.job,
+        input = None,
+        project = task.job.project,
+        created_task = None,
+        completed_task = task,
+        new_file_copy = None,
+        transfer_action = None,
+        event_effect_type = '',
+        event_trigger_type = 'task_completed',
+        status = 'init',
+        member_created = None
+    )
+    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    if job.completion_directory and job.output_dir_action in ['copy', 'move']:
+        job_observable = task_file_observers.JobObservable(session = session,
+                                                           log = log,
+                                                           job = job,
+                                                           task = task,
+                                                           sync_events_manager = sync_event_manager)
+        job_observable.notify_all_observers(defer = True)
 
 def trigger_task_complete_sync_event(session, task, job, log):
     sync_event_manager = SyncEventManager.create_sync_event_and_manager(
@@ -50,6 +79,31 @@ def trigger_task_complete_sync_event(session, task, job, log):
     )
     job.job_complete_core(session)
 
+
+def send_to_review_randomly(session, task, task_update_manager):
+    """
+        Generates a random number and sends task to review based on the Job review
+        chances.
+    :param task:
+    :return:
+    """
+    # Review chance is a number betwen 0-1
+    review_chance = task.job.review_chance
+    rand_num = random.uniform(0, 1)
+
+    if rand_num <= review_chance:
+        # In review Mode no sync event (unless post_review=True)
+        task_update_manager.status = TASK_STATUSES['review_requested']
+        task_update_manager.main()
+        task_assign_reviewer.auto_assign_reviewer_to_task(
+            session = session,
+            task = task
+        )
+        return False
+    else:
+        task_update_manager.status = TASK_STATUSES['complete']
+        task_update_manager.main()
+        return True
 
 def task_complete(session,
                   task,
@@ -91,14 +145,11 @@ def task_complete(session,
                 task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
             else:
-                trigger_sync_event = False  # In review Mode no sync event (unless post_review=True)
-                task_update_manager.status = TASK_STATUSES['review_requested']
-                task_update_manager.main()
-                task_assign_reviewer.auto_assign_reviewer_to_task(
+                trigger_sync_event = send_to_review_randomly(
                     session = session,
-                    task = task
+                    task = task,
+                    task_update_manager = task_update_manager
                 )
-
         else:
             task_update_manager.status = 'complete'
             task_update_manager.main()
