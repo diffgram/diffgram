@@ -12,7 +12,7 @@ from shared.utils.task.task_update_manager import Task_Update
 from shared.database.task.task import TASK_STATUSES
 from shared.utils.task import task_assign_reviewer
 import random
-from shared.utils.task import task_assign_reviewer
+
 
 def trigger_task_complete_sync_event(session, task, job, log):
     sync_event_manager = SyncEventManager.create_sync_event_and_manager(
