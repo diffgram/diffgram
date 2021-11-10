@@ -12,7 +12,8 @@ def api_task_user_add(project_string_id, task_id):
         }},
             {'relation': {
                 'required': True,
-                'kind': str
+                'kind': str,
+                'valid_values_list': ['reviewer', 'assignee']
             }}
         ]
 
@@ -21,12 +22,43 @@ def api_task_user_add(project_string_id, task_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
-        result, log = api_task_user_add(
+        result, log = api_task_user_add_core(
             session = session,
             task_id = task_id,
-            project_string_id = project_string_id
+            user_id = input['user_id'],
+            relation = input['relation'],
+            project_string_id = project_string_id,
+            log = log
         )
 
+        if len(log["error"].keys()) >= 1:
+            return jsonify(log = log), 400
 
-def api_task_user_add_core(session: 'Session', task_id: int, log: dict):
-    return
+        return jsonify(task_user = result, log = log)
+
+
+def api_task_user_add_core(session: 'Session',
+                           task_id: int,
+                           user_id: int,
+                           relation: str,
+                           project_string_id: str,
+                           log: dict):
+    task = Task.get_by_id(session, task_id)
+
+    project = Project.get_by_string_id(session, project_string_id = project_string_id)
+
+    if task.project_id != project.id:
+        log['error']['project_id'] = 'Project and Task ID mismatch. Task does not belong to project.'
+        return False, log
+
+    user = User.get_by_id(session, user_id)
+    if relation == 'reviewer':
+        relation = task.add_reviewer(session = session, user = user)
+        return relation.serialize(), log
+    elif relation == 'assignee':
+        relation = task.add_assignee(session = session, user = user)
+        return relation.serialize(), log
+    else:
+        log['error']['relation'] = 'Invalid relation type. Only support "reviewer", "assignee"'
+        return False, log
+
