@@ -39,6 +39,7 @@ describe('Autoborder', () => {
       cy.mouseupcanvas()
     })
 
+    /*
     it('[UI] Shows Point Selected Usage Prompt', () => {
      cy.get('[data-cy="minimize-file-explorer-button"]')
       .then($button => {
@@ -47,10 +48,10 @@ describe('Autoborder', () => {
               $button.click()
             }
           })
-      cy.wait(300)
       cy.get('[data-cy="auto_border_first_point_selected_usage_prompt"]').should('be.visible')
     })
-   
+    */
+
     it('[Canvas] Selects Second Autoborder Point', () => {
       cy.mousedowncanvas(points[2].x, points[2].y);
       cy.mouseupcanvas()
