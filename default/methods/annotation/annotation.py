@@ -74,11 +74,12 @@ def task_annotation_update_api(task_id):
 
     # MAIN
     with sessionMaker.session_scope() as session:
-
+        member = get_member(session = session)
         new_file, annotation_update = task_annotation_update(
             session = session,
             task_id = task_id,
             input = input,
+            member = member,
             untrusted_input = untrusted_input,
             log = log)
 
