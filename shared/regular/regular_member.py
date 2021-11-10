@@ -4,29 +4,29 @@ from shared.database.auth.api import Auth_api
 
 
 def get_member(session):
-	"""
-	Private method. Assumes request already verified.
+    """
+    Private method. Assumes request already verified.
 
-	An issue of this being part of auth is that we may want the actual 
-	member object available in the session,
-	and at least our current process is to close / not pass the 
-	session used in auth. That perhaps is a good area to change
-	but either way core logic here is similar.
-	"""
-	member = None
+    An issue of this being part of auth is that we may want the actual
+    member object available in the session,
+    and at least our current process is to close / not pass the
+    session used in auth. That perhaps is a good area to change
+    but either way core logic here is similar.
+    """
+    member = None
 
-	# Potential to be outside of request context
-	if not request:
-		return member
+    # Potential to be outside of request context
+    if not request:
+        return member
 
-	user = User.get(session)
-	if user:
-		member = user.member
-	else:
-		if request.authorization:
-			client_id = request.authorization.get('username', None)
-			if client_id and client_id != 'None':
-				auth = Auth_api.get(session, client_id)
-				member = auth.member
+    user = User.get(session)
+    if user:
+        member = user.member
+    else:
+        if request.authorization:
+            client_id = request.authorization.get('username', None)
+            if client_id and client_id != 'None':
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
 
-	return member
+    return member

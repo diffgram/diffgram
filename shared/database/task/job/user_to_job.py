@@ -19,6 +19,8 @@ class User_To_Job(Base):
     user = relationship("User")
 
     status = Column(String(), default="active")
+
+    relation = Column(String(), default="annotator", primary_key=True)
     #  [ Active / accepted, in approval, completed, hidden etc. ]
     # More advanced "Application" class in the future maybe?
 
@@ -27,13 +29,15 @@ class User_To_Job(Base):
     def serialize_trainer_info_default(self):
 
         return {
-            'status': self.status
+            'status': self.status,
+            'relation': self.relation
         }
 
     def serialize(self):
         # Trying out a new id only
         return self.user_id
 
+    @staticmethod
     def get_job_ids_from_user(session,
                               user_id):
         valid_job_ids_list = []
@@ -45,6 +49,7 @@ class User_To_Job(Base):
 
         return valid_job_ids_list
 
+    @staticmethod
     def get_all_by_user_id(session,
                            user_id,
                            status_is_active=False,
@@ -96,6 +101,7 @@ class User_To_Job(Base):
             session,
             user_id_ignore_list: list = None,
             job=None,
+            relation: str = None,
             serialize=False,
             user = None):
 
@@ -110,6 +116,9 @@ class User_To_Job(Base):
 
         if user:
             query = query.filter(User_To_Job.user == user)
+
+        if relation:
+            query = query.filter(User_To_Job.relation == relation)
 
         if serialize == True:
             # TODO this could be part of generic
