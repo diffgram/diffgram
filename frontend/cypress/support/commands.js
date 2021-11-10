@@ -28,6 +28,7 @@ import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
+import {get_transformed_coordinates} from './utils'
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -288,6 +289,74 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
   })
 })
 
+
+Cypress.Commands.add('drawPolygon', function (points) {
+
+  for (var point of points) {
+    cy.mousedowncanvas(point.x, point.y);
+    cy.mouseupcanvas()
+  }
+  cy.wait(1000)
+
+})
+
+
+Cypress.Commands.add('selectPolygonType', function (points) {
+  cy.get('[data-cy="instance-type-select"]').click({force: true})
+  cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
+})
+
+Cypress.Commands.add('selectDrawValidatePolygon', function (points=undefined) {
+
+  if (points == undefined) {
+    points = [
+    {x: 200, y: 25},
+    {x: 200, y: 60},
+    {x: 180, y: 40},
+    {x: 160, y: 10},
+    {x: 200, y: 25},
+    ]
+  }
+
+  cy.selectPolygonType()
+
+  cy.select_label()
+  cy.wait(1000);
+
+  cy.drawPolygon(points)
+
+  cy.isValidPolygonTestOracle(points)
+
+})
+
+Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
+  cy.document().then((doc) => {
+    cy.window().then((window) => {
+      const canvas_wrapper = doc.getElementById('canvas_wrapper');
+      const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
+      const annCore = window.AnnotationCore;
+
+      const expected_polygon = annCore.instance_list.find(x => x.type == 'polygon')
+      expect(expected_polygon).to.exist;
+
+      // We want to skip the last point since that is the initial point. That's why its length - 1
+      for(let i = 0; i < points.length - 1; i++){
+        const point = points[i];
+        const clientX = point.x + canvas_client_box.x
+        const clientY = point.y + canvas_client_box.y
+        const box_point = get_transformed_coordinates({x: clientX, y: clientY},
+          canvas_client_box,
+          annCore.canvas_element,
+          canvas_wrapper,
+          annCore.canvas_element_ctx)
+
+        expect(expected_polygon.points[i].x).to.equal(box_point.x);
+        expect(expected_polygon.points[i].y).to.equal(box_point.y);
+      }
+    })
+  })
+})
+
 Cypress.Commands.add('registerProTestUser', function () {
 
   cy.visit('http://localhost:8085/user/pro/new');
@@ -324,12 +393,16 @@ Cypress.Commands.add('registerProTestUser', function () {
 })
 
 
-Cypress.Commands.add('loginByForm', function (email, password) {
+Cypress.Commands.add('loginByForm', function (email, password, redirect=undefined) {
   Cypress.log({
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
-  cy.visit('http://localhost:8085/user/login')
+  let path = 'http://localhost:8085/user/login'
+  if (redirect != undefined) {
+    path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
+  }
+  cy.visit(path)
   let LOCAL_STORAGE_MEMORY = {};
 
   const getInitialStore = () => cy.window().its('app.$store')
