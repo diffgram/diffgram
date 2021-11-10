@@ -15,7 +15,7 @@ from shared.database.task.task import TASK_STATUSES
 from methods.task.task.task_user_remove import task_user_remove_core
 
 
-class TestTaskReview(testing_setup.DiffgramBaseTestCase):
+class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
     """
         
         
@@ -25,7 +25,7 @@ class TestTaskReview(testing_setup.DiffgramBaseTestCase):
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestTaskReview, self).setUp()
+        super(TestTasUserRemove, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
