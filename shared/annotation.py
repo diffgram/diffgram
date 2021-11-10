@@ -6,7 +6,7 @@ except:
 
 try:
     # The walrus service doesn't have task_complete
-    from default.methods.task.task import task_complete
+    from shared.methods.task.task import task_complete
 except:
     pass
 
