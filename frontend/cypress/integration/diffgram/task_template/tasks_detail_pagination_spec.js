@@ -5,7 +5,7 @@ describe('tasks_detail_pagination', () => {
   context('tasks_detail_pagination', () => {
     before(function () {
 
-      cy.createSampleTasksUsingBackend(15)
+      cy.createSampleTasksUsingBackend(30)
 
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({
