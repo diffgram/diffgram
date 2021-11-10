@@ -146,6 +146,8 @@ class Job(Base, Caching):
     # And it creates confusion / strange errors to have both!
     # We could have both and name differently but not clear when it would be needed...
 
+    review_chance = Column(Float, default = 1.0)
+
     name = Column(String())
     description = Column(String())
 
