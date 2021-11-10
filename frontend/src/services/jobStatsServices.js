@@ -2,7 +2,6 @@ import axios from 'axios'
 
 export const getJobStats = async (job_id) => {
     try {
-
         const { data } = await axios.get(`/api/job/${job_id}/stat`)
         return data
     } catch(e) {
