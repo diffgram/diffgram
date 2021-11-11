@@ -228,6 +228,27 @@
 
           <v-divider></v-divider>
 
+          <v-flex v-if=" $store.state.builder_or_trainer.mode == 'builder'">
+
+            <new_flow
+              :project_string_id="$store.state.project.current.project_string_id">
+
+            </new_flow>
+
+          </v-flex>
+
+          <v-flex>
+
+            <v-btn color="primary"
+                   text
+                   style="text-transform: none !important;"
+                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/flow/list')">
+              <v-icon left>mdi-playlist-check</v-icon>
+              Email Alerts & Webhooks
+            </v-btn>
+
+          </v-flex>
+
           <v-flex>
             <v-btn color="primary"
                    text
