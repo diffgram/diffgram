@@ -155,6 +155,27 @@ const routerOptions = [
     meta: {external_page: true}
   },
   {
+    path: '/sticker',
+    component: 'products/builder/web_sticker'
+  },
+  {
+    path: '/order/premium',
+    component: 'account/billing/order_premium'
+  },
+  {
+    path: '/order/success',
+    component: 'account/billing/order_success'
+  },
+  {
+    path: '/policies',
+    component: 'company/policies',
+    meta: {external_page: true}
+  },
+  {
+    path: '/about',
+    component: 'company/about',
+    meta
+  {
     path: '/admin/account/overview',
     component: 'diffgram/account_admin',
     meta: {requiresAuth: true}
