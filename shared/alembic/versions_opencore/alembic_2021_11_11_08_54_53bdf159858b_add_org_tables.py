@@ -17,24 +17,6 @@ depends_on = None
 
 def upgrade():
 
-    op.create_table('address',
-                    sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('line_1', sa.String(), nullable=True),
-                    sa.Column('line_2', sa.String(), nullable=True),
-                    sa.Column('line_3', sa.String(), nullable=True),
-                    sa.Column('line_4', sa.String(), nullable=True),
-                    sa.Column('locality', sa.String(), nullable=True),
-                    sa.Column('region', sa.String(), nullable=True),
-                    sa.Column('postcode', sa.String(), nullable=True),
-                    sa.Column('country', sa.String(), nullable=True),
-                    sa.Column('previous_address_id', sa.Integer(), nullable=True),
-                    sa.Column('member_created_id', sa.Integer(), nullable=True),
-                    sa.Column('time_created', sa.DateTime(), nullable=True),
-                    sa.ForeignKeyConstraint(['member_created_id'], ['member.id'], ),
-                    sa.ForeignKeyConstraint(['previous_address_id'], ['address.id'], ),
-                    sa.PrimaryKeyConstraint('id')
-                    )
-
     org = op.create_table('org',
                           sa.Column('id', sa.Integer(), nullable = False),
                           sa.Column('security_disable', sa.Boolean(), nullable = True),
