@@ -7,7 +7,7 @@
     >
         <template>
             <v-progress-linear
-                v-model="annotation_show_progress"
+                :value="annotation_show_progress"
                 height="25"
                 color="green"
             >

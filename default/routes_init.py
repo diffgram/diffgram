@@ -21,6 +21,8 @@ def do_routes_importing():
     from methods.task.task.task_update import task_update_api
     from methods.task.task.task_next import task_next
     from methods.task.task.task_next_issue import task_next_issue
+    from methods.task.task.task_review import task_review_api
+    from methods.task.task.task_complete import api_task_complete
 
     from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
@@ -124,3 +126,12 @@ def do_routes_importing():
     from methods.video.sequence_preview_create import api_create_sequence_preview
 
     from methods.ui_schema.ui_schema import ui_schema_new_api
+
+    from methods.configs.mailgun_is_set import mailgun_is_set
+    from methods.task.credential.credential_type_new import new_credential_type_api
+    from methods.task.credential.credential_list import credential_list_api
+    from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api
+    from methods.task.credential.credential_type_update import update_credential_type_image_api
+
+
+

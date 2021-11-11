@@ -145,6 +145,7 @@
       'job_id',
       'show_sheet',
       'show_explorer_full_screen',
+      'enabled_edit_schema',
 
     ],
     components:{

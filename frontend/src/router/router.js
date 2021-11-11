@@ -10,14 +10,26 @@ const routerOptions = [
   {
     path: '/me',
     component: 'user/home/annotator_dashboard',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "My Home"
+    }
   },
   {
     path: '/projects',
     component: 'project/project_manager',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Projects"
+    }
+  },
+  {
+    path: '/white_label_customization/edit',
+    component: 'ui_schema/edit_overview_page',
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: false
     }
   },
   {
@@ -60,10 +72,11 @@ const routerOptions = [
     path: '/task/:task_id_prop',
     component: 'annotation/annotation_ui_factory',
     props: true,
-    meta: {
+    meta: (route) => ({
       requiresAuth: true,
-      hide_default_menu: true
-    },
+      hide_default_menu: true,
+      title: "#" + route.params.task_id_prop
+    }),
     name: "task_annotation"
   },
   {
@@ -103,7 +116,10 @@ const routerOptions = [
       // why do we need this "override" again?
       project_string_id: route.params.project_string_id
     }),
-    meta: {requiresAuth: true},
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Schema " + route.params.project_string_id
+    }),
     name: 'labels'
   },
 
@@ -162,11 +178,13 @@ const routerOptions = [
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
     component: 'annotation/annotation_ui_factory',
-    props: true, meta: {
+    props: true,
+    meta: (route) => ({
       requiresAuth: true,
       available_on_public_project: true,
-      hide_default_menu: true
-    },
+      hide_default_menu: true,
+      title: "Studio " + route.params.project_string_id
+    }),
     name: 'studio'
   },
   {
@@ -285,7 +303,25 @@ const routerOptions = [
 
   // 2 different job new, one has project ...
   {
+    path: '/job/new-legacy/:job_id_route',
+    component: 'task/job/job_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
     path: '/job/new/:job_id_route',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
+    path: '/project/:project_string_id_route/job/new-legacy',
     component: 'task/job/job_new',
     props: true,
     meta: {
@@ -295,11 +331,12 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id_route/job/new',
-    component: 'task/job/job_new',
+    component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "New Tasks"
     }
   },
   {
@@ -326,7 +363,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Tasks"
     }
   },
   {
@@ -336,7 +374,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Launch Events"
     }
   },
   {
@@ -345,7 +384,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Pipeline Events"
     }
   },
   {
@@ -366,7 +406,10 @@ const routerOptions = [
     path: '/job/:job_id',
     component: 'task/job/job_detail',
     props: true,
-    meta: {requiresAuth: true},
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Job #" + route.params.job_id
+    }),
     name: "job_detail"
   },
   {
@@ -385,7 +428,10 @@ const routerOptions = [
     path: '/software',
     component: 'marketing/software_marketing_unbounce',
     props: false,
-    meta: {requiresAuth: false}
+    meta: {
+      requiresAuth: false,
+      title: "Software"
+    }
   },
   {
     path: '/data_platform',
@@ -405,7 +451,10 @@ const routerOptions = [
     path: '/user/new',
     component: 'user/account/user_data_platform_new',
     props: false,
-    meta: {requiresAuth: false }
+    meta: {
+      requiresAuth: false,
+      title: "Signup Now"
+    }
   },
 
 
@@ -413,7 +462,10 @@ const routerOptions = [
     path: '/user/builder/signup',
     component: 'user/builder/builder_signup',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Signup Now"
+    }
   },
 
   // This should come before connection single because otherwise "list" matches
@@ -422,10 +474,11 @@ const routerOptions = [
     path: '/connection/list',
     alias: ['/connections/list'],  // plural
     component: 'connection/connection_list',
-    meta: {
+    meta: (route) => ({
       requiresAuth: true,
-      hide_default_menu: true
-    }
+      hide_default_menu: true,
+      title: "Connections"
+    })
   },
   /*
    */
@@ -436,7 +489,8 @@ const routerOptions = [
     component: 'connection/connection_page',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Connection"
     }
   },
 
@@ -449,7 +503,8 @@ const routerOptions = [
     component: 'report/report_list',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Report List"
     }
   },
   /*
@@ -466,7 +521,8 @@ const routerOptions = [
     component: 'report/report',
     meta: {
       requiresAuth: true,
-      hide_default_menu: true
+      hide_default_menu: true,
+      title: "Report"
     }
   },
 
@@ -477,7 +533,12 @@ const routerOptions = [
   },
   {
     path: '/studio/upload/:project_string_id',
-    component: 'upload_large', props: true
+    component: 'upload_large',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Import"
+    }
   },
   {
     path: '/review/ai/new/:string_ai_id', component: 'review_ai', props: true,
@@ -486,7 +547,10 @@ const routerOptions = [
   {
     path: '/user/login/:magic_auth?',
     component: 'user/login',
-    props: true
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
   },
   {
     path: '/user/account/password/set',
@@ -503,33 +567,52 @@ const routerOptions = [
   {
     path: '/user/edit/2fa',
     component: 'user/one_time_pass/otp',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Edit 2FA"
+    }
   },
   {
     path: '/user/edit',
     component: 'user/edit',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Edit self"
+      }
   },
   {
     path: '/a/project/new',
     component: 'project/project_new_wizard',
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "New Project"
+    }
   },
   {
     path: '/project/:project_string_id/export',
     component: 'export/export_home',
     props: true,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Export"
+    }
   },
   {
     path: '/',
     component: 'user/home/dashboard',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Dashboard"
+    }
   },
   {
     path: '*',
-    component: 'other/NotFound'
+    component: 'other/NotFound',
+    meta: {
+      requiresAuth: false,
+      title: "404 Not Found"
+    }
   }
 ]
 
@@ -549,66 +632,85 @@ const fetch_public_project = async function(project_string_id){
   }
   return false;
 }
+
+const try_load_public_project = async function(available_on_public_project){
+
+  if(available_on_public_project == true){
+    const project_string_id = to.params.project_string_id;
+    const project = await fetch_public_project(project_string_id);
+    if(project){
+      // If project exists, this is a public project and we can see it
+      store.commit('set_current_public_project', project);
+      return true
+    }
+    return false
+  }
+  return false
+}
+
+const get_meta = function(route){
+  if (typeof(route.meta) === 'function') {
+    return route.meta(route)
+  } else {
+    return route.meta
+  }
+}
+
+
+
 const routes = routerOptions.map(route => {
   return {
     ...route,
-    component: () => import(`@/components/${route.component}.vue`),
-    beforeEnter: async (to, from, next) => {
-
-      if (to.matched.some(record => record.meta.requiresAuth)) {
-        // this route requires auth, check if logged in
-        // if not, redirect to login page.
-
-        if (store.state.user.logged_in !== true) {
-
-          // Test if the route can be accessed on a public project
-          if(to.matched.some(record => record.meta.available_on_public_project)){
-            const project_string_id = to.params.project_string_id;
-            const project = await fetch_public_project(project_string_id);
-            if(project){
-              // If project exists, this is a public project and we can see it
-              store.commit('set_current_public_project', project);
-              next();
-            }
-            else{
-              // Otherwise redirect to login
-              next({
-                path: '/user/login',
-                query: {redirect: to.fullPath}
-              })
-            }
-          }
-          else{
-            next({
-              path: '/user/login',
-              query: {redirect: to.fullPath}
-            })
-          }
-        }
-        else {
-          next()
-        }
-      }
-
-
-
-        else {
-        next() // make sure to always call next()!
-      }
-    }
-
+    component: () => import(`@/components/${route.component}.vue`)
   }
 })
 
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes,
   mode: 'history'
 })
 
+router.beforeEach((to, from, next) => {
 
+  const meta = get_meta(to)
 
+  // No Auth Required
+  if (!meta.requiresAuth) {
+    return next()
+  }
+
+  // User is logged in already
+  if (store.state.user.logged_in == true) {
+    return next()
+  }
+
+  // If user is not logged in
+  const loaded_valid_public_project = try_load_public_project(meta.available_on_public_project)
+  if (loaded_valid_public_project == true) {
+    return next()
+  } else {
+    // redirect
+    return next({
+      path: '/user/login',
+      query: {redirect: to.fullPath}
+    })
+  }
+
+})
+
+const DEFAULT_TITLE = 'Diffgram';
+router.afterEach((to, from) => {
+    // Use next tick to handle router history correctly
+    // see: https://github.com/vuejs/vue-router/issues/914#issuecomment-384477609
+    Vue.nextTick(() => {
+        const meta = get_meta(to)
+        document.title = meta.title || DEFAULT_TITLE;
+    });
+});
+
+export default router;
 
 

@@ -6,7 +6,7 @@ except:
 
 try:
     # The walrus service doesn't have task_complete
-    from default.methods.task.task import task_complete
+    from shared.methods.task.task import task_complete
 except:
     pass
 
@@ -479,7 +479,8 @@ class Annotation_Update():
                     session = self.session,
                     task = self.task,
                     new_file = self.file,
-                    project = self.project)
+                    project = self.project,
+                    member = self.member)
 
         else:
             logger.error('Error updating annotation {}'.format(str(self.log)))
@@ -1855,6 +1856,7 @@ def task_annotation_update(
     input,
     untrusted_input,
     task = None,
+    member = None,
     log = regular_log.default()):
     # In context of already having the {task} object,
     # ie for newly created stuff... (to prevent race conditions)
@@ -1885,6 +1887,7 @@ def task_annotation_update(
         task = task,
         file = file,
         project = project,
+        member = member,
         instance_list_new = instance_list_new,
         video_data = input['video_data'],
         do_init_existing_instances = True
@@ -1897,7 +1900,8 @@ def task_annotation_update(
             session = session,
             task = task,
             new_file = new_file,
-            project = project)
+            project = project,
+            member = member)
 
     return new_file.serialize_with_type(session), annotation_update
 

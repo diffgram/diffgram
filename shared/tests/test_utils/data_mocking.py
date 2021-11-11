@@ -21,6 +21,7 @@ from shared.database.connection.connection import Connection
 from shared.database.discussion.discussion import Discussion
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
+from shared.database.task.task_event import TaskEvent
 import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
@@ -29,6 +30,7 @@ from shared.database.video.video import Video
 from shared.database.image import Image
 from shared.database.export import Export
 from shared.database.video.sequence import Sequence
+from shared.database.task.job.user_to_job import User_To_Job
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -51,7 +53,7 @@ def register_member(user, session):
     return new_member
 
 
-def register_user(user_data, session):
+def register_user(user_data: dict, session):
     """
 
     :param user_data:
@@ -84,11 +86,14 @@ def register_user(user_data, session):
         api_enabled_trainer = True,
         security_email_verified = True,
         last_builder_or_trainer_mode = 'builder',
+        member_id = user_data.get('member_id'),
         permissions_general = {'general': ['normal_user']}
 
     )
 
-    new_user.permissions_projects = {}  # I don't like having this here but alternative of committing object seems worse
+    new_user.permissions_projects = {
+        user_data.get('project_string_id'): ['admin']
+    }
     session.add(new_user)
 
     if 'project_string_id' in user_data:
@@ -166,6 +171,19 @@ def create_userscript(event_data, session):
     return event
 
 
+def create_task_event(task_event_data: dict, session: 'Session'):
+    task_event = TaskEvent(
+        project_id = task_event_data.get('project_id'),
+        job_id = task_event_data.get('job_id'),
+        task_id = task_event_data.get('task_id'),
+        event_type = task_event_data.get('event_type'),
+        member_created_id = task_event_data.get('member_created_id'),
+    )
+    session.add(task_event)
+    regular_methods.commit_with_rollback(session)
+    return task_event
+
+
 def create_directory(dir_data, session):
     working_dir = WorkingDir()
     working_dir.user_id = dir_data['user'].id
@@ -203,6 +221,12 @@ def create_instance_template(instance_template_data, session):
             session.add(rel)
     regular_methods.commit_with_rollback(session)
     return instance_template
+
+
+def create_user(user_data, session):
+    user = User(
+
+    )
 
 
 def create_file(file_data, session):
@@ -286,6 +310,17 @@ def new_system_event(system_event_data, session):
     return system_event
 
 
+def create_user_to_job(rel_data: dict, session: 'Session'):
+    rel = User_To_Job()
+    rel.job_id = rel_data.get('job_id')
+    rel.user_id = rel_data.get('user_id')
+    rel.relation = rel_data.get('relation')
+    rel.status = rel_data.get('status')
+    session.add(rel)
+    regular_methods.commit_with_rollback(session)
+    return rel
+
+
 def create_job(job_data, session):
     """
         The function will create a Job object for testing purposes. You can supply you own
@@ -330,6 +365,7 @@ def create_job(job_data, session):
     job.name = job_data.get('name', None)
     job.output_dir_action = job_data.get('output_dir_action', 'nothing')
     job.share_type = job_data.get('name', 'project')
+    job.allow_reviews = job_data.get('allow_reviews', False)
 
     job.share_type = job.share_type.lower()
 

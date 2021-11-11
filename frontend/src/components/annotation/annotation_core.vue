@@ -37,7 +37,7 @@
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
-                   :instance_type_list="instance_type_list"
+                   :instance_type_list="filtered_instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
                    :enabled_edit_schema="enabled_edit_schema"
@@ -175,6 +175,7 @@
       v-model="show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
+      data-cy="auto_border_first_point_selected_usage_prompt"
     >
       Select the second point of the same polygon for autobordering (or press "x" key to cancel)
 
@@ -381,7 +382,9 @@
 
       -->
 
-          <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
+          <div  contenteditable="true"
+                id="canvas_wrapper"
+                style="position: relative;"
 
                 @mousemove="mouse_move"
                 @mousedown="mouse_down"
@@ -413,8 +416,6 @@
             >
 
             </ghost_canvas_available_alert>
-
-            <br />
 
             <canvas
               data-cy="canvas"
@@ -780,8 +781,8 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
-    <qa_carousel 
-      :annotation_show_on="annotation_show_on" 
+    <qa_carousel
+      :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
       :instance_list="instance_list"
       :annotation_show_duration="annotation_show_duration_per_instance"
@@ -1409,6 +1410,23 @@
         }
       },
       computed: {
+        filtered_instance_type_list: function(){
+          if(!this.$props.task || !this.$props.task.job){
+            return this.instance_type_list
+          }
+          if(!this.$props.task.job.ui_schema){
+            return this.instance_type_list
+          }
+          let ui_schema = this.$props.task.job.ui_schema;
+          let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+          if(!allowed_types){
+            return this.instance_type_list
+          }
+          else{
+            return this.instance_type_list.filter(elm => allowed_types.includes(elm.name))
+          }
+
+        },
         clipboard: function() {
           return this.$store.getters.get_clipboard
         },
@@ -3496,7 +3514,7 @@
 
         auto_revert_snapped_to_instance_if_unchanged: function (instance) {
           if (this.snapped_to_instance == instance) {
-            this.reset_to_full()
+            this.focus_instance_show_all()
             this.snapped_to_instance = undefined
             return true
           }
@@ -3505,11 +3523,13 @@
 
         get_zoom_region_of_instance: function (instance){
           let max_zoom = 10
-          let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
-          let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y) * this.canvas_scale_global
           let padding = -2
-          return max_zoom_to_show_all + padding
+          let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y)
+          max_zoom_to_show_all += padding
+          max_zoom_to_show_all = this.clamp_values(max_zoom_to_show_all, this.canvas_scale_global, max_zoom)
+          return max_zoom_to_show_all
         },
 
         snap_to_instance: function (instance){
@@ -3521,17 +3541,15 @@
             return
           }
 
+          this.$refs.instance_detail_list.focus_mode = true
+          this.$refs.instance_detail_list.change_instance(instance, this.instance_focused_index)
+
           this.snapped_to_instance = instance
 
           let point = this.get_focus_point_of_instance(instance)
 
-          let move = {
-            x: point.x,
-            y: point.y
-          }
-
           let scale = this.get_zoom_region_of_instance(instance);
-          this.canvas_mouse_tools.zoom_to_point(move, scale)
+          this.canvas_mouse_tools.zoom_to_point(point, scale)
           this.zoom_value = this.canvas_mouse_tools.scale;
           this.update_canvas();
         },
@@ -5977,7 +5995,8 @@
 
             let points = polygon.points;
             let figure_list = this.get_polygon_figures(polygon);
-            if(figure_list === 0){
+
+            if(figure_list.length === 0){
               let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
               if(autoborder_point_exists){
                 found_point = true;
@@ -6540,8 +6559,27 @@
           this.annotation_show_type = show_type
         },
         annotation_show_change_item() {
-          if (this.annotation_show_type === "task") return this.trigger_task_change("next", this.$props.task, true)
-          this.change_file("next")
+          let do_change_item
+
+          let file = this.file || this.task.file
+          if (file.type == "video"){
+            if (this.$refs.video_controllers.at_end_of_video == true) {
+              do_change_item = true
+            }
+            else {
+              this.$refs.video_controllers.move_frame(1)
+            }           
+          }
+          if (file.type == "image") {
+            do_change_item = true
+          }
+
+          if (do_change_item == true) {
+            if (this.annotation_show_type === "task") {
+              return this.trigger_task_change("next", this.$props.task, true)
+            }
+            this.change_file("next")
+          }
         },
         set_annotation_show_duration(duration){
           this.annotation_show_duration_per_instance = (duration + 1) * 1000
@@ -6549,6 +6587,14 @@
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
             this.$emit('request_file_change', direction, file);
+          }
+        },
+        set_ui_schema(){
+          if(this.$props.task && this.$props.task.job && this.$props.task.job.ui_schema){
+            this.$store.commit('set_ui_schema', this.$props.task.job.ui_schema);
+          }
+          else{
+            this.$store.commit('clear_ui_schema');
           }
         },
         on_change_current_task: async function(){
@@ -6574,7 +6620,8 @@
           this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6604,7 +6651,8 @@
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
           this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
-          this.canvas_mouse_tools.reset_transform_with_global_scale()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
 
         refresh_attributes_from_current_file: async function (file) {

@@ -11,6 +11,7 @@
                     :headers="headers_view"
                     :class="`elevation-${elevation}`"
                     :options.sync="options"
+                    :hide-default-footer="hidedefaultfooter"
                     :data-cy="datacy"
                     v-model="selected_internal">
 
@@ -207,7 +208,12 @@ export default Vue.extend( {
     'disabled' : {
       default: false,
       type: Boolean
-    }
+    },
+    'hidedefaultfooter': {
+      default: false,
+      type: Boolean
+    },
+
   },
   data() {
     return {

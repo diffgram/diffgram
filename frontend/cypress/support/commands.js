@@ -28,6 +28,7 @@ import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
+import {get_transformed_coordinates} from './utils'
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -268,6 +269,94 @@ Cypress.Commands.add('signupPro', function () {
 
   })
 
+Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
+  cy.request({
+    method: 'POST',
+    url: `localhost:8085/api/walrus/test/gen-data`,
+    body:  {
+      'data_type' : 'task_template',
+      'structure': '1_pass',
+      'num_files': num_files
+    },
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    failOnStatusCode: true
+  }).then((response) =>{
+    if(response.body.success){
+      return true
+    }
+  })
+})
+
+
+Cypress.Commands.add('drawPolygon', function (points) {
+
+  for (var point of points) {
+    cy.mousedowncanvas(point.x, point.y);
+    cy.mouseupcanvas()
+  }
+  cy.wait(1000)
+
+})
+
+
+Cypress.Commands.add('selectPolygonType', function (points) {
+  cy.get('[data-cy="instance-type-select"]').click({force: true})
+  cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
+})
+
+Cypress.Commands.add('selectDrawValidatePolygon', function (points=undefined) {
+
+  if (points == undefined) {
+    points = [
+    {x: 200, y: 25},
+    {x: 200, y: 60},
+    {x: 180, y: 40},
+    {x: 160, y: 10},
+    {x: 200, y: 25},
+    ]
+  }
+
+  cy.selectPolygonType()
+
+  cy.select_label()
+  cy.wait(1000);
+
+  cy.drawPolygon(points)
+
+  cy.isValidPolygonTestOracle(points)
+
+})
+
+Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
+  cy.document().then((doc) => {
+    cy.window().then((window) => {
+      const canvas_wrapper = doc.getElementById('canvas_wrapper');
+      const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
+      const annCore = window.AnnotationCore;
+
+      const expected_polygon = annCore.instance_list.find(x => x.type == 'polygon')
+      expect(expected_polygon).to.exist;
+
+      // We want to skip the last point since that is the initial point. That's why its length - 1
+      for(let i = 0; i < points.length - 1; i++){
+        const point = points[i];
+        const clientX = point.x + canvas_client_box.x
+        const clientY = point.y + canvas_client_box.y
+        const box_point = get_transformed_coordinates({x: clientX, y: clientY},
+          canvas_client_box,
+          annCore.canvas_element,
+          canvas_wrapper,
+          annCore.canvas_element_ctx)
+
+        expect(expected_polygon.points[i].x).to.equal(box_point.x);
+        expect(expected_polygon.points[i].y).to.equal(box_point.y);
+      }
+    })
+  })
+})
+
 Cypress.Commands.add('registerProTestUser', function () {
 
   cy.visit('http://localhost:8085/user/pro/new');
@@ -304,12 +393,16 @@ Cypress.Commands.add('registerProTestUser', function () {
 })
 
 
-Cypress.Commands.add('loginByForm', function (email, password) {
+Cypress.Commands.add('loginByForm', function (email, password, redirect=undefined) {
   Cypress.log({
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
-  cy.visit('http://localhost:8085/user/login')
+  let path = 'http://localhost:8085/user/login'
+  if (redirect != undefined) {
+    path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
+  }
+  cy.visit(path)
   let LOCAL_STORAGE_MEMORY = {};
 
   const getInitialStore = () => cy.window().its('app.$store')
@@ -318,20 +411,29 @@ Cypress.Commands.add('loginByForm', function (email, password) {
 
     if (user_logged_in == false) {
       cy.wait(3000);
-      cy.get('[data-cy=email]')
-        .type(email)
-        .should('have.value', email)
-      cy.get('#show_pass').click();
-      cy.get('[data-cy=password]')
-        .type(password)
-        .should('have.value', password)
-      cy.get('[data-cy=login]').click();
-      cy.wait(3000);
-      Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-        localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-      });
-      const getStore = () => cy.window().its('app.$store')
-      getStore().its('state.user.logged_in').should('eq', true);
+      cy.window().then(window => {
+
+
+        cy.get('[data-cy=email]')
+          .type(email)
+          .should('have.value', email)
+        cy.wait(1000);
+        if(window.LoginComponent.mailgun){
+          cy.get('[data-cy=type-password-btn]').click({force: true})
+        }
+        cy.get('[data-cy=password]')
+          .type(password)
+          .should('have.value', password)
+        cy.get('[data-cy=login]').click();
+        cy.wait(3000);
+        Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+          localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+        });
+        const getStore = () => cy.window().its('app.$store')
+        getStore().its('state.user.logged_in').should('eq', true);
+
+      })
+
     }
 
   })
@@ -346,13 +448,13 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 
 Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(3000);
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy=main_menu_labels]').click({force:true})
   cy.wait(2000)
 });
 
 Cypress.Commands.add('goToStudioFromToolbar', function () {
-  cy.get('#open_main_menu > .v-btn__content').click({force: true});
+  cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
   cy.get('[data-cy="main_menu_data_explorer"]').click({force: true});
   cy.wait(5000);
   cy.get('[data-cy="minimize-file-explorer-button"] > .v-btn__content').click({force: true});
@@ -363,9 +465,9 @@ Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
 });
 
-Cypress.Commands.add('selectLabel', function (name) {
+Cypress.Commands.add('selectLabel', function (name, alternate_selector = 'label_select_attribute') {
   cy.wait(2000) // assumes will need to load
-  cy.get('[data-cy=label_select_attribute]').click({force: true});
+  cy.get(`[data-cy=${alternate_selector}]`).click({force: true});
   cy.wait(300)
   cy.get('.v-menu__content .v-list.v-select-list .v-list-item span span').contains(
     name).first().click({force: true})
@@ -373,7 +475,7 @@ Cypress.Commands.add('selectLabel', function (name) {
 
 Cypress.Commands.add('createAttributeOptions', function (option_list) {
   cy.get('[data-cy=new_attribute_option_button]').click({force: true});
-    
+
   cy.wait(400);
   for(let option of option_list){
     cy.get('[data-cy=attribute_option_name]').click({force: true});
@@ -381,7 +483,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
     cy.wait(300)
     cy.get('[data-cy="create_attribute_option"] > .v-btn__content').click({force: true});
-    
+
   }
   cy.get('[data-cy="close_button_new_attribute"]').click({force: true});
 });

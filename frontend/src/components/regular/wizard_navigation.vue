@@ -27,6 +27,7 @@
 
         <v-btn
           v-if="next_visible"
+          :loading="loading_next"
           :disabled="disabled_next"
           x-large
           @click="$emit('next')"
@@ -40,7 +41,7 @@
         <slot name="next">
 
         </slot>
-  
+
         <tooltip_button
           v-if="skip_visible"
           tooltip_message="Skip, I will do this later"
@@ -54,7 +55,7 @@
           :left="true"
           color="secondary">
         </tooltip_button>
-         
+
         <slot name="skip">
 
         </slot>
@@ -68,14 +69,14 @@
 <script lang="ts">
 
 /*
- 
+
  *
  *  EXAMPLE USAGE:
  *
 
 <wizard_navigation>
 
-   <template name="back">
+   <template slot="back">
       // Example of custom back button
     </template>
 
@@ -126,6 +127,10 @@ export default Vue.extend( {
         type: Boolean,
         default: true
      },
+    'loading_next':{
+      type: Boolean,
+      default: false
+    }
 
   },
   data() {
@@ -134,10 +139,10 @@ export default Vue.extend( {
     }
   },
   created(){
-   
+
   },
   mounted(){
-  
+
   },
   beforeDestroy() {
   },
