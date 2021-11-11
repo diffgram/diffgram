@@ -108,7 +108,7 @@ describe('Annotate Files Tests', () => {
       })
     })
 
-    context('It Correctly saves in parellel all frames when pasting to multiple frames', () => {
+    context('It Correctly saves all frames in parallel when pasting to multiple frames', () => {
       it('Correctly raises an instance_list integrity error.', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
 
