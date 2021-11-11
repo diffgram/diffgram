@@ -106,6 +106,13 @@ job_new_spec_list = [
         'required': False
         }
     },
+    {"reviewer_list_ids": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+    }
+    },
     {"pro_network": {
         'default': False,
         'kind': bool,
@@ -225,6 +232,13 @@ update_job_spec_list = [
         'allow_empty': True,
         'required': False
         }
+    },
+    {"reviewer_list_ids": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+    }
     },
     {"pro_network": {
         'kind': bool,
@@ -396,6 +410,7 @@ def job_update_core(session, job, project, input: dict, log: dict):
             interface_connection_id=input.get('interface_connection_id'),
             job_type=input['type'],
             member_list_ids=input['member_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             default_userscript_id=input.get('default_userscript_id'),
             ui_schema_id=input.get('ui_schema_id'),
             job=job
@@ -524,6 +539,7 @@ def new_web(project_string_id):
             job_type=input['type'],
             interface_connection_id=input.get('interface_connection_id'),
             member_list_ids=input['member_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             attached_directories_dict=input['attached_directories_dict'],
             pro_network=input['pro_network'],         
             default_userscript_id=input['default_userscript_id']
@@ -606,6 +622,7 @@ def new_or_update_core(session,
                        job_type=None,
                        job=None,
                        member_list_ids=None,
+                       reviewer_list_ids=None,
                        pro_network=False,
                        default_userscript_id=None):
     """
@@ -632,10 +649,14 @@ def new_or_update_core(session,
     else:
         is_updating = True
 
-
     log = job.update_member_list(
         member_list_ids = member_list_ids,
         session = session,
+        log = log)
+
+    log = job.update_reviewer_list(
+        session = session,
+        reviewer_list_ids = reviewer_list_ids,
         log = log)
 
     if default_userscript_id:
@@ -680,8 +701,6 @@ def new_or_update_core(session,
         log['error']['kind'] = "Invalid share_type, valid options are: ['market', 'org', 'project']"
         return False, log
 
-    # What about validation on other inputs???
-    # Look at actions or other part of system for options here...
 
     job.launch_datetime = launch_datetime
     # We expect this to be a valid datetime object,
@@ -731,7 +750,6 @@ def new_or_update_core(session,
                 user = member.user)
         except:
             logger.info("Failed to email about new pro job")
-
     # Update sync dirs and completion directory ID
     if isinstance(attached_directories_dict, dict):
         job.update_attached_directories(session,
