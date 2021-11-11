@@ -209,6 +209,8 @@
       :bottom="true">
     </tooltip_button>
 
+    <!-- Known bug when edited directly in studio context -->
+    <!--
     <ui_schema name="edit_instance_template">
       <tooltip_button
         tooltip_message="Edit Instance Template"
@@ -221,6 +223,7 @@
       >
       </tooltip_button>
     </ui_schema>
+    -->
 
     <v-divider
       vertical
