@@ -246,6 +246,13 @@ export default Vue.extend({
     if (window.Cypress) {
       window.LoginComponent = this;
     }
+
+    if (this.$store.state.user.logged_in == true){
+      if ("redirect" in this.$route.query) {
+        this.$router.push(this.$route.query["redirect"]);
+      }
+    }
+
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
     this.mailgun = mailgun;

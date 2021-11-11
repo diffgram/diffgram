@@ -175,6 +175,7 @@
       v-model="show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
+      data-cy="auto_border_first_point_selected_usage_prompt"
     >
       Select the second point of the same polygon for autobordering (or press "x" key to cancel)
 
@@ -5994,7 +5995,8 @@
 
             let points = polygon.points;
             let figure_list = this.get_polygon_figures(polygon);
-            if(figure_list === 0){
+
+            if(figure_list.length === 0){
               let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
               if(autoborder_point_exists){
                 found_point = true;

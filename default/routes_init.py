@@ -22,6 +22,7 @@ def do_routes_importing():
     from methods.task.task.task_next import task_next
     from methods.task.task.task_next_issue import task_next_issue
     from methods.task.task.task_review import task_review_api
+    from methods.task.task.task_complete import api_task_complete
 
     from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
