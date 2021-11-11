@@ -174,7 +174,8 @@ const routerOptions = [
   {
     path: '/about',
     component: 'company/about',
-    meta
+    meta: {external_page: true}
+  },
   {
     path: '/admin/account/overview',
     component: 'diffgram/account_admin',

@@ -48,27 +48,6 @@
 
           </div>
 
-          <div v-if="template.kind === 'brain_run' ">
-
-            <h2> Run Brain on this file </h2>
-
-
-             <brain_select_only :project_string_id="project_string_id"
-                                @brain=recieve_brain($event)
-                                >
-
-             </brain_select_only>
-             <!-- choose brain from list -->
-
-                <!-- TODO Get brain from this?
-                 -->
-
-             <!-- run visal flag -->
-
-             <!-- completion directory (defaults to new one?) -->
-
-          </div>
-
           <div v-if="template.kind === 'count' ">
 
             <!-- select label file -->
@@ -236,7 +215,6 @@
 
 
 import axios from 'axios';
-import brain_select_only from '../machine_learning/brain_select_only.vue'
 import label_select_only from '../label/label_select_only.vue'
 
 
@@ -246,7 +224,6 @@ import label_select_only from '../label/label_select_only.vue'
 
    components: {
 
-     brain_select_only : brain_select_only,
      label_select_only : label_select_only
 
     },
