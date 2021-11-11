@@ -332,12 +332,26 @@ import Vue from "vue"; export default Vue.extend( {
     if(this.$route.path.endsWith('discussions')){
       this.tab = 1;
     }
-    this.job_name = this.$store.state.job.current.name
-    this.set_document_title()
+    this.reset_local_info()
+    this.job_current_watcher = this.$store.watch((state) => {
+        return this.$store.state.job.refresh
+      },
+      (new_val, old_val) => {
+        this.reset_local_info()
+      },
+    )
+
   },
   computed: {
   },
+  beforeDestroy() {
+    this.job_current_watcher()
+  },
   methods: {
+      reset_local_info() {
+        this.job_name = this.$store.state.job.current.name;
+        this.set_document_title();
+      },
       set_document_title() {
         document.title = this.job_name
       },
