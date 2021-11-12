@@ -46,10 +46,8 @@ class ActionFlowTriggerQueueThread:
                                             project_id=project_id,
                                             trigger_type=event.kind)
 
-            print('action_flows', action_flows)
             for action_flow in action_flows:
                 # If the action flow has a time window configured, we should check if there's a running window first.
-                print('action_flow', action_flow.time_window, action_flow.id)
                 if action_flow.time_window:
                     aggregation_trigger_event = ActionFlowTriggerEventQueue.list(
                         session=session,
@@ -121,7 +119,7 @@ class ActionFlowTriggerQueueThread:
         """
         if not action_flow_trigger_event:
             return None
-
+        logger.info('Executing flow for event {}'.format(action_flow_trigger_event.id))
         # Check if there are any other duplicate events on the window (In case of a concurrent update on the queue)
         # And if so delete, duplicate trigger_events with aggregations
         project = action_flow_trigger_event.project
@@ -178,7 +176,6 @@ class ActionFlowTriggerQueueThread:
         """
 
         """
-        print(self.thread_sleep_time_min, self.thread_sleep_time_max, 'acttt')
         regular_methods.loop_forever_with_random_load_balancing(
             log_start_message='Starting ActionFlow Queue handler... ',
             log_heartbeat_message='[ActionFlow Queue heartbeat]',

@@ -1,5 +1,5 @@
 from shared.database.common import *
-
+from shared.database.action.action_flow import Action_Flow
 SUPPORTED_ACTION_TRIGGER_EVENT_TYPES = [
     'task_completed',
     'task_created',
@@ -42,7 +42,7 @@ class ActionFlowTriggerEventQueue(Base):
     job = relationship("Job", foreign_keys = [job_id])
 
     action_flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    action_flow = relationship("Action_Flow", foreign_keys = [action_flow_id])
+    action_flow = relationship(Action_Flow, foreign_keys = [action_flow_id])
 
     org_id = Column(Integer, ForeignKey('org.id'))
     org = relationship("Org", foreign_keys = [org_id])

@@ -2,6 +2,7 @@ from shared.database.common import *
 
 import random
 import string
+from shared.database.action.action import Action
 
 TIME_WINDOW_SECONDS_MAPPER = {
     '1_minute': 1 * 60,
@@ -48,10 +49,10 @@ class Action_Flow(Base):
                              foreign_keys = [directory_id])
 
     first_action_id = Column(BIGINT, ForeignKey('action.id'))
-    first_action = relationship("Action", foreign_keys = [first_action_id])
+    first_action = relationship(Action, foreign_keys = [first_action_id])
 
     last_action_id = Column(BIGINT, ForeignKey('action.id'))
-    last_action = relationship("Action", foreign_keys = [last_action_id])
+    last_action = relationship(Action, foreign_keys = [last_action_id])
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")

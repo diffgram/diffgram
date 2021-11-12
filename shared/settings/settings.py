@@ -96,6 +96,10 @@ PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY = env_adapter.bool(os.environ.get('PRO
 # Eventhub Settings
 EVENTHUB_URL = os.getenv('EVENTHUB_URL', 'https://diffgram.com/api/walrus/eventhub/new')
 
+# Stripe
+ALLOW_STRIPE_BILLING = os.getenv('ALLOW_STRIPE_BILLING', False)
+STRIPE_API_KEY = os.getenv('STRIPE_API_KEY', '')
+
 
 # Segment Key
 _ANALYTICS_WRITE_KEY = os.environ.get('_ANALYTICS_WRITE_KEY')
@@ -138,6 +142,10 @@ SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX = 120
 # Datasaur Sync Thread
 DATASAUR_SYNC_THREAD_SLEEP_TIME_MIN = 50
 DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX = 1800
+
+# Actions Sync Thread
+ACTION_THREAD_SLEEP_TIME_MIN = 60
+ACTION_THREAD_SLEEP_TIME_MAX = 300
 
 # Error Handling
 DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE = env_adapter.bool(os.getenv('DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE', False))

@@ -19,6 +19,14 @@ def do_routes_importing():
 
     from methods.task.task.task_by_id import task_by_id_api
 
+    # Stripe Billing Related
+    from methods.account.transact.transaction_list import transaction_list_api
+    from methods.account.billing.billing_stripe_new import stripe_new_customer_api
+    from methods.account.report.report_transactions import account_report_transactions_api
+    from methods.account.account.account_info import account_report_info_api
+    from methods.account.plan.plan_new import new_plan_api
+
+
     from methods.task.task_template.job_pin import job_pin_api
     from methods.task.task_template.job_resync import job_resync_api
 

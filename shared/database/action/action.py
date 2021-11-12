@@ -1,6 +1,6 @@
 from shared.database.common import *
 from shared.database.org.org import Org
-
+from shared.database.action.action_template import Action_Template
 
 class Action(Base):
     """
@@ -24,7 +24,7 @@ class Action(Base):
     status = Column(String())
 
     template_id = Column(Integer, ForeignKey('action_template.id'))
-    template = relationship("Action_Template", foreign_keys = [template_id])
+    template = relationship(Action_Template, foreign_keys = [template_id])
 
     flow_id = Column(Integer, ForeignKey('action_flow.id'))
     flow = relationship("Action_Flow", foreign_keys = [flow_id])

@@ -1,4 +1,5 @@
 from shared.database.common import *
+from shared.database.account.plan_template import PlanTemplate
 
 
 class Plan(Base):
@@ -23,7 +24,7 @@ class Plan(Base):
     id = Column(Integer, primary_key = True)
 
     template_id = Column(Integer, ForeignKey('plan_template.id'))
-    template = relationship('PlanTemplate',
+    template = relationship(PlanTemplate,
                             foreign_keys = [template_id])
     # Just calling this template instead of "plan_template"
     # for easier reading   ie project.plan.template.value

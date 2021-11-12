@@ -8,6 +8,9 @@ from shared.database.project_directory_list import Project_Directory_List
 from shared.database.event.event import Event
 from shared.database.report.report_dashboard import ReportDashboard
 from shared.database.org.org import Org
+from shared.database.account.account import Account
+
+
 class Project(Base, Caching):
     """
     serialize(self)
@@ -17,7 +20,7 @@ class Project(Base, Caching):
 
     __tablename__ = 'project'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key = True)
     name = Column(String(250))
 
     is_public = Column(Boolean)
@@ -27,21 +30,21 @@ class Project(Base, Caching):
     # TODO update / add these fields in sandbox DB
     deletion_pending = Column(Boolean)  # NEW, renamed from soft_remove
     deletion_id = Column(Integer, ForeignKey('deletion.id'))
-    deletion = relationship("Deletion", foreign_keys=[deletion_id])
+    deletion = relationship("Deletion", foreign_keys = [deletion_id])
 
-    highest_ai_version_number = Column(Integer, default=0)
+    highest_ai_version_number = Column(Integer, default = 0)
 
-    star_count = Column(Integer, default=0)
+    star_count = Column(Integer, default = 0)
     star_list = relationship("ProjectStar")
 
-    latest_issue_number = Column(Integer, default=0)
-    discussion_list = relationship("Discussion", back_populates="project")
+    latest_issue_number = Column(Integer, default = 0)
+    discussion_list = relationship("Discussion", back_populates = "project")
 
     credit_balance = Column(Float())  # Maybe this should be by billing account or something?
-    project_string_id = Column(String(100), index = True) # Added index
+    project_string_id = Column(String(100), index = True)  # Added index
 
     user_primary_id = Column(Integer, ForeignKey('userbase.id'))
-    user_primary = relationship("User", foreign_keys=[user_primary_id])
+    user_primary = relationship("User", foreign_keys = [user_primary_id])
     # TODO clarify difference between user primary
     # and member created?
 
@@ -54,7 +57,7 @@ class Project(Base, Caching):
 
     directory_default_id = Column(Integer, ForeignKey('working_dir.id'))
     directory_default = relationship("WorkingDir",
-                                     foreign_keys=[directory_default_id])
+                                     foreign_keys = [directory_default_id])
 
     default_report_dashboard_id = Column(Integer, ForeignKey('report_dashboard.id'))
     # order of this loading is not quite right
@@ -75,13 +78,13 @@ class Project(Base, Caching):
 
     # TODO review this
     # Does every project have a seperate settings table?
-    settings = relationship("Project_settings", uselist=False, back_populates="project")
+    settings = relationship("Project_settings", uselist = False, back_populates = "project")
 
     # For now just putting it here
     # Until process / research on optimal way to represent 1:1 relation
 
     # Frames per second
-    settings_input_video_fps = Column(Integer, default=30)  # ie 10,  0 == all
+    settings_input_video_fps = Column(Integer, default = 30)  # ie 10,  0 == all
 
     readme = Column(String())
 
@@ -93,29 +96,36 @@ class Project(Base, Caching):
     # This is member, but for now the only member who can create a project
     # is a User, because an API auth is for a project scope at the moment
     member_created_id = Column(Integer, ForeignKey('member.id'))
-    member_created = relationship("Member", foreign_keys=[member_created_id])
+    member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys=[member_updated_id])
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
-    time_created = Column(DateTime, default=datetime.datetime.utcnow)
-    time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
-    label_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default={})
+    label_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
 
     cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default={})
+                        default = {})
 
     # cache_expiry = Column(Integer)
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
     default_external_map = relationship("ExternalMap",
-                                        uselist=False,
-                                        foreign_keys=[default_external_map_id])
+                                        uselist = False,
+                                        foreign_keys = [default_external_map_id])
 
     org_id = Column(Integer, ForeignKey('org.id'))
-    org = relationship(Org, foreign_keys=[org_id])
+    org = relationship(Org, foreign_keys = [org_id])
+
+    account_id = Column(Integer, ForeignKey('account.id'))
+    account = relationship("Account", foreign_keys=[account_id])
+
+    plan_id = Column(Integer, ForeignKey('plan.id'))
+    plan = relationship('Plan',
+                        foreign_keys=[plan_id])
 
     @staticmethod
     def new(session,
@@ -131,11 +141,11 @@ class Project(Base, Caching):
         from shared.permissions.project_permissions import Project_permissions
 
         project = Project(  # Base object
-            name=name,
-            project_string_id=project_string_id,
-            goal=goal,
-            user_primary=user,  # Assumed to be primary
-            member_created=member_created
+            name = name,
+            project_string_id = project_string_id,
+            goal = goal,
+            user_primary = user,  # Assumed to be primary
+            member_created = member_created
         )
 
         # Permissions and user associations
@@ -144,9 +154,9 @@ class Project(Base, Caching):
         user.project_current = project
 
         permission_add_result, permission_add_error_message = Project_permissions.add(
-            permission="admin",
-            user=user,
-            sub_type=project_string_id)
+            permission = "admin",
+            user = user,
+            sub_type = project_string_id)
 
         session.add(user, project)
 
@@ -155,28 +165,60 @@ class Project(Base, Caching):
         member_id = user.member_id
 
         Event.new(
-            session=session,
-            kind="new_project",
-            member_id=member_id,
-            success=True,
-            project_id=project.id,
-            email=user.email  # Caution, assumes user object is available
+            session = session,
+            kind = "new_project",
+            member_id = member_id,
+            success = True,
+            project_id = project.id,
+            email = user.email  # Caution, assumes user object is available
         )
 
-
         project.directory_default = WorkingDir.new_user_working_dir(
-            session, None, project, user, project_default_dir=True)
+            session, None, project, user, project_default_dir = True)
 
-        report_dashboard = ReportDashboard.new(project_id=project.id)
+        report_dashboard = ReportDashboard.new(project_id = project.id)
         session.add(report_dashboard)
 
         session.flush()  # Needed to work with adding default directory
 
         # careful this expects a default dir already assigned
         Project_Directory_List.add_default(
-            session=session,
-            working_dir_id=project.directory_default.id,
-            project=project)
+            session = session,
+            working_dir_id = project.directory_default.id,
+            project = project)
+
+        ### Account  ###
+        account_list = Account.get_list(
+            session = session,
+            user_id = user.id,
+            mode_trainer_or_builder = "builder",
+            account_type = "billing",
+            by_primary_user = True)
+
+        # TODO assumes first in list.
+        if account_list:
+            project.account = account_list[0]
+
+            # This needs work
+            # Rationale is we want to make it easy for someone who has billing
+            # enabled to create a new project but this is making a lot of assumptions
+            if project.account.payment_method_on_file is True:
+                project.api_billing_enabled = True
+
+        else:
+            account = Account.account_new_core(
+                session = session,
+                primary_user = user,
+                mode_trainer_or_builder = "builder",
+                account_type = "billing",
+                nickname = "My Account")
+
+            project.account = account
+
+        ### PLAN ###
+
+        if user.default_plan_id:
+            project.plan = user.default_plan
 
         return project
 
@@ -189,14 +231,14 @@ class Project(Base, Caching):
 
     @staticmethod
     def list(
-            session,
-            user=None,
-            mode="from_user",  # [from_user, super_admin, from_account_id]
-            limit=60,
-            return_kind="objects",
-            date_to=None,
-            date_from=None,
-            account_id=None
+        session,
+        user = None,
+        mode = "from_user",  # [from_user, super_admin, from_account_id]
+        limit = 60,
+        return_kind = "objects",
+        date_to = None,
+        date_from = None,
+        account_id = None
     ):
         """
         Defaults to being 'from_user' can also be 'super_admin' to get all projects
@@ -285,11 +327,11 @@ class Project(Base, Caching):
             return preview_file_list
 
         file_list = WorkingDirFileLink.file_list(
-            session=self.session,
-            working_dir_id=self.directory_default_id,
-            limit=3,
-            type=['image', 'video'],
-            root_files_only=True  # Excludes labels  at time of writing
+            session = self.session,
+            working_dir_id = self.directory_default_id,
+            limit = 3,
+            type = ['image', 'video'],
+            root_files_only = True  # Excludes labels  at time of writing
         )
 
         if not file_list:
@@ -325,17 +367,17 @@ class Project(Base, Caching):
     def refresh_label_dict(self, session):
 
         file_list = WorkingDirFileLink.file_list(
-            session=session,
-            working_dir_id=self.directory_default_id,
-            limit=10000000,
-            type="label",
-            exclude_removed=False)  # eg for permissions
+            session = session,
+            working_dir_id = self.directory_default_id,
+            limit = 10000000,
+            type = "label",
+            exclude_removed = False)  # eg for permissions
         if not self.label_dict:
             self.label_dict = {}
         self.label_dict['label_file_id_list'] = [file.id for file in file_list]
 
     def serialize(self,
-                  session=None):
+                  session = None):
         """
         April 3, 2020
             project.serialize() is called in a bunch of places
@@ -377,17 +419,17 @@ class Project(Base, Caching):
             'settings_input_video_fps': self.settings_input_video_fps,
             'is_public': self.is_public,
             'directory_list': self.get_with_cache(
-                cache_key='directory_list',
-                cache_miss_function=self.regenerate_directory_list_cache,
-                session=session),
+                cache_key = 'directory_list',
+                cache_miss_function = self.regenerate_directory_list_cache,
+                session = session),
             'member_list': self.get_with_cache(
-                cache_key='member_list',
-                cache_miss_function=self.regenerate_member_list_cache,
-                session=session),
+                cache_key = 'member_list',
+                cache_miss_function = self.regenerate_member_list_cache,
+                session = session),
             'preview_file_list': self.get_with_cache(
-                cache_key='preview_file_list',
-                cache_miss_function=self.regenerate_preview_file_list,
-                session=session),
+                cache_key = 'preview_file_list',
+                cache_miss_function = self.regenerate_preview_file_list,
+                session = session),
             'time_created': time_created,
             'default_report_dashboard_id': self.default_report_dashboard_id
         }
@@ -534,13 +576,13 @@ class Project(Base, Caching):
             Project.project_string_id == project_string_id).first()
 
     def get_users_current_project(session):
-        user = session.query(User).filter_by(id=getUserID()).first()
-        return session.query(Project).filter_by(id=user.current_project_string_id).first()
+        user = session.query(User).filter_by(id = getUserID()).first()
+        return session.query(Project).filter_by(id = user.current_project_string_id).first()
 
     @staticmethod
     def list_from_plan(
-            session,
-            plan
+        session,
+        plan
     ):
         """
 
@@ -558,18 +600,18 @@ class Project(Base, Caching):
 
 class Project_settings(Base):
     __tablename__ = 'project_settings'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key = True)
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship("Project", back_populates="settings")
+    project = relationship("Project", back_populates = "settings")
 
     # fan is faster annotations net
     # This is just project level stuff
     # Other settings in ai and ai.ml
-    fan_on = Column(Boolean, default=True)
-    fan_trigger_interval = Column(Integer, default=30)
-    fan_inference_size = Column(Integer, default=90)
-    fan_type = Column(String(), default="box")
-    fan_inference_minimum = Column(Float, default=.50)
+    fan_on = Column(Boolean, default = True)
+    fan_trigger_interval = Column(Integer, default = 30)
+    fan_inference_size = Column(Integer, default = 90)
+    fan_type = Column(String(), default = "box")
+    fan_inference_minimum = Column(Float, default = .50)
 
     fan_method = Column(String())
     fan_sub_method = Column(String())
@@ -598,23 +640,23 @@ class Project_settings(Base):
 class ProjectTag(Base):
     __tablename__ = 'project_tag'
 
-    project_id = Column(Integer, ForeignKey('project.id'), primary_key=True)
-    tag_id = Column(Integer, ForeignKey('tag.id'), primary_key=True)
+    project_id = Column(Integer, ForeignKey('project.id'), primary_key = True)
+    tag_id = Column(Integer, ForeignKey('tag.id'), primary_key = True)
 
     # bidirectional collection of "project"/"ai_tags"
-    project = relationship("Project", backref=backref("project_tag_junction",
-                                                      cascade="all, delete-orphan"))
+    project = relationship("Project", backref = backref("project_tag_junction",
+                                                        cascade = "all, delete-orphan"))
     # reference to "tag" object
     tag = relationship("Tag")
 
-    def __init__(self, tag=None, project=None, special_key=None):
+    def __init__(self, tag = None, project = None, special_key = None):
         self.project = project
         self.tag = tag
 
 
 class Tag(Base):
     __tablename__ = 'tag'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key = True)
 
     is_public = Column(Boolean)
 
@@ -635,12 +677,12 @@ class ProjectStar(Base):
 
     __tablename__ = 'project_star'
 
-    id = Column(Integer, primary_key=True)
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
+    id = Column(Integer, primary_key = True)
+    created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
     user_id = Column(Integer, ForeignKey('userbase.id'))
-    user = relationship("User", foreign_keys=[user_id])
+    user = relationship("User", foreign_keys = [user_id])
 
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship("Project", back_populates="star_list",
-                           foreign_keys=project_id)
+    project = relationship("Project", back_populates = "star_list",
+                           foreign_keys = project_id)
