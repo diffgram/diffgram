@@ -7,7 +7,7 @@ from shared.database.source_control.working_dir import WorkingDir
 from shared.database.project_directory_list import Project_Directory_List
 from shared.database.event.event import Event
 from shared.database.report.report_dashboard import ReportDashboard
-
+from shared.database.org.org import Org
 class Project(Base, Caching):
     """
     serialize(self)
@@ -113,6 +113,10 @@ class Project(Base, Caching):
     default_external_map = relationship("ExternalMap",
                                         uselist=False,
                                         foreign_keys=[default_external_map_id])
+
+    org_id = Column(Integer, ForeignKey('org.id'))
+    org = relationship(Org, foreign_keys=[org_id])
+
     @staticmethod
     def new(session,
             name: str,

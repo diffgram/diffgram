@@ -7,8 +7,7 @@ Create Date: 2021-11-11 09:25:26.815675
 """
 from alembic import op
 import sqlalchemy as sa
-
-
+from shared.database_setup_supporting import *
 # revision identifiers, used by Alembic.
 revision = '3c50e7d2bb18'
 down_revision = '53bdf159858b'
@@ -17,7 +16,22 @@ depends_on = None
 
 
 
+
+
 def upgrade():
+    action_template = op.create_table('action_template',
+                                      sa.Column('id', sa.Integer(), nullable = False),
+                                      sa.Column('public_name', sa.String(), nullable = True),
+                                      sa.Column('kind', sa.String(), nullable = True),
+                                      sa.Column('category', sa.String(), nullable = True),
+                                      sa.Column('is_available', sa.Boolean(), nullable = True),
+                                      sa.Column('member_created_id', sa.Integer(), nullable = True),
+                                      sa.Column('member_updated_id', sa.Integer(), nullable = True),
+                                      sa.Column('time_created', sa.DateTime(), nullable = True),
+                                      sa.Column('time_updated', sa.DateTime(), nullable = True),
+                                      sa.PrimaryKeyConstraint('id')
+                                      )
+
     op.create_table('action_flow',
                     sa.Column('id', sa.Integer(), nullable = False),
                     sa.Column('name', sa.String(), nullable = True),
@@ -102,6 +116,10 @@ def upgrade():
                     sa.Column('overlay_label_file_id', sa.Integer(), nullable = True),
                     sa.PrimaryKeyConstraint('id')
                     )
+
+    op.add_column('action', sa.Column('url_to_post', sa.String()))
+    op.add_column('action', sa.Column('secret_webhook', sa.String()))
+
     op.create_table('action_event',
                     sa.Column('id', sa.BIGINT(), nullable = False),
                     sa.Column('flow_event_id', sa.BIGINT(), nullable = True),
@@ -159,6 +177,12 @@ def upgrade():
                           ["id"])
     op.create_foreign_key("org_id_fkey", "action_flow_trigger_event_queue", "org", ["org_id"], ["id"])
 
+    op.create_foreign_key("action_template_id_fkey", "action", "action_template", ["template_id"], ["id"])
+    op.create_foreign_key("action_template_member_created_id_fkey", "action_template", "member", ["member_created_id"],
+                          ["id"])
+    op.create_foreign_key("action_template_member_updated_id_fkey", "action_template", "member", ["member_updated_id"],
+                          ["id"])
+
 
 def downgrade():
     op.drop_constraint('input_id_fkey', 'action_flow_trigger_event_queue', type_ = 'foreignkey')
@@ -167,6 +191,9 @@ def downgrade():
     op.drop_constraint('job_id_fkey', 'action_flow_trigger_event_queue', type_ = 'foreignkey')
     op.drop_constraint('action_flow_id_fkey', 'action_flow_trigger_event_queue', type_ = 'foreignkey')
     op.drop_constraint('org_id_fkey', 'action_flow_trigger_event_queue', type_ = 'foreignkey')
+    op.drop_constraint('action_template_id_fkey', 'action', type_ = 'foreignkey')
+    op.drop_constraint('action_template_member_created_id_fkey', 'action_template', type_ = 'foreignkey')
+    op.drop_constraint('action_template_member_updated_id_fkey', 'action_template', type_ = 'foreignkey')
 
     op.drop_table('action_flow_trigger_event_queue')
 
@@ -174,3 +201,4 @@ def downgrade():
     op.drop_table('action')
     op.drop_table('action_flow_event')
     op.drop_table('action_flow')
+    op.drop_table('action_template')

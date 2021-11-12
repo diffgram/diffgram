@@ -1,4 +1,5 @@
 from shared.database.common import *
+from shared.database.org.org import Org
 
 
 class Action(Base):
@@ -54,7 +55,7 @@ class Action(Base):
     project = relationship("Project")
 
     org_id = Column(Integer, ForeignKey('org.id'))
-    org = relationship("Org", foreign_keys = [org_id])
+    org = relationship(Org, foreign_keys = [org_id])
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])

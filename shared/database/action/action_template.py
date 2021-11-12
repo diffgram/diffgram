@@ -1,6 +1,5 @@
 from shared.database.common import *
 
-
 class Action_Template(Base):
     """
 
@@ -43,10 +42,10 @@ class Action_Template(Base):
     """
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
-    member_created = relationship("Member", foreign_keys = [member_created_id])
+    member_created = relationship('Member', foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys = [member_updated_id])
+    member_updated = relationship('Member', foreign_keys = [member_updated_id])
 
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
@@ -66,3 +65,15 @@ class Action_Template(Base):
 
         return session.query(Action_Template).filter(
             Action_Template.kind == kind).first()
+
+    @staticmethod
+    def new(session, public_name, kind, category):
+        result = Action_Template(
+            public_name = public_name,
+            kind = kind,
+            category = category
+        )
+
+        session.add(result)
+        session.flush()
+        return result

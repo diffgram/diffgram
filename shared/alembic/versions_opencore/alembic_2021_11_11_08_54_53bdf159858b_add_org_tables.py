@@ -16,7 +16,6 @@ depends_on = None
 
 
 def upgrade():
-
     org = op.create_table('org',
                           sa.Column('id', sa.Integer(), nullable = False),
                           sa.Column('security_disable', sa.Boolean(), nullable = True),
@@ -54,8 +53,10 @@ def upgrade():
                     sa.PrimaryKeyConstraint('org_id', 'user_id')
                     )
 
+    op.add_column('project', sa.Column('org_id', sa.Integer, sa.ForeignKey('org.id')))
+
 
 def downgrade():
+    op.drop_column('project', 'org_id')
     op.drop_table('org_to_user')
     op.drop_table('org')
-    op.drop_table('address')
