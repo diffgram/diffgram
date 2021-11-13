@@ -44,13 +44,16 @@
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
               <div v-if="!update_user_cart && job_data_fetched">
-                <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
-                  <v-icon dark> mdi-account-circle </v-icon>
-                </v-avatar>
-                <span v-on="on" style="cursor: pointer">
-                  {{ full_name }}
-                </span>
-                <v-icon> arrow_drop_down </v-icon>
+                <div class="user-item" v-on="on">
+                  <user_icon
+                    :user="current_user"
+                    v-bind="attrs"
+                    show_full_name
+                    :size="20"
+                    :fontSize="'10px'"
+                  />
+                  <v-icon> arrow_drop_down </v-icon>
+                </div>
               </div>
               <div v-else>
                 <span v-on="on" style="cursor: pointer">
@@ -66,10 +69,13 @@
                   style="cursor: pointer"
                   @click="() => switch_user(member.id)"
                 >
-                  <v-avatar size="30" v-bind="attrs" v-on="on" color="indigo">
-                    <v-icon dark> mdi-account-circle </v-icon>
-                  </v-avatar>
-                  {{ member.first_name }} {{ member.last_name }}
+                  <user_icon
+                    :user="member"
+                    v-bind="attrs"
+                    show_full_name
+                    :size="20"
+                    :fontSize="'10px'"
+                  />
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -90,6 +96,7 @@
 import Vue from "vue";
 import pieChart from "../report/charts/pieChart";
 import store from "../../store";
+import user_icon from "../user/user_icon.vue";
 import {
   getJobStats,
   getJobStatsForUser,
@@ -98,6 +105,7 @@ import {
 export default Vue.extend({
   components: {
     pieChart,
+    user_icon,
   },
   store,
   watch: {
@@ -108,11 +116,11 @@ export default Vue.extend({
     },
   },
   computed: {
-    full_name() {
-      const { first_name, last_name } = this.member_list.find(
+    current_user() {
+      const user = this.member_list.find(
         (item) => item.id === this.show_member_stat
       );
-      return `${first_name} ${last_name}`;
+      return user;
     },
   },
   methods: {
@@ -232,6 +240,12 @@ export default Vue.extend({
   align-items: center;
   justify-content: center;
   height: 350px;
+}
+
+.user-item {
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
 }
 
 @media screen and (max-width: 1500px) {
