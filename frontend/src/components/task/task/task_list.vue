@@ -601,7 +601,7 @@ export default Vue.extend({
 
       page_number: 0,
       per_page_limit: 25,
-      per_page_limit_options: [10, 25, 100, 250],
+      per_page_limit_options: [5, 10, 25, 100, 250],
 
       selected: [],
       dialog_confirm_archive: false,

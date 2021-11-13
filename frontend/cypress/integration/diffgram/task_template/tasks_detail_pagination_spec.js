@@ -5,7 +5,7 @@ describe('tasks_detail_pagination', () => {
   context('tasks_detail_pagination', () => {
     before(function () {
 
-      cy.createSampleTasksUsingBackend(30)
+      cy.createSampleTasksUsingBackend(10)
 
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({
@@ -28,7 +28,7 @@ describe('tasks_detail_pagination', () => {
       cy.wait(5000)
       cy.get('[data-cy="task_list_filters"]').click({force: true})
       cy.get('[data-cy="task_list_per_page_limit_selector"]').first().click({force: true})    
-      cy.get('.v-list.v-select-list div').contains('10').first().click({force: true})
+      cy.get('.v-list.v-select-list div').contains('5').first().click({force: true})
       cy.get('[data-cy="task_list_refresh_task_list"]').click({force: true})
       cy.get('[data-cy="task_list_close_filters"]').click({force: true})
     })
