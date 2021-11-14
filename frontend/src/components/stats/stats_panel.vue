@@ -42,12 +42,11 @@
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
           <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
+            <template v-slot:activator="{ on }">
               <div v-if="!update_user_cart && job_data_fetched">
                 <div class="user-item" v-on="on">
                   <user_icon
                     :user="current_user"
-                    v-bind="attrs"
                     show_full_name
                     :size="20"
                     :fontSize="'10px'"
@@ -58,7 +57,7 @@
               <div v-else>
                 <span v-on="on" style="cursor: pointer">
                   Getting data for
-                  {{ full_name }}
+                  {{ current_user.first_name }} {{ current_user.last_name }}
                   ...
                 </span>
               </div>
@@ -71,7 +70,6 @@
                 >
                   <user_icon
                     :user="member"
-                    v-bind="attrs"
                     show_full_name
                     :size="20"
                     :fontSize="'10px'"
