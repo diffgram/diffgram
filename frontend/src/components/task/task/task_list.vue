@@ -860,25 +860,6 @@ export default Vue.extend({
       this.page_number -= 1;
       await this.task_list_api();
     },
-    api_get_next_task_scoped_to_job: async function (job_id) {
-      try {
-        this.next_task_loading = true;
-        const response = await axios.post(
-          `/api/v1/job/${job_id}/task/next`,
-          {}
-        );
-        if (response.status === 200) {
-          let task = response.data.task;
-          const routeData = `/task/${task.id}`;
-          this.$router.push(routeData);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        this.next_task_loading = false;
-      }
-    },
-
     rowclick(task) {
       if (!this.column_list.includes("Select")) {
         this.route_task(task.id);

@@ -259,6 +259,7 @@ import label_select_only from "../../label/label_select_only.vue";
 import axios from "axios";
 import job_type from "./job_type";
 import stats_panel from "../../stats/stats_panel.vue";
+import { nextTask } from "../../../services/tasksServices";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -298,6 +299,7 @@ export default Vue.extend({
       request_refresh_labels: null,
 
       loading: false,
+      next_task_loading: false,
 
       share_icon_list: [
         {
@@ -340,30 +342,39 @@ export default Vue.extend({
     if (this.$route.path.endsWith("discussions")) {
       this.tab = 1;
     }
-    this.reset_local_info()
-    this.job_current_watcher = this.$store.watch((state) => {
-        return this.$store.state.job.refresh
+    this.reset_local_info();
+    this.job_current_watcher = this.$store.watch(
+      (state) => {
+        return this.$store.state.job.refresh;
       },
       (new_val, old_val) => {
-        this.reset_local_info()
-      },
-    )
-
+        this.reset_local_info();
+      }
+    );
   },
-  computed: {
-  },
+  computed: {},
   beforeDestroy() {
-    this.job_current_watcher()
+    this.job_current_watcher();
   },
   methods: {
-      reset_local_info() {
-        this.job_name = this.$store.state.job.current.name;
-        this.set_document_title();
-      },
-      set_document_title() {
-        document.title = this.job_name
-      },
-      api_update_job: function () {
+    reset_local_info() {
+      this.job_name = this.$store.state.job.current.name;
+      this.set_document_title();
+    },
+    set_document_title() {
+      document.title = this.job_name;
+    },
+    api_get_next_task_scoped_to_job: async function (job_id) {
+      this.next_task_loading = true;
+      const response = await nextTask(job_id);
+      if (response.status === 200) {
+        let task = response.data.task;
+        const routeData = `/task/${task.id}`;
+        this.$router.push(routeData);
+      }
+      this.next_task_loading = false;
+    },
+    api_update_job: function () {
       /*
        * Assumes one job at a time
        *
