@@ -6,6 +6,15 @@
 
     <v_error_multiple :error="error"> </v_error_multiple>
 
+    <v_job_info_builder
+      :job_id="job_id"
+      :mode_data="'job_detail'"
+      :mode_view="'job_detail'"
+      @job_info="job = $event"
+      ref="job_builder_info"
+    >
+    </v_job_info_builder>
+
     <!--
     <v-btn v-if="!job.user_to_job"
             @click="job_apply()"
