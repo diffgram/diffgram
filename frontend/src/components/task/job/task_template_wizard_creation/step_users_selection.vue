@@ -38,7 +38,6 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
 import label_select_only from "../../../label/label_select_only";
 import label_manager_dialog from "../../../label/label_manager_dialog";
 
