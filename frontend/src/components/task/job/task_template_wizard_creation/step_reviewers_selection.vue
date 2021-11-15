@@ -31,12 +31,12 @@
 
       <member_select
         datacy="member-select"
-        v-model="job.member_list_ids"
+        v-model="job.reviewer_list_ids"
         label="Select Specific Users"
         :member_list="$store.state.project.current.member_list"
         :multiple="true"
         :init_all_selected="mode === 'update' ? false : true"
-        :initial_value="job.id != undefined ? job.member_list_ids : ['all']"
+        :initial_value="job.id != undefined ? job.reviewer_list_ids : ['all']"
         :allow_all_option="true"
       >
       </member_select>
@@ -94,9 +94,25 @@ export default Vue.extend({
     console.log(this.job);
   },
   methods: {
+    verify_members: function () {
+      if (
+        !this.$props.job.reviewer_list_ids ||
+        this.$props.job.reviewer_list_ids.length === 0
+      ) {
+        this.error = {
+          name: "At least 1 user should be assigned.",
+        };
+        return false;
+      }
+      return true;
+    },
     on_next_button_click: function () {
+      this.error = {};
+      let memers_ok = this.verify_members();
       if (this.review_all) this.job.review_chance = 100;
-      this.$emit("next_step");
+      if (memers_ok) {
+        this.$emit("next_step");
+      }
     },
   },
 });
