@@ -229,7 +229,7 @@ export default Vue.extend({
   data() {
     return {
       step: 1,
-      total_steps: 6,
+      total_steps: 9,
       loading: false,
       error: {},
     };
