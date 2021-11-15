@@ -1,36 +1,34 @@
 <template>
-  <v-container fluid data-cy="task-template-users-step">
+  <v-container fluid data-cy="task-template-reviewer-step">
     <div>
       <div class="d-flex mb-8 justify-space-between">
         <h1
-          data-cy="task-template-users-step-title"
+          data-cy="task-template-reviewer-step-title"
           class="font-weight-medium text--primary mr-4"
         >
           Would you like to enable reviews for this task?
         </h1>
       </div>
-      <v-radio-group v-model="job.allow_reviews">
+      <v-radio-group
+        data-cy="task-template-reviewer-radio-enable"
+        v-model="job.allow_reviews"
+      >
         <v-radio label="No" :value="false" />
         <v-radio label="Yes" :value="true" />
       </v-radio-group>
     </div>
     <div v-if="job.allow_reviews">
       <div class="d-flex mb-8 justify-space-between">
-        <h1
-          data-cy="task-template-users-step-title"
-          class="font-weight-medium text--primary mr-4"
-        >
+        <h1 class="font-weight-medium text--primary mr-4">
           Who is assigned to review these tasks?
         </h1>
       </div>
 
       <v_error_multiple :error="error"></v_error_multiple>
-      <p data-cy="task-template-users-step-subtitle" class="text--primary">
-        Select the Users assigned to the tasks.
-      </p>
+      <p class="text--primary">Select the Users assigned to the tasks.</p>
 
       <member_select
-        datacy="member-select"
+        datacy="reviwer-select"
         v-model="job.reviewer_list_ids"
         label="Select Specific Users"
         :member_list="$store.state.project.current.member_list"
@@ -42,10 +40,7 @@
       </member_select>
 
       <div class="d-flex mb-8 justify-space-between">
-        <h1
-          data-cy="task-template-users-step-title"
-          class="font-weight-medium text--primary mr-4"
-        >
+        <h1 class="font-weight-medium text--primary mr-4">
           What percent of the tasks should be reviewed?
         </h1>
       </div>
