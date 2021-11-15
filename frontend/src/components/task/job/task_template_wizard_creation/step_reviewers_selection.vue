@@ -90,6 +90,9 @@ export default Vue.extend({
       review_all: false,
     };
   },
+  created() {
+    console.log(this.job);
+  },
   methods: {
     on_next_button_click: function () {
       if (this.review_all) this.job.review_chance = 100;
