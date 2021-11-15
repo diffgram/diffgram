@@ -1,31 +1,64 @@
 <template>
   <v-container fluid data-cy="task-template-users-step">
-    <div class="d-flex mb-8 justify-space-between">
-      <h1
-        data-cy="task-template-users-step-title"
-        class="font-weight-medium text--primary mr-4"
-      >
-        Who is assigned to review these tasks?
-      </h1>
+    <div>
+      <div class="d-flex mb-8 justify-space-between">
+        <h1
+          data-cy="task-template-users-step-title"
+          class="font-weight-medium text--primary mr-4"
+        >
+          Who is assigned to review these tasks?
+        </h1>
+      </div>
+      <v-radio-group v-model="enabled">
+        <v-radio label="No" :value="false" />
+        <v-radio label="Yes" :value="true" />
+      </v-radio-group>
     </div>
+    <div v-if="enabled">
+      <div class="d-flex mb-8 justify-space-between">
+        <h1
+          data-cy="task-template-users-step-title"
+          class="font-weight-medium text--primary mr-4"
+        >
+          Who is assigned to review these tasks?
+        </h1>
+      </div>
 
-    <v_error_multiple :error="error"></v_error_multiple>
-    <p data-cy="task-template-users-step-subtitle" class="text--primary">
-      Select the Users assigned to the tasks.
-    </p>
+      <v_error_multiple :error="error"></v_error_multiple>
+      <p data-cy="task-template-users-step-subtitle" class="text--primary">
+        Select the Users assigned to the tasks.
+      </p>
 
-    <member_select
-      datacy="member-select"
-      v-model="job.member_list_ids"
-      label="Select Specific Users"
-      :member_list="$store.state.project.current.member_list"
-      :multiple="true"
-      :init_all_selected="mode === 'update' ? false : true"
-      :initial_value="job.id != undefined ? job.member_list_ids : ['all']"
-      :allow_all_option="true"
-    >
-    </member_select>
+      <member_select
+        datacy="member-select"
+        v-model="job.member_list_ids"
+        label="Select Specific Users"
+        :member_list="$store.state.project.current.member_list"
+        :multiple="true"
+        :init_all_selected="mode === 'update' ? false : true"
+        :initial_value="job.id != undefined ? job.member_list_ids : ['all']"
+        :allow_all_option="true"
+      >
+      </member_select>
 
+      <div class="d-flex mb-8 justify-space-between">
+        <h1
+          data-cy="task-template-users-step-title"
+          class="font-weight-medium text--primary mr-4"
+        >
+          What percent of the tasks should be reviewed?
+        </h1>
+      </div>
+      <v-text-field
+        label="What percent of the tasks has to be reviewd?"
+        v-model="review_percent"
+        hide-details
+        single-line
+        type="number"
+        :disabled="review_all"
+      />
+      <v-checkbox v-model="review_all" :label="`Review all`" />
+    </div>
     <wizard_navigation
       @next="on_next_button_click"
       @back="$emit('previous_step')"
@@ -56,11 +89,11 @@ export default Vue.extend({
     return {
       error: {},
       request_refresh_labels: new Date(),
+      enabled: false,
+      review_percent: null,
+      review_all: false,
     };
   },
-  mounted() {},
-
-  computed: {},
   methods: {
     verify_members: function () {
       if (
