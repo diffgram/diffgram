@@ -19,7 +19,7 @@ def valid_project_id(id):
     Roles='normal_user',
     apis_user_list=[
         'api_enabled_builder'])  # Checking email is verified within function to return nice error message here
-@limiter.limit("3 per day, 9 per month")
+@limiter.limit("25 per day")
 def project_new_api():
     spec_list = [{'project_name': str},
                  {'goal': None},

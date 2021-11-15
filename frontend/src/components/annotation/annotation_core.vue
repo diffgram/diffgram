@@ -1,6 +1,13 @@
 <template>
   <div id="annotation_core">
 
+    <ui_schema_context_menu
+      :show_context_menu="show_ui_schema_context_menu"
+      :project_string_id="project_string_id"
+      @close_context_menu="show_ui_schema_context_menu = false"
+      @start_edit_ui_schema="edit_ui_schema()"
+    >
+    </ui_schema_context_menu>
 
     <div style="position: relative">
 
@@ -21,7 +28,7 @@
                    :project_string_id="project_string_id"
                    :task="task"
                    :file="file"
-                   :canvas_scale_local="canvas_scale_local"
+                   :canvas_scale_local="zoom_value"
                    :has_changed="has_changed"
                    :label_list="label_list"
                    :draw_mode="draw_mode"
@@ -30,10 +37,12 @@
                    :instance_template_selected="instance_template_selected"
                    :instance_type="instance_type"
                    :loading_instance_templates="loading_instance_templates"
-                   :instance_type_list="instance_type_list"
+                   :instance_type_list="filtered_instance_type_list"
                    :view_issue_mode="view_issue_mode"
                    :is_keypoint_template="is_keypoint_template"
-                   @label_settings_change="label_settings = $event, refresh = Date.now()"
+                   :enabled_edit_schema="enabled_edit_schema"
+                   :annotation_show_on="annotation_show_on"
+                   @label_settings_change="update_label_settings($event)"
                    @change_label_file="change_current_label_file_template($event)"
                    @update_label_file_visibility="update_label_file_visible($event)"
                    @change_instance_type="change_instance_type($event)"
@@ -42,7 +51,10 @@
                    @redo="redo(), refresh = Date.now()"
                    @save="save()"
                    @change_file="change_file($event)"
-                   @change_task="trigger_task_change($event, task)"
+                   @annotation_show="annotation_show_activate"
+                   @show_duration_change="set_annotation_show_duration"
+                   @canvas_scale_global_changed="on_canvas_scale_global_changed"
+                   @change_task="trigger_task_change($event, task, false)"
                    @next_issue_task="next_issue_task(task)"
                    @refresh_all_instances="refresh_all_instances"
                    @task_update_toggle_deferred="task_update('toggle_deferred')"
@@ -163,6 +175,7 @@
       v-model="show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
+      data-cy="auto_border_first_point_selected_usage_prompt"
     >
       Select the second point of the same polygon for autobordering (or press "x" key to cancel)
 
@@ -369,7 +382,9 @@
 
       -->
 
-          <div  contenteditable="true"  id="canvas_wrapper" style="position: relative;"
+          <div  contenteditable="true"
+                id="canvas_wrapper"
+                style="position: relative;"
 
                 @mousemove="mouse_move"
                 @mousedown="mouse_down"
@@ -410,6 +425,7 @@
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
+              :mouse_position="mouse_position"
               :canvas_transform="canvas_transform">
 
 
@@ -417,7 +433,9 @@
                     :current_file="file"
                     :refresh="refresh"
                     @update_canvas="update_canvas"
+                    :canvas_transform="canvas_transform"
                     :canvas_filters="canvas_filters"
+                    :canvas_element="canvas_element"
                     :ord="1"
                     :annotations_loading="any_loading"
               >
@@ -432,6 +450,10 @@
                                 :mouse_position="mouse_position"
                                 :height="canvas_height"
                                 :width="canvas_width"
+                                :canvas_element="canvas_element"
+                                :width_scaled="canvas_width_scaled"
+                                :height_scaled="canvas_height_scaled"
+                                :canvas_mouse_tools="canvas_mouse_tools"
                                 :show="show_target_reticle"
                                 :target_colour="current_label_file ? current_label_file.colour : undefined"
                                 :text_color="this.$get_sequence_color(this.current_instance.sequence_id)"
@@ -439,6 +461,7 @@
                                 :target_type="target_reticle_type"
                                 :canvas_transform="canvas_transform"
                                 :reticle_size="label_settings.target_reticle_size"
+                                :zoom_value="zoom_value"
               >
               </target_reticle>
 
@@ -456,6 +479,8 @@
                                     :label_settings="label_settings"
                                     :current_instance="current_instance"
                                     :is_actively_drawing="is_actively_drawing"
+                                    :height="canvas_height"
+                                    :width="canvas_width"
                                     :refresh="refresh"
                                     :draw_mode="draw_mode"
                                     :mouse_position="mouse_position"
@@ -470,6 +495,7 @@
                                     :hidden_label_id_list="hidden_label_id_list"
                                     :is_actively_resizing="is_actively_resizing"
                                     :emit_instance_hover="!draw_mode || emit_instance_hover"
+                                    :zoom_value="zoom_value"
               >
               </canvas_instance_list>
 
@@ -494,6 +520,7 @@
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
                 @instance_hover_update="ghost_instance_hover_update($event[0], $event[1], $event[2])"
+                :zoom_value="zoom_value"
               >
               </ghost_instance_list_canvas>
 
@@ -536,7 +563,9 @@
                                         :canvas_transform="canvas_transform"
                                         :draw_mode="draw_mode"
                                         :is_actively_drawing="is_actively_drawing"
-                                        :label_file_colour_map="label_file_colour_map">
+                                        :label_file_colour_map="label_file_colour_map"
+                                        :zoom_value="zoom_value"
+                                       >
 
               </canvas_current_instance>
               <current_instance_template
@@ -554,6 +583,7 @@
               </current_instance_template>
 
             </canvas>
+
             <polygon_borders_context_menu
               :show_context_menu="show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -561,6 +591,7 @@
               @start_auto_bordering="perform_auto_bordering"
               @close_context_menu="show_polygon_border_context_menu = false"
             ></polygon_borders_context_menu>
+
             <context_menu :mouse_position="mouse_position"
                           :show_context_menu="show_context_menu"
                           :instance_clipboard="instance_clipboard"
@@ -696,18 +727,6 @@
   </v-navigation-drawer>
   -->
 
-    <!-- I would like to have a second sheet here for video stuff
-     but wondering if we should just attach the video thing to the image
-     This may need lot of fiddling to get it to load right under other sheet
-     -->
-    <!--
-  <v-bottom-sheet :value="true">
-
-    <h2 class="text-center"> BOTTOM </h2>
-
-  </v-bottom-sheet>
-  -->
-
 
     <!-- Media core -->
 
@@ -726,16 +745,10 @@
 
     https://vuetifyjs.com/en/components/bottom-sheets
 
-      TODO explore 'fullscreen' flag
-      may be useful if more files...
-
       https://github.com/vuetifyjs/vuetify/issues/8640
       needs :retain-focus="false" (but shouldn't)
 
     -->
-
-
-
 
     <instance_template_creation_dialog
       :project_string_id="project_string_id"
@@ -768,6 +781,16 @@
       Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
     </v-alert>
 
+    <qa_carousel
+      :annotation_show_on="annotation_show_on"
+      :loading="loading || annotations_loading || full_file_loading"
+      :instance_list="instance_list"
+      :annotation_show_duration="annotation_show_duration_per_instance"
+      @focus_instance="(index) => focus_instance({ index })"
+      @change_item="annotation_show_change_item"
+      @stop_carousel="annotation_show_activate"
+    />
+
   </div>
 </template>
 
@@ -789,6 +812,7 @@
   import task_status_icons from '../regular_concrete/task_status_icons'
   import context_menu from '../context_menu/context_menu.vue';
   import polygon_borders_context_menu from '../context_menu/polygon_borders_context_menu.vue';
+  import ui_schema_context_menu from '../ui_schema/ui_schema_context_menu.vue';
   import issues_sidepanel from '../discussions/issues_sidepanel.vue';
   import current_instance_template from '../vue_canvas/current_instance_template.vue';
   import instance_template_creation_dialog from '../instance_templates/instance_template_creation_dialog';
@@ -813,9 +837,12 @@
   import { sha256 } from 'js-sha256';
   import stringify  from 'json-stable-stringify';
   import PropType from 'vue'
+  import _ from "lodash"
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
+  import qa_carousel from "./qa_carousel.vue"
+
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
 
@@ -852,7 +879,9 @@
         context_menu,
         userscript,
         toolbar,
-        ghost_canvas_available_alert
+        ghost_canvas_available_alert,
+        ui_schema_context_menu,
+        qa_carousel
       },
       props: {
         'project_string_id': {
@@ -892,9 +921,20 @@
 
         'view_only_mode': {
           default: false
+        },
+        'enabled_edit_schema' : {},
+        'finish_annotation_show': {
+          default: false
         }
       },
       watch: {
+        finish_annotation_show: function (val) {
+          if (val) this.annotation_show_on = false
+        },
+        canvas_scale_global: function(newVal, oldVal){
+          this.on_canvas_scale_global_changed(newVal)
+
+        },
         file: {
           handler(newVal, oldVal){
             if(newVal != oldVal){
@@ -921,6 +961,7 @@
         mouse_computed(newval, oldval){
           // We don't want to create a new object here since the reference is used on all instance types.
           // If we create a new object we'll lose the reference on our class InstanceTypes
+
           this.mouse_down_delta_event.x = parseInt(newval.delta_x - oldval.delta_x)
           this.mouse_down_delta_event.y = parseInt(newval.delta_y - oldval.delta_y)
         },
@@ -1051,6 +1092,8 @@
           ellipse_hovered_instance: undefined,
           ellipse_hovered_instance_index: undefined,
 
+          show_ui_schema_context_menu: false,
+
           drawing_curve: false,
           curve_hovered_point: undefined,
 
@@ -1085,7 +1128,7 @@
           lock_point_hover_change: false,
           save_warning: {},
 
-          magic_nav_spacer: 40,
+          magic_nav_spacer: 80,
 
 
           hidden_label_id_list: [],
@@ -1098,6 +1141,7 @@
           instance_buffer_dict: {},
           instance_buffer_metadata: {},
 
+          is_editing_ui_schema: true,
 
           // Order here is important for corner moving. First one keeps y coord fixed and second one keeps x coord fixed.
           lateral_edges : {
@@ -1137,6 +1181,7 @@
           loading: false,
 
           label_settings: {
+            font_background_opacity: .75,
             enable_snap_to_instance: true,
             show_ghost_instances: true,
             show_text: true,
@@ -1144,6 +1189,7 @@
             show_attribute_text: true,
             show_list: true,
             show_occluded_keypoints: true,
+            show_left_right_arrows: true,
             allow_multiple_instance_select: false,
             font_size: 20,
             spatial_line_size: 2,
@@ -1179,6 +1225,15 @@
             instance_list: [],     // careful, need this to not be null for vue canvas to work as expected
             id: null
           },
+
+          annotation_show_on: false,
+          annotation_show_type: 'file',
+          annotation_show_current_instance: 0,
+          annotation_show_duration_per_instance: 2000,
+          finish_annotation_show_local: false,
+          annotation_show_progress: 0,
+          annotation_show_timer: null,
+          annotation_show_revert: 2,
 
           // We could also use this dictionary for other parts
           // that rely on type to specifcy an icon
@@ -1336,11 +1391,14 @@
           full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
           canvas_scale_local: 1,  // for actually scaling dimensions within canvas
+          zoom_value: 1,  // for display only
 
           canvas_translate: {
             x: 0,
             y: 0
           },
+
+          zoom_canvas: 1,
           error_no_permissions: {},
           snap_to_edges: 5,
           shift_key: false,
@@ -1357,6 +1415,23 @@
         }
       },
       computed: {
+        filtered_instance_type_list: function(){
+          if(!this.$props.task || !this.$props.task.job){
+            return this.instance_type_list
+          }
+          if(!this.$props.task.job.ui_schema){
+            return this.instance_type_list
+          }
+          let ui_schema = this.$props.task.job.ui_schema;
+          let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+          if(!allowed_types){
+            return this.instance_type_list
+          }
+          else{
+            return this.instance_type_list.filter(elm => allowed_types.includes(elm.name))
+          }
+
+        },
         clipboard: function() {
           return this.$store.getters.get_clipboard
         },
@@ -1543,6 +1618,7 @@
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+
           let middle_pane_width = this.window_width_from_listener - this.label_settings.left_nav_width - this.magic_nav_spacer
 
           let toolbar_height = 80
@@ -1550,6 +1626,11 @@
           // get media core height
           if (document.getElementById("media_core")){
             this.media_core_height = document.getElementById("media_core").__vue__.height
+          } else {
+            this.media_core_height = 0 // reset eg for task mode
+          }
+          if (this.task) {
+            this.magic_nav_spacer = 0
           }
 
           let middle_pane_height = this.window_height_from_listener - toolbar_height
@@ -1578,7 +1659,6 @@
 
           this.label_settings.canvas_scale_global_setting = new_size
 
-
           return new_size
 
 
@@ -1602,7 +1682,8 @@
             'canvas_scale_global': this.canvas_scale_global,
             'canvas_scale_local': this.canvas_scale_local,
             'canvas_scale_combined' : this.canvas_scale_local * this.canvas_scale_global,
-            'translate': this.canvas_translate
+            'translate': this.canvas_translate,
+            'zoom': this.zoom_canvas
           }
         },
 
@@ -1759,6 +1840,7 @@
             }
 
           }
+
           let instance_data = {
             x_min: x_min,
             y_min: y_min,
@@ -1862,6 +1944,48 @@
       },
 
       methods: {
+        on_canvas_scale_global_changed: async function(new_scale){
+          if(!new_scale){
+            return
+          }
+          // Force a canvas reset when changing global scale.
+          if(!this.canvas_element){
+            return
+          }
+          this.label_settings.canvas_scale_global_setting = new_scale;
+          this.canvas_mouse_tools.canvas_scale_global = new_scale;
+          this.canvas_mouse_tools.scale = new_scale;
+          this.canvas_element_ctx.clearRect(
+            0,
+            0,
+            this.canvas_element.width,
+            this.canvas_element.height
+          );
+          this.canvas_element_ctx.resetTransform();
+          this.canvas_element_ctx.scale(new_scale, new_scale);
+          this.canvas_element.width += 0;
+          this.canvas_mouse_tools.canvas_width = this.canvas_width
+          this.canvas_mouse_tools.canvas_height = this.canvas_height
+
+          await this.$nextTick()
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
+        },
+        edit_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+        },
+        add_ui_schema: function (event) {
+          this.$store.commit('set_ui_schema_editing_state', true);
+          this.show_ui_schema_context_menu = true
+          this.$store.commit('set_ui_schema_add_menu', true);
+        },
+
+        update_label_settings: function (event) {
+          this.label_settings = event
+          this.refresh = Date.now()
+        },
         cancel_merge: function(){
           this.$store.commit('set_instance_select_for_merge', false);
         },
@@ -2681,7 +2805,8 @@
 
           let index = update.index
           if (index == undefined) { return }  // careful 0 is ok.
-
+          let initial_instance = {...this.instance_list[index], initialized: false}
+          initial_instance = this.initialize_instance(initial_instance);
           // since sharing list type component need to determine which list to update
           // could also use render mode but may be different contexts
           if (!update.list_type || update.list_type == "default") {
@@ -2701,11 +2826,7 @@
           }
 
           if (update.mode == 'on_click_update_point_attribute'){
-            if (instance.nodes[update.node_hover_index].occluded == true) {
-              instance.nodes[update.node_hover_index].occluded = false
-            } else {
-              instance.nodes[update.node_hover_index].occluded = true
-            }
+            instance.toggle_occluded(update.node_hover_index)
           }
 
           // instance update
@@ -2783,17 +2904,20 @@
             let value = update.payload[1]
 
             // we assume this represents a group
+            initial_instance.prev_attribute = {
+              group: group.id,
+              value: {...instance.attribute_groups[group.id]}
+            }
             instance.attribute_groups[group.id] = value
             //console.debug(group, value)
           }
 
           // end instance update
 
-          let insert_instance_result = this.insert_instance(index, instance, update)
+          let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
 
           this.has_changed = true;
           this.trigger_refresh_with_delay()
-
 
         },
 
@@ -2804,36 +2928,14 @@
           return new_instance
         },
 
-        insert_instance(index, instance, update) {
+        insert_instance(index, instance, initial_instance, update) {
           // Use index = ` -1 ` if New instnace
 
           // use splice to update, directly updating propery doesn't detect change vue js stuff
           //  question, this extra update step is only needed for the attribute stuff right?
+          const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+          this.command_manager.executeCommand(command);
 
-          if (!update.list_type || update.list_type == "default") {
-            if (index === -1){
-              this.instance_list.push(instance)
-            } else {
-              this.instance_list.splice(index, 1, instance)
-            }
-            // update instance buffer
-            if (this.video_mode == true)  {
-              if (this.current_frame in this.instance_buffer_dict){
-                // Updating existing reference
-                if (index === -1){
-                  this.instance_buffer_dict[this.current_frame].push(instance)
-                } else {
-                  this.instance_buffer_dict[this.current_frame].splice(index, 1, instance)
-                }
-              }
-              else{
-                // This is ok ONLY becuase we already checked that the reference to instance_list
-                // did not exist
-                this.instance_buffer_dict[this.current_frame] = [instance]
-              }
-            }
-
-          }
           if (update.list_type == "gold_standard") {
             this.gold_standard_file.instance_list.splice(index, 1, instance)
           }
@@ -2852,6 +2954,11 @@
           else if(this.$props.task){
             this.on_change_current_task();
           }
+
+          if (this.$props.enabled_edit_schema == true) {
+            this.edit_ui_schema()
+          }
+
         },
 
         update_user_settings_from_store() {
@@ -2918,10 +3025,7 @@
         },
 
         async mounted() {
-          this.canvas_mouse_tools = new CanvasMouseTools(
-            this.mouse_position,
-            this.canvas_translate,
-          )
+
           //console.debug("mounted")
           // Reset issue mode
           this.$store.commit('set_instance_select_for_issue', false);
@@ -2932,10 +3036,18 @@
           this.fetch_model_run_list();
           this.fetch_instance_template();
 
-          this.update_canvas()
-
+          this.canvas_mouse_tools = new CanvasMouseTools(
+            this.mouse_position,
+            this.canvas_translate,
+            this.canvas_element,
+            this.canvas_scale_global,
+            this.canvas_width,
+            this.canvas_height
+          )
+          this.on_canvas_scale_global_changed()
           // assumes canvas wrapper available
-          this.canvas_wrapper.style.display = ""
+          this.canvas_wrapper.style.display = "";
+
 
           var self = this
           this.get_instances_watcher = this.$store.watch((state) => {
@@ -3182,6 +3294,9 @@
           if (this.$store.state.user.settings.hide_ghost_canvas_available_alert == true) {
             return
           }
+          if (this.label_settings.show_ghost_instances == false) {
+            return
+          }
           if (this.ghost_instance_list.length >= 1) {
             this.canvas_alert_x = this.mouse_position.x
             this.canvas_alert_y = this.mouse_position.y
@@ -3346,19 +3461,17 @@
 
         zoom_wheel_scroll_canvas_transform_update: function (event) {
 
-          this.hide_context_menu()    // context of position updating looks funny if it stays
+          this.hide_context_menu()
+          this.canvas_mouse_tools.zoom_wheel(event);
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
 
-          this.canvas_scale_local = this.canvas_mouse_tools.zoom_wheel_scroll_canvas_transform_update(
-            event, this.canvas_scale_local)
-
-          this.canvas_translate = this.canvas_mouse_tools.zoom_wheel_canvas_translate(
-            event, this.canvas_scale_local)
         },
 
         reset_to_full: function () {
-          this.canvas_translate.x = 0
-          this.canvas_translate.y = 0
-          this.canvas_scale_local = 1
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.canvas_mouse_tools.scale = this.canvas_mouse_tools.canvas_scale_global;
+          this.update_canvas();
         },
 
         get_center_point_of_instance:function (instance) {
@@ -3398,7 +3511,7 @@
 
         auto_revert_snapped_to_instance_if_unchanged: function (instance) {
           if (this.snapped_to_instance == instance) {
-            this.reset_to_full()
+            this.focus_instance_show_all()
             this.snapped_to_instance = undefined
             return true
           }
@@ -3407,15 +3520,16 @@
 
         get_zoom_region_of_instance: function (instance){
           let max_zoom = 10
-          let max_x = this.clamp_values(max_zoom, 0, this.canvas_width / instance.width)
-          let max_y = this.clamp_values(max_zoom, 0, this.canvas_height / instance.height)
-          let max_zoom_to_show_all = this.clamp_values(3, max_x, max_y)
-          let padding = -0.5
-          return max_zoom_to_show_all + padding
+          let padding = -2
+          let max_x = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_width / instance.width)
+          let max_y = this.clamp_values(max_zoom, this.canvas_scale_global, this.canvas_height / instance.height)
+          let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y)
+          max_zoom_to_show_all += padding
+          max_zoom_to_show_all = this.clamp_values(max_zoom_to_show_all, this.canvas_scale_global, max_zoom)
+          return max_zoom_to_show_all
         },
 
         snap_to_instance: function (instance){
-
           if (this.label_settings.enable_snap_to_instance == false) {
             return
           }
@@ -3424,14 +3538,17 @@
             return
           }
 
+          this.$refs.instance_detail_list.focus_mode = true
+          this.$refs.instance_detail_list.change_instance(instance, this.instance_focused_index)
+
           this.snapped_to_instance = instance
 
           let point = this.get_focus_point_of_instance(instance)
 
-          this.canvas_translate.x = point.x * this.canvas_scale_global
-          this.canvas_translate.y = point.y * this.canvas_scale_global
-
-          this.canvas_scale_local = this.get_zoom_region_of_instance(instance)
+          let scale = this.get_zoom_region_of_instance(instance);
+          this.canvas_mouse_tools.zoom_to_point(point, scale)
+          this.zoom_value = this.canvas_mouse_tools.scale;
+          this.update_canvas();
         },
 
         update_label_file_visible: function (label_file) {
@@ -3637,7 +3754,7 @@
         point_is_intersecting_circle: function (mouse, point, radius = 8) {
           // Careful this is effected by scale
           // bool, true if point if intersecting circle
-          let radius_scaled = radius / this.canvas_transform['canvas_scale_combined']
+          let radius_scaled = radius / this.zoom_value
           const result = Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) < radius_scaled;  // < number == circle.radius
           return result
         },
@@ -4649,13 +4766,14 @@
             instance.y_max = Math.max(instance.p1.y, instance.p2.y)
           }
           else if(['keypoints'].includes(instance.type)){
-            instance.calculate_min_max_points()
+            // instance.calculate_min_max_points()
           }
-
-          instance.x_min = parseInt(instance.x_min)
-          instance.y_min = parseInt(instance.y_min)
-          instance.x_max = parseInt(instance.x_max)
-          instance.y_max = parseInt(instance.y_max)
+          else{
+            instance.x_min = parseInt(instance.x_min)
+            instance.y_min = parseInt(instance.y_min)
+            instance.x_max = parseInt(instance.x_max)
+            instance.y_max = parseInt(instance.y_max)
+          }
 
         },
         move_keypoints: function(){
@@ -4695,10 +4813,6 @@
           }
           if (this.instance_hover_index != undefined && this.instance_hover_type === 'curve') {
             curve_did_move = this.move_curve(event)
-          }
-
-          if (this.instance_hover_index != undefined && this.instance_hover_type === 'keypoints') {
-            key_points_did_move = this.move_keypoints(event)
           }
           // want this seperate from other conditinos for now
           // this is similar to that "activel drawing" concept
@@ -5041,8 +5155,6 @@
 
         onRendered: function (ctx) {
 
-          // IMPORTANT   restore canvas from various transform operations
-          ctx.restore()
         },
 
         test: function () {
@@ -5052,36 +5164,68 @@
         mouse_transform: function (event, mouse_position) {
           this.populate_canvas_element();
           return this.canvas_mouse_tools.mouse_transform(
-            event, mouse_position, this.canvas_element, this.update_canvas, this.canvas_transform)
+            event,
+            mouse_position,
+            this.canvas_element,
+            this.update_canvas,
+            this.canvas_transform)
         },
 
         helper_difference_absolute: function (a, b) { return Math.abs(a - b) },
 
 
         move_position_based_on_mouse: function (movementX, movementY) {
-
-          // using local could work if we also "dragged" it... but feels funny for free move
-          // let x = this.canvas_translate.x + (movementX / this.canvas_scale_local)
-          // let y = this.canvas_translate.y + (movementY / this.canvas_scale_local)
-          let x = this.canvas_translate.x + movementX
-          let y = this.canvas_translate.y + movementY
-
-          /* Below are Locks so it doesn't go out of bounds.
-       * if it goes out of boudnds (ie negative or greater then image actual)
-       * then it causes severe rendering error.
-       *
-       * careful, we assume we need to compare to scaled value
-       * base on rest of context
-       * This is wishy washy answer but basically console logged
-       * and it was clear neeeded scaled value from that.
-       */
-          if (x >= 0 && x < this.canvas_width_scaled){
-            this.canvas_translate.x = x
-          }
-          if (y >= 0 && y < this.canvas_height_scaled){
-            this.canvas_translate.y = y
+          if(this.canvas_mouse_tools.scale === this.canvas_scale_global){
+            return
           }
 
+          // Map Bounds to World
+          var transform = this.canvas_mouse_tools.canvas_ctx.getTransform();
+
+          let min_point = this.canvas_mouse_tools.map_point_from_matrix(1, 1, transform)
+
+          let max_point = this.canvas_mouse_tools.map_point_from_matrix(
+            this.canvas_width - 1, this.canvas_height- 1, transform)
+
+          //console.log(min_point.x, min_point.y)
+
+          // Propose Position with Movement
+          let x_min_proposed = Math.max(0 + movementX, 0)
+          let y_min_proposed = Math.max(0 + movementY, 0)
+
+          let x_max_proposed = Math.min(this.canvas_width_scaled + movementX,  this.canvas_width_scaled)
+          let y_max_proposed = Math.min(this.canvas_height_scaled + movementY, this.canvas_height_scaled)
+
+          // Test if proposed position will break world mapped bounds
+          let current_trans_x = transform.e;
+          if ( x_min_proposed > min_point.x
+            && x_max_proposed < max_point.x){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_x(
+              movementX, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementX < 0 && new_bounds.x_min > 0){
+              movementX = movementX + new_bounds.x_min
+            }
+            if(movementX > 0 && new_bounds.x_max < x_max_proposed){
+              movementX = movementX - (x_max_proposed - new_bounds.x_max)
+            }
+            this.canvas_mouse_tools.pan_x(movementX)
+          }
+
+          if ( y_min_proposed > min_point.y
+            && y_max_proposed < max_point.y ){
+            let new_bounds = this.canvas_mouse_tools.get_new_bounds_from_translate_y(
+              movementY, this.canvas_width - 1, this.canvas_height - 1)
+
+            if(movementY < 0 && new_bounds.y_min > 0){
+              movementY = movementY + new_bounds.y_min
+            }
+            if(movementY > 0 && new_bounds.y_max < y_max_proposed){
+              movementY = movementY - (y_max_proposed - new_bounds.y_max)
+            }
+
+            this.canvas_mouse_tools.pan_y(movementY)
+          }
         },
 
         mouse_move: function (event) {
@@ -5095,6 +5239,7 @@
         window.focus()
       }
       */
+
           this.mouse_position = this.mouse_transform(event, this.mouse_position);
           if (this.ctrl_key === true) {
             this.move_position_based_on_mouse(event.movementX, event.movementY)
@@ -5129,7 +5274,10 @@
           // For refactored instance types (eventually all should be here)
           const mouse_move_interaction = this.generate_event_interactions(event);
           if(mouse_move_interaction){
-            mouse_move_interaction.process();
+            let did_move_instance = mouse_move_interaction.process();
+            if(did_move_instance){
+              this.has_changed = true;
+            }
           }
           //console.debug(this.mouse_position)
         },
@@ -5451,7 +5599,6 @@
               this.is_actively_resizing = false
             }
           }
-
           this.$store.commit('mouse_state_up')
 
           this.polygon_click_index = null
@@ -5661,69 +5808,69 @@
         },
 
         mouse_down_limits: function (event) {
-          /* not a fan of having a value
-       * and a flag... but also have to deal with both
-       * mouse up and down firing, but not wanting to rerun this stuff twice
-       * If there was a way to control the relation of mouse up/down
-       * firing but that feels very unclear
-       *
-       * Also not sure if we don't return will it wait for the function
-       * to complete as expected...
-       *
-       * So the default here is that it's true,
-       * and we expect that if it's true mouse_up will also allow it to continue
-       * It gets reset each time.
-       *
-       * In comparison to running this at save,
-       * it means for current video boxes it will run twice
-       * But the benefit is that then it prevents it from getting into broken state
-       * in first place
-       */
+            /* not a fan of having a value
+         * and a flag... but also have to deal with both
+         * mouse up and down firing, but not wanting to rerun this stuff twice
+         * If there was a way to control the relation of mouse up/down
+         * firing but that feels very unclear
+         *
+         * Also not sure if we don't return will it wait for the function
+         * to complete as expected...
+         *
+         * So the default here is that it's true,
+         * and we expect that if it's true mouse_up will also allow it to continue
+         * It gets reset each time.
+         *
+         * In comparison to running this at save,
+         * it means for current video boxes it will run twice
+         * But the benefit is that then it prevents it from getting into broken state
+         * in first place
+         */
 
-          // default
-          this.mouse_down_limits_result = true
+            // default
+            this.mouse_down_limits_result = true
 
-          // 1: left, 2: middle, 3: right, could be null
-          // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
+            // 1: left, 2: middle, 3: right, could be null
+            // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
 
-          if (event.which == 2 || event.which == 3) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.show_context_menu == true) {
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // this feels a bit funny
-          if (this.draw_mode == false) { return true }
-
-          if (this.space_bar == true || this.ctrl_key) {
-            // note pattern of needing both... for now this
-            // is so the mouse up respects this too
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          // TODO clarify if we could just do this first check
-          if (!this.current_label_file || !this.current_label_file.id) {
-            this.snackbar_warning = true
-            this.snackbar_warning_text = "Please select a label first"
-            this.mouse_down_limits_result = false
-            return false
-          }
-
-          if (this.video_mode == true) {
-            if (this.validate_sequences() == false) {
+            if (event.which == 2 || event.which == 3) {
               this.mouse_down_limits_result = false
               return false
             }
-          }
 
-          return true
+            if (this.show_context_menu == true) {
+              this.mouse_down_limits_result = false
+              return false
+            }
 
-        },
+            // this feels a bit funny
+            if (this.draw_mode == false) { return true }
+
+            if (this.space_bar == true || this.ctrl_key) {
+              // note pattern of needing both... for now this
+              // is so the mouse up respects this too
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            // TODO clarify if we could just do this first check
+            if (!this.current_label_file || !this.current_label_file.id) {
+              this.snackbar_warning = true
+              this.snackbar_warning_text = "Please select a label first"
+              this.mouse_down_limits_result = false
+              return false
+            }
+
+            if (this.video_mode == true) {
+              if (this.validate_sequences() == false) {
+                this.mouse_down_limits_result = false
+                return false
+              }
+            }
+
+            return true
+
+          },
 
         create_instance_events: function (instance_index=this.instance_list.length - 1) {
           this.event_create_instance = {...this.current_instance}
@@ -5845,7 +5992,8 @@
 
             let points = polygon.points;
             let figure_list = this.get_polygon_figures(polygon);
-            if(figure_list === 0){
+
+            if(figure_list.length === 0){
               let autoborder_point_exists = this.find_auto_border_point(polygon, points, instance_index);
               if(autoborder_point_exists){
                 found_point = true;
@@ -5956,6 +6104,7 @@
 
           // TODO new method ie
           // this.is_actively_drawing = true
+          this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
           if (this.$props.view_only_mode == true) {
             return
@@ -5986,6 +6135,7 @@
               this.ellipse_mouse_down()
             }
             if (this.instance_type == "box") {
+
               this.bounding_box_mouse_down();
             }
             if (this.instance_type == "keypoints") {
@@ -6015,7 +6165,6 @@
           this.mouse_down_position.request_time = Date.now()
           this.lock_polygon_corner();
           this.polygon_mid_point_mouse_down()
-
 
 
         },
@@ -6341,6 +6490,7 @@
           // bottom of https://www.sitepoint.com/delay-sleep-pause-wait/
           // use aysnc in front of function
         },
+
         next_issue_task: async function(task){
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6371,7 +6521,7 @@
             this.loading = false;
           }
         },
-        trigger_task_change: async function(direction, task){
+        trigger_task_change: async function(direction, task, assign_to_user=False){
           // Keyboard shortcuts case
           if (this.loading == true || this.annotations_loading == true) { return }
 
@@ -6384,7 +6534,7 @@
           this.reset_for_file_change_context()
 
           // Ask parent for a new task
-          this.$emit('request_new_task', direction, task)
+          this.$emit('request_new_task', direction, task, assign_to_user)
         },
 
         reset_for_file_change_context: function (){
@@ -6401,9 +6551,47 @@
           }
 
         },
+        annotation_show_activate(show_type){
+          this.annotation_show_on = !this.annotation_show_on
+          this.annotation_show_type = show_type
+        },
+        annotation_show_change_item() {
+          let do_change_item
+
+          let file = this.file || this.task.file
+          if (file.type == "video"){
+            if (this.$refs.video_controllers.at_end_of_video == true) {
+              do_change_item = true
+            }
+            else {
+              this.$refs.video_controllers.move_frame(1)
+            }           
+          }
+          if (file.type == "image") {
+            do_change_item = true
+          }
+
+          if (do_change_item == true) {
+            if (this.annotation_show_type === "task") {
+              return this.trigger_task_change("next", this.$props.task, true)
+            }
+            this.change_file("next")
+          }
+        },
+        set_annotation_show_duration(duration){
+          this.annotation_show_duration_per_instance = (duration + 1) * 1000
+        },
         change_file(direction, file){
           if (direction == "next" || direction == "previous") {
             this.$emit('request_file_change', direction, file);
+          }
+        },
+        set_ui_schema(){
+          if(this.$props.task && this.$props.task.job && this.$props.task.job.ui_schema){
+            this.$store.commit('set_ui_schema', this.$props.task.job.ui_schema);
+          }
+          else{
+            this.$store.commit('clear_ui_schema');
           }
         },
         on_change_current_task: async function(){
@@ -6426,8 +6614,11 @@
           await this.prepare_canvas_for_new_file();
 
           this.full_file_loading = false;
+          this.annotation_show_progress = 0
           this.ghost_clear_for_file_change_context()
-
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
         on_change_current_file: async function () {
           if (!this.$props.file) { return }
@@ -6456,6 +6647,9 @@
 
           this.full_file_loading = false;
           this.ghost_clear_for_file_change_context()
+          this.on_canvas_scale_global_changed(this.label_settings.canvas_scale_global_setting);
+          this.canvas_mouse_tools.reset_transform_with_global_scale();
+          this.set_ui_schema();
         },
 
         refresh_attributes_from_current_file: async function (file) {
@@ -6538,11 +6732,7 @@
                 this.snackbar_success = true
                 this.snackbar_success_text = "Deferred for review. Moved to next."
 
-                //
-                // Question, change_file() seems to save by default here
-                // do we want that?
-                // maybe a good idea since a deferred task could still have work done
-                this.trigger_task_change('next', this.$props.task)
+                this.trigger_task_change('next', this.$props.task, true)
 
               }
 
@@ -6657,7 +6847,7 @@
             }
           }
         },
-        
+
         may_snap_to_instance: function (event) {
           if (this.shift_key == true && event.key === "F") {
             this.snap_to_instance(this.selected_instance)
@@ -6814,7 +7004,6 @@
           this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
         },
         initialize_instance: function(instance){
-          // TODO: add other instance types as they are migrated to classes.
           if(instance.type === 'keypoints' && !instance.initialized){
             let initialized_instance = new KeypointInstance(
               this.mouse_position,
@@ -6824,6 +7013,7 @@
               this.instance_selected,
               this.instance_deselected,
               this.mouse_down_delta_event,
+              this.mouse_down_position,
               this.label_settings
             );
             initialized_instance.populate_from_instance_obj(instance);
@@ -7034,7 +7224,7 @@
             this.set_clipboard([this.instance_clipboard]);
           }
           else{
-            alert('Copy paste not implements for multiple instnaces.')
+            alert('Copy paste not implemented for multiple instnaces.')
             // TODO implement flag limit conditions for multi selects.
             if(!this.selected_instance && instance_index == undefined){return}
           }
@@ -7047,6 +7237,131 @@
           this.draw_mode = draw_mode    // context from external component like toolbar
           this.update_draw_mode_on_instances(draw_mode);
           this.is_actively_drawing = false    // QUESTION do we want this as a toggle or just set to false to clear
+        },
+
+        add_ids_to_new_instances_and_delete_old: function(response, request_video_data){
+          /*
+      * This function is used in the context of AnnotationUpdate.
+      * The new created/deleted instances are merged without loss of the current
+      * frontend data (like selected context for example).
+      * This is done by destructuring the new instance (the one received from backend)
+      * and then adding the original instance keys on top of the new one.
+      * */
+          // Add instance ID's to the newly created instances
+
+          const new_added_instances = response.data.added_instances;
+          const new_deleted_instances = response.data.deleted_instances;
+          let instance_list = this.instance_list;
+          if(this.video_mode){
+            instance_list = this.instance_buffer_dict[request_video_data.current_frame]
+          }
+          for(let i = 0;  i < instance_list.length; i++){
+            const current_instance = instance_list[i]
+            if(!current_instance.id){
+              // Case of a new instance added
+              const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
+              if(new_instance.length > 0){
+                // Now update the instance with the new ID's provided by the API
+                current_instance.id = new_instance[0].id;
+                current_instance.root_id =  new_instance[0].root_id;
+                current_instance.version =  new_instance[0].version;
+                current_instance.sequence_id = new_instance[0].sequence_id;
+                current_instance.number = new_instance[0].number;
+                instance_list.splice(i, 1, current_instance)
+
+              }
+            }
+            else{
+              // Case of an instance updated.
+              const new_instance = new_added_instances.filter(x => x.previous_id === current_instance.id)
+              if(new_instance.length > 0){
+                // Now update the instance with the new ID's provided by the API
+                current_instance.id = new_instance[0].id;
+                current_instance.root_id =  new_instance[0].root_id;
+                current_instance.previous_id =  new_instance[0].previous_id;
+                current_instance.version =  new_instance[0].version;
+                current_instance.sequence_id = new_instance[0].sequence_id;
+                current_instance.number = new_instance[0].number;
+                instance_list.splice(i, 1, current_instance)
+
+              }
+            }
+
+          }
+
+
+          const current_frontend_instances = instance_list.map(id => id);
+
+        },
+        hash_string: function(str){
+          return sha256(str)
+        },
+        has_duplicate_instances: function(instance_list){
+          if(!instance_list){
+            return [false, [], []];
+          }
+          const hashes = {};
+          const dup_ids = [];
+          const dup_indexes = [];
+          for(let i = 0; i < instance_list.length; i++){
+            const inst = instance_list[i];
+            if(inst.soft_delete){
+              continue;
+            }
+            const inst_data = {
+              type: inst.type,
+              x_min: inst.x_min,
+              y_min: inst.y_min,
+              y_max: inst.y_max,
+              x_max: inst.x_max,
+              p1: inst.p1,
+              p2: inst.p2,
+              cp: inst.cp,
+              center_x: inst.center_x,
+              center_y: inst.center_y,
+              angle: inst.angle,
+              width: inst.width,
+              height: inst.height,
+              start_char: inst.start_char,
+              end_char: inst.end_char,
+              start_token: inst.start_token,
+              end_token: inst.end_token,
+              start_sentence: inst.start_sentence,
+              end_sentence: inst.end_sentence,
+              sentence: inst.sentence,
+              label_file_id: inst.label_file_id,
+              number: inst.number,
+              rating: inst.rating,
+              points: inst.points ? inst.points.map(point => {return {...point}}) : inst.points,
+              nodes: inst.nodes ? inst.nodes.map(node => {return {...node}}) : inst.nodes,
+              front_face: {...inst.front_face},
+              rear_face: {...inst.rear_face},
+              soft_delete: inst.soft_delete,
+              attribute_groups: {...inst.attribute_groups},
+              machine_made: inst.machine_made,
+              sequence_id: inst.sequence_id,
+              pause_object: inst.pause_object
+            }
+
+            // We want a nested stringify with sorted keys. Builtin JS does not guarantee sort on nested objs.
+            const inst_hash_data = stringify(inst_data)
+            let inst_hash = this.hash_string(inst_hash_data)
+            if(hashes[inst_hash]){
+              dup_ids.push(inst.id ? inst.id : 'New Instance')
+              dup_ids.push(hashes[inst_hash][0].id ? hashes[inst_hash][0].id : 'New Instance')
+
+              dup_indexes.push(i)
+              dup_indexes.push(hashes[inst_hash][1])
+              return [true, dup_ids, dup_indexes];
+
+            }
+            else{
+              hashes[inst_hash] = [inst, i]
+            }
+
+          }
+          return [false, dup_ids, dup_indexes];
+
         },
         refresh_sequence_frame_list: function(instance_list, frame_number){
 
@@ -7244,13 +7559,12 @@
               this.snackbar_success = true
               this.snackbar_success_text = "Saved and completed. Moved to next."
 
-              if(this.task && this.task.id){   // props
-                this.trigger_task_change('next', this.task)
+              if(this.$props.task && this.$props.task.id){
+                this.trigger_task_change('next', this.$props.task, true)
               }
               else{
-                this.trigger_task_change('next', 'none')    // important
+                this.trigger_task_change('next', 'none', true)    // important
               }
-
 
             }
             this.has_changed = check_if_pending_created_instance(this.instance_list);

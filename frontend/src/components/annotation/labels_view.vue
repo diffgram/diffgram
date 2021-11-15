@@ -327,7 +327,7 @@
             <v-alert type="info"
                      dismissible
             >
-              Once a Task Template is launched the labels for that are "locked" by default.
+              Once Tasks are launched the labels for those Tasks are "locked" by default.
             </v-alert>
 
           </v-card>
@@ -666,9 +666,8 @@
         create_sample_labels: async function(){
           this.loading_create_sample_data = true;
           try{
-            const response = await axios.post('/api/walrus/v1/gen-data', {
-              data_type: 'label',
-              project_id: this.$store.state.project.current.id,
+            const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
+              data_type: 'label'
             })
             if(response.status === 200){
               this.refresh_labels_function();

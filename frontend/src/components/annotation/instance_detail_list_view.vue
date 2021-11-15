@@ -877,7 +877,6 @@ import Vue from "vue";
       },
 
       attribute_change: function (attribute) {
-
         this.instance_update(
              "attribute_change",
               this.current_instance_index,

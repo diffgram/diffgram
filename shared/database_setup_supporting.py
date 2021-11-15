@@ -63,3 +63,7 @@ from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.userscript.userscript import UserScript
 from shared.database.system_events.system_events import SystemEvents
+
+from shared.database.ui_schema.ui_schema import UI_Schema
+from shared.database.task.task_event import TaskEvent
+from shared.database.task.task_user import TaskUser

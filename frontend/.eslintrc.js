@@ -8,7 +8,8 @@ module.exports = {
   env: {
 		browser: true,
     es6: true,
-    mocha: true
+    mocha: true,
+    jest: true,
   },
   rules: {
     'vue/prop-name-casing': 'off',
@@ -23,4 +24,3 @@ module.exports = {
     // 'vue/no-deprecated-filter': 'off',
   }
 };
-

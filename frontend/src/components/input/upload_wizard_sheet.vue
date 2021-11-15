@@ -59,7 +59,7 @@
       <v-progress-linear
         color="secondary"
         striped
-        v-model="global_progress"
+        :value="global_progress"
         height="12"
       >
       </v-progress-linear>
@@ -71,52 +71,58 @@
               <v-icon x-large color="primary">mdi-upload</v-icon>
               Welcome to the Diffgram Upload Wizard!
             </h1>
-            <h3 class="text-center">We will guide you through all the steps you need to take to add new data to your
-              project</h3>
-            <br>
-            <br>
-            <h2 class="text-center mb-12">Do you want to upload new data or update existing files?</h2>
+            <h3 class="text-center mb-12">Do you want to upload new data or update existing files?</h3>
+
             <div class="d-flex justify-space-around ">
-              <v-btn
-                x-large
-                data-cy="upload_existing_data"
-                color="primary lighten-2"
-                @click="set_upload_mode('update')"
-              >Update Existing
-              </v-btn>
-              <v-btn
+               <v-btn
                 color="primary"
                 x-large
                 data-cy="upload_new_data"
                 @click="set_upload_mode('new')"
               >
-                Upload New Data
+                <v-icon left> mdi-file-plus</v-icon>
+                New
+              </v-btn>
+
+              <v-btn
+                x-large
+                data-cy="upload_existing_data"
+                color="primary lighten-2"
+                @click="set_upload_mode('update')"
+              >
+                <v-icon left> mdi-update</v-icon>
+                Update
               </v-btn>
             </div>
+
+           <div class="d-flex flex-column mt-12 justify-center align-center">
+ 
+            <h4 class="mb-4 primary--text lighten-2">
+                Want an example to test out?
+            </h4>
+          
+            <v-btn
+                text
+                small
+                href="https://storage.googleapis.com/diffgram-002/public/diffgramDataUploadExample.zip">
+                <v-icon left> mdi-download</v-icon>
+            Download Sample
+            </v-btn>
+                        
+            </div>
+
             <div class="d-flex flex-column mt-12 justify-center align-center">
               <h4 class="mb-4 primary--text lighten-2">
                 <v-icon>mdi-database-check-outline</v-icon>
-                Want an example JSON to test out?
+                Have a Diffgram export file?
               </h4>
-              <p class="secondary--text"><strong>
-                <a class="secondary--text"
-                   href="https://storage.googleapis.com/diffgram-002/public/diffgramDataUploadExample.zip">
-                  <v-icon large>mdi-download</v-icon>
-                  Download our sample data clicking here.
-                </a>
-              </strong></p>
-            </div>
-            <div class="d-flex flex-column mt-12 justify-center align-center">
-              <h2 class="mb-4 primary--text lighten-2">
-                <v-icon>mdi-database-check-outline</v-icon>
-                Do you have a Diffgram Export File?
-              </h2>
               <v-btn
-                color="secondary lighten-1"
                 data-cy="from_diffgram_export"
+                text
+                small
                 @click="set_upload_mode('from_diffgram_export')"
               >
-                Upload New From Diffgram Export JSON
+                Re-Import a Diffgram Export
               </v-btn>
             </div>
           </div>
@@ -259,6 +265,7 @@
             :currently_uploading="currently_uploading_bytes"
             :progress_percentage="progress_percentage"
             @close_wizard="close"
+            @success_upload="on_success_upload"
           >
 
           </upload_progress>
@@ -514,6 +521,12 @@
       },
 
       methods: {
+        on_success_upload: function(){
+          this.is_open = false;
+          Object.assign(this.$data, get_initial_state());
+          this.$emit('upload_success')
+          this.$router.push({query: {}}).catch(()=>{});
+        },
         update_is_actively_sending: function(is_actively_sending){
           this.is_actively_sending = is_actively_sending
         },

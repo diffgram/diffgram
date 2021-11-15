@@ -61,6 +61,12 @@ job_new_spec_list = [
         'kind': str
     }
     },
+    {"ui_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
+    }
+    },
     {"td_api_trainer_basic_training": {
         'default': False,
         'kind': bool,
@@ -83,7 +89,8 @@ job_new_spec_list = [
     },
     {"label_file_list": {
         'default': None,
-        'kind': list
+        'kind': list,
+        'allow_empty': True,
         }
     },
     {"file_handling": {
@@ -98,6 +105,13 @@ job_new_spec_list = [
         'kind': list,
         'required': False
         }
+    },
+    {"reviewer_list_ids": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+    }
     },
     {"pro_network": {
         'default': False,
@@ -148,6 +162,12 @@ update_job_spec_list = [
     {"file_handling": {
         'kind': str,
         'default': None
+    }
+    },
+    {"ui_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
     }
     },
     {"instance_type": {
@@ -202,7 +222,8 @@ update_job_spec_list = [
     },
     {"label_file_list": {
         'default': None,
-        'kind': list
+        'kind': list,
+        'allow_empty': True
         }
     },
     {"member_list_ids": {
@@ -211,6 +232,13 @@ update_job_spec_list = [
         'allow_empty': True,
         'required': False
         }
+    },
+    {"reviewer_list_ids": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+    }
     },
     {"pro_network": {
         'kind': bool,
@@ -382,7 +410,9 @@ def job_update_core(session, job, project, input: dict, log: dict):
             interface_connection_id=input.get('interface_connection_id'),
             job_type=input['type'],
             member_list_ids=input['member_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             default_userscript_id=input.get('default_userscript_id'),
+            ui_schema_id=input.get('ui_schema_id'),
             job=job
         )
         return job, log
@@ -509,6 +539,7 @@ def new_web(project_string_id):
             job_type=input['type'],
             interface_connection_id=input.get('interface_connection_id'),
             member_list_ids=input['member_list_ids'],
+            reviewer_list_ids=input.get('reviewer_list_ids'),
             attached_directories_dict=input['attached_directories_dict'],
             pro_network=input['pro_network'],         
             default_userscript_id=input['default_userscript_id']
@@ -587,9 +618,11 @@ def new_or_update_core(session,
                        output_dir_action='nothing',
                        completion_directory_id=None,
                        interface_connection_id=None,
+                       ui_schema_id=None,
                        job_type=None,
                        job=None,
                        member_list_ids=None,
+                       reviewer_list_ids=None,
                        pro_network=False,
                        default_userscript_id=None):
     """
@@ -616,10 +649,14 @@ def new_or_update_core(session,
     else:
         is_updating = True
 
-
     log = job.update_member_list(
         member_list_ids = member_list_ids,
         session = session,
+        log = log)
+
+    log = job.update_reviewer_list(
+        session = session,
+        reviewer_list_ids = reviewer_list_ids,
         log = log)
 
     if default_userscript_id:
@@ -634,20 +671,21 @@ def new_or_update_core(session,
 
         job.default_userscript_id = default_userscript.id
 
-    # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
-    job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)
-    if is_updating:
-        # Recreate labels information dict an update all tasks accordingly
-        """
-        The build label file list just does the raw IDs
-        job_label_attach does all the other magic
-        ie color maps, and also in future expansion the
-        label mode handling (like the "closed all availble")
+    if label_file_list:
+        # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
+        job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)
+        if is_updating:
+            # Recreate labels information dict an update all tasks accordingly
+            """
+            The build label file list just does the raw IDs
+            job_label_attach does all the other magic
+            ie color maps, and also in future expansion the
+            label mode handling (like the "closed all availble")
 
-        """
-        # Not really sure if tasks can exist while in draft mode but might be good idea to update anyways.
-        task_template_label_attach(session, job)
-        log = update_tasks(job, session, log)
+            """
+            # Not really sure if tasks can exist while in draft mode but might be good idea to update anyways.
+            task_template_label_attach(session, job)
+            log = update_tasks(job, session, log)
 
     if is_updating and job.share_type != share:
         job.share_type = share
@@ -663,8 +701,6 @@ def new_or_update_core(session,
         log['error']['kind'] = "Invalid share_type, valid options are: ['market', 'org', 'project']"
         return False, log
 
-    # What about validation on other inputs???
-    # Look at actions or other part of system for options here...
 
     job.launch_datetime = launch_datetime
     # We expect this to be a valid datetime object,
@@ -692,6 +728,7 @@ def new_or_update_core(session,
         'permission': permission,
         'label_mode': label_mode,
         'passes_per_file': passes_per_file,
+        'ui_schema_id': ui_schema_id,
         'instance_type': instance_type,
         'file_handling': file_handling,
         'output_dir_action': output_dir_action,
@@ -713,7 +750,6 @@ def new_or_update_core(session,
                 user = member.user)
         except:
             logger.info("Failed to email about new pro job")
-
     # Update sync dirs and completion directory ID
     if isinstance(attached_directories_dict, dict):
         job.update_attached_directories(session,

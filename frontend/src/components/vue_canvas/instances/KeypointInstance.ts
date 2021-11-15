@@ -12,10 +12,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public occluded: boolean = false;
   public is_bounding_box_hovered: boolean = false;
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
   public node_hover_index: any = undefined;
+  public center: any = undefined;
   public num_hovered_paths: number = 0;
   public is_drawing_edge: boolean = false;
   public is_moving: boolean = false;
@@ -27,11 +29,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public reference_width: number = undefined;
   public reference_height: number = undefined;
   public mouse_down_delta_event: any = undefined;
+  public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
-  private instance_rotate_control_mouse_hover: boolean = undefined
+  public instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
-  public label_settings: any = undefined 
+  public label_settings: any = undefined
+  private nearest_points_dict: any = undefined
+  private zoom_value: number = 1
 
 
   public get_instance_data(): object {
@@ -45,6 +50,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
               on_instance_selected = undefined,
               on_instance_deselected = undefined,
               mouse_down_delta_event = undefined,
+              mouse_down_position = undefined,
               label_settings = undefined) {
 
     super();
@@ -54,12 +60,23 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.on_instance_selected = on_instance_selected;
     this.on_instance_deselected = on_instance_deselected;
     this.mouse_down_delta_event = mouse_down_delta_event;
+    this.mouse_down_position = mouse_down_position;
     this.instance_context = instance_context;
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
     this.initialized = true;
+    this.occluded = false;
     this.ctx = ctx;
     this.label_settings = label_settings;
+    if (this.label_settings) {
+      this.vertex_size = this.label_settings.vertex_size
+      this.line_width = this.label_settings.spatial_line_size
+    } else {
+      this.label_settings = {}
+      this.label_settings.vertex_size = this.vertex_size
+      this.label_settings.line_width = this.line_width
+      this.label_settings.font_size = 20
+    }
   }
 
   public duplicate_for_undo(){
@@ -75,7 +92,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.on_instance_updated,
       this.on_instance_selected,
       this.on_instance_deselected,
-      this.mouse_down_delta_event
+      this.mouse_down_delta_event,
+      this.mouse_down_position,
+      this.label_settings,
     );
     let instance_data_to_keep = {
       ...this,
@@ -84,6 +103,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
     return duplicate_instance
+  }
+  public toggle_occluded(node_index){
+    // The intial state may be null that's why not using !value
+    if (this.nodes[node_index].occluded == true) {
+      this.nodes[node_index].occluded = false
+    } else {
+      this.nodes[node_index].occluded = true
+    }
   }
   public set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
@@ -129,7 +156,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if (this.node_hover_index != undefined) {
       this.is_moving = true;
     }
-    if(this.selected && this.is_bounding_box_hovered){
+    if(this.selected || (this.is_bounding_box_hovered && this.node_hover_index == undefined)){
       this.start_dragging();
     }
     if(this.instance_rotate_control_mouse_hover == true){
@@ -157,7 +184,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
 
       if(this.is_rotating == true) {
-        this.is_rotating = false
+        this.stop_rotating()
       }
 
     }
@@ -166,20 +193,19 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private do_rotation_movement() {
     this.angle = this.get_angle_of_from_rotation_control_movement()
-    var pi = Math.PI;
-    let degrees = this.angle  * (180/pi);
-
-    console.log('ANGLEEE', this.angle, degrees)
-    //console.log(this.angle)
   }
 
   private move_single_node(node) {
-    const x_move = this.mouse_down_delta_event.x;
-    const y_move = this.mouse_down_delta_event.y;
-    node.x += x_move;
-    node.y += y_move;
-    node.x = parseInt(node.x)
-    node.y = parseInt(node.y)
+    let x_move = this.mouse_down_delta_event.x;
+    let y_move = this.mouse_down_delta_event.y;
+    let old = {...node}
+    let old_x =  old.x
+    let old_y = old.y
+    let new_point = {x: 0, y:0};
+    new_point.x = old_x + x_move;
+    new_point.y = old_y + y_move;
+    node.x = new_point.x
+    node.y = new_point.y
     return node
   }
 
@@ -192,19 +218,19 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.is_moving = false;
   }
   public move(){
+
     if(this.is_rotating == true){
-      this.calculate_min_max_points()
       this.do_rotation_movement()
+      this.calculate_min_max_points();
       return true
     }
-    if (this.is_moving) {
-      this.calculate_min_max_points()
+    else if (this.is_moving) {
       this.move_node(event)
       return true;
     }
     else if(this.is_dragging_instance){
-      this.ctx.canvas.style.cursor = 'all-scroll'
       this.drag_instance(event);
+      this.calculate_min_max_points();
       return true
     }
     else{
@@ -212,17 +238,44 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
+  public get_rotated_min_max(){
+    let rotated_nodes = this.nodes.map(node => this.get_rotated_point(node, this.angle))
+    let min_x = Math.min(...rotated_nodes.map(n => n.x)) - this.vertex_size;
+    let max_x = Math.max(...rotated_nodes.map(n => n.x)) + this.vertex_size;
+    let min_y = Math.min(...rotated_nodes.map(n => n.y)) - this.vertex_size;
+    let max_y = Math.max(...rotated_nodes.map(n => n.y)) + this.vertex_size;
+    return {
+      min_x,
+      min_y,
+      max_x,
+      max_y
+    }
+  }
+  public get_center_point_rotated(){
+    let min_max_obj = this.get_rotated_min_max()
+
+    let center_x = (min_max_obj.max_x  + min_max_obj.min_x) / 2;
+    let center_y = (min_max_obj.min_y + min_max_obj.max_y) / 2;
+    return {
+      x: center_x, y: center_y
+    }
+  }
+
+  public calculate_center(){
+    // This is the unrotated center.
+    this.center_x = Math.round((this.x_max + this.x_min) / 2)
+    this.center_y = Math.round((this.y_max + this.y_min) / 2)
+    this.center = {x: this.center_x, y: this.center_y};
+  }
   private move_node(event): void {
     if (this.node_hover_index == undefined) {
       return
     }
     let node = this.nodes[this.node_hover_index]
-    //console.log(node.x, node.y, this.mouse_position.x, this.mouse_position.y, node)
     if (node) {
 
       node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
       node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
-      //console.log(node.x,node.y)
 
       this.instance_updated_callback(this);
     }
@@ -231,22 +284,25 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   private calculate_min_max_points(){
     if (this.nodes) {
       //TODO handle for case where it's rotated and user pushes bounds (causes whole object to move)
-      let x_node_rotated_list = [...this.nodes.map(p => p.x)]
-      let y_node_rotated_list = [...this.nodes.map(p => p.y)]
-      this.x_min = parseInt(Math.min(...x_node_rotated_list)) // careful math.min() expects destructured otherwised NaN
-      this.y_min = parseInt(Math.min(...y_node_rotated_list))
-      this.x_max = parseInt(Math.max(...x_node_rotated_list))
-      this.y_max = parseInt(Math.max(...y_node_rotated_list))
+      let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
+      let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
+      this.x_min = Math.round(Math.min(...x_node_unrotated_list)) // careful math.min() expects destructured otherwised NaN
+      this.y_min = Math.round(Math.min(...y_node_unrotated_list))
+      this.x_max = Math.round(Math.max(...x_node_unrotated_list))
+      this.y_max = Math.round(Math.max(...y_node_unrotated_list))
     }
   }
 
+  private get_scaled_and_rotated_point(point){
+    let x = this.get_scaled_x(point)
+    let y = this.get_scaled_y(point)
+    return {'x' : x, 'y' : y}
+  }
+
   private get_scaled_x(point){
-    //console.log(this.scale_width, this.reference_width, this.translate_x)
-    let x = point.x
-    //let degrees = 90;
-    //let angle =  degrees * (Math.PI/180)
+
     // Origin is center of shape
-    x = this.get_rotated_point(point).x
+    let x = this.get_rotated_point(point).x
 
     if(this.scale_width == undefined){return x }
     if(this.reference_width == undefined){return x}
@@ -258,6 +314,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let y = point.y;
     //let degrees = 90;
     //let angle =  degrees * (Math.PI/180)
+
     y = this.get_rotated_point(point).y
 
     if(this.scale_height == undefined){return y}
@@ -269,16 +326,21 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   private get_rotate_point_control_location(): {x: number, y: number}{
     // TODO
-    let x_top = this.x_max
-    let y_top = this.y_max
-    let v = {x: this.center_x - x_top, y: this.center_y - y_top};
-    let v_len = Math.sqrt( v.x ** 2 + v.y ** 2);
-    let u = {x: v.x / v_len, y: v.y / v_len};
+    let x_node_unrotated_list = [...this.nodes.map(p => p.x)]
+    let y_node_unrotated_list = [...this.nodes.map(p => p.y)]
+    let x_min = Math.round(Math.min(...x_node_unrotated_list))
+    let y_min = Math.round(Math.min(...y_node_unrotated_list))
+    let x_max = Math.round(Math.max(...x_node_unrotated_list))
+    let y_max = Math.round(Math.max(...y_node_unrotated_list))
+
+    let center_x = (x_max + x_min) / 2;
+    let center_y = (y_max +  y_min) / 2;
+
     let center_point =  {
-      x: this.center_x,
-      y: this.center_y + (this.height)
+      x: center_x,
+      y: center_y + (this.height)
     }
-    let rotated_center_point = this.get_rotated_point(center_point, this.angle);
+    let rotated_center_point = this.get_scaled_and_rotated_point(center_point);
     return rotated_center_point
   }
 
@@ -293,10 +355,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
 
     if (origin === undefined) {
-      origin = {
-        x: (this.x_max + this.x_min) / 2,
-        y: (this.y_max + this.y_min) / 2,
-      }
+      origin = this.center;
     }
 
     // Move point to origin
@@ -310,106 +369,130 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     qy = origin.y + qy
     return {x: qx, y: qy}
   }
-  private get_x_of_rotated_point(t, instance, h, angle=undefined){
-    let rot_angle = angle != undefined ? angle : instance.angle ;
-    let a = instance.width;
-    let b = instance.height;
-    let x = h + a*Math.cos(t) * Math.cos(rot_angle) - b * Math.sin(t) * Math.sin(rot_angle)
-    return x
-  }
-
-  private get_t(instance) {
-
-    let a = instance.width;
-    let b = instance.height;
-    let t = Math.atan(-(b) *  Math.tan(instance.angle))/ (a);
-    return t
-  }
-
-
-  private get_y_of_rotated_point(t, instance, k, angle=undefined){
-    let rot_angle = angle != undefined ? angle : instance.angle ;
-    let a = instance.width;
-    let b = instance.height;
-    let y = k + b*Math.sin(t) * Math.cos(rot_angle) + a * Math.cos(t) * Math.sin(rot_angle)
-    return y
-  }
 
   private get_angle_of_from_rotation_control_movement () {
     // Read: https://math.stackexchange.com/questions/361412/finding-the-angle-between-three-points
+    let center = {x: this.center_x, y: this.center_y}
 
-    let rotation_control_point = this.get_rotate_point_control_location();
-    let A = {x: rotation_control_point.x, y: rotation_control_point.y}
-    let B = {x: this.center_x, y: this.center_y}
-    B = this.get_rotated_point(B, this.angle)
+    let B = {x: center.x, y: center.y}
     let C = {x: this.mouse_position.x, y: this.mouse_position.y}
-    let A_len = Math.sqrt((A.x ** 2) + (A.y ** 2))
-    let B_len = Math.sqrt((B.x ** 2) + (B.y ** 2))
-    let C_len = Math.sqrt((C.x ** 2) + (C.y ** 2))
-    let BA = {x: A.x - B.x, y: A.y - B.y}
-    let BC = {x: C.x - B.x, y: C.y - B.y}
+    // let C = {x: rotate_point.x, y: rotate_point.y}
 
-    let BA_len = Math.sqrt((BA.x ** 2) + (BA.y ** 2))
-    let BC_len = Math.sqrt((BC.x ** 2) + (BC.y ** 2))
-    let BA_dot_BC = (BA.x * BC.x) + (BA.y * BC.y)
+    let BC = {x: C.x - B.x, y: C.y - B.y}
+    // BC = this.get_rotated_point(B, this.angle)
     // let theta = Math.acos(BA_dot_BC / (BA_len * BC_len))
     let theta = -Math.atan2(BC.x, BC.y)
-    let cross_ac = A_len * C_len * Math.sin(this.angle);
     let angle = 0;
     angle += theta
     return angle;
   }
 
 
-  private set_instance_color(){
+  public draw_rotate_point(
+      ctx): boolean {
 
-  }
-
-  private draw_rotate_point(
-      ctx,
-      draw_single_path_circle,
-      is_mouse_in_path,
-      i,
-      radius): boolean {
-
-    this.instance_rotate_control_mouse_hover = null
-
+    if(this.template_creation_mode){
+      return
+    }
     let rotate_point = this.get_rotate_point_control_location()
 
-    draw_single_path_circle(
-        rotate_point.x,
-        rotate_point.y ,
-        radius + 4, ctx, 'blue', '4px')
-    if(is_mouse_in_path(ctx, i, this)){
-
+    if(!rotate_point){
+      return this.instance_rotate_control_mouse_hover
+    }
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.fillStyle = 'white';
+    ctx.lineWidth = 2 / this.zoom_value;
+    ctx.arc(rotate_point.x, rotate_point.y, (this.vertex_size + 3) / this.zoom_value, 0, 2 * Math.PI);
+    ctx.fill()
+    ctx.stroke()
+    if(this.is_mouse_in_path(ctx)){
+      this.is_hovered = true
       this.instance_rotate_control_mouse_hover = true
+    }
+    else if(!this.is_rotating){
+      if(!this.is_bounding_box_hovered){
+        this.is_hovered = false
+      }
+      this.instance_rotate_control_mouse_hover = null
     }
 
     return this.instance_rotate_control_mouse_hover
   }
 
+  private draw_node_label(ctx, node){
+    // label draw_label
+
+    if (this.label_settings.show_text == false) {
+      return
+    }
+    if (this.label_settings.show_label_text == false) {
+      return
+    }
+    if(!node.name){
+      return
+    }
+    if(!this.is_hovered && !this.template_creation_mode) {
+      return
+    }
+
+    let prevfillStyle = ctx.fillStyle.toString();
+
+    let font_size = (this.label_settings.font_size * .75) / this.zoom_value;
+    ctx.font = font_size + "px Verdana";
+    ctx.textBaseline = 'bottom'
+
+    let message = node.name
+    let text_width = ctx.measureText(message).width;
+
+    ctx.fillStyle = "rgba(" + '255, 255, 255,' + this.label_settings.font_background_opacity + ")";
+
+    let text_height = font_size;
+    // the `y - text_height` assumes textBaseline = 'bottom', it's not needed if textBaseline = 'top'
+    let padding = 2 / this.zoom_value
+    let padding_from_point = 5 / this.zoom_value
+    let point_text = this.get_scaled_and_rotated_point(
+      {x: node.x + padding_from_point, y: node.y + padding_from_point  });
+    ctx.fillRect(
+      point_text.x,
+      point_text.y - text_height - padding,
+      text_width + padding,
+      text_height + padding)
+
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillText(message, point_text.x, point_text.y);
+
+
+
+    ctx.fillStyle = prevfillStyle
+
+
+
+  }
+
   public draw(ctx): void {
     this.ctx = ctx;
+
+    this.zoom_value = this.ctx.getTransform().a
+
     this.num_hovered_paths = 0;
     let i = 0;
-
     // Not sure where we want to set this
     this.width = this.x_max - this.x_min
     this.height = this.y_max - this.y_min
 
-    this.center_x = parseInt(this.x_max - (this.width / 2))
-    this.center_y = parseInt(this.y_max - (this.height / 2))
+    this.calculate_center()
 
     this.draw_instance_bounding_box(ctx)
 
-    // Draw current edge
     this.draw_currently_drawing_edge(ctx)
 
     this.draw_edges(ctx)
 
+    this.nearest_points_dict = {}
+
     for (let node of this.nodes) {
       // order of operations
-      ctx.lineWidth = 2;
 
       if (this.label_settings &&
           this.label_settings.show_occluded_keypoints == false &&
@@ -424,28 +507,29 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.fillStyle = this.fillColor;
       }
 
-
       let x = node.x
       let y = node.y
 
-      if(node.left_or_right == 'left') {
-        let apples = this.draw_icon(ctx, x, y, 'alert')
-      }
-      //if(node.left_or_right=='right') {
-      //  this.draw_icon(ctx, x, y, 'alert')
-      //}
-
       x = this.get_scaled_x(node)
       y = this.get_scaled_y(node)
-      //console.log(this)
 
       this.draw_point_and_set_node_hover_index(x, y, i, ctx)
+
+      this.draw_node_label(ctx, node);
+
+      this.draw_left_right_arrows(ctx, node, x, y)
+
       i += 1
     }
+    this.draw_rotate_point(ctx)
+    this.determine_and_set_nearest_node_hovered(ctx)
+
     if (this.num_hovered_paths === 0) {
       this.node_hover_index = undefined;
       this.is_node_hovered = false;
     }
+
+
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
       this.is_hovered = true;
@@ -455,14 +539,54 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.is_hovered = false;
       }
     }
-    if(this.instance_rotate_control_mouse_hover){
-      this.ctx.canvas.style.cursor = 'all-scroll'
+  }
+
+  private determine_and_set_nearest_node_hovered(ctx){
+    const sorted_keys = Object.keys(this.nearest_points_dict).map(elm => parseFloat(elm)).sort(function(a,b) { return a - b;})
+    const sorted: any[] =  sorted_keys.reduce(
+        (obj, key): any => {
+          obj[key.toString()] = this.nearest_points_dict[key.toString()];
+          return obj;
+        },
+        {}
+    );
+
+    if(!sorted || sorted.length === 0){
+      return
+    }
+    let index = parseInt(this.nearest_points_dict[Object.keys(sorted)[0]])
+    if(this.nodes[index] == undefined){
+      return
+    }
+    let point = {'x': this.nodes[index].x, 'y': this.nodes[index].y}
+    let radius = (this.vertex_size + 10) / this.zoom_value    // detection radius
+
+    if (this.point_is_intersecting_circle(
+      this.get_scaled_and_rotated_point(point),
+      this.mouse_position,
+      radius))
+    {
+      this.set_node_hovered(ctx, index)
+    }
+  }
+  private draw_left_right_arrows(ctx, node, x, y){
+    if (this.label_settings &&
+        this.label_settings.show_left_right_arrows == false) {
+      return
+    }
+    let size = (this.vertex_size * 4) / this.zoom_value
+    if(node.left_or_right == 'left') {
+      this.draw_icon(ctx, x - (10/this.zoom_value), y, 'arrow_left', size, 'rgb(255,0,0)')
+    }
+    if(node.left_or_right=='right') {
+      this.draw_icon(ctx, x + (10/this.zoom_value), y, 'arrow_right', size, 'rgb(0,255,0)')
     }
   }
 
 
   public stop_dragging(){
     this.is_dragging_instance = false;
+
   }
 
   public stop_rotating(){
@@ -473,7 +597,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.is_dragging_instance = true;
   }
   public add_node_to_instance() {
-    if (this.is_hovered) {
+    if (this.is_node_hovered) {
       if (this.current_node_connection.length === 1) {
         if(this.node_hover_index == undefined){return}
         let node = this.nodes[this.node_hover_index];
@@ -506,22 +630,45 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  private draw_icon(ctx, x, y, icon){
+  private draw_icon(
+        ctx, x, y, icon='arrow_left',
+        font_size=24, fillStyle='rgb(255,175,0)'){
+    // CAUTION if icon is invalid it won't render anything
+    // use `arrow_left` as an example that works
     if(!ctx.material_icons_loaded){
       return
     }
     const old_color = ctx.fillStyle;
     const old_font = ctx.font
-    ctx.beginPath();
-    ctx.font = '24px material-icons';
-    ctx.fillStyle = 'rgb(255,175,0)';
+    const old_textAlign = ctx.textAlign
+    const old_baseLine = ctx.textBaseline
+
+    ctx.font = font_size + 'px material-icons'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
     const text_icon = icon;
-    const text = ctx.fillText(text_icon,
-      x - 20,
-      y + 20);
+    //outline
+    ctx.font = font_size + 'px material-icons'
+    ctx.fillStyle = 'rgb(255,255,255)'
+    const text = ctx.fillText(
+      text_icon,
+      x,
+      y);
+
+    // inset main
+    let border_width = Math.round(font_size / 3)
+    ctx.fillStyle = fillStyle
+    ctx.font = font_size - border_width + 'px material-icons'
+    ctx.fillText(
+      text_icon,
+      x,
+      y);
+
     ctx.fillStyle = old_color;
     ctx.font = old_font;
-    const measures = ctx.measureText(text_icon);
+    ctx.textAlign = old_textAlign
+    ctx.textBaseline = old_baseLine
+    //const measures = ctx.measureText(text_icon);
     // Create an invisible box for click events.
     //const region = {x: x - 24 , y: y - 24 , w: measures.width, h: 100};
     //this.is_mouse_in_path_issue(ctx, region, i, issue)
@@ -529,6 +676,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private is_mouse_in_path(ctx) {
+    if(!this.mouse_position || !this.mouse_position.raw){
+      return false
+    }
     if (ctx.isPointInPath(
       this.mouse_position.raw.x,
       this.mouse_position.raw.y)) {
@@ -538,24 +688,31 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   }
   private draw_instance_bounding_box(ctx){
-    if(!this.selected){ return }
-    let rotated_nodes = this.nodes.map(node => this.get_rotated_point(node, this.angle))
-    let min_x = Math.min(...rotated_nodes.map(n => n.x)) - this.vertex_size
-    let max_x = Math.max(...rotated_nodes.map(n => n.x)) + this.vertex_size
-    let min_y = Math.min(...rotated_nodes.map(n => n.y)) - this.vertex_size
-    let max_y = Math.max(...rotated_nodes.map(n => n.y)) + this.vertex_size
-    let width = Math.abs(max_x - min_x);
-    let height = Math.abs(max_y - min_y);
+    let min_max_obj = this.get_rotated_min_max();
+    let width = Math.abs(min_max_obj.max_x - min_max_obj.min_x);
+    let height = Math.abs(min_max_obj.max_y - min_max_obj.min_y);
 
     ctx.globalAlpha = 0.4;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value
     ctx.beginPath();
 
-    ctx.rect(min_x, min_y, width + this.vertex_size, height + this.vertex_size);
-    ctx.stroke()
-    ctx.fill()
+    ctx.rect(min_max_obj.min_x, min_max_obj.min_y, width + this.vertex_size, height + this.vertex_size);
+    if(this.selected){
+      ctx.stroke()
+      ctx.fill()
+    }
+
+
     if(this.is_mouse_in_path(ctx)){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
+      // Draw helper bounding box
+      if(!this.selected){
+        ctx.fillStyle = 'white'
+        ctx.globalAlpha = 0.2;
+        ctx.stroke()
+        ctx.fill()
+      }
     }
     else{
       this.is_bounding_box_hovered = false;
@@ -563,19 +720,41 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.globalAlpha = 1;
   }
 
+  private get_square_delta_point_mouse(point, mouse): number {
+    return Math.sqrt(
+              (point.x - mouse.x) ** 2
+            + (mouse.y - point.y) ** 2)
+  }
+
+  private point_is_intersecting_circle(point, mouse, radius): boolean {
+
+      return Math.sqrt(
+          (point.x - mouse.x) ** 2
+        + (mouse.y - point.y) ** 2) < radius
+  }
+
+  private set_node_hovered(ctx, i): void {
+    this.is_hovered = true;
+    this.is_node_hovered = true;
+    this.node_hover_index = i
+    ctx.fillStyle = 'green'
+    this.num_hovered_paths += 1
+  }
+
   private draw_point_and_set_node_hover_index(x, y, i, ctx): void {
     ctx.beginPath();
-    ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
-    if (this.is_mouse_in_path(ctx)) {
-      this.is_hovered = true;
-      this.is_node_hovered = true;
-      this.node_hover_index = i
+    if(this.node_hover_index === i){
       ctx.fillStyle = 'green'
-      this.num_hovered_paths += 1
-
     }
+    ctx.lineWidth = 2 / this.zoom_value
+    ctx.arc(x, y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
     ctx.stroke();
     ctx.fill();
+
+    let point = {'x': x, 'y': y}
+    this.nearest_points_dict[this.get_square_delta_point_mouse(
+      point,
+      this.mouse_position)] = i
   }
 
   private draw_currently_drawing_edge(ctx) {
@@ -589,7 +768,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     ctx.beginPath();
-    ctx.lineWidth = 2;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
     ctx.moveTo(this.current_node_connection[0].x, this.current_node_connection[0].y);
     ctx.lineTo(this.mouse_position.x, this.mouse_position.y)
@@ -599,7 +778,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_edges(ctx) {
-    ctx.lineWidth = this.line_width;
+    ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
 
     for (let edge of this.edges) {

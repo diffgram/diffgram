@@ -9,6 +9,7 @@ from shared.database.model.model_run import ModelRun
 from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
 
+
 class Instance(Base):
     """
     An individual annotation instance
@@ -113,8 +114,7 @@ class Instance(Base):
 
     is_template = Column(Boolean, default = False)
     # Kepoints features:
-    nodes = Column(MutableDict.as_mutable(JSONEncodedDict),
-                   default = {'nodes': []})
+    nodes = Column(MutableDict.as_mutable(JSONEncodedDict),default = {'nodes': []})
     edges = Column(MutableDict.as_mutable(JSONEncodedDict),
                    default = {'edges': []})
     # Polygon features:
@@ -355,6 +355,8 @@ class Instance(Base):
             self.attribute_groups,
             self.machine_made,
             self.sequence_id,
+            self.nodes,
+            self.edges,
             self.pause_object
         ]
 

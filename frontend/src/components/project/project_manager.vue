@@ -367,8 +367,7 @@ export default Vue.extend( {
     create_sample_project: async function(){
       this.loading_create_sample_data = true;
       try{
-        const response = await axios.post('/api/walrus/v1/gen-data', {
-          data_type: 'project',
+        const response = await axios.post('/api/walrus/v1/new_project/gen-data', {
         })
         if(response.status === 200){
           this.refresh();

@@ -71,23 +71,24 @@
         job_object: {
           deep: true,
           async handler(newval, oldval) {
-            if (this.graph) {
-              this.graph.getModel().beginUpdate();
-              this.graph.removeCells(this.graph.getChildVertices(this.graph.getDefaultParent()));
-              this.graph.getModel().endUpdate();
-            }
-            this.loading = true;
-            this.job = this.$props.job_object;
-            await this.get_directory();
-
-
-            this.draw_pipeline(this.job, this.output_dir)
-            this.loading = false;
+            await this.redraw();
           }
         }
       },
       computed: {},
       methods: {
+        redraw: async function(){
+          if (this.graph) {
+            this.graph.getModel().beginUpdate();
+            this.graph.removeCells(this.graph.getChildVertices(this.graph.getDefaultParent()));
+            this.graph.getModel().endUpdate();
+          }
+          this.loading = true;
+          this.job = this.$props.job_object;
+          await this.get_directory();
+          this.draw_pipeline(this.job, this.output_dir)
+          this.loading = false;
+        },
         populate_data: async function () {
           if (this.$props.job_object) {
             this.job = this.$props.job_object;

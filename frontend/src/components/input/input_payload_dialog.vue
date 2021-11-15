@@ -26,7 +26,7 @@
   import labels_view from '../../components/annotation/labels_view'
   import v_upload_large from '../upload_large'
   import Vue from "vue";
-  import CodeDiff from 'vue-code-diff'
+  import CodeDiff from 'vue-code-diff/dist/vue-code-diff'
 
   export default Vue.extend({
 

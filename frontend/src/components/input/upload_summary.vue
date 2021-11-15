@@ -275,7 +275,6 @@
             const total_size = blob.size;
 
             if (total_size < chunk_size_bytes){
-              console.log('AAAAA', labels_payload)
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
                 pre_labeled_data: {...labels_payload}
               });

@@ -431,10 +431,11 @@
 
         axios.post('/api/v1/guide/attach/job',
           {
-            'update_or_remove': this.update_or_remove,
-            'kind': this.attach_kind,
-            'job_id': parseInt( this.job_id ),
-            'guide_id': guide_id
+            update_or_remove: this.update_or_remove,
+            kind: this.attach_kind,
+            job_id: parseInt( this.job_id ),
+            guide_id: guide_id,
+            overwrite: true
 
           })
           .then(response => {

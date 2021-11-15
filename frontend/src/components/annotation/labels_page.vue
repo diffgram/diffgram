@@ -12,6 +12,7 @@
 
     </v-container>
     <instance_template_list
+
       :project_string_id="project_string_id"
     ></instance_template_list>
   </div>

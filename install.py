@@ -58,6 +58,7 @@ class bcolors:
 class DiffgramInstallTool:
     static_storage_provider = None
     bucket_name = None
+    bucket_region = None
     gcp_credentials_path = None
     s3_access_id = None
     s3_access_secret = None
@@ -65,6 +66,9 @@ class DiffgramInstallTool:
     diffgram_version = None
     database_url = None
     local_database = None
+    mailgun = None
+    mailgun_key = None
+    email_domain = None
 
     def set_static_storage_option(self, option_number):
         if option_number == 1:
@@ -236,11 +240,12 @@ class DiffgramInstallTool:
         access_id = self.s3_access_id
         access_secret = self.s3_access_secret
         bucket_name = self.bucket_name
+        bucket_region = self.bucket_region
         test_file_path = 'diffgram_test_file.txt'
         client = None
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
-            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret)
+            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret, region_name = bucket_region)
             print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To S3 Account')
         except Exception as e:
             print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
@@ -316,6 +321,18 @@ class DiffgramInstallTool:
         else:
             self.bucket_name = bucket_name
 
+        # Ask for bucket region
+        is_valid = False
+
+        while not is_valid:
+            bucket_region = bcolors.inputcolor('Please provide the AWS S3 Bucket Region: ')
+            if bucket_region == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.bucket_region = bucket_region
+                is_valid = True
+
     def set_azure_credentials(self):
         # Ask For Access Key ID
         is_valid = False
@@ -365,6 +382,7 @@ class DiffgramInstallTool:
             env_file = 'DIFFGRAM_AWS_ACCESS_KEY_ID={}\n'.format(self.s3_access_id)
             env_file += 'DIFFGRAM_AWS_ACCESS_KEY_SECRET={}\n'.format(self.s3_access_secret)
             env_file += 'DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
+            env_file += 'DIFFGRAM_S3_BUCKET_REGION={}\n'.format(self.bucket_region)
             env_file += 'ML__DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
             env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
             env_file += 'DIFFGRAM_STATIC_STORAGE_PROVIDER={}\n'.format(self.static_storage_provider)
@@ -398,10 +416,15 @@ class DiffgramInstallTool:
             env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
             env_file += 'DATABASE_URL={}\n'.format(self.database_url)
 
+        if self.mailgun:
+            env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
+            env_file += 'EMAIL_DOMAIN_NAME={}\n'.format(self.email_domain)
+
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
-        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)
+        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)        
+
 
     def launch_dockers(self):
         try:
@@ -452,6 +475,18 @@ class DiffgramInstallTool:
                     bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
                     valid = False
 
+    def mailgun_config(self):
+        need_mailgun = bcolors.inputcolor(
+            'Do you want to add Mailgun to Diffgram?[Y/n] ')
+        if need_mailgun.lower() == 'y' or need_mailgun.lower() == 'yes':
+            mailgun_key = bcolors.inputcolor('Please provide the Mailgun key: ')
+            email_domain = bcolors.inputcolor('Please provide the email domain: ')
+            self.mailgun = True
+            self.mailgun_key = mailgun_key
+            self.email_domain = email_domain
+            return
+        return
+
     def install(self):
         self.print_logo()
         print('')
@@ -493,6 +528,7 @@ class DiffgramInstallTool:
 
         self.set_diffgram_version()
         self.database_config()
+        self.mailgun_config()
         self.populate_env()
         self.launch_dockers()
 

@@ -1,9 +1,6 @@
-try:
-    from methods.regular.regular_api import *
-    from methods.video.video import New_video
-except:
-    from walrus.methods.regular.regular_api import *
-    from walrus.methods.video.video import New_video
+
+from methods.regular.regular_api import *
+from methods.video.video import New_video
 
 try:
     from methods.video.video_preprocess import Video_Preprocess
@@ -17,7 +14,6 @@ import csv
 import gc
 import shutil
 
-from queue import PriorityQueue
 from random import randrange
 
 from werkzeug.utils import secure_filename
@@ -51,6 +47,7 @@ from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileP
 import numpy as np
 from shared.regular.regular_log import log_has_error
 import os
+from shared.utils.singleton import Singleton
 
 data_tools = Data_tools().data_tools
 
@@ -61,6 +58,7 @@ text_allowed_file_names = [".txt"]
 csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
+STOP_PROCESSING_DATA = False
 
 @dataclass(order = True)
 class PrioritizedItem:
@@ -81,6 +79,7 @@ class PrioritizedItem:
 
 
 def process_media_unit_of_work(item):
+    from methods.input.process_media_queue_manager import process_media_queue_manager
     with sessionMaker.session_scope_threaded() as session:
 
         process_media = Process_Media(
@@ -91,19 +90,26 @@ def process_media_unit_of_work(item):
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
+
+                process_media_queue_manager.add_item_to_processing_list(item)
                 process_media.main_entry()
+                process_media_queue_manager.remove_item_from_processing_list(item)
+
             except Exception as e:
                 logger.error("[Process Media] Main failed on {}".format(item.input_id))
                 logger.error(str(e))
                 logger.error(traceback.format_exc())
+                process_media_queue_manager.remove_item_from_processing_list(item)
         else:
+            process_media_queue_manager.add_item_to_processing_list(item)
             process_media.main_entry()
+            process_media_queue_manager.remove_item_from_processing_list(item)
 
 
 # REMOTE queue
-def start_queue_check_loop():
+def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-start_queue_check_loop
-
+    from methods.input.process_media_queue_manager import process_media_queue_manager
     if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == False:
         return
 
@@ -111,30 +117,32 @@ def start_queue_check_loop():
 
     while True:
         time.sleep(add_deferred_items_time)
+        if process_media_queue_manager.STOP_PROCESSING_DATA:
+            logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
+            break
 
-        check_and_wait_for_memory(memory_limit_float=75.0)
+        check_and_wait_for_memory(memory_limit_float = 75.0)
 
         logger.info("[Media Queue Heartbeat]")
         try:
-            add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time)
+            add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE)
         except Exception as exception:
             logger.info("[Media Queue Failed] {}".format(str(exception)))
             add_deferred_items_time = 30  # reset
 
 
-def check_and_wait_for_memory(memory_limit_float=75.0, check_interval=5):
+def check_and_wait_for_memory(memory_limit_float = 75.0, check_interval = 5):
     while True:
-        if is_memory_available(memory_limit_float=memory_limit_float):
+        if is_memory_available(memory_limit_float = memory_limit_float):
             return True
         else:
             logger.warn("No memory available, waiting. There is no harm if processing large amount please wait.")
             time.sleep(check_interval)
 
 
-def is_memory_available(memory_limit_float=75.0):
-
+def is_memory_available(memory_limit_float = 75.0):
     memory_percent = get_memory_percent()
-    if memory_percent is None: return True      # Don't stop if this check fails
+    if memory_percent is None: return True  # Don't stop if this check fails
 
     if memory_percent > memory_limit_float:
         logger.warn("[Memory] {} % used is > {} limit.".format(memory_percent, memory_limit_float))
@@ -143,7 +151,7 @@ def is_memory_available(memory_limit_float=75.0):
     return True
 
 
-def check_if_add_items_to_queue(add_deferred_items_time):
+def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-check_if_add_items_to_queue
 
     queue_limit = 1
@@ -189,33 +197,26 @@ def check_if_add_items_to_queue(add_deferred_items_time):
 
 
 # https://diffgram.com/docs/process-media-local-worker-queues
-VIDEO_QUEUE = PriorityQueue()
-FRAME_QUEUE = PriorityQueue()
-frame_queue_lock = threading.Lock()
-video_queue_lock = threading.Lock()
-threads = []
 
-video_threads = settings.PROCESS_MEDIA_NUM_VIDEO_THREADS
-frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
 
 
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
+    from methods.input.process_media_queue_manager import process_media_queue_manager
 
     if item.media_type and item.media_type in ["frame", "image", "text"]:
 
         wait_until_queue_pressure_is_lower(
-            queue = FRAME_QUEUE, 
-            limit = frame_threads * 2, 
-            check_interval=1)
-        FRAME_QUEUE.put(item)
+            queue = process_media_queue_manager.FRAME_QUEUE,
+            limit = process_media_queue_manager.frame_threads * 2,
+            check_interval = 1)
+        process_media_queue_manager.FRAME_QUEUE.put(item)
 
     else:
-        VIDEO_QUEUE.put(item)
+        process_media_queue_manager.VIDEO_QUEUE.put(item)
 
 
-def wait_until_queue_pressure_is_lower(queue, limit, check_interval=1):
-
+def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
     while True:
         if queue.qsize() < limit:
             return True
@@ -224,7 +225,7 @@ def wait_until_queue_pressure_is_lower(queue, limit, check_interval=1):
             time.sleep(check_interval)
 
 
-def process_media_queue_worker(queue, queue_type):
+def process_media_queue_worker(queue, queue_type, frame_queue_lock, video_queue_lock):
     queue_lock = None
     if queue_type == 'frame':
         queue_lock = frame_queue_lock
@@ -248,30 +249,6 @@ def process_media_queue_getter(queue, queue_lock):
     else:
         queue_lock.release()
         time.sleep(0.1)
-
-
-# Kick off worker threads for global queue
-for i in range(video_threads):
-    t = threading.Thread(
-        target = process_media_queue_worker,
-        args = (VIDEO_QUEUE, 'video',)
-    )
-    t.daemon = True  # Allow hot reload to work
-    t.start()
-    threads.append(t)
-
-for i in range(frame_threads):
-    t = threading.Thread(
-        target = process_media_queue_worker,
-        args = (FRAME_QUEUE, 'frame',)
-    )
-    t.daemon = True  # Allow hot reload to work
-    t.start()
-    threads.append(t)
-
-t = threading.Timer(20, start_queue_check_loop)
-t.daemon = True  # Allow hot reload to work
-t.start()
 
 
 class Process_Media():
@@ -434,7 +411,7 @@ class Process_Media():
 
         start_time = time.time()
 
-        check_and_wait_for_memory(memory_limit_float=75.0)
+        check_and_wait_for_memory(memory_limit_float = 75.0)
 
         ### Warm up
         self.get_input_with_retry()
@@ -484,13 +461,23 @@ class Process_Media():
         if self.input.mode == "update":
             self.__update_existing_file(file = self.input.file)
             # Important!
+
             # We are exiting main loop here
+            if len(self.log["error"].keys()) >= 1:
+                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                return
+
             return
         if self.input.mode == "update_with_existing":  # existing instances
             self.__update_existing_file(file = self.input.file,
                                         init_existing_instances = True)
             # Important!
             # We are exiting main loop here
+            if len(self.log["error"].keys()) >= 1:
+                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                return
+
+
             return
 
         if self.input.type not in ["from_url", "from_video_split"]:
@@ -544,6 +531,7 @@ class Process_Media():
             # log['error']['status_text']
             if len(self.log["error"].keys()) >= 1:
                 logger.error('Error downloading media: {}'.format(str(self.log['error'])))
+                self.input.update_log['error'] = self.log['error']
                 return False
 
         if self.input.media_type == "video":
@@ -617,10 +605,11 @@ class Process_Media():
             working_dir_id = self.input.directory_id,
             original_filename = self.input.original_filename,
             original_filename_match_type = None
-            )
+        )
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
+            self.input.update_log = {'existing_file_id': existing_file_list[0].id}
             return False
 
         return True
@@ -777,32 +766,41 @@ class Process_Media():
             self.log['error']['media_type'] = "media_type undefined. This may be a timing issue. \
                     Try including instances in single request, or waiting for file to finish processing before sending."
             return False
+        try:
+            self.populate_new_models_and_runs()
 
-        self.populate_new_models_and_runs()
+            # TODO what other input keys do we need to update (ie this assumes images etc)
+            if file and self.input.media_type == "video":
+                logger.debug("Parent Video File Update")
+                self.__update_existing_video()  # Maybe should be a strategy operation
+                return
 
-        # TODO what other input keys do we need to update (ie this assumes images etc)
-        if file and self.input.media_type == "video":
-            logger.debug("Parent Video File Update")
-            self.__update_existing_video()  # Maybe should be a strategy operation
-            return
+            elif file and self.input.media_type == 'text':
+                self.process_existing_instance_list(
+                    init_existing_instances = init_existing_instances)
+            else:
+                process_instance_result = self.process_existing_instance_list(
+                    init_existing_instances = init_existing_instances)
+                logger.debug(("Image or Frame File Update"))
 
-        elif file and self.input.media_type == 'text':
-            self.process_existing_instance_list(
-                init_existing_instances = init_existing_instances)
-        else:
-            process_instance_result = self.process_existing_instance_list(
-                init_existing_instances = init_existing_instances)
-            logger.debug(("Image or Frame File Update"))
+                if file and file.frame_number:
+                    logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
 
-            if file and file.frame_number:
-                logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
+                if process_instance_result is True and self.input.media_type == 'frame':
+                    self.__update_parent_video_at_last_frame()
 
-            if process_instance_result is True and self.input.media_type == 'frame':
-                self.__update_parent_video_at_last_frame()
-
-        # TODO first video case (otherwise then goes in frame processing flow)
-        if self.input.media_type in ["image", "text"] and self.input.status != "failed":
-            self.declare_success(input = self.input)
+            # TODO first video case (otherwise then goes in frame processing flow)
+            if self.input.media_type in ["image", "text"] and self.input.status != "failed":
+                self.declare_success(input = self.input)
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            self.input.status = 'failed'
+            self.input.description = str(e)
+            self.input.update_log = {'error': traceback.format_exc()}
+            self.log['error']['update_instance'] = str(e)
+            self.log['error']['traceback'] = traceback.format_exc()
+            if self.input.media_type == 'frame':
+                self.proprogate_frame_instance_update_errors_to_parent(self.log)
 
     def __update_parent_video_at_last_frame(self):
         # Last frame
@@ -831,7 +829,8 @@ class Process_Media():
                 session = self.session,
                 task = input.task,
                 new_file = input.file,
-                project = self.project)
+                project = self.project,
+                member = self.member)
 
     def __update_existing_video(self):
 
@@ -1615,6 +1614,7 @@ class Process_Media():
                 video_data = video_data,
                 task = task,
                 complete_task = should_complete_task,
+                member = self.member,
                 do_init_existing_instances = init_existing_instances,
                 external_map = self.input.external_map,
                 external_map_action = self.input.external_map_action,
@@ -1919,7 +1919,7 @@ class Process_Media():
             logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)))
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
-                self.input.url, input_original_filename = self.input.original_filename)
+            self.input.url, input_original_filename = self.input.original_filename)
         if self.input.extension is None:
             self.input.status = "failed"
             self.input.status_text = "Invalid extension, check filename"
@@ -2232,6 +2232,6 @@ def get_memory_percent():
         psutil_memory_result = psutil.virtual_memory()
         memory_percent = psutil_memory_result[2]
     except Exception as e:
-        logger.warn(traceback.format_exc())       
+        logger.warn(traceback.format_exc())
 
     return memory_percent

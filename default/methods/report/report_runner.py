@@ -121,7 +121,7 @@ report_spec_list = [
         'default': 'date',
         'kind': str,
         'required': False,
-        'valid_values_list': ['date', 'label', 'user', 'task', None, 'file'],
+        'valid_values_list': ['date', 'label', 'user', 'task', None, 'file', 'task_status'],
     }
     },
     {"directory_id_list": {
@@ -498,6 +498,10 @@ class Report_Runner():
                 self.query = self.query.group_by(self.base_class.file_id, self.base_class.label_file_id)
             else:
                 self.query = self.query.group_by(self.base_class.file_id)
+
+        elif self.report_template.group_by == 'task_status':
+            self.query = self.query.group_by(self.base_class.status)
+
 
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
@@ -919,13 +923,21 @@ class Report_Runner():
             'label': self.group_by_label,
             'user': self.group_by_user,
             'task': self.group_by_task,
-            'file': self.group_by_file
+            'file': self.group_by_file,
+            'task_status': self.group_by_task_status
         }
         return group_by_dict.get(group_by)
 
     def no_group_by(self):
         query = self.session.query(self.base_class)
         return query
+
+    def group_by_task_status(self):
+        self.date_func = func.date_trunc(self.report_template.date_period_unit,
+                                         self.time_created)
+        query = self.session.query(self.base_class.status, func.count(self.base_class.id))
+        return query
+
 
     def group_by_date(self):
         """

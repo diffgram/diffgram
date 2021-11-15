@@ -31,6 +31,12 @@ import './css/vue_dropzone.css'
  *
  */
 
+import file_preview from './components/source_control/file_preview'
+Vue.component('file_preview', file_preview)
+
+import file_preview_with_hover_expansion from './components/regular/file_preview_with_hover_expansion'
+Vue.component('file_preview_with_hover_expansion', file_preview_with_hover_expansion)
+
 import v_directory_list from './components/source_control/directory_list'
 Vue.component('v_directory_list', v_directory_list)
 
@@ -65,6 +71,9 @@ import error_multiple from './components/regular/error_multiple'
 import tooltip_button from './components/regular/tooltip_button'
 Vue.component('tooltip_button', tooltip_button)
 
+import ui_schema from './components/regular/ui_schema_wrapper'
+Vue.component('ui_schema', ui_schema)
+
 import button_with_confirm from './components/regular/button_with_confirm'
 Vue.component('button_with_confirm', button_with_confirm)
 
@@ -97,6 +106,9 @@ Vue.component('connection_select', connection_select)
 
 import ahref_seo_optimal from './components/regular/ahref_seo_optimal'
 Vue.component('ahref_seo_optimal', ahref_seo_optimal)
+
+import wizard_navigation from './components/regular/wizard_navigation'
+Vue.component('wizard_navigation', wizard_navigation)
 
 /*
  * CONCRETE regular methods
@@ -239,7 +251,12 @@ Vue.use(Vuetify)
 
 
 Vue.use(vue_scroll_to)
-Vue.use(require('vue-moment'));
+
+import VueMoment from 'vue-moment'
+import moment from 'moment-timezone'
+Vue.use(VueMoment, {
+    moment,
+})
 
 Vue.component('v_task_list', task_list)
 Vue.component('v_job_cancel', job_cancel)
@@ -323,6 +340,9 @@ Vue.prototype.$get_sequence_color = get_sequence_color
 
 import {addQueriesToLocation} from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
+
+
+
 
 // import {google_cloud_storage_searchbar} from './components/connectors/google_cloud_storage_searchbar.vue'
 // Vue.component('google_cloud_storage_searchbar', google_cloud_storage_searchbar)
