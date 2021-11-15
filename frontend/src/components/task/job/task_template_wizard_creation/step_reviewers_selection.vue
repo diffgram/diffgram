@@ -9,12 +9,12 @@
           Would you like to enable reviews for this task?
         </h1>
       </div>
-      <v-radio-group v-model="enabled">
+      <v-radio-group v-model="job.allow_reviews">
         <v-radio label="No" :value="false" />
         <v-radio label="Yes" :value="true" />
       </v-radio-group>
     </div>
-    <div v-if="enabled">
+    <div v-if="job.allow_reviews">
       <div class="d-flex mb-8 justify-space-between">
         <h1
           data-cy="task-template-users-step-title"
@@ -50,7 +50,7 @@
         </h1>
       </div>
       <v-slider
-        v-model="review_percent"
+        v-model="job.review_chance"
         :disabled="review_all"
         thumb-color="green"
         thumb-label="always"
@@ -87,30 +87,13 @@ export default Vue.extend({
     return {
       error: {},
       request_refresh_labels: new Date(),
-      enabled: false,
-      review_percent: null,
       review_all: false,
     };
   },
   methods: {
-    verify_members: function () {
-      if (
-        !this.$props.job.member_list_ids ||
-        this.$props.job.member_list_ids.length === 0
-      ) {
-        this.error = {
-          name: "At least 1 user should be assigned.",
-        };
-        return false;
-      }
-      return true;
-    },
     on_next_button_click: function () {
-      this.error = {};
-      let memers_ok = this.verify_members();
-      if (memers_ok) {
-        this.$emit("next_step");
-      }
+      if (this.review_all) this.job.review_chance = 100;
+      this.$emit("next_step");
     },
   },
 });
