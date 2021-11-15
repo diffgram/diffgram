@@ -6,7 +6,7 @@
           data-cy="task-template-users-step-title"
           class="font-weight-medium text--primary mr-4"
         >
-          Who is assigned to review these tasks?
+          Would you like to enable reviews for this task?
         </h1>
       </div>
       <v-radio-group v-model="enabled">
