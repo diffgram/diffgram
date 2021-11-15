@@ -49,13 +49,11 @@
           What percent of the tasks should be reviewed?
         </h1>
       </div>
-      <v-text-field
-        label="What percent of the tasks has to be reviewd?"
+      <v-slider
         v-model="review_percent"
-        hide-details
-        single-line
-        type="number"
         :disabled="review_all"
+        thumb-color="green"
+        thumb-label="always"
       />
       <v-checkbox v-model="review_all" :label="`Review all`" />
     </div>
