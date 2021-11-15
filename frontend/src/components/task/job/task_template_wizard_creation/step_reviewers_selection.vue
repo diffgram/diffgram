@@ -9,12 +9,17 @@
           Would you like to enable reviews for this task?
         </h1>
       </div>
-      <v-radio-group
-        data-cy="task-template-reviewer-radio-enable"
-        v-model="job.allow_reviews"
-      >
-        <v-radio label="No" :value="false" />
-        <v-radio label="Yes" :value="true" />
+      <v-radio-group v-model="job.allow_reviews">
+        <v-radio
+          data-cy="task-template-reviewer-radio-no"
+          label="No"
+          :value="false"
+        />
+        <v-radio
+          data-cy="task-template-reviewer-radio-yes"
+          label="Yes"
+          :value="true"
+        />
       </v-radio-group>
     </div>
     <div v-if="job.allow_reviews">

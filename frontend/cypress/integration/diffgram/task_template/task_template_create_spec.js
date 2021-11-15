@@ -75,7 +75,8 @@ describe('Task Template Creation', () => {
     it('Correctly Shows Reviewers Step in Wizard', () => {
       cy.get('[data-cy="task-template-reviewer-step"]').should('be.visible')
       cy.get('[data-cy="task-template-reviewer-step-title"]').should('be.visible')
-      cy.get('[data-cy="task-template-reviewer-radio-enable"]').should('be.visible')
+      cy.get('[data-cy="task-template-reviewer-radio-yes"]').should('be.visible')
+      cy.get('[data-cy="task-template-reviewer-radio-no"]').should('be.visible')
       cy.get('[data-cy="task-template-reviewer-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })
