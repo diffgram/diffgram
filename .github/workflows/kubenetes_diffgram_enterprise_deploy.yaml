@@ -229,6 +229,7 @@ jobs:
       DIFFGRAM_VERSION_TAG: ${{ github.event.inputs.release }}
       DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -287,6 +288,7 @@ jobs:
           diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -339,6 +341,7 @@ jobs:
           diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -404,6 +407,7 @@ jobs:
       DOCKER_IMAGE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
       GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -461,6 +465,7 @@ jobs:
           diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
@@ -516,6 +521,7 @@ jobs:
           diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           walrusService.numReplicas: 1
