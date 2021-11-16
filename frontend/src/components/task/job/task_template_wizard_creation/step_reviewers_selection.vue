@@ -95,7 +95,7 @@ export default Vue.extend({
     };
   },
   created() {
-    console.log(this.job);
+    if (this.job.review_chance === 100) this.review_all = true;
   },
   methods: {
     verify_members: function () {
