@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import {PCDLoader} from 'three/examples/jsm/loaders/PCDLoader';
+import Vue from "vue/types/vue";
 
 export default class FileLoader3DPointClouds {
-  component_ctx: object;
+  component_ctx: Vue;
   pcd_loading_status: string = 'pending';
 
   public constructor(component_ctx) {

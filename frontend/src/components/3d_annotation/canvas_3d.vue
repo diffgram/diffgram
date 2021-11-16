@@ -1,11 +1,8 @@
 <template>
-  <div v-if="!loading_pcd" :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
+  <div v-if="point_cloud_mesh" :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
 
   </div>
-  <div  class="ma-auto d-flex flex-column justify-center" v-else-if="show_loading_bar" style="background: white" :style="{width: `${width}px`, height: `${height}px`}">
-    <h2 class="ma-auto mb-0">Loading 3D Data...</h2>
-    <v-progress-linear height="50" class="ma-auto mr-4 ml-4" v-if="show_loading_bar" striped :value="percentage"></v-progress-linear>
-  </div>
+
 
 </template>
 
@@ -15,23 +12,20 @@
   import * as THREE from "three";
   import SceneController3D from './SceneController3D';
   import SceneControllerOrtographicView from './SceneControllerOrtographicView';
-  import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-  import {TransformControls} from 'three/examples/jsm/controls/TransformControls';
-  import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
-  import FileLoader3DPointClouds from './FileLoader3DPointClouds';
 
   export default Vue.extend({
       name: 'canvas_3d',
       components: {},
       props: {
+        point_cloud_mesh:{
+          default: null,
+          type: Object
+        },
         width: {
           default: 'auto'
         },
         height: {
           default: 'auto'
-        },
-        show_loading_bar:{
-          default: false
         },
         camera_type: {
           default: 'perspective'
@@ -86,13 +80,14 @@
       },
 
       async mounted() {
-        this.clear_and_load_canvas();
+
+        this.load_canvas();
 
       },
       beforeDestroy() {
         if (this.scene_controller) {
           this.scene_controller.detach_mouse_events();
-          this.scene_controller.clear_all();
+          this.destroy_canvas();
         }
 
       },
@@ -114,11 +109,7 @@
         }
       },
       methods: {
-        clear_and_load_canvas: async function(){
-          if(this.scene_controller){
-            // Clear all elements from the scene
-            this.scene_controller.clear_all(this.scene_controller.scene);
-          }
+        load_canvas: async function(){
           if (WEBGL.isWebGLAvailable()) {
             if (this.$props.create_new_scene) {
 
@@ -129,7 +120,28 @@
             alert('WebGL is not available on this machine.')
 
           }
+        },
+        destroy_canvas: function(){
+          if(this.scene_controller){
+            // Clear all elements from the scene
+            this.scene_controller.detach_mouse_event();
+            this.scene_controller.scene.remove(this.point_cloud_mesh);
+            this.point_cloud_mesh.geometry.dispose();
+            this.point_cloud_mesh.material.dispose();
 
+            this.scene_controller.clear_all();
+
+            if(document.getElementById(this.$props.container_id)){
+              document.getElementById(this.$props.container_id).removeChild(this.renderer.domElement);
+            }
+
+            delete this.renderer;
+            delete this.scene_controller.scene;
+
+            this.renderer = undefined;
+
+            this.scene_controller = undefined;
+          }
         },
         update_pan_speed: function(){
           this.scene_controller.controls_orbit.panSpeed = this.$props.pan_speed;
@@ -160,7 +172,6 @@
           this.scene_controller.attach_mouse_events();
           this.scene_controller.set_draw_mode(this.$props.draw_mode);
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
-          this.$props.instance_list
         },
         create_renderer: function(){
           this.renderer = new THREE.WebGLRenderer();
@@ -170,7 +181,7 @@
           this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         },
         setup_scene: async function (scene = undefined,) {
-          this.point_cloud_mesh = await this.load_pcd();
+
           this.container = document.getElementById(this.$props.container_id)
 
 
@@ -206,16 +217,6 @@
           this.add_instance_list_to_scene();
 
           this.scene_controller.start_render();
-          // this.scene_controller.center_camera_to_mesh(this.point_cloud_mesh);
-
-          // var box = new THREE.Box3().setFromObject(this.point_cloud_mesh);
-          // let scene_width = box.min;
-          // let scene_height = box.max;
-          // let scene_depth = box.getSize();
-
-          // this.scene_controller.set_scene_dimensions(scene_width, scene_height, scene_depth)
-          //
-          // console.log(box.min, box.max, box.getSize());
 
           this.$emit('scene_ready', this.scene_controller)
         },
@@ -234,7 +235,6 @@
           }
         },
         update_camera_aspect_ratio: function(){
-          console.log('update_camera_aspect_ratio', this.camera)
           if(!this.camera){
             return
           }
@@ -260,17 +260,7 @@
 
 
         },
-        load_pcd: async function () {
-          let file_loader_3d = new FileLoader3DPointClouds(this);
-          this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.$props.pcd_url)
-          this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
-            color: new THREE.Color('white'),
-            opacity: 1,
-            transparent: false,
-          });
-          return this.point_cloud_mesh
 
-        }
 
       }
     }

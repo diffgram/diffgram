@@ -83,11 +83,11 @@
       <div class="canvas-container" >
         <div id="main_3d_canvas_container"  style="position: relative" @contextmenu="open_context_menu">
           <canvas_3d
-            v-if="main_canvas_height && main_canvas_width"
+            v-if="main_canvas_height && main_canvas_width && point_cloud_mesh"
             ref="main_3d_canvas"
             :show_loading_bar="true"
             :width="main_canvas_width"
-            :pcd_url="pcd_url"
+            :point_cloud_mesh="point_cloud_mesh"
             :height="main_canvas_height"
             :zoom_speed="editor_3d_settings.zoom_speed"
             :pan_speed="editor_3d_settings.pan_speed"
@@ -106,6 +106,19 @@
             @instance_updated="on_instance_updated">
 
           </canvas_3d>
+          <div  class="ma-auto d-flex flex-column justify-center"
+                v-else
+                :style="{width: `${main_canvas_width}px`, height: `${main_canvas_height}px`, background: 'white'}">
+            <h2 class="ma-auto mb-0">Loading 3D Data...</h2>
+            <v-progress-linear
+              height="50"
+              class="ma-auto mr-4 ml-4"
+              striped
+              :value="percentage">
+
+            </v-progress-linear>
+          </div>
+
           <context_menu_3d_editor
             :mouse_position="mouse_position"
             :show_context_menu="show_context_menu"
@@ -130,9 +143,9 @@
         <div id="secondary_3d_canvas_container" class="d-flex">
           <div class="mr-1 mt-1">
             <canvas_3d
-              v-if="secondary_canvas_width && secondary_canvas_height"
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
               ref="x_axis_3d_canvas"
-              :pcd_url="pcd_url"
+              :point_cloud_mesh="point_cloud_mesh"
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
@@ -148,12 +161,12 @@
           <div class="mr-1 mt-1">
 
             <canvas_3d
-              v-if="secondary_canvas_width && secondary_canvas_height"
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
               ref="y_axis_3d_canvas"
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
-              :pcd_url="pcd_url"
+              :point_cloud_mesh="point_cloud_mesh"
               :height="secondary_canvas_height"
               :allow_navigation="true"
               :instance_list="instance_list"
@@ -166,9 +179,9 @@
           <div class="mr-1 mt-1">
 
             <canvas_3d
-              v-if="secondary_canvas_width && secondary_canvas_height"
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
               ref="z_axis_3d_canvas"
-              :pcd_url="pcd_url"
+              :point_cloud_mesh="point_cloud_mesh"
               :create_new_scene="false"
               camera_type="ortographic"
               :width="secondary_canvas_width"
@@ -202,6 +215,8 @@
   import canvas_3d from "./canvas_3d";
   import moment from "moment";
   import axios from "axios";
+  import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
+  import * as THREE from "three";
 
   export default Vue.extend({
     name: "sensor_fusion_editor_3d",
@@ -245,6 +260,7 @@
         ],
         error: null,
         warning: null,
+        percentage: 0,
         has_changed: false,
         save_loading_scene: false,
         show_context_menu: false,
@@ -270,6 +286,7 @@
         },
 
         current_label_file: null,
+        point_cloud_mesh: null,
         full_file_loading: false,
         instance_list: [],
         view_issue_mode: false,
@@ -311,10 +328,15 @@
         secondary_canvas_height: undefined,
       }
     },
+    async created(){
+      await this.load_pcd();
+    },
+
     async mounted() {
       window.addEventListener( 'resize', this.on_window_resize );
       window.addEventListener( 'keydown', this.key_down_handler, false );
       document.addEventListener('mousedown', this.mouse_events_global_down);
+
       this.calculate_main_canvas_dimension();
       this.calculate_secondary_canvas_dimension();
 
@@ -348,11 +370,28 @@
       }
     },
     methods: {
-      load_file_data: function(){
+      load_pcd: async function () {
+        let file_loader_3d = new FileLoader3DPointClouds(this);
+        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url)
+        this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
+          color: new THREE.Color('white'),
+          opacity: 1,
+          transparent: false,
+        });
+        return this.point_cloud_mesh
+
+      },
+      load_file_data: async function(){
         if(!this.$refs.main_3d_canvas){
           return
         }
-        this.$refs.main_3d_canvas.clear_and_load_canvas();
+        this.$refs.x_axis_3d_canvas.destroy_canvas()
+        this.$refs.y_axis_3d_canvas.destroy_canvas()
+        this.$refs.z_axis_3d_canvas.destroy_canvas()
+        this.$refs.main_3d_canvas.destroy_canvas();
+        await this.load_pcd();
+        await this.$nextTick();
+        await this.$refs.main_3d_canvas.load_canvas();
         this.calculate_main_canvas_dimension();
         this.calculate_secondary_canvas_dimension();
       },

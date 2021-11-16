@@ -22,6 +22,7 @@ export default class SceneController3D {
   public component_ctx: Vue;
   public label_file: { id: number, colour: {hex: string} } = null;
   public container: any;
+  public animation_id: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
   public instance_list: Array<Instance3D> = [];
   public selected_instance: Instance3D = null;
@@ -56,8 +57,13 @@ export default class SceneController3D {
     this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
 
   }
-  public clear_all(obj){
-    while(obj.children.length > 0){
+  public clear_all(initial_obj = undefined){
+    let obj = initial_obj;
+    if(!initial_obj){
+      obj = this.scene;
+    }
+    cancelAnimationFrame( this.animation_id );
+    while(obj.children.length){
       this.clear_all(obj.children[0]);
       obj.remove(obj.children[0]);
     }
@@ -73,10 +79,18 @@ export default class SceneController3D {
       })
       obj.material.dispose();
     }
+    this.renderer.setAnimationLoop(null);
+    while (this.renderer.domElement.lastChild){
+      this.renderer.domElement.removeChild(this.renderer.domElement.lastChild)
+    } // `renderer` is stored earlier
+    this.scene = undefined;
   }
 
   private reset_materials() {
     if (this.draw_mode) {
+      return
+    }
+    if(!this.scene){
       return
     }
     for (const child of this.scene.children) {
@@ -211,6 +225,9 @@ export default class SceneController3D {
     if (this.draw_mode) {
       return
     }
+    if(!this.scene){
+      return
+    }
     // update the picking ray with the camera and mouse position
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
@@ -234,13 +251,19 @@ export default class SceneController3D {
   }
 
   private animate(){
-    requestAnimationFrame( this.animate.bind(this) );
+    console.log(this.component_ctx.point_cloud_mesh)
+    if(!this.scene){
+      return
+    }
+    this.animation_id = requestAnimationFrame( this.animate.bind(this) );
 
     this.render();
   }
 
   private render() {
-
+    if(!this.scene){
+      return
+    }
     this.reset_materials();
     this.check_hover();
     this.renderer.render(this.scene, this.camera);
@@ -251,6 +274,12 @@ export default class SceneController3D {
     window.addEventListener('mousemove', this.on_mouse_move.bind(this), false);
     window.addEventListener('click', this.on_mouse_click.bind(this));
     window.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
+  }
+
+  public detach_mouse_event() {
+    window.removeEventListener('mousemove', this.on_mouse_move.bind(this));
+    window.removeEventListener('click', this.on_mouse_click.bind(this));
+    window.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
   }
 
   public detach_mouse_events() {
@@ -287,7 +316,7 @@ export default class SceneController3D {
     if (this.draw_mode) {
       this.draw_place_holder_cuboid();
       if (this.object_transform_controls) {
-        this.object_transform_controls.detach_controls();
+        this.detach_controls_from_mesh();
       }
     } else {
       this.remove_from_scene(this.place_holder_cuboid);
@@ -295,6 +324,7 @@ export default class SceneController3D {
       this.place_holder_cuboid = null;
     }
   }
+
 
   public deselect_instance() {
     if (!this.selected_instance) {
@@ -305,7 +335,7 @@ export default class SceneController3D {
     this.selected_instance.helper_lines = null;
     this.selected_instance = null;
     this.selected_instance_index = null;
-    this.object_transform_controls.detach_controls();
+    this.detach_controls_from_mesh();
 
   }
 
@@ -331,6 +361,9 @@ export default class SceneController3D {
   }
 
   public on_click_edit_mode(event) {
+    if(!this.scene){
+      return
+    }
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     // calculate objects intersecting the picking ray
@@ -365,7 +398,8 @@ export default class SceneController3D {
   }
 
   public start_render() {
-    this.animate();
+    // this.animate();
+    this.render();
   }
 
 
@@ -388,6 +422,7 @@ export default class SceneController3D {
       RIGHT: 'KeyD', // right arrow
       BOTTOM: 'KeyS' // down arrow
     }
+    this.controls_orbit.addEventListener('change', this.render.bind(this))
   }
 
   public add_transform_controls() {
@@ -405,19 +440,18 @@ export default class SceneController3D {
 
   public attach_transform_controls_to_mesh(mesh) {
     this.object_transform_controls.attach_to_mesh(mesh)
+    this.object_transform_controls.addEventListener( 'change', this.render.bind(this) );
 
+  }
+
+  private detach_controls_from_mesh(){
+    this.object_transform_controls.detach_controls();
+    this.object_transform_controls.removeEventListener( 'change', this.render.bind(this) );
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
 
-    if (center_camera_to_object) {
-      mesh.rotateX(THREE.Math.degToRad(-90));
-      mesh.rotateY(THREE.Math.degToRad(0));
-      mesh.rotateZ(THREE.Math.degToRad(0));
-      let center = mesh.geometry.boundingSphere.center;
 
-
-    }
     this.scene.add(mesh);
   }
 

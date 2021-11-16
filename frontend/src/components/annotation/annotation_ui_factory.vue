@@ -410,6 +410,9 @@
             if (local_project_string_id == this.$store.state.project.current.project_string_id) {
               return
             }
+            if(!local_project_string_id){
+              return
+            }
 
             const response = await axios.get('/api/project/' + local_project_string_id + '/view');
             if (response.data['none_found'] == true) {

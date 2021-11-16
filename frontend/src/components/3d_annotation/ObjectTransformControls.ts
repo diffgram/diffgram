@@ -120,6 +120,7 @@ export default class ObjectTransformControls {
   public detach_controls(){
     if(this.controls_transform){
       this.controls_transform.detach()
+
     }
   }
   public attach_to_mesh(mesh){
