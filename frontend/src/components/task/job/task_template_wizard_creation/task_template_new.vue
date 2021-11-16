@@ -101,6 +101,7 @@ export default Vue.extend({
         file_handling: "use_existing",
         interface_connection: undefined,
         member_list_ids: ["all"],
+        reviewer_list_ids: ["all"],
       },
       job_id: null,
     };
