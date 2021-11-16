@@ -615,7 +615,8 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
-            'time_created': self.time_created
+            'time_created': self.time_created,
+            'allow_reviews': self.allow_reviews
         }
 
     def serialize_for_task(self):
