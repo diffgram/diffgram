@@ -1,7 +1,6 @@
 <template>
   <div v-cloak>
-
-      <!--
+    <!--
      Problem:  both v-alert and v-card Both have tons of issues with controlling width in toolbar setting
      Solution: button component that seems to control width better
     -->
@@ -9,7 +8,11 @@
     <!-- Complete File -->
     <tooltip_button
       :tooltip_message="complete_message"
-      v-if="!task_id && current_file.ann_is_complete != true && view_only_mode != true"
+      v-if="
+        !task_id &&
+        current_file.ann_is_complete != true &&
+        view_only_mode != true
+      "
       @click="is_complete_toggle_file(true)"
       :loading="is_complete_toggle_loading"
       :disabled="is_complete_toggle_loading || disabled"
@@ -17,15 +20,14 @@
       icon="mdi-check-circle-outline"
       :icon_style="true"
       :bottom="true"
-                    >
+    >
     </tooltip_button>
-
 
     <!-- Complete Task -->
     <tooltip_button
       tooltip_message="Complete Task"
       v-if="task && task.id && task.status !== 'complete'"
-      @click="is_complete_toggle_task(true)"
+      @click="complete_dialog()"
       :loading="is_complete_toggle_loading"
       :disabled="is_complete_toggle_loading || disabled"
       color="primary"
@@ -41,12 +43,11 @@
       message="Complete"
       tooltip_message="Task Status"
       color="success"
-      tooltip_direction="bottom">
-
+      tooltip_direction="bottom"
+    >
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-
     </regular_chip>
     <!-- Just disable, don't show loading while saving,
         it's too distracting to show loading,
@@ -65,125 +66,141 @@
       message="Complete"
       tooltip_message="File Status"
       color="success"
-      tooltip_direction="bottom">
-
+      tooltip_direction="bottom"
+    >
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-
     </regular_chip>
 
     <tooltip_button
-        tooltip_message="Mark File As Not Complete"
-        @click="is_complete_toggle_file()"
-        v-if="!task && current_file.ann_is_complete == true && !view_only_mode"
-        icon="cancel"
-        :loading="is_complete_toggle_loading"
-        :disabled="is_complete_toggle_loading"
-        :icon_style="true"
-        color="warning"
-        :bottom="true"
-                    >
+      tooltip_message="Mark File As Not Complete"
+      @click="is_complete_toggle_file()"
+      v-if="!task && current_file.ann_is_complete == true && !view_only_mode"
+      icon="cancel"
+      :loading="is_complete_toggle_loading"
+      :disabled="is_complete_toggle_loading"
+      :icon_style="true"
+      color="warning"
+      :bottom="true"
+    >
     </tooltip_button>
-
+    <submit_to_review
+      :dialog="dialog_open"
+      @complete="is_complete_toggle_task(true)"
+      @on_task_action="close_dialog()"
+    />
   </div>
 </template>
 
 <script lang="ts">
-
-import axios from 'axios';
+import axios from "axios";
+import submit_to_review from "../../dialogs/submit_to_review.vue";
 
 import Vue from "vue";
 
-export default Vue.extend( {
-
-  name: 'is_complete',
-  props: {'project_string_id' : {},
-          'current_file': {},
-          'task': undefined,
-          'complete_on_change_trigger': {},
-          'view_only_mode': {},
-          'save_and_complete': {},
-          'loading': {
-              default: false,
-              type: Boolean
-          },
-          'disabled' : {
-              default: false,
-              type: Boolean
-          },
-          'task_id' : {
-              default: null,
-              type: Number
-          }
+export default Vue.extend({
+  name: "is_complete",
+  components: {
+    submit_to_review,
+  },
+  props: {
+    project_string_id: {},
+    current_file: {},
+    task: undefined,
+    complete_on_change_trigger: {},
+    view_only_mode: {},
+    save_and_complete: {},
+    loading: {
+      default: false,
+      type: Boolean,
+    },
+    disabled: {
+      default: false,
+      type: Boolean,
+    },
+    task_id: {
+      default: null,
+      type: Number,
+    },
   },
   data() {
     return {
-      is_complete_toggle_loading: false
-
-    }
+      is_complete_toggle_loading: false,
+      dialog_open: false,
+    };
   },
   computed: {
-   complete_message: function () {
-      if (this.current_file.video_id){
-        return "Complete Video"
+    complete_message: function () {
+      if (this.current_file.video_id) {
+        return "Complete Video";
       } else {
-        return "Complete"
+        return "Complete";
       }
-    }
+    },
   },
 
   watch: {
-    'complete_on_change_trigger': 'is_complete_toggle'
+    complete_on_change_trigger: "is_complete_toggle",
   },
 
-  created() {
-
-  },
+  created() {},
   methods: {
-    is_complete_toggle_file: function (on_complete_only=false) {
-
-      // save_and_complete prop, ie so only do this when used in menu
-      // on_complete_only so "cancel" button doesn't push to next page
-      if (this.save_and_complete == true && on_complete_only == true) {
-        this.$store.commit('save_and_complete')
-        return
-      }
-
-      let endpoint = '/api/project/' + this.project_string_id +
-        '/file/' + this.current_file.id +
-        '/annotation/is_complete_toggle'
-
-      axios.post(endpoint, {
-        directory_id: this.$store.state.project.current_directory.directory_id
-      }).then(response => {
-        this.is_complete_toggle_loading = false
-        this.$emit('replace_file', response.data.new_file)
-      }).catch(error => {
-
-      });
+    complete_dialog: function () {
+      if (!this.task.job.allow_reviews)
+        return this.is_complete_toggle_file(true);
+      this.dialog_open = true;
     },
-    is_complete_toggle_task: function (on_complete_only=false) {
+    close_dialog: function () {
+      this.dialog_open = false;
+    },
+    is_complete_toggle_file: function (on_complete_only = false) {
       // save_and_complete prop, ie so only do this when used in menu
       // on_complete_only so "cancel" button doesn't push to next page
       if (this.save_and_complete == true && on_complete_only == true) {
-        this.$store.commit('save_and_complete');
-        this.$emit('complete_task');
-        return
+        this.$store.commit("save_and_complete");
+        return;
       }
-      const endpoint = `/api/v1/task/${this.task_id}/file/is_complete_toggle`
 
-      axios.post(endpoint, {
-        directory_id: this.$store.state.project.current_directory.directory_id
-      }).then(response => {
-        this.is_complete_toggle_loading = false
-        this.$emit('replace_file', response.data.new_file);
+      let endpoint =
+        "/api/project/" +
+        this.project_string_id +
+        "/file/" +
+        this.current_file.id +
+        "/annotation/is_complete_toggle";
 
-        }).catch(error => {
-      });
-    }
+      axios
+        .post(endpoint, {
+          directory_id:
+            this.$store.state.project.current_directory.directory_id,
+        })
+        .then((response) => {
+          this.is_complete_toggle_loading = false;
+          this.$emit("replace_file", response.data.new_file);
+        })
+        .catch((error) => {});
+    },
+    is_complete_toggle_task: function (on_complete_only = false) {
+      // save_and_complete prop, ie so only do this when used in menu
+      // on_complete_only so "cancel" button doesn't push to next page
+      if (this.save_and_complete == true && on_complete_only == true) {
+        this.$store.commit("save_and_complete");
+        this.$emit("complete_task");
+        return;
+      }
+      const endpoint = `/api/v1/task/${this.task_id}/file/is_complete_toggle`;
 
-  }
-}
-
-) </script>
+      axios
+        .post(endpoint, {
+          directory_id:
+            this.$store.state.project.current_directory.directory_id,
+        })
+        .then((response) => {
+          this.is_complete_toggle_loading = false;
+          this.$emit("replace_file", response.data.new_file);
+        })
+        .catch((error) => {});
+    },
+  },
+});
+</script>

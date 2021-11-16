@@ -8,8 +8,8 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="dialog = false"> Cancel </v-btn>
-          <v-btn color="green" text @click="dialog = false"> Submit </v-btn>
+          <v-btn color="primary" text @click="cancel"> Cancel </v-btn>
+          <v-btn color="green" text @click="submit"> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -18,7 +18,6 @@
 
 <script>
 import Vue from "vue";
-import axios from "axios";
 
 export default Vue.extend({
   name: "submit_to_review",
@@ -29,15 +28,13 @@ export default Vue.extend({
     },
   },
   methods: {
-    get_job: async () => {
-      const response = await axios.post(`/api/v1/job/17/builder/info`, {
-        mode_data: "job_edit",
-      });
-      console.log(response);
+    submit: function () {
+      this.$emit("complete");
+      this.$emit("on_task_action");
     },
-  },
-  created() {
-    this.get_job();
+    cancel: function () {
+      this.$emit("on_task_action");
+    },
   },
 });
 </script>
