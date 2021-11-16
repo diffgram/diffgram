@@ -86,23 +86,13 @@
       },
 
       async mounted() {
+        this.clear_and_load_canvas();
 
-        if (WEBGL.isWebGLAvailable()) {
-          if (this.$props.create_new_scene) {
-
-            await this.setup_scene_controls()
-          }
-
-
-        } else {
-          const warning = WEBGL.getWebGLErrorMessage();
-          alert('WebGL is not available on this machine.')
-
-        }
       },
       beforeDestroy() {
         if (this.scene_controller) {
           this.scene_controller.detach_mouse_events();
+          this.scene_controller.clear_all();
         }
 
       },
@@ -124,6 +114,23 @@
         }
       },
       methods: {
+        clear_and_load_canvas: async function(){
+          if(this.scene_controller){
+            // Clear all elements from the scene
+            this.scene_controller.clear_all(this.scene_controller.scene);
+          }
+          if (WEBGL.isWebGLAvailable()) {
+            if (this.$props.create_new_scene) {
+
+              await this.setup_scene()
+            }
+          } else {
+            const warning = WEBGL.getWebGLErrorMessage();
+            alert('WebGL is not available on this machine.')
+
+          }
+
+        },
         update_pan_speed: function(){
           this.scene_controller.controls_orbit.panSpeed = this.$props.pan_speed;
           this.scene_controller.controls_orbit.update();
@@ -155,7 +162,14 @@
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
           this.$props.instance_list
         },
-        setup_scene_controls: async function (scene = undefined,) {
+        create_renderer: function(){
+          this.renderer = new THREE.WebGLRenderer();
+
+          this.renderer.setPixelRatio(window.devicePixelRatio);
+
+          this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+        },
+        setup_scene: async function (scene = undefined,) {
           this.point_cloud_mesh = await this.load_pcd();
           this.container = document.getElementById(this.$props.container_id)
 
@@ -163,11 +177,11 @@
           if(this.container.clientWidth === 0 || this.container.clientHeight === 0){
             return
           }
-          this.renderer = new THREE.WebGLRenderer();
 
-          this.renderer.setPixelRatio(window.devicePixelRatio);
+          if(!this.renderer){
+            this.create_renderer();
+          }
 
-          this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
           window.addEventListener( 'resize', this.on_window_resize );
           if (!scene) {
             scene = new THREE.Scene();

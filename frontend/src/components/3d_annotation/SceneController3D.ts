@@ -4,6 +4,7 @@ import ObjectTransformControls from "./ObjectTransformControls";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
+import {Vue} from "vue/types/vue";
 
 export default class SceneController3D {
   public scene: THREE.Scene;
@@ -18,8 +19,8 @@ export default class SceneController3D {
   public axes_helper: THREE.AxesHelper;
   public grid_helper: THREE.GridHelper;
   public place_holder_cuboid: THREE.Mesh;
-  public component_ctx: object;
-  public label_file: object = null;
+  public component_ctx: Vue;
+  public label_file: { id: number, colour: {hex: string} } = null;
   public container: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
   public instance_list: Array<Instance3D> = [];
@@ -54,6 +55,24 @@ export default class SceneController3D {
     this.camera.position.set(0, 0, 25);
     this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
 
+  }
+  public clear_all(obj){
+    while(obj.children.length > 0){
+      this.clear_all(obj.children[0]);
+      obj.remove(obj.children[0]);
+    }
+    if(obj.geometry) obj.geometry.dispose();
+
+    if(obj.material){
+      //in case of map, bumpMap, normalMap, envMap ...
+      Object.keys(obj.material).forEach(prop => {
+        if(!obj.material[prop])
+          return;
+        if(obj.material[prop] !== null && typeof obj.material[prop].dispose === 'function')
+          obj.material[prop].dispose();
+      })
+      obj.material.dispose();
+    }
   }
 
   private reset_materials() {

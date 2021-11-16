@@ -340,9 +340,22 @@
       },
     },
     watch:{
+      file: function(new_val, old_val){
+        if(new_val != old_val){
+          this.load_file_data();
+        }
 
+      }
     },
     methods: {
+      load_file_data: function(){
+        if(!this.$refs.main_3d_canvas){
+          return
+        }
+        this.$refs.main_3d_canvas.clear_and_load_canvas();
+        this.calculate_main_canvas_dimension();
+        this.calculate_secondary_canvas_dimension();
+      },
       set_save_loading: function(value, frame){
         if(this.video_mode){
           this.save_loading_frame[frame] = value;
@@ -621,9 +634,9 @@
         // Set scene for secondary canvas
         await this.$nextTick();
         this.secondary_3d_canvas_container = document.getElementById('secondary_3d_canvas_container')
-        this.$refs.x_axis_3d_canvas.setup_scene_controls(main_scene)
-        this.$refs.y_axis_3d_canvas.setup_scene_controls(main_scene)
-        this.$refs.z_axis_3d_canvas.setup_scene_controls(main_scene)
+        this.$refs.x_axis_3d_canvas.setup_scene(main_scene)
+        this.$refs.y_axis_3d_canvas.setup_scene(main_scene)
+        this.$refs.z_axis_3d_canvas.setup_scene(main_scene)
       },
       on_instance_updated: function(instance){
         this.center_secondary_cameras_to_instance(instance)
