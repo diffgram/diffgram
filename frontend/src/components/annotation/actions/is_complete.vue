@@ -90,7 +90,7 @@
       @complete="is_complete_toggle_task(true)"
       @on_task_action="close_dialog()"
     />
-    <review_dialog :dialog="review_dialog" />
+    <review_dialog :dialog="review_dialog" @complete="on_submit_review" />
   </div>
 </template>
 
@@ -98,6 +98,7 @@
 import axios from "axios";
 import submit_to_review from "../../dialogs/submit_to_review.vue";
 import review_dialog from "../../dialogs/review_dialog.vue";
+import { submitTaskReview } from "../../../services/tasksServices";
 
 import Vue from "vue";
 
@@ -131,7 +132,7 @@ export default Vue.extend({
     return {
       is_complete_toggle_loading: false,
       dialog_open: false,
-      review_dialog: true,
+      review_dialog: false,
     };
   },
   computed: {
@@ -162,10 +163,22 @@ export default Vue.extend({
     complete_dialog: function () {
       if (!this.task.job.allow_reviews)
         return this.is_complete_toggle_file(true);
+
+      if (this.task.status === "review_requested")
+        return (this.review_dialog = true);
+
       this.dialog_open = true;
     },
     close_dialog: function () {
       this.dialog_open = false;
+      this.review_dialog = false;
+    },
+    on_submit_review: async function (payload) {
+      const { data } = await submitTaskReview(this.task.id, payload);
+      const new_task_status = data.task.status;
+      if (new_task_status === "complete") this.task.status = "complete";
+      this.close_dialog();
+      this.$emit("on_next");
     },
     is_complete_toggle_file: function (on_complete_only = false) {
       // save_and_complete prop, ie so only do this when used in menu

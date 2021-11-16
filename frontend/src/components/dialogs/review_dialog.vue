@@ -13,6 +13,7 @@
 
           <v-textarea
             solo
+            v-model="comment"
             v-if="need_changes"
             name="input-7-4"
             label="Speciafy what need to be improved"
@@ -21,8 +22,8 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text> Cancel </v-btn>
-          <v-btn color="green" text> Submit </v-btn>
+          <v-btn color="primary" @click="on_cancel" text> Cancel </v-btn>
+          <v-btn color="green" @click="on_submit" text> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -31,6 +32,7 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios";
 
 export default Vue.extend({
   name: "review_dialog",
@@ -43,7 +45,20 @@ export default Vue.extend({
   data() {
     return {
       need_changes: false,
+      comment: null,
     };
+  },
+  methods: {
+    on_submit: async function () {
+      const payload = {
+        action: this.need_changes ? "request_change" : "approve",
+        comment: this.comment,
+      };
+      this.$emit("complete", payload);
+    },
+    on_cancel: function () {
+      this.$emit("on_task_action");
+    },
   },
 });
 </script>
