@@ -90,12 +90,14 @@
       @complete="is_complete_toggle_task(true)"
       @on_task_action="close_dialog()"
     />
+    <review_dialog :dialog="review_dialog" />
   </div>
 </template>
 
 <script lang="ts">
 import axios from "axios";
 import submit_to_review from "../../dialogs/submit_to_review.vue";
+import review_dialog from "../../dialogs/review_dialog.vue";
 
 import Vue from "vue";
 
@@ -103,6 +105,7 @@ export default Vue.extend({
   name: "is_complete",
   components: {
     submit_to_review,
+    review_dialog,
   },
   props: {
     project_string_id: {},
@@ -128,6 +131,7 @@ export default Vue.extend({
     return {
       is_complete_toggle_loading: false,
       dialog_open: false,
+      review_dialog: true,
     };
   },
   computed: {
