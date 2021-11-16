@@ -4,56 +4,32 @@
       {{ job.status }}
     </div>
 
-    <div v-if="['job_detail'].includes(mode_view)">
-
-      <!-- For now treating the
-        general "job only" attributes
-        as *different* from something that updates tasks
-        too like the labels thing. -->
-
-
-      <!-- TODO job status component -->
-      <div>
-        {{ job.status }}  Tasks Remaining: {{ job.tasks_remaining }}
-      </div>
-
-      <div class="pa-2">
-      <v-progress-linear :value="job.percent_completed">
-      </v-progress-linear>
-      </div>
-
-
-    </div>
-
     <div v-if="job.td_api_trainer_basic_training == true">
-      <h2> <v-icon>mdi-heart</v-icon> Basic Training </h2>
+      <h2><v-icon>mdi-heart</v-icon> Basic Training</h2>
     </div>
   </div>
 </template>
 
 
 <script lang="ts">
-
-import axios from 'axios';
+import axios from "axios";
 
 import Vue from "vue";
 
-export default Vue.extend( {
-  name: 'job_overview_and_task_list',
-  components: {
-
-  },
+export default Vue.extend({
+  name: "job_overview_and_task_list",
+  components: {},
   props: {
-    'job_id': {
-      default: null
+    job_id: {
+      default: null,
     },
-    'mode_data': {
-      default: null     // job_edit, job_detail
+    mode_data: {
+      default: null, // job_edit, job_detail
     },
     // not clear on difference between use for view and data in this context yet
-    'mode_view': {
-      default: null     // job_edit, job_detail
-    }
+    mode_view: {
+      default: null, // job_edit, job_detail
+    },
   },
   data() {
     return {
@@ -64,59 +40,43 @@ export default Vue.extend( {
 
       job: {
         percent_completed: 0,
-        label_dict: null
+        label_dict: null,
       },
-
-    }
+    };
   },
-  computed: {
+  computed: {},
 
-  },
-
-  watch: {
-
-  },
+  watch: {},
 
   created() {
-
-    this.job_builder_info()
-
+    this.job_builder_info();
   },
   methods: {
     job_builder_info: function () {
+      this.loading = true;
 
-      this.loading = true
+      axios
+        .post("/api/v1/job/" + this.job_id + "/builder/info", {
+          mode_data: this.mode_data,
+        })
+        .then((response) => {
+          if (response.data.log.success == true) {
+            this.job = response.data.job;
+            this.$emit("job_info", this.job);
+            this.$store.commit("set_job", this.job);
+          }
 
-      axios.post(
-        '/api/v1/job/' + this.job_id +
-        '/builder/info', {
-          'mode_data': this.mode_data
-        }
-      ).then(response => {
-
-        if (response.data.log.success == true) {
-
-          this.job = response.data.job
-          this.$emit('job_info', this.job)
-          this.$store.commit('set_job', this.job)
-        }
-
-        this.loading = false
-
-      })
-        .catch(error => {
-
+          this.loading = false;
+        })
+        .catch((error) => {
           if (error.response.status == 403) {
-            this.$store.commit('error_permission')
+            this.$store.commit("error_permission");
           }
 
           console.error(error);
-          this.loading = false
-
+          this.loading = false;
         });
     },
-
-  }
-}
-
-) </script>
+  },
+});
+</script>

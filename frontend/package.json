@@ -52,7 +52,7 @@
     "typescript": "^3.9.7",
     "uuid": "^8.3.1",
     "vue": "^2.6.12",
-    "vue-chartjs": "^3.5.1",
+    "vue-chartjs": "^3.5.0",
     "vue-code-diff": "^1.1.0",
     "vue-color": "^2.7.1",
     "vue-intercom": "^1.0.14",
