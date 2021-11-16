@@ -18,6 +18,7 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios";
 
 export default Vue.extend({
   name: "submit_to_review",
@@ -26,6 +27,17 @@ export default Vue.extend({
       type: Boolean,
       default: false,
     },
+  },
+  methods: {
+    get_job: async () => {
+      const response = await axios.post(`/api/v1/job/17/builder/info`, {
+        mode_data: "job_edit",
+      });
+      console.log(response);
+    },
+  },
+  created() {
+    this.get_job();
   },
 });
 </script>
