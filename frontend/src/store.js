@@ -251,14 +251,17 @@ const org = {
 const job = {
 
   state: {
-    current: {}
+    current: {},
+    refresh: undefined
   },
   mutations: {
     clear_job(state) {
       state.current = {}
+      state.refresh = Date.now()
     },
     set_job(state, job) {
       state.current = job
+      state.refresh = Date.now()
     }
   }
 }
