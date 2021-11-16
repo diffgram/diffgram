@@ -107,6 +107,7 @@
         :task="task"
         @complete_task="$emit('complete_task')"
         @replace_file="$emit('replace_file', $event)"
+        @on_next="$emit('change_task', 'next')"
         :save_and_complete="true"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (!file && !task)"
