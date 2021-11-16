@@ -83,8 +83,6 @@ describe('Task Template Creation', () => {
       cy.intercept(url).as('update_job')
       cy.get('[data-cy="task-template-reviewer-radio-yes"]').click({force: true})
       cy.get('[data-cy="task-template-reviewer-review-all"]').click({force: true})
-      cy.wait(100)
-      cy.get('[data-cy="task-template-reviewer-review-all"]').should('be.checked')
       cy.get('[data-cy="task-template-reviewer-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })
@@ -98,7 +96,6 @@ describe('Task Template Creation', () => {
       cy.intercept(url).as('update_job')
       cy.get('[data-cy="task-template-upload-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
-
 
     })
 
