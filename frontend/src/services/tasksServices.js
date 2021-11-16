@@ -14,5 +14,4 @@ export const nextTask = async (job_id) => {
             data: {}
         }
     }
-
 }
