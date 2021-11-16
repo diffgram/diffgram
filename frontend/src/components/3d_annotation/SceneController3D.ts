@@ -251,7 +251,6 @@ export default class SceneController3D {
   }
 
   private animate(){
-    console.log(this.component_ctx.point_cloud_mesh)
     if(!this.scene){
       return
     }
@@ -276,14 +275,10 @@ export default class SceneController3D {
     window.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
   }
 
-  public detach_mouse_event() {
+  public detach_mouse_events() {
     window.removeEventListener('mousemove', this.on_mouse_move.bind(this));
     window.removeEventListener('click', this.on_mouse_click.bind(this));
     window.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
-  }
-
-  public detach_mouse_events() {
-    window.removeEventListener('mousemove', this.on_mouse_move.bind(this), false);
   }
 
   public set_instance_list(instance_list) {

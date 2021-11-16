@@ -160,10 +160,8 @@ import Vue from "vue"; export default Vue.extend( {
   mounted() {
 
     // Label()
-    console.log('label_file_prop', this.label_file_prop)
     this.current_label_file = {...this.label_file_prop}
     this.current_label_file.label = {...this.label_file_prop.label}
-    console.log('current_label_file', this.current_label_file)
   },
   methods: {
 

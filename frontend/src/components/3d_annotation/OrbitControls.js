@@ -402,7 +402,6 @@ class OrbitControls extends EventDispatcher {
       const v = new Vector3();
 
       return function panUp( distance, objectMatrix, zAxis) {
-        console.log('Z AXIS', zAxis)
         if ( !zAxis && scope.screenSpacePanning === true) {
 
           v.setFromMatrixColumn( objectMatrix, 1 );

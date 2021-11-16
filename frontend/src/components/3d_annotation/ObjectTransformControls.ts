@@ -11,7 +11,6 @@ export default class ObjectTransformControls {
     this.controls_transform.addEventListener( 'change', render_function );
     this.controls_transform.addEventListener( 'dragging-changed', drag_function);
     this.scene_controller = scene_controller;
-    console.log('ObjectTransformControls', this.controls_transform, layer_number)
     let gizmo = this.controls_transform._gizmo.gizmo;
     let picker = this.controls_transform._gizmo.picker;
     let helper = this.controls_transform._gizmo.helper;

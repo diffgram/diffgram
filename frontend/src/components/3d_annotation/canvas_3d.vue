@@ -86,7 +86,6 @@
       },
       beforeDestroy() {
         if (this.scene_controller) {
-          this.scene_controller.detach_mouse_events();
           this.destroy_canvas();
         }
 
@@ -124,15 +123,19 @@
         destroy_canvas: function(){
           if(this.scene_controller){
             // Clear all elements from the scene
-            this.scene_controller.detach_mouse_event();
+            this.scene_controller.detach_mouse_events();
             this.scene_controller.scene.remove(this.point_cloud_mesh);
             this.point_cloud_mesh.geometry.dispose();
             this.point_cloud_mesh.material.dispose();
 
             this.scene_controller.clear_all();
 
-            if(document.getElementById(this.$props.container_id)){
-              document.getElementById(this.$props.container_id).removeChild(this.renderer.domElement);
+            let container = document.getElementById(this.$props.container_id)
+            if(container && this.renderer){
+              if(container.contains(this.renderer.domElement)){
+                document.getElementById(this.$props.container_id).removeChild(this.renderer.domElement);
+              }
+
             }
 
             delete this.renderer;
@@ -242,7 +245,6 @@
           let h = this.container.clientHeight
           this.camera.aspect = w / h;
           this.camera.updateProjectionMatrix();
-          console.log('w, h', w, h)
           this.renderer.setSize(w, h);
         },
         on_window_resize: function () {
