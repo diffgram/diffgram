@@ -445,15 +445,29 @@ export default class SceneController3D {
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
-
+    if(center_camera_to_object){
+      this.center_camera_to_mesh(mesh, 'z')
+    }
 
     this.scene.add(mesh);
   }
 
-  public center_camera_to_mesh(mesh, axis = 'x'){
-    let center = getCenterPoint(mesh);
-    this.camera.position.set(center.x - 1, center.y - 1, center.z - 1);
+  public center_camera_to_mesh(mesh, dist = 2){
+    var vFOV = this.camera.fov * Math.PI / 180;        // convert vertical fov to radians
+    var height = 2 * Math.tan( vFOV / 2 ) * dist; // visible height
+    mesh.geometry.computeBoundingSphere();
+    mesh.geometry.computeBoundingBox();
+    let radius = mesh.geometry.boundingSphere.radius;
+    var aspect = this.container.clientWidth / this.container.clientHeight;
+    var width = height * aspect;                  // visible width
+    var zoom = (radius/2) / Math.tan(vFOV/2) - radius;
+    const center = new THREE.Vector3();
+    mesh.geometry.boundingBox.getCenter(center)
+    this.camera.position.copy(center);
+    this.camera.position.z += zoom;
     this.camera.lookAt(center);
+    this.camera.lookAt(center);
+
   }
 
   public set_scene_dimensions(width, height, depth){
