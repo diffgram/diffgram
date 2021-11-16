@@ -55,7 +55,11 @@
         thumb-color="green"
         thumb-label="always"
       />
-      <v-checkbox v-model="review_all" :label="`Review all`" />
+      <v-checkbox
+        data-cy="task-template-reviewer-review-all"
+        v-model="review_all"
+        :label="`Review all`"
+      />
     </div>
     <wizard_navigation
       @next="on_next_button_click"

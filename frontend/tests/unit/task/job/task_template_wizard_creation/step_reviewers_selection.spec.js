@@ -1,6 +1,5 @@
 import Vuex from "vuex";
 import { shallowMount, createLocalVue } from "@vue/test-utils";
-import axios from 'axios'
 import step_reviewers_selection from "@/components/task/job/task_template_wizard_creation/step_reviewers_selection.vue"
 
 const localVue = createLocalVue();

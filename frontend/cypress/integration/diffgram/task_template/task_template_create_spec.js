@@ -77,6 +77,14 @@ describe('Task Template Creation', () => {
       cy.get('[data-cy="task-template-reviewer-step-title"]').should('be.visible')
       cy.get('[data-cy="task-template-reviewer-radio-yes"]').should('exist')
       cy.get('[data-cy="task-template-reviewer-radio-no"]').should('exist')
+    })
+
+    it('Correctly sets reviews to 100%', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="task-template-reviewer-radio-yes"]').click({force: true})
+      cy.get('[data-cy="task-template-reviewer-review-all"]').click({force: true})
+      cy.wait(100)
+      cy.get('[data-cy="task-template-reviewer-review-all"]').should('be.checked')
       cy.get('[data-cy="task-template-reviewer-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })
