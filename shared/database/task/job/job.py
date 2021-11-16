@@ -789,6 +789,8 @@ class Job(Base, Caching):
             'type': self.type,
             'pending_initial_dir_sync': self.pending_initial_dir_sync,
             'review_by_human_freqeuncy': self.review_by_human_freqeuncy,
+            'allow_reviews': self.allow_reviews,
+            'review_chance': self.review_chance,
 
             'project_string_id': self.project.project_string_id,
             'is_live': self.is_live,
