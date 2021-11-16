@@ -25,13 +25,13 @@
 
     <!-- Complete Task -->
     <tooltip_button
-      tooltip_message="Complete Task"
+      :tooltip_message="task_attributes.message"
       v-if="task && task.id && task.status !== 'complete'"
       @click="complete_dialog()"
       :loading="is_complete_toggle_loading"
       :disabled="is_complete_toggle_loading || disabled"
       color="primary"
-      icon="mdi-check-circle-outline"
+      :icon="task_attributes.icon"
       :icon_style="true"
       :bottom="true"
     >
@@ -138,13 +138,22 @@ export default Vue.extend({
         return "Complete";
       }
     },
+    task_attributes: function () {
+      if (this.task.status === "review_requested")
+        return {
+          icon: "mdi-archive-eye-outline",
+          message: "Complete task review",
+        };
+      return {
+        icon: "mdi-check-circle-outline",
+        message: "Complete task",
+      };
+    },
   },
 
   watch: {
     complete_on_change_trigger: "is_complete_toggle",
   },
-
-  created() {},
   methods: {
     complete_dialog: function () {
       if (!this.task.job.allow_reviews)
