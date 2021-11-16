@@ -56,8 +56,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-
-    <submit_to_review :dialog="true" />
   </div>
 </template>
 
@@ -67,14 +65,12 @@ import axios from "axios";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import file_manager_sheet from "../source_control/file_manager_sheet";
-import submit_to_review from "../dialogs/submit_to_review.vue";
 import Vue from "vue";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
-    submit_to_review,
   },
   props: {
     project_string_id: {
