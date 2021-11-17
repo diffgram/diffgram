@@ -452,22 +452,38 @@ export default class SceneController3D {
     this.scene.add(mesh);
   }
 
-  public center_camera_to_mesh(mesh, dist = 2){
-    var vFOV = this.camera.fov * Math.PI / 180;        // convert vertical fov to radians
-    var height = 2 * Math.tan( vFOV / 2 ) * dist; // visible height
-    mesh.geometry.computeBoundingSphere();
-    mesh.geometry.computeBoundingBox();
-    let radius = mesh.geometry.boundingSphere.radius;
-    var aspect = this.container.clientWidth / this.container.clientHeight;
-    var width = height * aspect;                  // visible width
-    var zoom = (radius/2) / Math.tan(vFOV/2) - radius;
-    const center = new THREE.Vector3();
-    mesh.geometry.boundingBox.getCenter(center)
-    this.camera.position.copy(center);
-    this.camera.position.z += zoom;
-    this.camera.lookAt(center);
-    this.camera.lookAt(center);
+  public center_camera_to_mesh(mesh, axis = 'x'){
+    let vFoV = this.camera.getEffectiveFOV();
+    let hFoV = this.camera.fov * this.camera.aspect;
 
+    let FoV = Math.min(vFoV, hFoV);
+    let FoV2 = FoV / 2;
+
+    let dir = new THREE.Vector3();
+    this.camera.getWorldDirection(dir);
+
+    let bb = mesh.geometry.boundingBox;
+    let bs = mesh.geometry.boundingSphere;
+    let bsWorld = bs.center.clone();
+    mesh.localToWorld(bsWorld);
+
+    let th = FoV2 * Math.PI / 180.0;
+    let sina = Math.sin(th);
+    let R = bs.radius;
+    let FL = R / sina;
+
+    let cameraDir = new THREE.Vector3();
+    this.camera.getWorldDirection(cameraDir);
+
+    let cameraOffs = cameraDir.clone();
+    cameraOffs.multiplyScalar(-FL);
+    let newCameraPos = bsWorld.clone().add(cameraOffs);
+
+    this.camera.position.copy(newCameraPos);
+    this.camera.lookAt(bsWorld);
+    this.controls_orbit.target.copy(bsWorld);
+
+    this.controls_orbit.update();
   }
 
   public set_scene_dimensions(width, height, depth){

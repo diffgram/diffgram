@@ -330,6 +330,7 @@
     },
     async created(){
       await this.load_pcd();
+
     },
 
     async mounted() {
@@ -339,6 +340,8 @@
 
       this.calculate_main_canvas_dimension();
       this.calculate_secondary_canvas_dimension();
+
+
 
     },
     computed:{
@@ -372,7 +375,7 @@
     methods: {
       load_pcd: async function () {
         let file_loader_3d = new FileLoader3DPointClouds(this);
-        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url)
+        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url);
         this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
           color: new THREE.Color('white'),
           opacity: 1,
@@ -666,8 +669,8 @@
       },
       on_scene_ready: function(scene_controller){
         let main_scene = scene_controller.scene;
-        this.setup_secondary_scene_controls(main_scene)
-
+        this.setup_secondary_scene_controls(main_scene);
+        this.$refs.main_3d_canvas.set_current_label_file(this.current_label_file);
       },
       setup_secondary_scene_controls: async function(main_scene){
         // Set scene for secondary canvas
@@ -733,10 +736,14 @@
 
       },
       change_label_file: function(label_file){
+        this.current_label_file = label_file;
+
         if(!this.$refs.main_3d_canvas){
           return
         }
-        this.current_label_file = label_file;
+
+        console.log('main 3dd called')
+
         this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
       edit_mode_toggle: function(draw_mode){
