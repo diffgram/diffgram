@@ -65,6 +65,9 @@
             @replace_file="$emit('replace_file', $event)"
             @open_instance_template_dialog="open_instance_template_dialog()"
             @copy_all_instances="copy_all_instances"
+            @on_task_annotation_complete_and_save="
+              on_task_annotation_complete_and_save
+            "
           >
           </toolbar>
         </template>
@@ -839,6 +842,10 @@
       @change_item="annotation_show_change_item"
       @stop_carousel="annotation_show_activate"
     />
+
+    <v-snackbar timeout="5000" v-model="submitted_to_review">
+      Task has been submitted to review
+    </v-snackbar>
   </div>
 </template>
 
@@ -885,6 +892,7 @@ import { InstanceContext } from "../vue_canvas/instances/InstanceContext";
 import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
+import { finishTaskAnnotation } from "../../services/tasksServices";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1066,6 +1074,7 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      submitted_to_review: false,
       instance_rotate_control_mouse_hover: null,
 
       snapped_to_instance: undefined,
@@ -2008,6 +2017,19 @@ export default Vue.extend({
   },
 
   methods: {
+    on_task_annotation_complete_and_save: async function () {
+      await this.save(false);
+      const response = await finishTaskAnnotation(this.task.id);
+      const new_status = response.data.task.status;
+      this.task.status = new_status;
+      if (new_status !== "complete") {
+        this.submitted_to_review = true;
+      }
+      if (this.$props.task && this.$props.task.id) {
+        this.save_loading_image = false;
+        this.trigger_task_change("next", this.$props.task, true);
+      }
+    },
     on_canvas_scale_global_changed: async function (new_scale) {
       if (!new_scale) {
         return;
@@ -8210,6 +8232,8 @@ export default Vue.extend({
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
+        if (this.task && this.task.id) return;
+
         this.set_save_loading(false, current_frame);
         this.has_changed = false;
         if (and_complete == true) {

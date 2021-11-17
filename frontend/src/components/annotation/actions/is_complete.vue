@@ -198,8 +198,7 @@ export default Vue.extend({
       // save_and_complete prop, ie so only do this when used in menu
       // on_complete_only so "cancel" button doesn't push to next page
       if (this.save_and_complete == true && on_complete_only == true) {
-        this.$store.commit("save_and_complete");
-        this.$emit("complete_task");
+        this.$emit("on_task_annotation_complete_and_save");
         return;
       }
       const endpoint = `/api/v1/task/${this.task_id}/file/is_complete_toggle`;
