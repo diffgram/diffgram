@@ -419,6 +419,7 @@ export default class SceneController3D {
       BOTTOM: 'KeyS' // down arrow
     }
     this.controls_orbit.addEventListener('change', this.render.bind(this))
+    this.controls_orbit.update();
   }
 
   public add_transform_controls() {
@@ -447,9 +448,13 @@ export default class SceneController3D {
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
     this.scene.add(mesh);
-    // if (center_camera_to_object) {
-    //   this.center_camera_to_mesh(mesh)
-    // }
+    if(this.controls_orbit){
+      this.controls_orbit.update();
+    }
+
+    if (center_camera_to_object) {
+      this.center_camera_to_mesh(mesh)
+    }
   }
 
   public center_camera_to_mesh(mesh, offset = 1) {
@@ -462,38 +467,17 @@ export default class SceneController3D {
     let geometry = mesh.geometry;
     geometry.computeBoundingBox();
     let center = new THREE.Vector3();
-    geometry.boundingBox.getCenter( center );
+    boundingBox.getCenter( center );
 
-    console.log('center', center)
+    console.log('center', center, boundingBox)
     let size = new THREE.Vector3();
     boundingBox.getSize(size);
 
-    // get the max side of the bounding box (fits to width OR height as needed )
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = this.camera.fov * (Math.PI / 180);
-    let cameraZ = Math.abs(maxDim / 4 * Math.tan(fov * 2));
-
-    cameraZ *= offset; // zoom out a little so that objects don't fill the screen
-
-    // this.camera.position.z =  center.z;
-    // this.camera.position.y =  center.y;
-    // this.camera.position.x =  center.x;
-
-    const minZ = boundingBox.min.z;
-    const cameraToFarEdge = (minZ < 0) ? -minZ + cameraZ : cameraZ - minZ;
-    // this.camera.lookAt(center);
-    // this.camera.far = cameraToFarEdge * 3;
-    // this.camera.updateProjectionMatrix();
+    // Center the camera
     this.camera.position.copy(center);
-    console.log('UPDATE PROJ MATRIX', mesh)
+    // this.controls_orbit.target.copy(center);
 
-    // set camera to rotate around center of loaded object
-    this.controls_orbit.target = center;
     this.controls_orbit.update();
-    // // // prevent camera from zooming out far enough to create far plane cutoff
-    // // this.controls_orbit.maxDistance = cameraToFarEdge * 2;
-    //
-    // this.controls_orbit.saveState();
 
 
 

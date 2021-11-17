@@ -3072,6 +3072,7 @@
               self.save()
             },
           )
+
           this.save_and_complete_watcher = this.$store.watch((state) => {
               return this.$store.state.annotation_state.save_and_complete
             },
@@ -6565,7 +6566,7 @@
             }
             else {
               this.$refs.video_controllers.move_frame(1)
-            }           
+            }
           }
           if (file.type == "image") {
             do_change_item = true

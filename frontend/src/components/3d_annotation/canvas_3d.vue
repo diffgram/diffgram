@@ -1,8 +1,8 @@
 <template>
+
   <div v-if="point_cloud_mesh" :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
 
   </div>
-
 
 </template>
 
@@ -80,6 +80,9 @@
       },
 
       async mounted() {
+        if(this.camera_type === 'perspective'){
+          window.addEventListener('keydown', this.on_key_down);
+        }
 
         this.load_canvas();
 
@@ -87,6 +90,9 @@
       beforeDestroy() {
         if (this.scene_controller) {
           this.destroy_canvas();
+        }
+        if(this.camera_type === 'perspective'){
+          window.removeEventListener('keydown', this.on_key_down);
         }
 
       },
@@ -108,6 +114,11 @@
         }
       },
       methods: {
+        on_key_down: function(event){
+          if(event.keyCode == 67){ // c key
+            this.center_camera();
+          }
+        },
         load_canvas: async function(){
           if (WEBGL.isWebGLAvailable()) {
             if (this.$props.create_new_scene) {
@@ -215,11 +226,11 @@
 
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
-          this.camera.position.y = 10;
+          this.scene_controller.start_render();
 
           this.add_instance_list_to_scene();
 
-          this.scene_controller.start_render();
+
           this.$emit('scene_ready', this.scene_controller)
         },
         set_current_label_file: function (label_file) {
@@ -240,6 +251,7 @@
           if(!this.camera){
             return
           }
+          console.log('UPDATE ASPECT')
           let w = this.container.clientWidth
           let h = this.container.clientHeight
           this.camera.aspect = w / h;
@@ -248,6 +260,9 @@
         },
         on_window_resize: function () {
           this.update_camera_aspect_ratio();
+        },
+        center_camera: function(){
+          this.scene_controller.center_camera_to_mesh(this.point_cloud_mesh)
         },
         configure_controls: function () {
           if (!this.$props.allow_navigation) {
@@ -258,6 +273,7 @@
           this.scene_controller.controls_orbit.zoomSpeed = this.$props.zoom_speed;
           this.scene_controller.controls_orbit.panSpeed = this.$props.pan_speed;
           this.scene_controller.add_transform_controls();
+
 
 
         },
