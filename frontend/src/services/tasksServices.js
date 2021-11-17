@@ -23,3 +23,12 @@ export const submitTaskReview = async (task_id, payload) => {
         return {}
     }
 }
+
+export const finishTaskAnnotation = async (task_id) => {
+    try{
+        const response = await axios.post(`/api/v1/task/${task_id}/complete`, {})
+        return response
+    } catch(e) {
+        return {}
+    }
+}
