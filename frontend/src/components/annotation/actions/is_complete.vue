@@ -91,6 +91,7 @@
 
 <script lang="ts">
 import axios from "axios";
+import store from "../../../store";
 import review_dialog from "../../dialogs/review_dialog.vue";
 import { submitTaskReview } from "../../../services/tasksServices";
 
@@ -98,6 +99,7 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "is_complete",
+  store,
   components: {
     review_dialog,
   },
@@ -153,9 +155,10 @@ export default Vue.extend({
   },
   methods: {
     complete_dialog: function () {
-      if (this.task.status === "review_requested")
+      if (this.task.status === "review_requested") {
+        this.$store.commit("set_user_is_typing_or_menu_open", true);
         return (this.review_dialog = true);
-
+      }
       this.is_complete_toggle_task(true);
     },
     close_dialog: function () {
@@ -166,6 +169,7 @@ export default Vue.extend({
       const new_task_status = data.task.status;
       if (new_task_status === "complete") this.task.status = "complete";
       this.close_dialog();
+      this.$store.commit("set_user_is_typing_or_menu_open", false);
       this.$emit("on_next");
     },
     is_complete_toggle_file: function (on_complete_only = false) {
