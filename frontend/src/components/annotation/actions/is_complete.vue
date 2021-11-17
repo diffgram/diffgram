@@ -85,18 +85,12 @@
       :bottom="true"
     >
     </tooltip_button>
-    <submit_to_review
-      :dialog="dialog_open"
-      @complete="is_complete_toggle_task(true)"
-      @on_task_action="close_dialog()"
-    />
     <review_dialog :dialog="review_dialog" @complete="on_submit_review" />
   </div>
 </template>
 
 <script lang="ts">
 import axios from "axios";
-import submit_to_review from "../../dialogs/submit_to_review.vue";
 import review_dialog from "../../dialogs/review_dialog.vue";
 import { submitTaskReview } from "../../../services/tasksServices";
 
@@ -105,7 +99,6 @@ import Vue from "vue";
 export default Vue.extend({
   name: "is_complete",
   components: {
-    submit_to_review,
     review_dialog,
   },
   props: {
@@ -131,7 +124,6 @@ export default Vue.extend({
   data() {
     return {
       is_complete_toggle_loading: false,
-      dialog_open: false,
       review_dialog: false,
     };
   },
@@ -161,16 +153,12 @@ export default Vue.extend({
   },
   methods: {
     complete_dialog: function () {
-      if (!this.task.job.allow_reviews)
-        return this.is_complete_toggle_file(true);
-
       if (this.task.status === "review_requested")
         return (this.review_dialog = true);
 
-      this.dialog_open = true;
+      this.is_complete_toggle_task(true);
     },
     close_dialog: function () {
-      this.dialog_open = false;
       this.review_dialog = false;
     },
     on_submit_review: async function (payload) {
