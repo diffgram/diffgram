@@ -220,7 +220,6 @@
           this.add_instance_list_to_scene();
 
           this.scene_controller.start_render();
-
           this.$emit('scene_ready', this.scene_controller)
         },
         set_current_label_file: function (label_file) {

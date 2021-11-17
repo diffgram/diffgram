@@ -20,7 +20,7 @@ export default class SceneController3D {
   public grid_helper: THREE.GridHelper;
   public place_holder_cuboid: THREE.Mesh;
   public component_ctx: Vue;
-  public label_file: { id: number, colour: {hex: string} } = null;
+  public label_file: { id: number, colour: { hex: string } } = null;
   public container: any;
   public animation_id: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
@@ -53,34 +53,34 @@ export default class SceneController3D {
 
     this.scene.add(this.grid_helper);
     this.scene.add(this.axes_helper);
-    this.camera.position.set(0, 0, 25);
     this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
 
   }
-  public clear_all(initial_obj = undefined){
+
+  public clear_all(initial_obj = undefined) {
     let obj = initial_obj;
-    if(!initial_obj){
+    if (!initial_obj) {
       obj = this.scene;
     }
-    cancelAnimationFrame( this.animation_id );
-    while(obj.children.length){
+    cancelAnimationFrame(this.animation_id);
+    while (obj.children.length) {
       this.clear_all(obj.children[0]);
       obj.remove(obj.children[0]);
     }
-    if(obj.geometry) obj.geometry.dispose();
+    if (obj.geometry) obj.geometry.dispose();
 
-    if(obj.material){
+    if (obj.material) {
       //in case of map, bumpMap, normalMap, envMap ...
       Object.keys(obj.material).forEach(prop => {
-        if(!obj.material[prop])
+        if (!obj.material[prop])
           return;
-        if(obj.material[prop] !== null && typeof obj.material[prop].dispose === 'function')
+        if (obj.material[prop] !== null && typeof obj.material[prop].dispose === 'function')
           obj.material[prop].dispose();
       })
       obj.material.dispose();
     }
     this.renderer.setAnimationLoop(null);
-    while (this.renderer.domElement.lastChild){
+    while (this.renderer.domElement.lastChild) {
       this.renderer.domElement.removeChild(this.renderer.domElement.lastChild)
     } // `renderer` is stored earlier
     this.scene = undefined;
@@ -90,7 +90,7 @@ export default class SceneController3D {
     if (this.draw_mode) {
       return
     }
-    if(!this.scene){
+    if (!this.scene) {
       return
     }
     for (const child of this.scene.children) {
@@ -225,7 +225,7 @@ export default class SceneController3D {
     if (this.draw_mode) {
       return
     }
-    if(!this.scene){
+    if (!this.scene) {
       return
     }
     // update the picking ray with the camera and mouse position
@@ -250,17 +250,17 @@ export default class SceneController3D {
     }
   }
 
-  private animate(){
-    if(!this.scene){
+  private animate() {
+    if (!this.scene) {
       return
     }
-    this.animation_id = requestAnimationFrame( this.animate.bind(this) );
+    this.animation_id = requestAnimationFrame(this.animate.bind(this));
 
     this.render();
   }
 
   private render() {
-    if(!this.scene){
+    if (!this.scene) {
       return
     }
     this.reset_materials();
@@ -356,7 +356,7 @@ export default class SceneController3D {
   }
 
   public on_click_edit_mode(event) {
-    if(!this.scene){
+    if (!this.scene) {
       return
     }
     this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -395,6 +395,7 @@ export default class SceneController3D {
   public start_render() {
     // this.animate();
     this.render();
+
   }
 
 
@@ -435,58 +436,70 @@ export default class SceneController3D {
 
   public attach_transform_controls_to_mesh(mesh) {
     this.object_transform_controls.attach_to_mesh(mesh)
-    this.object_transform_controls.addEventListener( 'change', this.render.bind(this) );
+    this.object_transform_controls.addEventListener('change', this.render.bind(this));
 
   }
 
-  private detach_controls_from_mesh(){
+  private detach_controls_from_mesh() {
     this.object_transform_controls.detach_controls();
-    this.object_transform_controls.removeEventListener( 'change', this.render.bind(this) );
+    this.object_transform_controls.removeEventListener('change', this.render.bind(this));
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
-    if(center_camera_to_object){
-      this.center_camera_to_mesh(mesh, 'z')
-    }
-
     this.scene.add(mesh);
+    // if (center_camera_to_object) {
+    //   this.center_camera_to_mesh(mesh)
+    // }
   }
 
-  public center_camera_to_mesh(mesh, axis = 'x'){
-    let vFoV = this.camera.getEffectiveFOV();
-    let hFoV = this.camera.fov * this.camera.aspect;
+  public center_camera_to_mesh(mesh, offset = 1) {
 
-    let FoV = Math.min(vFoV, hFoV);
-    let FoV2 = FoV / 2;
+    const boundingBox = new THREE.Box3();
 
-    let dir = new THREE.Vector3();
-    this.camera.getWorldDirection(dir);
+    // get bounding box of object - this will be used to setup controls and camera
+    boundingBox.setFromObject(mesh);
 
-    let bb = mesh.geometry.boundingBox;
-    let bs = mesh.geometry.boundingSphere;
-    let bsWorld = bs.center.clone();
-    mesh.localToWorld(bsWorld);
+    let geometry = mesh.geometry;
+    geometry.computeBoundingBox();
+    let center = new THREE.Vector3();
+    geometry.boundingBox.getCenter( center );
 
-    let th = FoV2 * Math.PI / 180.0;
-    let sina = Math.sin(th);
-    let R = bs.radius;
-    let FL = R / sina;
+    console.log('center', center)
+    let size = new THREE.Vector3();
+    boundingBox.getSize(size);
 
-    let cameraDir = new THREE.Vector3();
-    this.camera.getWorldDirection(cameraDir);
+    // get the max side of the bounding box (fits to width OR height as needed )
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const fov = this.camera.fov * (Math.PI / 180);
+    let cameraZ = Math.abs(maxDim / 4 * Math.tan(fov * 2));
 
-    let cameraOffs = cameraDir.clone();
-    cameraOffs.multiplyScalar(-FL);
-    let newCameraPos = bsWorld.clone().add(cameraOffs);
+    cameraZ *= offset; // zoom out a little so that objects don't fill the screen
 
-    this.camera.position.copy(newCameraPos);
-    this.camera.lookAt(bsWorld);
-    this.controls_orbit.target.copy(bsWorld);
+    // this.camera.position.z =  center.z;
+    // this.camera.position.y =  center.y;
+    // this.camera.position.x =  center.x;
 
+    const minZ = boundingBox.min.z;
+    const cameraToFarEdge = (minZ < 0) ? -minZ + cameraZ : cameraZ - minZ;
+    // this.camera.lookAt(center);
+    // this.camera.far = cameraToFarEdge * 3;
+    // this.camera.updateProjectionMatrix();
+    this.camera.position.copy(center);
+    console.log('UPDATE PROJ MATRIX', mesh)
+
+    // set camera to rotate around center of loaded object
+    this.controls_orbit.target = center;
     this.controls_orbit.update();
+    // // // prevent camera from zooming out far enough to create far plane cutoff
+    // // this.controls_orbit.maxDistance = cameraToFarEdge * 2;
+    //
+    // this.controls_orbit.saveState();
+
+
+
   }
 
-  public set_scene_dimensions(width, height, depth){
+  public set_scene_dimensions(width, height, depth) {
     this.scene_width = width;
     this.scene_height = height;
     this.scene_depth = depth;
