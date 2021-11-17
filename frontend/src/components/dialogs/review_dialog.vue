@@ -14,9 +14,8 @@
           <v-textarea
             solo
             v-model="comment"
-            v-if="need_changes"
             name="input-7-4"
-            label="Speciafy what need to be improved"
+            label="Review comment"
           />
         </v-card-text>
 
@@ -32,7 +31,6 @@
 
 <script>
 import Vue from "vue";
-import axios from "axios";
 
 export default Vue.extend({
   name: "review_dialog",
