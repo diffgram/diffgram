@@ -677,7 +677,7 @@ def new_or_update_core(session,
         is_updating = True
 
     job.allow_reviews = allow_reviews
-    job.review_chance = review_chance / 100
+    job.review_chance = (0 if review_chance == None else 0) / 100
 
     log = job.update_member_list(
         member_list_ids = member_list_ids,
