@@ -212,8 +212,15 @@
                         </v-btn>
                       </template>
                       <v-list>
-                        <v-list-item>
-                          <v-list-item-title>First</v-list-item-title>
+                        <v-list-item
+                          style="cursor: pointer"
+                          v-for="project in $store.state.project_list
+                            .user_projects_list"
+                          :key="project.id"
+                        >
+                          <v-list-item-title @click="change_project(project)">{{
+                            project.name
+                          }}</v-list-item-title>
                         </v-list-item>
                       </v-list>
                     </v-menu>
@@ -364,7 +371,6 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
 import main_menu_project from "./menu_project";
 import pending_files_dialog from "../input/pending_files_dialog";
 import { getProjectList } from "../../services/projectServices";
@@ -443,6 +449,18 @@ export default Vue.extend({
     }
   },
   methods: {
+    change_project(item) {
+      if (item.is_public) {
+        this.$store.commit("set_current_public_project", item);
+      } else {
+        this.$store.commit("set_current_public_project", {});
+      }
+      this.$store.commit("set_project", item);
+
+      this.$router.push({ path: "/home/dashboard" });
+
+      this.$emit("exit", true);
+    },
     open_pending_files_dialog: function () {
       this.$refs.pending_files_dialog.open();
     },
