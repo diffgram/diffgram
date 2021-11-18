@@ -182,7 +182,14 @@
         },
         setup_perspective_scene_controller: function (scene) {
           this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
-          this.scene_controller = new SceneController3D(scene, this.camera, this.renderer, this.container, this, this.$props.instance_list)
+          this.scene_controller = new SceneController3D(scene,
+            this.camera,
+            this.renderer,
+            this.container,
+            this,
+            this.$props.instance_list,
+            60,
+            this.point_cloud_mesh)
           this.scene_controller.attach_mouse_events();
           this.scene_controller.set_draw_mode(this.$props.draw_mode);
           this.scene_controller.set_current_label_file(this.$props.current_label_file);

@@ -23,6 +23,11 @@ export default class SceneController3D {
   public label_file: { id: number, colour: { hex: string } } = null;
   public square_2d_data: { x_min: number, y_min: number, mesh: THREE.Mesh } = {};
   public mouse_position_3d: THREE.Vector3;
+  public mouse_position_3d_initial_draw: THREE.Vector3;
+  public plane_normal: THREE.Vector3;
+  public plane: THREE.Plane;
+  public point_cloud_mesh: THREE.Mesh;
+  public mouse_position_2d: THREE.Vector2;
   public container: any;
   public animation_id: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
@@ -36,7 +41,7 @@ export default class SceneController3D {
   public scene_height: number = null;
   public scene_depth: number = null;
 
-  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60) {
+  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60, point_cloud_mesh: THREE.Mesh) {
     this.scene = scene;
     this.camera = camera;
     this.renderer = renderer;
@@ -44,7 +49,12 @@ export default class SceneController3D {
     this.container = container;
     this.component_ctx = component_ctx;
     this.mouse = new THREE.Vector2();
+    this.plane_normal = new THREE.Vector3();
+    this.mouse_position_3d = new THREE.Vector3();
+    this.mouse_position_3d_initial_draw = new THREE.Vector3();
+    this.plane = new THREE.Plane();
     this.instance_list = instance_list
+    this.point_cloud_mesh = point_cloud_mesh
     this.raycaster = new THREE.Raycaster();
     this.square_2d_data = {
       x_min: undefined,
@@ -63,6 +73,7 @@ export default class SceneController3D {
     this.scene.add(this.grid_helper);
     this.scene.add(this.axes_helper);
     this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
+
 
   }
 
@@ -131,6 +142,7 @@ export default class SceneController3D {
 
   private on_mouse_click(event) {
     // update the picking ray with the camera and mouse position
+    console.log('ON CLICK DRAWW MODE', event)
     if (this.draw_mode) {
       this.on_click_draw_mode(event)
     } else {
@@ -170,35 +182,32 @@ export default class SceneController3D {
     }
   }
 
-  private create_2d_square_mesh(){
-    let square_mesh;
-
-    const square = new THREE.Shape();
-    let mouse_pos_vector = this.get_3d_mouse_position();
-    this.square_2d_data.x_min  = mouse_pos_vector.x
-    this.square_2d_data.y_min  = mouse_pos_vector.y
-    square.moveTo(this.square_2d_data.x_min, this.square_2d_data.y_min);
-    square.lineTo(this.square_2d_data.x_min, this.square_2d_data.y_min - 1);
-    square.lineTo(this.square_2d_data.x_min - 1, this.square_2d_data.y_min - 1);
-    square.lineTo(this.square_2d_data.x_min - 1, this.square_2d_data.y_min);
-
-    const geometry = new THREE.ShapeGeometry(square);
-
-    const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(this.get_current_color()),
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
-
-    square_mesh = new THREE.Mesh(geometry, material);
-
-    this.scene.add(square_mesh);
-    return square_mesh
+  private create_mini_sphere() {
+    var sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(.125, 0.1, 0.1), new THREE.MeshBasicMaterial({
+      color: "yellow",
+      wireframe: false
+    }));
+    let pos = this.get_3d_mouse_position()
+    console.log('POSS', pos)
+    sphere.position.copy(pos);
+    this.scene.add(sphere);
+    this.render()
   }
+
   private on_click_draw_mode(event) {
-    this.currently_drawing_instance = true;
-    let square_mesh = this.create_2d_square_mesh();
-    console.log('square_mesh', square_mesh)
+    if (!this.scene) {
+      return
+    }
+
+    if(this.currently_drawing_instance){
+      this.currently_drawing_instance = false;
+    }
+    else{
+      this.currently_drawing_instance = true;
+      this.draw_place_holder_cuboid();
+    }
+
+    // this.create_mini_sphere()
 
   }
 
@@ -212,6 +221,7 @@ export default class SceneController3D {
 
     this.mouse.x = (x / this.container.clientWidth) * 2 - 1;
     this.mouse.y = -(y / this.container.clientHeight) * 2 + 1;
+    this.get_3d_mouse_position();
     this.component_ctx.$emit('updated_mouse_position',
       {
         x: this.mouse.x,
@@ -224,29 +234,40 @@ export default class SceneController3D {
 
   private on_mouse_move(event) {
 
-    this.update_mouse_position(event)
+    this.update_mouse_position(event);
     if (this.draw_mode) {
-      // this.draw_place_holder_cuboid();
+      if(this.currently_drawing_instance){
+        this.draw_place_holder_cuboid();
+      }
+
     } else {
 
     }
 
   }
 
-  private get_3d_mouse_position(){
+  private get_3d_mouse_position() {
     // Transform the Mouse 2D Coordinates to the 3D world using unproject()
-    let mouse_vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
-    mouse_vector.unproject(this.camera);
-    mouse_vector.sub(this.camera.position).normalize();
-    return mouse_vector
+    this.plane_normal.copy(this.camera.position).normalize();
+    this.plane.setFromNormalAndCoplanarPoint(this.plane_normal, this.scene.position);
+    this.raycaster.setFromCamera(this.mouse, this.camera);
+    let inter_point = this.raycaster.ray.intersectPlane(this.plane, this.mouse_position_3d);
+    return this.mouse_position_3d
   }
+
   private draw_place_holder_cuboid() {
 
     if (!this.place_holder_cuboid) {
-      // let geometry = new THREE.BoxGeometry(this.scene_width * 0.1, this.scene_height * 0.1, this.scene_depth * 0.1);
-      let geometry = new THREE.BoxGeometry(2, 2, 2);
+
+      var box = new THREE.Box3().setFromObject( this.point_cloud_mesh );
+      let size = Math.abs(box.max - box.min)
+      console.log('boxxxx', box.min, box.max,size, size*0.05 );
+
+      let geometry = new THREE.BoxGeometry(size * 0.05, size * 0.05, size * 0.05);
+      this.mouse_position_3d_initial_draw = this.mouse_position_3d_initial_draw.copy(this.mouse_position_3d)
       let material = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(this.get_current_color()),
+        // color: new THREE.Color(this.get_current_color()),
+        color: new THREE.Color('redon mouse posi'),
         opacity: 0.9,
         transparent: true,
       });
@@ -254,11 +275,16 @@ export default class SceneController3D {
       this.scene.add(this.place_holder_cuboid)
 
     }
-    let mouse_vector = this.get_3d_mouse_position();
-    let distance = -this.camera.position.z / mouse_vector.z
-    let cube_position = new THREE.Vector3();
-    cube_position.copy(this.camera.position).add(mouse_vector.multiplyScalar(distance))
-    this.place_holder_cuboid.position.copy(cube_position)
+    let xSize = this.mouse_position_3d.x - this.mouse_position_3d_initial_draw.x;
+    let ySize = this.mouse_position_3d.y - this.mouse_position_3d_initial_draw.y;
+    let zSize = Math.max(xSize, ySize);
+    console.log('size', xSize, ySize)
+    console.log('params', this.place_holder_cuboid.geometry.parameters.width, this.place_holder_cuboid.geometry.parameters.height, this.place_holder_cuboid.geometry.parameters.depth)
+    let scaleFactorX = xSize / this.place_holder_cuboid.geometry.parameters.width;
+    let scaleFactorY = ySize / this.place_holder_cuboid.geometry.parameters.height;
+    let scaleFactorZ = zSize / this.place_holder_cuboid.geometry.parameters.depth;
+    console.log('scale factors', scaleFactorX, scaleFactorY, scaleFactorZ)
+    this.place_holder_cuboid.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
 
   }
 
@@ -311,15 +337,15 @@ export default class SceneController3D {
   }
 
   public attach_mouse_events() {
-    window.addEventListener('mousemove', this.on_mouse_move.bind(this), false);
-    window.addEventListener('click', this.on_mouse_click.bind(this));
-    window.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
+    this.container.addEventListener('mousemove', this.on_mouse_move.bind(this), false);
+    this.container.addEventListener('click', this.on_mouse_click.bind(this));
+    this.container.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
   }
 
   public detach_mouse_events() {
-    window.removeEventListener('mousemove', this.on_mouse_move.bind(this));
-    window.removeEventListener('click', this.on_mouse_click.bind(this));
-    window.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
+    this.container.removeEventListener('mousemove', this.on_mouse_move.bind(this));
+    this.container.removeEventListener('click', this.on_mouse_click.bind(this));
+    this.container.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
   }
 
   public set_instance_list(instance_list) {
@@ -349,8 +375,8 @@ export default class SceneController3D {
 
   public set_draw_mode(draw_mode) {
     this.draw_mode = draw_mode;
+    this.currently_drawing_instance = false;
     if (this.draw_mode) {
-      // this.draw_place_holder_cuboid();
       if (this.object_transform_controls) {
         this.detach_controls_from_mesh();
       }
