@@ -153,7 +153,7 @@ export const public_project = {
 
 export const project_list = {
   state: {
-    user_projects_list: []
+    user_projects_list: null
   },
   mutations: {
     set_userProjects_list(state, fetched_projects_list) {

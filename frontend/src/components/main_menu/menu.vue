@@ -199,35 +199,24 @@
                     <!-- TODO make this a composable
               component so if we want truncated stuff
               for other areas (ie for Org) -->
-
-                    <v-tooltip bottom>
-                      Current Project: {{ $store.state.project.current.name }}
-
-                      <template v-slot:activator="{ on }">
-                        <h2 v-on="on" class="pa-3">
-                          <!-- We seem to need this if we want
-                  ... to be on one line with it.
-                    I guess this depends on size of screen more then
-                    length / is relative...
-
-                    Truncating in the middle looks silly there...
-                      {{ $store.state.project.current.name.slice(-6) }}
-                    -->
-                          <div
-                            v-if="
-                              $store.state.project.current.name &&
-                              $store.state.project.current.name.length >= 16
-                            "
-                          >
-                            {{ $store.state.project.current.name.slice(0, 15) }}
-                            ...
-                          </div>
-                          <div v-else>
-                            {{ $store.state.project.current.name }}
-                          </div>
-                        </h2>
+                    <v-menu offset-y>
+                      <template
+                        v-slot:activator="{ on, attrs }"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-btn v-bind="attrs" v-on="on" text>
+                          <h2 v-on="on" class="pa-3">
+                            {{ display_projectName }}
+                          </h2>
+                        </v-btn>
                       </template>
-                    </v-tooltip>
+                      <v-list>
+                        <v-list-item>
+                          <v-list-item-title>First</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
                   </div>
                 </v-layout>
               </div>
@@ -375,8 +364,10 @@
 </template>
 
 <script lang="ts">
+import axios from "axios";
 import main_menu_project from "./menu_project";
 import pending_files_dialog from "../input/pending_files_dialog";
+import { getProjectList } from "../../services/projectServices";
 
 import Vue from "vue";
 
@@ -409,6 +400,12 @@ export default Vue.extend({
   },
 
   computed: {
+    display_projectName: function () {
+      const project_name = this.$store.state.project.current.name;
+      if (project_name && project_name.length >= 16)
+        return `${project_name.slice(0, 15)}...`;
+      return project_name;
+    },
     items_super_admin: function () {
       var array = [
         {
@@ -438,7 +435,13 @@ export default Vue.extend({
       }
     },
   },
-  mounted() {},
+  async mounted() {
+    if (!this.$store.state.project_list) {
+      const response = await getProjectList();
+      const project_list = response.data.project_list;
+      this.$store.commit("set_userProjects_list", project_list);
+    }
+  },
   methods: {
     open_pending_files_dialog: function () {
       this.$refs.pending_files_dialog.open();
