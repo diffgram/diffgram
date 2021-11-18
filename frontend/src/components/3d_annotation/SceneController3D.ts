@@ -21,11 +21,14 @@ export default class SceneController3D {
   public place_holder_cuboid: THREE.Mesh;
   public component_ctx: Vue;
   public label_file: { id: number, colour: { hex: string } } = null;
+  public square_2d_data: { x_min: number, y_min: number, mesh: THREE.Mesh } = {};
+  public mouse_position_3d: THREE.Vector3;
   public container: any;
   public animation_id: any;
   public excluded_objects_ray_caster: Array<string> = ['axes_helper', 'grid_helper', 'point_cloud'];
   public instance_list: Array<Instance3D> = [];
   public selected_instance: Instance3D = null;
+  public currently_drawing_instance: boolean = false;
   public selected_instance_index: number = null;
   public instance_hovered_index: number = null;
   public TRANSFORM_CONTROLS_LAYER: number = 1;
@@ -43,8 +46,14 @@ export default class SceneController3D {
     this.mouse = new THREE.Vector2();
     this.instance_list = instance_list
     this.raycaster = new THREE.Raycaster();
+    this.square_2d_data = {
+      x_min: undefined,
+      y_min: undefined,
+      mesh: undefined
+    };
 
     this.controls_panning_speed = controls_panning_speed
+
     // Add grid and axis helper arrows
     this.axes_helper = new THREE.AxesHelper(5);
     this.axes_helper.name = 'axes_helper';
@@ -161,7 +170,35 @@ export default class SceneController3D {
     }
   }
 
+  private create_2d_square_mesh(){
+    let square_mesh;
+
+    const square = new THREE.Shape();
+    let mouse_pos_vector = this.get_3d_mouse_position();
+    this.square_2d_data.x_min  = mouse_pos_vector.x
+    this.square_2d_data.y_min  = mouse_pos_vector.y
+    square.moveTo(this.square_2d_data.x_min, this.square_2d_data.y_min);
+    square.lineTo(this.square_2d_data.x_min, this.square_2d_data.y_min - 1);
+    square.lineTo(this.square_2d_data.x_min - 1, this.square_2d_data.y_min - 1);
+    square.lineTo(this.square_2d_data.x_min - 1, this.square_2d_data.y_min);
+
+    const geometry = new THREE.ShapeGeometry(square);
+
+    const material = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(this.get_current_color()),
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+
+    square_mesh = new THREE.Mesh(geometry, material);
+
+    this.scene.add(square_mesh);
+    return square_mesh
+  }
   private on_click_draw_mode(event) {
+    this.currently_drawing_instance = true;
+    let square_mesh = this.create_2d_square_mesh();
+    console.log('square_mesh', square_mesh)
 
   }
 
@@ -189,13 +226,20 @@ export default class SceneController3D {
 
     this.update_mouse_position(event)
     if (this.draw_mode) {
-      this.draw_place_holder_cuboid();
+      // this.draw_place_holder_cuboid();
     } else {
 
     }
 
   }
 
+  private get_3d_mouse_position(){
+    // Transform the Mouse 2D Coordinates to the 3D world using unproject()
+    let mouse_vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
+    mouse_vector.unproject(this.camera);
+    mouse_vector.sub(this.camera.position).normalize();
+    return mouse_vector
+  }
   private draw_place_holder_cuboid() {
 
     if (!this.place_holder_cuboid) {
@@ -210,10 +254,7 @@ export default class SceneController3D {
       this.scene.add(this.place_holder_cuboid)
 
     }
-    // Transform the Mouse 2D Coordinates to the 3D world using unproject()
-    let mouse_vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 0.5);
-    mouse_vector.unproject(this.camera);
-    mouse_vector.sub(this.camera.position).normalize();
+    let mouse_vector = this.get_3d_mouse_position();
     let distance = -this.camera.position.z / mouse_vector.z
     let cube_position = new THREE.Vector3();
     cube_position.copy(this.camera.position).add(mouse_vector.multiplyScalar(distance))
@@ -309,7 +350,7 @@ export default class SceneController3D {
   public set_draw_mode(draw_mode) {
     this.draw_mode = draw_mode;
     if (this.draw_mode) {
-      this.draw_place_holder_cuboid();
+      // this.draw_place_holder_cuboid();
       if (this.object_transform_controls) {
         this.detach_controls_from_mesh();
       }
@@ -404,7 +445,7 @@ export default class SceneController3D {
     this.controls_orbit.listenToKeyEvents(window); // optional
     this.controls_orbit.enableDamping = false; // an animation loop is required when either damping or auto-rotation are enabled
     this.controls_orbit.dampingFactor = 0.09;
-    this.controls_orbit.screenSpacePanning = true;
+    this.controls_orbit.screenSpacePanning = false;
     this.controls_orbit.enableRotate = true;
     this.controls_orbit.keyPanSpeed = this.controls_panning_speed
     this.controls_orbit.minDistance = 0;
@@ -418,6 +459,7 @@ export default class SceneController3D {
       RIGHT: 'KeyD', // right arrow
       BOTTOM: 'KeyS' // down arrow
     }
+
     this.controls_orbit.addEventListener('change', this.render.bind(this))
     this.controls_orbit.update();
   }
@@ -437,20 +479,17 @@ export default class SceneController3D {
 
   public attach_transform_controls_to_mesh(mesh) {
     this.object_transform_controls.attach_to_mesh(mesh)
-    this.object_transform_controls.addEventListener('change', this.render.bind(this));
+
 
   }
 
   private detach_controls_from_mesh() {
     this.object_transform_controls.detach_controls();
-    this.object_transform_controls.removeEventListener('change', this.render.bind(this));
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
     this.scene.add(mesh);
-    if(this.controls_orbit){
-      this.controls_orbit.update();
-    }
+
 
     if (center_camera_to_object) {
       this.center_camera_to_mesh(mesh)
@@ -458,27 +497,38 @@ export default class SceneController3D {
   }
 
   public center_camera_to_mesh(mesh, offset = 1) {
+    // Read: https://discourse.threejs.org/t/camera-zoom-to-fit-object/936/6
+    let vFoV = this.camera.getEffectiveFOV();
+    let hFoV = this.camera.fov * this.camera.aspect;
 
-    const boundingBox = new THREE.Box3();
+    let FoV = Math.min(vFoV, hFoV);
+    let FoV2 = FoV / 2;
 
-    // get bounding box of object - this will be used to setup controls and camera
-    boundingBox.setFromObject(mesh);
+    let dir = new THREE.Vector3();
+    this.camera.getWorldDirection(dir);
 
-    let geometry = mesh.geometry;
-    geometry.computeBoundingBox();
-    let center = new THREE.Vector3();
-    boundingBox.getCenter( center );
+    let bb = mesh.geometry.boundingBox;
+    let bs = mesh.geometry.boundingSphere;
+    let bsWorld = bs.center.clone();
+    mesh.localToWorld(bsWorld);
 
-    console.log('center', center, boundingBox)
-    let size = new THREE.Vector3();
-    boundingBox.getSize(size);
+    let th = FoV2 * Math.PI / 180.0;
+    let sina = Math.sin(th);
+    let R = bs.radius;
+    let FL = R / sina;
 
-    // Center the camera
-    this.camera.position.copy(center);
-    // this.controls_orbit.target.copy(center);
+    let cameraDir = new THREE.Vector3();
+    this.camera.getWorldDirection(cameraDir);
+
+    let cameraOffs = cameraDir.clone();
+    cameraOffs.multiplyScalar(-FL);
+    let newCameraPos = bsWorld.clone().add(cameraOffs);
+
+    this.camera.position.copy(newCameraPos);
+    this.camera.lookAt(bsWorld);
+    this.controls_orbit.target.copy(bsWorld);
 
     this.controls_orbit.update();
-
 
 
   }
