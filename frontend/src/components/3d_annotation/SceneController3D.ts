@@ -168,18 +168,11 @@ export default class SceneController3D {
   }
 
   private on_double_click_draw_mode(event) {
-    if (this.place_holder_cuboid) {
-      // Add cuboid to instance list
-      let new_instance = this.add_cube_to_instance_list(this.place_holder_cuboid);
-      this.place_holder_cuboid = null;
-      this.select_instance(new_instance, this.instance_list.length - 1);
-      this.set_draw_mode(false);
-
-
-      if (this.component_ctx) {
-        this.component_ctx.$emit('instance_drawn', new_instance)
-      }
+    if(this.draw_mode && !this.currently_drawing_instance){
+      this.currently_drawing_instance = true;
+      this.draw_place_holder_cuboid();
     }
+
   }
 
   private create_mini_sphere() {
@@ -200,11 +193,25 @@ export default class SceneController3D {
     }
 
     if(this.currently_drawing_instance){
-      this.currently_drawing_instance = false;
+      if (this.place_holder_cuboid) {
+        // Add cuboid to instance list
+        let new_instance = this.add_cube_to_instance_list(this.place_holder_cuboid);
+
+        this.select_instance(new_instance, this.instance_list.length - 1);
+        this.set_draw_mode(false);
+
+
+        if (this.component_ctx) {
+          this.component_ctx.$emit('instance_drawn', new_instance)
+        }
+        this.currently_drawing_instance = false;
+        this.place_holder_cuboid = null;
+      }
+
+
     }
     else{
-      this.currently_drawing_instance = true;
-      this.draw_place_holder_cuboid();
+
     }
 
     // this.create_mini_sphere()
@@ -261,30 +268,39 @@ export default class SceneController3D {
 
       var box = new THREE.Box3().setFromObject( this.point_cloud_mesh );
       let size = Math.abs(box.max - box.min)
-      console.log('boxxxx', box.min, box.max,size, size*0.05 );
 
-      let geometry = new THREE.BoxGeometry(size * 0.05, size * 0.05, size * 0.05);
+
+      // let geometry = new THREE.BoxGeometry(size * 0.05, size * 0.05, size * 0.05);
+      let geometry = new THREE.BoxGeometry(1, 1, 1);
       this.mouse_position_3d_initial_draw = this.mouse_position_3d_initial_draw.copy(this.mouse_position_3d)
       let material = new THREE.MeshBasicMaterial({
         // color: new THREE.Color(this.get_current_color()),
-        color: new THREE.Color('redon mouse posi'),
-        opacity: 0.9,
+        color: new THREE.Color('red'),
+        opacity: 0.7,
         transparent: true,
+
       });
       this.place_holder_cuboid = new THREE.Mesh(geometry, material);
+      this.place_holder_cuboid.position.copy(this.mouse_position_3d_initial_draw)
       this.scene.add(this.place_holder_cuboid)
+      this.render()
+
 
     }
-    let xSize = this.mouse_position_3d.x - this.mouse_position_3d_initial_draw.x;
-    let ySize = this.mouse_position_3d.y - this.mouse_position_3d_initial_draw.y;
-    let zSize = Math.max(xSize, ySize);
-    console.log('size', xSize, ySize)
-    console.log('params', this.place_holder_cuboid.geometry.parameters.width, this.place_holder_cuboid.geometry.parameters.height, this.place_holder_cuboid.geometry.parameters.depth)
-    let scaleFactorX = xSize / this.place_holder_cuboid.geometry.parameters.width;
-    let scaleFactorY = ySize / this.place_holder_cuboid.geometry.parameters.height;
-    let scaleFactorZ = zSize / this.place_holder_cuboid.geometry.parameters.depth;
-    console.log('scale factors', scaleFactorX, scaleFactorY, scaleFactorZ)
-    this.place_holder_cuboid.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
+    else{
+      let xSize = this.mouse_position_3d.x - this.mouse_position_3d_initial_draw.x;
+      let ySize = this.mouse_position_3d.y - this.mouse_position_3d_initial_draw.y;
+      let zSize = Math.max(xSize, ySize);
+      console.log('size', xSize, ySize)
+      console.log('params', this.place_holder_cuboid.geometry.parameters.width, this.place_holder_cuboid.geometry.parameters.height, this.place_holder_cuboid.geometry.parameters.depth)
+      let scaleFactorX = xSize / this.place_holder_cuboid.geometry.parameters.width;
+      let scaleFactorY = ySize / this.place_holder_cuboid.geometry.parameters.height;
+      let scaleFactorZ = zSize / this.place_holder_cuboid.geometry.parameters.depth;
+      console.log('scale factors', scaleFactorX, scaleFactorY, scaleFactorZ)
+      this.place_holder_cuboid.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
+      this.render()
+    }
+
 
   }
 
