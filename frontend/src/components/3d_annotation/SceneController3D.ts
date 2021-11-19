@@ -143,7 +143,7 @@ export default class SceneController3D {
 
   private on_mouse_click(event) {
     // update the picking ray with the camera and mouse position
-    console.log('ON CLICK DRAWW MODE', event)
+
     if (this.draw_mode) {
       this.on_click_draw_mode(event)
     } else {
@@ -185,9 +185,10 @@ export default class SceneController3D {
       if (this.cuboid_drawer_tool.place_holder_cuboid) {
         this.currently_drawing_instance = false;
         // Add cuboid to instance list
+        this.set_draw_mode(false);
         let new_instance = this.add_cube_to_instance_list(this.cuboid_drawer_tool.place_holder_cuboid);
         this.select_instance(new_instance, this.instance_list.length - 1);
-        this.set_draw_mode(false);
+
         this.cuboid_drawer_tool.remove_placeholder_cuboid()
 
 
@@ -339,17 +340,23 @@ export default class SceneController3D {
 
   public set_draw_mode(draw_mode) {
 
-    this.currently_drawing_instance = false;
+
     let placeholder_cuboid = this.cuboid_drawer_tool.place_holder_cuboid;
     if (this.draw_mode) {
       if (this.object_transform_controls && this.selected_instance) {
         this.detach_controls_from_mesh();
       }
+      if(this.currently_drawing_instance){
+        this.remove_from_scene(placeholder_cuboid);
+        this.cuboid_drawer_tool.remove_placeholder_cuboid()
+      }
     } else {
       this.remove_from_scene(placeholder_cuboid);
       this.cuboid_drawer_tool.remove_placeholder_cuboid()
     }
+    this.currently_drawing_instance = false;
     this.draw_mode = draw_mode;
+    this.render()
   }
 
 
@@ -368,24 +375,19 @@ export default class SceneController3D {
 
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
-    const geometry = instance.mesh.geometry.clone();
-    const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0xffffff}));
+    console.log('SELECT INSTANCE');
+    let line = instance.highlight_edges();
 
-    line.position.copy(instance.mesh.position);
-    line.rotation.copy(instance.mesh.rotation);
-    line.scale.copy(instance.mesh.scale);
-
-    instance.mesh.add(line);
     this.attach_transform_controls_to_mesh(instance.mesh)
+
+    this.selected_instance = instance;
+    this.selected_instance_index = index;
+    this.scene.add(line);
+    this.render()
+
     if (this.component_ctx) {
       this.component_ctx.$emit('instance_selected', instance)
     }
-    this.selected_instance = instance;
-    this.selected_instance_index = index;
-    this.selected_instance.helper_lines = line;
-    this.scene.add(line);
-    this.render()
   }
 
   public on_click_edit_mode(event) {
@@ -413,7 +415,7 @@ export default class SceneController3D {
     let new_instance = new Cuboid3DInstance(
       this,
       cuboid_mesh
-    )
+    );
     new_instance.label_file = this.label_file;
     new_instance.label_file_id = this.label_file.id;
     new_instance.draw_on_scene()
@@ -470,14 +472,15 @@ export default class SceneController3D {
   }
 
   public attach_transform_controls_to_mesh(mesh) {
-    console.log('ATTACH CONTROLS MESH', mesh.parent, mesh.userData, mesh)
     this.object_transform_controls.attach_to_mesh(mesh)
+    this.render();
 
 
   }
 
   private detach_controls_from_mesh() {
     this.object_transform_controls.detach_controls();
+    this.render()
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
@@ -529,9 +532,4 @@ export default class SceneController3D {
 
   }
 
-  public set_scene_dimensions(width, height, depth) {
-    this.scene_width = width;
-    this.scene_height = height;
-    this.scene_depth = depth;
-  }
 }

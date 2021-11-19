@@ -18,6 +18,8 @@ export default class FileLoader3DPointClouds {
           mesh.material.color.set('white');
           mesh.name = 'point_cloud'
           this.component_ctx.loading_pcd = false;
+          // mesh.geometry.center();
+          // mesh.geometry.rotateX( Math.PI );
           resolve(mesh)
         },
         (xhr) => {

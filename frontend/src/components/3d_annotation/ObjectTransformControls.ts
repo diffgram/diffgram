@@ -46,7 +46,8 @@ export default class ObjectTransformControls {
     this.scene_controller.component_ctx.$emit('instance_updated', instance)
   }
 
-  private on_key_down(event){
+  private on_key_down_object_transform(event){
+    console.log('KEYY DOENNN')
     let currentCamera = this.controls_transform.camera;
     let control = this.controls_transform;
 
@@ -112,7 +113,12 @@ export default class ObjectTransformControls {
     }
   }
   private add_hotkeys_for_transform_controls(){
-    window.addEventListener( 'keydown', this.on_key_down.bind(this));
+    window.addEventListener( 'keydown', this.on_key_down_object_transform.bind(this));
+
+  }
+
+  private remove_hotkeys_for_transform_controls(){
+    window.removeEventListener( 'keydown', this.on_key_down_object_transform.bind(this));
 
   }
 
@@ -120,14 +126,16 @@ export default class ObjectTransformControls {
     console.log('detachhh')
     if(this.controls_transform){
       this.controls_transform.detach()
-      this.controls_transform.removeEventListener('change', this.scene_controller.render);
+      this.remove_hotkeys_for_transform_controls();
+      this.controls_transform.removeEventListener('change', this.scene_controller.render.bind(this));
     }
   }
   public attach_to_mesh(mesh){
     this.controls_transform.attach(mesh);
     this.add_hotkeys_for_transform_controls();
-    this.controls_transform.addEventListener('change', this.scene_controller.render);
-    console.log('MESH PARENT 2', mesh.parent, mesh)
+    this.controls_transform.addEventListener('change', this.scene_controller.render.bind(this));
+    console.log('ATTACHED MESH PARENT 2', mesh.parent, mesh)
+    this.scene_controller.render();
   }
 
 

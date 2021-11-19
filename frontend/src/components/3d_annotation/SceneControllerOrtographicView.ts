@@ -82,6 +82,6 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
       this.camera.updateProjectionMatrix();
 
     }
-
+    this.render();
   }
 }

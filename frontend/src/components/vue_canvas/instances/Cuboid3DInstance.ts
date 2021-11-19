@@ -4,7 +4,7 @@ import SceneController3D from "../../3d_annotation/SceneController3D";
 
 export default class Cuboid3DInstance extends Instance3D {
 
-
+  public helper_lines: THREE.Mesh;
 
   public constructor(scene_controller_3d: SceneController3D, mesh: THREE.Mesh) {
     super();
@@ -33,6 +33,20 @@ export default class Cuboid3DInstance extends Instance3D {
     }
 
     this.scene_controller_3d.add_mesh_to_scene(this.mesh, false)
+  }
+
+  public highlight_edges(){
+    const geometry = this.mesh.geometry.clone();
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color: 0xffffff}));
+
+    line.position.copy(this.mesh.position);
+    line.rotation.copy(this.mesh.rotation);
+    line.scale.copy(this.mesh.scale);
+
+    this.mesh.add(line);
+    this.helper_lines = line;
+    return line
   }
 
 

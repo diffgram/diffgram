@@ -198,7 +198,7 @@
 
       </div>
     </div>
-    <v-snackbar v-model="show_snackbar" :timeout="3000" color="primary">
+    <v-snackbar v-model="show_snackbar" :timeout="3000" color="secondary">
       {{snackbar_text}}
 
       <template v-slot:action="{ attrs }">
@@ -762,16 +762,23 @@
 
         this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
+      hide_snackbar: function(){
+        this.show_snackbar = false;
+      },
       show_info_snackbar_for_drawing: function(){
         if(this.instance_type === 'cuboid_3d'){
           this.snackbar_text = 'Double click to start drawing a cuboid.'
         }
+        this.show_snackbar = true;
       },
       edit_mode_toggle: function(draw_mode){
         this.draw_mode = draw_mode;
         this.$refs.main_3d_canvas.set_draw_mode(draw_mode)
         if(this.draw_mode){
           this.show_info_snackbar_for_drawing();
+        }
+        else{
+          this.hide_snackbar();
         }
       },
     }

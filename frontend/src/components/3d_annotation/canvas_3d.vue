@@ -80,6 +80,7 @@
       },
 
       async mounted() {
+        this.container = document.getElementById(this.$props.container_id)
         if(this.camera_type === 'perspective'){
           window.addEventListener('keydown', this.on_key_down);
         }
@@ -115,7 +116,9 @@
       },
       methods: {
         on_key_down: function(event){
+          console.log('CANVAS 3D KEYDOWNCC')
           if(event.keyCode == 67){ // c key
+            console.log('CENTERR CAMERA')
             this.center_camera();
           }
         },
