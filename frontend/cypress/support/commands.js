@@ -276,7 +276,11 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
     body:  {
       'data_type' : 'task_template',
       'structure': '1_pass',
-      'num_files': num_files
+      'num_files': num_files,
+      'reviews': {
+        allow_reviews: true,
+        review_chance: 1
+      }
     },
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
