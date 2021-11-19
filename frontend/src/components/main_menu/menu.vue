@@ -441,11 +441,14 @@ export default Vue.extend({
       }
     },
   },
-  async mounted() {
+  watch: {
+    '$store.state.user.logged_in': function(value) {
+      if (value) this.get_avalible_projects()
+    }
+  },
+  mounted() {
     if (!this.$store.state.project_list) {
-      const response = await getProjectList();
-      const project_list = response.data.project_list;
-      this.$store.commit("set_userProjects_list", project_list);
+      this.get_avalible_projects()
     }
   },
   methods: {
@@ -477,6 +480,11 @@ export default Vue.extend({
         window.open("/");
       }
     },
+    get_avalible_projects: async function () {
+      const response = await getProjectList();
+      const project_list = response.data.project_list;
+      this.$store.commit("set_userProjects_list", project_list);
+    }
   },
 });
 </script>
