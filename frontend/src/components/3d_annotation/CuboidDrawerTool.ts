@@ -15,6 +15,7 @@ export default class CuboidDrawerTool {
   }
 
   public create_place_holder_cuboid(){
+    console.log('CREATE PLACEGOLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
     if (!this.place_holder_cuboid) {
 
       var box = new THREE.Box3().setFromObject( this.scene_controller.point_cloud_mesh );
@@ -34,7 +35,7 @@ export default class CuboidDrawerTool {
       this.place_holder_cuboid = new THREE.Mesh(geometry, material);
       this.place_holder_cuboid.position.copy(this.mouse_position_3d_initial_draw)
       this.scene_controller.scene.add(this.place_holder_cuboid)
-      this.scene_controller.render()
+
     }
   }
   public remove_placeholder_cuboid(){
@@ -51,12 +52,9 @@ export default class CuboidDrawerTool {
     let xSize = mouse_position_3d.x - this.mouse_position_3d_initial_draw.x;
     let ySize = mouse_position_3d.y - this.mouse_position_3d_initial_draw.y;
     let zSize = Math.max(xSize, ySize);
-    console.log('size', xSize, ySize)
-    console.log('params', this.place_holder_cuboid.geometry.parameters.width, this.place_holder_cuboid.geometry.parameters.height, this.place_holder_cuboid.geometry.parameters.depth)
     let scaleFactorX = xSize / this.place_holder_cuboid.geometry.parameters.width;
     let scaleFactorY = ySize / this.place_holder_cuboid.geometry.parameters.height;
     let scaleFactorZ = zSize / this.place_holder_cuboid.geometry.parameters.depth;
-    console.log('scale factors', scaleFactorX, scaleFactorY, scaleFactorZ)
     this.place_holder_cuboid.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
     this.scene_controller.render()
 
