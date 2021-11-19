@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import { shallowMount } from "@vue/test-utils";
 import is_complete from "@/components/annotation/actions/is_complete.vue";
 
 describe("is_complete.vue", () => {
