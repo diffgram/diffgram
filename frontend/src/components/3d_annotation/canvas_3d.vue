@@ -132,6 +132,7 @@
           }
         },
         destroy_canvas: function(){
+          console.log('DESTRO CANVASSS')
           if(this.scene_controller){
             // Clear all elements from the scene
             this.scene_controller.detach_mouse_events();
@@ -228,6 +229,7 @@
             this.setup_perspective_scene_controller(scene);
             this.configure_controls();
           } else if (this.$props.camera_type === 'ortographic') {
+            console.log('SETUP ORT SCENE', scene)
             this.setup_ortographic_scene_controller(scene)
           }
 

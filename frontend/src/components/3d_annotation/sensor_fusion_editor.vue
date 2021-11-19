@@ -198,6 +198,20 @@
 
       </div>
     </div>
+    <v-snackbar v-model="show_snackbar" :timeout="3000" color="primary">
+      {{snackbar_text}}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="white"
+          text
+          v-bind="attrs"
+          @click="snackbar_success = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 
 </template>
@@ -265,6 +279,8 @@
         save_loading_scene: false,
         show_context_menu: false,
         instance_type: 'cuboid_3d',
+        snackbar_text: '',
+        show_snackbar: false,
         draw_mode: false,
         request_change_current_instance: null,
         instance_hover_index: null,
@@ -732,8 +748,8 @@
       change_file: function(){
 
       },
-      change_instance_type: function(){
-
+      change_instance_type: function(instance_type){
+        this.instance_type = instance_type;
       },
       change_label_file: function(label_file){
         this.current_label_file = label_file;
@@ -746,9 +762,17 @@
 
         this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
+      show_info_snackbar_for_drawing: function(){
+        if(this.instance_type === 'cuboid_3d'){
+          this.snackbar_text = 'Double click to start drawing a cuboid.'
+        }
+      },
       edit_mode_toggle: function(draw_mode){
         this.draw_mode = draw_mode;
         this.$refs.main_3d_canvas.set_draw_mode(draw_mode)
+        if(this.draw_mode){
+          this.show_info_snackbar_for_drawing();
+        }
       },
     }
   })

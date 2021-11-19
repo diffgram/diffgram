@@ -117,15 +117,17 @@ export default class ObjectTransformControls {
   }
 
   public detach_controls(){
+    console.log('detachhh')
     if(this.controls_transform){
       this.controls_transform.detach()
-      this.controls_transform.removeEventListener('change', this.scene_controller.render.bind(this.scene_controller));
+      this.controls_transform.removeEventListener('change', this.scene_controller.render);
     }
   }
   public attach_to_mesh(mesh){
     this.controls_transform.attach(mesh);
     this.add_hotkeys_for_transform_controls();
-    this.controls_transform.addEventListener('change', this.scene_controller.render.bind(this.scene_controller));
+    this.controls_transform.addEventListener('change', this.scene_controller.render);
+    console.log('MESH PARENT 2', mesh.parent, mesh)
   }
 
 

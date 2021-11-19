@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
+import CuboidDrawerTool from "./CuboidDrawerTool";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
@@ -18,15 +19,16 @@ export default class SceneController3D {
   public draw_mode: THREE.Raycaster;
   public axes_helper: THREE.AxesHelper;
   public grid_helper: THREE.GridHelper;
-  public place_holder_cuboid: THREE.Mesh;
+
   public component_ctx: Vue;
   public label_file: { id: number, colour: { hex: string } } = null;
   public square_2d_data: { x_min: number, y_min: number, mesh: THREE.Mesh } = {};
   public mouse_position_3d: THREE.Vector3;
-  public mouse_position_3d_initial_draw: THREE.Vector3;
+
   public plane_normal: THREE.Vector3;
   public plane: THREE.Plane;
   public point_cloud_mesh: THREE.Mesh;
+  public cuboid_drawer_tool: CuboidDrawerTool;
   public mouse_position_2d: THREE.Vector2;
   public container: any;
   public animation_id: any;
@@ -51,7 +53,6 @@ export default class SceneController3D {
     this.mouse = new THREE.Vector2();
     this.plane_normal = new THREE.Vector3();
     this.mouse_position_3d = new THREE.Vector3();
-    this.mouse_position_3d_initial_draw = new THREE.Vector3();
     this.plane = new THREE.Plane();
     this.instance_list = instance_list
     this.point_cloud_mesh = point_cloud_mesh
@@ -74,7 +75,7 @@ export default class SceneController3D {
     this.scene.add(this.axes_helper);
     this.camera.layers.enable(this.TRANSFORM_CONTROLS_LAYER)
 
-
+    this.cuboid_drawer_tool = new CuboidDrawerTool(this)
   }
 
   public clear_all(initial_obj = undefined) {
@@ -170,21 +171,9 @@ export default class SceneController3D {
   private on_double_click_draw_mode(event) {
     if(this.draw_mode && !this.currently_drawing_instance){
       this.currently_drawing_instance = true;
-      this.draw_place_holder_cuboid();
+      this.cuboid_drawer_tool.create_place_holder_cuboid();
     }
 
-  }
-
-  private create_mini_sphere() {
-    var sphere = new THREE.Mesh(new THREE.SphereBufferGeometry(.125, 0.1, 0.1), new THREE.MeshBasicMaterial({
-      color: "yellow",
-      wireframe: false
-    }));
-    let pos = this.get_3d_mouse_position()
-    console.log('POSS', pos)
-    sphere.position.copy(pos);
-    this.scene.add(sphere);
-    this.render()
   }
 
   private on_click_draw_mode(event) {
@@ -193,19 +182,19 @@ export default class SceneController3D {
     }
 
     if(this.currently_drawing_instance){
-      if (this.place_holder_cuboid) {
+      if (this.cuboid_drawer_tool.place_holder_cuboid) {
+        this.currently_drawing_instance = false;
         // Add cuboid to instance list
-        let new_instance = this.add_cube_to_instance_list(this.place_holder_cuboid);
-
+        let new_instance = this.add_cube_to_instance_list(this.cuboid_drawer_tool.place_holder_cuboid);
+        this.scene.add(this.cuboid_drawer_tool.place_holder_cuboid)
         this.select_instance(new_instance, this.instance_list.length - 1);
         this.set_draw_mode(false);
+        this.cuboid_drawer_tool.remove_placeholder_cuboid()
 
 
         if (this.component_ctx) {
           this.component_ctx.$emit('instance_drawn', new_instance)
         }
-        this.currently_drawing_instance = false;
-        this.place_holder_cuboid = null;
       }
 
 
@@ -244,7 +233,7 @@ export default class SceneController3D {
     this.update_mouse_position(event);
     if (this.draw_mode) {
       if(this.currently_drawing_instance){
-        this.draw_place_holder_cuboid();
+        this.cuboid_drawer_tool.resize_place_holder_cuboid();
       }
 
     } else {
@@ -262,47 +251,7 @@ export default class SceneController3D {
     return this.mouse_position_3d
   }
 
-  private draw_place_holder_cuboid() {
 
-    if (!this.place_holder_cuboid) {
-
-      var box = new THREE.Box3().setFromObject( this.point_cloud_mesh );
-      let size = Math.abs(box.max - box.min)
-
-
-      // let geometry = new THREE.BoxGeometry(size * 0.05, size * 0.05, size * 0.05);
-      let geometry = new THREE.BoxGeometry(1, 1, 1);
-      this.mouse_position_3d_initial_draw = this.mouse_position_3d_initial_draw.copy(this.mouse_position_3d)
-      let material = new THREE.MeshBasicMaterial({
-        // color: new THREE.Color(this.get_current_color()),
-        color: new THREE.Color('red'),
-        opacity: 0.7,
-        transparent: true,
-
-      });
-      this.place_holder_cuboid = new THREE.Mesh(geometry, material);
-      this.place_holder_cuboid.position.copy(this.mouse_position_3d_initial_draw)
-      this.scene.add(this.place_holder_cuboid)
-      this.render()
-
-
-    }
-    else{
-      let xSize = this.mouse_position_3d.x - this.mouse_position_3d_initial_draw.x;
-      let ySize = this.mouse_position_3d.y - this.mouse_position_3d_initial_draw.y;
-      let zSize = Math.max(xSize, ySize);
-      console.log('size', xSize, ySize)
-      console.log('params', this.place_holder_cuboid.geometry.parameters.width, this.place_holder_cuboid.geometry.parameters.height, this.place_holder_cuboid.geometry.parameters.depth)
-      let scaleFactorX = xSize / this.place_holder_cuboid.geometry.parameters.width;
-      let scaleFactorY = ySize / this.place_holder_cuboid.geometry.parameters.height;
-      let scaleFactorZ = zSize / this.place_holder_cuboid.geometry.parameters.depth;
-      console.log('scale factors', scaleFactorX, scaleFactorY, scaleFactorZ)
-      this.place_holder_cuboid.scale.set( scaleFactorX, scaleFactorY, scaleFactorZ );
-      this.render()
-    }
-
-
-  }
 
   private check_hover() {
     if (this.draw_mode) {
@@ -342,7 +291,7 @@ export default class SceneController3D {
     this.render();
   }
 
-  private render() {
+  public render() {
     if (!this.scene) {
       return
     }
@@ -392,14 +341,14 @@ export default class SceneController3D {
   public set_draw_mode(draw_mode) {
     this.draw_mode = draw_mode;
     this.currently_drawing_instance = false;
+    let placeholder_cuboid = this.cuboid_drawer_tool.place_holder_cuboid;
     if (this.draw_mode) {
-      if (this.object_transform_controls) {
+      if (this.object_transform_controls && this.selected_instance) {
         this.detach_controls_from_mesh();
       }
     } else {
-      this.remove_from_scene(this.place_holder_cuboid);
-
-      this.place_holder_cuboid = null;
+      this.remove_from_scene(placeholder_cuboid);
+      this.cuboid_drawer_tool.remove_placeholder_cuboid()
     }
   }
 
@@ -520,6 +469,7 @@ export default class SceneController3D {
   }
 
   public attach_transform_controls_to_mesh(mesh) {
+    console.log('MESH', mesh.parent)
     this.object_transform_controls.attach_to_mesh(mesh)
 
 
@@ -530,6 +480,9 @@ export default class SceneController3D {
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
+    if(!this.scene){
+      return
+    }
     this.scene.add(mesh);
 
 

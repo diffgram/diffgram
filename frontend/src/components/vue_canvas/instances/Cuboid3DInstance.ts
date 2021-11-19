@@ -27,6 +27,7 @@ export default class Cuboid3DInstance extends Instance3D {
       });
     }
     if(!this.mesh){
+      console.log('new meshhhhh')
       this.mesh = new THREE.Mesh( this.geometry, this.material );
       this.mesh.name = 'cuboid_3d'
     }
