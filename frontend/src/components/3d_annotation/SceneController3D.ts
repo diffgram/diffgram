@@ -117,13 +117,12 @@ export default class SceneController3D {
     for (const child of this.scene.children) {
       if (child.material) {
         let instance_index = child.userData.instance_index;
-        child.material.opacity = 0.3;
+        child.material.opacity = 0.6;
         child.material.color.set(child.userData.color)
         let instance = this.instance_list[instance_index];
         if (this.selected_instance) {
           if (this.selected_instance.mesh === child) {
-            child.material.color.set(0xFFFFFF)
-            child.material.opacity = 0.5;
+            child.material.opacity = 0.9;
           }
         }
 
@@ -131,7 +130,7 @@ export default class SceneController3D {
     }
   }
 
-  private get_current_color() {
+  public get_current_color() {
     if (this.label_file) {
       return this.label_file.colour.hex;
     }
@@ -267,8 +266,9 @@ export default class SceneController3D {
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     let hovered_instance = false;
     for (let i = 0; i < intersects.length; i++) {
+      console.log('INNNTEEERRSSSS')
       intersects[i].object.material.opacity = 0.5;
-      intersects[i].object.material.color.set(0xFFFFFF);
+      // intersects[i].object.material.color.set(0xFFFFFF);
       if (intersects[i].object.userData.instance_index != undefined) {
         this.instance_hovered_index = intersects[i].object.userData.instance_index
         let instance = this.instance_list[this.instance_hovered_index];
@@ -356,7 +356,6 @@ export default class SceneController3D {
     }
     this.currently_drawing_instance = false;
     this.draw_mode = draw_mode;
-    this.render()
   }
 
 
@@ -364,9 +363,9 @@ export default class SceneController3D {
     if (!this.selected_instance) {
       return
     }
-    this.selected_instance.mesh.remove(...this.selected_instance.mesh.children);
-    this.remove_from_scene(this.selected_instance.helper_lines)
-    this.selected_instance.helper_lines = null;
+    // this.selected_instance.mesh.remove(...this.selected_instance.mesh.children);
+    // this.remove_from_scene(this.selected_instance.helper_lines)
+    // this.selected_instance.helper_lines = null;
     this.selected_instance = null;
     this.selected_instance_index = null;
     this.detach_controls_from_mesh();
@@ -376,14 +375,12 @@ export default class SceneController3D {
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
     console.log('SELECT INSTANCE');
-    let line = instance.highlight_edges();
+
 
     this.attach_transform_controls_to_mesh(instance.mesh)
 
     this.selected_instance = instance;
     this.selected_instance_index = index;
-    this.scene.add(line);
-    this.render()
 
     if (this.component_ctx) {
       this.component_ctx.$emit('instance_selected', instance)
@@ -421,6 +418,8 @@ export default class SceneController3D {
     new_instance.draw_on_scene()
     new_instance.update_spacial_data();
     this.instance_list.push(new_instance);
+    let line = new_instance.highlight_edges();
+    this.scene.add(line);
     let index = this.instance_list.length - 1;
     new_instance.mesh.userData.instance_index = index;
     new_instance.mesh.userData.color = this.label_file.colour.hex;
@@ -428,8 +427,8 @@ export default class SceneController3D {
   }
 
   public start_render() {
-    // this.animate();
-    this.render();
+    this.animate();
+    // this.render();
 
   }
 
@@ -473,14 +472,11 @@ export default class SceneController3D {
 
   public attach_transform_controls_to_mesh(mesh) {
     this.object_transform_controls.attach_to_mesh(mesh)
-    this.render();
-
 
   }
 
   private detach_controls_from_mesh() {
     this.object_transform_controls.detach_controls();
-    this.render()
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {

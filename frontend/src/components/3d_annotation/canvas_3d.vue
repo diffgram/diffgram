@@ -199,8 +199,7 @@
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
         },
         create_renderer: function(){
-          this.renderer = new THREE.WebGLRenderer();
-
+          this.renderer = new THREE.WebGLRenderer({ antialias: true});
           this.renderer.setPixelRatio(window.devicePixelRatio);
 
           this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);

@@ -27,7 +27,7 @@ export default class CuboidDrawerTool {
       this.mouse_position_3d_initial_draw = this.mouse_position_3d_initial_draw.copy(this.scene_controller.mouse_position_3d)
       let material = new THREE.MeshBasicMaterial({
         // color: new THREE.Color(this.get_current_color()),
-        color: new THREE.Color('red'),
+        color: new THREE.Color(this.scene_controller.get_current_color()),
         opacity: 0.7,
         transparent: true,
 

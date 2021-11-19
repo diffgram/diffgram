@@ -43,7 +43,7 @@ export default class Cuboid3DInstance extends Instance3D {
     line.position.copy(this.mesh.position);
     line.rotation.copy(this.mesh.rotation);
     line.scale.copy(this.mesh.scale);
-
+    line.renderOrder = 1;
     this.mesh.add(line);
     this.helper_lines = line;
     return line
