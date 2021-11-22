@@ -27,6 +27,7 @@
     <tooltip_button
       :tooltip_message="task_attributes.message"
       v-if="task && task.id && task.status !== 'complete'"
+      datacy="submit-to-review"
       @click="complete_dialog()"
       :loading="is_complete_toggle_loading"
       :disabled="is_complete_toggle_loading || disabled"
