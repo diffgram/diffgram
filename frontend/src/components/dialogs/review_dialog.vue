@@ -6,7 +6,7 @@
 
         <v-card-text>
           <h3>Do you want to approve or request changes?</h3>
-          <v-radio-group v-model="need_changes">
+          <v-radio-group v-model="no_need_changes">
             <v-radio label="Approve" :value="true" />
             <v-radio label="Reject" :value="false" />
           </v-radio-group>
@@ -42,14 +42,14 @@ export default Vue.extend({
   },
   data() {
     return {
-      need_changes: false,
+      no_need_changes: true,
       comment: null,
     };
   },
   methods: {
     on_submit: async function () {
       const payload = {
-        action: this.need_changes ? "request_change" : "approve",
+        action: this.no_need_changes ? "approve" : "request_change",
         comment: this.comment,
       };
       this.$emit("complete", payload);
