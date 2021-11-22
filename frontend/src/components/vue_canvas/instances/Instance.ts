@@ -151,7 +151,6 @@ export abstract class Instance3D extends Instance {
 
   public update_spacial_data() {
     var box = new THREE.Box3().setFromObject(this.mesh);
-    console.log(box.min, box.max);
     this.width = box.max.x - box.min.x;
     this.height = box.max.y - box.min.y;
     this.depth = box.max.z - box.min.z;

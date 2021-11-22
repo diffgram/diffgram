@@ -402,9 +402,26 @@
         return this.point_cloud_mesh
 
       },
+      add_meshes_to_scene: function(instance_list){
+        if(!this.$refs.main_3d_canvas.scene_controller){
+          return
+        }
+        let i = 0;
+        for(const inst of instance_list){
+          if(inst.type === 'cuboid_3d'){
+            this.$refs.main_3d_canvas.scene_controller.add_mesh_to_scene(inst.mesh, false);
+            this.$refs.main_3d_canvas.scene_controller.add_mesh_user_data_to_instance(inst, i)
+          }
+          else{
+            throw Error(`Cannot render 3D instance type ${inst.type}`)
+          }
+          i +=1;
+        }
 
+      },
       load_instance_list: async function(){
         let file_data;
+        this.instance_list.length = 0;
         if(this.file){
           file_data = await instanceServices.get_instance_list_from_file(this.project_string_id, this.file.id)
         }
@@ -417,7 +434,10 @@
         let instance_list = file_data.file_serialized.instance_list;
 
         instance_list = instance_utils.create_instance_list_with_class_types(instance_list, this);
-        this.instance_list = instance_list;
+        for(let inst of instance_list){
+          this.instance_list.push(inst)
+        }
+        this.add_meshes_to_scene(this.instance_list);
 
 
 

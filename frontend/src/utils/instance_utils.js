@@ -1,5 +1,6 @@
 import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInstance";
 import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
+import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
 
 
 export const initialize_instance_object = function(instance, component_ctx){
@@ -19,16 +20,11 @@ export const initialize_instance_object = function(instance, component_ctx){
     return initialized_instance
   }
   if(instance.type === 'cuboid_3d' && !instance.initialized){
+    let cuboid_drawer_tools = new CuboidDrawerTool();
+    let cuboid_mesh = cuboid_drawer_tools.create_mesh_from_instance_data(instance)
     let initialized_instance = new Cuboid3DInstance(
-      component_ctx.mouse_position,
-      component_ctx.canvas_element_ctx,
-      component_ctx.instance_context,
-      component_ctx.trigger_instance_changed,
-      component_ctx.instance_selected,
-      component_ctx.instance_deselected,
-      component_ctx.mouse_down_delta_event,
-      component_ctx.mouse_down_position,
-      component_ctx.label_settings
+      this,
+      cuboid_mesh
     );
     initialized_instance.populate_from_instance_obj(instance);
     return initialized_instance

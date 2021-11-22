@@ -3,7 +3,6 @@ import axios from "axios";
 
 export const get_instance_list_from_file = async (project_string_id, file_id) => {
   try {
-    alert('get instances')
     let url = `/api/project/${project_string_id}/file/${file_id}/annotation/list`;
     const { data } = await axios.post(url, {})
     return data

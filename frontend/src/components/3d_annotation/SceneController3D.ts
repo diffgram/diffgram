@@ -374,7 +374,7 @@ export default class SceneController3D {
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
 
-
+    instance.highlight_edges();
     this.attach_transform_controls_to_mesh(instance.mesh)
 
     this.selected_instance = instance;
@@ -393,9 +393,11 @@ export default class SceneController3D {
 
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
+    console.log('intersects', intersects.length)
     if (intersects.length > 0) {
       let index = intersects[0].object.userData.instance_index
       let instance_to_select = this.instance_list[index];
+      console.log('SELEEECT', instance_to_select, this.instance_list, index)
       if (instance_to_select) {
         this.deselect_instance();
         this.select_instance(instance_to_select, index);
@@ -404,6 +406,11 @@ export default class SceneController3D {
 
     }
     return intersects;
+  }
+  public add_mesh_user_data_to_instance(instance, index){
+
+    instance.mesh.userData.instance_index = index;
+    instance.mesh.userData.color = this.label_file.colour.hex;
   }
 
   public add_cube_to_instance_list(cuboid_mesh) {
@@ -419,8 +426,8 @@ export default class SceneController3D {
     let line = new_instance.highlight_edges();
     this.scene.add(line);
     let index = this.instance_list.length - 1;
-    new_instance.mesh.userData.instance_index = index;
-    new_instance.mesh.userData.color = this.label_file.colour.hex;
+    this.add_mesh_user_data_to_instance(new_instance, index)
+
     return new_instance
   }
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import SceneController3D from "./SceneController3D";
+import {Instance3D} from "../vue_canvas/instances/Instance";
 
 export default class CuboidDrawerTool {
   public scene_controller: SceneController3D;
@@ -37,6 +38,30 @@ export default class CuboidDrawerTool {
 
     }
   }
+
+  public create_mesh_from_instance_data(instance: Instance3D){
+    let geometry = new THREE.BoxGeometry(
+      instance.dimensions_3d.width,
+      instance.dimensions_3d.height,
+      instance.dimensions_3d.depth
+    );
+    const pos = new THREE.Vector3(
+      instance.position_3d.x,
+      instance.position_3d.y,
+      instance.position_3d.z
+    );
+    let material = new THREE.MeshBasicMaterial({
+      // color: new THREE.Color(this.get_current_color()),
+      color: new THREE.Color(instance.label_file.colour.hex),
+      opacity: 0.7,
+      transparent: true,
+
+    });
+    let mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(pos)
+    return mesh;
+  }
+
   public remove_placeholder_cuboid(){
     this.place_holder_cuboid = null;
   }
