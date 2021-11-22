@@ -193,6 +193,8 @@ export abstract class Instance3D extends Instance {
       position_3d: this.position_3d,
       dimensions_3d: this.dimensions_3d,
       center_3d: this.center_3d,
+      width: 0,
+      height: 0,
 
     }
 
