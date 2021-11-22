@@ -447,7 +447,7 @@ export default Vue.extend({
     }
   },
   mounted() {
-    if (!this.$store.state.project_list) {
+    if (!this.$store.state.project_list || this.$store.state.project_list.user_projects_list.length === 0) {
       this.get_avalible_projects()
     }
   },
