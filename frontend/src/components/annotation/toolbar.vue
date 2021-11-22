@@ -49,6 +49,7 @@
             color="primary"
             :icon_style="true"
             icon="mdi-playlist-play"
+            datacy="go-to-task-list"
             tooltip_message="Task List"
             @click="$router.push('/job/' + task.job_id)"
             :bottom="true"
