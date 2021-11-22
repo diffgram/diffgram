@@ -842,6 +842,7 @@
   import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
   import pLimit from 'p-limit';
   import qa_carousel from "./qa_carousel.vue"
+  import * as instance_utils from "../../utils/instance_utils.js"
 
   Vue.prototype.$ellipse = new ellipse();
   Vue.prototype.$polygon = new polygon();
@@ -2476,16 +2477,7 @@
         },
 
         create_instance_list_with_class_types: function(instance_list){
-          const result = []
-          if (!instance_list) { return result }
-          for(let i = 0; i < instance_list.length; i++){
-            let current_instance = instance_list[i];
-
-            // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
-            // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-            let initialized_instance = this.initialize_instance(current_instance)
-            result.push(initialized_instance);
-          }
+          const result = instance_utils.create_instance_list_with_class_types(instance_list, this)
           return result;
         },
         initialize_instance_buffer_dict_frame: function(frame_number){
@@ -7005,24 +6997,8 @@
           this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
         },
         initialize_instance: function(instance){
-          if(instance.type === 'keypoints' && !instance.initialized){
-            let initialized_instance = new KeypointInstance(
-              this.mouse_position,
-              this.canvas_element_ctx,
-              this.instance_context,
-              this.trigger_instance_changed,
-              this.instance_selected,
-              this.instance_deselected,
-              this.mouse_down_delta_event,
-              this.mouse_down_position,
-              this.label_settings
-            );
-            initialized_instance.populate_from_instance_obj(instance);
-            return initialized_instance
-          }
-          else{
-            return instance
-          }
+          let result = instance_utils.initialize_instance_object(instance, this)
+          return result
         },
         save_multiple_frames: async function(frames_list){
           const limit = pLimit(25); // 25 Max concurrent request.

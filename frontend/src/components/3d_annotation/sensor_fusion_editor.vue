@@ -231,6 +231,7 @@
   import axios from "axios";
   import * as instanceServices from '../../services/instanceServices';
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
+  import * as instance_utils from "../../utils/instance_utils"
   import * as THREE from "three";
 
   export default Vue.extend({
@@ -346,7 +347,7 @@
       }
     },
     async created(){
-      await this.load_pcd();
+      await this.initialize_file();
 
     },
 
@@ -384,7 +385,7 @@
     watch:{
       file: function(new_val, old_val){
         if(new_val != old_val){
-          this.load_file_data();
+          this.reload_file_data();
         }
 
       }
@@ -401,20 +402,31 @@
         return this.point_cloud_mesh
 
       },
-      load_instance_list: function(){
+
+      load_instance_list: async function(){
+        let file_data;
         if(this.file){
-          let instance_list = instanceServices.get_instance_list_from_file(this.file.id)
+          file_data = await instanceServices.get_instance_list_from_file(this.project_string_id, this.file.id)
         }
         else if(this.task){
-          let instance_list = instanceServices.get_instance_list_from_task(this.task.id)
+          file_data = await instanceServices.get_instance_list_from_task(this.project_string_id, this.task.id)
         }
         else{
           throw Error('A task or a file must be provided in props to fetch instances.')
         }
+        let instance_list = file_data.file_serialized.instance_list;
+
+        instance_list = instance_utils.create_instance_list_with_class_types(instance_list, this);
+        this.instance_list = instance_list;
+
 
 
       },
-      load_file_data: async function(){
+      initialize_file: async function(){
+        await this.load_pcd();
+        await this.load_instance_list();
+      },
+      reload_file_data: async function(){
         if(!this.$refs.main_3d_canvas){
           return
         }

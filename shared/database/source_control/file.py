@@ -516,6 +516,16 @@ class File(Base, Caching):
         if self.type == "video":
             return self.serialize_with_video(session)
 
+        if self.type == 'sensor_fusion':
+            return {
+                'id': self.id,
+                'type': self.type,
+                'hash': self.hash,
+                'state': self.state,
+                'point_cloud_3d_file': self.point_cloud.serialize(session) if self.point_cloud else None,
+                'instance_list': [instance.serialize_with_label() for instance in instance_list]
+            }
+
     def serialize_annotations_only(self):
 
         return {
