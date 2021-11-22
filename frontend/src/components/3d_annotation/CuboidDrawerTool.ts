@@ -15,7 +15,6 @@ export default class CuboidDrawerTool {
   }
 
   public create_place_holder_cuboid(){
-    console.log('CREATE PLACEGOLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEER')
     if (!this.place_holder_cuboid) {
 
       var box = new THREE.Box3().setFromObject( this.scene_controller.point_cloud_mesh );

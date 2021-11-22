@@ -116,9 +116,7 @@
       },
       methods: {
         on_key_down: function(event){
-          console.log('CANVAS 3D KEYDOWNCC')
           if(event.keyCode == 67){ // c key
-            console.log('CENTERR CAMERA')
             this.center_camera();
           }
         },
@@ -135,7 +133,6 @@
           }
         },
         destroy_canvas: function(){
-          console.log('DESTRO CANVASSS')
           if(this.scene_controller){
             // Clear all elements from the scene
             this.scene_controller.detach_mouse_events();
@@ -231,7 +228,6 @@
             this.setup_perspective_scene_controller(scene);
             this.configure_controls();
           } else if (this.$props.camera_type === 'ortographic') {
-            console.log('SETUP ORT SCENE', scene)
             this.setup_ortographic_scene_controller(scene)
           }
 
@@ -262,7 +258,6 @@
           if(!this.camera){
             return
           }
-          console.log('UPDATE ASPECT')
           let w = this.container.clientWidth
           let h = this.container.clientHeight
           this.camera.aspect = w / h;

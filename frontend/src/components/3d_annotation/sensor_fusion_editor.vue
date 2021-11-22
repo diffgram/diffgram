@@ -758,8 +758,6 @@
           return
         }
 
-        console.log('main 3dd called')
-
         this.$refs.main_3d_canvas.set_current_label_file(label_file)
       },
       hide_snackbar: function(){

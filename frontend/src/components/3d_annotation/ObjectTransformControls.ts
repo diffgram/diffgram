@@ -47,7 +47,6 @@ export default class ObjectTransformControls {
   }
 
   private on_key_down_object_transform(event){
-    console.log('KEYY DOENNN')
     let currentCamera = this.controls_transform.camera;
     let control = this.controls_transform;
 
@@ -123,7 +122,6 @@ export default class ObjectTransformControls {
   }
 
   public detach_controls(){
-    console.log('detachhh')
     if(this.controls_transform){
       this.controls_transform.detach()
       this.remove_hotkeys_for_transform_controls();
@@ -134,7 +132,6 @@ export default class ObjectTransformControls {
     this.controls_transform.attach(mesh);
     this.add_hotkeys_for_transform_controls();
     this.controls_transform.addEventListener('change', this.scene_controller.render.bind(this));
-    console.log('ATTACHED MESH PARENT 2', mesh.parent, mesh)
     this.scene_controller.render();
   }
 

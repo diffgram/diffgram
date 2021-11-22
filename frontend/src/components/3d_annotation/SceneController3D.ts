@@ -266,7 +266,6 @@ export default class SceneController3D {
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     let hovered_instance = false;
     for (let i = 0; i < intersects.length; i++) {
-      console.log('INNNTEEERRSSSS')
       intersects[i].object.material.opacity = 0.5;
       // intersects[i].object.material.color.set(0xFFFFFF);
       if (intersects[i].object.userData.instance_index != undefined) {
@@ -374,7 +373,6 @@ export default class SceneController3D {
 
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
-    console.log('SELECT INSTANCE');
 
 
     this.attach_transform_controls_to_mesh(instance.mesh)
