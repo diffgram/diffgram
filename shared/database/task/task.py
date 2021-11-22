@@ -633,6 +633,12 @@ class Task(Base):
         total = query.filter(Task.job_id == job_id).count()
         completed = query.filter(Task.job_id == job_id,
                                  Task.status == 'complete').count()
+        in_review = query.filter(Task.job_id == job_id,
+                                 Task.status == 'review_requested').count()
+        requires_changes = query.filter(Task.job_id == job_id,
+                                 Task.status == 'requires_changes').count()
+        in_progress = query.filter(Task.job_id == job_id,
+                                 Task.status == 'in_progress').count()
 
         task_id_list = [task.id for task in all_the_tasks_in_job]
         if user_id is None:
@@ -653,6 +659,9 @@ class Task(Base):
         tasks_stats = {
             "total": total,
             "completed": completed,
+            "in_review": in_review,
+            "requires_changes": requires_changes,
+            "in_progress": in_progress,
             "instaces_created": instances_created
         }
         return tasks_stats
