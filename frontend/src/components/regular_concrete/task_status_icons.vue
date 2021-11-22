@@ -38,6 +38,15 @@
   </tooltip_icon>
 
   <tooltip_icon
+    v-if="status == 'requires_changes'"
+    tooltip_message="Requires changes"
+    icon="mdi-clipboard-alert-outline"
+    color="red"
+    :large="large"
+  >
+  </tooltip_icon>
+
+  <tooltip_icon
       v-if="status == 'deferred'"
       tooltip_message = "Deferred"
       icon="mdi-debug-step-over"
