@@ -8145,6 +8145,8 @@ export default Vue.extend({
           gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
           video_data: video_data,
         });
+        this.save_loading_image = false
+        this.has_changed = false
         /*
          * TODO important,
          * in context of video, and wanting to allow the user to save and not wait for save
