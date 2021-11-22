@@ -123,6 +123,16 @@ job_new_spec_list = [
         'kind': dict,
         'required': False
     }},
+    {"allow_reviews": {
+        'kind': bool,
+        'required': False
+        }
+    },
+    {"review_chance": {
+        'kind': int,
+        'required': False
+        }
+    }
 ]
 
 """
@@ -242,6 +252,16 @@ update_job_spec_list = [
     },
     {"pro_network": {
         'kind': bool,
+        'required': False
+        }
+    },
+    {"allow_reviews": {
+        'kind': bool,
+        'required': False
+        }
+    },
+    {"review_chance": {
+        'kind': int,
         'required': False
         }
     }
@@ -413,6 +433,8 @@ def job_update_core(session, job, project, input: dict, log: dict):
             reviewer_list_ids=input.get('reviewer_list_ids'),
             default_userscript_id=input.get('default_userscript_id'),
             ui_schema_id=input.get('ui_schema_id'),
+            allow_reviews=input.get('allow_reviews'),
+            review_chance=input.get('review_chance'),
             job=job
         )
         return job, log
@@ -542,7 +564,9 @@ def new_web(project_string_id):
             reviewer_list_ids=input.get('reviewer_list_ids'),
             attached_directories_dict=input['attached_directories_dict'],
             pro_network=input['pro_network'],         
-            default_userscript_id=input['default_userscript_id']
+            default_userscript_id=input['default_userscript_id'],
+            allow_reviews=input.get('allow_reviews'),
+            review_chance=input.get('review_chance'),
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log=log), 400
@@ -624,7 +648,10 @@ def new_or_update_core(session,
                        member_list_ids=None,
                        reviewer_list_ids=None,
                        pro_network=False,
-                       default_userscript_id=None):
+                       default_userscript_id=None,
+                       allow_reviews=False,
+                       review_chance=0
+                       ):
     """
 
     Even if the user wants to copy an existing directory exactly
@@ -648,6 +675,9 @@ def new_or_update_core(session,
         session.add(job)
     else:
         is_updating = True
+
+    job.allow_reviews = allow_reviews
+    job.review_chance = review_chance 
 
     log = job.update_member_list(
         member_list_ids = member_list_ids,
@@ -733,7 +763,7 @@ def new_or_update_core(session,
         'file_handling': file_handling,
         'output_dir_action': output_dir_action,
         'interface_connection_id': interface_connection_id,
-        'pro_network': pro_network
+        'pro_network': pro_network,
     }
     print('fields_to_process', fields_to_process)
     for field_key, field_val in fields_to_process.items():
