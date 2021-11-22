@@ -229,6 +229,7 @@
   import canvas_3d from "./canvas_3d";
   import moment from "moment";
   import axios from "axios";
+  import * as instanceServices from '../../services/instanceServices';
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
   import * as THREE from "three";
 
@@ -400,6 +401,19 @@
         return this.point_cloud_mesh
 
       },
+      load_instance_list: function(){
+        if(this.file){
+          let instance_list = instanceServices.get_instance_list_from_file(this.file.id)
+        }
+        else if(this.task){
+          let instance_list = instanceServices.get_instance_list_from_task(this.task.id)
+        }
+        else{
+          throw Error('A task or a file must be provided in props to fetch instances.')
+        }
+
+
+      },
       load_file_data: async function(){
         if(!this.$refs.main_3d_canvas){
           return
@@ -413,6 +427,7 @@
         await this.$refs.main_3d_canvas.load_canvas();
         this.calculate_main_canvas_dimension();
         this.calculate_secondary_canvas_dimension();
+        await this.load_instance_list();
       },
       set_save_loading: function(value, frame){
         if(this.video_mode){
