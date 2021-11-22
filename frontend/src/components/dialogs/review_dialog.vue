@@ -5,10 +5,10 @@
         <v-card-title class="text-h5 grey lighten-2"> Review </v-card-title>
 
         <v-card-text>
-          <h3>Any changes to this task required?</h3>
+          <h3>Do you want to approve or request changes?</h3>
           <v-radio-group v-model="need_changes">
-            <v-radio label="No" :value="false" />
-            <v-radio label="Yes" :value="true" />
+            <v-radio label="Approve" :value="true" />
+            <v-radio label="Reject" :value="false" />
           </v-radio-group>
 
           <v-textarea
