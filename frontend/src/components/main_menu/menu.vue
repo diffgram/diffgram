@@ -215,7 +215,7 @@
                         <v-list-item
                           style="cursor: pointer"
                           v-for="project in $store.state.project_list
-                            .user_projects_list"
+                            .user_projects_list.filter(project => project.project_string_id != this.$store.state.project.current.project_string_id)"
                           :key="project.id"
                         >
                           <v-list-item-title @click="change_project(project)">{{
