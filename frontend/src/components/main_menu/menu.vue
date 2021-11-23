@@ -463,6 +463,7 @@ export default Vue.extend({
       this.$router.push({ path: "/home/dashboard" });
 
       this.$emit("exit", true);
+      if (window.location.pathname === '/home/dashboard') this.$router.go()
     },
     open_pending_files_dialog: function () {
       this.$refs.pending_files_dialog.open();
