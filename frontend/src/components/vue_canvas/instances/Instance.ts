@@ -149,6 +149,8 @@ export abstract class Instance3D extends Instance {
 
   abstract draw_on_scene(): void;
 
+  abstract remove_edges(): void;
+
   public update_spacial_data() {
     var box = new THREE.Box3().setFromObject(this.mesh);
     this.width = box.max.x - box.min.x;

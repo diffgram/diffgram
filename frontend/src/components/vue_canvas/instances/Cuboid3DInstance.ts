@@ -27,7 +27,6 @@ export default class Cuboid3DInstance extends Instance3D {
       });
     }
     if(!this.mesh){
-      console.log('new meshhhhh')
       this.mesh = new THREE.Mesh( this.geometry, this.material );
       this.mesh.name = 'cuboid_3d'
     }
@@ -47,6 +46,13 @@ export default class Cuboid3DInstance extends Instance3D {
     this.mesh.add(line);
     this.helper_lines = line;
     return line
+  }
+
+  public remove_edges(){
+    this.mesh.remove(...this.mesh.children);
+    this.scene_controller_3d.remove_from_scene(this.helper_lines)
+    // this.selected_instance.helper_lines = null;
+
   }
 
 

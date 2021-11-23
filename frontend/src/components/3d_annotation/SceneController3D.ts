@@ -359,12 +359,12 @@ export default class SceneController3D {
 
 
   public deselect_instance() {
+    console.log(this.selected_instance, 'deselectttt');
     if (!this.selected_instance) {
       return
     }
-    // this.selected_instance.mesh.remove(...this.selected_instance.mesh.children);
-    // this.remove_from_scene(this.selected_instance.helper_lines)
-    // this.selected_instance.helper_lines = null;
+
+    this.selected_instance.remove_edges();
     this.selected_instance = null;
     this.selected_instance_index = null;
     this.detach_controls_from_mesh();
@@ -373,10 +373,9 @@ export default class SceneController3D {
 
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
-
-    instance.highlight_edges();
     this.attach_transform_controls_to_mesh(instance.mesh)
-
+    let line = instance.highlight_edges();
+    this.scene.add(line);
     this.selected_instance = instance;
     this.selected_instance_index = index;
 
@@ -393,11 +392,10 @@ export default class SceneController3D {
 
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
-    console.log('intersects', intersects.length)
+
     if (intersects.length > 0) {
       let index = intersects[0].object.userData.instance_index
       let instance_to_select = this.instance_list[index];
-      console.log('SELEEECT', instance_to_select, this.instance_list, index)
       if (instance_to_select) {
         this.deselect_instance();
         this.select_instance(instance_to_select, index);
@@ -423,8 +421,7 @@ export default class SceneController3D {
     new_instance.draw_on_scene()
     new_instance.update_spacial_data();
     this.instance_list.push(new_instance);
-    let line = new_instance.highlight_edges();
-    this.scene.add(line);
+
     let index = this.instance_list.length - 1;
     this.add_mesh_user_data_to_instance(new_instance, index)
 

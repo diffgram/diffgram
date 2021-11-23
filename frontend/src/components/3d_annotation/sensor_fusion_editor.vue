@@ -433,7 +433,7 @@
         }
         let instance_list = file_data.file_serialized.instance_list;
 
-        instance_list = instance_utils.create_instance_list_with_class_types(instance_list, this);
+        instance_list = instance_utils.create_instance_list_with_class_types(instance_list, this, this.$refs.main_3d_canvas.scene_controller);
         for(let inst of instance_list){
           this.instance_list.push(inst)
         }
