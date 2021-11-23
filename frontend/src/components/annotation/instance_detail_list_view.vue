@@ -169,6 +169,13 @@
                               </tooltip_icon>
 
                               <tooltip_icon
+                                tooltip_message="Cuboid"
+                                v-if="props.item.type == 'cuboid_3d'"
+                                icon="mdi-cube-outline"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+
+                              <tooltip_icon
                                 tooltip_message="Ellipse"
                                 v-if="props.item.type == 'ellipse'"
                                 icon="mdi-ellipse-outline"
@@ -246,7 +253,7 @@
                           <!-- Full item comparison because
                               new objects won't have id-->
 
-                          <div v-if="props.item == current_instance"
+                          <div v-if="props.item.id == current_instance.id"
                                style="position: absolute; right: 0; top: 0">
 
                             <v-badge v-if="view_only_mode != true"
@@ -905,7 +912,7 @@ import Vue from "vue";
 
         this.current_instance = instance
         this.current_instance_index = index
-
+        console.log('SET NEW INSTANCE', this.current_instance)
         let instance_id = null  // so it clears if no valid ID yet... not sure if this is a good idea
         if (instance && instance.id) {
           instance_id = instance.id

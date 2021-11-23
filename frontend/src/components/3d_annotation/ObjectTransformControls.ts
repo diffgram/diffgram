@@ -31,6 +31,7 @@ export default class ObjectTransformControls {
 
 
     this.controls_transform.addEventListener('objectChange', this.on_mesh_changed.bind(this));
+    this.add_hotkeys_for_transform_controls();
     scene.add(this.controls_transform)
   }
 
@@ -47,6 +48,9 @@ export default class ObjectTransformControls {
   }
 
   private on_key_down_object_transform(event){
+    if(!this.controls_transform.object){
+      return
+    }
     let currentCamera = this.controls_transform.camera;
     let control = this.controls_transform;
 
@@ -124,13 +128,11 @@ export default class ObjectTransformControls {
   public detach_controls(){
     if(this.controls_transform){
       this.controls_transform.detach()
-      this.remove_hotkeys_for_transform_controls();
       this.controls_transform.removeEventListener('change', this.scene_controller.render.bind(this));
     }
   }
   public attach_to_mesh(mesh){
     this.controls_transform.attach(mesh);
-    this.add_hotkeys_for_transform_controls();
     this.controls_transform.addEventListener('change', this.scene_controller.render.bind(this));
     this.scene_controller.render();
   }

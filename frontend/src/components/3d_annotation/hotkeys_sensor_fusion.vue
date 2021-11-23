@@ -22,6 +22,9 @@
   <p> <kbd>Ctrl</kbd> + <kbd>c</kbd> Copy Selected Instance </p>
   <p> <kbd>Ctrl</kbd> + <kbd>v</kbd> Paste Selected Instance </p>
 
+  <p> <kbd>+</kbd> Scale Up Edit Controls </p>
+  <p> <kbd>-</kbd> Scale Down Edit Controls </p>
+
   <p> <kbd>C</kbd> Complete. Save, Mark as Complete, Go to Next.</p>
 
 </v-layout>

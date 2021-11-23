@@ -704,8 +704,11 @@
       on_context_menu_copy_instance: function(){
 
       },
-      on_instance_selected: function(instance){
+      on_instance_selected: function(instance, index){
+        console.log('instance sleected', instance, index)
         this.center_secondary_cameras_to_instance(instance)
+        this.$refs.instance_detail_list.change_instance(instance, index)
+        this.trigger_refresh_current_instance = Date.now();
       },
       calculate_main_canvas_dimension: function(){
         let main_3d_canvas_container = document.getElementById('main_3d_canvas_container')

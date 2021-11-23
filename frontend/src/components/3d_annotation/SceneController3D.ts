@@ -5,7 +5,7 @@ import CuboidDrawerTool from "./CuboidDrawerTool";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
-import {Vue} from "vue/types/vue";
+import Vue from 'vue';
 
 export default class SceneController3D {
   public scene: THREE.Scene;
@@ -376,11 +376,15 @@ export default class SceneController3D {
     this.attach_transform_controls_to_mesh(instance.mesh)
     let line = instance.highlight_edges();
     this.scene.add(line);
+    instance.selected = true;
+    instance.status = 'updated';
     this.selected_instance = instance;
     this.selected_instance_index = index;
+    Vue.set(this.instance_list, index, instance);
+
 
     if (this.component_ctx) {
-      this.component_ctx.$emit('instance_selected', instance)
+      this.component_ctx.$emit('instance_selected', instance, index)
     }
   }
 
