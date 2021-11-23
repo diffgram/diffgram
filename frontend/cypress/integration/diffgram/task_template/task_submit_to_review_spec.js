@@ -28,11 +28,11 @@ describe("tasks_detail_pagination", () => {
       cy.wait("@submit_to_review")
         .its("response")
         .should("have.property", "statusCode", 200);
+      cy.get('[data-cy="go-to-task-list"]').click({ force: true });
     });
 
     it("Reviews task", () => {
       const url = "/api/v1/task/*/review";
-      cy.get('[data-cy="go-to-task-list"]').click({ force: true });
       cy.wait(2000);
       cy.get("tbody > tr")
         .first()
