@@ -324,7 +324,18 @@
           </template>
 
           <template slot="AssignedUser" slot-scope="props">
-            <v_user_icon :user_id="props.item.assignee_user_id"> </v_user_icon>
+            <v_user_icon v-if="props.item.assignee_user_id" :user_id="props.item.assignee_user_id"> </v_user_icon>
+            <tooltip_button
+              v-else
+              tooltip_message="Add assignee"
+              class="hidden-sm-and-down"
+              color="primary"
+              icon="mdi-account-plus-outline"
+              large
+              :icon_style="true"
+              :bottom="true"
+            >
+            </tooltip_button>
           </template>
 
           <template slot="LastUpdated" slot-scope="props">
