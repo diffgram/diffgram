@@ -545,6 +545,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <add_assignee dialog />
     <v-snackbar v-model="snackbar_success" :timeout="3000" color="primary">
       Tasks archived successfully.
 
@@ -568,6 +569,7 @@ import { route_errors } from "../../regular/regular_error_handling";
 import task_status_icons from "../../regular_concrete/task_status_icons";
 import task_status_select from "../../regular_concrete/task_status_select";
 import task_input_list_dialog from "../../input/task_input_list_dialog";
+import add_assignee from "../../dialogs/add_assignee.vue"
 
 import pLimit from "p-limit";
 
@@ -579,6 +581,7 @@ export default Vue.extend({
     task_status_icons,
     task_status_select,
     task_input_list_dialog,
+    add_assignee
   },
   props: {
     project_string_id: {
