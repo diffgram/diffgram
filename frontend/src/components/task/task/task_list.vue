@@ -330,7 +330,7 @@
               tooltip_message="Add assignee"
               class="hidden-sm-and-down"
               color="primary"
-              @click.stop.prevent="assign_user_to_task"
+              @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
               icon="mdi-account-plus-outline"
               large
               :icon_style="true"
@@ -545,7 +545,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <add_assignee dialog />
+    <add_assignee :dialog="task_assign_dialog_open" @close="on_assign_dialog_close" @assign="assign_user_to_task" />
     <v-snackbar v-model="snackbar_success" :timeout="3000" color="primary">
       Tasks archived successfully.
 
@@ -613,6 +613,9 @@ export default Vue.extend({
   data() {
     return {
       actions_list: [{ name: "Archive", value: "archive" }],
+
+      task_assign_dialog_open: false,
+      task_to_assign: null,
 
       page_number: 0,
       per_page_limit: 25,
@@ -871,8 +874,20 @@ export default Vue.extend({
       await this.task_list_api();
     },
 
+    on_assign_dialog_open: function(id) {
+      this.task_assign_dialog_open = true
+      this.task_to_assign = id
+    },
+
+    on_assign_dialog_close: function() {
+      this.task_assign_dialog_open = false
+      this.task_to_assign = null
+    },
+
     assign_user_to_task: function() {
-      console.log("WORKS")
+      console.log(this.project_string_id)
+      console.log(this.task_to_assign)
+      this.on_assign_dialog_close()
     },
 
     async previous_page() {
