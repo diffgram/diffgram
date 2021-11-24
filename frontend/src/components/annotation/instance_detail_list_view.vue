@@ -912,7 +912,7 @@ import Vue from "vue";
 
         this.current_instance = instance
         this.current_instance_index = index
-        console.log('SET NEW INSTANCE', this.current_instance)
+
         let instance_id = null  // so it clears if no valid ID yet... not sure if this is a good idea
         if (instance && instance.id) {
           instance_id = instance.id

@@ -1,6 +1,10 @@
 <template>
 
-  <div v-if="point_cloud_mesh" :id="container_id" :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
+  <div v-if="point_cloud_mesh"
+       :id="container_id"
+       @focusin="on_focus_canvas"
+       @focusout="on_focus_out_canvas"
+       :style="{width: `${width}px`, height: `${height}px`}" class="ma-0">
 
   </div>
 
@@ -12,6 +16,8 @@
   import * as THREE from "three";
   import SceneController3D from './SceneController3D';
   import SceneControllerOrtographicView from './SceneControllerOrtographicView';
+
+
 
   export default Vue.extend({
       name: 'canvas_3d',
@@ -83,9 +89,25 @@
         this.container = document.getElementById(this.$props.container_id)
         if(this.camera_type === 'perspective'){
           window.addEventListener('keydown', this.on_key_down);
+          document.addEventListener('click', function(event) {
+            if(!component_ctx.renderer || !component_ctx.renderer.domElement){
+              return
+            }
+            if (event.target === component_ctx.renderer.domElement) {
+              component_ctx.scene_controller.add_orbit_controls_events();
+            }
+            else{
+              component_ctx.scene_controller.remove_orbit_controls_events();
+            }
+          });
         }
 
-        this.load_canvas();
+
+
+        await this.load_canvas();
+
+        let component_ctx = this;
+
 
       },
       beforeDestroy() {
@@ -115,6 +137,19 @@
         }
       },
       methods: {
+        on_focus_canvas: function(){
+          console.log('on_focus_canvas')
+          if(this.scene_controller){
+            this.scene_controller.add_orbit_controls_events();
+          }
+
+        },
+        on_focus_out_canvas: function(){
+          console.log('on_focus_out_canvas')
+          if(this.scene_controller){
+            this.scene_controller.remove_orbit_controls_events();
+          }
+        },
         on_key_down: function(event){
           if(event.keyCode == 67){ // c key
             this.center_camera();
@@ -137,6 +172,7 @@
             // Clear all elements from the scene
             this.scene_controller.detach_mouse_events();
             this.scene_controller.scene.remove(this.point_cloud_mesh);
+            this.scene_controller.remove_orbit_controls_events();
             this.point_cloud_mesh.geometry.dispose();
             this.point_cloud_mesh.material.dispose();
 
@@ -200,6 +236,7 @@
           this.renderer.setPixelRatio(window.devicePixelRatio);
 
           this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
+
         },
         setup_scene: async function (scene = undefined,) {
 
@@ -232,6 +269,7 @@
           }
 
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
+
 
           this.scene_controller.start_render();
 

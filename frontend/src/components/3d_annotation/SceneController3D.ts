@@ -168,7 +168,7 @@ export default class SceneController3D {
   }
 
   private on_double_click_draw_mode(event) {
-    if(this.draw_mode && !this.currently_drawing_instance){
+    if (this.draw_mode && !this.currently_drawing_instance) {
       this.currently_drawing_instance = true;
       this.cuboid_drawer_tool.create_place_holder_cuboid();
     }
@@ -180,7 +180,7 @@ export default class SceneController3D {
       return
     }
 
-    if(this.currently_drawing_instance){
+    if (this.currently_drawing_instance) {
       if (this.cuboid_drawer_tool.place_holder_cuboid) {
         this.currently_drawing_instance = false;
         // Add cuboid to instance list
@@ -197,8 +197,7 @@ export default class SceneController3D {
       }
 
 
-    }
-    else{
+    } else {
 
     }
 
@@ -231,7 +230,7 @@ export default class SceneController3D {
 
     this.update_mouse_position(event);
     if (this.draw_mode) {
-      if(this.currently_drawing_instance){
+      if (this.currently_drawing_instance) {
         this.cuboid_drawer_tool.resize_place_holder_cuboid();
       }
 
@@ -249,7 +248,6 @@ export default class SceneController3D {
     let inter_point = this.raycaster.ray.intersectPlane(this.plane, this.mouse_position_3d);
     return this.mouse_position_3d
   }
-
 
 
   private check_hover() {
@@ -345,7 +343,7 @@ export default class SceneController3D {
       if (this.object_transform_controls && this.selected_instance) {
         this.detach_controls_from_mesh();
       }
-      if(this.currently_drawing_instance){
+      if (this.currently_drawing_instance) {
         this.remove_from_scene(placeholder_cuboid);
         this.cuboid_drawer_tool.remove_placeholder_cuboid()
       }
@@ -409,7 +407,8 @@ export default class SceneController3D {
     }
     return intersects;
   }
-  public add_mesh_user_data_to_instance(instance, index){
+
+  public add_mesh_user_data_to_instance(instance, index) {
 
     instance.mesh.userData.instance_index = index;
     instance.mesh.userData.color = this.label_file.colour.hex;
@@ -441,7 +440,7 @@ export default class SceneController3D {
 
   public add_orbit_controls() {
     this.controls_orbit = new OrbitControls(this.camera, this.renderer.domElement)
-    this.controls_orbit.listenToKeyEvents(window); // optional
+    this.add_orbit_controls_events();
     this.controls_orbit.enableDamping = false; // an animation loop is required when either damping or auto-rotation are enabled
     this.controls_orbit.dampingFactor = 0.09;
     this.controls_orbit.screenSpacePanning = false;
@@ -461,6 +460,25 @@ export default class SceneController3D {
 
     this.controls_orbit.addEventListener('change', this.render.bind(this))
     this.controls_orbit.update();
+  }
+
+  public add_orbit_controls_events() {
+    if(!this.controls_orbit){
+      return
+    }
+    if(!this.controls_orbit._domElementKeyEvents){
+      this.controls_orbit.listenToKeyEvents(window); // optional
+    }
+
+    this.controls_orbit.enabled = true
+  }
+
+  public remove_orbit_controls_events() {
+    if(!this.controls_orbit){
+      return
+    }
+
+    this.controls_orbit.enabled = false
   }
 
   public add_transform_controls() {
@@ -486,7 +504,7 @@ export default class SceneController3D {
   }
 
   public add_mesh_to_scene(mesh, center_camera_to_object = true) {
-    if(!this.scene){
+    if (!this.scene) {
       return
     }
     this.scene.add(mesh);
