@@ -884,6 +884,7 @@ import Vue from "vue";
       },
 
       attribute_change: function (attribute) {
+        console.log('CHANGEEEE', attribute)
         this.instance_update(
              "attribute_change",
               this.current_instance_index,

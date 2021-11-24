@@ -102,8 +102,6 @@
           });
         }
 
-
-
         await this.load_canvas();
 
         let component_ctx = this;

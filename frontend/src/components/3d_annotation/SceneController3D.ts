@@ -263,6 +263,7 @@ export default class SceneController3D {
     // calculate objects intersecting the picking ray
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
     let hovered_instance = false;
+    let was_hovered = this.instance_hovered_index != undefined;
     for (let i = 0; i < intersects.length; i++) {
       intersects[i].object.material.opacity = 0.5;
       // intersects[i].object.material.color.set(0xFFFFFF);
@@ -273,7 +274,7 @@ export default class SceneController3D {
         hovered_instance = true
       }
     }
-    if (!hovered_instance) {
+    if (!hovered_instance && was_hovered) {
       this.instance_hovered_index = null
       this.component_ctx.$emit('instance_unhovered');
     }

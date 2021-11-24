@@ -62,7 +62,7 @@
                                     @toggle_instance_focus="()=>{}"
                                     @show_all="()=>{}"
                                     @update_canvas="()=>{}"
-                                    @instance_update="()=>{}"
+                                    @instance_update="instance_update"
                                     :video_mode="false"
                                     :task="task"
                                     :view_only_mode="view_only_mode"
@@ -396,6 +396,94 @@
       }
     },
     methods: {
+      instance_update: function (update) {
+        if (this.$props.view_only_mode == true) { return }
+
+        let index = update.index
+        if (index == undefined) { return }  // careful 0 is ok.
+        let initial_instance = {...this.instance_list[index], initialized: false}
+        initial_instance = instance_utils.initialize_instance(initial_instance);
+        // since sharing list type component need to determine which list to update
+        // could also use render mode but may be different contexts
+        if (!update.list_type || update.list_type == "default") {
+          var instance = this.instance_list[index]
+        }
+
+        if (!instance) {
+          console.error("Invalid index")
+          return
+        }
+
+
+        if (update.mode === 'on_click_update_point_attribute'){
+          instance.toggle_occluded(update.node_hover_index)
+        }
+
+        // instance update
+        if (update.mode == "update_label") {
+          // not 100% sure if we need both here
+          instance.label_file = update.payload
+          instance.label_file_id = update.payload.id
+        }
+
+        if (update.mode == "change_sequence"){
+
+          instance.sequence_id = update.sequence.id
+          instance.number = update.sequence.number
+
+        }
+
+        if (update.mode == "delete") {
+          instance.soft_delete = true
+        }
+
+        if (update.mode == "delete_undo") {
+          instance.soft_delete = false
+        }
+
+        if (update.mode == "delete" ||
+          update.mode == "delete_undo") {
+
+          // sequence related, design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
+          if (instance.label_file_id != this.current_lable_file_id) {
+            // this.save()
+            this.has_changed = true;
+            this.request_clear_sequence_list_cache = Date.now()
+          }
+        }
+
+        if (update.mode == "toggle_missing") {
+          if (instance.missing) {
+            instance.missing = !instance.missing
+          } else {
+            instance.missing = true
+          }
+        }
+
+        if (update.mode == "attribute_change") {
+          if (!instance.attribute_groups) {
+            instance.attribute_groups = {}
+          }
+          let group = update.payload[0]
+          let value = update.payload[1]
+
+          // we assume this represents a group
+          initial_instance.prev_attribute = {
+            group: group.id,
+            value: {...instance.attribute_groups[group.id]}
+          }
+          instance.attribute_groups[group.id] = value
+          //console.debug(group, value)
+        }
+
+        // end instance update
+
+        let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
+
+        this.has_changed = true;
+        this.trigger_refresh_with_delay()
+
+      },
       load_pcd: async function () {
         let file_loader_3d = new FileLoader3DPointClouds(this);
         this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url);
@@ -695,9 +783,6 @@
 
       },
       paste_instance: function(){
-
-      },
-      instance_update: function(){
 
       },
       close_share_dialog: function(){
