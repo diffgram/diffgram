@@ -615,7 +615,8 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
-            'time_created': self.time_created
+            'time_created': self.time_created,
+            'allow_reviews': self.allow_reviews
         }
 
     def serialize_for_task(self):
@@ -790,7 +791,7 @@ class Job(Base, Caching):
             'pending_initial_dir_sync': self.pending_initial_dir_sync,
             'review_by_human_freqeuncy': self.review_by_human_freqeuncy,
             'allow_reviews': self.allow_reviews,
-            'review_chance': self.review_chance,
+            'review_chance': self.review_chance * 100,
 
             'project_string_id': self.project.project_string_id,
             'is_live': self.is_live,
