@@ -147,6 +147,7 @@ export abstract class Instance3D extends Instance {
   public rotation_euler_angles: { x: number, y: number, z: number };
   public position_3d: { x: number, y: number, z: number };
   public dimensions_3d: { width: number, height: number, depth: number };
+  public initialized: boolean;
 
   abstract draw_on_scene(): void;
 

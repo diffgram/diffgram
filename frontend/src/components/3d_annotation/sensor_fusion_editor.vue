@@ -131,6 +131,7 @@
             :instance_list="instance_list"
             @instance_update="instance_update($event)"
             @share_dialog_open="open_share_dialog"
+            @delete_instance="delete_instance"
             @copy_instance="on_context_menu_copy_instance"
             @paste_instance="paste_instance"
             @open_instance_history_panel="show_instance_history_panel"
@@ -400,6 +401,19 @@
       }
     },
     methods: {
+      delete_instance: function(){
+        alert('aaa')
+        if (this.$props.view_only_mode == true) { return }
+
+        for (var i in this.instance_list) {
+          if (this.instance_list[i].selected == true) {
+            this.instance_update({
+              index: i,
+              mode: "delete"
+            })
+          }
+        }
+      },
       create_update_command(index, instance, initial_instance, update) {
         const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
         this.command_manager.executeCommand(command);
@@ -409,9 +423,13 @@
       instance_update: function (update) {
         if (this.$props.view_only_mode == true) { return }
 
+
         let index = update.index
         if (index == undefined) { return }  // careful 0 is ok.
-        let initial_instance = {...this.instance_list[index], initialized: false}
+
+
+        let initial_instance = this.instance_list[index];
+        console.log('instance_update start', initial_instance)
         initial_instance = instance_utils.initialize_instance_object(initial_instance);
         // since sharing list type component need to determine which list to update
         // could also use render mode but may be different contexts
@@ -445,10 +463,16 @@
 
         if (update.mode == "delete") {
           instance.soft_delete = true
+          console.log('INSTANCE', instance)
+          this.$refs.main_3d_canvas.scene_controller.deselect_instance();
+          this.$refs.main_3d_canvas.scene_controller.remove_from_scene(instance.mesh);
+
         }
 
         if (update.mode == "delete_undo") {
-          instance.soft_delete = false
+          instance.soft_delete = false;
+          instance.draw_on_scene()
+          instance.highlight_edges();
         }
 
         if (update.mode == "delete" ||
@@ -876,11 +900,17 @@
       },
 
       key_down_handler: function(event){
+        console.log('lololololo', event.keyCode)
         if (event.keyCode === 27) { // ESC
           if(this.$refs.main_3d_canvas &&
             !this.$refs.main_3d_canvas.scene_controller.object_transform_controls.controls_transform.object){
             this.edit_mode_toggle(!this.draw_mode)
           }
+
+        }
+
+        if (event.keyCode === 46) { // DEL
+          this.delete_instance();
 
         }
       },

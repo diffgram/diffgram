@@ -173,11 +173,13 @@
   import Vue from 'vue';
   import axios from 'axios';
   import share_instance_dialog from '../share/share_instance_dialog';
+  import user_icon from '../../components/user/user_icon'
 
   export default Vue.extend({
     name: 'context_menu_3d_editor',
     components: {
-      share_instance_dialog
+      share_instance_dialog,
+      user_icon
     },
     props: {
       'mouse_position': {

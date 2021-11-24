@@ -186,6 +186,7 @@ export default class SceneController3D {
         // Add cuboid to instance list
         this.set_draw_mode(false);
         let new_instance = this.add_cube_to_instance_list(this.cuboid_drawer_tool.place_holder_cuboid);
+
         this.select_instance(new_instance, this.instance_list.length - 1);
 
         this.cuboid_drawer_tool.remove_placeholder_cuboid()
@@ -372,9 +373,11 @@ export default class SceneController3D {
 
   public select_instance(instance, index) {
     // Build the White Edges Box (To highlight edge lines of cuboid)
-    this.attach_transform_controls_to_mesh(instance.mesh)
     let line = instance.highlight_edges();
-    this.scene.add(line);
+
+
+    this.attach_transform_controls_to_mesh(instance.mesh)
+
     instance.selected = true;
     instance.status = 'updated';
     this.selected_instance = instance;

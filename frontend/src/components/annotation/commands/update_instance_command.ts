@@ -50,8 +50,19 @@ export class UpdateInstanceCommand {
 
       return newInstance;
     }
-    else if (CLASS_INSTANCE_TYPES.includes(instance.type)) {
+    else if (instance.type === 'keypoints') {
       let newInstance = instance.get_instance_data();
+      let initializedInstance = instance_utils.initialize_instance_object(
+        newInstance,
+        this.ann_core_ctx,
+      );
+      return initializedInstance;
+    }
+    else if(instance.type === 'cuboid_3d'){
+      let newInstance = instance.get_instance_data();
+      console.log('instance to copy mesh', instance)
+      newInstance.mesh = instance.copy_mesh();
+
       let initializedInstance = instance_utils.initialize_instance_object(
         newInstance,
         this.ann_core_ctx,
