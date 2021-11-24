@@ -876,7 +876,7 @@ import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
 import { ellipse } from "../vue_canvas/ellipse.js";
 import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.js";
 import { CreateInstanceCommand } from "./commands/create_instance_command.js";
-import { UpdateInstanceCommand } from "./commands/update_instance_command.js";
+import { UpdateInstanceCommand } from "./commands/update_instance_command.ts";
 import { AnnotationCoreInteractionGenerator } from "../vue_canvas/interactions/AnnotationCoreInteractionGenerator";
 import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
