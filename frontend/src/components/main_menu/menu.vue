@@ -211,7 +211,9 @@
                           </h2>
                         </v-btn>
                       </template>
-                      <v-list>
+                      <v-list v-if="$store.state.project_list && $store.state.project_list
+                            .user_projects_list && $store.state.project_list
+                            .user_projects_list.length > 1">
                         <v-list-item
                           style="cursor: pointer"
                           v-for="project in $store.state.project_list
@@ -447,7 +449,11 @@ export default Vue.extend({
     }
   },
   mounted() {
-    if (!this.$store.state.project_list || this.$store.state.project_list.user_projects_list.length === 0) {
+    if (
+      !this.$store.state.project_list || 
+      this.$store.state.project_list.user_projects_list || 
+      this.$store.state.project_list.user_projects_list.length === 0
+      ) {
       this.get_avalible_projects()
     }
   },
