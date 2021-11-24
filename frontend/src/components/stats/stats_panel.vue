@@ -128,20 +128,21 @@ export default Vue.extend({
     },
     async update_user_chart() {
       const { job_id } = this.$route.params;
-      const userStats = await getJobStatsForUser(job_id, this.show_member_stat);
-      this.user_stats.chartData.datasets[0].data = [
-        userStats.completed,
-        userStats.total - userStats.completed,
-      ];
+      const { completed, total, in_progress, in_review, requires_changes, instaces_created } = await getJobStatsForUser(job_id, this.show_member_stat);
+      const pending = total - completed - in_progress - in_review - requires_changes
+      this.user_stats.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];
       this.user_stats.chartData.labels = [
-        `Completed ${userStats.completed}`,
-        `Pending ${userStats.total - userStats.completed}`,
+        `Completed ${completed}`,
+        `In progress ${in_progress}`,
+        `In review ${in_review}`,
+        `Require changes ${requires_changes}`,
+        `Pending ${pending}`,
       ];
       if (!this.job_data_fetched) {
         this.current_user_performance = {
-          instances: userStats.instaces_created,
-          total: userStats.total,
-          completed: userStats.completed,
+          instances: instaces_created,
+          total: total,
+          completed: completed,
         };
       }
       this.update_user_cart = false;
@@ -164,11 +165,15 @@ export default Vue.extend({
     this.member_list = [...this.$store.state.project.current.member_list];
     this.show_member_stat = user_id;
 
-    const { completed, total } = await getJobStats(job_id);
-    this.job_chart.chartData.datasets[0].data = [completed, total - completed];
+    const { completed, total, in_progress, in_review, requires_changes } = await getJobStats(job_id);
+    const pending = total - completed - in_progress - in_review - requires_changes
+    this.job_chart.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];
     this.job_chart.chartData.labels = [
       `Completed ${completed}`,
-      `Pending ${total - completed}`,
+      `In progress ${in_progress}`,
+      `In review ${in_review}`,
+      `Require changes ${requires_changes}`,
+      `Pending ${pending}`,
     ];
 
     await this.update_user_chart();
@@ -200,7 +205,7 @@ export default Vue.extend({
           labels: ["Completed", "Pending"],
           datasets: [
             {
-              backgroundColor: ["#41B883", "#00D8FF"],
+              backgroundColor: ["#6ab04c", "#ffbe76", '#7ed6df', '#eb4d4b', '#95afc0'],
               data: [],
             },
           ],
@@ -220,7 +225,7 @@ export default Vue.extend({
           datasets: [
             {
               label: "Data One",
-              backgroundColor: ["#41B883", "#E46651"],
+              backgroundColor: ["#6ab04c", "#ffbe76", '#7ed6df', '#eb4d4b', '#95afc0'],
               data: [],
             },
           ],

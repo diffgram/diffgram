@@ -8,11 +8,27 @@ export const nextTask = async (job_id) => {
         );
         return response
     } catch(e) {
-        console.log(e)
         return {
             status: 400,
             data: {}
         }
     }
+}
 
+export const submitTaskReview = async (task_id, payload) => {
+    try{
+        const response = await axios.post(`/api/v1/task/${task_id}/review`, payload)
+        return response
+    } catch(e) {
+        return {}
+    }
+}
+
+export const finishTaskAnnotation = async (task_id) => {
+    try{
+        const response = await axios.post(`/api/v1/task/${task_id}/complete`, {})
+        return response
+    } catch(e) {
+        return {}
+    }
 }
