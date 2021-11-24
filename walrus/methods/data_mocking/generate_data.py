@@ -47,6 +47,20 @@ data_gen_spec_list = [
             'kind': int,
             'required': False
         }
+    },
+    {
+        'reviews': {
+            'allow_reviews': {
+                'kind': bool,
+                'default': False,
+                'required': False
+            },
+            'review_chance': {
+                'kind': float,
+                'default': 0,
+                'required': False
+            }
+        }
     }
 ]
 
@@ -112,7 +126,7 @@ def shared_data_gen(session, project, input):
 
     elif input['data_type'] == 'task_template':
         data_mocker.generate_test_data_for_task_templates(
-            project=project, structure=input.get('structure'), num_files=input.get('num_files'))
+            project=project, structure=input.get('structure'), num_files=input.get('num_files'), reviews=input.get('reviews'))
         
 
 
@@ -336,7 +350,7 @@ class DiffgramDataMocker:
         job_sync_manager.create_file_links_for_attached_dirs(create_tasks=True)
         return files
 
-    def __create_sample_task_template(self, name, project):
+    def __create_sample_task_template(self, name, project, reviews):
         task_template = Job()
         task_template.name = name
         task_template.permission = 'all_secure_users'
@@ -345,6 +359,8 @@ class DiffgramDataMocker:
         task_template.stat_count_tasks = 0
         task_template.label_mode = 'closed_all_available'
         task_template.stat_count_complete = 0
+        task_template.allow_reviews = reviews['allow_reviews']
+        task_template.review_chance = reviews['review_chance']
         directory = WorkingDir.new_blank_directory(session=self.session)
         task_template.directory = directory
         label_files = self.generate_sample_label_files(project=project)
@@ -370,10 +386,13 @@ class DiffgramDataMocker:
         self.generate_test_data_for_task_templates(project, structure='1_pass')
 
 
-    def generate_test_data_for_task_templates(self, project, structure='1_pass', num_files=NUM_IMAGES):
+    def generate_test_data_for_task_templates(self, project, structure='1_pass', num_files=NUM_IMAGES, reviews={
+            "allow_reviews": False,
+            "review_chance": 0
+        }):
 
         if structure == '1_pass':
-            task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project)
+            task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project, reviews)
             # Try to get the default dataset.
             input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[-5:], project=project)
 
@@ -394,7 +413,7 @@ class DiffgramDataMocker:
         elif structure == '2_pass':
             for i in range(0, 2):
                 task_template = self.__create_sample_task_template('Sample Task Template {} pass'.format(i + 1),
-                                                                   project)
+                                                                   project, reviews)
                 # Try to get the default dataset.
                 if i == 0:
                     input_dir, input_dir_exists = self.generate_sample_dataset('Pending [{} pass]'.format(i + 1),
@@ -418,7 +437,7 @@ class DiffgramDataMocker:
                 self.session.flush()
                 self.create_tasks_for_sample_task_template(task_template, attached_dir=input_dir)
         elif structure == '2_input_1_output':
-            task_template = self.__create_sample_task_template('Sample 2 Input Task Template', project)
+            task_template = self.__create_sample_task_template('Sample 2 Input Task Template', project, reviews)
             # Try to get the default dataset.
             input_dir, input_dir_exists = self.generate_sample_dataset('Input Dataset 1', project=project)
             input2_dir, input2_dir_exists = self.generate_sample_dataset('Input Dataset 2', project=project)
