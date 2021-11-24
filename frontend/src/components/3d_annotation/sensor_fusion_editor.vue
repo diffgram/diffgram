@@ -233,6 +233,8 @@
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
   import * as instance_utils from "../../utils/instance_utils"
   import * as THREE from "three";
+  import {UpdateInstanceCommand} from "../annotation/commands/update_instance_command.ts";
+  import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager";
 
   export default Vue.extend({
     name: "sensor_fusion_editor_3d",
@@ -341,6 +343,7 @@
 
         },
         main_canvas_width: undefined,
+        command_manager: undefined,
         main_canvas_height: undefined,
         secondary_canvas_width: undefined,
         secondary_canvas_height: undefined,
@@ -348,6 +351,7 @@
     },
     async created(){
       await this.initialize_file();
+      this.command_manager = new CommandManagerAnnotationCore();
 
     },
 
@@ -396,13 +400,19 @@
       }
     },
     methods: {
+      create_update_command(index, instance, initial_instance, update) {
+        const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+        this.command_manager.executeCommand(command);
+        return true
+
+      },
       instance_update: function (update) {
         if (this.$props.view_only_mode == true) { return }
 
         let index = update.index
         if (index == undefined) { return }  // careful 0 is ok.
         let initial_instance = {...this.instance_list[index], initialized: false}
-        initial_instance = instance_utils.initialize_instance(initial_instance);
+        initial_instance = instance_utils.initialize_instance_object(initial_instance);
         // since sharing list type component need to determine which list to update
         // could also use render mode but may be different contexts
         if (!update.list_type || update.list_type == "default") {
@@ -478,10 +488,9 @@
 
         // end instance update
 
-        let insert_instance_result = this.insert_instance(index, instance, initial_instance, update)
+        this.create_update_command(index, instance, initial_instance, update)
 
         this.has_changed = true;
-        this.trigger_refresh_with_delay()
 
       },
       load_pcd: async function () {
@@ -531,7 +540,7 @@
           this.instance_list.push(inst)
         }
         this.add_meshes_to_scene(this.instance_list);
-
+        console.log('load instances', this.instance_list);
 
 
       },
@@ -584,8 +593,10 @@
           return
         }
         let current_frame = undefined;
+        console.log('aaaa', this.instance_list);
+        console.log('INSTANCE LIST', this.instance_list)
         let instance_list = this.instance_list.map(inst => inst.get_instance_data());
-
+        console.log('INSTANCE LIST to save', instance_list)
         if(this.get_save_loading(current_frame)){
           // If we have new instances created while saving. We might still need to save them after the first
           // save has been completed.

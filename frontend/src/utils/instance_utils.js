@@ -4,8 +4,9 @@ import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
 
 
 export const initialize_instance_object = function(instance, component_ctx, scene_controller_3d = undefined){
+  let initialized_instance;
   if(instance.type === 'keypoints' && !instance.initialized){
-    let initialized_instance = new KeypointInstance(
+    initialized_instance = new KeypointInstance(
       component_ctx.mouse_position,
       component_ctx.canvas_element_ctx,
       component_ctx.instance_context,
@@ -20,13 +21,23 @@ export const initialize_instance_object = function(instance, component_ctx, scen
     return initialized_instance
   }
   if(instance.type === 'cuboid_3d' && !instance.initialized){
-    let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller_3d);
-    let cuboid_mesh = cuboid_drawer_tools.create_mesh_from_instance_data(instance)
-    let initialized_instance = new Cuboid3DInstance(
-      scene_controller_3d,
-      cuboid_mesh
-    );
-    initialized_instance.populate_from_instance_obj(instance);
+    if(!instance.mesh){
+      let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller_3d);
+      let cuboid_mesh = cuboid_drawer_tools.create_mesh_from_instance_data(instance)
+      initialized_instance = new Cuboid3DInstance(
+        scene_controller_3d,
+        cuboid_mesh
+      );
+      initialized_instance.populate_from_instance_obj(instance);
+    }
+    else{
+      initialized_instance = new Cuboid3DInstance(
+        scene_controller_3d,
+        instance.mesh
+      );
+
+      initialized_instance.populate_from_instance_obj(instance);
+    }
     return initialized_instance
   }
   else{

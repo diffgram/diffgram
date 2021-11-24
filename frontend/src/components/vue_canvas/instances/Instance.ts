@@ -53,6 +53,7 @@ export class Instance {
     return {
       id: this.id,
       creation_ref: this.creation_ref_id,
+      attribute_groups: this.attribute_groups,
       x_min: this.x_min,
       y_min: this.y_min,
       center_x: this.center_x,

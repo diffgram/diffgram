@@ -826,7 +826,7 @@
     check_if_pending_created_instance
   } from './utils/AnnotationUtills'
   import {CreateInstanceCommand} from './commands/create_instance_command.js'
-  import {UpdateInstanceCommand} from './commands/update_instance_command.js'
+  import {UpdateInstanceCommand} from './commands/update_instance_command.ts'
   import {AnnotationCoreInteractionGenerator} from '../vue_canvas/interactions/AnnotationCoreInteractionGenerator'
   import { polygon } from '../vue_canvas/polygon.js';
   import { v4 as uuidv4 } from 'uuid';
