@@ -330,6 +330,7 @@
               tooltip_message="Add assignee"
               class="hidden-sm-and-down"
               color="primary"
+              @click.stop.prevent="assign_user_to_task"
               icon="mdi-account-plus-outline"
               large
               :icon_style="true"
@@ -865,6 +866,10 @@ export default Vue.extend({
     async next_page() {
       this.page_number += 1;
       await this.task_list_api();
+    },
+
+    assign_user_to_task: function() {
+      console.log("WORKS")
     },
 
     async previous_page() {
