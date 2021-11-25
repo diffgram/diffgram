@@ -884,9 +884,10 @@ export default Vue.extend({
       this.task_to_assign = null
     },
 
-    assign_user_to_task: function() {
-      console.log(this.project_string_id)
-      console.log(this.task_to_assign)
+    assign_user_to_task: function(user_id) {
+      console.log("Project string id",this.project_string_id)
+      console.log("Task to assign id",this.task_to_assign)
+      console.log("user to assign id", user_id)
       this.on_assign_dialog_close()
     },
 

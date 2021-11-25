@@ -8,8 +8,10 @@
           <h3>Who should be assigned to this task?</h3>
 
         <v-select
+          v-model="member_to_assign"
           :items="member_list"
           :item-text="member => `${member.first_name} ${member.last_name}`"
+          item-value="id"
           single-line
         >
         </v-select>
@@ -52,20 +54,15 @@ export default Vue.extend({
       const user = [...this.member_list].find(
         (item) => item.id === this.member_to_assign
       );
-      console.log(user)
       return user;
     },
   },
   mounted () {
       this.member_list = [...this.$store.state.project.current.member_list];
-      console.log(this.member_list)
   },
   methods: {
-      switch_user(id) {
-        this.member_to_assign = id;
-        },
       on_assign: function() {
-          this.$emit("assign")
+          this.$emit("assign", this.member_to_assign)
       },
       on_cancel: function() {
           this.$emit("close")
