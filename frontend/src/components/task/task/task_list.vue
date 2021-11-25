@@ -570,6 +570,7 @@ import task_status_icons from "../../regular_concrete/task_status_icons";
 import task_status_select from "../../regular_concrete/task_status_select";
 import task_input_list_dialog from "../../input/task_input_list_dialog";
 import add_assignee from "../../dialogs/add_assignee.vue"
+import { assignUserToTask } from "../../../services/tasksServices"
 
 import pLimit from "p-limit";
 
@@ -884,10 +885,9 @@ export default Vue.extend({
       this.task_to_assign = null
     },
 
-    assign_user_to_task: function(user_id) {
-      console.log("Project string id",this.project_string_id)
-      console.log("Task to assign id",this.task_to_assign)
-      console.log("user to assign id", user_id)
+    assign_user_to_task: async function(user_id) {
+      const response = await assignUserToTask(user_id, this.project_string_id, this.task_to_assign)
+      console.log(response)
       this.on_assign_dialog_close()
     },
 
