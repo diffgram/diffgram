@@ -8,7 +8,7 @@ def api_task_user_add(project_string_id, task_id):
     with sessionMaker.session_scope() as session:
         spec_list = [{'user_id': {
             'required': True,
-            'kind': int
+            'kind': list
         }},
             {'relation': {
                 'required': True,
@@ -21,15 +21,17 @@ def api_task_user_add(project_string_id, task_id):
                                                            spec_list = spec_list)
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
-
-        result, log = api_task_user_add_core(
-            session = session,
-            task_id = task_id,
-            user_id = input['user_id'],
-            relation = input['relation'],
-            project_string_id = project_string_id,
-            log = log
-        )
+        
+        for user in input['user_id']:
+            print(user)
+            result, log = api_task_user_add_core(
+                session = session,
+                task_id = task_id,
+                user_id = user,
+                relation = input['relation'],
+                project_string_id = project_string_id,
+                log = log
+            )
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400

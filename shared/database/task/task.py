@@ -149,7 +149,7 @@ class Task(Base):
     # QUESTION should we be using "member" here?
     # Current assumption is that tasks are only done by users which is maybe
     # wrong
-    assignee_user_id = Column(Integer, ForeignKey('userbase.id'))
+    assignee_user_id = Column(Integer, ForeignKey('userbase.id')) #DEPRECATED
     # assignee_user = relationship("User", back_populates = "task_list" )
     assignee_user = relationship("User",
                                  foreign_keys = [assignee_user_id],

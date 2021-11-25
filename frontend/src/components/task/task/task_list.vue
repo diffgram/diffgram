@@ -886,9 +886,7 @@ export default Vue.extend({
     },
 
     assign_user_to_task: async function(user_ids) {
-      console.log(user_ids)
-      // const response = await assignUserToTask(user_id, this.project_string_id, this.task_to_assign)
-      // console.log(response)
+      const response = await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
       this.on_assign_dialog_close()
     },
 
