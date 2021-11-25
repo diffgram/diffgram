@@ -7,14 +7,14 @@
         <v-card-text>
           <h3>Who should be assigned to this task?</h3>
 
-        <v-select
-          v-model="member_to_assign"
-          :items="member_list"
-          :item-text="member => `${member.first_name} ${member.last_name}`"
-          item-value="id"
-          single-line
+        <member_select
+          v-model="member_list_ids"
+          label="Select Specific Users"
+          :member_list="member_list"
+          :multiple="true"
+          :init_all_selected="false"
         >
-        </v-select>
+        </member_select>
 
         </v-card-text>
 
@@ -46,23 +46,15 @@ export default Vue.extend({
   data() {
     return {
       member_list: [],
-      member_to_assign: null
+      member_list_ids: []
     };
-  },
-  computed: {
-    current_user() {
-      const user = [...this.member_list].find(
-        (item) => item.id === this.member_to_assign
-      );
-      return user;
-    },
   },
   mounted () {
       this.member_list = [...this.$store.state.project.current.member_list];
   },
   methods: {
       on_assign: function() {
-          this.$emit("assign", this.member_to_assign)
+          this.$emit("assign", this.member_list_ids)
       },
       on_cancel: function() {
           this.$emit("close")
