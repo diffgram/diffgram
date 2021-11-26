@@ -61,6 +61,7 @@
     "vue-code-diff": "^1.1.0",
     "vue-color": "^2.7.1",
     "vue-intercom": "^1.0.14",
+    "vue-jest": "^4.0.1",
     "vue-markdown": "^2.2.4",
     "vue-moment": "^4.1.0",
     "vue-qriously": "^1.1.1",
@@ -81,12 +82,13 @@
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@mdi/font": "^5.8.55",
-    "@types/jest": "^27.0.3",
+    "@types/jest": "^26.0.3",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",
     "@vue/babel-preset-jsx": "^1.2.4",
     "@vue/cli": "^4.5.14",
+    "@vue/cli-plugin-babel": "^4.5.15",
     "@vue/cli-plugin-unit-jest": "^4.5.15",
     "@vue/cli-service-global": "^4.5.14",
     "@vue/eslint-config-typescript": "^5.1.0",
@@ -146,6 +148,7 @@
     "postcss-import": "^12.0.1",
     "postcss-loader": "^3.0.0",
     "postcss-url": "^8.0.0",
+    "regenerator-runtime": "^0.13.9",
     "rimraf": "^3.0.2",
     "sass": "^1.29.0",
     "sass-loader": "^8.0.2",
@@ -159,7 +162,7 @@
     "url-loader": "^3.0.0",
     "vue-loader": "^15.9.5",
     "vue-style-loader": "^4.1.2",
-    "vue-template-compiler": "2.6.12",
+    "vue-template-compiler": "2.6.14",
     "vue-ts-loader": "0.0.3",
     "webpack": "^4.44.2",
     "webpack-bundle-analyzer": "^3.9.0",
@@ -179,31 +182,5 @@
   },
   "resolutions": {
     "prosemirror-model": "1.9.1"
-  },
-  "config": {
-    "jest": {
-      "preset": "ts-jest",
-      "moduleDirectories": [
-        "node_modules",
-        "src"
-      ],
-      "moduleFileExtensions": [
-        "js",
-        "json",
-        "ts"
-      ],
-      "roots": [
-        "src"
-      ],
-      "testRegex": ".spec.ts$",
-      "transform": {
-        "^.+\\.(t|j)s$": "ts-jest"
-      },
-      "coverageDirectory": "../coverage",
-      "testEnvironment": "node",
-      "moduleNameMapper": {
-        "src/(.*)": "<rootDir>/src/$1"
-      }
-    }
   }
 }

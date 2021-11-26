@@ -2,18 +2,23 @@ import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import SceneController3D from "./SceneController3D";
 
+type GizmoType = {
+  _gizmo: any
+
+}
 export default class ObjectTransformControls {
   controls_transform: TransformControls;
   scene_controller: SceneController3D;
 
   public constructor(camera, scene_controller, domeElement, scene, render_function, drag_function, layer_number) {
-    this.controls_transform = new TransformControls( camera, domeElement );
+    this.controls_transform = new TransformControls( camera, domeElement ) as TransformControls & GizmoType;
     this.controls_transform.addEventListener( 'change', render_function );
     this.controls_transform.addEventListener( 'dragging-changed', drag_function);
     this.scene_controller = scene_controller;
-    let gizmo = this.controls_transform._gizmo.gizmo;
-    let picker = this.controls_transform._gizmo.picker;
-    let helper = this.controls_transform._gizmo.helper;
+    let controls_transform = this.controls_transform as GizmoType & TransformControls;
+    let gizmo = controls_transform._gizmo.gizmo;
+    let picker = controls_transform._gizmo.picker;
+    let helper = controls_transform._gizmo.helper;
 
     gizmo['translate'].traverse( function( child ) { child.layers.set( 1 ) });
     gizmo['rotate'].traverse( function( child ) { child.layers.set( 1 ) });
