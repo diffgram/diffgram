@@ -681,6 +681,12 @@ class Task(Base):
         if session:
             file = self.file.serialize_with_type(session = session)
 
+        join_table = session.query(TaskUser).filter(TaskUser.task_id == self.id).all()
+        print(self.id)
+        print(len(join_table))
+        for task in join_table:
+            print(task.__dict__)
+
         return {
             'id': self.id,
             'task_type': self.task_type,
