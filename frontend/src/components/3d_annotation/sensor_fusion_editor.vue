@@ -402,7 +402,6 @@
     },
     methods: {
       delete_instance: function(){
-        alert('aaa')
         if (this.$props.view_only_mode == true) { return }
 
         for (var i in this.instance_list) {
@@ -471,7 +470,8 @@
         if (update.mode == "delete_undo") {
           instance.soft_delete = false;
           instance.draw_on_scene()
-          instance.highlight_edges();
+          this.$refs.main_3d_canvas.scene_controller.select_instance(instance, index);
+
         }
 
         if (update.mode == "delete" ||
