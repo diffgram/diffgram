@@ -5,9 +5,10 @@ module.exports = {
     ".*\\.(vue)$": "vue-jest",
     "^.+\\.tsx?$": "ts-jest"
   },
+  "modulePaths": ["<rootDir>/src"],
   globals: {
     "ts-jest": {
-      tsConfig: "src/tsconfig.json"
+      tsconfig: "src/tsconfig.json"
     }
   }
 };

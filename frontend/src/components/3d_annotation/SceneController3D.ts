@@ -10,7 +10,7 @@ import Vue from 'vue';
 export default class SceneController3D {
   public scene: THREE.Scene;
   public controls_orbit: OrbitControls;
-  public camera: THREE.Camera;
+  public camera: THREE.PerspectiveCamera;
   public renderer: THREE.WebGLRenderer;
   public controls_panning_speed: number;
   public object_transform_controls: ObjectTransformControls;
@@ -22,7 +22,6 @@ export default class SceneController3D {
 
   public component_ctx: Vue;
   public label_file: { id: number, colour: { hex: string } } = null;
-  public square_2d_data: { x_min: number, y_min: number, mesh: THREE.Mesh } = {};
   public mouse_position_3d: THREE.Vector3;
 
   public plane_normal: THREE.Vector3;
@@ -57,12 +56,6 @@ export default class SceneController3D {
     this.instance_list = instance_list
     this.point_cloud_mesh = point_cloud_mesh
     this.raycaster = new THREE.Raycaster();
-    this.square_2d_data = {
-      x_min: undefined,
-      y_min: undefined,
-      mesh: undefined
-    };
-
     this.controls_panning_speed = controls_panning_speed
 
     // Add grid and axis helper arrows
@@ -114,15 +107,17 @@ export default class SceneController3D {
     if (!this.scene) {
       return
     }
-    for (const child of this.scene.children) {
+    for (let child_elm of this.scene.children) {
+      let child = child_elm as THREE.Mesh
       if (child.material) {
+
         let instance_index = child.userData.instance_index;
-        child.material.opacity = 0.6;
-        child.material.color.set(child.userData.color)
+        (child.material as THREE.MeshBasicMaterial).opacity = 0.6;
+        (child.material as THREE.MeshBasicMaterial).color.set(child.userData.color)
         let instance = this.instance_list[instance_index];
         if (this.selected_instance) {
           if (this.selected_instance.mesh === child) {
-            child.material.opacity = 0.9;
+            (child.material as THREE.MeshBasicMaterial).opacity = 0.9;
           }
         }
 
@@ -266,10 +261,11 @@ export default class SceneController3D {
     let hovered_instance = false;
     let was_hovered = this.instance_hovered_index != undefined;
     for (let i = 0; i < intersects.length; i++) {
-      intersects[i].object.material.opacity = 0.5;
+      let object = intersects[i].object as THREE.Mesh;
+      (object.material as THREE.MeshBasicMaterial).opacity = 0.5;
       // intersects[i].object.material.color.set(0xFFFFFF);
-      if (intersects[i].object.userData.instance_index != undefined) {
-        this.instance_hovered_index = intersects[i].object.userData.instance_index
+      if (object.userData.instance_index != undefined) {
+        this.instance_hovered_index = object.userData.instance_index
         let instance = this.instance_list[this.instance_hovered_index];
         this.component_ctx.$emit('instance_hovered', instance, this.instance_hovered_index);
         hovered_instance = true
