@@ -77,12 +77,15 @@ import axios from "axios";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import file_manager_sheet from "../source_control/file_manager_sheet";
+import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import Vue from "vue";
+
 
 export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    sensor_fusion_editor
   },
   props: {
     project_string_id: {
@@ -194,7 +197,18 @@ export default Vue.extend({
       }
       return file_id;
     },
+    annotation_interface: function(){
+      if(!this.current_file){
+        return
+      }
+      if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+        return 'image_or_video';
+      }
+      else if(this.current_file.type === 'sensor_fusion'){
+        return 'sensor_fusion';
+      }
 
+    },
     computed_project_string_id: function () {
       if (this.$props.project_string_id) {
         this.$store.commit(

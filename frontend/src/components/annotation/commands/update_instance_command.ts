@@ -60,13 +60,17 @@ export class UpdateInstanceCommand {
     }
     else if(instance.type === 'cuboid_3d'){
       let newInstance = instance.get_instance_data();
-      console.log('instance to copy mesh', instance)
-      newInstance.mesh = instance.copy_mesh();
+      console.log('instance to copy mesh', instance, this.ann_core_ctx, this.scene_controller_3d)
+      newInstance.mesh = instance.mesh;
 
       let initializedInstance = instance_utils.initialize_instance_object(
         newInstance,
         this.ann_core_ctx,
+        this.scene_controller_3d
       );
+      initializedInstance.remove_edges();
+
+      console.log('end inistialized', initializedInstance)
       return initializedInstance;
     }
     else{

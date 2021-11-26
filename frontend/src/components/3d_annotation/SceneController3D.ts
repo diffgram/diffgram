@@ -324,14 +324,14 @@ export default class SceneController3D {
     if (!(object instanceof THREE.Object3D)) return false;
 
     // for better memory management and performance
-    object.geometry.dispose();
-    if (object.material instanceof Array) {
-      // for better memory management and performance
-      object.material.forEach(material => material.dispose());
-    } else {
-      // for better memory management and performance
-      object.material.dispose();
-    }
+    // object.geometry.dispose();
+    // if (object.material instanceof Array) {
+    //   // for better memory management and performance
+    //   object.material.forEach(material => material.dispose());
+    // } else {
+    //   // for better memory management and performance
+    //   object.material.dispose();
+    // }
     object.removeFromParent(); // the parent might be the scene or another Object3D, but it is sure to be removed this way
 
     return true;
@@ -400,12 +400,23 @@ export default class SceneController3D {
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
 
     if (intersects.length > 0) {
-      let index = intersects[0].object.userData.instance_index
-      let instance_to_select = this.instance_list[index];
-      if (instance_to_select) {
-        this.deselect_instance();
-        this.select_instance(instance_to_select, index);
+      console.log('INTERSEC INSTANCEE', intersects)
+      let instance_object = intersects.find(elm => {
+        if(elm.object.userData && elm.object.userData.instance_index != undefined){
+          return true;
+        }
+        return false;
+      });
+      console.log('instance_object', instance_object)
+      if(instance_object){
+        let index = instance_object.object.userData.instance_index;
+        let instance_to_select = this.instance_list[index];
+        if (instance_to_select) {
+          this.deselect_instance();
+          this.select_instance(instance_to_select, index);
+        }
       }
+
 
 
     }

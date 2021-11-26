@@ -20,10 +20,10 @@ export const initialize_instance_object = function(instance, component_ctx, scen
     initialized_instance.populate_from_instance_obj(instance);
     return initialized_instance
   }
-  console.log('instance testt', instance)
+  console.log('instance testt', instance, scene_controller_3d)
   if(instance.type === 'cuboid_3d' && !instance.initialized){
-    console.log('INITIALIZE INSTANCEEE')
     if(!instance.mesh){
+      console.log('new mesh')
       let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller_3d);
       let cuboid_mesh = cuboid_drawer_tools.create_mesh_from_instance_data(instance)
       initialized_instance = new Cuboid3DInstance(
@@ -33,12 +33,15 @@ export const initialize_instance_object = function(instance, component_ctx, scen
       initialized_instance.populate_from_instance_obj(instance);
     }
     else{
+
+      console.log('old mesh')
       initialized_instance = new Cuboid3DInstance(
         scene_controller_3d,
         instance.mesh
       );
 
       initialized_instance.populate_from_instance_obj(instance);
+      console.log('result', initialized_instance)
     }
     return initialized_instance
   }

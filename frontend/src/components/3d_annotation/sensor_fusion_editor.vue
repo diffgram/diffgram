@@ -415,7 +415,7 @@
         }
       },
       create_update_command(index, instance, initial_instance, update) {
-        const command = new UpdateInstanceCommand(instance, index, initial_instance, this);
+        const command = new UpdateInstanceCommand(instance, index, initial_instance, this, this.$refs.main_3d_canvas.scene_controller);
         this.command_manager.executeCommand(command);
         return true
 
@@ -429,7 +429,6 @@
 
 
         let initial_instance = this.instance_list[index];
-        console.log('instance_update start', initial_instance)
         initial_instance = instance_utils.initialize_instance_object(initial_instance);
         // since sharing list type component need to determine which list to update
         // could also use render mode but may be different contexts
@@ -564,7 +563,6 @@
           this.instance_list.push(inst)
         }
         this.add_meshes_to_scene(this.instance_list);
-        console.log('load instances', this.instance_list);
 
 
       },
@@ -617,10 +615,7 @@
           return
         }
         let current_frame = undefined;
-        console.log('aaaa', this.instance_list);
-        console.log('INSTANCE LIST', this.instance_list)
         let instance_list = this.instance_list.map(inst => inst.get_instance_data());
-        console.log('INSTANCE LIST to save', instance_list)
         if(this.get_save_loading(current_frame)){
           // If we have new instances created while saving. We might still need to save them after the first
           // save has been completed.

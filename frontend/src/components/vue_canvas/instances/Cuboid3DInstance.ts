@@ -20,10 +20,10 @@ export default class Cuboid3DInstance extends Instance3D {
   }
 
   public draw_on_scene(){
-    if(!this.material){
+    if(!this.material && !this.mesh){
       this.geometry = new THREE.BoxGeometry( 2, 2, 2 );
     }
-    if(!this.geometry){
+    if(!this.geometry && !this.mesh){
       this.material = new THREE.MeshBasicMaterial({
         color: new THREE.Color('red'),
         opacity: 0.3,
@@ -63,10 +63,7 @@ export default class Cuboid3DInstance extends Instance3D {
 
   public copy_mesh(){
     const geometry = this.mesh.geometry.clone();
-    const box = new THREE.BoxGeometry(geometry);
-
     let material = new THREE.MeshBasicMaterial({
-      // color: new THREE.Color(this.get_current_color()),
       color: new THREE.Color(this.scene_controller_3d.get_current_color()),
       opacity: 0.7,
       transparent: true,
