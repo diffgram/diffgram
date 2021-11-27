@@ -546,7 +546,7 @@
     </v-dialog>
     <add_assignee 
       :dialog="task_assign_dialog_open" 
-      :assignees="task_to_assign ? task_list.filter(task => task.id === task_to_assign).task_assignees :[]" 
+      :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign).task_assignees :[]" 
       @close="on_assign_dialog_close" 
       @assign="assign_user_to_task" 
     />
