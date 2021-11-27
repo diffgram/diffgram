@@ -42,12 +42,23 @@ export default Vue.extend({
       type: Boolean,
       default: false,
     },
+    assignees: {
+      type:  Array,
+      default: []
+    }
   },
   data() {
     return {
       member_list: [],
       member_list_ids: []
     };
+  },
+  watch: {
+    assignees: {
+      handler: function (newValue) {
+         this.member_list_ids = newValue.map(assignee => assignee.user_id)
+      }
+    }
   },
   mounted () {
       this.member_list = [...this.$store.state.project.current.member_list];

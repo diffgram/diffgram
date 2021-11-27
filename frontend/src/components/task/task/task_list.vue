@@ -326,7 +326,6 @@
           <template slot="AssignedUser" slot-scope="props">
             <v_user_icon v-if="props.item.assignee_user_id" :user_id="props.item.assignee_user_id"> </v_user_icon>
             <tooltip_button
-              v-else
               tooltip_message="Add assignee"
               class="hidden-sm-and-down"
               color="primary"
@@ -545,7 +544,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <add_assignee :dialog="task_assign_dialog_open" @close="on_assign_dialog_close" @assign="assign_user_to_task" />
+    <add_assignee 
+      :dialog="task_assign_dialog_open" 
+      :assignees="task_to_assign ? task_list.filter(task => task.id === task_to_assign).task_assignees :[]" 
+      @close="on_assign_dialog_close" 
+      @assign="assign_user_to_task" 
+    />
     <v-snackbar v-model="snackbar_success" :timeout="3000" color="primary">
       Tasks archived successfully.
 

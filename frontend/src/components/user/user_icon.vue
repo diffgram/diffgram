@@ -86,7 +86,7 @@ export default Vue.extend({
         <template #activator="{ on }">
           <!-- 1.1 Expected case -->
           <div v-if="user_local.profile_image_thumb_url">
-            <v-avatar :size="size" v-on="on">
+            <v-avatar @click="emit('user_avatar_click')" :size="size" v-on="on">
               <img :src="user_local.profile_image_thumb_url" />
             </v-avatar>
           </div>
