@@ -324,7 +324,7 @@
           </template>
 
           <template slot="AssignedUser" slot-scope="props">
-            <v_user_icon v-if="props.item.assignee_user_id" :user_id="props.item.assignee_user_id"> </v_user_icon>
+            <v_user_icon v-for="assignee in props.item.task_assignees" :key="assignee.id" :user_id="assignee.user_id"> </v_user_icon>
             <tooltip_button
               tooltip_message="Add assignee"
               class="hidden-sm-and-down"
