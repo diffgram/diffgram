@@ -681,11 +681,13 @@ class Task(Base):
         if session:
             file = self.file.serialize_with_type(session = session)
 
-        join_table = session.query(TaskUser).filter(TaskUser.task_id == self.id).all()
-        print(self.id)
-        print(len(join_table))
-        for task in join_table:
-            print(task.__dict__)
+        task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
+        task_assignees = []
+
+        for assignee in task_assignees_query:
+            task_assignees.append(assignee.serialize())
+
+        print(task_assignees)
 
         return {
             'id': self.id,
@@ -702,8 +704,9 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'time_created': self.time_created.isoformat(),
-            'assignee_user_id': self.assignee_user_id,
-            'file': file
+            'assignee_user_id': self.assignee_user_id, #Legacy way to return assignees, now task_assignees should be used
+            'file': file,
+            'task_assignees': task_assignees
 
         }
 
