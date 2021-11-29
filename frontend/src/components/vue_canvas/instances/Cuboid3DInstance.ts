@@ -5,15 +5,17 @@ import {v4 as uuidv4 } from 'uuid'
 
 export default class Cuboid3DInstance extends Instance3D {
 
-  public helper_lines: THREE.Mesh;
+  public helper_lines: THREE.LineSegments;
+  public material: THREE.MeshBasicMaterial;
+  public geometry: THREE.BoxGeometry;
 
 
   public constructor(scene_controller_3d: SceneController3D, mesh: THREE.Mesh) {
     super();
     this.scene_controller_3d = scene_controller_3d;
     this.mesh = mesh;
-    this.material = mesh.material;
-    this.geometry = mesh.geometry;
+    this.material = mesh.material as THREE.MeshBasicMaterial;
+    this.geometry = mesh.geometry as THREE.BoxGeometry;
     this.type = 'cuboid_3d'
     this.initialized = true;
     this.creation_ref_id = uuidv4();

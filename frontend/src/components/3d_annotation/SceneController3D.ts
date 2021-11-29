@@ -10,7 +10,7 @@ import Vue from 'vue';
 export default class SceneController3D {
   public scene: THREE.Scene;
   public controls_orbit: OrbitControls;
-  public camera: THREE.PerspectiveCamera;
+  public camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   public renderer: THREE.WebGLRenderer;
   public controls_panning_speed: number;
   public object_transform_controls: ObjectTransformControls;
@@ -21,7 +21,7 @@ export default class SceneController3D {
   public grid_helper: THREE.GridHelper;
 
   public component_ctx: Vue;
-  public label_file: { id: number, colour: { hex: string } } = null;
+  public label_file: { id: number, label: any, label_file: any, colour: {hex: string} } = null;
   public mouse_position_3d: THREE.Vector3;
 
   public plane_normal: THREE.Vector3;
@@ -386,7 +386,7 @@ export default class SceneController3D {
     }
   }
 
-  public on_click_edit_mode(event) {
+  public on_click_edit_mode(event): void {
     if (!this.scene) {
       return
     }
@@ -416,7 +416,6 @@ export default class SceneController3D {
 
 
     }
-    return intersects;
   }
 
   public add_mesh_user_data_to_instance(instance, index) {
@@ -526,16 +525,17 @@ export default class SceneController3D {
     }
   }
 
-  public center_camera_to_mesh(mesh, offset = 1) {
+  public center_camera_to_mesh(mesh, axis = 'x', offset = 1): void {
     // Read: https://discourse.threejs.org/t/camera-zoom-to-fit-object/936/6
-    let vFoV = this.camera.getEffectiveFOV();
-    let hFoV = this.camera.fov * this.camera.aspect;
+    let camera = this.camera as THREE.PerspectiveCamera;
+    let vFoV = camera.getEffectiveFOV();
+    let hFoV = camera.fov * camera.aspect;
 
     let FoV = Math.min(vFoV, hFoV);
     let FoV2 = FoV / 2;
 
     let dir = new THREE.Vector3();
-    this.camera.getWorldDirection(dir);
+    camera.getWorldDirection(dir);
 
     let bb = mesh.geometry.boundingBox;
     let bs = mesh.geometry.boundingSphere;
@@ -548,14 +548,14 @@ export default class SceneController3D {
     let FL = R / sina;
 
     let cameraDir = new THREE.Vector3();
-    this.camera.getWorldDirection(cameraDir);
+    camera.getWorldDirection(cameraDir);
 
     let cameraOffs = cameraDir.clone();
     cameraOffs.multiplyScalar(-FL);
     let newCameraPos = bsWorld.clone().add(cameraOffs);
 
-    this.camera.position.copy(newCameraPos);
-    this.camera.lookAt(bsWorld);
+    camera.position.copy(newCameraPos);
+    camera.lookAt(bsWorld);
     this.controls_orbit.target.copy(bsWorld);
 
     this.controls_orbit.update();

@@ -30,7 +30,7 @@ export class Instance {
   public rear_face: number = null;
   public width: number = null;
   public height: number = null;
-  public label_file: { id, label: any, colour: {hex: string} } = null;
+  public label_file: { id: number, label: any, label_file: any, colour: {hex: string} } = null;
   public label_file_id: number = null;
   public selected: boolean = false;
   public number: number = null;
@@ -136,7 +136,7 @@ export class Instance {
 }
 
 export abstract class Instance3D extends Instance {
-  public helper_lines: THREE.Mesh;
+  public helper_lines: THREE.LineSegments;
   public mesh: THREE.Mesh;
   public scene_controller_3d: SceneController3D;
   public geometry: THREE.BoxGeometry;

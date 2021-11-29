@@ -7,8 +7,10 @@ import SceneController3D from "./SceneController3D";
 import {getCenterPoint} from './utils_3d'
 
 export default class SceneControllerOrtographicView extends  SceneController3D{
-  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60) {
-    super(scene, camera, renderer, container, component_ctx, controls_panning_speed, instance_list)
+  public camera: THREE.OrthographicCamera;
+
+  public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60, point_cloud_mesh) {
+    super(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed, point_cloud_mesh)
 
     // Hide the 3D transform controls layer. Because here we'll use 2D bounding box
     this.camera.layers.disable(this.TRANSFORM_CONTROLS_LAYER);
@@ -26,7 +28,7 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     return
   }
 
-  public on_click_edit_mode(){
+  public on_click_edit_mode(event): void{
     return
   }
 
@@ -34,7 +36,7 @@ export default class SceneControllerOrtographicView extends  SceneController3D{
     return
   }
 
-  public center_camera_to_mesh(mesh, axis = 'x'){
+  public center_camera_to_mesh(mesh, axis = 'x', offset = 1): void{
     let center = getCenterPoint(mesh);
     let frustrum_height;
     var aspect = this.container.clientWidth / this.container.clientHeight;
