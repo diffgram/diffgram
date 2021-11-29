@@ -56,7 +56,7 @@
           default: null
         },
         instance_list: {
-          default: []
+          default: () => ([])
         },
         container_id: {
           default: '3d-container'
@@ -136,14 +136,12 @@
       },
       methods: {
         on_focus_canvas: function(){
-          console.log('on_focus_canvas')
           if(this.scene_controller){
             this.scene_controller.add_orbit_controls_events();
           }
 
         },
         on_focus_out_canvas: function(){
-          console.log('on_focus_out_canvas')
           if(this.scene_controller){
             this.scene_controller.remove_orbit_controls_events();
           }
@@ -223,6 +221,9 @@
 
         },
         setup_perspective_scene_controller: function (scene) {
+          if(!this.container){
+            return
+          }
           this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
           this.scene_controller = new SceneController3D(scene,
             this.camera,
@@ -237,6 +238,9 @@
           this.scene_controller.set_current_label_file(this.$props.current_label_file);
         },
         create_renderer: function(){
+          if(!this.container){
+            return
+          }
           this.renderer = new THREE.WebGLRenderer({ antialias: true});
           this.renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -247,25 +251,27 @@
 
           this.container = document.getElementById(this.$props.container_id)
 
-
+          if(!this.container){
+            return
+          }
           if(this.container.clientWidth === 0 || this.container.clientHeight === 0){
             return
           }
-
           if(!this.renderer){
             this.create_renderer();
           }
-
           window.addEventListener( 'resize', this.on_window_resize );
           if (!scene) {
             scene = new THREE.Scene();
             // scene.background = new THREE.Color('blue')
           }
+
           document.getElementById(this.$props.container_id).appendChild(this.renderer.domElement);
 
           // Disable selecting text when double clicking inside canvas
           // see: https://stackoverflow.com/questions/3684285/how-to-prevent-text-select-outside-html5-canvas-on-double-click
           this.renderer.domElement.onselectstart = function () { return false; }
+
           if (this.$props.camera_type === 'perspective') {
             this.setup_perspective_scene_controller(scene);
             this.configure_controls();

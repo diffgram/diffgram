@@ -297,12 +297,18 @@ export default class SceneController3D {
   }
 
   public attach_mouse_events() {
+    if(!this.container){
+      return
+    }
     this.container.addEventListener('mousemove', this.on_mouse_move.bind(this), false);
     this.container.addEventListener('click', this.on_mouse_click.bind(this));
     this.container.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
   }
 
   public detach_mouse_events() {
+    if(!this.container){
+      return
+    }
     this.container.removeEventListener('mousemove', this.on_mouse_move.bind(this));
     this.container.removeEventListener('click', this.on_mouse_click.bind(this));
     this.container.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
