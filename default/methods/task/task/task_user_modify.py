@@ -7,15 +7,15 @@ from shared.database.task.task_user import TaskUser
 @Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
 def api_task_user_modify(project_string_id, task_id):
     with sessionMaker.session_scope() as session:
-        spec_list = [{'user_id': {
-            'required': True,
-            'kind': list
-        }},
+        spec_list = [
+            {'user_id': {
+            'required': False,
+            }},
             {'relation': {
                 'required': True,
                 'kind': str,
                 'valid_values_list': ['reviewer', 'assignee']
-            }}
+            }},
         ]
 
         log, input, untrusted_input = regular_input.master(request = request,
@@ -23,25 +23,28 @@ def api_task_user_modify(project_string_id, task_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
         
-        for user in input['user_id']:
-            user_already_assigned = TaskUser.get(session, user, task_id, input['relation'])
-            if (user_already_assigned):
-                task_user_id_to_remove = user_already_assigned.__dict__["id"]
+        users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id)
+        if (len(input['user_id']) > 0):
+            users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(input['user_id']))
 
-                log, input, untrusted_input = regular_input.master(request = request,
-                                                           spec_list = spec_list)
-                if len(log["error"].keys()) >= 1:
+        for user_to_remove in users_to_remove.all():
+            user_to_remove_id = user_to_remove.__dict__["id"]
+
+            if len(log["error"].keys()) >= 1:
                     return jsonify(log = log), 400
 
-                result, log = task_user_remove_core(
-                    session = session,
-                    task_user_id = task_user_id_to_remove,
-                    project_string_id = project_string_id,
-                    log = log
-                )
+            result, log = task_user_remove_core(
+                session = session,
+                task_user_id = user_to_remove_id,
+                project_string_id = project_string_id,
+                log = log
+            )
 
-                return jsonify(removed = result, log = log)
-                
+        for user in input['user_id']:
+            user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(TaskUser.task_id == task_id).all()
+            if (len(user_already_assigned) > 0):
+                continue
+
             result, log = api_task_user_add_core(
                 session = session,
                 task_id = task_id,

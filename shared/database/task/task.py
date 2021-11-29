@@ -687,8 +687,6 @@ class Task(Base):
         for assignee in task_assignees_query:
             task_assignees.append(assignee.serialize())
 
-        print(task_assignees)
-
         return {
             'id': self.id,
             'task_type': self.task_type,
