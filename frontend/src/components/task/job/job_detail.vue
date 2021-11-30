@@ -356,6 +356,9 @@ export default Vue.extend({
   beforeDestroy() {
     this.job_current_watcher();
   },
+  beforeDestroy() {
+    this.job_current_watcher()
+  },
   methods: {
     reset_local_info() {
       this.job_name = this.$store.state.job.current.name;
