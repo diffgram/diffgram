@@ -155,6 +155,15 @@ def web_export_to_file(project_string_id):
             log["error"]["directory"] = "Invalid directory"
             return jsonify(log = log), 400
 
+        # Caution assumes project.user_primary
+        # Billing check
+        log = check_export_billing(
+            session=session,
+            project=project,
+            directory=directory,
+            member=project.user_primary.member,
+            log=log)
+
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
@@ -271,3 +280,80 @@ def export_web_core(session,
             use_request_context = use_request_context
         )
 
+
+def check_export_billing(
+        session,
+        project,
+        directory,
+        member,
+        log):
+    """
+    If not on paid plan...
+
+    Check if directory instance
+    count is high enough
+    """
+
+    #	if not project.plan:
+    #		log['error']['plan'] = "No billing plan."
+    #		return log
+
+    # If instance count is over...
+
+    # TODO would prefer this to be part of some shared usage thing...
+    # Would like to be able to just call "Active instances" on a thing...
+    # Also assumtion this is Free only, so
+    # should be <100 files...
+
+    # Active instances so dates are only relevant to
+    # use for first 30 days enforcing not deleted?
+
+    if settings.ALLOW_STRIPE_BILLING is False:
+        return log
+
+    if project.plan:
+        if project.plan.template.is_free == False:
+            return log
+
+    # We assume for now that no plan means free plan
+    else:
+        # Careful if it's a large project,
+        # And no other areas / no billing ID it can hang here ina funny way
+        # Put limit of 200 as a temp measure for this.
+        print("On free plan")
+
+        # Free case, could error or success
+        file_list = WorkingDirFileLink.file_list(
+            session=session,
+            working_dir_id=directory.id,
+            type="image",
+            exclude_removed=True,
+            limit=200
+        )
+
+        new_instance_count = 0
+
+        for file in file_list:
+            new_instance_count += Instance.list(
+                session=session,
+                file_id=file.id,
+                exclude_removed=True,
+                return_kind="count")
+
+        if new_instance_count > 100:
+            log['error']['over_free_plan_limit'] = True
+            log['error']['active_instances'] = new_instance_count
+
+            Event.new(
+                kind="export_generation_free_account_over_limit",
+                session=session,
+                member=member,
+                success=False,
+                project_id=project.id
+            )
+
+            return log
+
+        print("Export , active instance count", new_instance_count)
+
+        return log
