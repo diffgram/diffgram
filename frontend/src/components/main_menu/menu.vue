@@ -115,7 +115,9 @@
                         v-bind="attrs"
                         v-on="on"
                       >
-                        <v-btn v-bind="attrs" v-on="on" text>
+                        <v-btn v-bind="attrs" v-on="on"
+                               style="text-transform: none !important;"
+                               text>
                           <h2 v-on="on" class="pa-3">
                             {{ display_projectName }}
                           </h2>
