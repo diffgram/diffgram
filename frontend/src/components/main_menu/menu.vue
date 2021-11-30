@@ -339,6 +339,9 @@ import menu_marketing from './menu_marketing'
   },
   computed: {
     display_projectName: function () {
+      if (!this.$store.state.project.current) {
+        return undefined
+      }
       const project_name = this.$store.state.project.current.name;
       if (project_name && project_name.length >= 16)
         return `${project_name.slice(0, 15)}...`;
