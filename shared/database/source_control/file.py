@@ -387,12 +387,10 @@ class File(Base, Caching):
 
         if self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
-            print('POINNFF', point_cloud_file)
             if point_cloud_file and point_cloud_file.point_cloud:
                 file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
         # Could also get parent file information here too...
-        print('aaaaaa', self.type)
         if self.type == "label":
             if self.label:
 
