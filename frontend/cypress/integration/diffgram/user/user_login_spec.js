@@ -19,6 +19,7 @@ describe('Login Flow tests', function () {
       'annotation_project',
       'annotation_state',
       'attribute',
+      'project_list',
       'auth',
       'builder_or_trainer',
       'error',

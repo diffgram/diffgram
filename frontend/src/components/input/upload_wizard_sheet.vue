@@ -96,11 +96,11 @@
             </div>
 
            <div class="d-flex flex-column mt-12 justify-center align-center">
- 
+
             <h4 class="mb-4 primary--text lighten-2">
                 Want an example to test out?
             </h4>
-          
+
             <v-btn
                 text
                 small
@@ -108,7 +108,7 @@
                 <v-icon left> mdi-download</v-icon>
             Download Sample
             </v-btn>
-                        
+
             </div>
 
             <div class="d-flex flex-column mt-12 justify-center align-center">
@@ -141,7 +141,7 @@
               <v-container fluid class="d-flex align-center justify-center">
 
                 <v_directory_list :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
-                                  :show_text_buttons="true"
+                                  :show_text_buttons="false"
                                   :project_string_id="project_string_id"
                                   @change_directory="on_change_directory"
                                   :show_new="true"
