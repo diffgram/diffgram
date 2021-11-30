@@ -150,6 +150,18 @@ export const public_project = {
     }
   }
 }
+
+export const project_list = {
+  state: {
+    user_projects_list: null
+  },
+  mutations: {
+    set_userProjects_list(state, fetched_projects_list) {
+      state.user_projects_list = fetched_projects_list
+    }
+  }
+}
+
 export const project = {
 
   // TODO merge name and string methods in project
@@ -763,6 +775,7 @@ const my_store = new Vuex.Store({
     media: media,
     annotation_state: annotation_state,
     project: project,
+    project_list: project_list,
     ai: ai,
     labels: labels,
     annotation_assignment: annotation_assignment,

@@ -13,6 +13,33 @@ from shared.database.task.task import TASK_STATUSES
 from shared.utils.task import task_assign_reviewer
 import random
 
+def trigger_task_complete_sync_event(session, task, job, log):
+    sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+        session = session,
+        dataset_source_id = None,
+        dataset_destination = None,
+        description = None,
+        file = task.file,
+        job = task.job,
+        input = None,
+        project = task.job.project,
+        created_task = None,
+        completed_task = task,
+        new_file_copy = None,
+        transfer_action = None,
+        event_effect_type = '',
+        event_trigger_type = 'task_completed',
+        status = 'init',
+        member_created = None
+    )
+    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    if job.completion_directory and job.output_dir_action in ['copy', 'move']:
+        job_observable = task_file_observers.JobObservable(session = session,
+                                                           log = log,
+                                                           job = job,
+                                                           task = task,
+                                                           sync_events_manager = sync_event_manager)
+        job_observable.notify_all_observers(defer = True)
 
 def trigger_task_complete_sync_event(session, task, job, log):
     sync_event_manager = SyncEventManager.create_sync_event_and_manager(
