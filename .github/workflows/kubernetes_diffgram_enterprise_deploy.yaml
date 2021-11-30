@@ -257,7 +257,7 @@ jobs:
           files: 'values.yaml'
         env:
           diffgramVersion: newrelic-${{ github.event.inputs.release }}
-          diffgramEdition: enterprise
+          diffgramEdition: opencore
           diffgramDomain: diffgram.com
           useCertManager: true
           useTls: true
@@ -310,7 +310,7 @@ jobs:
           files: 'values.yaml'
         env:
           diffgramVersion: newrelic-${{ env.BRANCH_NAME }}
-          diffgramEdition: enterprise
+          diffgramEdition: opencore
           diffgramDomain: diffgram.com
           useCertManager: true
           useTls: true
@@ -435,7 +435,7 @@ jobs:
           files: 'values.yaml'
         env:
           diffgramVersion: ${{ github.event.inputs.release }}
-          diffgramEdition: enterprise
+          diffgramEdition: opencore
           diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
           useCertManager: true
           useTls: true
@@ -491,7 +491,7 @@ jobs:
           files: 'values.yaml'
         env:
           diffgramVersion: ${{ env.BRANCH_NAME }}
-          diffgramEdition: enterprise
+          diffgramEdition: opencore
           diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
           useCertManager: true
           useTls: true

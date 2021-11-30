@@ -1389,7 +1389,10 @@ export default Vue.extend( {
           }
 
           await this.go_to_keyframe(frame);
-          this.$refs.video_source_ref.src = this.current_video.file_signed_url;
+          if(this.$refs.video_source_ref){
+            this.$refs.video_source_ref.src = this.current_video.file_signed_url;
+          }
+
         }
         this.$emit('update_canvas');
       }

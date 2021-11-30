@@ -113,7 +113,7 @@
                       >
                       </thumbnail>
                     </div>
-                    
+
 
                 </div>
 
@@ -227,7 +227,9 @@ export default Vue.extend( {
     },
 
     async get_file_with_annotations(last_task_event) {
-
+        if(!last_task_event){
+          return
+        }
         let url = '/api/v1/task/' + last_task_event.task_id + '/annotation/list';
         this.get_annotations_error = {}
         this.get_annotations_loading = true
@@ -244,7 +246,7 @@ export default Vue.extend( {
         finally{
           this.get_annotations_loading = false
         }
-      return 
+      return
     },
 
     api_get_next_task_annotator: async function(){

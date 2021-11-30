@@ -55,7 +55,7 @@
                 </div>
               </div>
               <div v-else>
-                <span v-on="on" style="cursor: pointer">
+                <span v-if="current_user" v-on="on" style="cursor: pointer">
                   Getting data for
                   {{ current_user.first_name }} {{ current_user.last_name }}
                   ...
@@ -128,6 +128,9 @@ export default Vue.extend({
     },
     async update_user_chart() {
       const { job_id } = this.$route.params;
+      if(!job_id){
+        return
+      }
       const { completed, total, in_progress, in_review, requires_changes, instaces_created } = await getJobStatsForUser(job_id, this.show_member_stat);
       const pending = total - completed - in_progress - in_review - requires_changes
       this.user_stats.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];

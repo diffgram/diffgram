@@ -228,6 +228,29 @@
 
           <v-divider></v-divider>
 
+          <v-flex v-if=" $store.state.builder_or_trainer.mode == 'builder'">
+
+            <new_flow
+              :project_string_id="$store.state.project.current.project_string_id">
+
+            </new_flow>
+
+          </v-flex>
+
+          <v-flex>
+
+            <v-btn color="primary"
+                   text
+                   style="text-transform: none !important;"
+                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/flow/list')">
+              <v-icon left>mdi-playlist-check</v-icon>
+              Email Alerts & Webhooks
+            </v-btn>
+
+          </v-flex>
+
+          <v-divider></v-divider>
+
           <v-flex>
             <v-btn color="primary"
                    text
@@ -239,22 +262,6 @@
               </span>
             </v-btn>
           </v-flex>
-
-
-          <!-- Hide while source control stuff is work in progress-->
-          <!--
-          <v-flex>
-            <v-btn color="primary"
-                    text
-                   :disabled="!$store.state.project.current.project_string_id"
-                    @click="route_changes">
-              <span>
-                <v-icon left>mdi-source-branch</v-icon>
-                Source control
-              </span>
-            </v-btn>
-          </v-flex>
-          -->
 
         </v-layout>
       </v-card>
@@ -269,8 +276,15 @@
 
 <script lang="ts">
 
-import Vue from "vue"; export default Vue.extend( {
+import Vue from "vue";
+import new_flow from '../action/action_new_flow.vue'
+
+export default Vue.extend( {
   name: 'main_menu_project',
+
+  components: {
+    new_flow : new_flow
+  },
 
   data() {
     return {
