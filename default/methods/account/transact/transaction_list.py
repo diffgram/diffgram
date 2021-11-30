@@ -15,8 +15,6 @@ from sqlalchemy import func
 import datetime
 
 
-# TODO permissions
-
 @routes.route('/api/v1/transaction/list',
               methods = ['POST'])
 def transaction_list_api():

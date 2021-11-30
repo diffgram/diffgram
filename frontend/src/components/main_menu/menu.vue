@@ -143,17 +143,6 @@
               </div>
             </div>
 
-            <div v-if="$store.state.builder_or_trainer.mode == 'builder'"
-                 class="pa-2">
-              <tooltip_icon
-                  color="primary"
-                  icon="mdi-database"
-                  tooltip_message="Data Platform"
-                  tooltip_direction="bottom"
-                  >
-              </tooltip_icon>
-            </div>
-
 
             <tooltip_button
               tooltip_message="View Pending File Operations"

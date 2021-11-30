@@ -249,6 +249,8 @@
 
           </v-flex>
 
+          <v-divider></v-divider>
+
           <v-flex>
             <v-btn color="primary"
                    text
@@ -260,22 +262,6 @@
               </span>
             </v-btn>
           </v-flex>
-
-
-          <!-- Hide while source control stuff is work in progress-->
-          <!--
-          <v-flex>
-            <v-btn color="primary"
-                    text
-                   :disabled="!$store.state.project.current.project_string_id"
-                    @click="route_changes">
-              <span>
-                <v-icon left>mdi-source-branch</v-icon>
-                Source control
-              </span>
-            </v-btn>
-          </v-flex>
-          -->
 
         </v-layout>
       </v-card>
