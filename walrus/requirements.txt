@@ -33,3 +33,4 @@ azure-storage-blob==12.8.0
 git+https://github.com/DanielPollithy/pypcd.git
 psutil==5.6.6
 SQLAlchemy-serializer==1.4.1
+newrelic
