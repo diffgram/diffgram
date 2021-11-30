@@ -1102,7 +1102,6 @@ class Process_Media():
             return
 
         try:
-            print('comit...')
             self.session.commit()
         except:
             self.session.rollback()
