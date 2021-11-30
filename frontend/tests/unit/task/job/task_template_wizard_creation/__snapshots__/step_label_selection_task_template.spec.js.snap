@@ -1,19 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`step_label_selection_task_template.vue Renders component correctly. 1`] = `
-<v-container fluid="" data-cy="task-template-labels-step">
-  <div class="d-flex mb-8 justify-space-between">
-    <h1 data-cy="step-labels-title" class="font-weight-medium text--primary mr-4">
-      What labels should be visible?
-    </h1>
-    <tooltip_button data-cy="manage-labels-button" tooltip_message="Quick Edit Project Level Schema" button_color="primary" icon="mdi-format-paint" button_message="Manage Labels &amp; Attributes" color="white"></tooltip_button>
-  </div>
-  <v_error_multiple error="[object Object]"></v_error_multiple>
-  <p class="text--primary">
-    Select The Labels to Use on This Task Template. All are selected by default.
-  </p>
-  <label_select_only-stub mode="multiple" datacy="label-select" select_all_at_load="true" show_select_all="true" label_prompt="Schema Selected For Tasks"></label_select_only-stub>
-  <wizard_navigation></wizard_navigation>
-  <label_manager_dialog-stub></label_manager_dialog-stub>
-</v-container>
+VueWrapper {
+  "_emitted": Object {},
+  "_emittedByOrder": Array [],
+  "isFunctionalComponent": undefined,
+}
 `;

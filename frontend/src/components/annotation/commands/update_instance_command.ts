@@ -7,8 +7,12 @@ const CLASS_INSTANCE_TYPES = [
   'cuboid_3d'
 ]
 
+interface ComponentWithInstanceList extends Vue {
+ instance_list: any[]
+}
+
 export class UpdateInstanceCommand {
-  public ann_core_ctx: Vue;
+  public ann_core_ctx: ComponentWithInstanceList;
   public scene_controller_3d: SceneController3D;
   public old_instance: Instance;
   public instance: Instance;
@@ -78,7 +82,7 @@ export class UpdateInstanceCommand {
     }
   }
 
-  constructor(instance: Instance, instance_index: number, old_instance: Instance, ann_core_ctx: Vue, scene_controller_3d: SceneController3D = undefined) {
+  constructor(instance: Instance, instance_index: number, old_instance: Instance, ann_core_ctx: ComponentWithInstanceList, scene_controller_3d: SceneController3D = undefined) {
     this.ann_core_ctx = ann_core_ctx;
     this.scene_controller_3d = scene_controller_3d;
     this.old_instance = this._copyInstance(old_instance);

@@ -10,8 +10,10 @@ module.exports = {
     + "|another-module"
     + "|yet-another-module"
     + ")/)",
+    "src/components/annotation/userscript/codemirror.css"
   ],
   "modulePaths": ["<rootDir>/src"],
+  roots: ["<rootDir>/tests/"],
   moduleNameMapper: {
     "@/(.*)": "<rootDir>/src/$1",
   },

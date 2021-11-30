@@ -1,11 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`context_menu_instance_template.vue Renders component correctly. 1`] = `
-<div class="context-menu" style="top: -1000px; left: -1000px;">
-  <v-card max-width="300" tile="" class="mx-auto">
-    <!---->
-    <!---->
-    <!---->
-  </v-card>
-</div>
+VueWrapper {
+  "_emitted": Object {},
+  "_emittedByOrder": Array [],
+  "isFunctionalComponent": undefined,
+}
 `;
