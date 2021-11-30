@@ -290,8 +290,15 @@
 
 <script lang="ts">
 
-import Vue from "vue"; export default Vue.extend( {
+import Vue from "vue";
+import new_flow from '../action/action_new_flow.vue'
+
+export default Vue.extend( {
   name: 'main_menu_project',
+
+  components: {
+    new_flow : new_flow
+  },
 
   data() {
     return {
