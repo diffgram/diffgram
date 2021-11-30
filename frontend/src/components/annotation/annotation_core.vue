@@ -2276,7 +2276,6 @@ export default Vue.extend({
       for (let i = 0; i < this.instance_list.length; i++) {
         let instance = this.instance_list[i];
         if (!instance.id) {
-          console.log('check_if_pending_created_instance tureeeee')
           this.has_changed = true;
         }
       }
