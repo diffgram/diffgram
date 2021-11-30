@@ -339,7 +339,7 @@ import menu_marketing from './menu_marketing'
   },
   computed: {
     display_projectName: function () {
-      if (!this.$store.state.project.current) {
+      if (!this.$store.state.project || !this.$store.state.project.current) {
         return undefined
       }
       const project_name = this.$store.state.project.current.name;
