@@ -33,6 +33,11 @@ jobs:
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
+
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile.newrelic
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:newrelic-${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
+
   Publish-Walrus-Docker-Image:
     runs-on: ubuntu-latest
     container:
@@ -62,6 +67,10 @@ jobs:
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
+
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile.newrelic
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:newrelic-${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
   Publish-Frontend-Docker-Image:
     runs-on: ubuntu-latest
@@ -93,6 +102,10 @@ jobs:
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
+
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:newrelic-${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
   Publish-Dispatcher-Docker-Image:
     runs-on: ubuntu-latest
     container:
@@ -122,4 +135,8 @@ jobs:
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher
+
+        docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:newrelic-${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher

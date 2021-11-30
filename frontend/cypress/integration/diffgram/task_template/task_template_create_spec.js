@@ -61,7 +61,6 @@ describe('Task Template Creation', () => {
       cy.get('[data-cy="task-template-users-step-title"]').should('be.visible')
       cy.get('[data-cy="task-template-users-step-subtitle"]').should('be.visible')
       cy.get('[data-cy="member-select"]').should('be.visible')
-
     })
 
     it('Correctly Selects a User and goes to next step', () => {
@@ -71,7 +70,21 @@ describe('Task Template Creation', () => {
       cy.get('.v-list-item.v-list-item--link').contains(testUser.first_name + ' ' + testUser.last_name).click({force: true})
       cy.get('[data-cy="task-template-users-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
+    })
 
+    it('Correctly Shows Reviewers Step in Wizard', () => {
+      cy.get('[data-cy="task-template-reviewer-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-reviewer-step-title"]').should('be.visible')
+      cy.get('[data-cy="task-template-reviewer-radio-yes"]').should('exist')
+      cy.get('[data-cy="task-template-reviewer-radio-no"]').should('exist')
+    })
+
+    it('Correctly sets reviews to 100%', () => {
+      cy.intercept(url).as('update_job')
+      cy.get('[data-cy="task-template-reviewer-radio-yes"]').click({force: true})
+      cy.get('[data-cy="task-template-reviewer-review-all"]').click({force: true})
+      cy.get('[data-cy="task-template-reviewer-step"] [data-cy="wizard_navigation_next"]').click({force: true});
+      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })
 
     it('Correctly Shows Upload Step', () => {
@@ -83,7 +96,6 @@ describe('Task Template Creation', () => {
       cy.intercept(url).as('update_job')
       cy.get('[data-cy="task-template-upload-step"] [data-cy="wizard_navigation_next"]').click({force: true});
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
-
 
     })
 
