@@ -10,12 +10,14 @@ module.exports = {
     + "|another-module"
     + "|yet-another-module"
     + ")/)",
-    "src/components/annotation/userscript/codemirror.css"
+
   ],
   "modulePaths": ["<rootDir>/src"],
   roots: ["<rootDir>/tests/"],
   moduleNameMapper: {
+    "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js",
     "@/(.*)": "<rootDir>/src/$1",
+
   },
   globals: {
     "ts-jest": {
