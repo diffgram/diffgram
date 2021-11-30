@@ -1,7 +1,13 @@
 <template>
 <div v-cloak>
 <v-layout column>
-  <h1>Video Editor Hotkeys</h1>
+  <h2> 3D/Sensor Fusion Hotkeys</h2>
+
+  <p> <kbd>T</kbd> Change Transform tool when instance selected (Translate, Rotate, Scale) </p>
+
+  <p> <kbd>C</kbd> Center Camera </p>
+  <p> <kbd>WASD</kbd> Move </p>
+
   <h2> General </h2>
 
   Right click an instance to bring up context menu.
@@ -12,7 +18,6 @@
   <p> <kbd>Double Click</kbd> Deselect selected instance </p>
 
   <p> <kbd>W</kbd> Toggle Label Menu </p>
-  <p> <kbd>X</kbd> Change Transform tool when instance selected (Translate, Rotate, Scale) </p>
   <p> <kbd>H</kbd> Hide/Show All Instances in File. </p>
   <p> <kbd>Shift + T</kbd>Remove/Add Instance Transparency </p>
   <p> <kbd>G</kbd> Toggle Ghost Instances </p>

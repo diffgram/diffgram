@@ -26,6 +26,9 @@ class SensorFusionFileProcessor:
         if self.input.temp_dir_path_and_filename is None:
             self.log['error']['json_file_path'] = 'temp_dir_path_and_filename is None.Needs to exists for loading JSON.'
 
+        self.input.status = "processing"
+        self.try_to_commit()
+
         with open(self.input.temp_dir_path_and_filename) as json_data:
             sensor_fusion_spec = json.load(json_data)
 
@@ -126,3 +129,11 @@ class SensorFusionFileProcessor:
         self.__add_file_to_input(sensor_fusion_file)
 
         return True, self.log
+
+
+    def try_to_commit(self):
+        try:
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise

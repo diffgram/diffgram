@@ -313,6 +313,7 @@
                         </div>
 
                         <div v-if="props.item.update_log &&
+                                   props.item.update_log.error &&
                                    Object.keys(props.item.update_log.error).length">
                           <h4>Log: </h4>
 
