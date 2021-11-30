@@ -31,3 +31,4 @@ azure-storage-blob==12.8.0
 lark
 SQLAlchemy-serializer==1.4.1
 stripe==2.33.2
+newrelic
