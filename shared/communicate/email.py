@@ -8,6 +8,7 @@ class Communicate_Via_Email():
     def __init__(self):
         self.domain_name = settings.EMAIL_DOMAIN_NAME
         self.api_key = settings.MAILGUN_KEY
+        self.reply_to = settings.EMAIL_REPLY_TO
 
     def send(self, email, subject, message, email_list = []):
 
@@ -18,11 +19,10 @@ class Communicate_Via_Email():
                                                                                       email_list],
                                      "subject": str(subject),
                                      "text": str(message),
-                                     "h:Reply-To": "change_me@yourdomain_change_me.com"
+                                     "h:Reply-To": self.reply_to
                                      }
                              )
 
-        print('email sentt', result, result.text, result.content)
         return result
 
 
