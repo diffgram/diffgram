@@ -616,6 +616,7 @@
         }
         let current_frame = undefined;
         let instance_list = this.instance_list.map(inst => inst.get_instance_data());
+
         if(this.get_save_loading(current_frame)){
           // If we have new instances created while saving. We might still need to save them after the first
           // save has been completed.
@@ -692,7 +693,7 @@
             gold_standard_file: this.gold_standard_file,    // .instance_list gets updated ie missing
             video_data: video_data
           })
-
+          console.log('response', response);
           this.save_count += 1;
           add_ids_to_new_instances_and_delete_old(response, video_data, this.instance_list, this.$props.video_mode)
 
