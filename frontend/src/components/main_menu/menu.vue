@@ -121,9 +121,9 @@
                           </h2>
                         </v-btn>
                       </template>
-                      <v-list v-if="$store.state.project_list && $store.state.project_list
-                            .user_projects_list && $store.state.project_list
-                            .user_projects_list.length > 1">
+                      <v-list v-if="$store.state.project_list &&
+                              $store.state.project_list.user_projects_list &&
+                              $store.state.project_list.user_projects_list.length > 1">
                         <v-list-item
                           style="cursor: pointer"
                           v-for="project in $store.state.project_list
@@ -318,8 +318,7 @@ import menu_marketing from './menu_marketing'
       title: "Diffgram",
       project_menu: false,
       project_manager_dialog: false,
-      pending_files_dialog_is_open: false,
-      brain_menu: false,
+      pending_files_dialog_is_open: false
     };
   },
   computed: {
@@ -366,7 +365,8 @@ import menu_marketing from './menu_marketing'
     if (
       !this.$store.state.project_list || 
       this.$store.state.project_list.user_projects_list || 
-      this.$store.state.project_list.user_projects_list.length === 0
+      (this.$store.state.project_list.user_projects_list &&
+        this.$store.state.project_list.user_projects_list.length === 0)
       ) {
       this.get_avalible_projects()
     }
