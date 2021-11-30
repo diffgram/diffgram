@@ -4,7 +4,7 @@ from shared.helpers.permissions import getUserID
 from shared.database import hashing_functions
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
-
+from shared.database.account.plan import Plan
 
 class User(Base):
     __tablename__ = 'userbase'
@@ -148,6 +148,10 @@ class User(Base):
     signup_role = Column(String())  # ie [leadership, product, engineering, student, other]
     signup_demo = Column(String())  # ie [yes, sales, not_yet]
     signup_how_many_data_labelers = Column(String())
+
+    default_plan_id = Column(Integer, ForeignKey('plan.id'))
+    default_plan = relationship(Plan,
+                                foreign_keys = [default_plan_id])
 
     def get_profile_image_url(self):
         if (self.profile_image_expiry is None or self.profile_image_expiry <= time.time()) and self.profile_image_blob:

@@ -1,10 +1,12 @@
 from methods.regular.regular_api import *
 from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
+from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
 from methods.input.packet import enqueue_packet
 
+
 @routes.route('/api/walrus/v1/interservice/receive',
-              methods=['POST'])
+              methods = ['POST'])
 def interservice_receive_api():
     """
     Inter-Service route to notify of new job launch
@@ -60,7 +62,7 @@ def interservice_receive_api():
     log, input_from_request, untrusted_input = regular_input.master(request = request, spec_list = spec_list)
 
     if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
+        return jsonify(log = log), 400
 
     logger.info("Received valid inter service request")
 
@@ -69,7 +71,6 @@ def interservice_receive_api():
         # CAUTIONS
         # Generally assumes any calls here are non blocking
         # So as to reasonably return   
-        
 
         # eg 1) Condition on message then some_launcher(event_id = input['id'])
 
@@ -80,11 +81,21 @@ def interservice_receive_api():
         #        session = session)
 
         if input_from_request['message'] == 'new_job_launch_queue_item':
-            job_launcher_thread = TaskTemplateLauncherThread(run_once=True)
+            job_launcher_thread = TaskTemplateLauncherThread(run_once = True)
             log['info']['job_launcher_thread'] = True
         if input_from_request['message'] == 'new_sync_action_item':
-            sync_action_thread = SyncActionsHandlerThread(run_once=True)
+            sync_action_thread = SyncActionsHandlerThread(run_once = True)
             log['info']['job_launcher_thread'] = True
+
+        if input_from_request['message'] == 'new_action_flow_queue_item':
+
+            num_flows = ActionFlowTriggerQueueThread.try_to_enqueue_new_action_flows(
+                session = session,
+                event_id = input_from_request['id'],
+                commit_per_element = True)
+            for i in range(0, num_flows):
+                action_flow_thread = ActionFlowTriggerQueueThread(run_once = True)
+
         if input_from_request['message'] == 'video_copy':
             enqueue_packet(project_string_id = input_from_request.get('project_string_id'),
                            session = session,
@@ -102,7 +113,7 @@ def interservice_receive_api():
                            video_parent_length = input_from_request['extra_params'].get('frame_count'),
                            task_id = None,
                            mode = 'copy_file',
-                           commit_input=True)
+                           commit_input = True)
         if input_from_request['message'] == 'image_copy':
             enqueue_packet(project_string_id = input_from_request.get('project_string_id'),
                            session = session,
@@ -120,7 +131,7 @@ def interservice_receive_api():
                            video_parent_length = None,
                            task_id = None,
                            mode = 'copy_file',
-                           commit_input=True)
+                           commit_input = True)
 
         log['success'] = True
-        return jsonify(log=log), 200
+        return jsonify(log = log), 200
