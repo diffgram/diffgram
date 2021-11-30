@@ -4,6 +4,11 @@ def do_routes_importing():
     from methods.attribute.attribute import api_attribute_update_or_new
     from methods.attribute.attribute_template_group_update import api_attribute_template_group_update
 
+    from methods.action.action import api_action_update_or_new
+    from methods.action.action_flow import new_flow_factory_api
+    from methods.action.action_flow_update import api_flow_update
+    from methods.action.action_list import api_action_list
+
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
 
@@ -13,6 +18,14 @@ def do_routes_importing():
     from methods.user import confirmation_token
 
     from methods.task.task.task_by_id import task_by_id_api
+
+    # Stripe Billing Related
+    from methods.account.transact.transaction_list import transaction_list_api
+    from methods.account.billing.billing_stripe_new import stripe_new_customer_api
+    from methods.account.report.report_transactions import account_report_transactions_api
+    from methods.account.account.account_info import account_report_info_api
+    from methods.account.plan.plan_new import new_plan_api
+
 
     from methods.task.task_template.job_pin import job_pin_api
     from methods.task.task_template.job_resync import job_resync_api

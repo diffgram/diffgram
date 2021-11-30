@@ -44,8 +44,8 @@
             <v-card-title>You're in great company</v-card-title>
 
             <v-card-text>
-              Join over 5,000 users who have created over 2,000 projects
-              and 3.5 million annotations with Diffgram.
+              Join over 6,000 users who have created over 3,000 projects
+              and 50 million annotations with Diffgram.
             </v-card-text>
 
           </v-card>

@@ -3,7 +3,11 @@
 
   <div  v-if="$store.state.user.logged_in==false">
     <ahref_seo_optimal href="/user/login/">
-      <v-btn text>Login</v-btn>
+      <v-btn text
+             style="text-transform: none !important;"
+             >
+        Login
+      </v-btn>
     </ahref_seo_optimal>
   </div>
 

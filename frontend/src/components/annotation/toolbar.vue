@@ -212,18 +212,21 @@
       >
       </tooltip_button>
 
-      <ui_schema name="edit_instance_template">
-        <tooltip_button
-          tooltip_message="Edit Instance Template"
-          v-if="instance_template_selected && is_keypoint_template"
-          @click="$emit('open_instance_template_dialog')"
-          color="primary"
-          icon="mdi-vector-polyline-edit"
-          :icon_style="true"
-          :bottom="true"
-        >
-        </tooltip_button>
-      </ui_schema>
+    <!-- Known bug when edited directly in studio context -->
+    <!--
+    <ui_schema name="edit_instance_template">
+      <tooltip_button
+        tooltip_message="Edit Instance Template"
+        v-if="instance_template_selected && is_keypoint_template"
+        @click="$emit('open_instance_template_dialog')"
+        color="primary"
+        icon="mdi-vector-polyline-edit"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
+    </ui_schema>
+    -->
 
       <v-divider vertical></v-divider>
 

@@ -576,10 +576,14 @@ class Annotation_Update():
         # For now there is no extra init needed if it's an image
         if self.file.type == "image":
             if self.force_lock:
-                self.file = File.get_by_id(session = self.session,
-                                           file_id = self.file.id,
-                                           with_for_update = True,
-                                           nowait = True)
+                try:
+                    self.file = File.get_by_id(session = self.session,
+                                               file_id = self.file.id,
+                                               with_for_update = True,
+                                               nowait = True)
+                except Exception as e:
+                    self.log['error']['file_lock'] = "File is locked or being saved by another user, please try saving again."
+                    self.log['error']['trace'] = traceback.format_exc()
             return
 
         if self.file.type == "video":

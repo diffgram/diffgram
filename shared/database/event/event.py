@@ -6,6 +6,7 @@ import threading
 import requests
 import shared.helpers.sessionMaker as sessionMaker
 from shared.helpers.sessionMaker import AfterCommitAction
+import shared.database.action.action_flow_trigger_event as action_flow_trigger_event
 
 logger = get_shared_logger()
 # The extra imports are only needed if they haven't already been
@@ -43,7 +44,7 @@ class Event(Base):
     
     """
 
-    id = Column(BIGINT, primary_key=True)
+    id = Column(BIGINT, primary_key = True)
 
     kind = Column(String())
 
@@ -79,7 +80,7 @@ class Event(Base):
     job = relationship("Job")
 
     member_id = Column(Integer, ForeignKey('member.id'))
-    member = relationship('Member', foreign_keys=[member_id])
+    member = relationship('Member', foreign_keys = [member_id])
 
     file_id = Column(Integer, ForeignKey('file.id'))
     file = relationship("File")
@@ -97,7 +98,7 @@ class Event(Base):
     diffgram_version = Column(String)
 
     # We don't need an "update" since this is meant to be a static record??
-    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
 
     def serialize(self):
         return {
@@ -143,32 +144,32 @@ class Event(Base):
 
     @staticmethod
     def get_by_id(
-            id: int,
-            session):
+        id: int,
+        session):
 
         if id is None: return False
 
         return session.query(Event).filter(Event.id == id).first()
 
     @staticmethod
-    def new_deferred(session=None,
-                     kind=None,
-                     member_id=None,
-                     success=None,
-                     error_log=None,
-                     description=None,
-                     link=None,
-                     project_id=None,
-                     task_id=None,
-                     job_id=None,
-                     run_time=None,
-                     email=None,
-                     member=None,
-                     input_id=None,
-                     add_to_session=True,
-                     flush_session=True,
-                     file_id=None,
-                     wait_for_commit=True):
+    def new_deferred(session = None,
+                     kind = None,
+                     member_id = None,
+                     success = None,
+                     error_log = None,
+                     description = None,
+                     link = None,
+                     project_id = None,
+                     task_id = None,
+                     job_id = None,
+                     run_time = None,
+                     email = None,
+                     member = None,
+                     input_id = None,
+                     add_to_session = True,
+                     flush_session = True,
+                     file_id = None,
+                     wait_for_commit = True):
         """
         Keyword Arg Note:
             Any keyword args added here will be propagated to
@@ -199,9 +200,9 @@ class Event(Base):
             if wait_for_commit:
                 event_args.pop('wait_for_commit', None)
                 if kind in ['task_created', 'task_completed', 'input_file_uploaded', 'task_template_completed']:
-                    AfterCommitAction(session=session,
-                                      callback=Event.__launch_new_event_threaded,
-                                      callback_args=event_args)
+                    AfterCommitAction(session = session,
+                                      callback = Event.__launch_new_event_threaded,
+                                      callback_args = event_args)
             else:
                 Event.__launch_new_event_threaded(**event_args)
         except Exception as exception:
@@ -217,37 +218,58 @@ class Event(Base):
             event_id = int(event.id)
             event_kind = event.kind
 
+        # Outside with block because we need to commit the session so walrus can access it.
+        Event.__may_create_ActionTriggerEvent(
+            event_id = event_id,
+            event_kind = event_kind)
+
+    def __may_create_ActionTriggerEvent(
+        event_id: int,
+        event_kind: str):
+
+        if not event_id: return
+
+        if event_kind in action_flow_trigger_event.SUPPORTED_ACTION_TRIGGER_EVENT_TYPES:
+            regular_methods.transmit_interservice_request(
+                message = 'new_action_flow_queue_item',
+                logger = logger,
+                service_target = 'walrus',
+                id = event_id,
+                base_class_string = 'Event')
+
+            logger.debug('Sent interservice request for Event: {}'.format(event_id))
+
     @staticmethod
     def __launch_new_event_threaded(**kwargs):
         t = threading.Thread(
-            target=Event.__new_event_threaded,
-            kwargs=locals().get('kwargs'))
+            target = Event.__new_event_threaded,
+            kwargs = locals().get('kwargs'))
         t.daemon = True  # Allow hot reload to work
         t.start()
 
     @staticmethod
     def new(session,
-            kind=None,
-            member_id=None,
-            success=None,
-            error_log=None,
-            description=None,
-            link=None,
-            project_id=None,
-            task_id=None,
-            run_time=None,
-            page_name=None,
-            object_type=None,
-            job_id=None,
-            email=None,
-            member=None,
-            input_id=None,
-            file_id=None,
-            report_data=None,
-            report_template_id=None,
-            report_template_data=None,
-            add_to_session=True,
-            flush_session=True
+            kind = None,
+            member_id = None,
+            success = None,
+            error_log = None,
+            description = None,
+            link = None,
+            project_id = None,
+            task_id = None,
+            run_time = None,
+            page_name = None,
+            object_type = None,
+            job_id = None,
+            email = None,
+            member = None,
+            input_id = None,
+            file_id = None,
+            report_data = None,
+            report_template_id = None,
+            report_template_data = None,
+            add_to_session = True,
+            flush_session = True
             ):
         """
         Generally we always want a member_id
@@ -275,23 +297,23 @@ class Event(Base):
                 email = user.email
 
         event = Event(
-            kind=kind,
-            member_id=member_id,
-            success=success,
-            error_log=error_log,
-            description=description,
-            link=link,
-            project_id=project_id,
-            task_id=task_id,
-            job_id=job_id,
-            run_time=run_time,
-            object_type=object_type,
-            input_id=input_id,
-            file_id=file_id,
-            report_data=report_data,
-            report_template_id=report_template_id,
-            report_template_data=report_template_data,
-            page_name=page_name,
+            kind = kind,
+            member_id = member_id,
+            success = success,
+            error_log = error_log,
+            description = description,
+            link = link,
+            project_id = project_id,
+            task_id = task_id,
+            job_id = job_id,
+            run_time = run_time,
+            object_type = object_type,
+            input_id = input_id,
+            file_id = file_id,
+            report_data = report_data,
+            report_template_id = report_template_id,
+            report_template_data = report_template_data,
+            page_name = page_name,
         )
         if add_to_session:
             session.add(event)
@@ -320,11 +342,11 @@ class Event(Base):
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'user'
-            result = requests.post(settings.EVENTHUB_URL, json=event_data)
+            result = requests.post(settings.EVENTHUB_URL, json = event_data)
             if result.status_code == 200:
                 logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
             else:
-                #print(result, result.text)
+                # print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
         except Exception as e:
@@ -361,8 +383,8 @@ class Event(Base):
 
     @staticmethod
     def track_user(
-            event,
-            email=None):
+        event,
+        email = None):
         # Validate an event exists.
         if event is None:
             return
@@ -384,10 +406,10 @@ class Event(Base):
             props.update(event.error_log)
         try:
             analytics.track(
-                user_id=event.member_id,
-                event=event.kind,
-                properties=props,
-                context={
+                user_id = event.member_id,
+                event = event.kind,
+                properties = props,
+                context = {
                     'traits': {
                         event.kind: True
                     }
@@ -399,14 +421,14 @@ class Event(Base):
 
     @staticmethod
     def list(
-            session,
-            project_id: int,
-            limit: int = 10,
-            kind: str = None,
-            member_id: int = None,
-            date_from_string: str = None,
-            date_to_string: str = None,
-            file_id: int = None):
+        session,
+        project_id: int,
+        limit: int = 10,
+        kind: str = None,
+        member_id: int = None,
+        date_from_string: str = None,
+        date_to_string: str = None,
+        file_id: int = None):
 
         """
         """
@@ -427,10 +449,10 @@ class Event(Base):
             query = query.filter(Event.member_id == member_id)
 
         query = regular_methods.regular_query(
-            query=query,
-            date_from_string=date_from_string,
-            date_to_string=date_to_string,
-            base_class=Event
+            query = query,
+            date_from_string = date_from_string,
+            date_to_string = date_to_string,
+            base_class = Event
         )
         print(date_from_string)
 
