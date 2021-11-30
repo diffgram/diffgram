@@ -9,15 +9,12 @@ const routerOptions = [
     alias: ['/training_data', '/training_data_software', '/os', '/marketing/os'],
     meta: {external_page: true}
   },
-  // {
-  //   path: '/',
-  //   component: 'user/home/dashboard',
-  //   props: false,
-  //   meta: {
-  //     requiresAuth: true,
-  //     title: "Dashboard"
-  //   }
-  // },
+  {
+    path: '/enterprise/contact',
+    alias: ['/contact'],
+    component: 'products/builder/enterprise_contact_us',
+    meta: {external_page: true}
+  },
   {
     path: '/what_is_tdm',
     component: 'marketing/what_is_tdm',
@@ -100,13 +97,6 @@ const routerOptions = [
     meta: {requiresAuth: false}
   },
   {
-    path: '/diffgram-vs-labelbox',
-    alias: ['/labelbox'],
-    component: 'marketing/marketing_vs_labelbox',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
     path: '/why_diffgram',
     component: 'marketing/why_diffgram',
     alias: ['/why'],
@@ -137,11 +127,6 @@ const routerOptions = [
   {
     path: '/versioning',
     component: 'marketing/marketing_versioning',
-    meta: {external_page: true}
-  },
-  {
-    path: '/training_data/contact',
-    component: 'marketing/training_data_contact',
     meta: {external_page: true}
   },
   {
@@ -340,14 +325,7 @@ const routerOptions = [
     props: true,
     meta: {requiresAuth: true}
   },
-  /*
-   * Feb 13, 2020
-   *  May prefer the alias to go to dashboard
-   *  but would need update how we handle changing
-   *  values (ie that it changes
-   *  the project from the URL)
-   *
-   */
+
   {
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
@@ -454,21 +432,7 @@ const routerOptions = [
     props: true,
     meta: {requiresAuth: true}
   },
-  {
-    path: '/project/:project_string_id/ml/home/',
-    component: 'machine_learning/home',
-    props: true, meta: {requiresAuth: true}
-  },
-  {
-    path: '/project/:project_string_id/version/:version_id/view/',
-    component: 'machine_learning/view_version',
-    props: true, meta: {requiresAuth: true}
-  },
-  {
-    path: '/project/:project_string_id/ml/new/:video_id?',
-    component: 'machine_learning/new',
-    props: true, meta: {requiresAuth: true}
-  },
+
   {
     path: '/project/:project_string_id/annotation_project/new',
     component: 'annotation/annotation_project_create',
@@ -596,7 +560,10 @@ const routerOptions = [
     path: '/home/dashboard',
     component: 'user/home/dashboard',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Dashboard"
+      }
   },
   {
     path: '/software',
@@ -623,6 +590,7 @@ const routerOptions = [
 
   {
     path: '/user/new',
+    alias: ['/user/data_platform/new'],
     component: 'user/account/user_data_platform_new',
     props: false,
     meta: {

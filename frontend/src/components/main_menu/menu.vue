@@ -244,6 +244,31 @@
           </tooltip_button>
 
 
+          <ahref_seo_optimal href="/contact"                       
+                   v-if="!$store.state.org.current.id &&
+                       $store.state.builder_or_trainer.mode == 'builder'"
+                             >
+            <v-btn color="primary"
+                   text
+                   style="text-transform: none !important;"
+                   >
+              Book A Demo
+            </v-btn>
+          </ahref_seo_optimal>
+
+          <ahref_seo_optimal href="/user/data_platform/new">
+            <v-btn color="primary"
+                   outlined
+                   class="hidden-sm-and-down"
+                   style="text-transform: none !important;"
+                   v-if="$store.state.user.logged_in != true"
+                   >
+              Try Now
+            </v-btn>
+          </ahref_seo_optimal>
+
+
+
 
           <ahref_seo_optimal href="/user/new">
             <v-btn color="primary"
