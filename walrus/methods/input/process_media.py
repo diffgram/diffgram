@@ -609,7 +609,9 @@ class Process_Media():
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
-            self.input.update_log = {'existing_file_id': existing_file_list[0].id}
+            self.input.update_log = {'error' : {
+                'existing_file_id': existing_file_list[0].id}
+            }
             return False
 
         return True
