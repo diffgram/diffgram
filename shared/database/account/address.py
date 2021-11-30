@@ -10,9 +10,9 @@ class Address(Base):
 
 	id = Column(Integer, primary_key=True)
 
-	line_1 = Column(String)		# Number,   2900
-	line_2 = Column(String)		# Street name,  Hearth Pl
-	line_3 = Column(String)		# Building, Floor, and UNit,  APT 128
+	line_1 = Column(String)		# Number,   100
+	line_2 = Column(String)		# Street name,  Road Pl
+	line_3 = Column(String)		# Building, Floor, and UNit,  APT 1
 	line_4 = Column(String)		# Optional
 
 	locality = Column(String)	# City,  Santa Clara
