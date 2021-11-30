@@ -77,7 +77,7 @@
                     </main_menu_project>
 
                     <v-btn v-if="$store.state.builder_or_trainer.mode == 'builder'"
-                           :disabled="!$store.state.project.current.project_string_id"
+                           :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
                            text
                            @click="$router.push('/job/list')">
                       <v-icon left>mdi-brush</v-icon>
@@ -128,8 +128,7 @@
                               $store.state.project_list.user_projects_list.length > 1">
                         <v-list-item
                           style="cursor: pointer"
-                          v-for="project in $store.state.project_list
-                            .user_projects_list.filter(project => project.project_string_id != this.$store.state.project.current.project_string_id)"
+                          v-for="project in user_project_list"
                           :key="project.id"
                         >
                           <v-list-item-title @click="change_project(project)">{{
@@ -152,6 +151,7 @@
               icon="mdi-file-clock"
               v-if="$store.state.builder_or_trainer.mode == 'builder'
                     && $store.state.user.logged_in == true
+                    && $store.state.project
                     && $store.state.project.current.project_string_id"
               :icon_style="true"
               :bottom="true"
@@ -168,17 +168,17 @@
 
           <div v-if="$store.state.user.logged_in == true
                   && $store.state.builder_or_trainer.mode == 'builder'">
-            <div v-if="$store.state.project.current">
+            <div v-if="$store.state.project && $store.state.project.current">
 
               <!-- set_user_is_typing_or_menu_open  is lock for hotkeys!! -->
 
-              <v-dialog :disabled="!$store.state.project.current.project_string_id"
+              <v-dialog :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
                         @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
                         width="800">
 
                 <template v-slot:activator="{ on }">
                   <v-btn v-on="on"
-                          :disabled="!$store.state.project.current.project_string_id"
+                          :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
                           @click="$store.commit('set_user_is_typing_or_menu_open', true)"
                           text
                           >
@@ -197,7 +197,7 @@
 
           <button_with_menu
                 tooltip_message="Super Admin Menu"
-                v-if="$store.state.user.current.is_super_admin == true"
+                v-if="$store.state.user && $store.state.user.current.is_super_admin == true"
                 icon="mdi-account-supervisor"
                 :close_by_button="true"
                 color="primary"
@@ -244,8 +244,8 @@
           </tooltip_button>
 
 
-          <ahref_seo_optimal href="/contact"                       
-                   v-if="!$store.state.org.current.id &&
+          <ahref_seo_optimal href="/contact"
+                   v-if="$store.state.org && !$store.state.org.current.id &&
                        $store.state.builder_or_trainer.mode == 'builder'"
                              >
             <v-btn color="primary"
@@ -338,6 +338,15 @@ import menu_marketing from './menu_marketing'
     };
   },
   computed: {
+    user_project_list: function(){
+      let user_project_list = this.$store.state.project_list.user_projects_list;
+      if( this.$store.state.project &&  this.$store.state.project.current){
+        user_project_list = user_project_list.filter(
+          project => project.project_string_id != this.$store.state.project.current.project_string_id
+        )
+      }
+      return user_project_list
+    },
     display_projectName: function () {
       if (!this.$store.state.project || !this.$store.state.project.current) {
         return undefined
@@ -382,8 +391,8 @@ import menu_marketing from './menu_marketing'
   },
   mounted() {
     if (
-      !this.$store.state.project_list || 
-      this.$store.state.project_list.user_projects_list || 
+      !this.$store.state.project_list ||
+      this.$store.state.project_list.user_projects_list ||
       (this.$store.state.project_list.user_projects_list &&
         this.$store.state.project_list.user_projects_list.length === 0)
       ) {
