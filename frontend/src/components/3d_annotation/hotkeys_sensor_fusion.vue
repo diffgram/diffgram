@@ -5,6 +5,9 @@
 
   <p> <kbd>T</kbd> Change Transform tool when instance selected (Translate, Rotate, Scale) </p>
 
+  <p> <kbd>C</kbd> Center Camera </p>
+  <p> <kbd>WASD</kbd> Move </p>
+
   <h2> General </h2>
 
   Right click an instance to bring up context menu.
