@@ -406,6 +406,7 @@ import menu_marketing from './menu_marketing'
       } else {
         this.$store.commit("set_current_public_project", {});
       }
+      console.log('ITEMMM', item)
       this.$store.commit("set_project", item);
       this.$router.push({ path: "/home/dashboard" });
       this.$emit("exit", true);

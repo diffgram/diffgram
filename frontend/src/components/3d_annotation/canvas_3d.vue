@@ -279,6 +279,7 @@
             this.setup_ortographic_scene_controller(scene)
           }
 
+          console.log('addd mesh to schene', )
           this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
 
 

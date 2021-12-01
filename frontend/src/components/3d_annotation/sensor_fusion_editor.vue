@@ -518,12 +518,14 @@
       },
       load_pcd: async function () {
         let file_loader_3d = new FileLoader3DPointClouds(this);
-        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url);
+        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url('https://diffgramstaging.blob.core.windows.net/staging1/projects/pcd/1/756?st=2021-12-01T20%3A58%3A11Z&se=2023-01-25T20%3A58%3A11Z&sp=rt&sv=2020-06-12&sr=b&rscd=attachment%3B%20filename%3D756&sig=qw36E%2BQxQ4U12fJajJo4BtqzYsQ/9VrftLBACoEuYT8%3D');
+        console.log('this.pcd_url', this.pcd_url)
         this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
           color: new THREE.Color('white'),
           opacity: 1,
           transparent: false,
         });
+        console.log('point_cloud_mesh', this.point_cloud_mesh)
         return this.point_cloud_mesh
 
       },

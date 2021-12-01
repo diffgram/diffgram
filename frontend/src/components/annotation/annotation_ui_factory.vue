@@ -286,6 +286,7 @@ export default Vue.extend({
 
     get_labels_from_project: async function () {
       try {
+        console.log('labels_list_from_project', this.labels_list_from_project, this.computed_project_string_id)
         if (
           this.labels_list_from_project &&
           this.computed_project_string_id ==
@@ -299,6 +300,7 @@ export default Vue.extend({
         var url =
           "/api/project/" + this.computed_project_string_id + "/labels/refresh";
         const response = await axios.get(url, {});
+        console.log('res', response)
         this.labels_list_from_project = response.data.labels_out;
         this.label_file_colour_map_from_project =
           response.data.label_file_colour_map;
@@ -408,7 +410,7 @@ export default Vue.extend({
         this.loading_project = true;
 
         let local_project_string_id = this.project_string_id;
-        if (local_project_string_id == null) {
+        if (!local_project_string_id) {
           local_project_string_id = project_string_id;
         }
 
@@ -417,6 +419,10 @@ export default Vue.extend({
           this.$store.state.project.current.project_string_id
         ) {
           return;
+        }
+
+        if(!local_project_string_id){
+          return
         }
 
         const response = await axios.get(
