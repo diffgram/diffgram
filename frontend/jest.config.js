@@ -12,6 +12,7 @@ module.exports = {
     + ")/)",
 
   ],
+  setupFiles: ["<rootDir>/tests/unit/index.js"],
   "modulePaths": ["<rootDir>/src"],
   roots: ["<rootDir>/tests/"],
   moduleNameMapper: {
