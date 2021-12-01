@@ -198,15 +198,27 @@ export default Vue.extend({
       return file_id;
     },
     annotation_interface: function(){
-      if(!this.current_file){
+      if(!this.current_file && !this.task){
         return
       }
-      if(this.current_file.type === 'image' || this.current_file.type === 'video'){
-        return 'image_or_video';
+      if(this.current_file){
+        if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+          return 'image_or_video';
+        }
+        else if(this.current_file.type === 'sensor_fusion'){
+          return 'sensor_fusion';
+        }
       }
-      else if(this.current_file.type === 'sensor_fusion'){
-        return 'sensor_fusion';
+      if(this.task){
+        if(this.task.file.type === 'image' || this.task.file.type === 'video'){
+          return 'image_or_video';
+        }
+        else if(this.task.file.type === 'sensor_fusion'){
+          return 'sensor_fusion';
+        }
       }
+
+
 
     },
     computed_project_string_id: function () {

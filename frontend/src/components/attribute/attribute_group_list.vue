@@ -92,7 +92,7 @@
                         :data-cy="`attribute_group_header_${group.prompt}`"
                         @click="update_url_with_current_group(group)"
                         class="d-flex justify-start text-left">
-          <h3 class="text-left d-flex align-center">
+          <h3 class="text-left d-flex align-center flex-grow-1">
             <attribute_kind_icons
               class="pr-2"
               :kind=" group.kind "
@@ -106,7 +106,27 @@
             </div>
 
           </h3>
+          <!-- Archive button -->
+          <button_with_confirm
+            @confirm_click="api_group_archive(group)"
+            icon="archive"
+            color="red"
+            :loading="loading"
+            :disabled="loading"
+            :icon_style="true"
+            tooltip_message="Archive Entire Attribute and All Options"
+          >
+            <template slot="content">
+              <v-layout column>
 
+                <v-alert type="error">
+                  Are you sure? This will remove all options too.
+                </v-alert>
+
+              </v-layout>
+            </template>
+          </button_with_confirm>
+          <!-- Archive button -->
           <!-- TODO maybe, play with this more
             eg maybe in edit mode show internal tag-->
 
@@ -261,7 +281,34 @@ import attribute_group_new from './attribute_group_new'
 
     },
     methods: {
+      api_group_archive: async function (group) {
+        this.loading = true
+        this.error = {}
+        this.success = false
+        try{
+          const response = await axios.post(
+            '/api/v1/project/' + this.project_string_id +
+            '/attribute/group/update',
+            {
+              group_id: Number(group.id),
+              mode: 'ARCHIVE',
+              kind: group.kind,
 
+            })
+          this.success = true
+          this.loading = false
+          this.$store.commit('attribute_refresh_group_list')
+        }
+        catch(error) {
+          if (error) {
+            if (error.response.status == 400) {
+              this.error = error.response.data.log.error
+            }
+            this.loading = false
+            console.log(error)
+          }
+        }
+      },
       open_panel_by_id(id: number){
         if (!this.attribute_group_list) {return }
         this.openedPanel = this.attribute_group_list.findIndex(x => {
