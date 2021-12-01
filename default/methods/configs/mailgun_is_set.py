@@ -3,8 +3,6 @@ try:
 except:
 	from default.methods.regular.regular_api import *
 
-from shared.helpers.security import limiter
-from methods import routes
 
 @routes.route('/api/configs/is-mailer-set')
 def mailgun_is_set():
