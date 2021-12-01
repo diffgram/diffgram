@@ -336,6 +336,11 @@ import menu_marketing from './menu_marketing'
           project => project.project_string_id != this.$store.state.project.current.project_string_id
         )
       }
+      const new_project = {
+          new_project : true,
+          name: "New Project"
+        }
+      user_project_list.push(new_project)
       return user_project_list
     },
     display_projectName: function () {
@@ -392,6 +397,11 @@ import menu_marketing from './menu_marketing'
   },
   methods: {
     change_project(item) {
+      if (item.new_project == true) {
+        this.$router.push({ path: "/a/project/new" });
+        this.$emit("exit", true);
+        return
+      }
       if (item.is_public) {
         this.$store.commit("set_current_public_project", item);
       } else {
