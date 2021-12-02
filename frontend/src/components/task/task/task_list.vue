@@ -329,7 +329,7 @@
                 tooltip_message="Add assignee"
                 class="hidden-sm-and-down"
                 color="primary"
-                @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'assignee')"
                 icon="mdi-account-plus-outline"
                 large
                 :icon_style="true"
@@ -357,7 +357,7 @@
                 tooltip_message="Add reviewer"
                 class="hidden-sm-and-down"
                 color="primary"
-                @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'reviewer')"
                 icon="mdi-account-plus-outline"
                 large
                 :icon_style="true"
@@ -366,15 +366,15 @@
               </tooltip_button>
               <v_user_icon 
                 style="z-index: 1" 
-                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+                v-if="props.item.task_reviewers.length > 0" :user_id="props.item.task_reviewers[0].user_id"
               />
-              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+              <v-tooltip v-if="props.item.task_reviewers.length > 1" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
-                    + {{ props.item.task_assignees.length - 1}}
+                    + {{ props.item.task_reviewers.length - 1}}
                   </v-avatar>
                 </template>
-                <span>{{ props.item.task_assignees.length }} users assigned to complete this task</span>
+                <span>{{ props.item.task_reviewers.length }} users assigned to complete this task</span>
               </v-tooltip>
             </div>
           </template>
@@ -664,6 +664,7 @@ export default Vue.extend({
       task_assign_dialog_open: false,
       task_to_assign: null,
       task_assign_dialog_loading: false,
+      task_assign_dialog_type: null,
 
       page_number: 0,
       per_page_limit: 25,
@@ -931,15 +932,17 @@ export default Vue.extend({
       await this.task_list_api();
     },
 
-    on_assign_dialog_open: function(id) {
+    on_assign_dialog_open: function(id, type) {
       this.task_assign_dialog_open = true
       this.task_to_assign = id
+      this.task_assign_dialog_type = type
     },
 
     on_assign_dialog_close: function() {
       this.task_assign_dialog_open = false
       this.task_to_assign = null
       this.task_assign_dialog_loading = false
+      this.task_assign_dialog_type = null
     },
 
     assign_user_to_task: async function(user_ids) {
@@ -1060,6 +1063,8 @@ export default Vue.extend({
             limit_count: this.per_page_limit,
           }
         );
+
+        console.log(response)
 
         if (response.data.log.success == true) {
           this.task_list = response.data.task_list;
