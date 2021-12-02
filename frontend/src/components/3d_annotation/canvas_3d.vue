@@ -284,8 +284,8 @@
 
           if(scene_created){
             this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
-            // this.scene_controller.start_render();
-            // this.add_instance_list_to_scene();
+            this.scene_controller.start_render();
+            this.add_instance_list_to_scene();
           }
 
 

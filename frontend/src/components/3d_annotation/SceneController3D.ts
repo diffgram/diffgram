@@ -295,6 +295,7 @@ export default class SceneController3D {
     }
     this.reset_materials();
     this.check_hover();
+    console.log('rendering', this.scene, this.camera)
     this.renderer.render(this.scene, this.camera);
 
   }
