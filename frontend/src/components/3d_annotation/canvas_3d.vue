@@ -233,9 +233,9 @@
             this.$props.instance_list,
             60,
             this.point_cloud_mesh)
-          this.scene_controller.attach_mouse_events();
-          this.scene_controller.set_draw_mode(this.$props.draw_mode);
-          this.scene_controller.set_current_label_file(this.$props.current_label_file);
+          // this.scene_controller.attach_mouse_events();
+          // this.scene_controller.set_draw_mode(this.$props.draw_mode);
+          // this.scene_controller.set_current_label_file(this.$props.current_label_file);
         },
         create_renderer: function(){
           if(!this.container){
@@ -279,13 +279,13 @@
             this.configure_controls();
 
           } else if (this.$props.camera_type === 'ortographic') {
-            this.setup_ortographic_scene_controller(scene)
+            // this.setup_ortographic_scene_controller(scene)
           }
 
           if(scene_created){
             this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
-            this.scene_controller.start_render();
-            this.add_instance_list_to_scene();
+            // this.scene_controller.start_render();
+            // this.add_instance_list_to_scene();
           }
 
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {PCDLoader} from 'three/examples/jsm/loaders/PCDLoader';
+// import {PCDLoader} from 'three/examples/jsm/loaders/PCDLoader';
+import {PCDLoader} from "./PCDLoader";
 import Vue from "vue/types/vue";
 
 export default class FileLoader3DPointClouds {

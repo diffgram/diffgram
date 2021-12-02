@@ -898,7 +898,6 @@
       },
 
       key_down_handler: function(event){
-        console.log('lololololo', event.keyCode)
         if (event.keyCode === 27) { // ESC
           if(this.$refs.main_3d_canvas &&
             !this.$refs.main_3d_canvas.scene_controller.object_transform_controls.controls_transform.object){

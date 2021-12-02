@@ -522,7 +522,7 @@ export default class SceneController3D {
     this.object_transform_controls.detach_controls();
   }
 
-  public add_mesh_to_scene(mesh, center_camera_to_object = true) {
+  public  add_mesh_to_scene(mesh, center_camera_to_object = true) {
     if (!this.scene) {
       return
     }
