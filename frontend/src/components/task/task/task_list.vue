@@ -324,18 +324,28 @@
           </template>
 
           <template slot="AssignedUser" slot-scope="props">
-            <v_user_icon v-for="assignee in props.item.task_assignees" :key="assignee.id" :user_id="assignee.user_id"> </v_user_icon>
-            <tooltip_button
-              tooltip_message="Add assignee"
-              class="hidden-sm-and-down"
-              color="primary"
-              @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
-              icon="mdi-account-plus-outline"
-              large
-              :icon_style="true"
-              :bottom="true"
-            >
-            </tooltip_button>
+            <div style="display: flex; flex-direction: row">
+              <tooltip_button
+                tooltip_message="Add assignee"
+                class="hidden-sm-and-down"
+                color="primary"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
+                icon="mdi-account-plus-outline"
+                large
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+              <v_user_icon style="z-index: 1" v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"> </v_user_icon>
+              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-avatar v-bind="attrs" v-on="on" style="border: 1px solid black; margin-left: -15px; z-index: 0; background-color: white">
+                    + {{ props.item.task_assignees.length - 1}}
+                  </v-avatar>
+                </template>
+                <span>{{ props.item.task_assignees.length }} users assigned to complete this task</span>
+              </v-tooltip>
+            </div>
           </template>
 
           <template slot="LastUpdated" slot-scope="props">
@@ -894,11 +904,10 @@ export default Vue.extend({
 
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
-      const response = await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
-      if (response.status === 200) {
-        const new_task_assignees = user_ids.map(id => ({user_id: id}))
-        this.task_list.find(task => task.id === this.task_to_assign).task_assignees = new_task_assignees
-      }
+      await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
+      const new_task_assignees = user_ids.map(id => ({user_id: id}))
+      console.log(new_task_assignees)
+      this.task_list.find(task => task.id === this.task_to_assign).task_assignees = new_task_assignees
       this.on_assign_dialog_close()
     },
 
