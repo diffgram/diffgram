@@ -351,7 +351,7 @@
             </div>
           </template>
 
-          <template slot="AssignedReviewer" slot-scope="props">
+          <template v-if="allow_reviews" slot="AssignedReviewer" slot-scope="props">
             <div style="display: flex; flex-direction: row">
               <tooltip_button
                 tooltip_message="Manage reviewers"
@@ -666,6 +666,8 @@ export default Vue.extend({
       task_assign_dialog_loading: false,
       task_assign_dialog_type: null,
 
+      allow_reviews: false,
+
       page_number: 0,
       per_page_limit: 25,
       per_page_limit_options: [5, 10, 25, 100, 250],
@@ -710,7 +712,6 @@ export default Vue.extend({
         "Preview",
         "AnnotationCount",
         "AssignedUser",
-        "AssignedReviewer",
         "LastUpdated",
         "Action",
       ],
@@ -1063,12 +1064,23 @@ export default Vue.extend({
           }
         );
 
-        console.log(response)
-
         if (response.data.log.success == true) {
           this.task_list = response.data.task_list;
+          this.allow_reviews = response.data.allow_reviews
           this.pending_initial_dir_sync =
             response.data.pending_initial_dir_sync;
+
+          if (response.data.allow_reviews) {
+            this.column_list = [
+              "Status",
+              "Preview",
+              "AnnotationCount",
+              "AssignedUser",
+              "AssignedReviewer",
+              "LastUpdated",
+              "Action",
+            ]
+          }
 
           this.update_tasks_with_file_annotations(this.task_list);
         }

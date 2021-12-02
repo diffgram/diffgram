@@ -93,10 +93,11 @@ def _task_list_api(project_id, input=input, log = regular_log.default()):
         if input.get('job_id'):
             job = Job.get_by_id(session, input['job_id'])
             initial_dir_sync = job.pending_initial_dir_sync
+            allow_reviews = job.allow_reviews
         log['success'] = True
         return jsonify(log=log,
                        task_list=task_list,
-                       pending_initial_dir_sync=initial_dir_sync), 200
+                       pending_initial_dir_sync=initial_dir_sync, allow_reviews=allow_reviews), 200
 
 
 def get_external_id_to_task(session, task, task_template):
