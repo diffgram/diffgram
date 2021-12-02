@@ -281,7 +281,7 @@
           } else if (this.$props.camera_type === 'ortographic') {
             this.setup_ortographic_scene_controller(scene)
           }
-          
+
           if(scene_created){
             this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
             this.scene_controller.start_render();

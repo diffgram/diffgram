@@ -69,12 +69,8 @@ export default class Cuboid3DInstance extends Instance3D {
       color: new THREE.Color(this.scene_controller_3d.get_current_color()),
       opacity: 0.7,
       transparent: true,
-
-
     });
-
     let mesh = new THREE.Mesh(geometry, material);
-
     return mesh;
   }
 
