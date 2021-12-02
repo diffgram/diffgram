@@ -162,6 +162,16 @@ const routerOptions = [
     meta: {external_page: true}
   },
   {
+    path: '/admin',
+    component: 'diffgram/admin_home',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/admin/install/info',
+    component: 'diffgram/admin_install_info',
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/admin/account/overview',
     component: 'diffgram/account_admin',
     meta: {requiresAuth: true}
