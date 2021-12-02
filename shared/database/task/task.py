@@ -662,7 +662,7 @@ class Task(Base):
             "in_review": in_review,
             "requires_changes": requires_changes,
             "in_progress": in_progress,
-            "instaces_created": instances_created
+            "instances_created": instances_created
         }
         return tasks_stats
     

@@ -16,7 +16,7 @@ def job_stat(job_id):
 
 @routes.route('/api/job/<job_id>/user/<user_id>/stats', methods=["GET"])
 @Job_permissions.by_job_id(project_role_list = ["admin", "Editor", "Viewer"], apis_user_list = ['builder_or_trainer'])
-def jon_user_stats(job_id, user_id):
+def job_user_stats(job_id, user_id):
     with sessionMaker.session_scope() as session:
         tasks = Task.stats(
             session,
