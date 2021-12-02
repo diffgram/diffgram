@@ -687,6 +687,12 @@ class Task(Base):
         for assignee in task_assignees_query:
             task_assignees.append(assignee.serialize())
 
+        task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+        task_reviewers = []
+
+        for assignee in task_reviewers_query:
+            task_reviewers.append(assignee.serialize())
+
         return {
             'id': self.id,
             'task_type': self.task_type,
@@ -704,7 +710,8 @@ class Task(Base):
             'time_created': self.time_created.isoformat(),
             'assignee_user_id': self.assignee_user_id, #Legacy way to return assignees, now task_assignees should be used
             'file': file,
-            'task_assignees': task_assignees
+            'task_assignees': task_assignees,
+            'task_reviewers': task_reviewers
 
         }
 
