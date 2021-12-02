@@ -2,7 +2,7 @@
   <div id="input_view">
 
     <v-card elevation="0">
-      
+
       <v-container fluid>
 
         <v-progress-linear
@@ -298,7 +298,7 @@
                     <template slot="content">
                       <v-layout column>
 
-                        
+
                         <span v-if="props.item.status_text">
                           <v-alert type="error">
                             {{props.item.status_text}}
@@ -312,13 +312,13 @@
                           </p>
                         </div>
 
-                        <div v-if="props.item.update_log &&
+                        <div v-if="props.item.update_log && props.item.update_log.error &&
                                    Object.keys(props.item.update_log.error).length">
                           <h4>Log: </h4>
 
                           <v_error_multiple :error="props.item.update_log.error">
-                          </v_error_multiple>    
-                          
+                          </v_error_multiple>
+
                         </div>
 
                         <v_info_multiple :info="props.item.update_log.info">

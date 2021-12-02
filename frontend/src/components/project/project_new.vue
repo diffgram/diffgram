@@ -77,6 +77,7 @@
 
 import axios from 'axios';
 import sillyname from 'sillyname';
+import { getProjectList } from "../../services/projectServices";
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'new_project',
@@ -130,12 +131,15 @@ import Vue from "vue"; export default Vue.extend( {
         'project_string_id': this.project_string_id,
         'org_id': this.$store.state.org.current.id
 
-      }).then(response => {
+      }).then(async response => {
         if (response.data.log.success == true) {
 
           this.$store.commit('set_project', response.data.project)
 
           this.$emit('project_created', response.data.project);
+          const projext_list_response = await getProjectList();
+          const project_list = projext_list_response.data.project_list;
+          this.$store.commit("set_userProjects_list", project_list);
         } else {
 
           this.loading = false

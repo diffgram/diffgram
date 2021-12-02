@@ -32,3 +32,4 @@ alembic==1.4.2
 azure-storage-blob==12.8.0
 psutil==5.6.6
 SQLAlchemy-serializer==1.4.1
+newrelic

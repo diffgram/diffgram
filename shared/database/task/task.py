@@ -7,6 +7,7 @@ import shared.database.discussion.discussion_relation as dr
 import shared.database.discussion.discussion as discussion
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
+from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
 from shared.database.user import User
 
@@ -618,6 +619,53 @@ class Task(Base):
                 task_list = session.query(Task).filter(Task.id.in_(task_with_issues_id_list))
 
         return task_list
+
+    @staticmethod
+    def stats(session, job_id, user_id=None):
+        from shared.database.user import User
+        
+        query = session.query(Task)
+        all_the_tasks_in_job = query.filter(Task.job_id == job_id).all()
+
+        if user_id:
+            query = query.filter(Task.assignee_user_id == user_id)
+
+        total = query.filter(Task.job_id == job_id).count()
+        completed = query.filter(Task.job_id == job_id,
+                                 Task.status == 'complete').count()
+        in_review = query.filter(Task.job_id == job_id,
+                                 Task.status == 'review_requested').count()
+        requires_changes = query.filter(Task.job_id == job_id,
+                                 Task.status == 'requires_changes').count()
+        in_progress = query.filter(Task.job_id == job_id,
+                                 Task.status == 'in_progress').count()
+
+        task_id_list = [task.id for task in all_the_tasks_in_job]
+        if user_id is None:
+            # Get all the instances created on the tasks. No user filter
+            instances_created = session.query(Instance).filter(
+                Instance.task_id.in_(task_id_list),
+                Instance.soft_delete == False
+            ).count()
+        else:
+            # Get all the instances created by the given user
+            user = User.get_by_id(session, user_id = user_id)
+            instances_created = session.query(Instance).filter(
+                Instance.task_id.in_(task_id_list),
+                Instance.soft_delete == False,
+                Instance.member_created_id == user.member_id
+            ).count()
+
+        tasks_stats = {
+            "total": total,
+            "completed": completed,
+            "in_review": in_review,
+            "requires_changes": requires_changes,
+            "in_progress": in_progress,
+            "instaces_created": instances_created
+        }
+        return tasks_stats
+    
 
     def get_by_id(session,
                   task_id):

@@ -1,7 +1,10 @@
 <template>
   <v-container fluid data-cy="task-template-users-step">
     <div class="d-flex mb-8 justify-space-between">
-      <h1 data-cy="task-template-users-step-title" class="font-weight-medium text--primary mr-4">
+      <h1
+        data-cy="task-template-users-step-title"
+        class="font-weight-medium text--primary mr-4"
+      >
         Who is assigned to work on these tasks?
       </h1>
     </div>
@@ -23,7 +26,6 @@
     >
     </member_select>
 
-
     <wizard_navigation
       @next="on_next_button_click"
       @back="$emit('previous_step')"
@@ -33,62 +35,52 @@
     >
     </wizard_navigation>
   </v-container>
-
 </template>
 
 <script lang="ts">
+import label_select_only from "../../../label/label_select_only";
+import label_manager_dialog from "../../../label/label_manager_dialog";
 
-  import axios from 'axios';
-  import label_select_only from '../../../label/label_select_only'
-  import label_manager_dialog from '../../../label/label_manager_dialog'
+import Vue from "vue";
 
-  import Vue from "vue";
+export default Vue.extend({
+  name: "step_label_task_template",
+  props: ["project_string_id", "job", "loading_steps", "mode"],
 
-  export default Vue.extend({
-      name: 'step_label_task_template',
-      props: [
-        'project_string_id',
-        'job',
-        'loading_steps',
-        'mode',
-      ],
+  components: {
+    label_select_only,
+    label_manager_dialog,
+  },
 
-      components: {
-        label_select_only,
-        label_manager_dialog
-      },
+  data() {
+    return {
+      error: {},
+      request_refresh_labels: new Date(),
+    };
+  },
+  mounted() {},
 
-      data() {
-        return {
-          error: {},
-          request_refresh_labels: new Date(),
-        }
-      },
-      mounted() {
-
-
-      },
-
-      computed: {
-
-      },
-      methods: {
-        verify_members: function(){
-          if(!this.$props.job.member_list_ids || this.$props.job.member_list_ids.length === 0){
-            this.error = {
-              name: 'At least 1 user should be assigned.'
-            }
-            return false
-          }
-          return true
-        },
-        on_next_button_click: function(){
-          this.error = {};
-          let memers_ok = this.verify_members();
-          if(memers_ok){
-            this.$emit('next_step');
-          }
-        },
+  computed: {},
+  methods: {
+    verify_members: function () {
+      if (
+        !this.$props.job.member_list_ids ||
+        this.$props.job.member_list_ids.length === 0
+      ) {
+        this.error = {
+          name: "At least 1 user should be assigned.",
+        };
+        return false;
       }
-    }
-  ) </script>
+      return true;
+    },
+    on_next_button_click: function () {
+      this.error = {};
+      let memers_ok = this.verify_members();
+      if (memers_ok) {
+        this.$emit("next_step");
+      }
+    },
+  },
+});
+</script>

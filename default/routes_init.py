@@ -4,6 +4,11 @@ def do_routes_importing():
     from methods.attribute.attribute import api_attribute_update_or_new
     from methods.attribute.attribute_template_group_update import api_attribute_template_group_update
 
+    from methods.action.action import api_action_update_or_new
+    from methods.action.action_flow import new_flow_factory_api
+    from methods.action.action_flow_update import api_flow_update
+    from methods.action.action_list import api_action_list
+
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
 
@@ -13,6 +18,14 @@ def do_routes_importing():
     from methods.user import confirmation_token
 
     from methods.task.task.task_by_id import task_by_id_api
+
+    # Stripe Billing Related
+    from methods.account.transact.transaction_list import transaction_list_api
+    from methods.account.billing.billing_stripe_new import stripe_new_customer_api
+    from methods.account.report.report_transactions import account_report_transactions_api
+    from methods.account.account.account_info import account_report_info_api
+    from methods.account.plan.plan_new import new_plan_api
+
 
     from methods.task.task_template.job_pin import job_pin_api
     from methods.task.task_template.job_resync import job_resync_api
@@ -41,6 +54,8 @@ def do_routes_importing():
     from methods.task.task_template.job_launch_list import job_launch_list_api
 
     from methods.task.task.task_annotator_request import task_next_by_job_api
+    from methods.task.task.task_user_add import api_task_user_add
+    from methods.task.task.task_user_remove import api_task_user_remove
 
     from methods.task.guide.guide_new import guide_new_api
     from methods.task.guide.guide_edit import guide_edit_api
@@ -128,10 +143,13 @@ def do_routes_importing():
     from methods.ui_schema.ui_schema import ui_schema_new_api
 
     from methods.configs.mailgun_is_set import mailgun_is_set
+    from methods.configs.admin_install_info import api_admin_install_info
+
     from methods.task.credential.credential_type_new import new_credential_type_api
     from methods.task.credential.credential_list import credential_list_api
     from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api
     from methods.task.credential.credential_type_update import update_credential_type_image_api
 
+    from methods.task.stats.fast_stats import job_stat, jon_user_stats
 
 

@@ -1,0 +1,565 @@
+name: Kubernetes Enterprise Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Choose a branch and leave as "$$current_branch" to deploy current selected branch. WARNING, redeploying the same branch will fail. Make a new branch off that for redeploy.  !! OR !! Ignore the branch selector, delete the "$$" text, and name a release version to deploy.'
+        required: true
+        default: $$current_branch
+      environment:
+        description: 'Either "staging" or "production"'
+        required: true
+        default: "staging"
+jobs:
+  publish_default_branch:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Configure GCP
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default -f default/Dockerfile.newrelic
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/default:newrelic-$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default:newrelic-$BRANCH_NAME
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default -f default/Dockerfile
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/default:$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default:$BRANCH_NAME
+
+  publish_frontend_branch:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Configure GCP
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Build and Push Docker Images
+        if: "github.event.inputs.release == '$$current_branch'"
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/frontend:newrelic-$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend:newrelic-$BRANCH_NAME
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/frontend:$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend:$BRANCH_NAME
+
+  publish_walrus_branch:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Configure GCP
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Build and Push Docker Images
+        if: "github.event.inputs.release == '$$current_branch'"
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus -f walrus/Dockerfile.newrelic
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/walrus:newrelic-$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus:newrelic-$BRANCH_NAME
+
+      - name: Build & Push to Docker
+        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
+        run: |
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/walrus:$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus:$BRANCH_NAME
+
+  publish_dispatcher_branch:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Configure GCP
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+      - name: Build and Push Docker Images
+        if: "github.event.inputs.release == '$$current_branch'"
+        run: |
+          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
+          cat ~/gcloud-service-key.json
+          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
+          gcloud config list
+          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+          gcloud auth configure-docker --quiet
+
+          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
+          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/local_dispatcher:$BRANCH_NAME
+          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher:$BRANCH_NAME
+
+  Production-Deploy-Azure-Kubernetes:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
+    if: "github.event.inputs.environment == 'production'"
+    env:
+      CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
+      DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
+      EMAIL_VALIDATION: ${{ secrets.EMAIL_VALIDATION }}
+      HUB_SPOT_KEY: ${{ secrets.HUB_SPOT_KEY }}
+      INTER_SERVICE_SECRET: ${{ secrets.INTER_SERVICE_SECRET }}
+      MAILGUN_KEY: ${{ secrets.MAILGUN_KEY }}
+      ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      USER_PASSWORDS_SECRET: ${{ secrets.USER_PASSWORDS_SECRET }}
+      _ANALYTICS_WRITE_KEY: ${{ secrets._ANALYTICS_WRITE_KEY }}
+      DIFFGRAM_STATIC_STORAGE_PROVIDER: ${{ secrets.DIFFGRAM_STATIC_STORAGE_PROVIDER }}
+      SERVICE_ACCOUNT_FULL_PATH: ${{ secrets.SERVICE_ACCOUNT_FULL_PATH }}
+      FERNET_KEY: ${{ secrets.FERNET_KEY }}
+      URL_BASE: ${{ secrets.URL_BASE }}
+      WALRUS_SERVICE_URL_BASE: ${{ secrets.WALRUS_SERVICE_URL_BASE }}
+      PROCESS_MEDIA_TRY_BLOCK_ON: ${{ secrets.PROCESS_MEDIA_TRY_BLOCK_ON }}
+      PROCESS_MEDIA_REMOTE_QUEUE_ON: ${{ secrets.PROCESS_MEDIA_REMOTE_QUEUE_ON }}
+      PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY: ${{ secrets.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY }}
+      WEBHOOKS_URL_BASE: ${{ secrets.WEBHOOKS_URL_BASE }}
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+      GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
+      DOCKER_IMAGE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+      GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
+      DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
+      DIFFGRAM_VERSION_TAG: ${{ github.event.inputs.release }}
+      DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
+      DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+        # Use branch name for whatever purpose
+      - run: echo ${BRANCH_NAME}
+
+      - name: Clone Helm Chart for Diffgram
+        uses: actions/checkout@master
+        with:
+          repository: diffgram/diffgram-helm
+
+      - name: Prepare app.yaml for helm chart.
+        uses: microsoft/variable-substitution@v1
+        if: "github.event.inputs.release != '$$current_branch'"
+        with:
+          files: 'values.yaml'
+        env:
+          diffgramVersion: newrelic-${{ github.event.inputs.release }}
+          diffgramEdition: opencore
+          diffgramDomain: diffgram.com
+          useCertManager: true
+          useTls: true
+          dbSettings.dbProvider: azure
+          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
+          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
+          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
+          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
+          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
+          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
+          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
+          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
+          diffgramSecrets.FERNET_KEY: ${{secrets.FERNET_KEY}}
+          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
+          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
+          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
+          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
+          diffgramSettings.USERDOMAIN: kubernetes_production
+          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
+          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.DIFFGRAM_AZURE_CONTAINER_NAME}}
+          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.ML__DIFFGRAM_AZURE_CONTAINER_NAME}}
+          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
+          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
+          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
+          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
+          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
+          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
+          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
+          walrusService.requests.memory: "32G"
+          walrusService.limits.memory: "32G"
+          walrusService.requests.cpu: "8"
+          walrusService.limits.cpu: "8"
+          defaultService.requests.memory: "4G"
+          defaultService.requests.cpu: "2"
+          frontendService.requests.memory: "2G"
+          frontendService.requests.cpu: "1"
+          defaultService.numReplicas: 3
+          frontendService.numReplicas: 1
+          walrusService.numReplicas: 1
+          nodeGroupLabel: diffgram-apps
+
+      - name: Prepare app.yaml for helm chart.
+        uses: microsoft/variable-substitution@v1
+        if: "github.event.inputs.release == '$$current_branch'"
+        with:
+          files: 'values.yaml'
+        env:
+          diffgramVersion: newrelic-${{ env.BRANCH_NAME }}
+          diffgramEdition: opencore
+          diffgramDomain: diffgram.com
+          useCertManager: true
+          useTls: true
+          dbSettings.dbProvider: azure
+          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
+          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
+          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
+          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
+          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
+          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
+          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
+          diffgramSecrets.FERNET_KEY: ${{secrets.FERNET_KEY}}
+          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
+          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
+          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
+          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
+          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
+          diffgramSettings.USERDOMAIN: kubernetes_production
+          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
+          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.DIFFGRAM_AZURE_CONTAINER_NAME}}
+          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.ML__DIFFGRAM_AZURE_CONTAINER_NAME}}
+          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
+          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
+          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
+          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
+          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
+          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
+          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
+          walrusService.requests.memory: "32G"
+          walrusService.limits.memory: "32G"
+          walrusService.requests.cpu: "8"
+          walrusService.limits.cpu: "8"
+          defaultService.requests.memory: "4G"
+          defaultService.requests.cpu: "2"
+          frontendService.requests.memory: "2G"
+          frontendService.requests.cpu: "1"
+          defaultService.numReplicas: 3
+          frontendService.numReplicas: 1
+          walrusService.numReplicas: 1
+          nodeGroupLabel: diffgram-apps
+
+
+      - name: Check values.yaml
+        run: cat values.yaml
+
+
+      # Set the target Azure Kubernetes Service (AKS) cluster.
+      - name: Set Kubernetes Cluster Context on AKS
+        uses: azure/aks-set-context@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+          resource-group: ${{ secrets.AKS_CLUSTER_RESOURCE_GROUP }}
+
+
+      - name: Upgrade Diffgram with Helm
+        run: |
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-production
+
+
+  Staging-Deploy-Azure-Kubernetes:
+    runs-on: ubuntu-latest
+    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
+    environment: ${{ github.event.inputs.environment }}
+    if: "github.event.inputs.environment == 'staging'"
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
+      DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
+      EMAIL_VALIDATION: ${{ secrets.EMAIL_VALIDATION }}
+      HUB_SPOT_KEY: ${{ secrets.HUB_SPOT_KEY }}
+      INTER_SERVICE_SECRET: ${{ secrets.INTER_SERVICE_SECRET }}
+      MAILGUN_KEY: ${{ secrets.MAILGUN_KEY }}
+      ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      USER_PASSWORDS_SECRET: ${{ secrets.USER_PASSWORDS_SECRET }}
+      _ANALYTICS_WRITE_KEY: ${{ secrets._ANALYTICS_WRITE_KEY }}
+      DIFFGRAM_STATIC_STORAGE_PROVIDER: ${{ secrets.DIFFGRAM_STATIC_STORAGE_PROVIDER }}
+      SERVICE_ACCOUNT_FULL_PATH: ${{ secrets.SERVICE_ACCOUNT_FULL_PATH }}
+      FERNET_KEY: ${{ secrets.FERNET_KEY }}
+      URL_BASE: ${{ secrets.URL_BASE }}
+      WALRUS_SERVICE_URL_BASE: ${{ secrets.WALRUS_SERVICE_URL_BASE }}
+      PROCESS_MEDIA_TRY_BLOCK_ON: ${{ secrets.PROCESS_MEDIA_TRY_BLOCK_ON }}
+      PROCESS_MEDIA_REMOTE_QUEUE_ON: ${{ secrets.PROCESS_MEDIA_REMOTE_QUEUE_ON }}
+      PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY: ${{ secrets.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY }}
+      WEBHOOKS_URL_BASE: ${{ secrets.WEBHOOKS_URL_BASE }}
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+      GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
+      DOCKER_IMAGE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
+      GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
+      DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      # Use branch name for whatever purpose
+      - run: echo ${BRANCH_NAME}
+
+      - name: Clone Helm Chart for Diffgram
+        uses: actions/checkout@master
+        with:
+          repository: diffgram/diffgram-helm
+
+      - name: Prepare app.yaml for helm chart.
+        uses: microsoft/variable-substitution@v1
+        if: "github.event.inputs.release != '$$current_branch'"
+        with:
+          files: 'values.yaml'
+        env:
+          diffgramVersion: ${{ github.event.inputs.release }}
+          diffgramEdition: opencore
+          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
+          useCertManager: true
+          useTls: true
+          dbSettings.dbProvider: azure
+          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
+          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
+          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
+          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
+          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
+          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
+          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
+          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
+          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
+          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
+          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
+          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
+          diffgramSettings.USERDOMAIN: kubernetes_production
+          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
+          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
+          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: staging1
+          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: staging1
+          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
+          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
+          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
+          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
+          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
+          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
+          defaultService.numReplicas: 1
+          frontendService.numReplicas: 1
+          walrusService.numReplicas: 1
+          defaultService.requests.cpu: "2"
+          defaultService.requests.memory: "4G"
+          defaultService.limits.cpu: "2"
+          defaultService.limits.memory: "4G"
+          frontendService.requests.cpu: "2"
+          frontendService.requests.memory: "4G"
+          frontendService.limits.cpu: "2"
+          frontendService.limits.memory: "4G"
+          walrusService.requests.cpu: "2"
+          walrusService.requests.memory: "4G"
+          walrusService.limits.cpu: "2"
+          walrusService.limits.memory: "4G"
+          nodeGroupLabel: null
+
+      - name: Prepare app.yaml for helm chart.
+        uses: microsoft/variable-substitution@v1
+        if: "github.event.inputs.release == '$$current_branch'"
+        with:
+          files: 'values.yaml'
+        env:
+          diffgramVersion: ${{ env.BRANCH_NAME }}
+          diffgramEdition: opencore
+          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
+          useCertManager: true
+          useTls: true
+          dbSettings.dbProvider: azure
+          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
+          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
+          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
+          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
+          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
+          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
+          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
+          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
+          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
+          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
+          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
+          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
+          diffgramSettings.USERDOMAIN: kubernetes_production
+          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
+          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: staging1
+          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: staging1
+          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
+          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
+          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
+          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
+          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
+          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
+          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
+          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
+          defaultService.numReplicas: 1
+          walrusService.numReplicas: 1
+          frontendService.numReplicas: 1
+          defaultService.requests.cpu: "2"
+          defaultService.requests.memory: "4G"
+          defaultService.limits.cpu: "2"
+          defaultService.limits.memory: "4G"
+          frontendService.requests.cpu: "2"
+          frontendService.requests.memory: "4G"
+          frontendService.limits.cpu: "2"
+          frontendService.limits.memory: "4G"
+          walrusService.requests.cpu: "2"
+          walrusService.requests.memory: "4G"
+          walrusService.limits.cpu: "2"
+          walrusService.limits.memory: "4G"
+          nodeGroupLabel: null
+
+
+      - name: Check values.yaml
+        run: cat values.yaml
+
+
+      # Set the target Azure Kubernetes Service (AKS) cluster.
+      - name: Set Kubernetes Cluster Context on AKS
+        uses: azure/aks-set-context@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+          resource-group: ${{ secrets.AKS_CLUSTER_RESOURCE_GROUP }}
+
+
+      - name: Upgrade Diffgram with Helm
+        run: |
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging

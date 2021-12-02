@@ -10,3 +10,14 @@ export const is_mailgun_set = async () => {
         }
     }
 }
+
+export const get_install_info = async () => {
+    try {
+        const { data } = await axios.get('/api/v1/admin/install/info')
+        return data
+    } catch(error) {
+        return {
+            error
+        }
+    }
+}

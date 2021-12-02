@@ -28,6 +28,24 @@ class TaskUser(Base, SerializerMixin):
             '-user'))
 
     @staticmethod
+    def get(session, user_id, task_id, relation):
+        result = session.query(TaskUser).filter(
+            TaskUser.user_id == user_id,
+            TaskUser.task_id == task_id,
+            TaskUser.relation == relation
+        ).first()
+
+        return result
+
+    @staticmethod
+    def get_by_id(session, task_user_id):
+        result = session.query(TaskUser).filter(
+            TaskUser.id == task_user_id
+        ).first()
+
+        return result
+
+    @staticmethod
     def new(session: 'Session',
             task_id: int,
             user_id: int,
