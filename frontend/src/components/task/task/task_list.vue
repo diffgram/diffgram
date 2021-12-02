@@ -947,9 +947,9 @@ export default Vue.extend({
 
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
-      await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
+      await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
       const new_task_assignees = user_ids.map(id => ({user_id: id}))
-      this.task_list.find(task => task.id === this.task_to_assign).task_assignees = new_task_assignees
+      this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       this.on_assign_dialog_close()
     },
 
