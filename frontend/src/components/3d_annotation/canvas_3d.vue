@@ -110,10 +110,12 @@
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( container.clientWidth,  container.clientHeight );
+
+
         document.body.appendChild( renderer.domElement );
 
         scene = new THREE.Scene();
-
+        scene.background = new THREE.Color('blue')
         camera = new THREE.PerspectiveCamera( 30, container.clientWidth / container.clientHeight, 0.01, 40 );
         camera.position.set( 0, 0, 1 );
         scene.add( camera );
