@@ -351,6 +351,34 @@
             </div>
           </template>
 
+          <template slot="AssignedReviewer" slot-scope="props">
+            <div style="display: flex; flex-direction: row">
+              <tooltip_button
+                tooltip_message="Add reviewer"
+                class="hidden-sm-and-down"
+                color="primary"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id)"
+                icon="mdi-account-plus-outline"
+                large
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+              <v_user_icon 
+                style="z-index: 1" 
+                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+              />
+              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
+                    + {{ props.item.task_assignees.length - 1}}
+                  </v-avatar>
+                </template>
+                <span>{{ props.item.task_assignees.length }} users assigned to complete this task</span>
+              </v-tooltip>
+            </div>
+          </template>
+
           <template slot="LastUpdated" slot-scope="props">
             <div v-if="props.item.time_updated">
               {{
@@ -681,6 +709,7 @@ export default Vue.extend({
         "Preview",
         "AnnotationCount",
         "AssignedUser",
+        "AssignedReviewer",
         "LastUpdated",
         "Action",
       ],
@@ -694,6 +723,7 @@ export default Vue.extend({
         "DataUpdateLog",
         "IncomingDataset",
         "AssignedUser",
+        "AssignedReviewer",
         "LastUpdated",
         "Action",
       ],
@@ -754,6 +784,13 @@ export default Vue.extend({
         {
           text: "Assigned User",
           header_string_id: "AssignedUser",
+          align: "center",
+          sortable: false,
+          value: "",
+        },
+        {
+          text: "Assigned Reviewer",
+          header_string_id: "AssignedReviewer",
           align: "center",
           sortable: false,
           value: "",
