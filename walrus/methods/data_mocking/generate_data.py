@@ -130,7 +130,13 @@ def shared_data_gen(session, project, input):
         
     elif input['data_type'] == 'annotations':
         task_list = Task.list(session = session, project_id=project.id, limit_count=100)
-        data_mocker.generate_instance_many(task_list, member_created_id = get_member(session).id)
+        label_file_list = WorkingDirFileLink.file_list(
+            session=session,
+            working_dir_id=project.directory_default_id,
+            limit=1,
+            type="label"
+        )
+        data_mocker.generate_instance_many(task_list, label_file_list, member_created_id = get_member(session).id)
 
 
 @dataclass
@@ -164,13 +170,15 @@ class DiffgramDataMocker:
 
 
 
-    def generate_instance_many(self, task_list, member_created_id=1, count_per_task=1000):
+    def generate_instance_many(self, task_list, label_file_list, member_created_id=1, count_per_task=100):
+
+        label_file_id = label_file_list[0].id
 
         print(len(task_list))
         for task in task_list:
             print(task.id, task.project_id)
             for i in range(count_per_task):
-                self.generate_instance(task, member_created_id, instance_type="box", label_file_id=1)
+                self.generate_instance(task, member_created_id, instance_type="box", label_file_id=label_file_id)
 
         print("Complete")
 
@@ -182,12 +190,12 @@ class DiffgramDataMocker:
             project_id=task.project_id,
             task_id=task.id,
             member_created_id=member_created_id,
-            x_min=0,
-            y_min=0,
-            x_max=1,
-            y_max=1,
-            width=1,
-            height=1,
+            x_min=random.randint(0, 100),
+            y_min=random.randint(0, 100),
+            x_max=random.randint(200, 300),
+            y_max=random.randint(200, 400),
+            width=None,
+            height=None,
             label_file_id=label_file_id,
             hash=None,
             type=instance_type,
