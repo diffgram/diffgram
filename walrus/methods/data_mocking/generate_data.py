@@ -128,6 +128,9 @@ def shared_data_gen(session, project, input):
         data_mocker.generate_test_data_for_task_templates(
             project=project, structure=input.get('structure'), num_files=input.get('num_files'), reviews=input.get('reviews'))
         
+    elif input['data_type'] == 'annotations':
+        task_list = Task.list(session = session, project_id=project.id, limit_count=100)
+        data_mocker.generate_instance_many(task_list, member_created_id = get_member(session).id)
 
 
 @dataclass
@@ -159,6 +162,53 @@ class DiffgramDataMocker:
             inputs_data.append(diffgram_input)
         return inputs_data
 
+
+
+    def generate_instance_many(self, task_list, member_created_id=1, count_per_task=1000):
+
+        print(len(task_list))
+        for task in task_list:
+            print(task.id, task.project_id)
+            for i in range(count_per_task):
+                self.generate_instance(task, member_created_id, instance_type="box", label_file_id=1)
+
+        print("Complete")
+
+    def generate_instance(self, task, member_created_id, instance_type, label_file_id):
+
+        new_instance = Instance(
+            file_id=task.file_id,
+            sequence_id=None,   #  Different
+            project_id=task.project_id,
+            task_id=task.id,
+            member_created_id=member_created_id,
+            x_min=0,
+            y_min=0,
+            x_max=1,
+            y_max=1,
+            width=1,
+            height=1,
+            label_file_id=label_file_id,
+            hash=None,
+            type=instance_type,
+            number=None,
+            frame_number=None,
+            global_frame_number = None,
+            machine_made=None,
+            points=None,
+            soft_delete=False,
+            center_x = None,
+            center_y = None,
+            angle = None,
+            p1 = None,
+            p2 = None,
+            cp = None,
+            interpolated = None,
+            front_face = None,
+            rear_face = None,
+            creation_ref_id = None
+        )
+        self.session.add(new_instance)
 
     def generate_test_data_on_dataset_copy_file(self, dataset, num_files=NUM_IMAGES):
 
