@@ -4035,9 +4035,7 @@ Vue.prototype.$polygon = new polygon();
       }
     },
     detect_hover_on_ellipse_corners: function () {
-      // not happy with this name, maybe something more along the lines of
-      // determine which point in the cuboid we are near?
-      // or something...
+
       if (this.is_actively_resizing) {
         return;
       }
@@ -4138,9 +4136,6 @@ Vue.prototype.$polygon = new polygon();
       if (this.selected_instance.type != "cuboid") {
         return;
       }
-      // not happy with this name, maybe something more along the lines of
-      // determine which point in the cuboid we are near?
-      // or something...
 
       // avoid having a check for every point?
       let instance = this.selected_instance;
@@ -4167,8 +4162,7 @@ Vue.prototype.$polygon = new polygon();
       if (this.is_moving_cuboid_corner) {
         return;
       }
-      // again not happy with name
-      // trying to get accross it takes a face with multiple points
+      // takes a face with multiple points
       // and then sees if any are intersecting
       // then does current expected stuff
       // returns true if found to allow early exit
@@ -4342,7 +4336,6 @@ Vue.prototype.$polygon = new polygon();
         if (this.lock_point_hover_change == false) {
           this.canvas_element.style.cursor = "default";
         }
-        // TODO handle if visible
 
         this.detect_hover_on_cuboid_corners();
 
@@ -7640,97 +7633,104 @@ Vue.prototype.$polygon = new polygon();
           this.instance_template_draw_started = false;
           this.is_actively_drawing = false;
           this.instance_template_start_point = undefined;
-        },
-        show_loading_paste: function(){
-          this.show_snackbar_paste = true;
-          this.snackbar_paste_message = 'Pasting Instances Please Wait....';
-        },
-        show_success_paste: function(){
-          this.show_snackbar_paste = true;
-          this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
-        },
-        initialize_instance: function(instance){
-          if(instance.type === 'keypoints' && !instance.initialized){
-            let initialized_instance = new KeypointInstance(
-              this.mouse_position,
-              this.canvas_element_ctx,
-              this.instance_context,
-              this.trigger_instance_changed,
-              this.instance_selected,
-              this.instance_deselected,
-              this.mouse_down_delta_event,
-              this.mouse_down_position,
-              this.label_settings
-            );
-            initialized_instance.populate_from_instance_obj(instance);
-            return initialized_instance
-          }
-          else if (instance.type === 'global') {
-            this.global_instance_list.push(instance)
-            return
-          }
-          else {
-            return instance
-          }
-        },
-        save_multiple_frames: async function(frames_list){
-          const limit = pLimit(25); // 25 Max concurrent request.
-          try {
-            this.save_multiple_frames_error = {};
-            const promises = frames_list.map(frame_number => {
-              return limit(() => this.save(false, frame_number, this.instance_buffer_dict[frame_number]))
-            });
-            const result = await Promise.all(promises);
-            return result
+    },
+    show_loading_paste: function(){
+      this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Pasting Instances Please Wait....';
+    },
+    show_success_paste: function(){
+      this.show_snackbar_paste = true;
+      this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
+    },
+    initialize_instance: function(instance){
+      if(instance.type === 'keypoints' && !instance.initialized){
+        let initialized_instance = new KeypointInstance(
+          this.mouse_position,
+          this.canvas_element_ctx,
+          this.instance_context,
+          this.trigger_instance_changed,
+          this.instance_selected,
+          this.instance_deselected,
+          this.mouse_down_delta_event,
+          this.mouse_down_position,
+          this.label_settings
+        );
+        initialized_instance.populate_from_instance_obj(instance);
+        return initialized_instance
+      }
+      else if (instance.type === 'global') {
+        this.global_instance_list.push(instance)
+        return
+      }
+      else {
+        return instance
+      }
+    },
+    save_multiple_frames: async function(frames_list){
+      const limit = pLimit(25); // 25 Max concurrent request.
+      try {
+        this.save_multiple_frames_error = {};
+        const promises = frames_list.map(frame_number => {
+          return limit(() => this.save(false, frame_number, this.instance_buffer_dict[frame_number]))
+        });
+        const result = await Promise.all(promises);
+        return result
 
-          } catch (error) {
-            this.save_multiple_frames_error = this.$route_api_errors(error);
-            console.error(error);
-          }
-        },
-        add_pasted_instance_to_instance_list: async function(instance_clipboard, next_frames, original_file_id){
-          let on_new_frame_or_file = false;
-          if(instance_clipboard.original_frame_number != this.current_frame || next_frames != undefined){
-            on_new_frame_or_file = true;
-          }
-          if(this.$props.file && this.$props.file.id != original_file_id){
-            on_new_frame_or_file = true;
-          }
-          if(this.$props.task && this.$props.task.file.id != original_file_id){
-            on_new_frame_or_file = true;
-          }
-          if(instance_clipboard.type === 'point' && !on_new_frame_or_file){
-            instance_clipboard.points[0].x += 50
-            instance_clipboard.points[0].y += 50
-          }
-          else if(instance_clipboard.type === 'box' && !on_new_frame_or_file){
-            instance_clipboard.x_min += 50
-            instance_clipboard.x_max += 50
-            instance_clipboard.y_min += 50
-            instance_clipboard.y_max += 50
-          }
-          else if((instance_clipboard.type === 'line' || instance_clipboard.type === 'polygon') && !on_new_frame_or_file){
-            for(const point of instance_clipboard.points){
-              point.x += 50;
-              point.y += 50;
-            }
-          }
-          else if((instance_clipboard.type === 'keypoints') && !on_new_frame_or_file){
-            for(const node of instance_clipboard.nodes){
-              node.x += 50;
-              node.y += 50;
-            }
-          }
-          else if(instance_clipboard.type === 'cuboid'  && !on_new_frame_or_file){
-            for(let key in instance_clipboard.front_face){
-              if(['width', 'height'].includes(key)){continue}
-              instance_clipboard.front_face[key].x += 85
-              instance_clipboard.front_face[key].y += 85
-              instance_clipboard.rear_face[key].x += 85
-              instance_clipboard.rear_face[key].y += 85
-            }
-              instance_clipboard.rear_face[key].y += 85
-            }
+      } catch (error) {
+        this.save_multiple_frames_error = this.$route_api_errors(error);
+        console.error(error);
+      }
+    },
+    add_pasted_instance_to_instance_list: async function (
+      instance_clipboard,
+      next_frames,
+      original_file_id
+    ) {
+      let on_new_frame_or_file = false;
+      if (
+        instance_clipboard.original_frame_number != this.current_frame ||
+        next_frames != undefined
+      ) {
+        on_new_frame_or_file = true;
+      }
+      if (this.$props.file && this.$props.file.id != original_file_id) {
+        on_new_frame_or_file = true;
+      }
+      if (this.$props.task && this.$props.task.file.id != original_file_id) {
+        on_new_frame_or_file = true;
+      }
+      if (instance_clipboard.type === "point" && !on_new_frame_or_file) {
+        instance_clipboard.points[0].x += 50;
+        instance_clipboard.points[0].y += 50;
+      } else if (instance_clipboard.type === "box" && !on_new_frame_or_file) {
+        instance_clipboard.x_min += 50;
+        instance_clipboard.x_max += 50;
+        instance_clipboard.y_min += 50;
+        instance_clipboard.y_max += 50;
+      } else if (
+        (instance_clipboard.type === "line" ||
+          instance_clipboard.type === "polygon") &&
+        !on_new_frame_or_file
+      ) {
+        for (const point of instance_clipboard.points) {
+          point.x += 50;
+          point.y += 50;
+        }
+      } else if (
+        instance_clipboard.type === "keypoints" &&
+        !on_new_frame_or_file
+      ) {
+        for (const node of instance_clipboard.nodes) {
+          node.x += 50;
+          node.y += 50;
+        }
+      } else if (
+        instance_clipboard.type === "cuboid" &&
+        !on_new_frame_or_file
+      ) {
+        for (let key in instance_clipboard.front_face) {
+          if (["width", "height"].includes(key)) {
+            continue;
           }
           instance_clipboard.front_face[key].x += 85;
           instance_clipboard.front_face[key].y += 85;
@@ -7992,7 +7992,7 @@ Vue.prototype.$polygon = new polygon();
     hash_string: function (str) {
       return sha256(str);
     },
-    has_duplicate_instances: function (instance_list) {
+has_duplicate_instances: function (instance_list) {
       if (!instance_list) {
         return [false, [], []];
       }
@@ -8046,7 +8046,6 @@ Vue.prototype.$polygon = new polygon();
           sequence_id: inst.sequence_id,
           pause_object: inst.pause_object,
         };
-
         // We want a nested stringify with sorted keys. Builtin JS does not guarantee sort on nested objs.
         const inst_hash_data = stringify(inst_data);
         let inst_hash = this.hash_string(inst_hash_data);
@@ -8054,48 +8053,42 @@ Vue.prototype.$polygon = new polygon();
           dup_ids.push(inst.id ? inst.id : "New Instance");
           dup_ids.push(
             hashes[inst_hash][0].id ? hashes[inst_hash][0].id : "New Instance"
-              dup_indexes.push(i)
-              dup_indexes.push(hashes[inst_hash][1])
-              return [true, dup_ids, dup_indexes];
-
-            }
-            else{
-              hashes[inst_hash] = [inst, i]
-            }
-
-          }
-          return [false, dup_ids, dup_indexes];
-
-        },
-        refresh_sequence_frame_list: function(instance_list, frame_number){
-
-          for(const instance of instance_list){
-            this.$refs.sequence_list.add_frame_number_to_sequence(instance.sequence_id, frame_number)
-          }
-        },
-        save: async function (
-          and_complete=false,
-          frame_number_param = undefined,
-          instance_list_param = undefined)
-        {
-
-          this.save_error = {}
-          this.save_warning = {}
-          if (this.$props.view_only_mode == true) {
-            return
-          }
-          let current_frame = undefined;
-          let instance_list = this.instance_list;
-          if(this.video_mode){
-            if(frame_number_param == undefined){
-              current_frame = parseInt(this.current_frame, 10)
-            }
-            else{
-              current_frame = parseInt(frame_number_param, 10)
-            }
-              current_frame = parseInt(frame_number_param, 10)
-            }
-
+          );
+          dup_indexes.push(i);
+          dup_indexes.push(hashes[inst_hash][1]);
+          return [true, dup_ids, dup_indexes];
+        } else {
+          hashes[inst_hash] = [inst, i];
+        }
+      }
+      return [false, dup_ids, dup_indexes];
+    },
+    refresh_sequence_frame_list: function (instance_list, frame_number) {
+      for (const instance of instance_list) {
+        this.$refs.sequence_list.add_frame_number_to_sequence(
+          instance.sequence_id,
+          frame_number
+        );
+      }
+    },
+    save: async function (
+      and_complete = false,
+      frame_number_param = undefined,
+      instance_list_param = undefined
+    ) {
+      this.save_error = {};
+      this.save_warning = {};
+      if (this.$props.view_only_mode == true) {
+        return;
+      }
+      let current_frame = undefined;
+      let instance_list = this.instance_list;
+      if (this.video_mode) {
+        if (frame_number_param == undefined) {
+          current_frame = parseInt(this.current_frame, 10);
+        } else {
+          current_frame = parseInt(frame_number_param, 10);
+        }
         if (instance_list_param != undefined) {
           instance_list = instance_list_param;
         }
@@ -8103,13 +8096,11 @@ Vue.prototype.$polygon = new polygon();
       if (this.get_save_loading(current_frame) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
-
         return;
       }
       if (this.any_loading == true) {
         return;
       }
-
       this.set_save_loading(true, current_frame);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         this.has_duplicate_instances(instance_list);
@@ -8127,45 +8118,31 @@ Vue.prototype.$polygon = new polygon();
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
         };
-
         // We want to focus the most recent instance, if we focus the older one we can produce an error.
         this.$refs.instance_detail_list.toggle_instance_focus(
           dup_instance_list[0].original_index,
           undefined
         );
-
-            return
-          }
-          let instance_list_cache = instance_list.slice();
-
-          if (this.global_instance_list.length > 0) {
-            instance_list_cache = instance_list_cache.concat(
-                this.global_instance_list.slice())
-          }
-
-
-          let current_frame_cache = this.current_frame;
-          let current_video_file_id_cache = this.current_video_file_id;
-          let video_mode_cache = this.video_mode;
-          let current_video_file_id_cache = this.current_video_file_id;
-
-          // a video file can now be
-          // saved from file id + frame, so the current file
-          let current_file_id = null;
-          if(this.$props.file){
-            current_file_id = this.$props.file.id;
-          }
-          else if(this.$props.task){
-            current_file_id = this.$props.task.file.id
-          }
-          else{
-            throw new Error('You must provide either a file or a task in props in order to save.')
-          }
-            throw new Error('You must provide either a file or a task in props in order to save.')
-          }
-
+        this.set_save_loading(false, current_frame);
+        return;
+      }
+      this.instance_list_cache = instance_list.slice();
+      let current_frame_cache = this.current_frame;
+      let current_video_file_id_cache = this.current_video_file_id;
+      let video_mode_cache = this.video_mode;
+      // a video file can now be
+      // saved from file id + frame, so the current file
+      let current_file_id = null;
+      if (this.$props.file) {
+        current_file_id = this.$props.file.id;
+      } else if (this.$props.task) {
+        current_file_id = this.$props.task.file.id;
+      } else {
+        throw new Error(
+          "You must provide either a file or a task in props in order to save."
+        );
+      }
       var url = null;
-
       if (this.task && this.task.id) {
         url = "/api/v1/task/" + this.task.id + "/annotation/update";
       } else {
@@ -8178,7 +8155,6 @@ Vue.prototype.$polygon = new polygon();
             "/annotation/update";
         }
       }
-
       video_data = null;
       if (video_mode_cache == true) {
         var video_data = {
@@ -8186,6 +8162,7 @@ Vue.prototype.$polygon = new polygon();
           video_file_id: current_video_file_id_cache,
           current_frame: current_frame,
         };
+      }
       try {
         const response = await axios.post(url, {
           instance_list: this.instance_list_cache,
@@ -8197,34 +8174,11 @@ Vue.prototype.$polygon = new polygon();
         });
         this.save_loading_image = false
         this.has_changed = false
-        /*
-         * TODO important,
-         * in context of video, and wanting to allow the user to save and not wait for save
-         * response from server, is there any of this stuff that gets "returned"
-         * that we should *not* be updating?
-         *
-         * Context of https://github.com/swirlingsand/ai_vision/commit/ba405b6ab75de64457fc27f6e47cc7962328075c
-         *
-         * Basically realizing that so long as save succeeds, for video,
-         * it should make minimal assumptions about the state.
-         * ie the state after saving may not be the same as when save was initiated
-         *
-         * rightn now we blindly pass the updated sequence (which we DO want if the user stays
-         * on the frame), and trust sequence to handle this distction, ie checking albel file id
-         * is the same. As mentioned IF there ends up being some unified sequence thing
-         * that may help avoid that issue, but either way anything chained to this could be
-         * effected ... ie need to trace what save_response_callback was doing.
-         *
-         */
-           *
-           */
 
         this.save_count += 1;
         this.add_ids_to_new_instances_and_delete_old(response, video_data);
-
         this.check_if_pending_created_instance();
         this.$emit("save_response_callback", true);
-
         if (this.instance_buffer_metadata[this.current_frame]) {
           this.instance_buffer_metadata[this.current_frame].pending_save =
             false;
@@ -8233,7 +8187,6 @@ Vue.prototype.$polygon = new polygon();
             pending_save: false,
           };
         }
-
         if (response.data.sequence) {
           // Because: new color thing based on sequence id but seq id not assigned till response
           // not good code. just placeholder in current constraints until we can figure out something better.
@@ -8266,7 +8219,6 @@ Vue.prototype.$polygon = new polygon();
               response.data.sequence.id;
           }
           // end of temp sequence thing
-
           // Update any new created sequences
           if (response.data.new_sequence_list) {
             for (let new_seq of response.data.new_sequence_list) {
@@ -8280,7 +8232,6 @@ Vue.prototype.$polygon = new polygon();
             );
           }
         }
-
         /* When we save the file and go to next, we don't rely upon the
          * newly returned file to be anything related to the next task
          * We simply go to the "well" so to speak and request the next task here
@@ -8292,7 +8243,6 @@ Vue.prototype.$polygon = new polygon();
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true;
           this.snackbar_success_text = "Saved and completed. Moved to next.";
-
           if (this.$props.task && this.$props.task.id) {
             this.trigger_task_change("next", this.$props.task, true);
           } else {
@@ -8313,7 +8263,6 @@ Vue.prototype.$polygon = new polygon();
           this.display_refresh_cache_button = true;
           clearInterval(this.interval_autosave);
         }
-
         this.save_error = this.$route_api_errors(error);
         console.debug(error);
         //this.logout()
