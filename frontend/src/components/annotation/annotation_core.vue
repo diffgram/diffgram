@@ -5037,106 +5037,101 @@ Vue.prototype.$polygon = new polygon();
       this.ghost_instance_list.splice(ghost_index, 1); // remove from ghost list
     },
 
-        ghost_may_promote_instance_to_actual: function () {
-          if (this.label_settings.show_ghost_instances == false) { return }
-          if (this.ghost_instance_hover_index != undefined) { // may be 0!
-            this.instance_hover_index = this.ghost_instance_hover_index
-            this.instance_hover_type = this.ghost_instance_hover_type
-            this.ghost_promote_instance_to_actual(this.ghost_instance_hover_index)
-            this.ghost_clear_hover_index()
-          }
-        },
-        calculate_min_max_points: function(instance){
-          if(!instance){
-            return
-          }
-          if(['polygon', 'point'].includes(instance.type)){
-            instance.x_min = Math.min(...instance.points.map(p => p.x))
-            instance.y_min = Math.min(...instance.points.map(p => p.y))
-            instance.x_max = Math.max(...instance.points.map(p => p.x))
-            instance.y_max = Math.max(...instance.points.map(p => p.y))
-          }
-          else if(['cuboid'].includes(instance.type)){
-            instance.x_min = Math.min(
-              instance.front_face['top_right']['x'],
-              instance.front_face['bot_right']['x'],
-              instance.front_face['top_left']['x'],
-              instance.front_face['bot_right']['x'],
-              instance.rear_face['top_right']['x'],
-              instance.rear_face['bot_right']['x'],
-              instance.rear_face['top_left']['x'],
-              instance.rear_face['bot_right']['x'],
-            )
-            instance.x_max = Math.max(
-              instance.front_face['top_right']['x'],
-              instance.front_face['bot_right']['x'],
-              instance.front_face['top_left']['x'],
-              instance.front_face['bot_right']['x'],
-              instance.rear_face['top_right']['x'],
-              instance.rear_face['bot_right']['x'],
-              instance.rear_face['top_left']['x'],
-              instance.rear_face['bot_right']['x'],
-            )
-            instance.y_min = Math.min(
-              instance.front_face['top_right']['y'],
-              instance.front_face['bot_right']['y'],
-              instance.front_face['top_left']['y'],
-              instance.front_face['bot_right']['y'],
-              instance.rear_face['top_right']['y'],
-              instance.rear_face['bot_right']['y'],
-              instance.rear_face['top_left']['y'],
-              instance.rear_face['bot_right']['y'],
-            )
-            instance.y_max = Math.max(
-              instance.front_face['top_right']['y'],
-              instance.front_face['bot_right']['y'],
-              instance.front_face['top_left']['y'],
-              instance.front_face['bot_right']['y'],
-              instance.rear_face['top_right']['y'],
-              instance.rear_face['bot_right']['y'],
-              instance.rear_face['top_left']['y'],
-              instance.rear_face['bot_right']['y'],
-            )
-          }
-          else if(['ellipse'].includes(instance.type)){
-            instance.x_min = instance.center_x - instance.width;
-            instance.y_min = instance.center_y - instance.height;
-            instance.x_max = instance.center_x + instance.width
-            instance.y_max = instance.center_y + instance.height
-          }
-          else if(['curve'].includes(instance.type)){
-            instance.x_min = Math.min(instance.p1.x, instance.p2.x)
-            instance.x_max = Math.max(instance.p1.x, instance.p2.x)
-            instance.y_min = Math.min(instance.p1.y, instance.p2.y)
-            instance.y_max = Math.max(instance.p1.y, instance.p2.y)
-          }
-          else if(['keypoints'].includes(instance.type)){
-            instance.x_min = Math.min(...instance.nodes.map(p => p.x))
-            instance.y_min = Math.min(...instance.nodes.map(p => p.y))
-            instance.x_max = Math.max(...instance.nodes.map(p => p.x))
-            instance.y_max = Math.max(...instance.nodes.map(p => p.y))
-          }
-          else{
-            instance.x_min = parseInt(instance.x_min)
-            instance.y_min = parseInt(instance.y_min)
-            instance.x_max = parseInt(instance.x_max)
-            instance.y_max = parseInt(instance.y_max)
-          }
+    ghost_may_promote_instance_to_actual: function () {
+      if (this.label_settings.show_ghost_instances == false) {
+        return;
+      }
+      if (this.ghost_instance_hover_index != undefined) {
+        // may be 0!
+        this.instance_hover_index = this.ghost_instance_hover_index;
+        this.instance_hover_type = this.ghost_instance_hover_type;
+        this.ghost_promote_instance_to_actual(this.ghost_instance_hover_index);
+        this.ghost_clear_hover_index();
+      }
+    },
+    calculate_min_max_points: function (instance) {
+      if (!instance) {
+        return;
+      }
+      if (["polygon", "point"].includes(instance.type)) {
+        instance.x_min = Math.min(...instance.points.map((p) => p.x));
+        instance.y_min = Math.min(...instance.points.map((p) => p.y));
+        instance.x_max = Math.max(...instance.points.map((p) => p.x));
+        instance.y_max = Math.max(...instance.points.map((p) => p.y));
+      } else if (["cuboid"].includes(instance.type)) {
+        instance.x_min = Math.min(
+          instance.front_face["top_right"]["x"],
+          instance.front_face["bot_right"]["x"],
+          instance.front_face["top_left"]["x"],
+          instance.front_face["bot_right"]["x"],
+          instance.rear_face["top_right"]["x"],
+          instance.rear_face["bot_right"]["x"],
+          instance.rear_face["top_left"]["x"],
+          instance.rear_face["bot_right"]["x"]
+        );
+        instance.x_max = Math.max(
+          instance.front_face["top_right"]["x"],
+          instance.front_face["bot_right"]["x"],
+          instance.front_face["top_left"]["x"],
+          instance.front_face["bot_right"]["x"],
+          instance.rear_face["top_right"]["x"],
+          instance.rear_face["bot_right"]["x"],
+          instance.rear_face["top_left"]["x"],
+          instance.rear_face["bot_right"]["x"]
+        );
+        instance.y_min = Math.min(
+          instance.front_face["top_right"]["y"],
+          instance.front_face["bot_right"]["y"],
+          instance.front_face["top_left"]["y"],
+          instance.front_face["bot_right"]["y"],
+          instance.rear_face["top_right"]["y"],
+          instance.rear_face["bot_right"]["y"],
+          instance.rear_face["top_left"]["y"],
+          instance.rear_face["bot_right"]["y"]
+        );
+        instance.y_max = Math.max(
+          instance.front_face["top_right"]["y"],
+          instance.front_face["bot_right"]["y"],
+          instance.front_face["top_left"]["y"],
+          instance.front_face["bot_right"]["y"],
+          instance.rear_face["top_right"]["y"],
+          instance.rear_face["bot_right"]["y"],
+          instance.rear_face["top_left"]["y"],
+          instance.rear_face["bot_right"]["y"]
+        );
+      } else if (["ellipse"].includes(instance.type)) {
+        instance.x_min = instance.center_x - instance.width;
+        instance.y_min = instance.center_y - instance.height;
+        instance.x_max = instance.center_x + instance.width;
+        instance.y_max = instance.center_y + instance.height;
+      } else if (["curve"].includes(instance.type)) {
+        instance.x_min = Math.min(instance.p1.x, instance.p2.x);
+        instance.x_max = Math.max(instance.p1.x, instance.p2.x);
+        instance.y_min = Math.min(instance.p1.y, instance.p2.y);
+        instance.y_max = Math.max(instance.p1.y, instance.p2.y);
+      } else if (["keypoints"].includes(instance.type)) {
+        // instance.calculate_min_max_points()
+      } else {
+        instance.x_min = parseInt(instance.x_min);
+        instance.y_min = parseInt(instance.y_min);
+        instance.x_max = parseInt(instance.x_max);
+        instance.y_max = parseInt(instance.y_max);
+      }
+    },
+    move_keypoints: function () {
+      let key_points_did_move = false;
+      let instance = this.instance_list[this.instance_hover_index];
+      if (instance && this.is_actively_resizing) {
+        if (!this.original_edit_instance) {
+          this.original_edit_instance = instance.duplicate_for_undo();
+          this.original_edit_instance_index = this.instance_hover_index;
+        }
+        key_points_did_move = instance.move();
+      }
+      return key_points_did_move;
+    },
 
-        },
-        move_keypoints: function(){
-          let key_points_did_move = false;
-          let instance = this.instance_list[this.instance_hover_index];
-          if(instance && this.is_actively_resizing){
-            if(!this.original_edit_instance){
-              this.original_edit_instance = instance.duplicate_for_undo();
-              this.original_edit_instance_index = this.instance_hover_index;
-            }
-            key_points_did_move = instance.move();
-          }
-          return key_points_did_move
-        },
-        move_something: function (event) {
+    move_something: function (event) {
 
           /*
        * Limits (ie in edit mode) are assumed to be here.
@@ -6746,56 +6741,40 @@ Vue.prototype.$polygon = new polygon();
         var canvas_rectangle = this.canvas_element.getBoundingClientRect();
       }
 
+      this.polygon_auto_border_mouse_down()
+      this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
+      this.mouse_down_position.request_time = Date.now()
+      this.lock_polygon_corner();
+      this.polygon_mid_point_mouse_down()
 
 
+    },
+    lock_polygon_corner: function(){
+      this.polygon_point_click_index = this.polygon_point_hover_index
+      this.polygon_click_index = this.instance_hover_index
 
-          this.polygon_auto_border_mouse_down()
-          this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
-          this.mouse_down_position.request_time = Date.now()
-          this.lock_polygon_corner();
-          this.polygon_mid_point_mouse_down()
+    },
+    get_instances_core: function (response) {
+      // TODO improve to take dict instead of response
+      // since may use in other contexts
+      this.show_annotations = true
+      this.current_global_instance = null // reset
+      this.global_instance_list = []  // reset
 
+      // Not sure if a "silent" null check is right here
+      if (response.data['file_serialized']) {
+        this.instance_list = this.create_instance_list_with_class_types(
+          response.data['file_serialized']['instance_list']
+        );
+      }
+      this.get_and_set_global_instance()
 
-        },
-        lock_polygon_corner: function(){
-          this.polygon_point_click_index = this.polygon_point_hover_index
-          this.polygon_click_index = this.instance_hover_index
-
-        },
-        get_instances_core: function (response) {
-          // TODO improve to take dict instead of response
-          // since may use in other contexts
-          this.show_annotations = true
-          this.current_global_instance = null // reset
-          this.global_instance_list = []  // reset
-
-          // Not sure if a "silent" null check is right here
-          if (response.data['file_serialized']) {
-            this.instance_list = this.create_instance_list_with_class_types(
-              response.data['file_serialized']['instance_list']
-            );
-          }
-          this.get_and_set_global_instance()
-
-          this.loading = false
+      this.loading = false
 
       this.trigger_refresh_with_delay();
     },
 
     trigger_refresh_with_delay: function () {
-      /* Jan 2, 2020, there is some kind of timing issue
-       * with the way that the vue_canvas components detect
-         a refresh.
-
-         If we trigger $vm0.refresh = Date.now()
-         after it's loaded it works.
-
-         It also clears this is the user mouses over it
-         but this way
-         it covers that timing issue.
-       *
-       */
-
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
 
@@ -6842,6 +6821,7 @@ Vue.prototype.$polygon = new polygon();
         console.error(error);
       }
     },
+
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -7620,19 +7600,21 @@ Vue.prototype.$polygon = new polygon();
           this.auto_border_polygon_p1_index
         ].hovered_while_drawing = false;
       }
-          this.$store.commit('finish_draw')
-          this.current_polygon_point_list = []
-          this.auto_border_polygon_p1 = undefined;
-          this.auto_border_polygon_p1_index = undefined;
-          this.auto_border_polygon_p1_figure = undefined;
-          this.auto_border_polygon_p1_instance_index = undefined;
-          this.auto_border_polygon_p2 = undefined;
-          this.auto_border_polygon_p2_index = undefined;
-          this.auto_border_polygon_p2_figure = undefined;
-          this.auto_border_polygon_p2_instance_index = undefined;
-          this.instance_template_draw_started = false;
-          this.is_actively_drawing = false;
-          this.instance_template_start_point = undefined;
+      this.hide_context_menu();
+
+      this.$store.commit('finish_draw')
+      this.current_polygon_point_list = []
+      this.auto_border_polygon_p1 = undefined;
+      this.auto_border_polygon_p1_index = undefined;
+      this.auto_border_polygon_p1_figure = undefined;
+      this.auto_border_polygon_p1_instance_index = undefined;
+      this.auto_border_polygon_p2 = undefined;
+      this.auto_border_polygon_p2_index = undefined;
+      this.auto_border_polygon_p2_figure = undefined;
+      this.auto_border_polygon_p2_instance_index = undefined;
+      this.instance_template_draw_started = false;
+      this.is_actively_drawing = false;
+      this.instance_template_start_point = undefined;
     },
     show_loading_paste: function(){
       this.show_snackbar_paste = true;
@@ -7670,8 +7652,14 @@ Vue.prototype.$polygon = new polygon();
       const limit = pLimit(25); // 25 Max concurrent request.
       try {
         this.save_multiple_frames_error = {};
-        const promises = frames_list.map(frame_number => {
-          return limit(() => this.save(false, frame_number, this.instance_buffer_dict[frame_number]))
+        const promises = frames_list.map((frame_number) => {
+          return limit(() =>
+            this.save(
+              false,
+              frame_number,
+              this.instance_buffer_dict[frame_number]
+            )
+          );
         });
         const result = await Promise.all(promises);
         return result

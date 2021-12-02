@@ -111,33 +111,33 @@ export default Vue.extend({
           global_attribute_groups_list: null
 
         }
-      },
-      watch: {
-        '$route'(to, from) {
-          if(from.name === 'task_annotation' && to.name === 'studio'){
-            this.fetch_project_file_list();
-            this.task = null;
-            this.$refs.file_manager_sheet.display_file_manager_sheet();
+  },
+  watch: {
+    '$route'(to, from) {
+      if(from.name === 'task_annotation' && to.name === 'studio'){
+        this.fetch_project_file_list();
+        this.task = null;
+        this.$refs.file_manager_sheet.display_file_manager_sheet();
 
-          }
-          if(from.name === 'studio' && to.name === 'task_annotation'){
-            this.current_file = null;
-            this.fetch_single_task(this.$props.task_id_prop);
-            this.$refs.file_manager_sheet.hide_file_manager_sheet()
-          }
-          this.get_model_runs_from_query(to.query);
+      }
+      if(from.name === 'studio' && to.name === 'task_annotation'){
+        this.current_file = null;
+        this.fetch_single_task(this.$props.task_id_prop);
+        this.$refs.file_manager_sheet.hide_file_manager_sheet()
+      }
+      this.get_model_runs_from_query(to.query);
 
-        }
-      },
-      created() {
+    }
+  },
+  created() {
 
 
-        if (this.$route.query.edit_schema) {
-          this.enabled_edit_schema = true;
-        }
-        if (this.$route.query.view_only) {
-          this.view_only = true;
-        }
+    if (this.$route.query.edit_schema) {
+      this.enabled_edit_schema = true;
+    }
+    if (this.$route.query.view_only) {
+      this.view_only = true;
+    }
 
     if (
       !this.$store.getters.is_on_public_project ||
