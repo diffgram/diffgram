@@ -1,5 +1,5 @@
 <template>
-<div v-cloak>
+<div v-cloak id="hotkeys-3d">
 <v-layout column>
   <h2> 3D/Sensor Fusion Hotkeys</h2>
 
