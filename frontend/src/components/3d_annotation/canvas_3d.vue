@@ -241,7 +241,7 @@
           if(!this.container){
             return
           }
-          this.renderer = new THREE.WebGLRenderer({ antialias: true});
+          this.renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true});
           this.renderer.setPixelRatio(window.devicePixelRatio);
 
           this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);

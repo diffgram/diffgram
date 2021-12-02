@@ -108,6 +108,7 @@
           </h3>
           <!-- Archive button -->
           <button_with_confirm
+            v-if="mode === 'edit'"
             @confirm_click="api_group_archive(group)"
             icon="archive"
             color="red"
