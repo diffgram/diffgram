@@ -237,6 +237,9 @@ export default class SceneController3D {
   }
 
   private get_3d_mouse_position() {
+    if(!this.scene){
+      return
+    }
     // Transform the Mouse 2D Coordinates to the 3D world using unproject()
     this.plane_normal.copy(this.camera.position).normalize();
     this.plane.setFromNormalAndCoplanarPoint(this.plane_normal, this.scene.position);
