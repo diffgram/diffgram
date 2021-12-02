@@ -326,7 +326,7 @@
           <template slot="AssignedUser" slot-scope="props">
             <div style="display: flex; flex-direction: row">
               <tooltip_button
-                tooltip_message="Add assignee"
+                tooltip_message="Manage assignees"
                 class="hidden-sm-and-down"
                 color="primary"
                 @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'assignee')"
@@ -354,7 +354,7 @@
           <template slot="AssignedReviewer" slot-scope="props">
             <div style="display: flex; flex-direction: row">
               <tooltip_button
-                tooltip_message="Add reviewer"
+                tooltip_message="Manage reviewers"
                 class="hidden-sm-and-down"
                 color="primary"
                 @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'reviewer')"
@@ -585,12 +585,12 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <add_assignee 
-      :dialog="task_assign_dialog_open" 
-      :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign).task_assignees :[]" 
+    <add_assignee
+      :dialog="task_assign_dialog_open"
+      :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
       :loading="task_assign_dialog_loading"
-      @close="on_assign_dialog_close" 
-      @assign="assign_user_to_task" 
+      @close="on_assign_dialog_close"
+      @assign="assign_user_to_task"
     />
     <v-snackbar v-model="snackbar_success" :timeout="3000" color="primary">
       Tasks archived successfully.
@@ -849,7 +849,6 @@ export default Vue.extend({
     page_start_index: function () {
       return this.page_number * this.per_page_limit + 1;
     },
-
     page_end_index: function () {
       let count = this.page_number * this.per_page_limit + this.per_page_limit;
       if (count > this.$store.state.job.current.file_count_statistic) {
@@ -948,7 +947,7 @@ export default Vue.extend({
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
       await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
-      const new_task_assignees = user_ids.map(id => ({user_id: id}))
+      const new_task_assignees = user_ids.map(id => ({ user_id: id }))
       this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       this.on_assign_dialog_close()
     },

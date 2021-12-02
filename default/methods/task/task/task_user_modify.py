@@ -23,7 +23,7 @@ def api_task_user_modify(project_string_id, task_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
         
-        users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id)
+        users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id).filter(TaskUser.relation ==  input['relation'])
         if (len(input['user_id']) > 0):
             users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(input['user_id']))
 
@@ -41,10 +41,10 @@ def api_task_user_modify(project_string_id, task_id):
             )
 
         for user in input['user_id']:
-            user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(TaskUser.task_id == task_id).all()
+            user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(TaskUser.task_id == task_id).filter(TaskUser.relation ==  input['relation']).all()
             if (len(user_already_assigned) > 0):
                 continue
-
+            
             result, log = api_task_user_add_core(
                 session = session,
                 task_id = task_id,
