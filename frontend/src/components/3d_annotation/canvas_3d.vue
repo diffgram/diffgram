@@ -261,8 +261,10 @@
             this.create_renderer();
           }
           window.addEventListener( 'resize', this.on_window_resize );
+          let scene_created = false;
           if (!scene) {
             scene = new THREE.Scene();
+            scene_created = true;
             // scene.background = new THREE.Color('blue')
           }
 
@@ -275,17 +277,16 @@
           if (this.$props.camera_type === 'perspective') {
             this.setup_perspective_scene_controller(scene);
             this.configure_controls();
+
           } else if (this.$props.camera_type === 'ortographic') {
             this.setup_ortographic_scene_controller(scene)
           }
-
-          console.log('addd mesh to schene', )
-          this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
-
-
-          this.scene_controller.start_render();
-
-          this.add_instance_list_to_scene();
+          
+          if(scene_created){
+            this.scene_controller.add_mesh_to_scene(this.point_cloud_mesh)
+            this.scene_controller.start_render();
+            this.add_instance_list_to_scene();
+          }
 
 
           this.$emit('scene_ready', this.scene_controller)
