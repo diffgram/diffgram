@@ -16,8 +16,8 @@
   import * as THREE from "three";
   import SceneController3D from './SceneController3D';
   import SceneControllerOrtographicView from './SceneControllerOrtographicView';
-
-
+  import { PCDLoader } from './PCDLoader.js';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
   export default Vue.extend({
       name: 'canvas_3d',
@@ -86,25 +86,60 @@
       },
 
       async mounted() {
-        this.container = document.getElementById(this.$props.container_id)
-        if(this.camera_type === 'perspective'){
-          window.addEventListener('keydown', this.on_key_down);
-          document.addEventListener('click', function(event) {
-            if(!component_ctx.renderer || !component_ctx.renderer.domElement){
-              return
-            }
-            if (event.target === component_ctx.renderer.domElement) {
-              component_ctx.scene_controller.add_orbit_controls_events();
-            }
-            else{
-              component_ctx.scene_controller.remove_orbit_controls_events();
-            }
-          });
+        // this.container = document.getElementById(this.$props.container_id)
+        // if(this.camera_type === 'perspective'){
+        //   window.addEventListener('keydown', this.on_key_down);
+        //   document.addEventListener('click', function(event) {
+        //     if(!component_ctx.renderer || !component_ctx.renderer.domElement){
+        //       return
+        //     }
+        //     if (event.target === component_ctx.renderer.domElement) {
+        //       component_ctx.scene_controller.add_orbit_controls_events();
+        //     }
+        //     else{
+        //       component_ctx.scene_controller.remove_orbit_controls_events();
+        //     }
+        //   });
+        // }
+        //
+        // await this.load_canvas();
+        //
+        // let component_ctx = this;
+        let renderer, scene, camera;
+        let container = document.getElementById(this.$props.container_id)
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( container.clientWidth,  container.clientHeight );
+        document.body.appendChild( renderer.domElement );
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera( 30, container.clientWidth / container.clientHeight, 0.01, 40 );
+        camera.position.set( 0, 0, 1 );
+        scene.add( camera );
+
+        const controls = new OrbitControls( camera, renderer.domElement );
+        controls.addEventListener( 'change', render ); // use if there is no animation loop
+        controls.minDistance = 0.5;
+        controls.maxDistance = 10;
+
+        //scene.add( new THREE.AxesHelper( 1 ) );
+
+        const loader = new PCDLoader();
+        loader.load( 'https://diffgramstaging.blob.core.windows.net/testpablo/projects/pcd/7/76?st=2021-11-16T17%3A08%3A29Z&se=2023-01-10T17%3A08%3A29Z&sp=rt&sv=2020-06-12&sr=b&rscd=attachment%3B%20filename%3D76&sig=leCde9ZLeXA5pyOa7p/pB6ysQlnXJwps4gUy6SglW/k%3D', function ( points ) {
+
+          points.geometry.center();
+          points.geometry.rotateX( Math.PI );
+          scene.add( points );
+
+          render();
+
+        } );
+        function render() {
+
+          renderer.render( scene, camera );
+
         }
-
-        await this.load_canvas();
-
-        let component_ctx = this;
 
 
       },
