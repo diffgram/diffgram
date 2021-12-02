@@ -336,10 +336,13 @@
                 :bottom="true"
               >
               </tooltip_button>
-              <v_user_icon style="z-index: 1" v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"> </v_user_icon>
+              <v_user_icon 
+                style="z-index: 1" 
+                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+              />
               <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-avatar v-bind="attrs" v-on="on" style="border: 1px solid black; margin-left: -15px; z-index: 0; background-color: white">
+                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
                     + {{ props.item.task_assignees.length - 1}}
                   </v-avatar>
                 </template>
@@ -906,7 +909,6 @@ export default Vue.extend({
       this.task_assign_dialog_loading = true
       await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
       const new_task_assignees = user_ids.map(id => ({user_id: id}))
-      console.log(new_task_assignees)
       this.task_list.find(task => task.id === this.task_to_assign).task_assignees = new_task_assignees
       this.on_assign_dialog_close()
     },
@@ -1109,3 +1111,11 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style scoped>
+.show-number-of-users {
+  margin-left: -15px; 
+  z-index: 0; 
+  background-color: #d3d3d3
+}
+</style>
