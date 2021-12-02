@@ -547,6 +547,7 @@
     <add_assignee 
       :dialog="task_assign_dialog_open" 
       :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign).task_assignees :[]" 
+      :loading="task_assign_dialog_loading"
       @close="on_assign_dialog_close" 
       @assign="assign_user_to_task" 
     />
@@ -621,6 +622,7 @@ export default Vue.extend({
 
       task_assign_dialog_open: false,
       task_to_assign: null,
+      task_assign_dialog_loading: false,
 
       page_number: 0,
       per_page_limit: 25,
@@ -887,10 +889,16 @@ export default Vue.extend({
     on_assign_dialog_close: function() {
       this.task_assign_dialog_open = false
       this.task_to_assign = null
+      this.task_assign_dialog_loading = false
     },
 
     assign_user_to_task: async function(user_ids) {
+      this.task_assign_dialog_loading = true
       const response = await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign)
+      if (response.status === 200) {
+        const new_task_assignees = user_ids.map(id => ({user_id: id}))
+        this.task_list.find(task => task.id === this.task_to_assign).task_assignees = new_task_assignees
+      }
       this.on_assign_dialog_close()
     },
 

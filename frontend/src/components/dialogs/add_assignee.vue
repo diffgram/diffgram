@@ -21,7 +21,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn id="review-dialog-cancel" color="primary" @click="on_cancel" text> Cancel </v-btn>
-          <v-btn data-cy="review-the-task" id="review-dialog-submit" color="green" @click="on_assign" text> Assign </v-btn>
+          <v-btn :loading="loading" data-cy="review-the-task" id="review-dialog-submit" color="green" @click="on_assign" text> Assign </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -45,6 +45,10 @@ export default Vue.extend({
     assignees: {
       type:  Array,
       default: []
+    },
+    loading: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
