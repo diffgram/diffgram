@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import SceneController3D from "./SceneController3D";
+import AnnotationScene3D from "./AnnotationScene3D";
 import {Instance3D} from "../vue_canvas/instances/Instance";
 
 export default class CuboidDrawerTool {
-  public scene_controller: SceneController3D;
+  public scene_controller: AnnotationScene3D;
   public place_holder_cuboid: THREE.Mesh;
   public mouse_position_3d_initial_draw: THREE.Vector3;
 

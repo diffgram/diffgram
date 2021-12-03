@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import SceneController3D from "../../3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
 
 export interface InstanceBehaviour {
@@ -138,7 +138,7 @@ export class Instance {
 export abstract class Instance3D extends Instance {
   public helper_lines: THREE.LineSegments;
   public mesh: THREE.Mesh;
-  public scene_controller_3d: SceneController3D;
+  public scene_controller_3d: AnnotationScene3D;
   public geometry: THREE.BoxGeometry;
   public material: THREE.MeshBasicMaterial;
   public depth: number;

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {Instance3D} from './Instance'
-import SceneController3D from "../../3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {v4 as uuidv4 } from 'uuid'
 
 export default class Cuboid3DInstance extends Instance3D {
@@ -10,7 +10,7 @@ export default class Cuboid3DInstance extends Instance3D {
   public geometry: THREE.BoxGeometry;
 
 
-  public constructor(scene_controller_3d: SceneController3D, mesh: THREE.Mesh) {
+  public constructor(scene_controller_3d: AnnotationScene3D, mesh: THREE.Mesh) {
     super();
     this.scene_controller_3d = scene_controller_3d;
     this.mesh = mesh;

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
-import SceneController3D from "./SceneController3D";
+import AnnotationScene3D from "./AnnotationScene3D";
 
 type GizmoType = {
   _gizmo: any
@@ -8,7 +8,7 @@ type GizmoType = {
 }
 export default class ObjectTransformControls {
   controls_transform: TransformControls;
-  scene_controller: SceneController3D;
+  scene_controller: AnnotationScene3D;
 
   public constructor(camera, scene_controller, domeElement, scene, render_function, drag_function, layer_number) {
     this.controls_transform = new TransformControls( camera, domeElement ) as TransformControls & GizmoType;

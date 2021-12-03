@@ -143,57 +143,57 @@
         </div>
         <div id="secondary_3d_canvas_container" class="d-flex">
           <div class="mr-1 mt-1">
-<!--            <canvas_3d-->
-<!--              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"-->
-<!--              ref="x_axis_3d_canvas"-->
-<!--              :point_cloud_mesh="point_cloud_mesh"-->
-<!--              :create_new_scene="false"-->
-<!--              camera_type="ortographic"-->
-<!--              :width="secondary_canvas_width"-->
-<!--              :height="secondary_canvas_height"-->
-<!--              :allow_navigation="true"-->
-<!--              :instance_list="instance_list"-->
-<!--              :current_label_file="current_label_file"-->
-<!--              :draw_mode="draw_mode"-->
-<!--              :container_id="'x_axis_3d_canvas'"-->
-<!--              :with_keyboard_controls="true">-->
-<!--            </canvas_3d>-->
-<!--          </div>-->
-<!--          <div class="mr-1 mt-1">-->
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
+              ref="x_axis_3d_canvas"
+              :point_cloud_mesh="point_cloud_mesh"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'x_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
+          </div>
+          <div class="mr-1 mt-1">
 
-<!--            <canvas_3d-->
-<!--              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"-->
-<!--              ref="y_axis_3d_canvas"-->
-<!--              :create_new_scene="false"-->
-<!--              camera_type="ortographic"-->
-<!--              :width="secondary_canvas_width"-->
-<!--              :point_cloud_mesh="point_cloud_mesh"-->
-<!--              :height="secondary_canvas_height"-->
-<!--              :allow_navigation="true"-->
-<!--              :instance_list="instance_list"-->
-<!--              :current_label_file="current_label_file"-->
-<!--              :draw_mode="draw_mode"-->
-<!--              :container_id="'y_axis_3d_canvas'"-->
-<!--              :with_keyboard_controls="true">-->
-<!--            </canvas_3d>-->
-<!--          </div>-->
-<!--          <div class="mr-1 mt-1">-->
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
+              ref="y_axis_3d_canvas"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :point_cloud_mesh="point_cloud_mesh"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'y_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
+          </div>
+          <div class="mr-1 mt-1">
 
-<!--            <canvas_3d-->
-<!--              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"-->
-<!--              ref="z_axis_3d_canvas"-->
-<!--              :point_cloud_mesh="point_cloud_mesh"-->
-<!--              :create_new_scene="false"-->
-<!--              camera_type="ortographic"-->
-<!--              :width="secondary_canvas_width"-->
-<!--              :height="secondary_canvas_height"-->
-<!--              :allow_navigation="true"-->
-<!--              :instance_list="instance_list"-->
-<!--              :current_label_file="current_label_file"-->
-<!--              :draw_mode="draw_mode"-->
-<!--              :container_id="'z_axis_3d_canvas'"-->
-<!--              :with_keyboard_controls="true">-->
-<!--            </canvas_3d>-->
+            <canvas_3d
+              v-if="secondary_canvas_width && secondary_canvas_height && point_cloud_mesh"
+              ref="z_axis_3d_canvas"
+              :point_cloud_mesh="point_cloud_mesh"
+              :create_new_scene="false"
+              camera_type="ortographic"
+              :width="secondary_canvas_width"
+              :height="secondary_canvas_height"
+              :allow_navigation="true"
+              :instance_list="instance_list"
+              :current_label_file="current_label_file"
+              :draw_mode="draw_mode"
+              :container_id="'z_axis_3d_canvas'"
+              :with_keyboard_controls="true">
+            </canvas_3d>
           </div>
         </div>
 

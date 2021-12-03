@@ -3,10 +3,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
 import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
-import SceneController3D from "./SceneController3D";
+import AnnotationScene3D from "./AnnotationScene3D";
 import {getCenterPoint} from './utils_3d'
 
-export default class SceneControllerOrtographicView extends  SceneController3D{
+export default class AnnotationScene3DOrtographicView extends  AnnotationScene3D{
   public camera: THREE.OrthographicCamera;
 
   public constructor(scene, camera, renderer, container, component_ctx, instance_list, controls_panning_speed = 60, point_cloud_mesh) {

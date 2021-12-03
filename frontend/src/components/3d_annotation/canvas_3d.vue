@@ -14,8 +14,8 @@
   import {WEBGL} from "./WebGL";
   import Vue from "vue";
   import * as THREE from "three";
-  import SceneController3D from './SceneController3D';
-  import SceneControllerOrtographicView from './SceneControllerOrtographicView';
+  import AnnotationScene3D from './AnnotationScene3D';
+  import AnnotationScene3DOrtographicView from './AnnotationScene3DOrtographicView';
   import { PCDLoader } from './PCDLoader.js';
   import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -107,7 +107,8 @@
         let component_ctx = this;
 
 
-        // FOR TESTING PCD LOADING ISSSUE
+        // FOR TESTING PCD LOADING ISSUE:
+        // Uncomment this and comment the code above, this should display a basic figure with the pcd loader.
         // let renderer, scene, camera;
         // let container = document.getElementById(this.$props.container_id)
         // renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -246,7 +247,7 @@
             20,
             0.1,
             1000);
-          this.scene_controller = new SceneControllerOrtographicView(scene,
+          this.scene_controller = new AnnotationScene3DOrtographicView(scene,
             this.camera,
             this.renderer,
             this.container,
@@ -265,7 +266,7 @@
             return
           }
           this.camera = new THREE.PerspectiveCamera(75, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
-          this.scene_controller = new SceneController3D(scene,
+          this.scene_controller = new AnnotationScene3D(scene,
             this.camera,
             this.renderer,
             this.container,
@@ -273,9 +274,9 @@
             this.$props.instance_list,
             60,
             this.point_cloud_mesh)
-          // this.scene_controller.attach_mouse_events();
-          // this.scene_controller.set_draw_mode(this.$props.draw_mode);
-          // this.scene_controller.set_current_label_file(this.$props.current_label_file);
+          this.scene_controller.attach_mouse_events();
+          this.scene_controller.set_draw_mode(this.$props.draw_mode);
+          this.scene_controller.set_current_label_file(this.$props.current_label_file);
         },
         create_renderer: function(){
           if(!this.container){
@@ -319,7 +320,7 @@
             this.configure_controls();
 
           } else if (this.$props.camera_type === 'ortographic') {
-            // this.setup_ortographic_scene_controller(scene)
+            this.setup_ortographic_scene_controller(scene)
           }
 
           if(scene_created){
@@ -349,6 +350,11 @@
           if(!this.camera){
             return
           }
+          if(!this.renderer){
+            return
+          }
+
+
           let w = this.container.clientWidth
           let h = this.container.clientHeight
           this.camera.aspect = w / h;

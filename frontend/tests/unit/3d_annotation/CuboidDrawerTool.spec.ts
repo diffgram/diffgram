@@ -4,7 +4,7 @@ import CuboidDrawerTool from "../../../src/components/3d_annotation/CuboidDrawer
 import * as THREE from "three";
 import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
 import mock = jest.mock;
-import SceneController3D from "../../../src/components/3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
 import Cuboid3DInstance from "../../../src/components/vue_canvas/instances/Cuboid3DInstance"
 import {mocked} from 'ts-jest/utils'
 
@@ -23,7 +23,7 @@ describe("Test canvas_3d.vue", () => {
   });
 
   it("Correctly creates a CuboidDrawerTool() object", () => {
-    let scene_controller = mocked(SceneController3D, true);
+    let scene_controller = mocked(AnnotationScene3D, true);
     let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller);
     expect(cuboid_drawer_tools.mouse_position_3d_initial_draw).toMatchObject(new THREE.Vector3())
     expect(cuboid_drawer_tools.place_holder_cuboid).toBe(null)
@@ -31,7 +31,7 @@ describe("Test canvas_3d.vue", () => {
   });
 
   it("Correctly calls create_mesh_from_instance_data()", () => {
-    let scene_controller = mocked(SceneController3D, true);
+    let scene_controller = mocked(AnnotationScene3D, true);
     let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller);
     let mock_instance = mocked(Cuboid3DInstance, true) as unknown as Cuboid3DInstance;
     mock_instance.label_file = {
@@ -64,7 +64,7 @@ describe("Test canvas_3d.vue", () => {
   });
 
   it("Correctly calls remove_placeholder_cuboid()", () => {
-    let scene_controller = mocked(SceneController3D, true);
+    let scene_controller = mocked(AnnotationScene3D, true);
     let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller);
     let mock_instance = mocked(Cuboid3DInstance, true) as unknown as Cuboid3DInstance;
     mock_instance.label_file = {
@@ -90,7 +90,7 @@ describe("Test canvas_3d.vue", () => {
   });
 
   it("Correctly calls resize_place_holder_cuboid()", () => {
-    let scene_controller = mocked(SceneController3D, true) as unknown as SceneController3D;
+    let scene_controller = mocked(AnnotationScene3D, true) as unknown as AnnotationScene3D;
     let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller);
     let mock_instance = mocked(Cuboid3DInstance, true) as unknown as Cuboid3DInstance;
 

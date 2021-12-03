@@ -1,5 +1,5 @@
 import * as instance_utils from '../../../utils/instance_utils';
-import SceneController3D from "../../3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../3d_annotation/SceneController3D";
 import {Instance} from "../../vue_canvas/instances/Instance";
 
 const CLASS_INSTANCE_TYPES = [
@@ -13,7 +13,7 @@ interface ComponentWithInstanceList extends Vue {
 
 export class UpdateInstanceCommand {
   public ann_core_ctx: ComponentWithInstanceList;
-  public scene_controller_3d: SceneController3D;
+  public scene_controller_3d: AnnotationScene3D;
   public old_instance: Instance;
   public instance: Instance;
   public instance_index: number;
@@ -82,7 +82,7 @@ export class UpdateInstanceCommand {
     }
   }
 
-  constructor(instance: Instance, instance_index: number, old_instance: Instance, ann_core_ctx: ComponentWithInstanceList, scene_controller_3d: SceneController3D = undefined) {
+  constructor(instance: Instance, instance_index: number, old_instance: Instance, ann_core_ctx: ComponentWithInstanceList, scene_controller_3d: AnnotationScene3D = undefined) {
     this.ann_core_ctx = ann_core_ctx;
     this.scene_controller_3d = scene_controller_3d;
     this.old_instance = this._copyInstance(old_instance);

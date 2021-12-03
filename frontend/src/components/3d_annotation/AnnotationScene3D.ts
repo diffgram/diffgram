@@ -7,16 +7,17 @@ import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
 import Vue from 'vue';
 
-export default class SceneController3D {
+export default class AnnotationScene3D {
   public scene: THREE.Scene;
   public controls_orbit: OrbitControls;
   public camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   public renderer: THREE.WebGLRenderer;
   public controls_panning_speed: number;
+  public binded_funcs: any;
   public object_transform_controls: ObjectTransformControls;
   public mouse: THREE.Vector2;
   public raycaster: THREE.Raycaster;
-  public draw_mode: THREE.Raycaster;
+  public draw_mode: boolean;
   public axes_helper: THREE.AxesHelper;
   public grid_helper: THREE.GridHelper;
 
@@ -268,6 +269,7 @@ export default class SceneController3D {
       let object = intersects[i].object as THREE.Mesh;
       (object.material as THREE.MeshBasicMaterial).opacity = 0.5;
       // intersects[i].object.material.color.set(0xFFFFFF);
+      console.log('aaa', object.userData.instance_index)
       if (object.userData.instance_index != undefined) {
         this.instance_hovered_index = object.userData.instance_index
         let instance = this.instance_list[this.instance_hovered_index];
@@ -296,7 +298,6 @@ export default class SceneController3D {
     }
     this.reset_materials();
     this.check_hover();
-    console.log('rendering', this.scene, this.camera)
     this.renderer.render(this.scene, this.camera);
 
   }
@@ -305,22 +306,30 @@ export default class SceneController3D {
     if(!this.container){
       return
     }
-    this.container.addEventListener('mousemove', this.on_mouse_move.bind(this), false);
-    this.container.addEventListener('click', this.on_mouse_click.bind(this));
-    this.container.addEventListener('dblclick', this.on_mouse_double_click.bind(this));
+    this.binded_funcs = {
+      on_mouse_move: this.on_mouse_move.bind(this),
+      on_mouse_click: this.on_mouse_move.bind(this),
+      on_mouse_double_click: this.on_mouse_move.bind(this),
+    }
+    this.container.addEventListener('mousemove', this.binded_funcs.on_mouse_move, false);
+    this.container.addEventListener('click', this.binded_funcs.on_mouse_click);
+    this.container.addEventListener('dblclick', this.binded_funcs.on_mouse_double_click);
   }
 
   public detach_mouse_events() {
     if(!this.container){
       return
     }
-    this.container.removeEventListener('mousemove', this.on_mouse_move.bind(this));
-    this.container.removeEventListener('click', this.on_mouse_click.bind(this));
-    this.container.removeEventListener('dblclick', this.on_mouse_double_click.bind(this));
-  }
+    if(this.binded_funcs.on_mouse_move){
+      this.container.removeEventListener('mousemove', this.binded_funcs.on_mouse_move);
+    }
+    if(this.binded_funcs.on_mouse_click){
+      this.container.removeEventListener('click', this.binded_funcs.on_mouse_click);
+    }
+    if(this.binded_funcs.on_mouse_double_click){
+      this.container.removeEventListener('dblclick', this.binded_funcs.on_mouse_double_click);
+    }
 
-  public set_instance_list(instance_list) {
-    this.instance_list = instance_list;
   }
 
   public set_current_label_file(label_file) {
@@ -366,7 +375,6 @@ export default class SceneController3D {
 
 
   public deselect_instance() {
-    console.log(this.selected_instance, 'deselectttt');
     if (!this.selected_instance) {
       return
     }
@@ -407,14 +415,12 @@ export default class SceneController3D {
     const intersects = this.raycaster.intersectObjects(this.scene.children.filter(obj => !this.excluded_objects_ray_caster.includes(obj.name)));
 
     if (intersects.length > 0) {
-      console.log('INTERSEC INSTANCEE', intersects)
       let instance_object = intersects.find(elm => {
         if(elm.object.userData && elm.object.userData.instance_index != undefined){
           return true;
         }
         return false;
       });
-      console.log('instance_object', instance_object)
       if(instance_object){
         let index = instance_object.object.userData.instance_index;
         let instance_to_select = this.instance_list[index];

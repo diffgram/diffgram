@@ -3,7 +3,7 @@ import Vue from "vue";
 import * as THREE from "three";
 import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
 import ObjectTransformControls from "../../../src/components/3d_annotation/ObjectTransformControls";
-import SceneController3D from "../../../src/components/3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
 import axios from "axios";
 import {mocked} from 'ts-jest/utils'
 import {load} from "mime";
@@ -22,7 +22,7 @@ describe("Test ObjectTransformControls.spec.ts", () => {
   beforeEach(() => {
     let ctx = {loading_pcd: false, percentage: 1}
     let camera = mocked(THREE.PerspectiveCamera, true) as unknown as THREE.PerspectiveCamera;
-    let scene_controller = mocked(SceneController3D, true) as unknown as SceneController3D;
+    let scene_controller = mocked(AnnotationScene3D, true) as unknown as AnnotationScene3D;
     let domeElement = document.createElement('canvas');
     scene_controller.scene = new THREE.Scene();
     let scene = scene_controller.scene;
@@ -42,7 +42,7 @@ describe("Test ObjectTransformControls.spec.ts", () => {
   it("Correctly creates a ObjectTransformControls() object", () => {
     let ctx = new Vue();
     let camera = mocked(THREE.PerspectiveCamera, true) as unknown as THREE.PerspectiveCamera;
-    let scene_controller = mocked(SceneController3D, true) as unknown as SceneController3D;
+    let scene_controller = mocked(AnnotationScene3D, true) as unknown as AnnotationScene3D;
     let domeElement = document.createElement('canvas');
     scene_controller.scene = new THREE.Scene();
     scene_controller.component_ctx = ctx;
