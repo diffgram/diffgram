@@ -1,7 +1,7 @@
 import Vuex from "vuex";
 import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
 import canvas_3d from "../../../src/components/3d_annotation/canvas_3d.vue";
-
+import 'jest-canvas-mock';
 import * as THREE from "three";
 import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
 import mock = jest.mock;
@@ -33,6 +33,10 @@ describe("Test canvas_3d.vue", () => {
   let options;
   let wrapper: Wrapper<Vue>;
   beforeEach(() => {
+    let WebGLRendererModule = require("three/src/renderers/WebGLRenderer");
+
+    // @ts-ignore
+    THREE.WebGLRenderer = MockClassWebGLRenderer
     options = {
 
       propsData: {
@@ -76,6 +80,12 @@ describe("Test canvas_3d.vue", () => {
 
   it("Tests if canvas_3d mounts successfully", () => {
     wrapper = shallowMount(canvas_3d, options);
+    wrapper.setData({
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
+    })
     expect(wrapper.html().includes(`id="${options.propsData.container_id}"`)).toBeTruthy();
   });
 
@@ -87,6 +97,10 @@ describe("Test canvas_3d.vue", () => {
         add_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     const spy = jest.spyOn(vm.scene_controller, 'add_orbit_controls_events')
     vm.on_focus_canvas();
@@ -101,6 +115,10 @@ describe("Test canvas_3d.vue", () => {
         remove_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     const spy = jest.spyOn(vm.scene_controller, 'remove_orbit_controls_events')
     vm.on_focus_out_canvas();
@@ -125,6 +143,10 @@ describe("Test canvas_3d.vue", () => {
         center_camera_to_mesh: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     const spy = jest.spyOn(vm, 'center_camera')
     vm.on_key_down({keyCode: 67});
@@ -146,6 +168,10 @@ describe("Test canvas_3d.vue", () => {
         center_camera_to_mesh: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     const spy = jest.spyOn(vm, 'setup_scene')
     vm.load_canvas();
@@ -176,6 +202,10 @@ describe("Test canvas_3d.vue", () => {
         remove_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     const spy_detach_mouse_events = jest.spyOn(vm.scene_controller, 'detach_mouse_events')
@@ -214,6 +244,10 @@ describe("Test canvas_3d.vue", () => {
         remove_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     const spy_update = jest.spyOn(vm.scene_controller.controls_orbit, 'update')
@@ -244,6 +278,10 @@ describe("Test canvas_3d.vue", () => {
         remove_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     const spy_update = jest.spyOn(vm.scene_controller.controls_orbit, 'update')
@@ -260,7 +298,11 @@ describe("Test canvas_3d.vue", () => {
       renderer: {
         setPixelRatio: jest.fn()
       },
-
+      container: {
+        clientWidth: 0,
+        clientHeight: 0,
+        addEventListener: jest.fn()
+      }
     })
     let scene_mock = {
       add: jest.fn(),
@@ -278,6 +320,10 @@ describe("Test canvas_3d.vue", () => {
       renderer: {
         setPixelRatio: jest.fn()
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     let scene_mock = {
@@ -369,6 +415,10 @@ describe("Test canvas_3d.vue", () => {
         remove_orbit_controls_events: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     const spy_set_current_label_file = jest.spyOn(vm.scene_controller, 'set_current_label_file')
@@ -398,6 +448,10 @@ describe("Test canvas_3d.vue", () => {
         set_draw_mode: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
 
     })
     const spy_set_draw_mode = jest.spyOn(vm.scene_controller, 'set_draw_mode')
@@ -486,6 +540,10 @@ describe("Test canvas_3d.vue", () => {
         center_camera_to_mesh: () => {
         }
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     let vm = wrapper.vm as any;
     const spy_1 = jest.spyOn(vm.scene_controller, 'center_camera_to_mesh')
@@ -506,6 +564,10 @@ describe("Test canvas_3d.vue", () => {
         add_orbit_controls: () => {},
         add_transform_controls: () => {},
       },
+      container: {
+        clientWidth: 0,
+        clientHeight: 0
+      }
     })
     let vm = wrapper.vm as any;
     const spy_1 = jest.spyOn(vm.scene_controller, 'add_transform_controls')

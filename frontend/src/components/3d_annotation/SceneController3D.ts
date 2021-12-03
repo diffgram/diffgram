@@ -116,6 +116,7 @@ export default class SceneController3D {
         (child.material as THREE.MeshBasicMaterial).color.set(child.userData.color)
         let instance = this.instance_list[instance_index];
         if (this.selected_instance) {
+
           if (this.selected_instance.mesh === child) {
             (child.material as THREE.MeshBasicMaterial).opacity = 0.9;
           }

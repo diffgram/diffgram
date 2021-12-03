@@ -43,6 +43,9 @@ export default class ObjectTransformControls {
   private on_mesh_changed(event){
     let instance_index= event.target.object.userData.instance_index;
     let instance = this.scene_controller.instance_list[instance_index];
+    if(!instance){
+      return
+    }
     if(instance.helper_lines){
       instance.helper_lines.position.copy(instance.mesh.position)
       instance.helper_lines.rotation.copy(instance.mesh.rotation)
@@ -58,7 +61,6 @@ export default class ObjectTransformControls {
     }
     let currentCamera = this.controls_transform.camera;
     let control = this.controls_transform;
-
     switch ( event.keyCode ) {
 
       case 81: // Q
@@ -94,19 +96,19 @@ export default class ObjectTransformControls {
         break;
 
       case 88: // X
-        control.showX = ! control.showX;
+        control.showX = !control.showX;
         break;
 
       case 89: // Y
-        control.showY = ! control.showY;
+        control.showY = !control.showY;
         break;
 
       case 90: // Z
-        control.showZ = ! control.showZ;
+        control.showZ = !control.showZ;
         break;
 
       case 32: // Spacebar
-        control.enabled = ! control.enabled;
+        control.enabled = !control.enabled;
         break;
 
 
@@ -120,6 +122,7 @@ export default class ObjectTransformControls {
 
     }
   }
+
   private add_hotkeys_for_transform_controls(){
     window.addEventListener( 'keydown', this.on_key_down_object_transform.bind(this));
 
