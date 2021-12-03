@@ -586,6 +586,7 @@
       </v-card>
     </v-dialog>
     <add_assignee
+      :dialog_type="task_assign_dialog_type"
       :dialog="task_assign_dialog_open"
       :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
       :loading="task_assign_dialog_loading"

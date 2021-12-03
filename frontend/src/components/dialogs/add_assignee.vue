@@ -2,19 +2,21 @@
   <div class="text-center">
     <v-dialog v-if="dialog" v-model="dialog" width="500" @keydown.esc="on_cancel">
       <v-card>
-        <v-card-title class="text-h5 grey lighten-2"> Assign </v-card-title>
+        <v-card-title v-if="dialog_type === 'assignee'" class="text-h5 grey lighten-2"> Manage assignees </v-card-title>
+        <v-card-title v-else class="text-h5 grey lighten-2"> Manage reviewers </v-card-title>
 
         <v-card-text>
-          <h3>Who should be assigned to this task?</h3>
+          <h3 v-if="dialog_type === 'assignee'">Who should be assigned to this task?</h3>
+          <h3 v-else>Who should review to this task?</h3>
 
-        <member_select
-          v-model="member_list_ids"
-          label="Select Specific Users"
-          :member_list="member_list"
-          :multiple="true"
-          :init_all_selected="false"
-        >
-        </member_select>
+          <member_select
+            v-model="member_list_ids"
+            label="Select Specific Users"
+            :member_list="member_list"
+            :multiple="true"
+            :init_all_selected="false"
+          >
+          </member_select>
 
         </v-card-text>
 
@@ -49,6 +51,10 @@ export default Vue.extend({
     loading: {
       type: Boolean,
       default: false
+    },
+    dialog_type: {
+      type: String,
+      default: 'assignee'
     }
   },
   data() {
