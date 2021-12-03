@@ -39,13 +39,16 @@ export const assignUserToTask = async (
   task_id,
   relation = "assignee"
 ) => {
-  const response = await axios.post(
-    `/api/v1/project/${project_string_id}/task/${task_id}/user/modify`,
-    {
-      user_id,
-      relation
-    }
-  );
-
-  return response;
+  try {
+    const response = await axios.post(
+      `/api/v1/project/${project_string_id}/task/${task_id}/user/modify`,
+      {
+        user_id,
+        relation
+      }
+    );
+    return response;
+  } catch (e) {
+    return {};
+  }
 };
