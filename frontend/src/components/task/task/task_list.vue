@@ -246,7 +246,7 @@
               Archive
             </v-btn>
             <v-btn
-              @click="() => on_batch_assign_dialog_open('batch_assignee')"
+              @click="() => on_batch_assign_dialog_open('assignee')"
               v-if="selected_action === 'assign' && selected_tasks.length > 0"
               :loading="loading"
               :disabled="selected_tasks.length === 0"
@@ -676,6 +676,7 @@ export default Vue.extend({
       task_to_assign: null,
       task_assign_dialog_loading: false,
       task_assign_dialog_type: null,
+      task_assign_batch: false,
 
       allow_reviews: false,
 
@@ -952,6 +953,7 @@ export default Vue.extend({
     on_batch_assign_dialog_open: function(type) {
       this.task_assign_dialog_open = true
       this.task_assign_dialog_type = type
+      this.task_assign_batch = true
     },
 
     on_assign_dialog_close: function() {
@@ -959,12 +961,13 @@ export default Vue.extend({
       this.task_to_assign = null
       this.task_assign_dialog_loading = false
       this.task_assign_dialog_type = null
+      this.task_assign_batch = false
     },
 
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
       const new_task_assignees = user_ids.map(id => ({ user_id: id }))
-      if (!this.task_assign_dialog_type.includes('batch')) {
+      if (!this.task_assign_batch) {
         await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
         this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       } else {
@@ -972,7 +975,7 @@ export default Vue.extend({
         this.selected_tasks.map(assign_item => {
           this.task_list.find(task => task.id === assign_item.id)["assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
         })
-        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks)
+        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
         this.selected_tasks = []
       }
       this.on_assign_dialog_close()
