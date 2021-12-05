@@ -245,6 +245,16 @@
               <v-icon>mdi-archive</v-icon>
               Archive
             </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('batch_assignee')"
+              v-if="selected_action === 'assign' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="primary"
+            >
+              <v-icon>mdi-account-plus-outline</v-icon>
+              Select users
+            </v-btn>
 
             <!--
           <v-checkbox v-model="my_stuff_only"
@@ -660,7 +670,7 @@ export default Vue.extend({
   watch: {},
   data() {
     return {
-      actions_list: [{ name: "Archive", value: "archive" }],
+      actions_list: [{ name: "Archive", value: "archive" }, {name: "Assign", value: 'assign'}],
 
       task_assign_dialog_open: false,
       task_to_assign: null,
@@ -933,9 +943,14 @@ export default Vue.extend({
       await this.task_list_api();
     },
 
-    on_assign_dialog_open: function(id, type) {
+    on_assign_dialog_open: function(task_id, type) {
       this.task_assign_dialog_open = true
-      this.task_to_assign = id
+      this.task_to_assign = task_id
+      this.task_assign_dialog_type = type
+    },
+
+    on_batch_assign_dialog_open: function(type) {
+      this.task_assign_dialog_open = true
       this.task_assign_dialog_type = type
     },
 
@@ -948,9 +963,13 @@ export default Vue.extend({
 
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
-      await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
-      const new_task_assignees = user_ids.map(id => ({ user_id: id }))
-      this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+      if (!this.task_assign_dialog_type.includes('batch')) {
+        await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
+        const new_task_assignees = user_ids.map(id => ({ user_id: id }))
+        this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+      } else {
+        console.log("Perform batch assign", user_ids)
+      }
       this.on_assign_dialog_close()
     },
 

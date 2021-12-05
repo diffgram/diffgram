@@ -71,7 +71,7 @@ export default Vue.extend({
     }
   },
   mounted () {
-      this.member_list = [...this.$store.state.project.current.member_list];
+    this.member_list = [...this.$store.state.project.current.member_list];
   },
   methods: {
       on_assign: function() {
