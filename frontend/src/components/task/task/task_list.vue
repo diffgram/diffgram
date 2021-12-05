@@ -253,7 +253,17 @@
               color="primary"
             >
               <v-icon>mdi-account-plus-outline</v-icon>
-              Select users
+              Select annotators
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('reviewer')"
+              v-if="selected_action === 'assignReviewers' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="primary"
+            >
+              <v-icon>mdi-account-plus-outline</v-icon>
+              Select reviewers
             </v-btn>
 
             <!--
@@ -670,7 +680,7 @@ export default Vue.extend({
   watch: {},
   data() {
     return {
-      actions_list: [{ name: "Archive", value: "archive" }, {name: "Assign", value: 'assign'}],
+      actions_list: [{ name: "Archive", value: "archive" }, {name: "Manage annotators", value: 'assign'}],
 
       task_assign_dialog_open: false,
       task_to_assign: null,
@@ -973,7 +983,7 @@ export default Vue.extend({
       } else {
         await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
         this.selected_tasks.map(assign_item => {
-          this.task_list.find(task => task.id === assign_item.id)["assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+          this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
         })
         await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
         this.selected_tasks = []
@@ -1108,6 +1118,12 @@ export default Vue.extend({
               "LastUpdated",
               "Action",
             ]
+
+            this.actions_list = [
+              { name: "Archive", value: "archive" }, 
+              {name: "Manage annotators", value: 'assign'}, 
+              {name: "Manage reviewers", value: 'assignReviewers'}, 
+              ]
           }
 
           this.update_tasks_with_file_annotations(this.task_list);
