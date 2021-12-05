@@ -52,3 +52,27 @@ export const assignUserToTask = async (
     return {};
   }
 };
+
+export const batchAssignUserToTask = async (
+  user_ids,
+  project_string_id,
+  tasks,
+  relation = "assignee"
+) => {
+  try {
+    const requests = tasks.map(task =>
+      axios.post(
+        `/api/v1/project/${project_string_id}/task/${task.id}/user/modify`,
+        {
+          user_id: user_ids,
+          relation
+        }
+      )
+    );
+
+    const responses = await axios.all(requests);
+    return responses;
+  } catch (e) {
+    return [];
+  }
+};

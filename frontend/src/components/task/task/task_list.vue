@@ -627,7 +627,7 @@ import task_status_icons from "../../regular_concrete/task_status_icons";
 import task_status_select from "../../regular_concrete/task_status_select";
 import task_input_list_dialog from "../../input/task_input_list_dialog";
 import add_assignee from "../../dialogs/add_assignee.vue"
-import { assignUserToTask } from "../../../services/tasksServices"
+import { assignUserToTask, batchAssignUserToTask } from "../../../services/tasksServices"
 
 import pLimit from "p-limit";
 
@@ -963,12 +963,17 @@ export default Vue.extend({
 
     assign_user_to_task: async function(user_ids) {
       this.task_assign_dialog_loading = true
+      const new_task_assignees = user_ids.map(id => ({ user_id: id }))
       if (!this.task_assign_dialog_type.includes('batch')) {
         await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
-        const new_task_assignees = user_ids.map(id => ({ user_id: id }))
         this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       } else {
-        console.log("Perform batch assign", user_ids)
+        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
+        this.selected_tasks.map(assign_item => {
+          this.task_list.find(task => task.id === assign_item.id)["assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+        })
+        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks)
+        this.selected_tasks = []
       }
       this.on_assign_dialog_close()
     },
