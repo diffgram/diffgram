@@ -315,24 +315,26 @@ describe("Test canvas_3d.vue", () => {
   });
 
   it("Correctly calls setup_perspective_scene_controller()", () => {
+    options.propsData.container = {
+      clientWidth: 0,
+      addEventListener: jest.fn(),
+      clientHeight: 0
+    }
     wrapper = shallowMount(canvas_3d, options);
     wrapper.setData({
       renderer: {
         setPixelRatio: jest.fn()
       },
-      container: {
-        clientWidth: 0,
-        clientHeight: 0
-      }
+
 
     })
     let scene_mock = {
       add: jest.fn(),
-    }
+    };
     let vm = wrapper.vm as any;
     vm.setup_perspective_scene_controller(scene_mock);
-    expect(vm.camera).toBeDefined()
-    expect(vm.scene_controller).toBeDefined()
+    expect(vm.camera).toBeDefined();
+    expect(vm.scene_controller).toBeDefined();
 
   });
 
@@ -494,7 +496,7 @@ describe("Test canvas_3d.vue", () => {
         clientWidth: 1,
         clientHeight: 1
       },
-      renderer:{
+      renderer: {
         setSize: jest.fn(),
       },
       camera: {
@@ -518,7 +520,7 @@ describe("Test canvas_3d.vue", () => {
         clientWidth: 1,
         clientHeight: 1
       },
-      renderer:{
+      renderer: {
         setSize: jest.fn(),
       },
       camera: {
@@ -558,11 +560,11 @@ describe("Test canvas_3d.vue", () => {
     wrapper = shallowMount(canvas_3d, options);
     wrapper.setData({
       scene_controller: {
-        controls_orbit: {
-
+        controls_orbit: {},
+        add_orbit_controls: () => {
         },
-        add_orbit_controls: () => {},
-        add_transform_controls: () => {},
+        add_transform_controls: () => {
+        },
       },
       container: {
         clientWidth: 0,
