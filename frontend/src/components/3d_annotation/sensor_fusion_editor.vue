@@ -86,7 +86,7 @@
             v-if="main_canvas_height && main_canvas_width && point_cloud_mesh"
             ref="main_3d_canvas"
             :show_loading_bar="true"
-            :width="main_canvas_width"
+            :width="main_canvas_width"main_3d_canvas_container
             :point_cloud_mesh="point_cloud_mesh"
             :height="main_canvas_height"
             :zoom_speed="editor_3d_settings.zoom_speed"
@@ -228,6 +228,8 @@
   import instance_detail_list_view from "../annotation/instance_detail_list_view";
   import context_menu_3d_editor from "./context_menu_3d_editor";
   import canvas_3d from "./canvas_3d";
+  import main_menu from '../main_menu/menu'
+  import error_multiple from '../regular/error_multiple'
   import moment from "moment";
   import axios from "axios";
   import * as instanceServices from '../../services/instanceServices';
@@ -243,7 +245,9 @@
       toolbar_sensor_fusion,
       instance_detail_list_view,
       context_menu_3d_editor,
-      canvas_3d
+      canvas_3d,
+      main_menu,
+      v_error_multiple: error_multiple,
     },
     props: {
       'project_string_id': {
@@ -427,6 +431,7 @@
         if (index == undefined) { return }  // careful 0 is ok.
 
 
+
         let initial_instance = this.instance_list[index];
         initial_instance = instance_utils.initialize_instance_object(initial_instance);
         // since sharing list type component need to determine which list to update
@@ -439,7 +444,6 @@
           console.error("Invalid index")
           return
         }
-
 
         if (update.mode === 'on_click_update_point_attribute'){
           instance.toggle_occluded(update.node_hover_index)
@@ -461,7 +465,6 @@
 
         if (update.mode == "delete") {
           instance.soft_delete = true
-          console.log('INSTANCE', instance)
           this.$refs.main_3d_canvas.scene_controller.deselect_instance();
           this.$refs.main_3d_canvas.scene_controller.remove_from_scene(instance.mesh);
 
@@ -474,8 +477,8 @@
 
         }
 
-        if (update.mode == "delete" ||
-          update.mode == "delete_undo") {
+        if (update.mode === "delete" ||
+          update.mode === "delete_undo") {
 
           // sequence related, design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
           if (instance.label_file_id != this.current_lable_file_id) {
@@ -485,15 +488,7 @@
           }
         }
 
-        if (update.mode == "toggle_missing") {
-          if (instance.missing) {
-            instance.missing = !instance.missing
-          } else {
-            instance.missing = true
-          }
-        }
-
-        if (update.mode == "attribute_change") {
+        if (update.mode === "attribute_change") {
           if (!instance.attribute_groups) {
             instance.attribute_groups = {}
           }
@@ -516,16 +511,14 @@
         this.has_changed = true;
 
       },
-      load_pcd: async function () {
+      load_pcd: async function (pcd_url) {
         let file_loader_3d = new FileLoader3DPointClouds(this);
-        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(this.pcd_url);
-        console.log('this.pcd_url', this.pcd_url)
+        this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(pcd_url);
         this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
           color: new THREE.Color('white'),
           opacity: 1,
           transparent: false,
         });
-        console.log('point_cloud_mesh', this.point_cloud_mesh)
         return this.point_cloud_mesh
 
       },
@@ -556,7 +549,8 @@
           file_data = await instanceServices.get_instance_list_from_task(this.project_string_id, this.task.id)
         }
         else{
-          throw Error('A task or a file must be provided in props to fetch instances.')
+          console.error('A task or a file must be provided in props to fetch instances.')
+          return
         }
         let instance_list = file_data.file_serialized.instance_list;
 
@@ -569,7 +563,7 @@
 
       },
       initialize_file: async function(){
-        await this.load_pcd();
+        await this.load_pcd(this.pcd_url);
         await this.load_instance_list();
       },
       reload_file_data: async function(){
@@ -580,8 +574,12 @@
         this.$refs.y_axis_3d_canvas.destroy_canvas()
         this.$refs.z_axis_3d_canvas.destroy_canvas()
         this.$refs.main_3d_canvas.destroy_canvas();
-        await this.load_pcd();
+        await this.load_pcd(this.pcd_url);
         await this.$nextTick();
+        await this.load_file_data();
+
+      },
+      load_file_data: async function(){
         await this.$refs.main_3d_canvas.load_canvas();
         this.calculate_main_canvas_dimension();
         this.calculate_secondary_canvas_dimension();
@@ -695,7 +693,7 @@
             gold_standard_file: this.gold_standard_file,    // .instance_list gets updated ie missing
             video_data: video_data
           })
-          console.log('response', response);
+
           this.save_count += 1;
           add_ids_to_new_instances_and_delete_old(response, video_data, this.instance_list, this.$props.video_mode)
 
@@ -828,7 +826,6 @@
 
       },
       on_instance_selected: function(instance, index){
-        console.log('instance sleected', instance, index)
         this.center_secondary_cameras_to_instance(instance)
         this.$refs.instance_detail_list.change_instance(instance, index)
 

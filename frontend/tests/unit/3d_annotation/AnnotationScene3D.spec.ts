@@ -8,6 +8,7 @@ import axios from "axios";
 import {mocked} from 'ts-jest/utils'
 import {load} from "mime";
 import mock = jest.mock;
+import {create_test_mesh} from './3d_mocks'
 import {OrbitControls} from "../../../src/components/3d_annotation/OrbitControls";
 
 axios.defaults.adapter = require('axios/lib/adapters/http')
@@ -16,16 +17,7 @@ jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically wi
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
-const create_test_mesh = function () {
-  let geometry = new THREE.BoxGeometry(2, 2, 2);
-  let material = new THREE.MeshBasicMaterial({
-    color: new THREE.Color('red'),
-    opacity: 1,
-    transparent: true,
-  });
-  let mesh = new THREE.Mesh(geometry, material);
-  return mesh
-}
+
 
 window.alert = jest.fn();
 

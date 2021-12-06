@@ -1,5 +1,5 @@
 import * as instance_utils from '../../../utils/instance_utils';
-import AnnotationScene3D from "../../3d_annotation/SceneController3D";
+import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../vue_canvas/instances/Instance";
 
 const CLASS_INSTANCE_TYPES = [
