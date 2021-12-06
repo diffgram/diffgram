@@ -1006,11 +1006,11 @@ export default Vue.extend({
         await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
         this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       } else {
-        if (this.selected_action == 'assign') {
+        if (this.selected_action.includes('assign')) {
           await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
           this.selected_tasks.map(assign_item => {
-            const task_assignees = _.unionBy([this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"], new_task_assignees], 'user_id')
-            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = task_assignees
+            const task_assignees = _.merge(_.keyBy(new_task_assignees, 'user_id'), _.keyBy(this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"], 'user_id'));
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = _.values(task_assignees)
           })
         } else {
           await batchRemoveUserFromTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
