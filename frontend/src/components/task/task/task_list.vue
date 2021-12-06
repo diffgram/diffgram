@@ -364,7 +364,7 @@
           </template>
 
           <template slot="AssignedUser" slot-scope="props">
-            <div style="display: flex; flex-direction: row">
+            <div class="display-assigned-users">
               <tooltip_button
                 tooltip_message="Manage assignees"
                 class="hidden-sm-and-down"
@@ -392,7 +392,7 @@
           </template>
 
           <template v-if="allow_reviews" slot="AssignedReviewer" slot-scope="props">
-            <div style="display: flex; flex-direction: row">
+            <div class="display-assigned-users">
               <tooltip_button
                 tooltip_message="Manage reviewers"
                 class="hidden-sm-and-down"
@@ -652,10 +652,11 @@
 
 <script lang="ts">
 import axios from "axios";
+import _ from 'lodash'
 import { route_errors } from "../../regular/regular_error_handling";
-import task_status_icons from "../../regular_concrete/task_status_icons";
-import task_status_select from "../../regular_concrete/task_status_select";
-import task_input_list_dialog from "../../input/task_input_list_dialog";
+import task_status_icons from "../../regular_concrete/task_status_icons.vue";
+import task_status_select from "../../regular_concrete/task_status_select.vue";
+import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
 import add_assignee from "../../dialogs/add_assignee.vue"
 import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
 
@@ -1008,7 +1009,8 @@ export default Vue.extend({
         if (this.selected_action == 'assign') {
           await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
           this.selected_tasks.map(assign_item => {
-            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+            const task_assignees = _.unionBy([this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"], new_task_assignees], 'user_id')
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = task_assignees
           })
         } else {
           await batchRemoveUserFromTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
@@ -1246,5 +1248,13 @@ export default Vue.extend({
   margin-left: -15px; 
   z-index: 0; 
   background-color: #d3d3d3
+}
+
+.display-assigned-users {
+  display: flex; 
+  flex-direction: row; 
+  width: 100%; 
+  align-items: center; 
+  justify-content: center;
 }
 </style>
