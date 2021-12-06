@@ -1,11 +1,11 @@
 import stringify from 'json-stable-stringify';
 import {sha256} from 'js-sha256';
 
-export const hash_string = function (str) {
+export let hash_string = function (str) {
   return sha256(str)
 }
 
-export const has_duplicate_instances = function (instance_list) {
+export let has_duplicate_instances = function (instance_list) {
   if (!instance_list) {
     return [false, [], []];
   }
@@ -77,7 +77,7 @@ export const has_duplicate_instances = function (instance_list) {
 }
 
 
-export const add_ids_to_new_instances_and_delete_old = function (response,
+export let add_ids_to_new_instances_and_delete_old = function (response,
                                                                  request_video_data,
                                                                  instance_list,
                                                                  video_mode) {
@@ -95,10 +95,6 @@ export const add_ids_to_new_instances_and_delete_old = function (response,
   if (video_mode) {
     instance_list = this.instance_buffer_dict[request_video_data.current_frame]
   }
-  console.log('request_video_data', request_video_data)
-  console.log('new_added_instances', new_added_instances)
-  console.log('video_mode', video_mode)
-  console.log('instance_list', instance_list)
   for (let i = 0; i < instance_list.length; i++) {
     const current_instance = instance_list[i]
     if (!current_instance.id) {
@@ -135,7 +131,7 @@ export const add_ids_to_new_instances_and_delete_old = function (response,
 }
 
 
-export const check_if_pending_created_instance = function(instance_list){
+export let check_if_pending_created_instance = function(instance_list){
   // Sets the pending changes flag if there are any instances that have not been saved yet.
   for(let i = 0; i < instance_list.length; i++){
     let instance = instance_list[i];

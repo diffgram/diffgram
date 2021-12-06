@@ -5,9 +5,11 @@ import FileLoader3DPointClouds from "../../../src/components/3d_annotation/FileL
 import * as instanceServices from '../../../src/services/instanceServices';
 import * as instance_utils from "../../../src/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
+import * as AnnotationUtills from '../../../src/components/annotation/utils/AnnotationUtills';
 import * as THREE from 'three';
 import axios from "axios";
 
+jest.mock('axios')
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
 jest.mock("../../../src/components/3d_annotation/FileLoader3DPointClouds", () => {
     return jest.fn().mockImplementation(() => {
@@ -39,6 +41,16 @@ describe("Test sensor_fusion_editor.vue", () => {
       actions,
       mutations: {
         'set_user_is_typing_or_menu_open': jest.fn(),
+      },
+      state: {
+        project: {
+          current_directory: {
+            directory_id: 1
+          }
+        },
+        builder_or_trainer: {
+          mode: 'builder'
+        }
       }
     })
     options = {
@@ -443,7 +455,8 @@ describe("Test sensor_fusion_editor.vue", () => {
 
     wrapper.vm.$refs.main_3d_canvas = {
       destroy_canvas: jest.fn(),
-      load_canvas: async () => {},
+      load_canvas: async () => {
+      },
       scene_controller: {
         add_mesh_to_scene: jest.fn(),
         add_mesh_user_data_to_instance: jest.fn(),
@@ -503,7 +516,8 @@ describe("Test sensor_fusion_editor.vue", () => {
 
     wrapper.vm.$refs.main_3d_canvas = {
       destroy_canvas: jest.fn(),
-      load_canvas: async () => {},
+      load_canvas: async () => {
+      },
       scene_controller: {
         add_mesh_to_scene: jest.fn(),
         add_mesh_user_data_to_instance: jest.fn(),
@@ -546,11 +560,12 @@ describe("Test sensor_fusion_editor.vue", () => {
         url_signed: 'https://github.com/mrdoob/three.js/raw/master/examples/models/pcd/binary/Zaghetto.pcd'
       },
     }
+    options.propsData.video_mode = true;
     wrapper = shallowMount(sensor_fusion_editor, options);
     wrapper.setData({
       main_canvas_height: 100,
       main_canvas_width: 100,
-      video_mode: true,
+
       point_cloud_mesh: create_test_mesh(),
       save_loading_frame: {},
     })
@@ -569,11 +584,11 @@ describe("Test sensor_fusion_editor.vue", () => {
         url_signed: 'https://github.com/mrdoob/three.js/raw/master/examples/models/pcd/binary/Zaghetto.pcd'
       },
     }
+    options.propsData.video_mode = true;
     wrapper = shallowMount(sensor_fusion_editor, options);
     wrapper.setData({
       main_canvas_height: 100,
       main_canvas_width: 100,
-      video_mode: true,
       point_cloud_mesh: create_test_mesh(),
       save_loading_frame: {
         5: 'test_get_save_loading'
@@ -582,8 +597,15 @@ describe("Test sensor_fusion_editor.vue", () => {
     wrapper.vm.get_save_loading(5)
 
     expect(wrapper.vm.save_loading_frame['5']).toBe('test_get_save_loading')
+
+    options.propsData.video_mode = false;
+    wrapper = shallowMount(sensor_fusion_editor, options);
     wrapper.setData({
-      video_mode: false,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+      point_cloud_mesh: create_test_mesh(),
+    })
+    wrapper.setData({
       save_loading_scene: 'test_2',
     })
     let result = wrapper.vm.get_save_loading()
@@ -592,5 +614,590 @@ describe("Test sensor_fusion_editor.vue", () => {
 
   });
 
+  it("correctly calls save()", async () => {
+    options.propsData.file = {
+      point_cloud: {
+        url_signed: 'https://github.com/mrdoob/three.js/raw/master/examples/models/pcd/binary/Zaghetto.pcd'
+      },
+    }
+    wrapper = shallowMount(sensor_fusion_editor, options);
+    wrapper.setData({
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.set_save_loading = jest.fn()
+    axios.post = async () => ({
+      data: {}
+    })
+    AnnotationUtills.has_duplicate_instances = () => [false, [], []];
+    AnnotationUtills.check_if_pending_created_instance = () => false
+    let spy = jest.spyOn(wrapper.vm, 'set_save_loading')
+    let spy2 = jest.spyOn(AnnotationUtills, 'has_duplicate_instances')
+    let spy4 = jest.spyOn(axios, 'post')
+
+    let result = await wrapper.vm.save()
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalled();
+    expect(spy4).toHaveBeenCalled();
+    expect(result).toBe(true);
+
+  });
+
+  it("correctly calls detect_clicks_outside_context_menu()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+    wrapper.setData({
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    let event = {
+      target: {
+        matches: () => false
+      }
+    }
+    let spy = jest.spyOn(wrapper.vm, 'hide_context_menu')
+    let result = await wrapper.vm.detect_clicks_outside_context_menu(event)
+    expect(spy).toHaveBeenCalled()
+
+  });
+
+  it("correctly calls mouse_events_global_down()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+    wrapper.setData({
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    let event = {
+      target: {
+        matches: () => false
+      }
+    }
+    let spy = jest.spyOn(wrapper.vm, 'detect_clicks_outside_context_menu')
+    let result = await wrapper.vm.mouse_events_global_down(event)
+    expect(spy).toHaveBeenCalled()
+
+  });
+
+  it("correctly calls open_context_menu()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+    wrapper.setData({
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    let event = {
+      target: {
+        matches: () => false
+      }
+    }
+    let spy = jest.spyOn(wrapper.vm, 'open_context_menu')
+    wrapper.vm.open_context_menu(event)
+    expect(wrapper.vm.show_context_menu).toBe(true)
+
+  });
+
+  it("correctly calls hide_context_menu()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+    wrapper.setData({
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    let event = {
+      target: {
+        matches: () => false
+      }
+    }
+    let spy = jest.spyOn(wrapper.vm, 'detect_clicks_outside_context_menu')
+    wrapper.vm.hide_context_menu(event)
+    expect(wrapper.vm.show_context_menu).toBe(false)
+
+  });
+
+  it("correctly calls on_instance_selected()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    let index = 0;
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance')
+    let spy2 = jest.spyOn(wrapper.vm.$refs.instance_detail_list, 'change_instance')
+    wrapper.vm.on_instance_selected(instance, index)
+
+    expect(spy).toHaveBeenCalled()
+    expect(spy2).toHaveBeenCalled()
+  });
+
+
+  it("correctly calls calculate_main_canvas_dimension()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    let index = 0;
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    document.getElementById = () => {
+      return 'test'
+    }
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance')
+    let spy2 = jest.spyOn(wrapper.vm.$refs.instance_detail_list, 'change_instance')
+    wrapper.vm.calculate_main_canvas_dimension(instance, index)
+
+    expect(wrapper.vm.main_canvas_width).toBe(parseInt(window.innerWidth - wrapper.vm.editor_3d_settings.left_nav_width))
+    expect(wrapper.vm.main_canvas_height).toBe(parseInt(window.innerHeight * 0.65))
+  });
+
+  it("correctly calls calculate_secondary_canvas_dimension()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    let index = 0;
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    document.getElementById = () => {
+      return 'test'
+    }
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance');
+    let spy2 = jest.spyOn(wrapper.vm.$refs.instance_detail_list, 'change_instance');
+
+    let width = wrapper.vm.main_canvas_width * 0.333;
+    width = parseInt(width, 10);
+    let height = window.innerHeight * 0.235;
+    height = parseInt(height, 10);
+    wrapper.vm.calculate_secondary_canvas_dimension(instance, index)
+
+    expect(wrapper.vm.secondary_canvas_height).toBe(parseInt(height))
+    expect(wrapper.vm.secondary_canvas_width).toBe(parseInt(width))
+  });
+
+  it("correctly calls on_window_resize()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    let index = 0;
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    document.getElementById = () => {
+      return 'test'
+    }
+    let spy = jest.spyOn(wrapper.vm, 'calculate_main_canvas_dimension');
+    let spy2 = jest.spyOn(wrapper.vm, 'calculate_secondary_canvas_dimension');
+    wrapper.vm.on_window_resize()
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalled();
+  });
+
+  it("correctly calls on_scene_ready()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    wrapper.vm.$refs.main_3d_canvas = {
+      set_current_label_file: jest.fn()
+    };
+    document.getElementById = () => {
+      return 'test'
+    }
+    let spy = jest.spyOn(wrapper.vm, 'setup_secondary_scene_controls');
+    let spy2 = jest.spyOn(wrapper.vm.$refs.main_3d_canvas, 'set_current_label_file');
+    let scene_controller = {
+      scene: {}
+    }
+    wrapper.vm.on_scene_ready(scene_controller)
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalled();
+  });
+
+  it("correctly calls setup_secondary_scene_controls()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.$refs.instance_detail_list = {
+      change_instance: jest.fn()
+    }
+    wrapper.vm.$refs.x_axis_3d_canvas = {
+      setup_scene: jest.fn()
+    };
+    wrapper.vm.$refs.y_axis_3d_canvas = {
+      setup_scene: jest.fn()
+    };
+    wrapper.vm.$refs.z_axis_3d_canvas = {
+      setup_scene: jest.fn()
+    };
+    document.getElementById = () => {
+      return 'test'
+    }
+    let spy = jest.spyOn(wrapper.vm.$refs.x_axis_3d_canvas, 'setup_scene');
+    let spy2 = jest.spyOn(wrapper.vm.$refs.y_axis_3d_canvas, 'setup_scene');
+    let spy3 = jest.spyOn(wrapper.vm.$refs.z_axis_3d_canvas, 'setup_scene');
+    let scene_controller = {
+      scene: {}
+    }
+    wrapper.vm.setup_secondary_scene_controls(scene_controller)
+
+    expect(wrapper.vm.secondary_3d_canvas_container).toBeDefined();
+
+  });
+
+  it("correctly calls on_instance_updated()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance');
+    let scene_controller = {
+      scene: {}
+    }
+    wrapper.vm.on_instance_updated(scene_controller)
+
+    expect(wrapper.vm.has_changed).toBe(true);
+    expect(spy).toHaveBeenCalled();
+
+  });
+
+  it("correctly calls on_instance_hovered()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance');
+    let scene_controller = {
+      scene: {}
+    }
+    wrapper.vm.on_instance_hovered('test', 1)
+
+    expect(wrapper.vm.instance_hover_index).toBe(1);
+    expect(wrapper.vm.instance_hovered).toBe('test');
+
+  });
+
+  it("correctly calls on_instance_unhovered()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance');
+    wrapper.vm.on_instance_unhovered()
+
+    expect(wrapper.vm.instance_hover_index).toBe(null);
+    expect(wrapper.vm.instance_hovered).toBe(null);
+
+  });
+
+  it("correctly calls on_update_mouse_position()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    let mouse_pos = {x: 5, y: 8}
+    wrapper.vm.on_update_mouse_position(mouse_pos)
+
+    expect(wrapper.vm.mouse_position).toBe(mouse_pos);
+
+  });
+
+  it("correctly calls on_instance_drawn()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {}
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+
+    wrapper.vm.center_secondary_cameras_to_instance = jest.fn()
+    wrapper.vm.edit_mode_toggle = jest.fn()
+    let spy = jest.spyOn(wrapper.vm, 'center_secondary_cameras_to_instance');
+    let spy2 = jest.spyOn(wrapper.vm, 'edit_mode_toggle');
+    wrapper.vm.on_instance_drawn(instance)
+
+    expect(wrapper.vm.has_changed).toBe(true);
+    expect(spy).toHaveBeenCalledWith(instance)
+    expect(spy2).toHaveBeenCalledWith(false)
+
+  });
+
+  it("correctly calls center_secondary_cameras_to_instance()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    document.getElementById = () => {
+      return 'test'
+    }
+
+    wrapper.vm.edit_mode_toggle = jest.fn()
+    wrapper.vm.$refs.x_axis_3d_canvas = {
+      scene_controller: {
+        center_camera_to_mesh: jest.fn()
+      }
+
+    };
+    wrapper.vm.$refs.y_axis_3d_canvas = {
+      scene_controller: {
+        center_camera_to_mesh: jest.fn()
+      }
+    };
+    wrapper.vm.$refs.z_axis_3d_canvas = {
+      scene_controller: {
+        center_camera_to_mesh: jest.fn()
+      }
+    };
+    let spy = jest.spyOn(wrapper.vm.$refs.x_axis_3d_canvas.scene_controller, 'center_camera_to_mesh');
+    let spy2 = jest.spyOn(wrapper.vm.$refs.y_axis_3d_canvas.scene_controller, 'center_camera_to_mesh');
+    let spy3 = jest.spyOn(wrapper.vm.$refs.z_axis_3d_canvas.scene_controller, 'center_camera_to_mesh');
+
+    wrapper.vm.center_secondary_cameras_to_instance(instance)
+
+
+    expect(spy).toHaveBeenCalledWith(instance.mesh, 'x')
+    expect(spy2).toHaveBeenCalledWith(instance.mesh, 'y')
+    expect(spy3).toHaveBeenCalledWith(instance.mesh, 'z')
+
+  });
+
+  it("correctly calls key_down_handler()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.$refs.main_3d_canvas = {
+      scene_controller: {
+        object_transform_controls: {
+          controls_transform: {
+            object: undefined
+          }
+        }
+      }
+
+    };
+    let event = {
+      keyCode: 27
+    }
+    wrapper.vm.edit_mode_toggle = jest.fn();
+    let spy = jest.spyOn(wrapper.vm, 'edit_mode_toggle');
+
+    wrapper.vm.key_down_handler(event)
+    expect(spy).toHaveBeenCalledWith(!wrapper.vm.draw_mode)
+
+    event = {
+      keyCode: 46
+    }
+    spy = jest.spyOn(wrapper.vm, 'delete_instance');
+    wrapper.vm.key_down_handler(event)
+    expect(spy).toHaveBeenCalled()
+
+  });
+
+  it("correctly calls change_instance_type()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+
+    wrapper.vm.change_instance_type('test')
+    expect(wrapper.vm.instance_type).toBe('test')
+
+  });
+
+  it("correctly calls change_label_file()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.$refs.main_3d_canvas = {
+      set_current_label_file: jest.fn()
+
+    };
+    let label_file = {
+      test: 'test'
+    };
+    let spy = jest.spyOn(wrapper.vm.$refs.main_3d_canvas, 'set_current_label_file');
+    wrapper.vm.change_label_file(label_file);
+    expect(wrapper.vm.current_label_file).toBe(label_file);
+    expect(spy).toHaveBeenCalled();
+
+  });
+
+
+  it("correctly calls hide_snackbar()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_list: [instance],
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.$refs.main_3d_canvas = {
+      set_current_label_file: jest.fn()
+
+    };
+    wrapper.vm.hide_snackbar();
+    expect(wrapper.vm.show_snackbar).toBe(false);
+
+  });
+
+  it("correctly calls show_info_snackbar_for_drawing()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_type: 'cuboid_3d',
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.$refs.main_3d_canvas = {
+      set_current_label_file: jest.fn()
+
+    };
+    wrapper.vm.show_info_snackbar_for_drawing();
+    expect(wrapper.vm.snackbar_text).toBe('Double click to start drawing a cuboid.');
+
+  });
+
+  it("correctly calls edit_mode_toggle()", async () => {
+    wrapper = shallowMount(sensor_fusion_editor, options);
+
+    let instance = {
+      mesh: create_test_mesh()
+    }
+    wrapper.setData({
+      instance_type: 'cuboid_3d',
+      instance_hovered: instance,
+      instance_hover_index: 1,
+      main_canvas_height: 100,
+      main_canvas_width: 100,
+    })
+    wrapper.vm.$refs.main_3d_canvas = {
+      set_draw_mode: jest.fn()
+
+    };
+    let spy = jest.spyOn(wrapper.vm.$refs.main_3d_canvas, 'set_draw_mode');
+    let spy2 = jest.spyOn(wrapper.vm, 'hide_snackbar');
+    wrapper.vm.edit_mode_toggle(false);
+    expect(wrapper.vm.draw_mode).toBe(false);
+    expect(spy).toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalled();
+
+    let spy3 = jest.spyOn(wrapper.vm, 'show_info_snackbar_for_drawing');
+    wrapper.vm.edit_mode_toggle(true);
+    expect(wrapper.vm.draw_mode).toBe(true);
+    expect(spy).toHaveBeenCalled();
+    expect(spy3).toHaveBeenCalled();
+
+  });
+
 
 });
+

@@ -609,8 +609,8 @@
       },
 
       save: async function(and_complete=false, frame_number_param = undefined, instance_list_param = undefined){
-        this.error = {}
-        this.warning = {}
+        this.error = {};
+        this.warning = {};
         if (this.$props.view_only_mode) {
           return
         }
@@ -629,10 +629,10 @@
         this.set_save_loading(true, current_frame);
         let [has_duplicate_instances_result, dup_ids, dup_indexes] = has_duplicate_instances(instance_list);
         let dup_instance_list = dup_indexes.map(i => ({...instance_list[i], original_index: i}));
+
         dup_instance_list.sort(function(a,b){
           return moment(b.client_created_time, 'YYYY-MM-DD HH:mm') - moment(a.client_created_time, 'YYYY-MM-DD HH:mm');
         });
-
         if(has_duplicate_instances_result){
           this.save_warning = {
             duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`
@@ -644,11 +644,11 @@
           this.set_save_loading(false, current_frame);
           return
         }
+
         this.instance_list_cache = instance_list.slice();
         let current_frame_cache = this.current_frame;
         let current_video_file_id_cache = this.current_video_file_id;
         let video_mode_cache = this.video_mode;
-
 
 
         // a video file can now be
@@ -664,7 +664,6 @@
           throw new Error('You must provide either a file or a task in props in order to save.')
         }
 
-
         var url = null
 
         if (this.task && this.task.id) {
@@ -677,6 +676,7 @@
         }
 
         video_data = null
+
         if (video_mode_cache == true) {
           var video_data = {
             video_mode: video_mode_cache,
@@ -772,7 +772,7 @@
           this.has_changed = check_if_pending_created_instance(this.instance_list);
           return true
         } catch (error) {
-          console.error(error);
+          console.error('Error in save() function', error);
           this.set_save_loading(false, current_frame);
           if(error.response.data &&
             error.response.data.log &&
