@@ -253,7 +253,17 @@
               color="primary"
             >
               <v-icon>mdi-account-plus-outline</v-icon>
-              Select annotators
+              Add annotators
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('assignee')"
+              v-if="selected_action === 'remove' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="error"
+            >
+              <v-icon>mdi-account-minus-outline</v-icon>
+              Remove annotators
             </v-btn>
             <v-btn
               @click="() => on_batch_assign_dialog_open('reviewer')"
@@ -637,7 +647,7 @@ import task_status_icons from "../../regular_concrete/task_status_icons";
 import task_status_select from "../../regular_concrete/task_status_select";
 import task_input_list_dialog from "../../input/task_input_list_dialog";
 import add_assignee from "../../dialogs/add_assignee.vue"
-import { assignUserToTask, batchAssignUserToTask } from "../../../services/tasksServices"
+import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
 
 import pLimit from "p-limit";
 
@@ -680,7 +690,11 @@ export default Vue.extend({
   watch: {},
   data() {
     return {
-      actions_list: [{ name: "Archive", value: "archive" }, {name: "Manage annotators", value: 'assign'}],
+      actions_list: [
+        { name: "Archive", value: "archive" }, 
+        { name: "Assign annotators", value: 'assign' },
+        { name: "Remove annotators", value: 'remove' },
+        ],
 
       task_assign_dialog_open: false,
       task_to_assign: null,
@@ -981,12 +995,18 @@ export default Vue.extend({
         await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
         this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
       } else {
-        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
-        this.selected_tasks.map(assign_item => {
-          this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
-        })
-        await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
-        this.selected_tasks = []
+        if (this.selected_action == 'assign') {
+          await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
+          this.selected_tasks.map(assign_item => {
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+          })
+        } else {
+          await batchRemoveUserFromTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
+          this.selected_tasks.map(assign_item => {
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"].filter(user => !user_ids.includes(user.user_id))
+          })
+        }
+        this.task_list.forEach((t) => t.is_selected = false)
       }
       this.on_assign_dialog_close()
     },
@@ -1121,8 +1141,10 @@ export default Vue.extend({
 
             this.actions_list = [
               { name: "Archive", value: "archive" }, 
-              {name: "Manage annotators", value: 'assign'}, 
-              {name: "Manage reviewers", value: 'assignReviewers'}, 
+              { name: "Assign annotators", value: 'assign'},
+              { name: "Remove annotators", value: 'remove' },
+              { name: "Assign reviewers", value: 'assignReviewers'}, 
+              { name: "Remove reviewers", value: 'removeReviewers'}, 
               ]
           }
 

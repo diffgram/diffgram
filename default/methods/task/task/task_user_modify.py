@@ -18,6 +18,8 @@ def api_task_user_modify(project_string_id, task_id):
             }},
         ]
 
+        result = {}
+
         log, input, untrusted_input = regular_input.master(request = request,
                                                            spec_list = spec_list)
         if len(log["error"].keys()) >= 1:

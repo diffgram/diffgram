@@ -1,5 +1,6 @@
 from methods.regular.regular_api import *
 from shared.database.external.external import ExternalMap
+from shared.database.task.task_user import TaskUser
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/task/<int:task_id>/user/add', methods = ['POST'])
@@ -17,13 +18,18 @@ def api_task_user_add(project_string_id, task_id):
             }}
         ]
 
+        result = {}
+
         log, input, untrusted_input = regular_input.master(request = request,
                                                            spec_list = spec_list)
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
         
         for user in input['user_id']:
-            print(user)
+            users_already_assigned = session.query(TaskUser).filter(TaskUser.task_id == task_id).filter(TaskUser.relation ==  input['relation']).filter(TaskUser.user_id == user).count()
+            if (users_already_assigned > 0):
+                continue
+
             result, log = api_task_user_add_core(
                 session = session,
                 task_id = task_id,
