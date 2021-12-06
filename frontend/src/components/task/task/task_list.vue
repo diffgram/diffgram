@@ -273,7 +273,17 @@
               color="primary"
             >
               <v-icon>mdi-account-plus-outline</v-icon>
-              Select reviewers
+              Add reviewers
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('reviewer')"
+              v-if="selected_action === 'removeReviewers' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="error"
+            >
+              <v-icon>mdi-account-minus-outline</v-icon>
+              Remove reviewers
             </v-btn>
 
             <!--
