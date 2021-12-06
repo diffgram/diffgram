@@ -86,7 +86,7 @@
             v-if="main_canvas_height && main_canvas_width && point_cloud_mesh"
             ref="main_3d_canvas"
             :show_loading_bar="true"
-            :width="main_canvas_width"main_3d_canvas_container
+            :width="main_canvas_width"
             :point_cloud_mesh="point_cloud_mesh"
             :height="main_canvas_height"
             :zoom_speed="editor_3d_settings.zoom_speed"
