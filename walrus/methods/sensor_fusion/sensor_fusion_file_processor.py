@@ -7,6 +7,8 @@ from shared.settings import settings
 from shared.database.source_control.file import File
 from shared.database.point_cloud.point_cloud import PointCloud
 
+from shared.shared_logger import get_shared_logger
+logger = get_shared_logger()
 
 class SensorFusionFileProcessor:
     """
@@ -25,12 +27,15 @@ class SensorFusionFileProcessor:
     def __load_sensor_fusion_json(self) -> dict:
         if self.input.temp_dir_path_and_filename is None:
             self.log['error']['json_file_path'] = 'temp_dir_path_and_filename is None.Needs to exists for loading JSON.'
+            logger.error(self.log)
 
         self.input.status = "processing"
         self.try_to_commit()
 
         with open(self.input.temp_dir_path_and_filename) as json_data:
+   
             sensor_fusion_spec = json.load(json_data)
+
 
             return sensor_fusion_spec
 

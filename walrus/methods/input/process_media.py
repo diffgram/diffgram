@@ -1032,7 +1032,7 @@ class Process_Media():
         Route to function based on self.input.media_type
 
         """
-
+        print('OPERATION', self.input.media_type)
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
@@ -2120,6 +2120,7 @@ class Process_Media():
         or both?
         """
         extension = extension.lower()
+        print('INPUT TYPE', extension)
 
         if extension in images_allowed_file_names:
             return "image"
