@@ -57,6 +57,7 @@
 
     <div style="width: 310px" class=" pt-4">
       <label_select_annotation
+        data-cy="toolbar_label_selector"
         :project_string_id="project_string_id"
         :label_file_list="label_list"
         default_hot_keys="l"
@@ -151,6 +152,7 @@
 
       <div>
         <tooltip_button
+          data-cy="previous_file_button"
           tooltip_message="Previous File"
           v-if="!task && file && file.id"
           @click="$emit('change_file', 'previous')"
@@ -167,6 +169,7 @@
       </div>
       <div>
         <tooltip_button
+          data-cy="next_file_button"
           tooltip_message="Next File"
           v-if="!task && file && file.id"
           @click="$emit('change_file', 'next')"
@@ -213,6 +216,7 @@
 
 
       <tooltip_button
+        data-cy="refresh_instances"
         tooltip_message="Refresh Instances"
         v-if="$store.state.user.current.is_super_admin == true"
         @click="$emit('refresh_all_instances')"
@@ -225,6 +229,7 @@
       </tooltip_button>
 
       <button_with_menu
+        datacy="display_hotkeys_button"
         tooltip_message="Hotkeys"
         v-if="view_only_mode != true"
         color="primary"

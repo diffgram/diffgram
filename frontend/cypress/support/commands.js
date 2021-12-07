@@ -64,6 +64,8 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   })
 })
 
+
+
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
     const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
@@ -723,7 +725,7 @@ Cypress.Commands.add('select_label', function (label_name) {
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
 
-Cypress.Commands.add('upload_3d_file', function (file_name = `${uuidv4()}.json`) {
+Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
   cy.window().then(async window =>  {
     let store = window.app.$store;
     let file_path = 'pcd_json_files/data.json';
@@ -772,10 +774,30 @@ Cypress.Commands.add('upload_3d_file', function (file_name = `${uuidv4()}.json`)
 
             xhr.send(data);
           })
+          .then((resp) => {
+            cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
+            cy.wait(8000)
+            cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+          })
       });
 
   })
 
+
+});
+
+
+Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wrapper = 'main_screen') {
+  const canvas_client_box = document.querySelector(`[data-cy=${canvas_wrapper}] canvas`).getBoundingClientRect();
+  const real_x = x + canvas_client_box.x;
+  const real_y = y + canvas_client_box.y;
+  cy.get(`[data-cy=${canvas_wrapper}]`).dblclick(real_x, real_y)
+  .trigger('mousemove', {
+      eventConstructor: 'MouseEvent',
+      clientX: real_x,
+      clientY: real_y,
+      force: true
+    })
 
 });
 
