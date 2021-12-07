@@ -265,6 +265,7 @@
               :loading="loading"
               :disabled="selected_tasks.length === 0"
               color="error"
+              data-cy="remove-batch-annotators-open"
             >
               <v-icon>mdi-account-minus-outline</v-icon>
               Remove annotators
