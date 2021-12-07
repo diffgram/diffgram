@@ -148,6 +148,7 @@ export default class AnnotationScene3D {
   }
 
   private on_mouse_double_click(event) {
+    console.log('docoobl clickkk')
     event.stopPropagation();
     if (this.draw_mode) {
       this.on_double_click_draw_mode(event)
@@ -308,8 +309,8 @@ export default class AnnotationScene3D {
     }
     this.binded_funcs = {
       on_mouse_move: this.on_mouse_move.bind(this),
-      on_mouse_click: this.on_mouse_move.bind(this),
-      on_mouse_double_click: this.on_mouse_move.bind(this),
+      on_mouse_click: this.on_mouse_click.bind(this),
+      on_mouse_double_click: this.on_mouse_double_click.bind(this),
     }
     this.container.addEventListener('mousemove', this.binded_funcs.on_mouse_move, false);
     this.container.addEventListener('click', this.binded_funcs.on_mouse_click);

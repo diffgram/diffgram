@@ -370,6 +370,9 @@
     },
 
     async mounted() {
+      if (window.Cypress) {
+        window.SensorFusionEditor = this;
+      }
       window.addEventListener('resize', this.on_window_resize);
       window.addEventListener('keydown', this.key_down_handler, false);
       document.addEventListener('mousedown', this.mouse_events_global_down);

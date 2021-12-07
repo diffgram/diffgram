@@ -788,16 +788,31 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
 
 Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wrapper = 'main_screen') {
-  const canvas_client_box = document.querySelector(`[data-cy=${canvas_wrapper}] canvas`).getBoundingClientRect();
-  const real_x = x + canvas_client_box.x;
-  const real_y = y + canvas_client_box.y;
-  cy.get(`[data-cy=${canvas_wrapper}]`).dblclick(real_x, real_y)
-  .trigger('mousemove', {
-      eventConstructor: 'MouseEvent',
-      clientX: real_x,
-      clientY: real_y,
-      force: true
-    })
+  cy.window().then(window => {
+    let sensor_fusion_editor = window.SensorFusionEditor;
+    let canvas = sensor_fusion_editor.$refs.main_3d_canvas.renderer.domElement;
+    cy.log('CANVAS', canvas);
+    const canvas_client_box = canvas.getBoundingClientRect();
+
+    const real_x = x + canvas_client_box.x;
+    const real_y = y + canvas_client_box.y;
+    cy.get(`[data-cy=${canvas_wrapper}]`).dblclick(x, y)
+      .trigger('mousemove', {
+        eventConstructor: 'MouseEvent',
+        clientX: x + width,
+        clientY: y + height,
+        force: true
+      })
+      .click({
+        eventConstructor: 'MouseEvent',
+        x: x + width,
+        y: y + height,
+        force: true
+      })
+
+
+  })
+
 
 });
 
