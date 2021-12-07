@@ -10,6 +10,7 @@
           <h3 v-else>Who should review to this task?</h3>
 
           <member_select
+            datacy="member-select"
             v-model="member_list_ids"
             label="Select Specific Users"
             :member_list="member_list"
@@ -23,7 +24,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn id="review-dialog-cancel" color="primary" @click="on_cancel" text> Cancel </v-btn>
-          <v-btn :loading="loading" data-cy="review-the-task" id="review-dialog-submit" color="green" @click="on_assign" text> Submit </v-btn>
+          <v-btn :loading="loading" data-cy="finish-user-assignment" id="review-dialog-submit" color="green" @click="on_assign" text> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

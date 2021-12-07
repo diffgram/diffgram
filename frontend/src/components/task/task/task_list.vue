@@ -371,6 +371,7 @@
                 color="primary"
                 @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'assignee')"
                 icon="mdi-account-plus-outline"
+                datacy="open-add-assignee-dialog"
                 large
                 :icon_style="true"
                 :bottom="true"

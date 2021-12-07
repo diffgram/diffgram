@@ -39,7 +39,7 @@
 
         <template v-slot:item="data">
 
-          <v-layout>
+          <v-layout :data-cy="`${datacy}__select-user`">
             <v_user_icon v-if="data.item.show_icon" class="mr-4" :user="data.item" :size="25"
                          :font-size="'12px !important'">
             </v_user_icon>
