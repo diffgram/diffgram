@@ -60,7 +60,7 @@ class TestTasUserAdd(testing_setup.DiffgramBaseTestCase):
     def test_api_task_user_add(self):
         request_data = {
             'relation': 'assignee',
-            'user_id': self.member.user_id
+            'user_id': [self.member.user_id]
         }
         endpoint = "/api/v1/project/{}/task/{}/user/add".format(self.project.project_string_id, self.task.id)
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
@@ -97,7 +97,7 @@ class TestTasUserAdd(testing_setup.DiffgramBaseTestCase):
 
         request_data = {
             'relation': 'invalid_value',
-            'user_id': self.member.user_id
+            'user_id': [self.member.user_id]
         }
         response = self.client.post(
             endpoint,
