@@ -231,7 +231,7 @@
     has_duplicate_instances,
     add_ids_to_new_instances_and_delete_old,
     check_if_pending_created_instance
-  } from '../annotation/utils/AnnotationUtills';
+  } from '../annotation/utils/AnnotationSavePrechecks';
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
   import instance_detail_list_view from "../annotation/instance_detail_list_view";
   import context_menu_3d_editor from "./context_menu_3d_editor";
