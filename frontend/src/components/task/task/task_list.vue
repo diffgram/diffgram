@@ -202,6 +202,7 @@
               v-if="!view_only"
               offset="x"
               color="primary"
+              datacy="show-hide-columns"
             >
               <template slot="content">
                 <v-select
@@ -210,6 +211,7 @@
                   multiple
                   label="Columns"
                   :disabled="loading"
+                  data-cy="select-column"
                 >
                 </v-select>
 
@@ -233,6 +235,7 @@
               item-text="name"
               label="Actions"
               class="mr-4"
+              data-cy="select-task-list-action"
             >
             </v-select>
             <v-btn
@@ -251,6 +254,7 @@
               :loading="loading"
               :disabled="selected_tasks.length === 0"
               color="primary"
+              data-cy="add-batch-annotators-open"
             >
               <v-icon>mdi-account-plus-outline</v-icon>
               Add annotators
@@ -317,7 +321,7 @@
           @rowclick="rowclick($event)"
         >
           <template slot="Select" slot-scope="props">
-            <v-checkbox v-model="props.item.is_selected"> </v-checkbox>
+            <v-checkbox data-cy="select-task-list-item" v-model="props.item.is_selected"> </v-checkbox>
           </template>
 
           <template slot="Status" slot-scope="props">
