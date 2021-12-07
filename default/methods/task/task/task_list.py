@@ -70,12 +70,10 @@ def task_list_api(project_string_id):
             return jsonify(log = log), 400
 
         project = Project.get_by_string_id(session, project_string_id=project_string_id)
-        return _task_list_api(project_id=project.id, input=input, log=log)
+        return _task_list_api(session = session, project_id=project.id, input=input, log=log)
 
 
-def _task_list_api(project_id, input=input, log = regular_log.default()):
-
-    with sessionMaker.session_scope() as session:
+def _task_list_api(session, project_id, input=input, log = regular_log.default()):
 
         task_list = task_list_core(session=session,
                                    date_from=input['date_from'],
