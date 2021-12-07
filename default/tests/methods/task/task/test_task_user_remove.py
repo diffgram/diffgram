@@ -63,7 +63,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             'user_id': [self.member.user_id]
         }
         relation = self.task.add_reviewer(session = self.session, user = self.member.user)
-        endpoint = "/api/v1/project/{}/task/user/remove/{}".format(self.project.project_string_id, relation.id)
+        endpoint = "/api/v1/project/{}/task/{}/user/remove".format(self.project.project_string_id, self.task.id)
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
 
         credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
