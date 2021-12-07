@@ -9,7 +9,7 @@ def api_task_user_modify(project_string_id, task_id):
     with sessionMaker.session_scope() as session:
         spec_list = [
             {'user_id': {
-            'required': False,
+                'required': False,
             }},
             {'relation': {
                 'required': True,
@@ -18,48 +18,59 @@ def api_task_user_modify(project_string_id, task_id):
             }},
         ]
 
-        result = {}
-
         log, input, untrusted_input = regular_input.master(request = request,
                                                            spec_list = spec_list)
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
-        
-        users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id).filter(TaskUser.relation ==  input['relation'])
-        if (len(input['user_id']) > 0):
-            users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(input['user_id']))
 
-        for user_to_remove in users_to_remove.all():
-            user_to_remove_id = user_to_remove.__dict__["id"]
-
-            if len(log["error"].keys()) >= 1:
-                    return jsonify(log = log), 400
-
-            result, log = task_user_remove_core(
-                session = session,
-                task_user_id = user_to_remove_id,
-                project_string_id = project_string_id,
-                log = log
-            )
-
-        for user in input['user_id']:
-            user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(TaskUser.task_id == task_id).filter(TaskUser.relation ==  input['relation']).all()
-            if (len(user_already_assigned) > 0):
-                continue
-            
-            result, log = api_task_user_add_core(
-                session = session,
-                task_id = task_id,
-                user_id = user,
-                relation = input['relation'],
-                project_string_id = project_string_id,
-                log = log
-            )
+        result, log = task_user_modify_core(session = session,
+                                            task_id = task_id,
+                                            project_string_id = project_string_id,
+                                            user_id_list = input['user_id'],
+                                            relation = input['relation'],
+                                            log = log)
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
         return jsonify(task_user = result, log = log)
+
+
+def task_user_modify_core(session, task_id, project_string_id, user_id_list, relation, log):
+    result = {}
+    users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id).filter(
+        TaskUser.relation == relation)
+    if (len(user_id_list) > 0):
+        users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(input['user_id']))
+
+    for user_to_remove in users_to_remove.all():
+        user_to_remove_id = user_to_remove.__dict__["id"]
+
+        if len(log["error"].keys()) >= 1:
+            return jsonify(log = log), 400
+
+        result, log = task_user_remove_core(
+            session = session,
+            task_user_id = user_to_remove_id,
+            project_string_id = project_string_id,
+            log = log
+        )
+
+    for user in input['user_id']:
+        user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(
+            TaskUser.task_id == task_id).filter(TaskUser.relation == input['relation']).all()
+        if (len(user_already_assigned) > 0):
+            continue
+
+        result, log = api_task_user_add_core(
+            session = session,
+            task_id = task_id,
+            user_id = user,
+            relation = input['relation'],
+            project_string_id = project_string_id,
+            log = log
+        )
+    return result, log
 
 
 def api_task_user_add_core(session: 'Session',
@@ -87,11 +98,11 @@ def api_task_user_add_core(session: 'Session',
         log['error']['relation'] = 'Invalid relation type. Only support "reviewer", "assignee"'
         return False, log
 
+
 def task_user_remove_core(session: 'Session',
                           task_user_id: int,
                           project_string_id: str,
                           log: dict):
-
     project = Project.get_by_string_id(session, project_string_id = project_string_id)
 
     task_user = TaskUser.get_by_id(session = session, task_user_id = task_user_id)
