@@ -93,7 +93,9 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
 
         result, log = task_user_remove_core(
             session = self.session,
-            task_user_id = relation.id,
+            task_id = self.task.id,
+            user_id = self.member.user_id,
+            relation = relation,
             project_string_id = self.project.project_string_id,
             log = regular_log.default()
         )
