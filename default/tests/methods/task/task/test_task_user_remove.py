@@ -38,6 +38,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             self.session
 
         )
+        self.relation = 'assignee'
         self.project = project_data['project']
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
@@ -58,8 +59,9 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
                                              self.session)
 
     def test_api_task_user_remove(self):
+        self.relation = 'assignee'
         request_data = {
-            'relation': 'assignee',
+            'relation': self.relation,
             'user_id': [self.member.user_id]
         }
         relation = self.task.add_reviewer(session = self.session, user = self.member.user)
@@ -68,7 +70,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
 
         credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
 
-        response = self.client.delete(
+        response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
@@ -86,7 +88,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             session = self.session,
             task_id = self.task.id,
             user_id = self.member.user_id,
-            relation = relation,
+            relation = self.relation,
             project_string_id = self.project.project_string_id,
             log = regular_log.default()
             )
