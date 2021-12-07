@@ -59,7 +59,6 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
                                              self.session)
 
     def test_api_task_user_remove(self):
-        self.relation = 'assignee'
         request_data = {
             'relation': self.relation,
             'user_id': [self.member.user_id]
@@ -89,7 +88,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             session = self.session,
             task_id = self.task.id,
             user_id = self.member.user_id,
-            relation = relation,
+            relation = self.relation,
             project_string_id = self.project.project_string_id,
             log = regular_log.default()
         )
