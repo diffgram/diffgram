@@ -83,10 +83,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_task_user_remove_core(self):
-        relation = self.task.add_assignee(
-            session = self.session,
-            user = self.member,
-            )
+        relation = self.task.add_assignee(session = self.session, user = self.member.user)
 
         result, log = task_user_remove_core(
             session = self.session,
