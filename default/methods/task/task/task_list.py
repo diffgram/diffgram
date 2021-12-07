@@ -33,7 +33,7 @@ def task_list_by_job_api(job_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
         job = Job.get_by_id(session, job_id)
-        return _task_list_api(project_id=job.project.id, input=input, log=log)
+        return _task_list_api(session = session, project_id=job.project.id, input=input, log=log)
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/task/list', methods=['POST'])
