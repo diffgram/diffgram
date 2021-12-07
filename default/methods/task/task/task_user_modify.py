@@ -41,7 +41,7 @@ def task_user_modify_core(session, task_id, project_string_id, user_id_list, rel
     users_to_remove = session.query(TaskUser).filter(TaskUser.task_id == task_id).filter(
         TaskUser.relation == relation)
     if (len(user_id_list) > 0):
-        users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(input['user_id']))
+        users_to_remove = users_to_remove.filter(TaskUser.user_id.notin_(user_id_list))
 
     for user_to_remove in users_to_remove.all():
         user_to_remove_id = user_to_remove.__dict__["id"]
@@ -56,9 +56,9 @@ def task_user_modify_core(session, task_id, project_string_id, user_id_list, rel
             log = log
         )
 
-    for user in input['user_id']:
+    for user in user_id_list:
         user_already_assigned = session.query(TaskUser).filter(TaskUser.user_id == user).filter(
-            TaskUser.task_id == task_id).filter(TaskUser.relation == input['relation']).all()
+            TaskUser.task_id == task_id).filter(TaskUser.relation == relation).all()
         if (len(user_already_assigned) > 0):
             continue
 
@@ -66,7 +66,7 @@ def task_user_modify_core(session, task_id, project_string_id, user_id_list, rel
             session = session,
             task_id = task_id,
             user_id = user,
-            relation = input['relation'],
+            relation = relation,
             project_string_id = project_string_id,
             log = log
         )
