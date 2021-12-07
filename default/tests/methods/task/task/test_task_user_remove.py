@@ -59,7 +59,8 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
 
     def test_api_task_user_remove(self):
         request_data = {
-
+            'relation': 'assignee',
+            'user_id': [self.member.user_id]
         }
         relation = self.task.add_reviewer(session = self.session, user = self.member.user)
         endpoint = "/api/v1/project/{}/task/user/remove/{}".format(self.project.project_string_id, relation.id)
@@ -81,7 +82,15 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
         self.assertTrue(data['removed'])
 
     def test_task_user_remove_core(self):
-        relation = self.task.add_assignee(session = self.session, user = self.member.user)
+        relation = self.task.add_assignee(
+            session = self.session,
+            task_id = self.task.id,
+            user_id = self.member.user_id,
+            relation = relation,
+            project_string_id = self.project.project_string_id,
+            log = regular_log.default()
+            )
+
         result, log = task_user_remove_core(
             session = self.session,
             task_user_id = relation.id,
