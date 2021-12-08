@@ -78,9 +78,7 @@ class TestTasUserAdd(testing_setup.DiffgramBaseTestCase):
 
         data = response.json
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['task_user']['user_id'], self.member.user_id)
-        self.assertEqual(data['task_user']['task_id'], self.task.id)
-        self.assertEqual(data['task_user']['relation'], 'assignee')
+        self.assertEqual(len(data), 1)
 
         request_data = {
             'relation': 'assignee',
