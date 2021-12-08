@@ -30,7 +30,7 @@ labelbox==2.4.9
 boto3==1.16.63
 alembic==1.4.2
 azure-storage-blob==12.8.0
-git+https://github.com/DanielPollithy/pypcd.git
+git+https://github.com/diffgram/pypcd
 psutil==5.6.6
 SQLAlchemy-serializer==1.4.1
 newrelic
