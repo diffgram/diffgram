@@ -50,7 +50,7 @@ describe("Test stats panel component", () => {
         jest.spyOn(window.localStorage.__proto__, 'setItem');
         window.localStorage.__proto__.setItem = jest.fn();
         const wrapper = shallowMount(stats_panel, props, localVue);
-        await wrapper.find('v-btn').trigger('click')
+        await wrapper.find('[data-cy="change_stats_visbility_button"]').trigger('click')
         expect(localStorage.setItem).toHaveBeenCalled();
     })
 
@@ -59,7 +59,7 @@ describe("Test stats panel component", () => {
           data: function() {
           return {
             stats_visibility: false,
-            
+
           }
         },
         ...props
@@ -99,6 +99,6 @@ describe("Test stats panel component", () => {
         ...props
       }, localVue);
 
-      expect(wrapper.findAll('v-menu').length).toBe(1)
+      expect(wrapper.findAll('#menu_user_list').length).toBe(1)
     })
 })

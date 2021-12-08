@@ -1,7 +1,8 @@
 import Vuex from "vuex";
+import Vuetify from "vuetify";
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import annotation_core from "@/components/annotation/annotation_core.vue";
-
+const vuetify = new Vuetify();
 const localVue = createLocalVue();
 localVue.use(Vuex);
 
@@ -30,8 +31,10 @@ describe("Test annotation_core", () => {
           getters: {
             get_view_issue_mode: () => {}
           }
-        }
-      }
+        },
+
+      },
+      vuetify
     };
   });
 

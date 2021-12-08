@@ -5,7 +5,7 @@ import FileLoader3DPointClouds from "../../../src/components/3d_annotation/FileL
 import * as instanceServices from '../../../src/services/instanceServices';
 import * as instance_utils from "../../../src/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
-import * as AnnotationUtills from '../../../src/components/annotation/utils/AnnotationUtills';
+import * as AnnotationSavePrechecks from '../../../src/components/annotation/utils/AnnotationSavePrechecks';
 import * as THREE from 'three';
 import axios from "axios";
 
@@ -629,10 +629,10 @@ describe("Test sensor_fusion_editor.vue", () => {
     axios.post = async () => ({
       data: {}
     })
-    AnnotationUtills.has_duplicate_instances = () => [false, [], []];
-    AnnotationUtills.check_if_pending_created_instance = () => false
+    AnnotationSavePrechecks.has_duplicate_instances = () => [false, [], []];
+    AnnotationSavePrechecks.check_if_pending_created_instance = () => false
     let spy = jest.spyOn(wrapper.vm, 'set_save_loading')
-    let spy2 = jest.spyOn(AnnotationUtills, 'has_duplicate_instances')
+    let spy2 = jest.spyOn(AnnotationSavePrechecks, 'has_duplicate_instances')
     let spy4 = jest.spyOn(axios, 'post')
 
     let result = await wrapper.vm.save()

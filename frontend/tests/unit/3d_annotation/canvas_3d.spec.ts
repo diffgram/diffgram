@@ -149,7 +149,7 @@ describe("Test canvas_3d.vue", () => {
       }
     })
     const spy = jest.spyOn(vm, 'center_camera')
-    vm.on_key_down({keyCode: 67});
+    vm.on_key_down({keyCode: 88});
     expect(spy).toHaveBeenCalled()
   });
 

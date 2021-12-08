@@ -107,7 +107,7 @@
           <div v-if="$store.state.user.logged_in == true">
               <div v-if="$store.state.builder_or_trainer.mode == 'builder'">
                 <v-layout>
-                  <div v-if="display_projectName">
+                  <div v-if="display_projectName"  id="project_name">
 
                     <v-menu offset-y>
                       <template
@@ -123,10 +123,13 @@
                           </h2>
                         </v-btn>
                       </template>
-                      <v-list v-if="$store.state.project_list &&
+                      <v-list
+                              id="project_list"
+                              v-if="$store.state.project_list &&
                               $store.state.project_list.user_projects_list &&
                               $store.state.project_list.user_projects_list.length > 1">
                         <v-list-item
+                          class="project-option"
                           style="cursor: pointer"
                           v-for="project in user_project_list"
                           :key="project.id"
