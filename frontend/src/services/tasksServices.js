@@ -54,7 +54,7 @@ export const assignUserToTask = async (
 };
 
 export const batchAssignUserToTask = async (
-  user_ids,
+  user_id_list,
   project_string_id,
   tasks,
   relation = "assignee"
@@ -64,7 +64,7 @@ export const batchAssignUserToTask = async (
       axios.post(
         `/api/v1/project/${project_string_id}/task/${task.id}/user/add`,
         {
-          user_id: user_ids,
+          user_id_list,
           relation
         }
       )
@@ -78,7 +78,7 @@ export const batchAssignUserToTask = async (
 };
 
 export const batchRemoveUserFromTask = async (
-  user_ids,
+  user_id_list,
   project_string_id,
   tasks,
   relation = "assignee"
@@ -88,7 +88,7 @@ export const batchRemoveUserFromTask = async (
       axios.post(
         `/api/v1/project/${project_string_id}/task/${task.id}/user/remove`,
         {
-          user_id: user_ids,
+          user_id_list,
           relation
         }
       )
