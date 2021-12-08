@@ -188,7 +188,7 @@
           }
         },
         on_key_down: function(event){
-          if(event.keyCode == 67){ // c key
+          if(event.keyCode == 88){ // c key
             this.center_camera();
           }
         },
