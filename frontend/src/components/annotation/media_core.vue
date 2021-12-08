@@ -1465,14 +1465,15 @@ import Vue from "vue";
 
     },
 
-    change_directory(event) {
+    async change_directory(event) {
 
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
       this.page_number = 1;
 
-      this.get_media(false);
+      await this.get_media(false);
+      this.$emit('file_changed', this.current_file)
 
 
     },

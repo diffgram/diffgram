@@ -39,6 +39,12 @@
         >
         </sensor_fusion_editor>
       </div>
+      <div v-else-if="!annotation_interface">
+        <empty_file_editor_placeholder
+          :loading="any_loading"
+          :project_string_id="project_string_id"
+        ></empty_file_editor_placeholder>
+      </div>
 
       <file_manager_sheet
         v-show="!loading_project"
@@ -76,6 +82,7 @@
 import axios from "axios";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
+import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import Vue from "vue";
@@ -85,6 +92,7 @@ export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    empty_file_editor_placeholder,
     sensor_fusion_editor
   },
   props: {
@@ -108,6 +116,7 @@ export default Vue.extend({
     return {
       show_snackbar: false,
       enabled_edit_schema: false,
+      initializing: false,
       snackbar_message: "",
       loading: false,
       loading_project: true,
@@ -167,7 +176,7 @@ export default Vue.extend({
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
     }
-
+    this.initializing = true
     await this.get_labels_from_project();
     this.get_model_runs_from_query(this.$route.query);
     if (this.$route.query.view_only) {
@@ -188,8 +197,12 @@ export default Vue.extend({
         await this.fetch_project_file_list();
       }
     }
+    this.initializing = false
   },
   computed: {
+    any_loading: function(){
+      return this.loading || this.loading_project || this.initializing
+    },
     file_id: function () {
       let file_id = this.$props.file_id_prop;
       if (this.$route.query.file) {
@@ -385,7 +398,6 @@ export default Vue.extend({
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
             this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-
             this.task = response.data.task;
           } else {
             if (direction === "next") {
