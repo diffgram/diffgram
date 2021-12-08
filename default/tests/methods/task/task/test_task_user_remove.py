@@ -61,7 +61,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
     def test_api_task_user_remove(self):
         request_data = {
             'relation': self.relation,
-            'user_id': [self.member.user_id]
+            'user_id_list': [self.member.user_id]
         }
         relation = self.task.add_reviewer(session = self.session, user = self.member.user)
         endpoint = "/api/v1/project/{}/task/{}/user/remove".format(self.project.project_string_id, self.task.id)
@@ -82,12 +82,10 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_task_user_remove_core(self):
-        relation = self.task.add_assignee(session = self.session, user = self.member.user)
-
         result, log = task_user_remove_core(
             session = self.session,
             task_id = self.task.id,
-            user_id = self.member.user_id,
+            user_id_list = [self.member.user_id],
             relation = self.relation,
             project_string_id = self.project.project_string_id,
             log = regular_log.default()
