@@ -6934,31 +6934,53 @@ mplate_has_keypoints_type: function (instance_template) {
       const step_size = 5; // We will fetch 5 frames per call
       const limit = pLimit(15); // 10 Max concurrent request.
       const total_frames = frames_end - frame_start;
-
-      // Build frames start/end
-      const frames_tuples = [];
-      for (let i = frame_start; i < frames_end; i += step_size + 1) {
-        frames_tuples.push([i, i + step_size]);
-      }
-      const promises = frames_tuples.map((frame_tuple) => {
-        return limit(() => {
-          let new_url = `${url_base}/instance/buffer/start/${frame_tuple[0]}/end/${frame_tuple[1]}/list`;
-          return axios.post(new_url, {
-            directory_id:
+      try{
+        // Build frames start/end
+        const frames_tuples = [];
+        for (let i = frame_start; i < frames_end; i += step_size + 1) {
+          frames_tuples.push([i, i + step_size]);
+        }
+        const promises = frames_tuples.map((frame_tuple) => {
+          return limit(() => {
+            let new_url = `${url_base}/instance/buffer/start/${frame_tuple[0]}/end/${frame_tuple[1]}/list`;
+            return axios.post(new_url, {
+              directory_id:
               this.$store.state.project.current_directory.directory_id,
+            });
           });
         });
-      });
 
-      let all_responses = await Promise.all(promises);
-      let new_instance_buffer_dict = {};
-      for (const response of all_responses) {
-        new_instance_buffer_dict = {
-          ...new_instance_buffer_dict,
-          ...response.data.instance_buffer_dict,
-        };
+        let all_responses = await Promise.all(promises);
+        let new_instance_buffer_dict = {};
+        for (const response of all_responses) {
+          new_instance_buffer_dict = {
+            ...new_instance_buffer_dict,
+            ...response.data.instance_buffer_dict,
+          };
+        }
+        return new_instance_buffer_dict;
       }
-      return new_instance_buffer_dict;
+      catch (e) {
+        console.error(e)
+        this.error = this.$route_api_errors(e)
+        return undefined;
+      }
+
+
+    },
+    get_url_instance_buffer: function(){
+      let url = "";
+      if (this.task && this.task.id) {
+        url += "/api/v1/task/" + this.task.id + "/video/file_from_task";
+      } else {
+        url +=
+          "/api/project/" +
+          this.$props.project_string_id +
+          "/video/" +
+          String(this.current_video_file_id);
+        // careful it's the video file we want here
+      }
+      return url
     },
     async get_video_instance_buffer(play_after_success) {
       /*
@@ -6980,27 +7002,21 @@ mplate_has_keypoints_type: function (instance_template) {
 
       this.instance_frame_start = this.current_frame;
 
-      let url = "";
-
-      if (this.task && this.task.id) {
-        url += "/api/v1/task/" + this.task.id + "/video/file_from_task";
-      } else {
-        url +=
-          "/api/project/" +
-          this.$props.project_string_id +
-          "/video/" +
-          String(this.current_video_file_id);
-        // careful it's the video file we want here
-      }
+      let url = this.get_url_instance_buffer();
 
       try {
         // Get the buffer from the Server. Note that at this point it is not initialized.
         // We'll initialize class instances as per frame and not all at once for performance reasons.
-        this.instance_buffer_dict = await this.get_instance_buffer_parallel(
+        let new_instance_buffer_dict = await this.get_instance_buffer_parallel(
           url,
           this.current_frame,
           this.current_frame + this.label_settings.instance_buffer_size
         );
+        if(!new_instance_buffer_dict){
+          return
+        }
+        this.instance_buffer_dict = new_instance_buffer_dict;
+
 
         this.instance_buffer_metadata = {};
         // Now set the current list from buffer
@@ -7709,11 +7725,22 @@ mplate_has_keypoints_type: function (instance_template) {
       if (next_frames != undefined) {
         let next_frames_to_add = parseInt(next_frames, 10);
         const frames_to_save = [];
-        for (
-          let i = this.current_frame + 1;
-          i <= this.current_frame + next_frames_to_add;
-          i++
-        ) {
+        // Fetch Instance List for empty frame buffers
+        let missing_frames = []
+        for (let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add; i++) {
+          if(!this.instance_buffer_dict[i]){
+            missing_frames.push(i)
+          }
+        }
+        let min_frame = Math.min(...missing_frames);
+        let max_frame = Math.max(...missing_frames);
+        let url = this.get_url_instance_buffer();
+        let new_instance_buffer = await this.get_instance_buffer_parallel(url, min_frame, max_frame)
+        if(!new_instance_buffer){
+          return
+        }
+        this.instance_buffer_dict = new_instance_buffer;
+        for ( let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add;i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = this.duplicate_instance(pasted_instance);
@@ -8099,8 +8126,6 @@ mplate_has_keypoints_type: function (instance_template) {
          * We simply go to the "well" so to speak and request the next task here
          * using the "change_file".
          */
-        if (this.task && this.task.id) return;
-
         this.set_save_loading(false, current_frame);
         this.has_changed = false;
         if (and_complete == true) {

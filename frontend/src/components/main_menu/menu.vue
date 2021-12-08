@@ -206,6 +206,14 @@
           <template slot="content">
             <v-layout column>
 
+              <v-btn @click="$router.push('/admin/')">
+                Projects
+              </v-btn>
+
+              <v-btn @click="$router.push('/admin/install/info')">
+                Install Info
+              </v-btn>
+
               <v-btn @click="builder_or_trainer_toggle()">
                 Builder / Trainer Toggle
               </v-btn>
@@ -214,13 +222,10 @@
                 Super Admin Toggle
               </v-btn>
 
-              <v-btn @click="$router.push('/admin/')">
-                Projects
-              </v-btn>
-
               <v-btn @click="$router.push('/admin/student')">
                 Student Plan
               </v-btn>
+
 
             </v-layout>
           </template>
@@ -264,20 +269,6 @@
                    v-if="$store.state.user.logged_in != true"
                    >
               Try Now
-            </v-btn>
-          </ahref_seo_optimal>
-
-
-
-
-          <ahref_seo_optimal href="/user/new">
-            <v-btn color="primary"
-                   outlined
-                   class="hidden-sm-and-down"
-                   v-if="$store.state.user.logged_in != true
-                   && !$store.state.builder_or_trainer.mode"
-                   >
-              Sign Up
             </v-btn>
           </ahref_seo_optimal>
 
@@ -345,6 +336,11 @@ import menu_marketing from './menu_marketing'
           project => project.project_string_id != this.$store.state.project.current.project_string_id
         )
       }
+      const new_project = {
+          new_project : true,
+          name: "New Project"
+        }
+      user_project_list.push(new_project)
       return user_project_list
     },
     display_projectName: function () {
@@ -401,6 +397,11 @@ import menu_marketing from './menu_marketing'
   },
   methods: {
     change_project(item) {
+      if (item.new_project == true) {
+        this.$router.push({ path: "/a/project/new" });
+        this.$emit("exit", true);
+        return
+      }
       if (item.is_public) {
         this.$store.commit("set_current_public_project", item);
       } else {

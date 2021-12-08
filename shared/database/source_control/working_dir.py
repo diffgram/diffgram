@@ -529,6 +529,7 @@ class WorkingDirFileLink(Base):
 
         # Assumes working dir....
 
+
         if job_id:
             if not order_by_class_and_attribute:
                 query = session.query(File).distinct(File.id).filter(File.job_id == job_id)
@@ -537,6 +538,7 @@ class WorkingDirFileLink(Base):
 
         else:
             if directory_list is None:
+                if working_dir_id is None: return None
                 file_link_sub_query = WorkingDirFileLink.get_sub_query(
                     session, working_dir_id, type)
 

@@ -63,6 +63,7 @@ describe("Test project dropdown", () => {
             localVue
           })
         expect(wrapper.html()).toContain('Test project')
-        expect(wrapper.findAll('v-list-item').length).toBe(2)
+        // includes the 'new button'
+        expect(wrapper.findAll('v-list-item').length).toBe(3)
     })
 })

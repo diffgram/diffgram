@@ -230,6 +230,7 @@ jobs:
       DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -289,6 +290,7 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -342,6 +344,7 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -408,6 +411,7 @@ jobs:
       GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -466,6 +470,7 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
@@ -522,6 +527,7 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
+          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           walrusService.numReplicas: 1
