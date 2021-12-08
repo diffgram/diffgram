@@ -98,7 +98,7 @@ class SensorFusionFileProcessor:
         filename = self.input.original_filename.split('_sf.json')[0]
         file = File.new(
             session = self.session,
-            working_dir_id = self.input.directory_id,
+            working_dir_id = None,
             file_type = "point_cloud_3d",
             parent_id = parent_sensor_fusion_file.id,
             original_filename = filename,

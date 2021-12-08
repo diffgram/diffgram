@@ -1,7 +1,8 @@
 <template>
   <div id="3d-editor-container" data-cy="3d-editor-container">
     <div style="position: relative">
-      <main_menu :height="`100px`">
+      <main_menu :height="`${!task ? '100px' : '50px'}`"
+                 :show_default_navigation="task ? false : true">
 
         <template slot="second_row">
 
@@ -57,7 +58,7 @@
            :style="{width: `${editor_3d_settings.left_nav_width}px`, overflow: 'hidden', paddingLeft: '12px'}">
         <instance_detail_list_view ref="instance_detail_list"
                                    data-cy="instance_detail_list"
-                                   v-if="file && current_label_file && label_file_colour_map"
+                                   v-if="(file || task) && current_label_file && label_file_colour_map"
                                    :instance_list="instance_list"
                                    :model_run_list="undefined"
                                    :label_file_colour_map="label_file_colour_map"
@@ -73,12 +74,12 @@
                                    :label_list="label_list"
                                    :draw_mode="draw_mode"
                                    :current_frame="current_frame"
-                                   :current_video_file_id="file.id"
+                                   :current_video_file_id="file ? file.id : task.file.id"
                                    :current_label_file_id="current_label_file.id"
                                    :video_playing="video_playing"
                                    :external_requested_index="request_change_current_instance"
                                    :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                   :current_file="file ? file : task"
+                                   :current_file="file ? file : task.file"
         >
         </instance_detail_list_view>
 
@@ -401,10 +402,16 @@
         }
       },
       pcd_url: function () {
-        if (!this.$props.file) {
+        if (!this.$props.file && !this.$props.task) {
           return
         }
-        return this.$props.file.point_cloud.url_signed;
+        if (this.$props.file) {
+          return this.$props.file.point_cloud.url_signed;
+        }
+        if (this.$props.task) {
+          return this.$props.task.file.point_cloud.url_signed;
+        }
+
       },
     },
     watch: {
@@ -913,6 +920,23 @@
 
         }
       },
+      reset_for_file_change_context: function () {
+        this.current_sequence_annotation_core_prop = {
+          id: null,
+          number: null,
+        };
+        this.video_mode = false; // if we don't have this can be issues switching to say an image
+        this.instance_buffer_dict = {};
+        this.instance_buffer_metadata = {};
+        this.instance_list = [];
+        if (this.video_mode) {
+          this.$refs.video_controllers.reset_cache();
+        }
+        this.$refs.x_axis_3d_canvas.destroy_canvas()
+        this.$refs.y_axis_3d_canvas.destroy_canvas()
+        this.$refs.z_axis_3d_canvas.destroy_canvas()
+        this.$refs.main_3d_canvas.destroy_canvas();
+      },
       insert_tag_type: function () {
 
       },
@@ -922,11 +946,29 @@
       next_issue_task: function () {
 
       },
-      trigger_task_change: function () {
+      trigger_task_change: async function (direction,
+                                           task,
+                                           assign_to_user = false) {
+        // Keyboard shortcuts case
+        if (this.full_file_loading == true) {
+          return;
+        }
 
+        if (this.has_changed) {
+          await this.save();
+        }
+
+        // Set the UI to loading state until a new task is provided in the props.
+        // The watcher of 'task' will make sure to set loading = false and full_file_loading = false
+        this.reset_for_file_change_context();
+
+        // Ask parent for a new task
+        this.$emit("request_new_task", direction, task, assign_to_user);
       },
-      change_file: function () {
-
+      change_file(direction, file) {
+        if (direction == "next" || direction == "previous") {
+          this.$emit("request_file_change", direction, file);
+        }
       },
       change_instance_type: function (instance_type) {
         this.instance_type = instance_type;

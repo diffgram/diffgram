@@ -7,6 +7,7 @@
 
       <div v-on="on">
         <file_preview
+          v-if="file.type === 'image' || file.type === 'video'"
           class="d-flex file-preview"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
@@ -18,11 +19,13 @@
           :show_video_nav_bar="false"
           :enable_go_to_file_on_click="false"
         ></file_preview>
+        <v-icon v-if="file.type === 'sensor_fusion'" size="64" color="primary">mdi-printer-3d</v-icon>
        </div>
 
     </template>
 
       <file_preview
+        v-if="file.type === 'image' || file.type === 'video'"
         class="d-flex file-preview"
         file_preview_width="500"
         file_preview_height="500"
@@ -34,6 +37,8 @@
         :show_video_nav_bar="false"
         :enable_go_to_file_on_click="false"
       ></file_preview>
+    <h3 v-if="file.type === 'sensor_fusion'">3D File</h3>
+
 
     </v-tooltip>
 

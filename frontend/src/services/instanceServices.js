@@ -17,7 +17,7 @@ export const get_instance_list_from_file = async (project_string_id, file_id) =>
 
 export const get_instance_list_from_task = async (project_string_id, task_id) => {
   try {
-    const { data } = await axios.get(`/api/job/${job_id}/user/${user_id}/stats`)
+    const { data } = await axios.get(`/api/v1/task/${task_id}/annotation/list`)
     return data
   } catch(e) {
     return {

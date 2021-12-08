@@ -35,6 +35,8 @@
           :task="task"
           :file="current_file"
           :view_only_mode="view_only"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
           ref="sensor_fusion_editor"
         >
         </sensor_fusion_editor>
