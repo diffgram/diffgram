@@ -6,8 +6,8 @@
         <v-card-title v-else class="text-h5 grey lighten-2"> Manage reviewers </v-card-title>
 
         <v-card-text>
-          <h3 v-if="dialog_type === 'assignee'">Who should be assigned to this task?</h3>
-          <h3 v-else>Who should review to this task?</h3>
+          <h3 v-if="dialog_type === 'assignee'">Who should be assigned to {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
+          <h3 v-else>Who should review {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
 
           <member_select
             datacy="member-select"
@@ -56,6 +56,10 @@ export default Vue.extend({
     dialog_type: {
       type: String,
       default: 'assignee'
+    },
+    plural: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
