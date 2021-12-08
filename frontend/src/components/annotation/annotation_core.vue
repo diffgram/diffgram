@@ -855,7 +855,7 @@ import moment from "moment";
 import axios from "axios";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
-import * as AnnotationSavePreChecks from '../annotation/utils/AnnotationSavePrechecks'
+import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
@@ -2272,16 +2272,7 @@ export default Vue.extend({
         e.returnValue = "";
       }
     },
-    check_if_pending_created_instance: function () {
-      // Sets the pending changes flag if there are any instances that have not been saved yet.
-      for (let i = 0; i < this.instance_list.length; i++) {
-        let instance = this.instance_list[i];
-        if (!instance.id) {
-          this.has_changed = true;
-        }
-      }
-    },
-    instance_template_has_keypoints_type: function (instance_template) {
+mplate_has_keypoints_type: function (instance_template) {
       return (
         instance_template.instance_list.filter(
           (instance) => instance.type === "keypoints"
@@ -7894,24 +7885,6 @@ export default Vue.extend({
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
     },
 
-    add_ids_to_new_instances_and_delete_old: function (
-      response,
-      request_video_data
-    ) {
-
-      AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
-        response,
-        request_video_data,
-        this.instance_list,
-        this.video_mode
-      )
-    },
-    hash_string: function (str) {
-      return sha256(str);
-    },
-    has_duplicate_instances: function (instance_list) {
-      return AnnotationSavePreChecks.has_duplicate_instances(instance_list)
-    },
     refresh_sequence_frame_list: function (instance_list, frame_number) {
       for (const instance of instance_list) {
         this.$refs.sequence_list.add_frame_number_to_sequence(
@@ -7955,7 +7928,7 @@ export default Vue.extend({
 
       this.set_save_loading(true, current_frame);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
-        this.has_duplicate_instances(instance_list);
+        AnnotationSavePrechecks.has_duplicate_instances(instance_list);
       let dup_instance_list = dup_indexes.map((i) => ({
         ...instance_list[i],
         original_index: i,
@@ -8055,9 +8028,14 @@ export default Vue.extend({
          */
 
         this.save_count += 1;
-        this.add_ids_to_new_instances_and_delete_old(response, video_data);
-
-        this.check_if_pending_created_instance();
+        AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
+          response,
+          video_data,
+          this.instance_list,
+          this.instance_buffer_dict,
+          this.video_mode
+        )
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
 
         if (this.instance_buffer_metadata[this.current_frame]) {
@@ -8136,7 +8114,7 @@ export default Vue.extend({
             this.trigger_task_change("next", "none", true); // important
           }
         }
-        this.check_if_pending_created_instance();
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         return true;
       } catch (error) {
         console.error(error);

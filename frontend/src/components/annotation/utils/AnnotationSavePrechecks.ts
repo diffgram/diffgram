@@ -49,7 +49,7 @@ export let has_duplicate_instances = function (instance_list) {
       }) : inst.points,
       nodes: inst.nodes
         ? inst.nodes.map((node) => {
-          return { ...node };
+          return {...node};
         })
         : inst.nodes,
       front_face: {...inst.front_face},
@@ -83,25 +83,27 @@ export let has_duplicate_instances = function (instance_list) {
 
 
 export let add_ids_to_new_instances_and_delete_old = function (response,
-                                                                 request_video_data,
-                                                                 instance_list,
-                                                                 video_mode) {
-    /*
-    * This function is used in the context of AnnotationUpdate.
-    * The new created/deleted instances are merged without loss of the current
-    * frontend data (like selected context for example).
-    * This is done by destructuring the new instance (the one received from backend)
-    * and then adding the original instance keys on top of the new one.
-    * */
+                                                               request_video_data,
+                                                               instance_list,
+                                                               instance_buffer_dict,
+                                                               video_mode) {
+  /*
+  * This function is used in the context of AnnotationUpdate.
+  * The new created/deleted instances are merged without loss of the current
+  * frontend data (like selected context for example).
+  * This is done by destructuring the new instance (the one received from backend)
+  * and then adding the original instance keys on top of the new one.
+  * */
 
   // Add instance ID's to the newly created instances
   const new_added_instances = response.data.added_instances;
   const new_deleted_instances = response.data.deleted_instances;
   if (video_mode) {
-    instance_list = this.instance_buffer_dict[request_video_data.current_frame]
+    instance_list = instance_buffer_dict[request_video_data.current_frame]
   }
   for (let i = 0; i < instance_list.length; i++) {
     const current_instance = instance_list[i]
+    console.log('CURRENT INSTANCE', current_instance)
     if (!current_instance.id) {
       // Case of a new instance added
       const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
@@ -136,11 +138,11 @@ export let add_ids_to_new_instances_and_delete_old = function (response,
 }
 
 
-export let check_if_pending_created_instance = function(instance_list){
+export let check_if_pending_created_instance = function (instance_list) {
   // Sets the pending changes flag if there are any instances that have not been saved yet.
-  for(let i = 0; i < instance_list.length; i++){
+  for (let i = 0; i < instance_list.length; i++) {
     let instance = instance_list[i];
-    if(!instance.id){
+    if (!instance.id) {
       return true
     }
   }
