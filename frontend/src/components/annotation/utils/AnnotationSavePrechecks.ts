@@ -47,6 +47,11 @@ export let has_duplicate_instances = function (instance_list) {
       points: inst.points ? inst.points.map(point => {
         return {...point}
       }) : inst.points,
+      nodes: inst.nodes
+        ? inst.nodes.map((node) => {
+          return { ...node };
+        })
+        : inst.nodes,
       front_face: {...inst.front_face},
       rear_face: {...inst.rear_face},
       soft_delete: inst.soft_delete,

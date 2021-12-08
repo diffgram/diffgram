@@ -88,3 +88,5 @@ class GracefulKiller(metaclass = Singleton):
             self.set_inputs_with_error_status(process_media_queue_manager.PROCESSING_INPUT_LIST)
             # TODO: set failed inputs to failed status
             self.exit_process()
+
+
