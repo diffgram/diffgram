@@ -2,12 +2,12 @@
   <div class="text-center">
     <v-dialog v-if="dialog" v-model="dialog" width="500" @keydown.esc="on_cancel" @click:outside="on_cancel">
       <v-card>
-        <v-card-title v-if="dialog_type === 'assignee'" class="text-h5 grey lighten-2"> Manage assignees </v-card-title>
-        <v-card-title v-else class="text-h5 grey lighten-2"> Manage reviewers </v-card-title>
+        <v-card-title v-if="dialog_type === 'assignee'" class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} assignees </v-card-title>
+        <v-card-title v-else class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} reviewers </v-card-title>
 
         <v-card-text>
-          <h3 v-if="dialog_type === 'assignee'">Who should be assigned to {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
-          <h3 v-else>Who should review {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
+          <h3 v-if="dialog_type === 'assignee'">Who should be {{ remove_mode ? 'removed' : 'assigned'}} to {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
+          <h3 v-else>Who should {{ remove_mode ? 'be removed from the' : 'review the'}} {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
 
           <member_select
             datacy="member-select"
@@ -24,7 +24,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn id="review-dialog-cancel" color="primary" @click="on_cancel" text> Cancel </v-btn>
-          <v-btn :loading="loading" data-cy="finish-user-assignment" id="review-dialog-submit" color="green" @click="on_assign" text> Submit </v-btn>
+          <v-btn :loading="loading" data-cy="finish-user-assignment" id="review-dialog-submit" :color="remove_mode ? 'error' : 'success'" @click="on_assign" text> Submit </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -44,6 +44,10 @@ export default Vue.extend({
     dialog: {
       type: Boolean,
       default: false,
+    },
+    remove_mode: {
+      type: Boolean,
+      default: false
     },
     assignees: {
       type:  Array,

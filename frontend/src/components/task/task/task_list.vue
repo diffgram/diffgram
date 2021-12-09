@@ -249,7 +249,7 @@
               Archive
             </v-btn>
             <v-btn
-              @click="() => on_batch_assign_dialog_open('assignee')"
+              @click="() => on_batch_assign_dialog_open('assignee', false)"
               v-if="selected_action === 'assign' && selected_tasks.length > 0"
               :loading="loading"
               :disabled="selected_tasks.length === 0"
@@ -260,7 +260,7 @@
               Add annotators
             </v-btn>
             <v-btn
-              @click="() => on_batch_assign_dialog_open('assignee')"
+              @click="() => on_batch_assign_dialog_open('assignee', true)"
               v-if="selected_action === 'remove' && selected_tasks.length > 0"
               :loading="loading"
               :disabled="selected_tasks.length === 0"
@@ -271,7 +271,7 @@
               Remove annotators
             </v-btn>
             <v-btn
-              @click="() => on_batch_assign_dialog_open('reviewer')"
+              @click="() => on_batch_assign_dialog_open('reviewer', false)"
               v-if="selected_action === 'assignReviewers' && selected_tasks.length > 0"
               :loading="loading"
               :disabled="selected_tasks.length === 0"
@@ -281,7 +281,7 @@
               Add reviewers
             </v-btn>
             <v-btn
-              @click="() => on_batch_assign_dialog_open('reviewer')"
+              @click="() => on_batch_assign_dialog_open('reviewer', true)"
               v-if="selected_action === 'removeReviewers' && selected_tasks.length > 0"
               :loading="loading"
               :disabled="selected_tasks.length === 0"
@@ -382,8 +382,8 @@
                 :bottom="true"
               >
               </tooltip_button>
-              <v_user_icon 
-                style="z-index: 1" 
+              <v_user_icon
+                style="z-index: 1"
                 v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
               />
               <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
@@ -410,8 +410,8 @@
                 :bottom="true"
               >
               </tooltip_button>
-              <v_user_icon 
-                style="z-index: 1" 
+              <v_user_icon
+                style="z-index: 1"
                 v-if="props.item.task_reviewers.length > 0" :user_id="props.item.task_reviewers[0].user_id"
               />
               <v-tooltip v-if="props.item.task_reviewers.length > 1" bottom>
@@ -637,6 +637,7 @@
       :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
       :loading="task_assign_dialog_loading"
       :plural="task_assign_batch"
+      :remove_mode="remove_mode"
       @close="on_assign_dialog_close"
       @assign="assign_user_to_task"
     />
@@ -709,7 +710,7 @@ export default Vue.extend({
   data() {
     return {
       actions_list: [
-        { name: "Archive", value: "archive" }, 
+        { name: "Archive", value: "archive" },
         { name: "Assign annotators", value: 'assign' },
         { name: "Remove annotators", value: 'remove' },
         ],
@@ -896,6 +897,7 @@ export default Vue.extend({
         },
       ],
       view_only: false,
+      remove_mode: false,
       next_task_loading: false,
     };
   },
@@ -992,10 +994,11 @@ export default Vue.extend({
       this.task_assign_dialog_type = type
     },
 
-    on_batch_assign_dialog_open: function(type) {
+    on_batch_assign_dialog_open: function(type, remove_mode) {
       this.task_assign_dialog_open = true
       this.task_assign_dialog_type = type
       this.task_assign_batch = true
+      this.remove_mode = remove_mode
     },
 
     on_assign_dialog_close: function() {
@@ -1159,11 +1162,11 @@ export default Vue.extend({
             ]
 
             this.actions_list = [
-              { name: "Archive", value: "archive" }, 
+              { name: "Archive", value: "archive" },
               { name: "Assign annotators", value: 'assign'},
               { name: "Remove annotators", value: 'remove' },
-              { name: "Assign reviewers", value: 'assignReviewers'}, 
-              { name: "Remove reviewers", value: 'removeReviewers'}, 
+              { name: "Assign reviewers", value: 'assignReviewers'},
+              { name: "Remove reviewers", value: 'removeReviewers'},
               ]
           }
 
@@ -1252,16 +1255,16 @@ export default Vue.extend({
 
 <style scoped>
 .show-number-of-users {
-  margin-left: -15px; 
-  z-index: 0; 
+  margin-left: -15px;
+  z-index: 0;
   background-color: #d3d3d3
 }
 
 .display-assigned-users {
-  display: flex; 
-  flex-direction: row; 
-  width: 100%; 
-  align-items: center; 
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
   justify-content: center;
 }
 </style>
