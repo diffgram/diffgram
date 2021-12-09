@@ -6,7 +6,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from packaging import version
 import traceback
-from regular.regular_methods import commit_with_rollback
+from shared.regular.regular_methods import commit_with_rollback
 
 logger = get_shared_logger()
 
