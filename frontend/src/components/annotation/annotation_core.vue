@@ -213,7 +213,7 @@
           v-if="!error_no_permissions.data"
           :width="label_settings.left_nav_width"
         >
-        <task_status />
+        <task_status v-if="task && task.id" :task_status="task.status" />
         <br />
           <v-alert
             v-if="
