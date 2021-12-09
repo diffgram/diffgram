@@ -40,7 +40,7 @@ def api_task_user_add(project_string_id, task_id):
 
 def api_task_user_add_core(session: 'Session',
                            task_id: int,
-                           user_id_list: int,
+                           user_id_list: list,
                            relation: str,
                            project_string_id: str,
                            log: dict):
