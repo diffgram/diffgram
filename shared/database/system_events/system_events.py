@@ -6,6 +6,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from packaging import version
 import traceback
+from regular.regular_methods import commit_with_rollback
 
 logger = get_shared_logger()
 
@@ -113,7 +114,6 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
-            session.commit()
             return system_event
 
         else:
@@ -136,7 +136,6 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
-                session.commit()
                 return system_event
             elif version_to_check < recorded_version:
                 logger.info('Downgrade version detected: [{}]'.format(version_to_check))
@@ -154,7 +153,6 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
-                session.commit()
                 return system_event
             else:
                 # On equal versions, we do nothing.
@@ -190,7 +188,6 @@ class SystemEvents(Base):
                     shut_down_time = None,
                     created_date = datetime.datetime.utcnow()
                 )
-                session.commit()
                 return system_event
         else:
             system_event = SystemEvents.new(
@@ -207,7 +204,6 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
-            session.commit()
             return system_event
 
     def serialize(self):
@@ -325,7 +321,7 @@ class SystemEvents(Base):
             session.flush()
 
         # Try commit
-        # session.commit()
+        commit_with_rollback(session)
 
         event.send_to_segment()
         event.send_to_eventhub()
