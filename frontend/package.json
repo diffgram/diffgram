@@ -6,7 +6,7 @@
   "author": "Diffgram <support@diffgram.com>",
   "scripts": {
     "build": "node build/build.js",
-    "test:unit": "vue-cli-service test:unit --coverage --silent",
+    "test:unit": "vue-cli-service test:unit --coverage",
     "test:unit-update": "vue-cli-service test:unit --coverage --silent -u",
     "lint": "npx eslint './src/**/*.vue'",
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",

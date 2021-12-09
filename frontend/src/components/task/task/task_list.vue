@@ -202,6 +202,7 @@
               v-if="!view_only"
               offset="x"
               color="primary"
+              datacy="show-hide-columns"
             >
               <template slot="content">
                 <v-select
@@ -210,6 +211,7 @@
                   multiple
                   label="Columns"
                   :disabled="loading"
+                  data-cy="select-column"
                 >
                 </v-select>
 
@@ -233,6 +235,7 @@
               item-text="name"
               label="Actions"
               class="mr-4"
+              data-cy="select-task-list-action"
             >
             </v-select>
             <v-btn
@@ -244,6 +247,48 @@
             >
               <v-icon>mdi-archive</v-icon>
               Archive
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('assignee', false)"
+              v-if="selected_action === 'assign' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="primary"
+              data-cy="add-batch-annotators-open"
+            >
+              <v-icon>mdi-account-plus-outline</v-icon>
+              Add annotators
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('assignee', true)"
+              v-if="selected_action === 'remove' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="error"
+              data-cy="remove-batch-annotators-open"
+            >
+              <v-icon>mdi-account-minus-outline</v-icon>
+              Remove annotators
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('reviewer', false)"
+              v-if="selected_action === 'assignReviewers' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="primary"
+            >
+              <v-icon>mdi-account-plus-outline</v-icon>
+              Add reviewers
+            </v-btn>
+            <v-btn
+              @click="() => on_batch_assign_dialog_open('reviewer', true)"
+              v-if="selected_action === 'removeReviewers' && selected_tasks.length > 0"
+              :loading="loading"
+              :disabled="selected_tasks.length === 0"
+              color="error"
+            >
+              <v-icon>mdi-account-minus-outline</v-icon>
+              Remove reviewers
             </v-btn>
 
             <!--
@@ -277,7 +322,7 @@
           @rowclick="rowclick($event)"
         >
           <template slot="Select" slot-scope="props">
-            <v-checkbox v-model="props.item.is_selected"> </v-checkbox>
+            <v-checkbox data-cy="select-task-list-item" v-model="props.item.is_selected"> </v-checkbox>
           </template>
 
           <template slot="Status" slot-scope="props">
@@ -324,7 +369,60 @@
           </template>
 
           <template slot="AssignedUser" slot-scope="props">
-            <v_user_icon :user_id="props.item.assignee_user_id"> </v_user_icon>
+            <div class="display-assigned-users">
+              <tooltip_button
+                tooltip_message="Manage assignees"
+                class="hidden-sm-and-down"
+                color="primary"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'assignee')"
+                icon="mdi-account-plus-outline"
+                datacy="open-add-assignee-dialog"
+                large
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+              <v_user_icon
+                style="z-index: 1"
+                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+              />
+              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
+                    + {{ props.item.task_assignees.length - 1}}
+                  </v-avatar>
+                </template>
+                <span>{{ props.item.task_assignees.length }} users assigned to complete this task</span>
+              </v-tooltip>
+            </div>
+          </template>
+
+          <template v-if="allow_reviews" slot="AssignedReviewer" slot-scope="props">
+            <div class="display-assigned-users">
+              <tooltip_button
+                tooltip_message="Manage reviewers"
+                class="hidden-sm-and-down"
+                color="primary"
+                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'reviewer')"
+                icon="mdi-account-plus-outline"
+                large
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+              <v_user_icon
+                style="z-index: 1"
+                v-if="props.item.task_reviewers.length > 0" :user_id="props.item.task_reviewers[0].user_id"
+              />
+              <v-tooltip v-if="props.item.task_reviewers.length > 1" bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
+                    + {{ props.item.task_reviewers.length - 1}}
+                  </v-avatar>
+                </template>
+                <span>{{ props.item.task_reviewers.length }} users assigned to complete this task</span>
+              </v-tooltip>
+            </div>
           </template>
 
           <template slot="LastUpdated" slot-scope="props">
@@ -533,6 +631,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <add_assignee
+      :dialog_type="task_assign_dialog_type"
+      :dialog="task_assign_dialog_open"
+      :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
+      :loading="task_assign_dialog_loading"
+      :plural="task_assign_batch"
+      :remove_mode="remove_mode"
+      @close="on_assign_dialog_close"
+      @assign="assign_user_to_task"
+    />
     <v-snackbar v-model="snackbar_success" :timeout="3000" color="primary">
       Tasks archived successfully.
 
@@ -552,10 +660,13 @@
 
 <script lang="ts">
 import axios from "axios";
+import _ from 'lodash'
 import { route_errors } from "../../regular/regular_error_handling";
-import task_status_icons from "../../regular_concrete/task_status_icons";
-import task_status_select from "../../regular_concrete/task_status_select";
-import task_input_list_dialog from "../../input/task_input_list_dialog";
+import task_status_icons from "../../regular_concrete/task_status_icons.vue";
+import task_status_select from "../../regular_concrete/task_status_select.vue";
+import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
+import add_assignee from "../../dialogs/add_assignee.vue"
+import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
 
 import pLimit from "p-limit";
 
@@ -567,6 +678,7 @@ export default Vue.extend({
     task_status_icons,
     task_status_select,
     task_input_list_dialog,
+    add_assignee
   },
   props: {
     project_string_id: {
@@ -597,7 +709,19 @@ export default Vue.extend({
   watch: {},
   data() {
     return {
-      actions_list: [{ name: "Archive", value: "archive" }],
+      actions_list: [
+        { name: "Archive", value: "archive" },
+        { name: "Assign annotators", value: 'assign' },
+        { name: "Remove annotators", value: 'remove' },
+        ],
+
+      task_assign_dialog_open: false,
+      task_to_assign: null,
+      task_assign_dialog_loading: false,
+      task_assign_dialog_type: null,
+      task_assign_batch: false,
+
+      allow_reviews: false,
 
       page_number: 0,
       per_page_limit: 25,
@@ -656,6 +780,7 @@ export default Vue.extend({
         "DataUpdateLog",
         "IncomingDataset",
         "AssignedUser",
+        "AssignedReviewer",
         "LastUpdated",
         "Action",
       ],
@@ -721,6 +846,13 @@ export default Vue.extend({
           value: "",
         },
         {
+          text: "Assigned Reviewer",
+          header_string_id: "AssignedReviewer",
+          align: "center",
+          sortable: false,
+          value: "",
+        },
+        {
           text: "Type",
           header_string_id: "Type",
           align: "left",
@@ -765,6 +897,7 @@ export default Vue.extend({
         },
       ],
       view_only: false,
+      remove_mode: false,
       next_task_loading: false,
     };
   },
@@ -773,7 +906,6 @@ export default Vue.extend({
     page_start_index: function () {
       return this.page_number * this.per_page_limit + 1;
     },
-
     page_end_index: function () {
       let count = this.page_number * this.per_page_limit + this.per_page_limit;
       if (count > this.$store.state.job.current.file_count_statistic) {
@@ -854,6 +986,51 @@ export default Vue.extend({
     async next_page() {
       this.page_number += 1;
       await this.task_list_api();
+    },
+
+    on_assign_dialog_open: function(task_id, type) {
+      this.task_assign_dialog_open = true
+      this.task_to_assign = task_id
+      this.task_assign_dialog_type = type
+    },
+
+    on_batch_assign_dialog_open: function(type, remove_mode) {
+      this.task_assign_dialog_open = true
+      this.task_assign_dialog_type = type
+      this.task_assign_batch = true
+      this.remove_mode = remove_mode
+    },
+
+    on_assign_dialog_close: function() {
+      this.task_assign_dialog_open = false
+      this.task_to_assign = null
+      this.task_assign_dialog_loading = false
+      this.task_assign_dialog_type = null
+      this.task_assign_batch = false
+    },
+
+    assign_user_to_task: async function(user_ids) {
+      this.task_assign_dialog_loading = true
+      const new_task_assignees = user_ids.map(id => ({ user_id: id }))
+      if (!this.task_assign_batch) {
+        await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
+        this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
+      } else {
+        if (this.selected_action.includes('assign')) {
+          await batchAssignUserToTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
+          this.selected_tasks.map(assign_item => {
+            const task_assignees = _.merge(_.keyBy(new_task_assignees, 'user_id'), _.keyBy(this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"], 'user_id'));
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = _.values(task_assignees)
+          })
+        } else {
+          await batchRemoveUserFromTask(user_ids, this.project_string_id, this.selected_tasks, this.task_assign_dialog_type)
+          this.selected_tasks.map(assign_item => {
+            this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = this.task_list.find(task => task.id === assign_item.id)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"].filter(user => !user_ids.includes(user.user_id))
+          })
+        }
+        this.task_list.forEach((t) => t.is_selected = false)
+      }
+      this.on_assign_dialog_close()
     },
 
     async previous_page() {
@@ -969,8 +1146,29 @@ export default Vue.extend({
 
         if (response.data.log.success == true) {
           this.task_list = response.data.task_list;
+          this.allow_reviews = response.data.allow_reviews
           this.pending_initial_dir_sync =
             response.data.pending_initial_dir_sync;
+
+          if (response.data.allow_reviews) {
+            this.column_list = [
+              "Status",
+              "Preview",
+              "AnnotationCount",
+              "AssignedUser",
+              "AssignedReviewer",
+              "LastUpdated",
+              "Action",
+            ]
+
+            this.actions_list = [
+              { name: "Archive", value: "archive" },
+              { name: "Assign annotators", value: 'assign'},
+              { name: "Remove annotators", value: 'remove' },
+              { name: "Assign reviewers", value: 'assignReviewers'},
+              { name: "Remove reviewers", value: 'removeReviewers'},
+              ]
+          }
 
           this.update_tasks_with_file_annotations(this.task_list);
         }
@@ -1054,3 +1252,19 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style scoped>
+.show-number-of-users {
+  margin-left: -15px;
+  z-index: 0;
+  background-color: #d3d3d3
+}
+
+.display-assigned-users {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+</style>
