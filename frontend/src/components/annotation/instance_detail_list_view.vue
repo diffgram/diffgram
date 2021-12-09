@@ -132,7 +132,7 @@
                             <!-- TODO error handling here -->
                             <div  class="color-box"
                                   @click="change_instance(props.item, props.item.instance_list_index),show_all()"
-                                  v-if="label_file_colour_map[props.item.label_file.id]">
+                                  v-if="label_file_colour_map[props.item.label_file_id]">
 
                               <div v-if="props.item.type =='box'">
                                 <v-icon :style="get_instance_color(props.item)">
@@ -271,7 +271,8 @@
 
                           </div>
 
-                          <div v-if="props.item.label_file">
+                          <div v-if="props.item.label_file &&
+                                     props.item.label_file.label">
 
                             <!-- Context, when a user focuses an instance, we expect it to select it
                                  However, when a user *just* selects an instance, we expect it to lose focus-->
@@ -279,8 +280,8 @@
                               :style="style_instance_selected_color(props.item)"
                               @click="change_instance(props.item, props.item.instance_list_index),
                                  show_all()">
-                        {{props.item.label_file.label.name}}
-                      </span>
+                              {{props.item.label_file.label.name}}
+                            </span>
                           </div>
 
 
@@ -693,7 +694,7 @@ import Vue from "vue";
 
         for (var label of this.label_list) {
 
-            if (this.current_instance.label_file.id == label.id) {
+            if (this.current_instance.label_file_id == label.id) {
               return label.attribute_group_list
 
           }
@@ -999,7 +1000,7 @@ import Vue from "vue";
           return this.style_color(instance.override_color)
         }
         else{
-          return this.style_color(this.label_file_colour_map[instance.label_file.id].hex)
+          return this.style_color(this.label_file_colour_map[instance.label_file_id].hex)
         }
       },
       style_color: function (hex) {
