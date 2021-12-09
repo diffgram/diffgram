@@ -180,7 +180,9 @@ def new_eventhub_web():
         }
         },
     ]
-    # return jsonify({"disabled": 'temp disabled'}), 200
+    if not settings.ALLOW_EVENTHUB:
+        return jsonify({"disabled": 'Eventhub disabled'}), 202
+
     log, input, untrusted_input = regular_input.master(
         request = request,
         spec_list = spec_list)
