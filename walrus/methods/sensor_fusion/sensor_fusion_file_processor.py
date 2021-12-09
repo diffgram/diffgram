@@ -34,6 +34,8 @@ class SensorFusionFileProcessor:
 
         with open(self.input.temp_dir_path_and_filename, encoding='utf-8') as json_data:
             logger.info('JSONDATA33 {}'.format(json_data))
+            data = json_data.read()
+            logger.info('data {}'.format(data))
             sensor_fusion_spec = json.load(json_data)
 
 
