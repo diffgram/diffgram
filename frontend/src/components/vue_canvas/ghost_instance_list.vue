@@ -1173,7 +1173,8 @@
 
           let message = ""
 
-          if (this.label_settings.show_label_text == true) {
+          if (this.label_settings.show_label_text == true &&
+              instance.label_file.label) {
             message += instance.label_file.label.name
             if (instance.number != undefined) {
               message += " " + instance.number
