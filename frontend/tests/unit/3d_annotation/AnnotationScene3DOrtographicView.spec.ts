@@ -198,7 +198,7 @@ describe("Test ObjectTransformControls.spec.ts", () => {
     expect(controller.camera.left).toBe(- frustrum_height * aspect / 2);
     expect(controller.camera.right).toBe(frustrum_height * aspect / 2);
     expect(controller.camera.top).toBe(frustrum_height / 2);
-    expect(controller.camera.bottom).toBe(frustrum_height / 2);
+    expect(controller.camera.bottom).toBe(- frustrum_height / 2);
     expect(spy).toHaveBeenCalled();
   });
 

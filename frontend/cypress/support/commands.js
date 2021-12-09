@@ -792,7 +792,6 @@ Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wra
   cy.window().then(window => {
     let sensor_fusion_editor = window.SensorFusionEditor;
     let canvas = sensor_fusion_editor.$refs.main_3d_canvas.renderer.domElement;
-    cy.log('CANVAS', canvas);
     const canvas_client_box = canvas.getBoundingClientRect();
 
     const real_x = x + canvas_client_box.x;
