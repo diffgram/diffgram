@@ -85,14 +85,15 @@ export default Vue.extend({
       <v-tooltip bottom>
         <template #activator="{ on }">
           <!-- 1.1 Expected case -->
+
           <div v-if="user_local.profile_image_thumb_url">
-            <v-avatar :size="size" v-on="on">
+            <v-avatar @click="emit('user_avatar_click')" :size="size" v-on="on">
               <img :src="user_local.profile_image_thumb_url" />
             </v-avatar>
           </div>
 
           <!-- 1.2 Fallback case -->
-          <div v-else class="default-icon">
+          <div v-else>
             <v-avatar :size="size" color="blue" v-on="on">
               <span class="white--text" :style="{ ['font-size']: fontSize }">
                 {{ avatarName }}

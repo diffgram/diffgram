@@ -33,7 +33,7 @@ def task_list_by_job_api(job_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
         job = Job.get_by_id(session, job_id)
-        return _task_list_api(project_id=job.project.id, input=input, log=log)
+        return _task_list_api(session = session, project_id=job.project.id, input=input, log=log)
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/task/list', methods=['POST'])
@@ -70,12 +70,10 @@ def task_list_api(project_string_id):
             return jsonify(log = log), 400
 
         project = Project.get_by_string_id(session, project_string_id=project_string_id)
-        return _task_list_api(project_id=project.id, input=input, log=log)
+        return _task_list_api(session = session, project_id=project.id, input=input, log=log)
 
 
-def _task_list_api(project_id, input=input, log = regular_log.default()):
-
-    with sessionMaker.session_scope() as session:
+def _task_list_api(session, project_id, input=input, log = regular_log.default()):
 
         task_list = task_list_core(session=session,
                                    date_from=input['date_from'],
@@ -93,10 +91,15 @@ def _task_list_api(project_id, input=input, log = regular_log.default()):
         if input.get('job_id'):
             job = Job.get_by_id(session, input['job_id'])
             initial_dir_sync = job.pending_initial_dir_sync
-        log['success'] = True
+            allow_reviews = job.allow_reviews
+            log['success'] = True
+            return jsonify(log=log,
+                        task_list=task_list,
+                        pending_initial_dir_sync=initial_dir_sync, allow_reviews=allow_reviews), 200
+
         return jsonify(log=log,
-                       task_list=task_list,
-                       pending_initial_dir_sync=initial_dir_sync), 200
+                    task_list=task_list,
+                    pending_initial_dir_sync=initial_dir_sync), 200
 
 
 def get_external_id_to_task(session, task, task_template):
