@@ -50,7 +50,6 @@ export default class AnnotationScene3DOrtographicView extends  AnnotationScene3D
       frustrum_height = 2 * bbox_radius / aspect;
     }
     if(axis === 'x'){
-
       this.camera.position.set(center.x - 20, center.y, center.z);
       this.camera.lookAt(center);
 

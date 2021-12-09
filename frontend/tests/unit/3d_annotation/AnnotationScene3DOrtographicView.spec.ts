@@ -175,12 +175,14 @@ describe("Test ObjectTransformControls.spec.ts", () => {
       controls_panning_speed,
       point_cloud_mesh
     );
+    controller.clientHeight = 200
+    controller.clientWidth = 400
     let frustrum_height;
     let mockmesh = create_test_mesh();
     let center = getCenterPoint(mockmesh);
     var helper_bbox = new THREE.BoxHelper(mockmesh);
     helper_bbox.update();
-    var aspect = controller.clientWidth / controller.clientHeight;
+    var aspect = controller.container.clientWidth / controller.container.clientHeight;
     var bbox_radius = helper_bbox.geometry.boundingSphere.radius;
     if(aspect > 1){
       frustrum_height = 2 * bbox_radius;
@@ -190,7 +192,7 @@ describe("Test ObjectTransformControls.spec.ts", () => {
     }
     let spy = jest.spyOn(controller.camera, 'lookAt')
     controller.add_mesh_to_scene(mockmesh, false);
-    controller.center_camera_to_mesh(mockmesh);
+    controller.center_camera_to_mesh(mockmesh, 'x', 1);
     expect(controller.camera.position.x).toBe(center.x - 20);
     expect(controller.camera.position.y).toBe(center.y);
     expect(controller.camera.left).toBe(- frustrum_height * aspect / 2);
