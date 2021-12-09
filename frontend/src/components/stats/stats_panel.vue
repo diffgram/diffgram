@@ -1,8 +1,10 @@
 <template>
   <div>
-    <v-btn data-cy="change_stats_visbility_button" @click="change_stats_visibility" text
-      >{{ stats_visibility ? "Hide" : "Show job" }} statistics</v-btn
-    >
+    <v-btn data-cy="change_stats_visibility_button"
+           @click="change_stats_visibility()"
+           text>
+      {{ stats_visibility ? "Hide" : "Show job" }} statistics
+    </v-btn>
     <v-row v-if="stats_visibility">
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
