@@ -272,19 +272,21 @@ class SystemEvents(Base):
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
-        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2exxx']:
             return
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'system'
-            result = requests.post(settings.EVENTHUB_URL, json = event_data)
-            if result.status_code == 200:
-                logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
+            print('before post', settings.EVENTHUB_URL)
+            result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
+            print('after post')
+            if result.status_code in [200, 202]:
+                logger.info("Sent event: {} to Diffgram Eventhub [{}]".format(self.id, result.status_code))
                 return True
             else:
                 print(result, result.text)
                 logger.error(
-                    "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
+                    "Error sending {} to Diffgram Eventhub. Status Code: {}".format(self.id, result.status_code))
         except Exception as e:
             logger.error("Exception sending {} to Diffgram Eventhub: ".format(str(e)))
 

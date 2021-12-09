@@ -180,7 +180,9 @@ def new_eventhub_web():
         }
         },
     ]
+    logger.info('Received Event from Event hub')
     if not settings.ALLOW_EVENTHUB:
+        logger.info('Eventhub disabled, ignoring...')
         return jsonify({"disabled": 'Eventhub disabled'}), 202
 
     log, input, untrusted_input = regular_input.master(
