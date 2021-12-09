@@ -760,8 +760,8 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
       })
       .as('upload_large')
       .then(() => {
-        cy.fixture(file_path)
-          .then((str) => {
+        cy.fixture(file_path, 'utf8')
+          .then(async (str) => {
             // text/plain;UTF-8
             const blob = new Blob([JSON.stringify(str)]);
             const xhr = new window.XMLHttpRequest();
@@ -772,9 +772,10 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
             xhr.setRequestHeader("Authorization", `Bearer ${window.testToken}`);
 
-            xhr.send(data);
+            await xhr.send(data);
           })
           .then((resp) => {
+            cy.wait(3000)
             cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
             cy.wait(8000)
             cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
