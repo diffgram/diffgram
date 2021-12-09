@@ -87,6 +87,8 @@ from shared.helpers.security import limiter
 from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
 from methods.connectors.datasaur_connector import DatasaurSyncManager
 from methods.input.process_media_queue_manager import ProcessMediaQueueManager
+from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
+
 limiter.init_app(app)
 
 settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
@@ -109,7 +111,9 @@ datasaur_sync_manager = DatasaurSyncManager(thread_sleep_time_min=settings.DATAS
                                             thread_sleep_time_max=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX)
 datasaur_sync_manager.start_sync_loop()
 
-
+actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=settings.ACTION_THREAD_SLEEP_TIME_MIN,
+                                              thread_sleep_time_max=settings.ACTION_THREAD_SLEEP_TIME_MAX,
+                                              run_once=False)
 
 
 print("Startup in", time.time() - start_time)

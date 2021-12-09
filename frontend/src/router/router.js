@@ -3,6 +3,175 @@ import Router from 'vue-router'
 
 const routerOptions = [
   {
+    // home
+    path: '/',
+    component: 'marketing/home_unbounce',
+    alias: ['/training_data', '/training_data_software', '/os', '/marketing/os'],
+    meta: {external_page: true}
+  },
+  {
+    path: '/enterprise/contact',
+    alias: ['/contact'],
+    component: 'products/builder/enterprise_contact_us',
+    meta: {external_page: true}
+  },
+  {
+    path: '/what_is_tdm',
+    component: 'marketing/what_is_tdm',
+    alias: ['/tdm'],
+    meta: {external_page: true}
+  },
+  {
+    path: '/segmentation',
+    component: 'marketing/marketing_segmentation',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/security',
+    alias: ['/secure'],
+    component: 'marketing/marketing_security',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/install',
+    alias: ['/i'],
+    component: 'marketing/marketing_install',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/your_next_step',
+    component: 'marketing/marketing_your_next_step',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/single_application',
+    component: 'marketing/marketing_single_application',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/open_source',
+    component: 'marketing/marketing_open_source',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/automation',
+    component: 'marketing/marketing_automation',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/human_tasks_workflow',
+    component: 'marketing/marketing_human_tasks_workflow',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/white_label_customization',
+    component: 'marketing/marketing_white_label_customization',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/ease_of_use',
+    component: 'marketing/marketing_ease_of_use',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/engineering_led_support',
+    component: 'marketing/marketing_engineering_led_support',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/diffgram-vs-sagemaker',
+    alias: ['/sagemaker'],
+    component: 'marketing/marketing_vs_sagemaker_groundtruth',
+    props: false,
+    meta: {requiresAuth: false}
+  },
+  {
+    path: '/why_diffgram',
+    component: 'marketing/why_diffgram',
+    alias: ['/why'],
+    meta: {external_page: true}
+  },
+  {
+    path: '/learn/build_vs_buy',
+    component: 'marketing/build_vs_buy',
+    alias: ['/build_vs_buy'],
+    meta: {external_page: true}
+  },
+  {
+    path: '/video_annotation',
+    component: 'marketing/video_annotation',
+    alias: ['/video'],
+    meta: {external_page: true}
+  },
+  {
+    path: '/pricing',
+    component: 'products/pricing',
+    meta: {external_page: true}
+  },
+  {
+    path: '/streaming',
+    component: 'marketing/marketing_streaming',
+    meta: {external_page: true}
+  },
+  {
+    path: '/versioning',
+    component: 'marketing/marketing_versioning',
+    meta: {external_page: true}
+  },
+  {
+    path: '/enterprise',
+    component: 'marketing/marketing_enterprise',
+    meta: {external_page: true}
+  },
+  {
+    path: '/enterprise/hub',
+    component: 'marketing/marketing_enterprise_hub',
+    meta: {external_page: true}
+  },
+  {
+    path: '/sticker',
+    component: 'products/builder/web_sticker'
+  },
+  {
+    path: '/order/premium',
+    component: 'account/billing/order_premium'
+  },
+  {
+    path: '/order/success',
+    component: 'account/billing/order_success'
+  },
+  {
+    path: '/policies',
+    component: 'company/policies',
+    meta: {external_page: true}
+  },
+  {
+    path: '/about',
+    component: 'company/about',
+    meta: {external_page: true}
+  },
+  {
+    path: '/admin',
+    component: 'diffgram/admin_home',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/admin/install/info',
+    component: 'diffgram/admin_install_info',
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/admin/account/overview',
     component: 'diffgram/account_admin',
     meta: {requiresAuth: true}
@@ -166,14 +335,7 @@ const routerOptions = [
     props: true,
     meta: {requiresAuth: true}
   },
-  /*
-   * Feb 13, 2020
-   *  May prefer the alias to go to dashboard
-   *  but would need update how we handle changing
-   *  values (ie that it changes
-   *  the project from the URL)
-   *
-   */
+
   {
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
@@ -280,21 +442,7 @@ const routerOptions = [
     props: true,
     meta: {requiresAuth: true}
   },
-  {
-    path: '/project/:project_string_id/ml/home/',
-    component: 'machine_learning/home',
-    props: true, meta: {requiresAuth: true}
-  },
-  {
-    path: '/project/:project_string_id/version/:version_id/view/',
-    component: 'machine_learning/view_version',
-    props: true, meta: {requiresAuth: true}
-  },
-  {
-    path: '/project/:project_string_id/ml/new/:video_id?',
-    component: 'machine_learning/new',
-    props: true, meta: {requiresAuth: true}
-  },
+
   {
     path: '/project/:project_string_id/annotation_project/new',
     component: 'annotation/annotation_project_create',
@@ -422,7 +570,10 @@ const routerOptions = [
     path: '/home/dashboard',
     component: 'user/home/dashboard',
     props: false,
-    meta: {requiresAuth: true}
+    meta: {
+      requiresAuth: true,
+      title: "Dashboard"
+      }
   },
   {
     path: '/software',
@@ -449,6 +600,7 @@ const routerOptions = [
 
   {
     path: '/user/new',
+    alias: ['/user/data_platform/new'],
     component: 'user/account/user_data_platform_new',
     props: false,
     meta: {
@@ -597,15 +749,7 @@ const routerOptions = [
       title: "Export"
     }
   },
-  {
-    path: '/',
-    component: 'user/home/dashboard',
-    props: false,
-    meta: {
-      requiresAuth: true,
-      title: "Dashboard"
-    }
-  },
+
   {
     path: '*',
     component: 'other/NotFound',

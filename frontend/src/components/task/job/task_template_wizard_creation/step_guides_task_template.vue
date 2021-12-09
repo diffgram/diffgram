@@ -36,7 +36,7 @@
     <wizard_navigation
       @next="on_next_button_click"
       :disabled_next="loading"
-      :loading_next="loading"
+      :loading_next="loading_steps"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
@@ -70,7 +70,8 @@
       name: 'step_guides_task_template',
       props: [
         'project_string_id',
-        'job'
+        'job',
+        'loading_steps'
       ],
 
       components: {
