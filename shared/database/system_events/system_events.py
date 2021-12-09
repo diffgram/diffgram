@@ -79,7 +79,7 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
-            session.commit()
+
             SystemEvents.check_version_upgrade(session = session, service_name = service_name)
             SystemEvents.check_os_change(session = session, service_name = service_name)
             return True
@@ -323,6 +323,9 @@ class SystemEvents(Base):
             session.add(event)
         if flush_session:
             session.flush()
+
+        # Try commit
+        # session.commit()
 
         event.send_to_segment()
         event.send_to_eventhub()
