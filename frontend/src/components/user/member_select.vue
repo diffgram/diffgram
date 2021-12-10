@@ -21,6 +21,7 @@
             ripple
             :data-cy="`${datacy}__select-all`"
             @click="toggle"
+            v-if="allow_all_option"
           >
             <v-list-item-action>
               <v-icon :color="item_internal.length > 0 ? 'indigo darken-4' : ''">
@@ -38,7 +39,7 @@
 
         <template v-slot:item="data">
 
-          <v-layout>
+          <v-layout :data-cy="`${datacy}__select-user`">
             <v_user_icon v-if="data.item.show_icon" class="mr-4" :user="data.item" :size="25"
                          :font-size="'12px !important'">
             </v_user_icon>
@@ -146,7 +147,7 @@ Where is a dict in data() eg  member: {}
 
         value: function (item) {
           this.item_internal = item
-        }
+        },
 
       },
       created() {

@@ -6,6 +6,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from packaging import version
 import traceback
+from shared.regular.regular_methods import commit_with_rollback
 
 logger = get_shared_logger()
 
@@ -79,6 +80,7 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
+
             SystemEvents.check_version_upgrade(session = session, service_name = service_name)
             SystemEvents.check_os_change(session = session, service_name = service_name)
             return True
@@ -266,19 +268,18 @@ class SystemEvents(Base):
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
-        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2exxx']:
             return
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'system'
-            result = requests.post(settings.EVENTHUB_URL, json = event_data)
-            if result.status_code == 200:
-                logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
+            result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
+            if result.status_code in [200, 202]:
+                logger.info("Sent event: {} to Diffgram Eventhub [{}]".format(self.id, result.status_code))
                 return True
             else:
-                print(result, result.text)
                 logger.error(
-                    "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
+                    "Error sending {} to Diffgram Eventhub. Status Code: {}".format(self.id, result.status_code))
         except Exception as e:
             logger.error("Exception sending {} to Diffgram Eventhub: ".format(str(e)))
 
@@ -315,6 +316,9 @@ class SystemEvents(Base):
             session.add(event)
         if flush_session:
             session.flush()
+
+        # Try commit
+        commit_with_rollback(session)
 
         event.send_to_segment()
         event.send_to_eventhub()

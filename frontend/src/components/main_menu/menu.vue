@@ -217,6 +217,10 @@
                 Install Info
               </v-btn>
 
+              <v-btn @click="$router.push('/admin/mock')">
+                Mock Data
+              </v-btn>
+
               <v-btn @click="builder_or_trainer_toggle()">
                 Builder / Trainer Toggle
               </v-btn>
