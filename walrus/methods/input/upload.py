@@ -269,6 +269,7 @@ class Upload():
                 chunk_index=self.dzchunkindex,
                 input = self.input,
             )
+            logger.info('Upload Response: {}'.format(response))
             if response is False:
                 logger.error('Upload failed: Please try again, or try using API/SDK. (Raw upload error)')
                 input.status = "failed"
