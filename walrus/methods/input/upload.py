@@ -250,7 +250,9 @@ class Upload():
 
         stream = self.binary_file.stream.read()
         content_size = len(stream)
-
+        logger.info('upload_large: stream {}'.format(stream))
+        logger.info('upload_large: raw_data_blob_path {}'.format(input.raw_data_blob_path))
+        logger.info('upload_large: input ID {}'.format(input.id))
         try:
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
