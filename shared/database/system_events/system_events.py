@@ -273,14 +273,11 @@ class SystemEvents(Base):
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'system'
-            print('before post', settings.EVENTHUB_URL)
             result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
-            print('after post')
             if result.status_code in [200, 202]:
                 logger.info("Sent event: {} to Diffgram Eventhub [{}]".format(self.id, result.status_code))
                 return True
             else:
-                print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: {}".format(self.id, result.status_code))
         except Exception as e:
