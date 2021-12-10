@@ -124,6 +124,7 @@ class DataToolsGCP:
                 headers = headers
             )
         except Exception as e:
+            logger.error('Upload TO GCP Failed: {}'.format(traceback.format_exc()))
             raise e
             # TODO if we are going to have a try block
             # here should we error / pass this to Input instance in some way?

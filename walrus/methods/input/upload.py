@@ -14,6 +14,7 @@ from shared.database.batch.batch import InputBatch
 
 from shared.data_tools_core import Data_tools
 from shared.database.source_control.file import File
+import traceback
 
 data_tools = Data_tools().data_tools
 
@@ -250,9 +251,11 @@ class Upload():
 
         stream = self.binary_file.stream.read()
         content_size = len(stream)
-        logger.info('upload_large: stream {}'.format(stream))
-        logger.info('upload_large: raw_data_blob_path {}'.format(input.raw_data_blob_path))
-        logger.info('upload_large: input ID {}'.format(input.id))
+        logger.info('upload_large_api: stream {}'.format(stream))
+        logger.info('upload_large_api: raw_data_blob_path {}'.format(input.raw_data_blob_path))
+        logger.info('upload_large_api: input_type {}'.format(input.type))
+        logger.info('upload_large_api: media_type {}'.format(input.media_type))
+        logger.info('upload_large_api: input ID {}'.format(input.id))
         try:
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
@@ -267,11 +270,13 @@ class Upload():
                 input = self.input,
             )
             if response is False:
+                logger.error('Upload failed: Please try again, or try using API/SDK. (Raw upload error)')
                 input.status = "failed"
                 input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
                 return
 
         except Exception as exception:
+            logger.error('Upload failed: {}'.format(traceback.format_exc()))
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
             raise Exception #TODO REMOVE
