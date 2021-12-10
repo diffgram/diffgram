@@ -159,7 +159,7 @@ jobs:
       #    - run: yarn --cwd frontend/ run cypress install
       - run: yarn --cwd frontend/ build
       # Populate DB
-      - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      - run: cd shared; alembic upgrade head;
       # Start Servers
       #    - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
       # Test connections
