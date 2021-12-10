@@ -193,7 +193,7 @@ jobs:
           # determine the unique run id necessary to re-run the checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_ENV: development
-          DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
+          DATABASE_URL: ${{ secrets.E2E_TESTS_DATABASE_URL }}
           PYTHONPATH: /__w/diffgram
           DIFFGRAM_SYSTEM_MODE: testing_e2e
           GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
