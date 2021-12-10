@@ -341,7 +341,10 @@
           :close_by_button="true"
         >
           <template slot="content">
-            <task_status />
+            <task_status 
+              v-if="task && task.id" 
+              :task_status="task.status"
+            />
           </template>
         </button_with_menu>
 
