@@ -41,7 +41,7 @@ from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_co
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
 from methods.data_mocking.generate_data import generate_data_api
-
+from methods.eventhub.eventhub_new import new_eventhub_web
 from methods import routes as routes_blueprint
 
 with app.app_context():
