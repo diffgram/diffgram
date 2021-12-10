@@ -761,9 +761,21 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
       .as('upload_large')
       .then(() => {
         cy.fixture(file_path, 'utf8')
-          .then(async (str) => {
-            cy.log('FILE str', str)
-            const blob = new Blob([JSON.stringify(str)], {type: "application/json"});
+          .then(async (obj) => {
+            function encode (s) {
+              const out = [];
+              for ( let i = 0; i < s.length; i++ ) {
+                out[i] = s.charCodeAt(i);
+              }
+              return new Uint8Array(out);
+            }
+
+            const str = JSON.stringify(obj);
+            const data_encoded = encode( str );
+            const blob = new Blob( [ data_encoded ], {
+              type: "application/json;charset=utf-8"
+            });
+            // const blob = new Blob([JSON.stringify(str)], {type: "application/json"});
             // var blob = new Blob(new Uint8Array(ascii2ByteArray(str)), {type:"application/json"});
             const xhr = new window.XMLHttpRequest();
 
