@@ -32,9 +32,8 @@ class SensorFusionFileProcessor:
         self.input.status = "processing"
         self.try_to_commit()
 
-        with open(self.input.temp_dir_path_and_filename, encoding = 'utf-8', errors = 'ignore') as json_data:
-            str_data = json_data.read()
-            sensor_fusion_spec = json.loads(str_data)
+        with open(self.input.temp_dir_path_and_filename) as json_data:
+            sensor_fusion_spec = json.load(json_data)
 
             return sensor_fusion_spec
 
