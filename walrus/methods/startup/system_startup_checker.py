@@ -3,6 +3,7 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.settings import settings
 
+
 class WalrusServiceSystemStartupChecker(SystemStartupBase):
 
     def __init__(self):
