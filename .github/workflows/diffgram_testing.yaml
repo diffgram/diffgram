@@ -124,7 +124,7 @@ jobs:
       options: --user root
       env:
         NODE_ENV: development
-        DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
+        DATABASE_URL: ${{ secrets.E2E_TESTS_DATABASE_URL }}
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
@@ -139,20 +139,6 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
