@@ -1,49 +1,41 @@
 <template>
-  <div v-cloak>
-      <v-layout>
-          <v-flex>
-              <v-card>
-                <h3>Task status:</h3>
-                <v-stepper
-                    v-model="step"
-                    vertical
-                    >
-                    <v-stepper-step
-                        step="1"
-                        :color="color"
-                        :complete="step > 1"
-                        complete-icon="mdi-check-circle"
-                    >
-                        In progress
-                    </v-stepper-step>
-                    <v-stepper-step
-                        v-if="!need_changes"
-                        step="2"
-                        :color="color"
-                        :complete="step > 2"
-                        complete-icon="mdi-check-circle"
-                    >
-                        On review
-                    </v-stepper-step>
-                    <v-stepper-step
-                        v-else
-                        step="2"
-                        :rules="[() => false]"
-                    >
-                        Changes required
-                    </v-stepper-step>
-                    <v-stepper-step
-                        step="3"
-                        :color="color"
-                        :complete="step > 2"
-                    >
-                        Completed
-                    </v-stepper-step>
-                </v-stepper>
-              </v-card>
-          </v-flex>
-      </v-layout>
-  </div>
+    <v-stepper
+        v-model="step"
+        outlined
+        :vertical="false"
+    >
+        <v-stepper-step
+            step="1"
+            :color="color"
+            :complete="step > 1"
+            complete-icon="mdi-check-circle"
+        >
+            In progress
+        </v-stepper-step>
+        <v-stepper-step
+            v-if="!need_changes"
+            step="2"
+            :color="color"
+            :complete="step > 2"
+            complete-icon="mdi-check-circle"
+        >
+            On review
+        </v-stepper-step>
+        <v-stepper-step
+            v-else
+            step="2"
+            :rules="[() => false]"
+        >
+            Changes required
+        </v-stepper-step>
+        <v-stepper-step
+            step="3"
+            :color="color"
+            :complete="step > 2"
+        >
+            Completed
+        </v-stepper-step>
+    </v-stepper>
 </template>
 
 <script lang="ts">
