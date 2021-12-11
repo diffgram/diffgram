@@ -99,7 +99,7 @@
         </tooltip_button>
       </div>
 
-      <v-divider v-if="task" vertical></v-divider>
+      <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
 
       <v_is_complete
         v-if="task && task.status !== 'complete'"
@@ -332,22 +332,10 @@
       </div>
 
       <div>
-
-        <button_with_menu
-          tooltip_message="Task status: In progress"
-          v-if="view_only_mode != true"
-          color="primary"
-          icon="mdi-account-clock-outline"
-          :close_by_button="true"
-        >
-          <template slot="content">
             <task_status 
               v-if="task && task.id" 
               :task_status="task.status"
             />
-          </template>
-        </button_with_menu>
-
       </div>
 
       <v-divider vertical></v-divider>
