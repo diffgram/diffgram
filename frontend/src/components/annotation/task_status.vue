@@ -10,7 +10,7 @@
           :text_style="true"
         >
         <template slot="content">
-            <v-stepper>
+            <v-stepper v-model="step">
                 <v-stepper-header>
                     <v-stepper-step :complete="step > 1" step="1">
                         In progress
