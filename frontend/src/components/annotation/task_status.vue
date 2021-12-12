@@ -1,10 +1,10 @@
 <template>
 <div class="status-button">
     <button_with_menu
-          :tooltip_message="display_status"
+          :tooltip_message="display_status.title"
           v-if="view_only_mode != true"
           :color="task_status === 'requires_changes' ? 'red' : color"
-          :icon="display_icon"
+          :icon="display_status.icon"
           :close_by_button="true"
           :icon_style="false"
           :text_style="true"
@@ -53,16 +53,10 @@ import Vue from "vue";
             return 1
         },
         display_status() {
-            if (this.task_status === 'review_requested') return "In review"
-            if (this.task_status === "requires_changes") return "Requires changes"
-            if (this.task_status === "complete") return "Completed"
-            return "In progress"
-        },
-        display_icon() {
-            if (this.task_status === 'review_requested') return "mdi-archive-eye-outline"
-            if (this.task_status === "requires_changes") return "mdi-clipboard-alert-outline"
-            if (this.task_status === "complete") return "mdi-check-circle"
-            return "mdi-account-clock-outline"
+            if (this.task_status === 'review_requested') return { icon: "mdi-archive-eye-outline", title: "In review" }
+            if (this.task_status === "requires_changes") return { icon: "mdi-clipboard-alert-outline", title: "Requires changes" }
+            if (this.task_status === "complete") return { icon: "mdi-check-circle", title: "Completed" }
+            return { icon: "mdi-account-clock-outline", title: "In progress" }
         },
         need_changes() {
             if (this.task_status === "requires_changes") return true
