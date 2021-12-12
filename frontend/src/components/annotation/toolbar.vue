@@ -335,6 +335,7 @@
             <task_status 
               v-if="task && task.id" 
               :task_status="task.status"
+              :allo_reviews="task.job.allo_reviews"
             />
       </div>
 
@@ -951,11 +952,11 @@
 <script lang="ts">
 import Vue from "vue";
 import label_select_annotation from "../label/label_select_annotation.vue";
-import file_meta_data_card from "./file_meta_data_card";
-import task_relations_card from "./task_relations_card";
-import file_relations_card from "./file_relations_card";
-import task_meta_data_card from "./task_meta_data_card";
-import hotkeys from "./hotkeys";
+import file_meta_data_card from "./file_meta_data_card.vue";
+import task_relations_card from "./task_relations_card.vue";
+import file_relations_card from "./file_relations_card.vue";
+import task_meta_data_card from "./task_meta_data_card.vue";
+import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
 
 export default Vue.extend({

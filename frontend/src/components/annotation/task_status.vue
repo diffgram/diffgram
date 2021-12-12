@@ -16,11 +16,11 @@
                         In progress
                     </v-stepper-step>
 
-                    <v-stepper-step v-if="!need_changes" :complete="step > 2" step="2">
+                    <v-stepper-step v-if="!need_changes && allo_reviews" :complete="step > 2" step="2">
                         In review
                     </v-stepper-step>
 
-                    <v-stepper-step :rules="[() => false]" v-else step="2">
+                    <v-stepper-step :rules="[() => false]" v-if="need_changes && allo_reviews" step="2">
                         Requires changes
                     </v-stepper-step>
 
@@ -44,6 +44,10 @@ import Vue from "vue";
         task_status: {
             type: Boolean,
             required: true
+        },
+        allo_reviews: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
