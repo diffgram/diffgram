@@ -335,7 +335,7 @@
             <task_status 
               v-if="task && task.id" 
               :task_status="task.status"
-              :allo_reviews="task.job.allo_reviews"
+              :allow_reviews="task.job.allow_reviews"
             />
       </div>
 

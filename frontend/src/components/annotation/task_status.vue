@@ -2,7 +2,6 @@
 <div class="status-button">
     <button_with_menu
           :tooltip_message="display_status.title"
-          v-if="view_only_mode != true"
           :color="task_status === 'requires_changes' ? 'red' : color"
           :icon="display_status.icon"
           :close_by_button="true"
@@ -10,21 +9,21 @@
           :text_style="true"
         >
         <template slot="content">
-            <v-stepper v-model="step">
+            <v-stepper class="elevation-0" v-model="step">
                 <v-stepper-header>
                     <v-stepper-step :complete="step > 1" step="1">
                         In progress
                     </v-stepper-step>
 
-                    <v-stepper-step v-if="!need_changes && allo_reviews" :complete="step > 2" step="2">
+                    <v-stepper-step v-if="!need_changes && allow_reviews" :complete="step > 2" step="2">
                         In review
                     </v-stepper-step>
 
-                    <v-stepper-step :rules="[() => false]" v-if="need_changes && allo_reviews" step="2">
+                    <v-stepper-step :rules="[() => false]" v-if="need_changes && allow_reviews" step="2">
                         Requires changes
                     </v-stepper-step>
 
-                    <v-stepper-step :complete="step > 2" :step="allo_reviews ? '3' : '2'">
+                    <v-stepper-step :complete="step > 2" :step="allow_reviews ? '3' : '2'">
                         Completed
                     </v-stepper-step>
                 </v-stepper-header>
@@ -42,10 +41,10 @@ import Vue from "vue";
     name: 'task_status',
     props: {
         task_status: {
-            type: Boolean,
+            type: String,
             required: true
         },
-        allo_reviews: {
+        allow_reviews: {
             type: Boolean,
             default: false
         }
