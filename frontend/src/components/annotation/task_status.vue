@@ -24,7 +24,7 @@
                         Requires changes
                     </v-stepper-step>
 
-                    <v-stepper-step :complete="step > 2" step="3">
+                    <v-stepper-step :complete="step > 2" :step="allo_reviews ? '3' : '2'">
                         Completed
                     </v-stepper-step>
                 </v-stepper-header>
