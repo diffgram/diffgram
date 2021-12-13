@@ -23,8 +23,6 @@ else:
     print('Destroying database: {}'.format(settings.DATABASE_URL))
     drop_database(settings.DATABASE_URL)
     print('Creating DB: {}'.format(settings.DATABASE_URL))
-    from shared.database.core import Base
-
     create_database(engine.url)
     alembic_args = [
         '--raiseerr',
