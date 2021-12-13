@@ -26,5 +26,10 @@ else:
     from shared.database.core import Base
 
     create_database(engine.url)
-    Base.metadata.create_all(engine)
+    alembic_args = [
+        '--raiseerr',
+        'upgrade',
+        'head',
+    ]
+    alembic.config.main(argv = alembic_args)
     print('Database created successfully.')
