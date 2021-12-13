@@ -24,6 +24,7 @@ describe('Annotate Files Tests', () => {
     context('Undo/Redo All Instance Type Creations', () => {
       it('Correctly Undos a Bounding Box Creation', () => {
         // Draw box
+        cy.wait(1000)
         cy.mousedowncanvas(75, 75);
         cy.wait(500)
         cy.mouseupcanvas();
