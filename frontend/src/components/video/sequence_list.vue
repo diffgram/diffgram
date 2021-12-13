@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak v-if="video_mode == true" class="pa-0 ma-0">
+  <div v-cloak v-if="video_mode == true && !video_playing" class="pa-0 ma-0">
 
     <v-alert type="info" v-if="sequence_list && sequence_list.length > 200"
               max-width="600"
