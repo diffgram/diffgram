@@ -1,8 +1,10 @@
 <template>
   <div>
-    <v-btn @click="change_stats_visibility" text
-      >{{ stats_visibility ? "Hide" : "Show job" }} statistics</v-btn
-    >
+    <v-btn data-cy="change_stats_visibility_button"
+           @click="change_stats_visibility()"
+           text>
+      {{ stats_visibility ? "Hide" : "Show job" }} statistics
+    </v-btn>
     <v-row v-if="stats_visibility">
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
@@ -41,7 +43,7 @@
       </v-col>
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
-          <v-menu offset-y>
+          <v-menu offset-y id="menu_user_list">
             <template v-slot:activator="{ on }">
               <div v-if="!update_user_cart && job_data_fetched">
                 <div class="user-item" v-on="on">

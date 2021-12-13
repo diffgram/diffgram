@@ -14,6 +14,7 @@ from shared.database.batch.batch import InputBatch
 
 from shared.data_tools_core import Data_tools
 from shared.database.source_control.file import File
+import traceback
 
 data_tools = Data_tools().data_tools
 
@@ -112,7 +113,11 @@ class Upload():
         return input
 
     def extract_instance_list_from_batch(self, input, input_batch_id, file_name):
+        if input_batch_id is None:
+            return
         input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        if not input_batch:
+            return
         pre_labels = input_batch.pre_labeled_data
         if pre_labels is None:
             return input
@@ -155,8 +160,10 @@ class Upload():
         Perhaps is nice pattern to start thinking more in terms of external
         objects like  upload.attribute instead of self.attribute.
         """
-
+        print('reques filess', self.request.files)
         self.binary_file = self.request.files.get('file')
+        print('FILE NAME', self.binary_file.filename)
+
         # to distinguish from diffgram file which we normally just call 'file'
         if not self.binary_file:
             self.log['error']['binary_file'] = "No file provided"
@@ -172,6 +179,7 @@ class Upload():
                 request=self.request,
                 filename=self.binary_file.filename)
         else:
+            print('dzuuid dzuuid', self.dzuuid)
             self.input = self.session.query(Input).filter(
                 Input.dzuuid == self.dzuuid,
                 Input.project == self.project).first()
@@ -220,11 +228,14 @@ class Upload():
         add_item_to_queue(item)
 
         user = User.get(session=self.session)
+        kind = 'input_from_upload_UI'
+        if user is None:
+            kind = 'input_from_api_call'
 
         Event.new(
             session=self.session,
-            kind="input_from_upload_UI",
-            member_id=user.member_id,
+            kind=kind,
+            member_id=user.member_id if user else None,
             success=True,
             project_id=self.project.id,
             description=str(input.media_type) + " " + str(self.project.project_string_id),
@@ -240,7 +251,11 @@ class Upload():
 
         stream = self.binary_file.stream.read()
         content_size = len(stream)
-
+        logger.info('upload_large_api: stream {}'.format(stream))
+        logger.info('upload_large_api: raw_data_blob_path {}'.format(input.raw_data_blob_path))
+        logger.info('upload_large_api: input_type {}'.format(input.type))
+        logger.info('upload_large_api: media_type {}'.format(input.media_type))
+        logger.info('upload_large_api: input ID {}'.format(input.id))
         try:
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
@@ -254,12 +269,15 @@ class Upload():
                 chunk_index=self.dzchunkindex,
                 input = self.input,
             )
+            logger.info('Upload Response: {}'.format(response))
             if response is False:
+                logger.error('Upload failed: Please try again, or try using API/SDK. (Raw upload error)')
                 input.status = "failed"
                 input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
                 return
 
         except Exception as exception:
+            logger.error('Upload failed: {}'.format(traceback.format_exc()))
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
             raise Exception #TODO REMOVE
@@ -299,9 +317,9 @@ class Upload():
             video_split_duration=request.form.get('video_split_duration'),
             batch_id=request.form.get('input_batch_id'),
         )
-
-        self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
-        self.extract_metadata_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
+        if request.form.get('input_batch_id') is not None:
+            self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
+            self.extract_metadata_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
 
         self.session.add(self.input)
 
@@ -328,8 +346,7 @@ class Upload():
 
         self.input.mode = request.headers.get('mode')
 
-        self.input.media_type = Process_Media.determine_media_type(
-            extension=self.input.extension)
+        self.input.media_type = Process_Media.determine_media_type(extension=self.input.extension, input_type = self.input.type)
 
         if not self.input.media_type:
             self.input.status = "failed"

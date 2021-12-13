@@ -1,6 +1,6 @@
 <template>
   <div v-cloak>
-    <v-card>
+    <v-card data-cy="task_list_container">
       <v-layout>
         <!-- Temporary button -->
 

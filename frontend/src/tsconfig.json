@@ -13,13 +13,14 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
+    "allowJs": true,
     "baseUrl": ".",
-    "types": [
-    ],
+    "types": ["jest", "node"],
     "paths": {
       "components/*": [
         "src/components/*"
-      ]
+      ],
+      "three-full": ["node_modules/@types/three"]
     },
     "lib": [
       "esnext",
@@ -34,7 +35,7 @@
     "./src/**/*", "shims-vue.d.ts"
   ],
 
-  // exclude is not working 
+  // exclude is not working
   // can put // @ts-nocheck  at top of file
   "exclude": [
     "node_modules"

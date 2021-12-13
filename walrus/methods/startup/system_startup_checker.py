@@ -2,7 +2,8 @@ from shared.database.system_events.system_events import SystemEvents
 from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.settings import settings
-import traceback
+
+
 class WalrusServiceSystemStartupChecker(SystemStartupBase):
 
     def __init__(self):

@@ -11,27 +11,14 @@
       <v-layout row >
         <v-flex >
           <v-card :color="header_colour">
-            <v-card-title>
+            <v-card-title class="pb-0">
 
-          <div v-if="render_mode!='gold_standard'">Instances & Attributes
-            <v-chip v-if="current_instance && current_instance.id">ID: {{current_instance.id}}</v-chip>
-          </div>
-          <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
-
-              <v-spacer></v-spacer>
-
+              <div v-if="render_mode!='gold_standard'">Instances & Attributes
+                <v-chip v-if="current_instance && current_instance.id">ID: {{current_instance.id}}</v-chip>
+              </div>
+              <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
             </v-card-title>
-
-            <v-card-subtitle>
-              <div v-if="video_mode == true">
-              In Frame
-              </div>
-              <div v-else>
-              In Image
-              </div>
-            </v-card-subtitle>
-
             <attribute_group_list
                 style="overflow-y:auto; max-height: 400px"
                 v-if="attribute_group_list_prop.length != 0"
@@ -182,6 +169,13 @@
                               </tooltip_icon>
 
                               <tooltip_icon
+                                tooltip_message="Cuboid"
+                                v-if="props.item.type == 'cuboid_3d'"
+                                icon="mdi-cube-outline"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+
+                              <tooltip_icon
                                 tooltip_message="Ellipse"
                                 v-if="props.item.type == 'ellipse'"
                                 icon="mdi-ellipse-outline"
@@ -259,7 +253,7 @@
                           <!-- Full item comparison because
                               new objects won't have id-->
 
-                          <div v-if="props.item == current_instance"
+                          <div v-if="props.item.id == current_instance.id"
                                style="position: absolute; right: 0; top: 0">
 
                             <v-badge v-if="view_only_mode != true"
@@ -891,6 +885,7 @@ import Vue from "vue";
       },
 
       attribute_change: function (attribute) {
+        console.log('CHANGEEEE', attribute)
         this.instance_update(
              "attribute_change",
               this.current_instance_index,

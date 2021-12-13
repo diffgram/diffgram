@@ -128,11 +128,11 @@ jobs:
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
-        DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
+        DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
         SAME_HOST: True
-        GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
-        CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
-        ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+        DIFFGRAM_AZURE_CONNECTION_STRING: ${{ secrets.E2E_TESTS_AZURE_CONNECTION_STRING }}
+        DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
+        ML__DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
@@ -173,7 +173,7 @@ jobs:
       #    - run: yarn --cwd frontend/ run cypress install
       - run: yarn --cwd frontend/ build
       # Populate DB
-      - run: python3 default/play_and_scripts/scripts/setup_database_e2e_tests.py
+      - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
       # Start Servers
       #    - run: yarn --cwd frontend/ run dev & npx wait-on http://localhost:8081
       # Test connections
@@ -211,11 +211,11 @@ jobs:
           PYTHONPATH: /__w/diffgram
           DIFFGRAM_SYSTEM_MODE: testing_e2e
           GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
-          DIFFGRAM_STATIC_STORAGE_PROVIDER: gcp
+          DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
           SAME_HOST: True
-          GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
-          CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
-          ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
+          DIFFGRAM_AZURE_CONNECTION_STRING: ${{ secrets.E2E_TESTS_AZURE_CONNECTION_STRING }}
+          DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
+          ML__DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
           CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json

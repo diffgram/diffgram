@@ -1,5 +1,5 @@
 import Vuex from "vuex";
-import { shallowMount, createLocalVue } from "@vue/test-utils";
+import { shallowMount, createLocalVue, mount } from "@vue/test-utils";
 import stats_panel from "@/components/stats/stats_panel.vue";
 
 const localVue = createLocalVue();
@@ -47,11 +47,13 @@ describe("Test stats panel component", () => {
     })
 
     it("Sets new local storage variable after clicking the button", async () => {
-        jest.spyOn(window.localStorage.__proto__, 'setItem');
+
         window.localStorage.__proto__.setItem = jest.fn();
-        const wrapper = shallowMount(stats_panel, props, localVue);
-        await wrapper.find('v-btn').trigger('click')
-        expect(localStorage.setItem).toHaveBeenCalled();
+        const wrapper = mount(stats_panel, props, localVue);
+        let spy = jest.spyOn(wrapper.vm, 'change_stats_visibility');
+        await wrapper.find('[data-cy="change_stats_visibility_button"]').trigger('click')
+        await wrapper.vm.$nextTick()
+        expect(spy).toHaveBeenCalled();
     })
 
     it("Renders show stats button when the stats is hidden", () => {
@@ -59,7 +61,7 @@ describe("Test stats panel component", () => {
           data: function() {
           return {
             stats_visibility: false,
-            
+
           }
         },
         ...props
@@ -99,6 +101,6 @@ describe("Test stats panel component", () => {
         ...props
       }, localVue);
 
-      expect(wrapper.findAll('v-menu').length).toBe(1)
+      expect(wrapper.findAll('#menu_user_list').length).toBe(1)
     })
 })

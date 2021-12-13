@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="show_annotation_core == true">
+      <div v-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
           class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
@@ -26,6 +26,26 @@
           ref="annotation_core"
         >
         </v_annotation_core>
+      </div>
+      <div v-else-if="annotation_interface === 'sensor_fusion'">
+        <sensor_fusion_editor
+          :project_string_id="computed_project_string_id"
+          :label_file_colour_map="label_file_colour_map"
+          :label_list="label_list"
+          :task="task"
+          :file="current_file"
+          :view_only_mode="view_only"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
+          ref="sensor_fusion_editor"
+        >
+        </sensor_fusion_editor>
+      </div>
+      <div v-else-if="!annotation_interface">
+        <empty_file_editor_placeholder
+          :loading="any_loading"
+          :project_string_id="project_string_id"
+        ></empty_file_editor_placeholder>
       </div>
 
       <file_manager_sheet
@@ -64,13 +84,18 @@
 import axios from "axios";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
+import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import file_manager_sheet from "../source_control/file_manager_sheet";
+import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import Vue from "vue";
+
 
 export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    empty_file_editor_placeholder,
+    sensor_fusion_editor
   },
   props: {
     project_string_id: {
@@ -93,6 +118,7 @@ export default Vue.extend({
     return {
       show_snackbar: false,
       enabled_edit_schema: false,
+      initializing: false,
       snackbar_message: "",
       loading: false,
       loading_project: true,
@@ -152,7 +178,7 @@ export default Vue.extend({
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
     }
-
+    this.initializing = true
     await this.get_labels_from_project();
     this.get_model_runs_from_query(this.$route.query);
     if (this.$route.query.view_only) {
@@ -173,8 +199,12 @@ export default Vue.extend({
         await this.fetch_project_file_list();
       }
     }
+    this.initializing = false
   },
   computed: {
+    any_loading: function(){
+      return this.loading || this.loading_project || this.initializing
+    },
     file_id: function () {
       let file_id = this.$props.file_id_prop;
       if (this.$route.query.file) {
@@ -182,7 +212,30 @@ export default Vue.extend({
       }
       return file_id;
     },
+    annotation_interface: function(){
+      if(!this.current_file && !this.task){
+        return
+      }
+      if(this.current_file){
+        if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+          return 'image_or_video';
+        }
+        else if(this.current_file.type === 'sensor_fusion'){
+          return 'sensor_fusion';
+        }
+      }
+      if(this.task){
+        if(this.task.file.type === 'image' || this.task.file.type === 'video'){
+          return 'image_or_video';
+        }
+        else if(this.task.file.type === 'sensor_fusion'){
+          return 'sensor_fusion';
+        }
+      }
 
+
+
+    },
     computed_project_string_id: function () {
       if (this.$props.project_string_id) {
         this.$store.commit(
@@ -248,6 +301,7 @@ export default Vue.extend({
 
     get_labels_from_project: async function () {
       try {
+        console.log('labels_list_from_project', this.labels_list_from_project, this.computed_project_string_id)
         if (
           this.labels_list_from_project &&
           this.computed_project_string_id ==
@@ -261,6 +315,7 @@ export default Vue.extend({
         var url =
           "/api/project/" + this.computed_project_string_id + "/labels/refresh";
         const response = await axios.get(url, {});
+        console.log('res', response)
         this.labels_list_from_project = response.data.labels_out;
         this.label_file_colour_map_from_project =
           response.data.label_file_colour_map;
@@ -345,7 +400,6 @@ export default Vue.extend({
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
             this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-
             this.task = response.data.task;
           } else {
             if (direction === "next") {
@@ -370,7 +424,7 @@ export default Vue.extend({
         this.loading_project = true;
 
         let local_project_string_id = this.project_string_id;
-        if (local_project_string_id == null) {
+        if (!local_project_string_id) {
           local_project_string_id = project_string_id;
         }
 
@@ -379,6 +433,10 @@ export default Vue.extend({
           this.$store.state.project.current.project_string_id
         ) {
           return;
+        }
+
+        if(!local_project_string_id){
+          return
         }
 
         const response = await axios.get(

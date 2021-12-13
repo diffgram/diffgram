@@ -43,13 +43,16 @@ from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
+from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileProcessor
 import numpy as np
+from shared.regular.regular_log import log_has_error
 import os
 from shared.utils.singleton import Singleton
 
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
+sensor_fusion_allowed_extensions = [".json"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
 csv_allowed_file_names = [".csv"]
@@ -101,6 +104,7 @@ def process_media_unit_of_work(item):
             process_media_queue_manager.add_item_to_processing_list(item)
             process_media.main_entry()
             process_media_queue_manager.remove_item_from_processing_list(item)
+
 
 # REMOTE queue
 def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
@@ -193,6 +197,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 
 
 # https://diffgram.com/docs/process-media-local-worker-queues
+
 
 
 def add_item_to_queue(item):
@@ -515,7 +520,10 @@ class Process_Media():
                 return False
 
         if self.input.type in ["from_resumable",
-                               "from_url", "from_video_split", "ui_wizard"]:
+                               "from_url",
+                               "from_video_split",
+                               "from_sensor_fusion_json",
+                               "ui_wizard"]:
 
             download_result = self.download_media()
 
@@ -561,6 +569,9 @@ class Process_Media():
         if not self.input:
             return True
 
+        if log_has_error(self.log):
+            return False
+
         process_instance_result = self.process_existing_instance_list()
 
         self.may_attach_to_job()
@@ -598,7 +609,9 @@ class Process_Media():
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
-            self.input.update_log = {'existing_file_id': existing_file_list[0].id}
+            self.input.update_log = {'error' : {
+                'existing_file_id': existing_file_list[0].id}
+            }
             return False
 
         return True
@@ -791,7 +804,6 @@ class Process_Media():
             if self.input.media_type == 'frame':
                 self.proprogate_frame_instance_update_errors_to_parent(self.log)
 
-
     def __update_parent_video_at_last_frame(self):
         # Last frame
         # In the update context input.video_parent_length = self.highest_frame_encountered
@@ -926,7 +938,7 @@ class Process_Media():
         # From the file directory, get all related jobs.
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
-        if self.input.media_type not in ['image', 'video']:
+        if self.input.media_type not in ['image', 'video', 'sensor_fusion']:
             return
 
         directory = self.input.directory
@@ -991,17 +1003,41 @@ class Process_Media():
         if self.input.job.status in ['active', 'in_review']:
             self.create_task_on_job_sync_directories()
 
+    def process_sensor_fusion_json(self):
+        sf_processor = SensorFusionFileProcessor(
+            session = self.session,
+            input = self.input,
+            log = self.log
+        )
+
+        try:
+            result, self.log = sf_processor.process_sensor_fusion_file_contents()
+
+            if log_has_error(self.log):
+                self.input.status = 'failed'
+                logger.error('Sensor fussion file failed to process. Input {}'.format(self.input.id))
+                logger.error(self.log)
+
+            self.declare_success(self.input)
+
+        except Exception as e:
+            logger.error('Exception on process sensor fusion: {}'.format(traceback.format_exc()))
+            self.log['error']['process_sensor_fusion_json'] = traceback.format_exc()
+            self.input.status = 'failed'
+            self.input.update_log = self.log
+
     def route_based_on_media_type(self):
         """
 
         Route to function based on self.input.media_type
 
         """
-
+        print('OPERATION', self.input.media_type)
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
             "frame": self.process_frame,
+            "sensor_fusion": self.process_sensor_fusion_json,
             "video": self.process_video,
             "csv": self.process_csv_file
         }
@@ -1066,7 +1102,6 @@ class Process_Media():
             return
 
         try:
-            print('comit...')
             self.session.commit()
         except:
             self.session.rollback()
@@ -2071,7 +2106,8 @@ class Process_Media():
     @staticmethod
     def determine_media_type(
         extension,
-        allow_csv = True):
+        allow_csv = True,
+        input_type = None):
         """
         Maps filenames to "media_type" concept in Diffgram system
         Arguments:
@@ -2084,6 +2120,7 @@ class Process_Media():
         or both?
         """
         extension = extension.lower()
+        print('INPUT TYPE', extension)
 
         if extension in images_allowed_file_names:
             return "image"
@@ -2101,6 +2138,10 @@ class Process_Media():
                 return None
 
             return "csv"
+
+        if input_type is not None and input_type == 'from_sensor_fusion_json':
+            if extension in sensor_fusion_allowed_extensions:
+                return 'sensor_fusion'
 
         if extension in existing_instances_allowed_file_names:
             return "existing_instances"

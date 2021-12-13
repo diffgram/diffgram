@@ -77,12 +77,13 @@ describe("manual_user_assignment", () => {
         .click({ force: true });
       cy.get('[data-cy="select-task-list-item"]')
         .eq(2)
-        .click({ force: true });
-      cy.get('[data-cy="select-task-list-action"]').click({ force: true });
-      cy.get("div")
+        .click({ force: true })
+        .wait(500)
+        .get('[data-cy="select-task-list-action"]').click({ force: true })
+        .get("div")
         .contains("Remove annotators")
         .click({ force: true });
-      cy.wait(500);
+      cy.wait(1500);
       cy.get('[data-cy="remove-batch-annotators-open"]').click({ force: true });
       cy.get('[data-cy="member-select"]').click({ force: true });
       cy.get('[data-cy="member-select__select-user"]')

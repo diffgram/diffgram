@@ -26,7 +26,7 @@ describe("task_list.vue", () => {
 
   it("Render task_list component correctly", () => {
     const wrapper = shallowMount(task_list, props, localVue);
-    expect(wrapper.findAll("v-card").length).toBe(2);
+    expect(wrapper.findAll("[data-cy='task_list_container']").length).toBe(1);
   });
 
   it("Should open dialog correctly", () => {

@@ -336,6 +336,9 @@ class Event(Base):
         if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
             return
 
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing_e2e', 'testing']:
+            return
+
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'user'

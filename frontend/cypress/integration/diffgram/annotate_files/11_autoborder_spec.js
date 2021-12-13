@@ -20,9 +20,11 @@ describe('Autoborder', () => {
       })
       // Straight to studio from login
       cy.loginByForm(testUser.email, testUser.password, "?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e");
+      cy.uploadAndViewSampleImage(testUser.project_string_id);
+      cy.uploadAndViewSampleImage(testUser.project_string_id);
       cy.wait(15000)
     })
-    
+
     it('[Prep] Create a Polygon to Prepare', () => {
       cy.selectDrawValidatePolygon(points)
     })
