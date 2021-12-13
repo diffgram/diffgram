@@ -231,6 +231,7 @@ jobs:
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
+      ALLOW_EVENTHUB: ${{ secrets.ALLOW_EVENTHUB }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -291,6 +292,8 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
+          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -345,6 +348,8 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
+          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -413,6 +418,7 @@ jobs:
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      ALLOW_EVENTHUB: ${{ secrets.ALLOW_EVENTHUB }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -471,6 +477,8 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
+          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
@@ -528,6 +536,8 @@ jobs:
           diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
           diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
+          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
+          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           walrusService.numReplicas: 1
