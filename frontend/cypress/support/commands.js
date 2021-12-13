@@ -64,6 +64,8 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   })
 })
 
+
+
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
     const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
@@ -243,38 +245,38 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
 
 
 Cypress.Commands.add('signupPro', function () {
-    cy.visit('http://localhost:8085/user/pro/signup');
-    // This part is not quite working yet
+  cy.visit('http://localhost:8085/user/pro/signup');
+  // This part is not quite working yet
 
-    cy.get('[data-cy=occupation_list]').click({force: true})
-    let occupation_name_search = "engineer"
-    cy.get('[data-cy=occupation_list]').type(occupation_name_search)
-    cy.wait(100)
-    let occupation_name_contains = 'Ship'
-    cy.get('.v-list.v-select-list div').contains(occupation_name_contains).click({force: true})
+  cy.get('[data-cy=occupation_list]').click({force: true})
+  let occupation_name_search = "engineer"
+  cy.get('[data-cy=occupation_list]').type(occupation_name_search)
+  cy.wait(100)
+  let occupation_name_contains = 'Ship'
+  cy.get('.v-list.v-select-list div').contains(occupation_name_contains).click({force: true})
 
-    cy.get('[data-cy=first_name]').click({force: true});
-    cy.get('[data-cy=first_name]').type('pro');
-    cy.get('[data-cy=last_name]').type('e2e');
-    cy.get('[data-cy=linkedin_profile_url]').type('linkedin_profile_url yes');
-    cy.get('[data-cy=how_hear_about_us]').type('Testing');
-    cy.get('[data-cy=city]').type('Testing City');
+  cy.get('[data-cy=first_name]').click({force: true});
+  cy.get('[data-cy=first_name]').type('pro');
+  cy.get('[data-cy=last_name]').type('e2e');
+  cy.get('[data-cy=linkedin_profile_url]').type('linkedin_profile_url yes');
+  cy.get('[data-cy=how_hear_about_us]').type('Testing');
+  cy.get('[data-cy=city]').type('Testing City');
 
-    cy.get('[data-cy=role]').click()
-    cy.wait(50)
-    cy.get('.v-list-item div').contains('Student').click({force: true})
+  cy.get('[data-cy=role]').click()
+  cy.wait(50)
+  cy.get('.v-list-item div').contains('Student').click({force: true})
 
-    cy.get('[data-cy=finish_sign_up_button]').click();
-    cy.wait(1500);
+  cy.get('[data-cy=finish_sign_up_button]').click();
+  cy.wait(1500);
 
-  })
+})
 
-Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
+Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files = 11) {
   cy.request({
     method: 'POST',
     url: `localhost:8085/api/walrus/test/gen-data`,
-    body:  {
-      'data_type' : 'task_template',
+    body: {
+      'data_type': 'task_template',
       'structure': '1_pass',
       'num_files': num_files,
       'reviews': {
@@ -286,8 +288,8 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files=11) {
       'Content-Type': 'application/json;charset=UTF-8'
     },
     failOnStatusCode: true
-  }).then((response) =>{
-    if(response.body.success){
+  }).then((response) => {
+    if (response.body.success) {
       return true
     }
   })
@@ -310,15 +312,15 @@ Cypress.Commands.add('selectPolygonType', function (points) {
   cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
 })
 
-Cypress.Commands.add('selectDrawValidatePolygon', function (points=undefined) {
+Cypress.Commands.add('selectDrawValidatePolygon', function (points = undefined) {
 
   if (points == undefined) {
     points = [
-    {x: 200, y: 25},
-    {x: 200, y: 60},
-    {x: 180, y: 40},
-    {x: 160, y: 10},
-    {x: 200, y: 25},
+      {x: 200, y: 25},
+      {x: 200, y: 60},
+      {x: 180, y: 40},
+      {x: 160, y: 10},
+      {x: 200, y: 25},
     ]
   }
 
@@ -344,7 +346,7 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
       expect(expected_polygon).to.exist;
 
       // We want to skip the last point since that is the initial point. That's why its length - 1
-      for(let i = 0; i < points.length - 1; i++){
+      for (let i = 0; i < points.length - 1; i++) {
         const point = points[i];
         const clientX = point.x + canvas_client_box.x
         const clientY = point.y + canvas_client_box.y
@@ -397,7 +399,7 @@ Cypress.Commands.add('registerProTestUser', function () {
 })
 
 
-Cypress.Commands.add('loginByForm', function (email, password, redirect=undefined) {
+Cypress.Commands.add('loginByForm', function (email, password, redirect = undefined) {
   Cypress.log({
     name: 'loginByForm',
     message: `${email} | ${password}`,
@@ -422,7 +424,7 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect=undefine
           .type(email)
           .should('have.value', email)
         cy.wait(1000);
-        if(window.LoginComponent.mailgun){
+        if (window.LoginComponent.mailgun) {
           cy.get('[data-cy=type-password-btn]').click({force: true})
         }
         cy.get('[data-cy=password]')
@@ -453,7 +455,7 @@ Cypress.Commands.add('gotToProject', function (project_string_id) {
 Cypress.Commands.add('goToSchemaFromToolbar', function () {
   cy.wait(3000);
   cy.get('[data-cy=project_menu_dropdown_toggle]').click({force: true});
-  cy.get('[data-cy=main_menu_labels]').click({force:true})
+  cy.get('[data-cy=main_menu_labels]').click({force: true})
   cy.wait(2000)
 });
 
@@ -481,7 +483,7 @@ Cypress.Commands.add('createAttributeOptions', function (option_list) {
   cy.get('[data-cy=new_attribute_option_button]').click({force: true});
 
   cy.wait(400);
-  for(let option of option_list){
+  for (let option of option_list) {
     cy.get('[data-cy=attribute_option_name]').click({force: true});
     cy.wait(750)
     cy.get('[data-cy=attribute_option_name]').type(option, {force: true});
@@ -503,7 +505,6 @@ Cypress.Commands.add('typesInternalTagPrompt', function (name) {
 });
 
 
-
 Cypress.Commands.add('createLabels', function (labels_list) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(2500)
@@ -512,18 +513,18 @@ Cypress.Commands.add('createLabels', function (labels_list) {
     method: 'GET',
     url: `localhost:8085/api/project/diffgram-testing-e2e/labels/refresh`,
     failOnStatusCode: false
-  }).then((response) =>{
+  }).then((response) => {
     cy.log('RESPONSE')
     cy.log(response)
     response.body.labels_out.forEach((label_response_obj) => {
       const label_obj = label_list_obj.find(elm => elm.name === label_response_obj.label.name)
-      if(label_obj){
+      if (label_obj) {
         label_obj.exists = true;
       }
     })
     cy.get('[data-cy=new_label_template]').first().click({force: true});
     for (let i = 0; i < label_list_obj.length; i++) {
-      if(label_list_obj[i].exists){
+      if (label_list_obj[i].exists) {
         continue
       }
       cy.get('[data-cy=label_name_text_field]').click({force: true});
@@ -611,7 +612,7 @@ Cypress.Commands.add('uploadImageWithLabels', function (project_string_id) {
   cy.get('[data-cy=select_y_max]').first().click({force: true})
   cy.get('.v-menu__content:visible .v-list-item__title').contains('upper_y').eq(0).click({force: true})
   cy.wait(500)
-  cy.get('[data-cy=continue_instance_mapping]').click({force:true})
+  cy.get('[data-cy=continue_instance_mapping]').click({force: true})
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(3000);
@@ -695,12 +696,12 @@ Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
   cy.get('[data-cy=new_instance_template]').first().click({force: true});
   cy.get('[data-cy=instance_template_name_text_field]').type(name);
   cy.wait(500)
-  for(let node of instance_data.nodes){
+  for (let node of instance_data.nodes) {
     cy.mousedowncanvas(node.x, node.y)
     cy.wait(500)
     cy.mouseupcanvas(node.x, node.y)
   }
-  for(let edge of instance_data.edges){
+  for (let edge of instance_data.edges) {
     cy.mousemovecanvas(instance_data.nodes[edge[0]].x, instance_data.nodes[edge[0]].y)
     cy.mousedowncanvas(instance_data.nodes[edge[0]].x, instance_data.nodes[edge[0]].y)
     cy.wait(500)
@@ -717,11 +718,115 @@ Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
 
 Cypress.Commands.add('select_label', function (label_name) {
   // hook for future
-  if(!label_name){
+  if (!label_name) {
     return
   }
   cy.get('[data-cy=label_select]').click({force: true})
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
+});
+
+Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
+  cy.window().then(async window =>  {
+    let store = window.app.$store;
+    let file_path = 'pcd_json_files/data.json';
+    let payload = {
+      'dzuuid': uuidv4(),
+      'original_filename': file_name,
+      'dzchunkindex': 0,
+      'dztotalfilesize': 25088,
+      'dzchunksize': 25088,
+      'dztotalchunkcount': 1,
+      'dzchunkbyteoffset': 0,
+      'directory_id': store.state.project.current_directory.directory_id,
+      'source': 'from_sensor_fusion_json'
+    }
+    let file_data = undefined;
+    // parse the string into object literal
+    const data = new FormData();
+
+    data.append("dzuuid", uuidv4());
+    data.append("original_filename", file_name);
+    data.append("dzchunkindex", 0);
+    data.append("dztotalfilesize", 25088);
+    data.append("dzchunksize", 25088);
+    data.append("dztotalchunkcount", 1);
+    data.append("dzchunkbyteoffset", 0);
+    data.append("directory_id", store.state.project.current_directory.directory_id);
+    data.append("source", 'from_sensor_fusion_json');
+    cy.server()
+      .route({
+        method: "POST",
+        url: `/api/walrus/project/${store.state.project.current.project_string_id}/upload/large`,
+      })
+      .as('upload_large')
+      .then(() => {
+        cy.fixture(file_path, 'utf8')
+          .then(async (obj) => {
+            function encode (s) {
+              const out = [];
+              for ( let i = 0; i < s.length; i++ ) {
+                out[i] = s.charCodeAt(i);
+              }
+              return new Uint8Array(out);
+            }
+
+            const str = JSON.stringify(obj);
+            const data_encoded = encode( str );
+            const blob = new Blob( [ data_encoded ], {
+              type: "application/json;charset=utf-8"
+            });
+            // const blob = new Blob([JSON.stringify(str)], {type: "application/json"});
+            // var blob = new Blob(new Uint8Array(ascii2ByteArray(str)), {type:"application/json"});
+            const xhr = new window.XMLHttpRequest();
+
+            data.set("file", blob, file_name);
+
+            xhr.open("POST", `/api/walrus/project/${store.state.project.current.project_string_id}/upload/large`,);
+
+            xhr.setRequestHeader("Authorization", `Bearer ${window.testToken}`);
+
+            await xhr.send(data);
+          })
+          .then((resp) => {
+            cy.wait(3000)
+            cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
+            cy.wait(8000)
+            cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+          })
+      });
+
+  })
+
+
+});
+
+
+Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wrapper = 'main_screen') {
+  cy.window().then(window => {
+    let sensor_fusion_editor = window.SensorFusionEditor;
+    let canvas = sensor_fusion_editor.$refs.main_3d_canvas.renderer.domElement;
+    const canvas_client_box = canvas.getBoundingClientRect();
+
+    const real_x = x + canvas_client_box.x;
+    const real_y = y + canvas_client_box.y;
+    cy.get(`[data-cy=${canvas_wrapper}]`).dblclick(x, y)
+      .trigger('mousemove', {
+        eventConstructor: 'MouseEvent',
+        clientX: x + width,
+        clientY: y + height,
+        force: true
+      })
+      .click({
+        eventConstructor: 'MouseEvent',
+        x: x + width,
+        y: y + height,
+        force: true
+      })
+
+
+  })
+
+
 });
 
 

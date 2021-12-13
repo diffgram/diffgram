@@ -20,6 +20,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Correctly raises an error when frontend sends invalid instance list.', () => {
       it('Correctly raises an instance_list integrity error.', () => {
+        cy.wait(1000)
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
 
 
@@ -44,6 +45,7 @@ describe('Annotate Files Tests', () => {
             max_y: 320,
           }
         ]
+        cy.wait(1000)
         for (let box of boxes) {
           cy.mousedowncanvas(box.min_x, box.min_x);
           cy.wait(500)

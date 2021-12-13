@@ -1,21 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`step_ui_schema_task_template.vue Renders component correctly. 1`] = `
-<v-container fluid="" data-cy="task-template-ui-schema-step">
-  <div class="d-flex mb-8 justify-space-between">
-    <h1 data-cy="task-template-ui-schema-step-title" class="font-weight-medium text--primary mr-4">
-      White-label Customization (BETA)
-    </h1>
-    <tooltip_button tooltip_message="Launch UI Editor" button_color="primary" icon="mdi-puzzle-edit" left="true" button_message="Launch UI Editor" color="white"></tooltip_button>
-  </div>
-  <v_error_multiple error="[object Object]"></v_error_multiple>
-  <p class="text--primary">
-    UI Schemas are a way to Customize the Annotation UI. You can show/hide buttons and configure
-    what you want the annotators to see beyond Label Schema.
-  </p>
-  <v-container fluid="">
-    <ui_schema_selector-stub show_default_option="true" label="Select a Schema" data-cy="ui-schema-selector"></ui_schema_selector-stub>
-  </v-container>
-  <wizard_navigation></wizard_navigation>
-</v-container>
+VueWrapper {
+  "_emitted": Object {},
+  "_emittedByOrder": Array [],
+  "isFunctionalComponent": undefined,
+}
 `;

@@ -8,7 +8,7 @@ RUN apt-get update -y
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt-get update -y && apt-get upgrade -y
-RUN apt-get -y install python3.7.2 python3-pip libpq-dev python3-dev
+RUN apt-get -y install python3.7.2 python3-pip libpq-dev python3-dev git
 
 ## Install FFMPEG V 4.3
 RUN ffmpeg -version

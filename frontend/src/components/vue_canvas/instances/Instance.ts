@@ -1,11 +1,13 @@
-
+import * as THREE from 'three';
+import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
+import {getCenterPoint} from "../../3d_annotation/utils_3d";
 
 export interface InstanceBehaviour {
   draw(ctx): void
 }
 
 
-export class Instance{
+export class Instance {
   public id: number = null;
   public creation_ref_id: string = null;
   public x_min: number = null;
@@ -28,7 +30,7 @@ export class Instance{
   public rear_face: number = null;
   public width: number = null;
   public height: number = null;
-  public label_file: object = null;
+  public label_file: { id: number, label: any, colour: {hex: string} } = null;
   public label_file_id: number = null;
   public selected: boolean = false;
   public number: number = null;
@@ -44,13 +46,14 @@ export class Instance{
   public pause_object: false
 
 
-  public get_instance_data(): object{
+  public get_instance_data(): object {
     /*
     * Specific instance types should add/remove fields to this object if required.
     * */
     return {
       id: this.id,
-      creation_ref: this.creation_ref_id,
+      creation_ref_id: this.creation_ref_id,
+      attribute_groups: this.attribute_groups,
       x_min: this.x_min,
       y_min: this.y_min,
       center_x: this.center_x,
@@ -78,48 +81,125 @@ export class Instance{
       points: this.points,
       sequence_id: this.sequence_id,
       soft_delete: this.soft_delete,
-      pause_object: this.pause_object
+      pause_object: this.pause_object,
     }
   }
 
-  public select(){
+  public select() {
     this.selected = true
   }
 
-  public unselect(){
+  public unselect() {
     this.selected = false
   }
 
-  public populate_from_instance_obj(inst){
-    for(let key in inst){
+  public populate_from_instance_obj(inst) {
+    for (let key in inst) {
       this[key] = inst[key]
     }
   }
 
-  public instance_updated_callback(instance){
-    if(this.on_instance_updated){
+  public instance_updated_callback(instance) {
+    if (this.on_instance_updated) {
       this.on_instance_updated(instance);
     }
   }
-  public instance_hovered_callback(instance){
-    if(this.on_instance_hovered){
+
+  public delete() {
+    this.soft_delete = true;
+  }
+
+  public instance_hovered_callback(instance) {
+    if (this.on_instance_hovered) {
       this.on_instance_hovered(instance)
     }
   }
-  public instance_selected_callback(instance){
-    if(this.on_instance_selected){
+
+  public instance_selected_callback(instance) {
+    if (this.on_instance_selected) {
       this.on_instance_selected(instance);
     }
   }
-  public instance_deselected_callback(instance){
-    if(this.on_instance_deselected){
+
+  public instance_deselected_callback(instance) {
+    if (this.on_instance_deselected) {
       this.on_instance_deselected(instance);
     }
   }
-  public instance_unhovered_callback(instance){
-    if(this.on_instance_unhovered){
+
+  public instance_unhovered_callback(instance) {
+    if (this.on_instance_unhovered) {
       this.on_instance_unhovered(instance);
     }
   }
 
+}
+
+export abstract class Instance3D extends Instance {
+  public helper_lines: THREE.LineSegments;
+  public mesh: THREE.Mesh;
+  public scene_controller_3d: AnnotationScene3D;
+  public geometry: THREE.BoxGeometry;
+  public material: THREE.MeshBasicMaterial;
+  public depth: number;
+  public center_3d: { x: number, y: number, z: number };
+  // Rotation is in Euler Angles
+  public rotation_euler_angles: { x: number, y: number, z: number };
+  public position_3d: { x: number, y: number, z: number };
+  public dimensions_3d: { width: number, height: number, depth: number };
+  public initialized: boolean;
+
+  abstract draw_on_scene(): void;
+
+  abstract remove_edges(): void;
+
+  public update_spacial_data() {
+    var box = new THREE.Box3().setFromObject(this.mesh);
+    this.width = box.max.x - box.min.x;
+    this.height = box.max.y - box.min.y;
+    this.depth = box.max.z - box.min.z;
+    let center = getCenterPoint(this.mesh);
+    this.center_3d = {
+      x: center.x,
+      y: center.y,
+      z: center.z
+    }
+    this.rotation_euler_angles = {
+      x: this.mesh.rotation.x,
+      y: this.mesh.rotation.y,
+      z: this.mesh.rotation.z,
+    }
+    this.position_3d = {
+      x: this.mesh.position.x,
+      y: this.mesh.position.y,
+      z: this.mesh.position.z,
+    }
+
+    this.dimensions_3d = {
+      width: this.width,
+      height: this.height,
+      depth: this.depth,
+    }
+
+  }
+
+  public delete() {
+    super.delete();
+    this.mesh.visible = false;
+  }
+
+  public get_instance_data() {
+    let result = super.get_instance_data();
+    return {
+      ...result,
+      rotation_euler_angles: this.rotation_euler_angles,
+      position_3d: this.position_3d,
+      dimensions_3d: this.dimensions_3d,
+      center_3d: this.center_3d,
+      width: 0,
+      height: 0,
+
+    }
+
+  }
 }

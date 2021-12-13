@@ -57,6 +57,7 @@ class DataToolsGCP:
         url = blob.create_resumable_upload_session(content_type = content_type)
         if input is not None:
             input.resumable_url = url
+        logger.info('New GCP Resumable upload: {}'.format(url))
         return url
 
     def transmit_chunk_of_resumable_upload(
@@ -123,7 +124,9 @@ class DataToolsGCP:
                 data = stream,
                 headers = headers
             )
+            logger.info('GCP Chunk Response: {}'.format(response))
         except Exception as e:
+            logger.error('Upload TO GCP Failed: {}'.format(traceback.format_exc()))
             raise e
             # TODO if we are going to have a try block
             # here should we error / pass this to Input instance in some way?

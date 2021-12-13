@@ -133,6 +133,9 @@
           type: String
         },
         'label_file_list': {},
+        'default_hot_keys': {
+          default: 'w'
+        },
         'label_file_colour_map': {},
         'request_refresh_from_project': {
           default: null
@@ -292,7 +295,7 @@
           if (this.$store.state.user.is_typing_or_menu_open == true) {
             return
           }
-          if (event.key === 'w') {
+          if (event.key === this.$props.default_hot_keys) {
             this.toggle_label_menu()
             return
           }

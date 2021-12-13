@@ -1,5 +1,7 @@
-import { shallowMount } from "@vue/test-utils";
+import { shallowMount, mount } from "@vue/test-utils";
 import add_assignee from "@/components/dialogs/add_assignee.vue";
+import Vuetify from "vuetify";
+const vuetify = new Vuetify();
 
 describe("add_assignee.vue", () => {
   let props;
@@ -19,7 +21,8 @@ describe("add_assignee.vue", () => {
             }
           }
         }
-      }
+      },
+      vuetify
     };
   });
 
@@ -27,23 +30,23 @@ describe("add_assignee.vue", () => {
     props.propsData.dialog = false;
     const wrapper = shallowMount(add_assignee, props);
 
-    expect(wrapper.findAll("v-dialog").length).toBe(0);
+    expect(wrapper.findAll("[data-cy='add_assignee_dialog']").length).toBe(0);
   });
 
   it("Show dialog when it's open", () => {
     const wrapper = shallowMount(add_assignee, props);
 
-    expect(wrapper.findAll("v-dialog").length).toBe(1);
+    expect(wrapper.findAll("[data-cy='add_assignee_dialog']").length).toBe(1);
   });
 
   it("Emits assign event when submit button is pressed", () => {
-    const wrapper = shallowMount(add_assignee, props);
-    wrapper.find("#review-dialog-submit").trigger("click");
+    const wrapper = mount(add_assignee, props);
+    wrapper.find("[data-cy='finish-user-assignment']").trigger("click");
     expect(wrapper.emitted().assign).toBeTruthy();
   });
 
   it("Emits close event when cancel button is pressed", () => {
-    const wrapper = shallowMount(add_assignee, props);
+    const wrapper = mount(add_assignee, props);
     wrapper.find("#review-dialog-cancel").trigger("click");
     expect(wrapper.emitted().close).toBeTruthy();
   });

@@ -1,6 +1,6 @@
 <template>
   <div class="text-center">
-    <v-dialog v-if="dialog" v-model="dialog" width="500" @keydown.esc="on_cancel" @click:outside="on_cancel">
+    <v-dialog data-cy="add_assignee_dialog" v-if="dialog" v-model="dialog" width="500" @keydown.esc="on_cancel" @click:outside="on_cancel">
       <v-card>
         <v-card-title v-if="dialog_type === 'assignee'" class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} assignees </v-card-title>
         <v-card-title v-else class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} reviewers </v-card-title>
