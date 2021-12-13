@@ -4,7 +4,13 @@ from sqlalchemy_utils.functions import drop_database
 from sqlalchemy import create_engine
 from shared.database_setup_supporting import *
 import alembic.config
+import pathlib
+import os
 
+parent_path = pathlib.Path().resolve().parent.parent.parent
+init_config_path = '{}/shared'.format(parent_path)
+
+os.chdir(init_config_path)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing_e2e':
     raise Exception('Can only set database when mode is: testing_e2e'
                     '')
