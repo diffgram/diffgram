@@ -49,6 +49,8 @@ describe("Test set for QA slideshow", () => {
           .invoke("text")
           .then(finalS_state => {
             expect(initial_state).to.not.equal(finalS_state);
+            cy.get('[data-cy=more_button]').click({force: true});
+            cy.wait(100)
             cy.get('[data-cy="pause-annotation-show"]').click();
           });
       });
