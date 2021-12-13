@@ -99,10 +99,10 @@
         </tooltip_button>
       </div>
 
-      <v-divider v-if="task" vertical></v-divider>
+      <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
 
       <v_is_complete
-        v-if="task"
+        v-if="task && task.status !== 'complete'"
         :project_string_id="project_string_id"
         :current_file="file ? file : task.file"
         :task="task"
@@ -297,6 +297,7 @@
 
       <!--  without this div the order of the two buttons randomly swaps
     -->
+
       <div>
         <tooltip_button
           tooltip_message="Previous File"
@@ -329,57 +330,17 @@
         >
         </tooltip_button>
       </div>
-      <v-divider vertical />
+
       <div>
-        <button_with_menu
-          datacy="open-annotation-show-menu"
-          v-if="annotation_show_on !== true"
-          tooltip_message="Annotation show"
-          color="primary"
-          :icon="anootations_show_icon"
-          :close_by_button="true"
-          :disabled="loading || annotations_loading || full_file_loading"
-        >
-          <template slot="content">
-            <v-btn
-              data-cy="start-annotation-show"
-              @click="
-                $emit(
-                  'annotation_show',
-                  !task && file && file.id ? 'file' : 'task'
-                )
-              "
-            >
-              <span> Start </span>
-            </v-btn>
-            <v-slider
-              v-model="numberValue"
-              :tick-labels="duration_labels"
-              :max="4"
-              step="1"
-              ticks="always"
-              tick-size="4"
-              hint="Duration in seconds"
-              persistent-hint
-              @change="$emit('show_duration_change', $event)"
+            <task_status 
+              v-if="task && task.id" 
+              :task_status="task.status"
+              :allow_reviews="task.job.allow_reviews"
             />
-          </template>
-        </button_with_menu>
-        <tooltip_button
-          v-else
-          data-cy="pause-annotation-show"
-          tooltip_message="Pause"
-          ui_schema_name="stop_shideshow"
-          @click="
-            $emit('annotation_show', !task && file && file.id ? 'file' : 'task')
-          "
-          color="primary"
-          icon="pause"
-          :icon_style="true"
-          :bottom="true"
-        />
       </div>
-      <v-divider vertical />
+
+      <v-divider vertical></v-divider>
+      
       <div>
         <tooltip_button
           tooltip_message="Previous Task"
@@ -432,18 +393,6 @@
 
       <v-divider vertical></v-divider>
 
-      <tooltip_button
-        tooltip_message="Refresh Instances"
-        v-if="$store.state.user.current.is_super_admin == true"
-        @click="$emit('refresh_all_instances')"
-        :loading="loading || annotations_loading"
-        color="primary"
-        icon="mdi-refresh"
-        :icon_style="true"
-        :bottom="true"
-      >
-      </tooltip_button>
-
       <!--  Moving away from default of multi select here, so hide for now -->
       <!--
   <tooltip_button
@@ -456,44 +405,6 @@
       :bottom="true">
   </tooltip_button>
   -->
-
-      <ui_schema name="brightness_contrast_filters">
-        <button_with_menu
-          tooltip_message="Brightness, Contrast, Filters"
-          color="primary"
-          icon="exposure"
-        >
-          <template slot="content">
-            <v-layout column>
-              <v-slider
-                v-model="label_settings_local.filter_brightness"
-                prepend-icon="brightness_4"
-                min="50"
-                max="200"
-              >
-              </v-slider>
-
-              <v-slider
-                v-model="label_settings_local.filter_contrast"
-                prepend-icon="exposure"
-                min="50"
-                max="200"
-              ></v-slider>
-
-              <v-slider
-                v-model="label_settings_local.filter_grayscale"
-                prepend-icon="gradient"
-                min="0"
-                max="100"
-              ></v-slider>
-
-              <v-btn icon @click="filter_reset()">
-                <v-icon color="primary"> autorenew </v-icon>
-              </v-btn>
-            </v-layout>
-          </template>
-        </button_with_menu>
-      </ui_schema>
 
       <button_with_menu
         tooltip_message="Hotkeys"
@@ -557,6 +468,103 @@
         <template slot="content">
           <v-layout class="pb-4">
             <!-- View Task Information -->
+             <div>
+                <button_with_menu
+                  datacy="open-annotation-show-menu"
+                  v-if="annotation_show_on !== true"
+                  tooltip_message="Annotation show"
+                  color="primary"
+                  :icon="anootations_show_icon"
+                  :close_by_button="true"
+                  :disabled="loading || annotations_loading || full_file_loading"
+                >
+                  <template slot="content">
+                    <v-btn
+                      data-cy="start-annotation-show"
+                      @click="
+                        $emit(
+                          'annotation_show',
+                          !task && file && file.id ? 'file' : 'task'
+                        )
+                      "
+                    >
+                      <span> Start </span>
+                    </v-btn>
+                    <v-slider
+                      v-model="numberValue"
+                      :tick-labels="duration_labels"
+                      :max="4"
+                      step="1"
+                      ticks="always"
+                      tick-size="4"
+                      hint="Duration in seconds"
+                      persistent-hint
+                      @change="$emit('show_duration_change', $event)"
+                    />
+                  </template>
+                </button_with_menu>
+                <tooltip_button
+                  v-else
+                  data-cy="pause-annotation-show"
+                  tooltip_message="Pause"
+                  ui_schema_name="stop_shideshow"
+                  @click="
+                    $emit('annotation_show', !task && file && file.id ? 'file' : 'task')
+                  "
+                  color="primary"
+                  icon="pause"
+                  :icon_style="true"
+                  :bottom="true"
+                />
+              </div>
+            <tooltip_button
+                tooltip_message="Refresh Instances"
+                v-if="$store.state.user.current.is_super_admin == true"
+                @click="$emit('refresh_all_instances')"
+                :loading="loading || annotations_loading"
+                color="primary"
+                icon="mdi-refresh"
+                :icon_style="true"
+                :bottom="true"
+              >
+              </tooltip_button>
+              <ui_schema name="brightness_contrast_filters">
+              <button_with_menu
+                tooltip_message="Brightness, Contrast, Filters"
+                color="primary"
+                icon="exposure"
+              >
+                <template slot="content">
+                  <v-layout column>
+                    <v-slider
+                      v-model="label_settings_local.filter_brightness"
+                      prepend-icon="brightness_4"
+                      min="50"
+                      max="200"
+                    >
+                    </v-slider>
+
+                    <v-slider
+                      v-model="label_settings_local.filter_contrast"
+                      prepend-icon="exposure"
+                      min="50"
+                      max="200"
+                    ></v-slider>
+
+                    <v-slider
+                      v-model="label_settings_local.filter_grayscale"
+                      prepend-icon="gradient"
+                      min="0"
+                      max="100"
+                    ></v-slider>
+
+                    <v-btn icon @click="filter_reset()">
+                      <v-icon color="primary"> autorenew </v-icon>
+                    </v-btn>
+                  </v-layout>
+                </template>
+              </button_with_menu>
+            </ui_schema>
             <button_with_menu
               v-if="task && task.id"
               tooltip_message="View Task Information"
@@ -944,11 +952,12 @@
 <script lang="ts">
 import Vue from "vue";
 import label_select_annotation from "../label/label_select_annotation.vue";
-import file_meta_data_card from "./file_meta_data_card";
-import task_relations_card from "./task_relations_card";
-import file_relations_card from "./file_relations_card";
-import task_meta_data_card from "./task_meta_data_card";
-import hotkeys from "./hotkeys";
+import file_meta_data_card from "./file_meta_data_card.vue";
+import task_relations_card from "./task_relations_card.vue";
+import file_relations_card from "./file_relations_card.vue";
+import task_meta_data_card from "./task_meta_data_card.vue";
+import hotkeys from "./hotkeys.vue";
+import task_status from "./task_status.vue"
 
 export default Vue.extend({
   name: "toolbar",
@@ -959,6 +968,7 @@ export default Vue.extend({
     task_meta_data_card,
     task_relations_card,
     hotkeys,
+    task_status
   },
   props: {
     project_string_id: {},

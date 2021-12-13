@@ -213,6 +213,7 @@
           v-if="!error_no_permissions.data"
           :width="label_settings.left_nav_width"
         >
+        <br />
           <v-alert
             v-if="
               $store.state.user.settings.studio_box_info == true &&
@@ -893,6 +894,7 @@ import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation } from "../../services/tasksServices";
+import task_status from "./task_status.vue"
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -932,6 +934,7 @@ export default Vue.extend({
     ghost_canvas_available_alert,
     ui_schema_context_menu,
     qa_carousel,
+    task_status
   },
   props: {
     project_string_id: {
