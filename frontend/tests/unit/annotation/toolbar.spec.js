@@ -79,15 +79,6 @@ describe("Annotation core toolbar test set", () => {
     );
   });
 
-  it("Renders play button if annotation show is off", async () => {
-    const wrapper = shallowMount(toolbar, props, localVue);
-    const annotation_show_button_is_rendered = wrapper
-      .html()
-      .includes('tooltip_message="Annotation show"');
-
-    expect(annotation_show_button_is_rendered).toBeTruthy();
-  });
-
   it("Does not render play button if annotation show is off", async () => {
     props.propsData.annotation_show_on = true;
     const wrapper = shallowMount(toolbar, props, localVue);
@@ -105,16 +96,6 @@ describe("Annotation core toolbar test set", () => {
       .includes('tooltip_message="Pause"');
 
     expect(!annotation_pause_button_is_rendered).toBeTruthy();
-  });
-
-  it("Renders pause button if annotation show is off", () => {
-    props.propsData.annotation_show_on = true;
-    const wrapper = shallowMount(toolbar, props, localVue);
-    const annotation_pause_button_is_rendered = wrapper
-      .html()
-      .includes('tooltip_message="Pause"');
-
-    expect(annotation_pause_button_is_rendered).toBeTruthy();
   });
 
   it("Emits annotation show event when pause button is clicked", async () => {
