@@ -1662,6 +1662,7 @@ export default Vue.extend({
       let image_size_width = 1920; // default
       let image_size_height = 1280;
 
+
       if (this.canvas_width) {
         //  TODO rename 'canvas' thing here as it's more like original media width
         // the 'canvas_scaled' is what's being used for actual canvas stuff?
@@ -3597,7 +3598,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       if (file.type == "image") {
         this.video_mode = false;
-
+        console.log('PROPERTIES IMAGE', file.image);
         this.canvas_width = file.image.width;
         this.canvas_height = file.image.height;
 
