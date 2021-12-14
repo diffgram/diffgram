@@ -25,19 +25,20 @@ a single application.
 
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
+
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Wizard
 2. [Store](#Store) - Source of Truth for Training Data
 3. [Workflow](#Workflow) - Human Tasks
-4. [Annotation](#Annotation) - Image & Video Labeling. Audio, Text, 3D coming soon.
+4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide) Available Now. Plus Text & Audio Coming Soon.
 5. [Annotation Automation](#Annotation-Automation) - Customizable
 6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
 7. [Explore](#Explore) - Query & Visually See Annotations
 8. [Debug](#Debug) - Compare Models & More
 9. [Secure and Private](#Secure-and-Private)
 
-Diffgram is Open Source and Client Installed. **[Quickstart](#Quickstart)**
+Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickstart)**
 
 * [Who is Diffgram for?](#Who-is-Diffgram-for)
 * [What problem does Diffgram solve?](#What-problem-does-Diffgram-solve)
@@ -49,8 +50,14 @@ Diffgram is Open Source and Client Installed. **[Quickstart](#Quickstart)**
 * [Built for Extreme Scale](#Built-for-Extreme-Scale)
 
 ### Who is Diffgram for?
-Data Scientists, Project Admins, Software Engineers, 
+Data Scientists, Machine Learning Leaders, AI Experts, Software Engineers, 
 Data Annotators and Subject Matter Experts.
+
+### What can I Customize?
+With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
+Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Piplines, Queries, and More.
+Diffgram is the most customizable training data platform.
+[Training Data Customization](https://diffgram.readme.io/docs/customization)
 
 ### What problem does Diffgram solve?
 The current state of multiple tools is a huge pain. 
@@ -127,32 +134,34 @@ Run Diffgram on and access data from any of the clouds.
 ### What is Diffgram a drop in replacement for?
 Diffgram is a drop in replacement for the following systems: 
 Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex), 
-V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, HastyAI, Dataloop, Keymakr, ActiveLoop, DVC, Scale Nucleus.
+V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, Cord, HastyAI, Dataloop, Keymakr, Scale Nucleus.
 
 Please see the roadmap and talk with us if you see a missing feature.
 
-### How much does this cost?
+### How much does this cost? What's your business model?
 If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
 You can install Diffgram and use it with hundreds of thousands of annotations for free.
 
-If you desire additional support, feature prioritization, etc. we have packages available.
+For more detail [Compare Diffgram Verisons](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
 
-### When do I need to upgrade?
-We charge based on capacity. If you have 20+ people then the first step is upgrading to [Enterprise Edition](https://diffgram.com/enterprise).
-This unlocks capacity, adds support and many other features.
+### Premium Support
+[Learn more.](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise#premium-licenses-with-open-source)
+
+### Enterprise
+[Enterprise Edition](https://diffgram.com/enterprise).
+For companies and teams with 20+ users.
+This is our best level of support, Enterprise focused features, SLAs, and More.
 
 If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
 Diffgram Enterprise can help you scale every aspect of your training data. 
 
 ## Roadmap
-2021: 
-1. Interfaces 3D, Text, Audio
-
 2022: 
-1. Save on labeling costs by only labeling most relevant data. Active Learning.
-2. Save QA costs by using model to debug humans. Explore V2
-3. Save on labeling costs by using interactive automations. Userscripts V2
-4. Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
+1. New Interfaces: Text, Audio
+2. Save on labeling costs by only labeling most relevant data. Active Learning.
+3. Save QA costs by using model to debug humans. Explore V2
+4. Save on labeling costs by using interactive automations. Userscripts V2
+5. Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
 
 2023:
 1. Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
@@ -205,6 +214,8 @@ Ingest prediction data without writing extra scripts.
 
 * [NEW Import Wizard](https://medium.com/diffgram/now-anyone-can-turn-spreadsheets-into-editable-pre-labels-more-saving-hundreds-of-hours-of-bbc756ec7b49) saves you hours having to map your data (pre-labels, QA, debug etc.).
 * [All-Cloud Integrated File Browser](https://www.youtube.com/watch?v=w7yiW5wpnMg&t=59s)
+* Scalable pipeline for massive ingestion - we have tested to 600+ hardware nodes
+* Integrated pipeline hooks - newly added data auto creates tasks and more
 
 ## Store
 Collaboration across teams between machine learning, product, ops, managers, and more.
@@ -227,9 +238,10 @@ to existing partially annotated sets.
 
 ## Annotation
 Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
-* [Quality Image and Video Annotation.](https://diffgram.com/software)
+* [Image and Video Annotation.](https://diffgram.com/software)
 * [Semantic Segmentation Focus](https://diffgram.com/segmentation) Autobordering, turbo mode and more
 * [Video Annotation](https://diffgram.com/video) High resolution, high frame rate, multiple sequences.
+* [3D Annotation (e.g. LiDAR)](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
 
 Schema (Ontology): Diffgram supports all popular [attributes](https://diffgram.readme.io/docs/attributes-1) and spatial types including *[Custom Spatial types](https://diffgram.readme.io/docs/custom-spatial-templates-user-defined-shapes)*.
 (Best Data Annotation for AI/ML)
