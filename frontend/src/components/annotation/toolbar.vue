@@ -333,14 +333,14 @@
 
       <div>
             <task_status 
-              v-if="task && task.id" 
+              v-if="task && task.id && task.job"
               :task_status="task.status"
               :allow_reviews="task.job.allow_reviews"
             />
       </div>
 
       <v-divider vertical></v-divider>
-      
+
       <div>
         <tooltip_button
           tooltip_message="Previous Task"
@@ -360,7 +360,7 @@
 
         <!-- This is a WIP example of injecting a tombstone button to help positionally
         make it easier for user.-->
-        <!-- 
+        <!--
       <tooltip_button
         tooltip_message="Add Button"
         ui_schema_name="add_button"
