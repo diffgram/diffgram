@@ -71,27 +71,27 @@ describe("manual_user_assignment", () => {
       const url = "/api/v1/project/*/task/*/user/remove";
       cy.get('[data-cy="select-task-list-item"]')
         .eq(0)
-        .click({ force: true });
-      cy.get('[data-cy="select-task-list-item"]')
+        .click({ force: true })
+        .get('[data-cy="select-task-list-item"]')
         .eq(1)
-        .click({ force: true });
-      cy.get('[data-cy="select-task-list-item"]')
+        .click({ force: true })
+        .get('[data-cy="select-task-list-item"]')
         .eq(2)
         .click({ force: true })
-        .wait(500)
+        .wait(1500)
         .get('[data-cy="select-task-list-action"]').click({ force: true })
         .get("div")
         .contains("Remove annotators")
-        .click({ force: true });
-      cy.wait(1500);
-      cy.get('[data-cy="remove-batch-annotators-open"]').click({ force: true });
-      cy.get('[data-cy="member-select"]').click({ force: true });
-      cy.get('[data-cy="member-select__select-user"]')
+        .click({ force: true })
+        .wait(1500)
+        .get('[data-cy="remove-batch-annotators-open"]').click({ force: true })
+        .get('[data-cy="member-select"]').click({ force: true })
+        .get('[data-cy="member-select__select-user"]')
         .first()
-        .click({ force: true });
-      cy.intercept(url).as("remove_user");
-      cy.get('[data-cy="finish-user-assignment"]').click({ force: true });
-      cy.wait("@remove_user")
+        .click({ force: true })
+        .intercept(url).as("remove_user")
+        .get('[data-cy="finish-user-assignment"]').click({ force: true })
+        .wait("@remove_user")
         .its("response")
         .should("have.property", "statusCode", 200);
     });
