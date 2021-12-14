@@ -32,7 +32,8 @@ def serialize_public_env_variables():
         'EVENTHUB_URL': settings.EVENTHUB_URL,
         'WEBHOOKS_URL_BASE': settings.WEBHOOKS_URL_BASE,
         'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE': settings.DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE,
-        'ALLOW_EVENTHUB': settings.ALLOW_EVENTHUB
+        'ALLOW_EVENTHUB': settings.ALLOW_EVENTHUB,
+        'DIFFGRAM_INSTALL_FINGERPRINT': settings.DIFFGRAM_INSTALL_FINGERPRINT
         }
     email = {
         'EMAIL_VALIDATION': settings.EMAIL_VALIDATION,
