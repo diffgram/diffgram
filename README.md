@@ -29,11 +29,11 @@ Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDb
 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
-1. [Ingest](#Ingest) - Magic Wizard
-2. [Store](#Store) - Source of Truth for Training Data
-3. [Workflow](#Workflow) - Human Tasks
+1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
+2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
+3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
 4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide) Available Now. Plus Text & Audio Coming Soon.
-5. [Annotation Automation](#Annotation-Automation) - Customizable
+5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
 6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
 7. [Explore](#Explore) - Query & Visually See Annotations
 8. [Debug](#Debug) - Compare Models & More
@@ -232,13 +232,25 @@ It's a database for your training data, both metadata and access of raw BLOB dat
 ## Workflow
 Manage Annotation Workflow, Tasks, Quality Assurance and more.
 
-* One click create [human review Pipelines](https://diffgram.com/streaming).
+QA Features including:
+
+* QA Slideshow: Reduce Costly Errors
+* Reduce Context Switching Costs with Discussions & Issue Tracking
+* Get New Team Members Certified with Training and Exams
+* Hold People Accountable with Per User Reporting
+* Reduce Human Errors with Human Centered Tasks
+
+Learn more -> [Quality Assurance Features](https://diffgram.readme.io/docs/measure-data-quality-annotations-more)
+
+* Automatic Per Task Review Routing, with configurable review chance
+* [Human Task Pipelines](https://diffgram.com/streaming).
 * Webhooks with [Actions](https://diffgram.readme.io/docs/setting-up-webhooks)
 * Easily annotate a single dataset, or scale to hundreds of projects with
 thousands of subdivided [task sets](https://diffgram.readme.io/docs/tasks-introduction). Includes easy search and filtering.
 * Fully integrated customizable Annotation [Reporting](https://diffgram.readme.io/docs/reporting-introduction).
 * Continually upgrade your data, including easily adding more depth
 to existing partially annotated sets.
+
 
 ## Annotation
 Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
