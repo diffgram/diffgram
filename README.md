@@ -25,6 +25,7 @@ a single application.
 
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
+Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDbcU).
 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
@@ -52,6 +53,9 @@ Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickst
 ### Who is Diffgram for?
 Data Scientists, Machine Learning Leaders, AI Experts, Software Engineers, 
 Data Annotators and Subject Matter Experts.
+
+### New to Training Data?
+Learn more about the general concepts with the [Training Data Book](https://www.oreilly.com/library/view/training-data-for/9781492094517/).
 
 ### What can I Customize?
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
