@@ -439,9 +439,9 @@
             <v-card-title>
               <v-icon size="48" color="primary">mdi-github</v-icon> Open Source Installation Detected:
             </v-card-title>
-            <v-card-subtitle>
-              <h2>Install ID:</h2>
-              <v-chip color="primary">{{install_fingerprint}}</v-chip>
+            <v-card-subtitle class="d-flex align-center">
+              <h2 class="mr-2">Install ID:</h2>
+              <v-chip color="secondary">{{install_fingerprint}}</v-chip>
             </v-card-subtitle>
 
             <!-- CREDIT CARD -->
