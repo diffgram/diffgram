@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_index('index__parent_id_type', 'file', ['parent_id', 'type'], postgresql_concurrently=True)
-    op.create_index('index__parent_id', 'file', ['parent_id'], postgresql_concurrently=True)
+    op.create_index('index__parent_id_type', 'file', ['parent_id', 'type'])
+    op.create_index('index__parent_id', 'file', ['parent_id'])
 
 
 def downgrade():
