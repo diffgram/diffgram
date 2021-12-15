@@ -41,6 +41,9 @@
         >
         </sensor_fusion_editor>
       </div>
+      <div v-else-if="annotation_interface === 'text'">
+        <text_annotation_core />
+      </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -87,6 +90,7 @@ import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
+import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import Vue from "vue";
 
 
@@ -95,7 +99,8 @@ export default Vue.extend({
   components: {
     file_manager_sheet,
     empty_file_editor_placeholder,
-    sensor_fusion_editor
+    sensor_fusion_editor,
+    text_annotation_core
   },
   props: {
     project_string_id: {
@@ -223,6 +228,9 @@ export default Vue.extend({
         else if(this.current_file.type === 'sensor_fusion'){
           return 'sensor_fusion';
         }
+        else if(this.current_file.type === 'text'){
+          return 'text'
+        }
       }
       if(this.task){
         if(this.task.file.type === 'image' || this.task.file.type === 'video'){
@@ -230,6 +238,9 @@ export default Vue.extend({
         }
         else if(this.task.file.type === 'sensor_fusion'){
           return 'sensor_fusion';
+        }
+        else if(this.task.file.type === 'text'){
+          return 'text';
         }
       }
 
