@@ -47,6 +47,7 @@ from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileP
 import numpy as np
 from shared.regular.regular_log import log_has_error
 import os
+from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 
 data_tools = Data_tools().data_tools
@@ -559,6 +560,10 @@ class Process_Media():
         ###
 
         ### Main
+        self.check_free_tier_limits()
+
+        if log_has_error(self.log):
+            return False
 
         self.route_based_on_media_type()
 
@@ -1026,13 +1031,66 @@ class Process_Media():
             self.input.status = 'failed'
             self.input.update_log = self.log
 
+    def check_free_tier_limits(self):
+        if self.input.media_type not in ['image', 'text', 'sensor_fusion', 'video']:
+            return
+
+        directory = self.input.directory
+
+        file_count_dir = WorkingDirFileLink.file_list(
+            session = self.session,
+            working_dir_id = directory.id,
+            limit = None,
+            counts_only = True
+        )
+        user_id = None
+        user = None
+        if self.input.member_created:
+            user = self.input.member_created.user
+            if user:
+                user_id = user.id
+        print('member input', self.input.member_created)
+        logger.info('Free tier check for user: {} DIR[{}] File count: {}'.format(user_id,
+                                                                                 directory.id,
+                                                                                 file_count_dir))
+        feature_checker = FeatureChecker(
+            session = self.session,
+            user = user,
+            project = self.input.project
+        )
+
+        if self.input.media_type == 'video':
+            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_VIDEOS_PER_DATASET')
+
+        elif self.input.media_type == 'image':
+            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_VIDEOS_PER_DATASET')
+
+        elif self.input.media_type == 'text':
+            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_TEXT_FILES_PER_DATASET')
+
+        elif self.input.media_type == 'sensor_fusion':
+            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET')
+        else:
+            return
+
+        if max_file_count <= file_count_dir:
+            message = 'Free Tier Limit Reached - Max Files Allowed: {}. But Directory with ID: {} has {}'.format(
+                max_file_count,
+                directory.id,
+                file_count_dir)
+            logger.error(message)
+            self.log['error']['free_tier_limit'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
+            return False
+
     def route_based_on_media_type(self):
         """
 
         Route to function based on self.input.media_type
 
         """
-        print('OPERATION', self.input.media_type)
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,

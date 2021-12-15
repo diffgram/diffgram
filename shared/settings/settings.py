@@ -164,7 +164,7 @@ DIFFGRAM_SERVICE_NAME = os.getenv('DIFFGRAM_SERVICE_NAME')
 EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', 'support@diffgram.com')
 
 # Plans Features
-ALLOW_PLANS = os.getenv('ALLOW_PLANS', False)
+ALLOW_PLANS = env_adapter.bool(os.getenv('ALLOW_PLANS', False))
 
 FREE_TIER__MAX_VIDEOS_PER_DATASET = os.getenv('FREE_TIER__MAX_VIDEOS_PER_DATASET', 30)
 FREE_TIER__MAX_USERS_PER_PROJECT = os.getenv('FREE_TIER__MAX_USERS_PER_PROJECT', 3)

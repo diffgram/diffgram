@@ -3,6 +3,10 @@ from shared.database.user import User
 from shared.database.account.plan_template import PlanTemplate
 from shared.database.account.plan import Plan
 from sqlalchemy.orm.session import Session
+from shared.database.project import Project
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
 
 
 class FeatureChecker:
@@ -15,11 +19,13 @@ class FeatureChecker:
 
     user: User
     session: Session
+    project: Project
     install_fingerprint: str
     FEATURE_FLAGS: list  # Temp list while feature flag system is implemented.
 
-    def __init__(self, session, user):
+    def __init__(self, session: Session, user: User, project: Project):
         self.user = user
+        self.project = project
         self.session = session
         self.install_finger_print = settings.DIFFGRAM_INSTALL_FINGERPRINT
         # This Dict will eventually be replaced by calls to our feature flag system.
@@ -27,6 +33,8 @@ class FeatureChecker:
             'FREE_TIER__MAX_VIDEOS_PER_DATASET',
             'FREE_TIER__MAX_USERS_PER_PROJECT',
             'FREE_TIER__MAX_IMAGES_PER_DATASET',
+            'FREE_TIER__MAX_TEXT_FILES_PER_DATASET',
+            'FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET',
             'FREE_TIER__MAX_FRAMES_PER_VIDEO',
             'FREE_TIER__MAX_INSTANCES_PER_EXPORT',
             'FREE_TIER__MAX_PROJECTS',
@@ -63,9 +71,6 @@ class FeatureChecker:
             roi_multiple = -1
 
         )
-
-        self.user.default_plan = plan
-        self.session.add(self.user)
         return plan
 
     def get_flag(self, flag_name):
@@ -75,10 +80,29 @@ class FeatureChecker:
         if flag_name not in self.FEATURE_FLAGS:
             return None
 
-        if self.user.default_plan:
-            plan = self.user.default_plan
-        else:
-            plan = self.get_or_create_free_plan()
+        plan = None
+        if self.user:
+            if self.user.default_plan:
+                plan = self.user.default_plan
+                logger.info('User on plan {}'.format(plan.template.public_name))
+            else:
+                plan = self.get_or_create_free_plan()
+                # Attach free plan to users who don't have the plan
+                self.user.default_plan = plan
+                self.session.add(self.user)
+                logger.info('Attached new free plan to user {}'.format(self.user.id))
+
+        elif self.project:
+            plan = self.project.plan
+            if not plan:
+                plan = self.get_or_create_free_plan()
+                # Attach free plan to project that don't have the plan
+                self.project.plan = plan
+                self.session.add(self.project)
+                logger.info('Attached new free plan to project {}'.format(self.project.project_string_id))
+            logger.info('project on plan {}'.format(plan.template.public_name))
+        if not plan:
+            return None
 
         plan_template = plan.template
         if flag_name == 'FREE_TIER__MAX_VIDEOS_PER_DATASET':
@@ -86,6 +110,10 @@ class FeatureChecker:
         if flag_name == 'FREE_TIER__MAX_USERS_PER_PROJECT':
             return plan_template.limit_users_per_project
         if flag_name == 'FREE_TIER__MAX_IMAGES_PER_DATASET':
+            return plan_template.limit_files
+        if flag_name == 'FREE_TIER__MAX_TEXT_FILES_PER_DATASET':
+            return plan_template.limit_files
+        if flag_name == 'FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET':
             return plan_template.limit_files
         if flag_name == 'FREE_TIER__MAX_FRAMES_PER_VIDEO':
             return plan_template.limit_files

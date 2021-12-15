@@ -132,6 +132,7 @@ class S3Connector(Connector):
                 return None
 
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
+            member = session.query(Member).filter(Member.user_id == opts['event_data']['request_user']).first()
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                   session=session,
                                                   media_url=signed_url,
@@ -141,7 +142,8 @@ class S3Connector(Connector):
                                                   batch_id=opts.get('batch_id'),
                                                   video_split_duration=opts.get('video_split_duration'),
                                                   directory_id=opts.get('directory_id'),
-                                                  extract_labels_from_batch=True)
+                                                  extract_labels_from_batch=True,
+                                                  member = member)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
