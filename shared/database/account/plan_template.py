@@ -80,6 +80,7 @@ class PlanTemplate(Base):
             'cost_per_1000_instance': self.cost_per_1000_instances
         }
 
+    @staticmethod
     def get_by_public_name(
         session,
         public_name):
@@ -88,8 +89,40 @@ class PlanTemplate(Base):
 
         return query.first()
 
-    def create_premium_plan():
+    @staticmethod
+    def create_free_plan(session):
+        template = PlanTemplate.new(
+            session = session,
+            public_name = 'Free',
+            internal_name = 'default_free_plan',
+            kind = 'default',
+            limit_instances = 100,
+            limit_projects = 3,
+            limit_files = 100,
+            limit_users_per_project = 3,
+            limit_video_frames_per_file = 300,
+            included_monthly_training_credits = 100,
+            cost_monthly = 0,
+            may_buy_instances = False,
+            cost_per_1000_instances = 0,
+            cost_per_traning_hour = 0,
+            cost_annual = 0,
+            feature_sla = 'no_support',
+            feature_support = 'no_support',
+            feature_user_management = 'no_support',
+            is_available = True,
+            is_public = True,
+            is_free = True,
+            export_models_allowed = True,
+
+        )
+
+        return template
+
+    @staticmethod
+    def create_premium_plan(session):
         return PlanTemplate.new(
+            session = session,
             public_name = 'premium',
             internal_name = 'premium_jan_2021',
             limit_instances = None,
@@ -103,12 +136,13 @@ class PlanTemplate(Base):
             is_public = True,
             is_free = False,
             export_models_allowed = True,
-            feature_sla = False,
-            feature_support = True,
-            feature_user_management = True)
+            feature_sla = 'no_support',
+            feature_support = 'no_support',
+            feature_user_management = 'no_support')
 
     @staticmethod
-    def new(public_name,
+    def new(session,
+            public_name,
             internal_name,
             limit_instances,
             limit_projects,
@@ -118,12 +152,17 @@ class PlanTemplate(Base):
             cost_monthly,
             cost_per_1000_instances,
             is_available = True,
+            included_monthly_training_credits = 100,
+            cost_per_traning_hour = 0,
+            cost_annual = 0,
+            may_buy_instances = False,
+            kind = 'default',
             is_public = False,
             is_free = False,
             export_models_allowed = True,
-            feature_sla = True,
-            feature_support = True,
-            feature_user_management = True
+            feature_sla = 'no_support',
+            feature_support = 'no_support',
+            feature_user_management = 'no_support'
             ):
         """
         Assumption this is called internally
@@ -146,9 +185,16 @@ class PlanTemplate(Base):
             is_available = is_available,
             is_public = is_public,
             is_free = is_free,
+            kind = kind,
+            included_monthly_training_credits = included_monthly_training_credits,
             export_models_allowed = export_models_allowed,
+            may_buy_instances = may_buy_instances,
+            cost_per_traning_hour = cost_per_traning_hour,
             feature_sla = feature_sla,
             feature_support = feature_support,
-            feature_user_management = feature_user_management
+            feature_user_management = feature_user_management,
+            cost_annual = cost_annual
         )
+        session.add(plan_template)
+        session.flush()
         return plan_template
