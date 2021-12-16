@@ -66,7 +66,7 @@ class TaskEvent(Base, SerializerMixin):
             return ""
 
         comment_display = session.query(DiscussionComment).filter(DiscussionComment.id == latest_comment.comment_id).first()
-        return comment_display.__dict__["content"]
+        return comment_display.content
 
     @staticmethod
     def generate_task_creation_event(session, task, member) -> 'TaskEvent':
