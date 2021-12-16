@@ -86,7 +86,7 @@
       :bottom="true"
     >
     </tooltip_button>
-    <review_dialog :dialog="review_dialog" @complete="on_submit_review" />
+    <review_dialog :dialog="review_dialog" @complete="on_submit_review" @close_dialog="close_dialog" />
   </div>
 </template>
 
