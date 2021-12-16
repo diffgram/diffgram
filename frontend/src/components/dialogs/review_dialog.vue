@@ -55,7 +55,6 @@ export default Vue.extend({
       this.$emit("complete", payload);
     },
     on_cancel: function () {
-      console.log("HERE")
       this.$emit("close_dialog");
     },
   },
