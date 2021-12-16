@@ -294,78 +294,66 @@ def check_export_billing(
     count is high enough
     """
 
-    #	if not project.plan:
-    #		log['error']['plan'] = "No billing plan."
-    #		return log
-
-    # If instance count is over...
-
-    # TODO would prefer this to be part of some shared usage thing...
-    # Would like to be able to just call "Active instances" on a thing...
-    # Also assumtion this is Free only, so
-    # should be <100 files...
-
     # Active instances so dates are only relevant to
     # use for first 30 days enforcing not deleted?
-
+    logger.info('Checking Limits for Plan')
     if settings.ALLOW_STRIPE_BILLING is False:
         return log
 
-    if project.plan:
-        if project.plan.template.is_free == False:
+    if settings.ALLOW_PLANS is False:
+        return log
+
+    # Careful if it's a large project,
+    # And no other areas / no billing ID it can hang here ina funny way
+    # Put limit of 200 as a temp measure for this.
+
+    # Free case, could error or success
+    file_list = WorkingDirFileLink.file_list(
+        session = session,
+        working_dir_id = directory.id,
+        type = "image",
+        exclude_removed = True,
+        limit = 200
+    )
+
+    new_instance_count = 0
+
+    checker = FeatureChecker(
+        session = session,
+        user = member.user,
+        project = project
+    )
+    max_allowed_instances = checker.get_flag('FREE_TIER__MAX_INSTANCES_PER_EXPORT')
+
+    for file in file_list:
+        new_instance_count += Instance.list(
+            session = session,
+            file_id = file.id,
+            exclude_removed = True,
+            return_kind = "count")
+
+    logger.info('Checking limits for export with {} instances'.format(new_instance_count))
+
+    if max_allowed_instances:
+        if new_instance_count > max_allowed_instances:
+            message = 'Free Tier Limit Reached - Max Instances Allowed: {}. But Export  has {} instances'.format(
+                max_allowed_instances,
+                new_instance_count
+            )
+            log['error']['over_free_plan_limit'] = True
+            log['error']['active_instances'] = new_instance_count
+            log['error']['free_tier_limit'] = message
+
+            Event.new(
+                kind = "export_generation_free_account_over_limit",
+                session = session,
+                member = member,
+                success = False,
+                project_id = project.id
+            )
+
             return log
 
-    # We assume for now that no plan means free plan
-    else:
-        # Careful if it's a large project,
-        # And no other areas / no billing ID it can hang here ina funny way
-        # Put limit of 200 as a temp measure for this.
-        print("On free plan")
+    print("Export , active instance count", new_instance_count)
 
-        # Free case, could error or success
-        file_list = WorkingDirFileLink.file_list(
-            session = session,
-            working_dir_id = directory.id,
-            type = "image",
-            exclude_removed = True,
-            limit = 200
-        )
-
-        new_instance_count = 0
-
-        for file in file_list:
-            new_instance_count += Instance.list(
-                session = session,
-                file_id = file.id,
-                exclude_removed = True,
-                return_kind = "count")
-
-        checker = FeatureChecker(
-            session = session,
-            user = member.user,
-            project = project
-        )
-        max_allowed_instances = checker.get_flag('FREE_TIER__MAX_INSTANCES_PER_EXPORT')
-        if max_allowed_instances:
-            if new_instance_count > max_allowed_instances:
-                message = 'Free Tier Limit Reached - Max Instances Allowed: {}. But Export  has {} instances'.format(
-                    max_allowed_instances,
-                    new_instance_count
-                )
-                log['error']['over_free_plan_limit'] = True
-                log['error']['active_instances'] = new_instance_count
-                log['error']['free_tier_limit'] = message
-
-                Event.new(
-                    kind = "export_generation_free_account_over_limit",
-                    session = session,
-                    member = member,
-                    success = False,
-                    project_id = project.id
-                )
-
-                return log
-
-        print("Export , active instance count", new_instance_count)
-
-        return log
+    return log

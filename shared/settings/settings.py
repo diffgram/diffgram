@@ -102,7 +102,7 @@ EVENTHUB_URL = os.getenv('EVENTHUB_URL', 'https://diffgram.com/api/walrus/eventh
 ALLOW_EVENTHUB = env_adapter.bool(os.environ.get('ALLOW_EVENTHUB', False))
 
 # Stripe
-ALLOW_STRIPE_BILLING = os.getenv('ALLOW_STRIPE_BILLING', False)
+ALLOW_STRIPE_BILLING = env_adapter.bool(os.environ.get('ALLOW_STRIPE_BILLING', False))
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY', '')
 
 
