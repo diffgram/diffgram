@@ -131,6 +131,9 @@ def new_plan_api(project_string_id):
             project = Project.get(session, project_string_id)
         else:
             project = None
+            if input.get('email_opensource') is None or input.get('install_fingerprint') is None:
+                log['error']['billing'] = "Please login or provide install_fingerprint for purchase."
+                return jsonify(log = log), 400
 
         if project and project.api_billing_enabled is not True:
             log['error']['billing'] = "Please save a credit card to enable billing first."
