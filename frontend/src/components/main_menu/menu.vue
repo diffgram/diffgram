@@ -415,8 +415,15 @@
     },
     methods: {
       go_to_order_page: function(){
-        // window.open(`https://diffgram.com/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}`, '_blank')
-        window.open(`http://localhost:8085/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}`, '_blank')
+        console.log('window.location.host', window.location.host)
+        if(window.location.host === 'diffgram.com'){
+          window.open(`https://diffgram.com/order/premium`, '_blank')
+
+        }
+        else{
+          window.open(`http://localhost:8085/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}&email=${this.$store.state.user.current.email}`, '_blank')
+
+        }
       },
       change_project(item) {
         if (item.new_project == true) {

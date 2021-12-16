@@ -10,9 +10,6 @@ from shared.database.account.plan_template import PlanTemplate
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/account/plan/new',
               methods = ['POST'])
-@Project_permissions.user_has_project(
-    Roles = ["admin", "Editor"],
-    apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("3 per day")
 def new_plan_api(project_string_id):
     """
@@ -108,7 +105,18 @@ def new_plan_api(project_string_id):
             'kind': int,
             'required': False
         }
-        }]
+        },
+        {"email_opensource": {
+            'kind': str,
+            'required': False
+        }
+        },
+        {"install_fingerprint": {
+            'kind': str,
+            'required': False
+        }
+        }
+    ]
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
@@ -119,14 +127,15 @@ def new_plan_api(project_string_id):
         return jsonify(log = {'error': {'ALLOW_STRIPE_BILLING': 'Not Allowed for this version'}}), 400
 
     with sessionMaker.session_scope() as session:
+        if project_string_id != 'undefined':
+            project = Project.get(session, project_string_id)
+        else:
+            project = None
 
-        project = Project.get(session, project_string_id)
-
-        if project.api_billing_enabled is not True:
+        if project and project.api_billing_enabled is not True:
             log['error']['billing'] = "Please save a credit card to enable billing first."
             return jsonify(log = log), 400
 
-        print('public', input['plan_template_public_name'])
         plan_template = PlanTemplate.get_by_public_name(
             session = session,
             public_name = input['plan_template_public_name'])
@@ -145,17 +154,19 @@ def new_plan_api(project_string_id):
         # account = Account.get_by_id(session, account_id)
         user = User.get(session = session)
 
-        project_list = user.projects
-
+        if user:
+            project_list = user.projects
+        else:
+            project_list = []
         # TODO using project.plan as a proxy
         # But really should have more "definitive" way to get plan...
 
-        # Question do we want this here? gotta be a better way to check....
-        if project is None:
-            log['error']['project'] = "No project. Please create a project first."
-            return jsonify(log = log), 400
+        # # Question do we want this here? gotta be a better way to check....
+        # if project is None and user is not None:
+        #     log['error']['project'] = "No project. Please create a project first."
+        #     return jsonify(log = log), 400
 
-        if project.plan:
+        if project and project.plan:
 
             # TODO update old plan? ie end date / is active?
 
@@ -166,8 +177,9 @@ def new_plan_api(project_string_id):
                 return jsonify(log = log), 400
 
         plan = Plan.new(
+            session = session,
             plan_template = plan_template,
-            member = user.member,
+            member = user.member if user else None,
 
             premium_plan_user_count = input['premium_plan_user_count'],
             is_annual_pricing = input['annual_pricing'],
@@ -191,26 +203,27 @@ def new_plan_api(project_string_id):
             roi_multiple = input['roi_multiple']
         )
 
-        session.add(plan)
-        session.flush()
-
         result = plan.update_projects(
             session = session,
             project_list = project_list,
-            member = user.member)
+            member = user.member if user else None)
 
-        # EMAIL
-        # Assumption this is for upgraded plans
-
-        subject = "New paid plan"
+        subject = "New paid plan!"
 
         # Wrapping with str in case it's None. Shouldn't be possible but just in case
+        message = ' - Project Name: {} [ID: {}] \n - Project with user: {} \n - User count: {} \n ' \
+                  '- Install Finger Print ID [Open Source only]: {} \n - Open Source Email: {}'.format(
+            str(project.name if project else None),
+            str(project.project_string_id if project else None),
+            str(project.user_primary.email if project else None),
+            str(plan.premium_plan_user_count if plan else None),
+            str(input['install_fingerprint']),
+            str(input['email_opensource']),
 
-        message = str(project.name) + " project with user " + str(project.user_primary.email) + \
-                  " user count:  " + str(plan.premium_plan_user_count)
+        )
 
         communicate_via_email.send(
-            "anthony@diffgram.com", subject, message)
+            "anthonysarkis@diffgram.com", subject, message)
 
         # TODO reference old plan to new plan?
 

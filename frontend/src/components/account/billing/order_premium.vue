@@ -367,9 +367,31 @@
       </v-card>
 
 
-      <v-card>
+      <v-card class="mt-5 mb-5">
 
-        <v-card>
+        <div v-if="install_fingerprint && email">
+          <v-card>
+
+            <v-card-title>
+              <v-icon size="48" color="primary">mdi-github</v-icon> Open Source Installation Detected:
+            </v-card-title>
+            <v-card-subtitle class="d-flex align-center">
+              <h2 class="mr-2">Install ID:</h2>
+              <v-chip color="secondary">{{install_fingerprint}}</v-chip>
+              <h2 class="mr-2">Email:</h2>
+              <v-chip color="secondary">{{email}}</v-chip>
+            </v-card-subtitle>
+
+            <!-- CREDIT CARD -->
+            <credit_card show_account_info=false>
+            </credit_card>
+
+            <br>
+            <br>
+          </v-card>
+        </div>
+
+        <v-card class="mt-8 mb-4">
           <v-card-text class="text--primary">
             <h2 class="pt-4 pb-2">
               You will be charged {{$format_money(calculated_charge)}}
@@ -402,7 +424,7 @@
 
           <v-card-actions>
 
-            <v-btn v-if="$store.state.user.logged_in == true "
+            <v-btn v-if="($store.state.user.logged_in == true) || (install_fingerprint && email)  "
                    color="primary"
                    :disabled="loading"
                    @click="order()"
@@ -418,7 +440,7 @@
 
         </v-card>
 
-        <div v-if="$store.state.user.logged_in == true ">
+        <div v-if="$store.state.user.logged_in == true && !install_fingerprint && !email">
           <v-card>
 
             <v-card-title>
@@ -433,26 +455,8 @@
             <br>
           </v-card>
         </div>
-        <div v-if="install_fingerprint">
-          <v-card>
 
-            <v-card-title>
-              <v-icon size="48" color="primary">mdi-github</v-icon> Open Source Installation Detected:
-            </v-card-title>
-            <v-card-subtitle class="d-flex align-center">
-              <h2 class="mr-2">Install ID:</h2>
-              <v-chip color="secondary">{{install_fingerprint}}</v-chip>
-            </v-card-subtitle>
-
-            <!-- CREDIT CARD -->
-            <credit_card show_account_info=false>
-            </credit_card>
-
-            <br>
-            <br>
-          </v-card>
-        </div>
-        <div v-else>
+        <div v-else-if="!$store.state.user.logged_in == true && !install_fingerprint && !email">
           <v-alert type="info"
                    prominent
           >
@@ -523,6 +527,7 @@
 
           marketing_promo_rate_found: null,
           install_fingerprint: null,
+          email: null,
           promo_map: {
             'switch': .20,
             'holiday': .30
@@ -557,6 +562,9 @@
         }
         if (this.$route.query.install_fingerprint) {
           this.install_fingerprint = this.$route.query.install_fingerprint;
+        }
+        if (this.$route.query.email) {
+          this.email = this.$route.query.email;
         }
       },
       computed: {
@@ -696,6 +704,8 @@
             calculated_charge: this.calculated_charge,
             annual_pricing: this.annual_pricing,
             per_user_final: this.per_user_final,
+            email_opensource: this.email,
+            install_fingerprint: this.install_fingerprint,
 
             plan_template_public_name: 'premium',
 

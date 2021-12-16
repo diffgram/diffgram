@@ -66,8 +66,16 @@
       },
       methods: {
         go_to_order_page: function(){
+          if(window.location.host === 'diffgram.com'){
+            window.open(`https://diffgram.com/order/premium`, '_blank')
+
+          }
+          else{
+            window.open(`https://diffgram.com/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}&email=${this.$store.state.user.current.email}`, '_blank')
+
+          }
           // window.open(`https://diffgram.com/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}`, '_blank')
-          window.open(`http://localhost:8085/order/premium?install_fingerprint=${this.$store.state.user.current.install_fingerprint}`, '_blank')
+
         },
         close(){
           this.input = undefined;
