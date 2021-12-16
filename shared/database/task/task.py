@@ -9,6 +9,7 @@ from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
 from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
+from shared.database.task.task_event import TaskEvent
 from shared.database.user import User
 
 TASK_STATUSES = {
@@ -465,7 +466,7 @@ class Task(Base):
             'file': self.file.serialize_with_annotations(session = session),
             'guide': guide,
             'label_dict': self.label_dict,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
         }
 
     def serialize_builder_view_by_id(self, session):
@@ -484,6 +485,11 @@ class Task(Base):
             if self.job.default_userscript:
                 default_userscript = self.job.default_userscript.serialize()
 
+        task_comment = ""
+        
+        if self.status == "complete" or self.status == "requires_changes":
+            task_comment = TaskEvent.get_last_task_comment(session, self.id, self.job_id, self.project_id)
+
         return {
             'id': self.id,
             'job_id': self.job_id,
@@ -499,7 +505,8 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'default_userscript': default_userscript,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
+            'task_comment': task_comment
         }
 
     def get_by_job_and_file(
