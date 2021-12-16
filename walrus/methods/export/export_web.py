@@ -7,7 +7,7 @@ from shared.database.export import Export
 from methods.export.export_view import export_view_core
 from shared.database.task.job.job import Job
 from methods.export.export_utils import check_export_permissions_and_status
-
+from shared.feature_flags.feature_checker import FeatureChecker
 
 data_tools = Data_tools().data_tools
 
@@ -158,11 +158,11 @@ def web_export_to_file(project_string_id):
         # Caution assumes project.user_primary
         # Billing check
         log = check_export_billing(
-            session=session,
-            project=project,
-            directory=directory,
-            member=project.user_primary.member,
-            log=log)
+            session = session,
+            project = project,
+            directory = directory,
+            member = project.user_primary.member,
+            log = log)
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -282,11 +282,11 @@ def export_web_core(session,
 
 
 def check_export_billing(
-        session,
-        project,
-        directory,
-        member,
-        log):
+    session,
+    project,
+    directory,
+    member,
+    log):
     """
     If not on paid plan...
 
@@ -324,35 +324,47 @@ def check_export_billing(
 
         # Free case, could error or success
         file_list = WorkingDirFileLink.file_list(
-            session=session,
-            working_dir_id=directory.id,
-            type="image",
-            exclude_removed=True,
-            limit=200
+            session = session,
+            working_dir_id = directory.id,
+            type = "image",
+            exclude_removed = True,
+            limit = 200
         )
 
         new_instance_count = 0
 
         for file in file_list:
             new_instance_count += Instance.list(
-                session=session,
-                file_id=file.id,
-                exclude_removed=True,
-                return_kind="count")
+                session = session,
+                file_id = file.id,
+                exclude_removed = True,
+                return_kind = "count")
 
-        if new_instance_count > 100:
-            log['error']['over_free_plan_limit'] = True
-            log['error']['active_instances'] = new_instance_count
+        checker = FeatureChecker(
+            session = session,
+            user = member.user,
+            project = project
+        )
+        max_allowed_instances = checker.get_flag('FREE_TIER__MAX_INSTANCES_PER_EXPORT')
+        if max_allowed_instances:
+            if new_instance_count > max_allowed_instances:
+                message = 'Free Tier Limit Reached - Max Instances Allowed: {}. But Export  has {} instances'.format(
+                    max_allowed_instances,
+                    new_instance_count
+                )
+                log['error']['over_free_plan_limit'] = True
+                log['error']['active_instances'] = new_instance_count
+                log['error']['free_tier_limit'] = message
 
-            Event.new(
-                kind="export_generation_free_account_over_limit",
-                session=session,
-                member=member,
-                success=False,
-                project_id=project.id
-            )
+                Event.new(
+                    kind = "export_generation_free_account_over_limit",
+                    session = session,
+                    member = member,
+                    success = False,
+                    project_id = project.id
+                )
 
-            return log
+                return log
 
         print("Export , active instance count", new_instance_count)
 
