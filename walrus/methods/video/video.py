@@ -101,7 +101,7 @@ class New_video():
         )
 
         max_frames = checker.get_flag('FREE_TIER__MAX_FRAMES_PER_VIDEO')
-        if frame_count >= max_frames:
+        if max_frames is not None and frame_count >= max_frames:
             self.input.status = "failed"
             message = 'Free Tier Limit Reached - Max Frames Per Video Allowed: {}. But Video has {}'.format(
                 max_frames,

@@ -1073,7 +1073,8 @@ class Process_Media():
         else:
             return
 
-        if max_file_count <= file_count_dir:
+
+        if max_file_count is not None and max_file_count <= file_count_dir:
             message = 'Free Tier Limit Reached - Max Files Allowed: {}. But Directory with ID: {} has {}'.format(
                 max_file_count,
                 directory.id,
