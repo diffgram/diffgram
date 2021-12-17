@@ -41,17 +41,17 @@ class FeatureChecker:
         ]
 
     def get_or_create_free_plan(self):
-        plant_template = PlanTemplate.get_by_public_name(
+        plan_template = PlanTemplate.get_by_public_name(
             session = self.session,
             public_name = 'Free'
         )
-        if not plant_template:
-            plant_template = PlanTemplate.create_free_plan(session = self.session)
+        if not plan_template:
+            plan_template = PlanTemplate.create_free_plan(session = self.session)
 
         plan = Plan.new(
             session = self.session,
             member = self.user.member,
-            plan_template = plant_template,
+            plan_template = plan_template,
             premium_plan_user_count = -1,
             is_annual_pricing = False,
             calculated_charge = -1,
