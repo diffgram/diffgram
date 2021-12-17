@@ -27,11 +27,18 @@
     <br />
     <br />
     <div>
-        <svg @mousedown="on_selection_start" @mouseup="on_selection_end" id="trial">
+        <svg @mousedown="on_selection_start" @mouseup="on_selection_end" width="100%" style="height: 125.5px" id="trial">
             <g transform="translate(0, 23.5)">
                 <text id="text-to-annotate">{{text}}</text>
             </g>
-            <rect v-if="set_x && set_y" :x="set_x" :y="set_y" :width="selecction_width" height="3" fill="green"></rect>
+            <rect 
+                v-for="annotation in annotations" 
+                :x="annotation.set_x" 
+                :y="annotation.set_y" 
+                :width="annotation.selecction_width" 
+                height="3" 
+                fill="green" 
+            />
         </svg>
     </div>
 </div>
@@ -47,15 +54,15 @@ export default Vue.extend({
     },
     data() {
         return {
-            text: "This is my amazing text",
+            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             set_x: null,
             set_y: null,
-            selecction_width: 70
+            selecction_width: 70,
+            annotations: []
         }
     },
     methods: {
         on_svg_click: function(event) {
-            console.log()
             const coordX_global = event.clientX;
             var element = document.getElementById('trial');
             var text_element = document.getElementById('text-to-annotate');
@@ -69,14 +76,14 @@ export default Vue.extend({
             this.set_y = coordY_local
         },
         on_selection_start: function(event) {
-            console.log("Key down")
             this.selecction_width = 0
             this.on_svg_click(event)
         },
         on_selection_end: function(event) {
-            console.log("key up")
             const coordX_global = event.clientX;
             this.selecction_width = Math.abs(this.set_x - coordX_global)
+
+            this.annotations = [...this.annotations, {set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width}]
 
             console.log(this.selecction_width)
         }
