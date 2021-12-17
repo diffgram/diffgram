@@ -220,7 +220,8 @@
                   <v-select :items="filter_media_type_option_list"
                             v-model="filter_media_type_setting"
                             label="File Type"
-                            item-value="text"
+                            item-value="value"
+                            item-text="name"
                             :disabled="loading"
                             @change="item_changed"></v-select>
 
@@ -981,7 +982,28 @@ import Vue from "vue";
       loading: true,
       inference_selected_loading: false,
 
-      filter_media_type_option_list: ["All", "Image", "Video"],
+      filter_media_type_option_list: [
+        {
+          name: "All",
+          value: "All"
+        },
+        {
+          name: "Image",
+          value: "image",
+        },
+        {
+          name: "Video",
+          value: "video",
+        },
+        {
+          name: "Text",
+          value: "text",
+        },
+        {
+          name: "Sensor Fusion",
+          value: "sensor_fusion"
+        }
+      ],
       filter_media_type_setting: "All", // Video
 
       annotations_are_machine_made_items: ["All", "Predictions only", "Human only"],
