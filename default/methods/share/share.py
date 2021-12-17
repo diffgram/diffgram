@@ -191,8 +191,8 @@ class Share_Project():
             project = self.project
         )
 
-        max_users = feature_checker.get_flag('FREE_TIER__MAX_USERS_PER_PROJECT')
-        print('FREE_TIER__MAX_USERS_PER_PROJECT', max_users, len(existing_members))
+        max_users = feature_checker.get_flag('MAX_USERS_PER_PROJECT')
+        print('MAX_USERS_PER_PROJECT', max_users, len(existing_members))
         if len(existing_members) >= max_users:
             message = 'Free Tier Limit Reached - Max Users Allowed: {}. But Project with ID: {} has {}'.format(
                 max_users,

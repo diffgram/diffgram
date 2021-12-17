@@ -323,7 +323,7 @@ def check_export_billing(
         user = member.user,
         project = project
     )
-    max_allowed_instances = checker.get_flag('FREE_TIER__MAX_INSTANCES_PER_EXPORT')
+    max_allowed_instances = checker.get_flag('MAX_INSTANCES_PER_EXPORT')
 
     for file in file_list:
         new_instance_count += Instance.list(

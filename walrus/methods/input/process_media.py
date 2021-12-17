@@ -1060,16 +1060,16 @@ class Process_Media():
         )
 
         if self.input.media_type == 'video':
-            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_VIDEOS_PER_DATASET')
+            max_file_count = feature_checker.get_flag('MAX_VIDEOS_PER_DATASET')
 
         elif self.input.media_type == 'image':
-            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_VIDEOS_PER_DATASET')
+            max_file_count = feature_checker.get_flag('MAX_VIDEOS_PER_DATASET')
 
         elif self.input.media_type == 'text':
-            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_TEXT_FILES_PER_DATASET')
+            max_file_count = feature_checker.get_flag('MAX_TEXT_FILES_PER_DATASET')
 
         elif self.input.media_type == 'sensor_fusion':
-            max_file_count = feature_checker.get_flag('FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET')
+            max_file_count = feature_checker.get_flag('MAX_SENSOR_FUSION_FILES_PER_DATASET')
         else:
             return
 

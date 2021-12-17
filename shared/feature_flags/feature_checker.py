@@ -30,14 +30,14 @@ class FeatureChecker:
         self.install_finger_print = settings.DIFFGRAM_INSTALL_FINGERPRINT
         # This Dict will eventually be replaced by calls to our feature flag system.
         self.FEATURE_FLAGS = [
-            'FREE_TIER__MAX_VIDEOS_PER_DATASET',
-            'FREE_TIER__MAX_USERS_PER_PROJECT',
-            'FREE_TIER__MAX_IMAGES_PER_DATASET',
-            'FREE_TIER__MAX_TEXT_FILES_PER_DATASET',
-            'FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET',
-            'FREE_TIER__MAX_FRAMES_PER_VIDEO',
-            'FREE_TIER__MAX_INSTANCES_PER_EXPORT',
-            'FREE_TIER__MAX_PROJECTS',
+            'MAX_VIDEOS_PER_DATASET',
+            'MAX_USERS_PER_PROJECT',
+            'MAX_IMAGES_PER_DATASET',
+            'MAX_TEXT_FILES_PER_DATASET',
+            'MAX_SENSOR_FUSION_FILES_PER_DATASET',
+            'MAX_FRAMES_PER_VIDEO',
+            'MAX_INSTANCES_PER_EXPORT',
+            'MAX_PROJECTS',
         ]
 
     def get_or_create_free_plan(self):
@@ -105,19 +105,19 @@ class FeatureChecker:
             return None
 
         plan_template = plan.template
-        if flag_name == 'FREE_TIER__MAX_VIDEOS_PER_DATASET':
+        if flag_name == 'MAX_VIDEOS_PER_DATASET':
             return plan_template.limit_files
-        if flag_name == 'FREE_TIER__MAX_USERS_PER_PROJECT':
+        if flag_name == 'MAX_USERS_PER_PROJECT':
             return plan_template.limit_users_per_project
-        if flag_name == 'FREE_TIER__MAX_IMAGES_PER_DATASET':
+        if flag_name == 'MAX_IMAGES_PER_DATASET':
             return plan_template.limit_files
-        if flag_name == 'FREE_TIER__MAX_TEXT_FILES_PER_DATASET':
+        if flag_name == 'MAX_TEXT_FILES_PER_DATASET':
             return plan_template.limit_files
-        if flag_name == 'FREE_TIER__MAX_SENSOR_FUSION_FILES_PER_DATASET':
+        if flag_name == 'MAX_SENSOR_FUSION_FILES_PER_DATASET':
             return plan_template.limit_files
-        if flag_name == 'FREE_TIER__MAX_FRAMES_PER_VIDEO':
+        if flag_name == 'MAX_FRAMES_PER_VIDEO':
             return plan_template.limit_files
-        if flag_name == 'FREE_TIER__MAX_INSTANCES_PER_EXPORT':
+        if flag_name == 'MAX_INSTANCES_PER_EXPORT':
             return plan_template.limit_instances
-        if flag_name == 'FREE_TIER__MAX_PROJECTS':
+        if flag_name == 'MAX_PROJECTS':
             return plan_template.limit_projects
