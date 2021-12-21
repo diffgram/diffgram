@@ -1,38 +1,17 @@
 <template>
 <div>
-    <svg data-v-3863495a="" data-v-4e93770c="" version="1.1" xmlns="http://www.w3.org/2000/svg" direction="ltr" id="svg0:60" width="100%" style="height: 125.5px">
-        <g data-v-3863495a="" transform="translate(0, 23.5)">
-            <g data-v-3863495a="" style="cursor: pointer;">
-                <path d="M 168.125 30
-                v -20
-                A 12 12 0 0 1 180.125 -2
-                H 588
-                " stroke="#74b8dc" stroke-width="1" fill-opacity="0">
-                </path>
-                <g>
-                    <rect x="341.73828125" y="-12" width="72.6484375" height="20" fill="white"></rect>
-                    <text x="378.0625" y="5" fill="currentColor" text-anchor="middle">isLorem</text>
-                    </g></g>
-                    <g data-v-3863495a="" transform="translate(0, 50)">
-                        <text fill="currentColor" id="0:60" x="0" style="white-space: pre;">{{ text }}</text>
-                        <g data-v-3863495a=""><line x1="127.4609375" y1="5" x2="208.7890625" y2="5" stroke="#e6d176" stroke-width="5" stroke-linecap="round">
-                            </line><g style="cursor: pointer;"><circle r="3" fill="#e6d176" cx="127.9609375" cy="20"></circle>
-                            <text x="124.9609375" y="20" fill="currentColor" dx="8" dy="0.35em">ORG</text>
-                        </g>
-                    </g>
-                </g>
-        </g>
-    </svg>
-    <br />
-    <br />
-    <br />
-    <div>
-        <svg @mousedown="on_selection_start" @mouseup="on_selection_end" width="90%" style="height: 125.5px; margin-left: 10px" id="trial">
-            <g id="text-to-annotate" transform="translate(0, 23.5)">
-                <text @dblclick.prevent="select_one_word" class="words" :id="`text_token_${token.index}`" :x="token.token_start_coordinate" v-for="token in text_tokenized">{{ token.word }}</text>
+    <div v-for="(sentense, sentense_index) in text_tokenized" style="border-bottom: 1px solid black;">
+        <svg @mousedown="on_selection_start" @mouseup="on_selection_end" width="90%" style="height: 125.5px; margin-left: 10px;" id="trial">
+            <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 23.5)">
+                <text 
+                    @dblclick.prevent="select_one_word(token.sentense_index)" 
+                    class="words" 
+                    :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
+                    :x="token.token_start_coordinate" 
+                    v-for="token in sentense">{{ token.word }}</text>
             </g>
             <rect 
-                v-for="annotation in annotations" 
+                v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
                 :x="annotation.set_x" 
                 :y="annotation.set_y" 
                 :width="annotation.selecction_width" 
@@ -54,11 +33,12 @@ export default Vue.extend({
         file: {},
         text: {
             type: String,
-            default: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+            default: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
         }
     },
     data() {
         return {
+            text_stringified: [],
             text_tokenized: [],
             set_x: null,
             set_y: null,
@@ -67,25 +47,36 @@ export default Vue.extend({
         }
     },
     mounted() {
-        this.tokenize_text(this.text)
+        this.stringify_test(this.text)
+        this.text_stringified.map((sentence, sentense_index) => {
+            this.tokenize_text(sentence, sentense_index)
+        })
         setTimeout(() => {
             this.text_render_width()
         }, 2000)
     },
     methods: {
-        tokenize_text: function(text) {
+        stringify_test: function(text) {
+            const stringified = text.split('. ')
+            this.text_stringified = stringified
+        },
+        tokenize_text: function(text, sentense_index) {
             const string_to_array = text.split(' ')
-            const tokenized_text = string_to_array.map((word, index) => ({ word, index, token_start_coordinate: 0}))
-            this.text_tokenized = tokenized_text
+            const tokenized_text = string_to_array.map((word, index) => ({ word, index, sentense_index, token_start_coordinate: 0}))
+            this.text_tokenized.push(tokenized_text)
         },
         text_render_width: function() {
-            let length_counter = 10;
-            const measure_words = this.text_tokenized.map(token => {
-                var element = document.getElementById(`text_token_${token.index}`);
-                const width_of_token = element.clientWidth
-                const updated_token = {...token, token_start_coordinate: length_counter}
-                length_counter += (width_of_token + 5)
-                return updated_token
+            const measure_words = this.text_tokenized.map(sentence => {
+                let length_counter = 10;
+                const updated_sentense = sentence.map(token => {
+                    var element = document.getElementById(`text_token_${token.index}_sentense_index_${token.sentense_index}`);
+                    const width_of_token = element.clientWidth
+                    const updated_token = {...token, token_start_coordinate: length_counter}
+                    length_counter += (width_of_token + 5)
+                    return updated_token
+                })
+
+                return updated_sentense
             })
 
             this.text_tokenized = measure_words
@@ -121,14 +112,15 @@ export default Vue.extend({
 
             this.selecction_width = this.selecction_width + token_end
         },
-        select_one_word: function() {
+        select_one_word: function(sentense_index) {
             console.log("ON DOUBLE CLICK")
             const s = window.getSelection();
             const oRange = s.getRangeAt(0);
             const oRect = oRange.getBoundingClientRect();
-            var text_element = document.getElementById('text-to-annotate');
+            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
             var topPos = oRect.y - text_element.getBoundingClientRect().top + window.scrollY + 10;
-            this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width} ]
+            this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width, sentense_index} ]
+            document.getSelection().removeAllRanges()
         },
         on_selection_start: function(event) {
             console.log("ON KEY DOWN")
@@ -144,6 +136,7 @@ export default Vue.extend({
                 this.selecction_width = Math.abs(this.set_x - coordX_global)
                 this.spread_selection()
                 this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width} ]
+                document.getSelection().removeAllRanges()
             }
         }
     }
