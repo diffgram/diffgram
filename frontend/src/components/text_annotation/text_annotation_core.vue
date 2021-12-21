@@ -1,7 +1,12 @@
 <template>
 <div>
     <div v-for="(sentense, sentense_index) in text_tokenized" style="border-bottom: 1px solid black;">
-        <svg @mousedown="on_selection_start" @mouseup="on_selection_end" width="90%" style="height: 125.5px; margin-left: 10px;" id="trial">
+        <svg 
+            @mousedown="(e) => on_selection_start(e, sentense_index)" 
+            @mouseup="(e) => on_selection_end(e, sentense_index)" width="90%" 
+            style="height: 125.5px; margin-left: 10px;" 
+            id="trial"
+        >
             <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 23.5)">
                 <text 
                     @dblclick.prevent="select_one_word(token.sentense_index)" 
@@ -81,10 +86,10 @@ export default Vue.extend({
 
             this.text_tokenized = measure_words
         },
-        on_svg_click: function(event) {
+        on_svg_click: function(event, sentense_index) {
             const coordX_global = event.clientX;
             var element = document.getElementById('trial');
-            var text_element = document.getElementById('text-to-annotate');
+            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
             var leftPos = element.getBoundingClientRect().left + window.scrollX;
 
@@ -94,17 +99,17 @@ export default Vue.extend({
             this.set_x = coordX_local
             this.set_y = coordY_local
         },
-        spread_selection: function() {
+        spread_selection: function(sentense_index) {
             console.log("SPEREADING SELECT")
-            const token_start = this.text_tokenized.reduce((prevValue, currentValue) => {
+            const token_start = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
                 const delta = this.set_x - currentValue.token_start_coordinate
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
             this.set_x = this.set_x - token_start
 
-            const token_end = this.text_tokenized.reduce((prevValue, currentValue) => {
-                var element_width = document.getElementById(`text_token_${currentValue.index}`).clientWidth;
+            const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
+                var element_width = document.getElementById(`text_token_${currentValue.index}_sentense_index_${sentense_index}`).clientWidth;
                 const delta = element_width  - (this.set_x + this.selecction_width)
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
@@ -122,20 +127,20 @@ export default Vue.extend({
             this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width, sentense_index} ]
             document.getSelection().removeAllRanges()
         },
-        on_selection_start: function(event) {
+        on_selection_start: function(event, sentense_index) {
             console.log("ON KEY DOWN")
             this.selecction_width = 0
-            this.on_svg_click(event)
+            this.on_svg_click(event, sentense_index)
         },
-        on_selection_end: function(event) {
+        on_selection_end: function(event, sentense_index) {
             console.log("ON KEY UP")
             const coordX_global = event.clientX;
             const selection_exists = Math.abs(this.set_x - coordX_global) > 10
 
             if (selection_exists) {
                 this.selecction_width = Math.abs(this.set_x - coordX_global)
-                this.spread_selection()
-                this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width} ]
+                this.spread_selection(sentense_index)
+                this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, } ]
                 document.getSelection().removeAllRanges()
             }
         }
