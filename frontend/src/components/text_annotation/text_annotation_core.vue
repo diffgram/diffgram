@@ -1,30 +1,52 @@
 <template>
-<div>
-    <div v-for="(sentense, sentense_index) in text_tokenized" style="border-bottom: 1px solid black;">
-        <svg 
-            @mousedown="(e) => on_selection_start(e, sentense_index)" 
-            @mouseup="(e) => on_selection_end(e, sentense_index)" width="90%" 
-            style="height: 125.5px; margin-left: 10px;" 
-            id="trial"
-        >
-            <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 23.5)">
-                <text 
-                    @dblclick.prevent="select_one_word(token.sentense_index)" 
-                    class="words" 
-                    :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
-                    :x="token.token_start_coordinate" 
-                    v-for="token in sentense">{{ token.word }}</text>
-            </g>
-            <rect 
-                v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
-                :x="annotation.set_x" 
-                :y="annotation.set_y" 
-                :width="annotation.selecction_width" 
-                height="20" 
-                fill="#2a58ff"
-                opacity="0.4"
-            />
-        </svg>
+<div style="display: flex; flex-direction: row;">
+    <div>
+        <div>
+            <h3 :style="`width: ${element_width_dev}px`">Labels: </h3>
+            <ul>
+                <li 
+                    class="annotation-list"
+                    @mouseover="on_annotation_hover(annotation.id)"
+                    @mouseout="on_stop_hover"
+                    v-for="annotation in annotations"
+                >
+                    Annotation #{{annotation.id}}
+                </li>
+            </ul>
+        </div>
+        <br />
+        <div>
+            <h3 :style="`width: ${element_width_dev}px`">Relations: </h3>
+        </div>
+    </div>
+    <div style="width: 100%">
+        <div v-for="(sentense, sentense_index) in text_tokenized" style="display: flex; flex-direction: row; border-bottom: 1px solid black;">
+            <div>{{sentense_index + 1}}.</div>
+            <svg 
+                @mousedown="(e) => on_selection_start(e, sentense_index)" 
+                @mouseup="(e) => on_selection_end(e, sentense_index)" 
+                width="90%" 
+                style="height: 125.5px; margin-left: 10px;" 
+                id="trial"
+            >
+                <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 23.5)">
+                    <text 
+                        class="words" 
+                        :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
+                        :x="token.token_start_coordinate" 
+                        v-for="token in sentense">{{ token.word }}</text>
+                </g>
+                <rect 
+                    v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
+                    :x="annotation.set_x" 
+                    :y="annotation.set_y" 
+                    :width="annotation.selecction_width" 
+                    height="20" 
+                    :fill="hover_id && hover_id === annotation.id ? 'red' : '#2a58ff'"
+                    opacity="0.4"
+                />
+            </svg>
+        </div>
     </div>
 </div>
 </template>
@@ -48,7 +70,9 @@ export default Vue.extend({
             set_x: null,
             set_y: null,
             selecction_width: 0,
-            annotations: []
+            annotations: [],
+            element_width_dev: 300,
+            hover_id: null
         }
     },
     mounted() {
@@ -89,7 +113,6 @@ export default Vue.extend({
         on_svg_click: function(event, sentense_index) {
             const coordX_global = event.clientX;
             var element = document.getElementById('trial');
-            console.log(sentense_index)
             var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
             var leftPos = element.getBoundingClientRect().left + window.scrollX;
@@ -111,22 +134,23 @@ export default Vue.extend({
 
             const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
                 var element_width = document.getElementById(`text_token_${currentValue.index}_sentense_index_${sentense_index}`).clientWidth;
-                const delta = element_width  - (this.set_x + this.selecction_width)
+                const delta = element_width  - (this.set_x + this.selecction_width) + this.element_width_dev
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
-            this.selecction_width = this.selecction_width + token_end
+            console.log(token_end)
+            this.selecction_width = this.selecction_width + token_end - this.element_width_dev
         },
-        select_one_word: function(sentense_index) {
-            console.log("ON DOUBLE CLICK")
-            const s = window.getSelection();
-            const oRange = s.getRangeAt(0);
-            const oRect = oRange.getBoundingClientRect();
-            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
-            var topPos = oRect.y - text_element.getBoundingClientRect().top + window.scrollY + 10;
-            this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width, sentense_index} ]
-            document.getSelection().removeAllRanges()
-        },
+        // select_one_word: function(sentense_index) {
+        //     console.log("ON DOUBLE CLICK")
+        //     const s = window.getSelection();
+        //     const oRange = s.getRangeAt(0);
+        //     const oRect = oRange.getBoundingClientRect();
+        //     var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
+        //     var topPos = oRect.y - text_element.getBoundingClientRect().top + window.scrollY + 10;
+        //     this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width, sentense_index} ]
+        //     document.getSelection().removeAllRanges()
+        // },
         on_selection_start: function(event, sentense_index) {
             console.log("ON KEY DOWN")
             this.selecction_width = 0
@@ -140,10 +164,23 @@ export default Vue.extend({
             if (selection_exists) {
                 this.selecction_width = Math.abs(this.set_x - coordX_global)
                 this.spread_selection(sentense_index)
-                this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index} ]
+                this.annotations = [...this.annotations, { id: this.annotations.length + 1, set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index} ]
                 document.getSelection().removeAllRanges()
             }
+        },
+        on_annotation_hover: function(id) {
+            this.hover_id = id
+        },
+        on_stop_hover: function() {
+            this.hover_id = null
         }
     }
 })
 </script>
+
+<style scoped>
+.annotation-list:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+</style>
