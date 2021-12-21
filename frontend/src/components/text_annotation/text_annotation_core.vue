@@ -89,6 +89,7 @@ export default Vue.extend({
         on_svg_click: function(event, sentense_index) {
             const coordX_global = event.clientX;
             var element = document.getElementById('trial');
+            console.log(sentense_index)
             var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
             var leftPos = element.getBoundingClientRect().left + window.scrollX;
@@ -114,7 +115,6 @@ export default Vue.extend({
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
-
             this.selecction_width = this.selecction_width + token_end
         },
         select_one_word: function(sentense_index) {
@@ -140,7 +140,7 @@ export default Vue.extend({
             if (selection_exists) {
                 this.selecction_width = Math.abs(this.set_x - coordX_global)
                 this.spread_selection(sentense_index)
-                this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, } ]
+                this.annotations = [...this.annotations, { set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index} ]
                 document.getSelection().removeAllRanges()
             }
         }
