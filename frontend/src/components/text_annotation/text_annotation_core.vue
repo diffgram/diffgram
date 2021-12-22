@@ -20,16 +20,25 @@
         </div>
     </div>
     <div style="width: 100%">
-        <div v-for="(sentense, sentense_index) in text_tokenized" style="display: flex; flex-direction: row; border-bottom: 1px solid black;">
+        <div 
+            v-for="(sentense, sentense_index) in text_tokenized" 
+            style="display: flex; flex-direction: row; border-bottom: 1px solid black;"
+        >
             <div>{{sentense_index + 1}}.</div>
             <svg 
                 @mousedown="(e) => on_selection_start(e, sentense_index)" 
                 @mouseup="(e) => on_selection_end(e, sentense_index)" 
                 width="90%" 
-                style="height: 125.5px; margin-left: 10px;" 
+                style="height: 120px; margin-left: 10px;" 
                 id="trial"
             >
-                <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 23.5)">
+                <path 
+                    v-if="path.M1 && path.M2 && path.Q1 && path.Q2 && path.Q3 && path.Q4 && path.sentense_index === sentense_index" 
+                    :d="`M ${path.M1} ${path.M2} Q ${path.Q1} ${path.Q2} ${path.Q3} ${path.Q4}`" 
+                    stroke="black" 
+                    fill="transparent"
+                />
+                <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
                     <text 
                         class="words" 
                         :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
@@ -40,10 +49,11 @@
                     v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
                     :x="annotation.set_x" 
                     :y="annotation.set_y" 
-                    :width="annotation.selecction_width" 
+                    :width="annotation.selecction_width"
                     height="20" 
                     :fill="hover_id && hover_id === annotation.id ? 'red' : '#2a58ff'"
                     opacity="0.4"
+                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index)"
                 />
             </svg>
         </div>
@@ -71,8 +81,19 @@ export default Vue.extend({
             set_y: null,
             selecction_width: 0,
             annotations: [],
+            relations: [],
             element_width_dev: 300,
-            hover_id: null
+            hover_id: null,
+            drawing_relation: false,
+            path: {
+                M1: null,
+                M2: null,
+                Q1: null,
+                Q2: null,
+                Q3: null,
+                Q4: null,
+                sentense_index: null
+            }
         }
     },
     mounted() {
@@ -118,7 +139,7 @@ export default Vue.extend({
             var leftPos = element.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
-            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10
+            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
 
             this.set_x = coordX_local
             this.set_y = coordY_local
@@ -138,25 +159,16 @@ export default Vue.extend({
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
-            console.log(token_end)
             this.selecction_width = this.selecction_width + token_end - this.element_width_dev
         },
-        // select_one_word: function(sentense_index) {
-        //     console.log("ON DOUBLE CLICK")
-        //     const s = window.getSelection();
-        //     const oRange = s.getRangeAt(0);
-        //     const oRect = oRange.getBoundingClientRect();
-        //     var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
-        //     var topPos = oRect.y - text_element.getBoundingClientRect().top + window.scrollY + 10;
-        //     this.annotations = [...this.annotations, { set_x: oRect.x - 10, set_y: topPos, selecction_width: oRect.width, sentense_index} ]
-        //     document.getSelection().removeAllRanges()
-        // },
         on_selection_start: function(event, sentense_index) {
+            if (!event.toElement.id) return
             console.log("ON KEY DOWN")
             this.selecction_width = 0
             this.on_svg_click(event, sentense_index)
         },
         on_selection_end: function(event, sentense_index) {
+            if (!event.toElement.id) return
             console.log("ON KEY UP")
             const coordX_global = event.clientX;
             const selection_exists = Math.abs(this.set_x - coordX_global) > 10
@@ -173,6 +185,43 @@ export default Vue.extend({
         },
         on_stop_hover: function() {
             this.hover_id = null
+        },
+        on_mouse_move_listen: function(event) {
+            console.log("arroy moving")
+            const coordX_global = event.clientX;
+            var element = document.getElementById('trial');
+            var leftPos = element.getBoundingClientRect().left + window.scrollX;
+
+            const coordX_local = coordX_global - leftPos
+
+            this.path.Q3 = coordX_local
+            this.path.Q1 = coordX_local  / 2
+        },
+        on_add_relation: function(event, sentense_index) {
+            console.log('trigger on rect')
+            if (this.drawing_relation) {
+                window.removeEventListener("mousemove", this.on_mouse_move_listen, true)
+                this.drawing_relation = false
+                return
+            }
+            console.log('Draw relation arrow')
+            this.drawing_relation = true
+            const coordX_global = event.clientX;
+            var element = document.getElementById('trial');
+            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
+            var topPos = text_element.getBoundingClientRect().top + window.scrollY;
+            var leftPos = element.getBoundingClientRect().left + window.scrollX;
+
+            const coordX_local = coordX_global - leftPos
+            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
+
+            this.path.sentense_index = sentense_index
+            this.path.M1 = coordX_local
+            this.path.M2 = coordY_local
+            this.path.Q2 = coordY_local - 30
+            this.path.Q4 = coordY_local
+
+            window.addEventListener('mousemove', this.on_mouse_move_listen, true);
         }
     }
 })
