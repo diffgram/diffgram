@@ -17,6 +17,16 @@
         <br />
         <div>
             <h3 :style="`width: ${element_width_dev}px`">Relations: </h3>
+            <ul>
+                <li 
+                    class="annotation-list"
+                    @mouseover="on_relation_hover(relation.id)"
+                    @mouseout="on_relation_stop_hover"
+                    v-for="relation in relations"
+                >
+                    Relation #{{relation.id}}
+                </li>
+            </ul>
         </div>
     </div>
     <div style="width: 100%">
@@ -32,10 +42,16 @@
                 style="height: 120px; margin-left: 10px;" 
                 id="trial"
             >
-                <path 
+                <path
                     v-if="path.M1 && path.M2 && path.Q1 && path.Q2 && path.Q3 && path.Q4 && path.sentense_index === sentense_index" 
                     :d="`M ${path.M1} ${path.M2} Q ${path.Q1} ${path.Q2} ${path.Q3} ${path.Q4}`" 
                     stroke="black" 
+                    fill="transparent"
+                />
+                <path
+                    v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
+                    :d="`M ${relation.M1} ${relation.M2} Q ${relation.Q1} ${relation.Q2} ${relation.Q3} ${relation.Q4}`" 
+                    :stroke="relation_hover_id === relation.id ? 'red' : 'black'" 
                     fill="transparent"
                 />
                 <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
@@ -84,6 +100,7 @@ export default Vue.extend({
             relations: [],
             element_width_dev: 300,
             hover_id: null,
+            relation_hover_id: null,
             drawing_relation: false,
             path: {
                 M1: null,
@@ -186,6 +203,12 @@ export default Vue.extend({
         on_stop_hover: function() {
             this.hover_id = null
         },
+        on_relation_hover: function(id) {
+            this.relation_hover_id = id
+        },
+        on_relation_stop_hover: function() {
+            this.relation_hover_id = null
+        },
         on_mouse_move_listen: function(event) {
             console.log("arroy moving")
             const coordX_global = event.clientX;
@@ -198,8 +221,9 @@ export default Vue.extend({
             this.path.Q1 = coordX_local  / 2
         },
         on_add_relation: function(event, sentense_index) {
-            console.log('trigger on rect')
             if (this.drawing_relation) {
+                this.relations = [...this.relations, {...this.path, id: this.relations.length + 1}]
+                this.path = {}
                 window.removeEventListener("mousemove", this.on_mouse_move_listen, true)
                 this.drawing_relation = false
                 return
