@@ -51,7 +51,9 @@
                 <path
                     v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
                     :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
-                    :stroke="relation_hover_id === relation.id ? 'red' : 'black'" 
+                    :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : 'black'" 
+                    @mouseover="on_relation_hover(relation.id)"
+                    @mouseout="on_relation_stop_hover"
                     fill="transparent"
                 />
                 <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
@@ -70,9 +72,11 @@
                     :y="annotation.set_y" 
                     :width="annotation.selecction_width"
                     height="20" 
-                    :fill="hover_id && hover_id === annotation.id ? 'red' : '#2a58ff'"
+                    :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : '#2a58ff'"
                     opacity="0.4"
                     @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
+                    @mouseover="on_annotation_hover(annotation.id)"
+                    @mouseout="on_stop_hover"
                     style="cursor: pointer"
                 />
             </svg>
@@ -104,7 +108,11 @@ export default Vue.extend({
             relations: [],
             element_width_dev: 300,
             hover_id: null,
-            relation_hover_id: null,
+            relation_hover: {
+                relation_hover_id: null,
+                start_label_id: null,
+                end_label_id: null
+            },
             drawing_relation: false,
             path: {
                 M1: null,
@@ -223,10 +231,19 @@ export default Vue.extend({
             this.hover_id = null
         },
         on_relation_hover: function(id) {
-            this.relation_hover_id = id
+            const relation_object = this.relations.find(rel => rel.id === id)
+            this.relation_hover = {
+                relation_hover_id: relation_object.id,
+                start_label_id: relation_object.start_label,
+                end_label_id: relation_object.end_label
+            }
         },
         on_relation_stop_hover: function() {
-            this.relation_hover_id = null
+            this.relation_hover = {
+                relation_hover_id: null,
+                start_label_id: null,
+                end_label_id: null
+            }
         },
         on_mouse_move_listen: function(event) {
             console.log("arroy moving")
@@ -251,7 +268,7 @@ export default Vue.extend({
                     M2: this.path.M2,
                     H,
                     sentense_index,
-                    starting_label: start_annotation.id,
+                    start_label: start_annotation.id,
                     end_label: end_annotation.id
                 }
                 this.relations = [...this.relations, new_relation]
