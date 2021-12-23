@@ -50,7 +50,7 @@
                 />
                 <path
                     v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
-                    :d="`M ${relation.M1} ${relation.M2} Q ${relation.Q1} ${relation.Q2} ${relation.Q3} ${relation.Q4}`" 
+                    :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.Q3} v 10`" 
                     :stroke="relation_hover_id === relation.id ? 'red' : 'black'" 
                     fill="transparent"
                 />
@@ -70,6 +70,7 @@
                     :fill="hover_id && hover_id === annotation.id ? 'red' : '#2a58ff'"
                     opacity="0.4"
                     @mousedown.prevent="(e) => on_add_relation(e, sentense_index)"
+                    style="cursor: pointer"
                 />
             </svg>
         </div>
@@ -223,7 +224,15 @@ export default Vue.extend({
         on_add_relation: function(event, sentense_index) {
             if (this.drawing_relation) {
                 this.relations = [...this.relations, {...this.path, id: this.relations.length + 1}]
-                this.path = {}
+                this.path = {
+                    M1: null,
+                    M2: null,
+                    Q1: null,
+                    Q2: null,
+                    Q3: null,
+                    Q4: null,
+                    sentense_index: null
+                }
                 window.removeEventListener("mousemove", this.on_mouse_move_listen, true)
                 this.drawing_relation = false
                 return
