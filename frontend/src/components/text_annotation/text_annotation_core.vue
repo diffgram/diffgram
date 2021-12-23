@@ -59,7 +59,10 @@
                         class="words" 
                         :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                         :x="token.token_start_coordinate" 
-                        v-for="token in sentense">{{ token.word }}</text>
+                        v-for="token in sentense"
+                    >
+                        {{ token.word }}
+                    </text>
                 </g>
                 <rect 
                     v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
@@ -187,6 +190,19 @@ export default Vue.extend({
         },
         on_selection_end: function(event, sentense_index) {
             if (!event.toElement.id) return
+            if (this.drawing_relation) {
+                this.drawing_relation = false
+                this.path = {
+                    M1: null,
+                    M2: null,
+                    Q1: null,
+                    Q2: null,
+                    Q3: null,
+                    Q4: null,
+                    sentense_index: null
+                }
+                return
+            }
             console.log("ON KEY UP")
             const coordX_global = event.clientX;
             const selection_exists = Math.abs(this.set_x - coordX_global) > 10
