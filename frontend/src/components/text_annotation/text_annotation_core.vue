@@ -50,7 +50,7 @@
                 />
                 <path
                     v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
-                    :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.Q3} v 10`" 
+                    :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
                     :stroke="relation_hover_id === relation.id ? 'red' : 'black'" 
                     fill="transparent"
                 />
@@ -72,7 +72,7 @@
                     height="20" 
                     :fill="hover_id && hover_id === annotation.id ? 'red' : '#2a58ff'"
                     opacity="0.4"
-                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index)"
+                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
                     style="cursor: pointer"
                 />
             </svg>
@@ -113,7 +113,9 @@ export default Vue.extend({
                 Q2: null,
                 Q3: null,
                 Q4: null,
-                sentense_index: null
+                sentense_index: null,
+                start_annotation_id: null,
+                end_annotation_id: null
             }
         }
     },
@@ -237,9 +239,22 @@ export default Vue.extend({
             this.path.Q3 = coordX_local
             this.path.Q1 = coordX_local  / 2
         },
-        on_add_relation: function(event, sentense_index) {
+        on_add_relation: function(event, sentense_index, annotation_id) {
             if (this.drawing_relation) {
-                this.relations = [...this.relations, {...this.path, id: this.relations.length + 1}]
+                const start_annotation = this.annotations.find(annotation => annotation.id === this.path.start_annotation_id)
+                const M1 = start_annotation.set_x + start_annotation.selecction_width / 2
+                const end_annotation = this.annotations.find(annotation => annotation.id === annotation_id)
+                const H = end_annotation.set_x + end_annotation.selecction_width / 2
+                const new_relation = {
+                    id: this.relations.length + 1,
+                    M1,
+                    M2: this.path.M2,
+                    H,
+                    sentense_index,
+                    starting_label: start_annotation.id,
+                    end_label: end_annotation.id
+                }
+                this.relations = [...this.relations, new_relation]
                 this.path = {
                     M1: null,
                     M2: null,
@@ -269,6 +284,7 @@ export default Vue.extend({
             this.path.M2 = coordY_local
             this.path.Q2 = coordY_local - 30
             this.path.Q4 = coordY_local
+            this.path.start_annotation_id = annotation_id
 
             window.addEventListener('mousemove', this.on_mouse_move_listen, true);
         }
