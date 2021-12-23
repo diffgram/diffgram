@@ -262,16 +262,18 @@ export default Vue.extend({
                 const M1 = start_annotation.set_x + start_annotation.selecction_width / 2
                 const end_annotation = this.annotations.find(annotation => annotation.id === annotation_id)
                 const H = end_annotation.set_x + end_annotation.selecction_width / 2
-                const new_relation = {
-                    id: this.relations.length + 1,
-                    M1,
-                    M2: this.path.M2,
-                    H,
-                    sentense_index,
-                    start_label: start_annotation.id,
-                    end_label: end_annotation.id
+                if (start_annotation.id !== end_annotation.id && !this.relations.find(rel => rel.start_label === start_annotation.id && rel.end_label === end_annotation.id)) {
+                    const new_relation = {
+                        id: this.relations.length + 1,
+                        M1,
+                        M2: this.path.M2,
+                        H,
+                        sentense_index,
+                        start_label: start_annotation.id,
+                        end_label: end_annotation.id
+                    }
+                    this.relations = [...this.relations, new_relation]
                 }
-                this.relations = [...this.relations, new_relation]
                 this.path = {
                     M1: null,
                     M2: null,
