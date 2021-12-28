@@ -58,23 +58,14 @@
                         stroke="black" 
                         fill="transparent"
                     />
-                    <g v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)">
-                        <path
-                            :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
-                            :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
-                            @mouseover="on_relation_hover(relation.id)"
-                            @mouseout="on_relation_stop_hover"
-                            fill="transparent"
-                        />
-                        <text 
-                            :x="relation.M1" 
-                            :y="relation.M2 - 15" 
-                            :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
-                            style="font-size: 10px"
-                            >
-                                {{ relation.label.label.name }}
-                        </text>
-                    </g>
+                    <text_relation 
+                        v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
+                        :key="`relation_${relation.id}`"
+                        :relation="relation"
+                        :relation_hover="relation_hover"
+                        @on_relation_hover="on_relation_hover"
+                        @on_relation_stop_hover="on_relation_stop_hover"
+                    />
                     <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
                         <text 
                             class="words" 
@@ -87,7 +78,7 @@
                     </g>
                     <text_label
                         v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
-                        :key="`annotation_id_${annotation.id}_for_sentence_${sentense_index}`"
+                        :key="`annotation_id_${annotation.id}`"
                         :annotation="annotation"
                         :hover_id="hover_id"
                         :relation_hover="relation_hover"
@@ -107,12 +98,14 @@
 import Vue from "vue";
 import text_toolbar from "./text-toolbar.vue"
 import text_label from "./text_label.vue"
+import text_relation from "./text_relation.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
     components: {
         text_toolbar,
-        text_label
+        text_label,
+        text_relation
     },
     props: {
         project_string_id: {
