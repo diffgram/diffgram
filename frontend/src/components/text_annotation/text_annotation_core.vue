@@ -2,6 +2,19 @@
 <div style="display: flex; flex-direction: row;">
     <div>
         <div>
+            <h3>Select label: </h3>
+            <label_select_annotation
+                :project_string_id="project_string_id"
+                :label_file_list="label_list"
+                :label_file_colour_map="label_file_colour_map"
+                @change="change_label"
+                :loading="loading"
+                :request_refresh_from_project="true"
+                :show_visibility_toggle="true"
+                @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+            />
+        </div>
+        <div>
             <h3 :style="`width: ${element_width_dev}px`">Labels: </h3>
             <ul>
                 <li 
@@ -10,7 +23,7 @@
                     @mouseout="on_stop_hover"
                     v-for="annotation in annotations"
                 >
-                    Annotation #{{annotation.id}}
+                    {{annotation.label.label.name}}
                 </li>
             </ul>
         </div>
@@ -24,7 +37,7 @@
                     @mouseout="on_relation_stop_hover"
                     v-for="relation in relations"
                 >
-                    Relation #{{relation.id}}
+                    {{relation.label.label.name}}
                 </li>
             </ul>
         </div>
@@ -48,14 +61,23 @@
                     stroke="black" 
                     fill="transparent"
                 />
-                <path
-                    v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
-                    :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
-                    :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : 'black'" 
-                    @mouseover="on_relation_hover(relation.id)"
-                    @mouseout="on_relation_stop_hover"
-                    fill="transparent"
-                />
+                <g v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)">
+                    <path
+                        :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
+                        :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
+                        @mouseover="on_relation_hover(relation.id)"
+                        @mouseout="on_relation_stop_hover"
+                        fill="transparent"
+                    />
+                    <text 
+                        :x="relation.M1" 
+                        :y="relation.M2 - 15" 
+                        :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
+                        style="font-size: 10px"
+                        >
+                            {{ relation.label.label.name }}
+                    </text>
+                </g>
                 <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
                     <text 
                         class="words" 
@@ -66,19 +88,30 @@
                         {{ token.word }}
                     </text>
                 </g>
-                <rect 
+                <g
                     v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
-                    :x="annotation.set_x" 
-                    :y="annotation.set_y" 
-                    :width="annotation.selecction_width"
-                    height="20" 
-                    :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : '#2a58ff'"
-                    opacity="0.4"
-                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
                     @mouseover="on_annotation_hover(annotation.id)"
                     @mouseout="on_stop_hover"
-                    style="cursor: pointer"
-                />
+                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
+                >
+                    <rect 
+                        :x="annotation.set_x" 
+                        :y="annotation.set_y" 
+                        :width="annotation.selecction_width"
+                        height="20" 
+                        :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
+                        opacity="0.4"
+                        style="cursor: pointer"
+                    />
+                    <text 
+                        :x="annotation.set_x" 
+                        :y="annotation.set_y + 30" 
+                        :stroke="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
+                        style="font-size: 10px"
+                        >
+                            {{ annotation.label.label.name }}
+                    </text>
+                </g>
             </svg>
         </div>
     </div>
@@ -87,11 +120,23 @@
 
 <script>
 import Vue from "vue";
+import label_select_annotation from "../label/label_select_annotation.vue";
 
 export default Vue.extend({
     name: "text_annotation_core",
+    components: {
+        label_select_annotation
+    },
     props: {
+        project_string_id: {
+            type: String,
+            required: true
+        },
         file: {},
+        label_list: {
+            type: Array,
+            required: true
+        },
         text: {
             type: String,
             default: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
@@ -104,6 +149,7 @@ export default Vue.extend({
             set_x: null,
             set_y: null,
             selecction_width: 0,
+            current_label: null,
             annotations: [],
             relations: [],
             element_width_dev: 300,
@@ -135,8 +181,12 @@ export default Vue.extend({
         setTimeout(() => {
             this.text_render_width()
         }, 2000)
+        this.current_label = this.label_list[0]
     },
     methods: {
+        change_label: function(label) {
+            this.current_label = label
+        },
         stringify_test: function(text) {
             const stringified = text.split('. ')
             this.text_stringified = stringified
@@ -220,7 +270,7 @@ export default Vue.extend({
             if (selection_exists) {
                 this.selecction_width = Math.abs(this.set_x - coordX_global)
                 this.spread_selection(sentense_index)
-                this.annotations = [...this.annotations, { id: this.annotations.length + 1, set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index} ]
+                this.annotations = [...this.annotations, { id: this.annotations.length + 1, set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index, label: {...this.current_label}} ]
                 document.getSelection().removeAllRanges()
             }
         },
@@ -270,7 +320,8 @@ export default Vue.extend({
                         H,
                         sentense_index,
                         start_label: start_annotation.id,
-                        end_label: end_annotation.id
+                        end_label: end_annotation.id,
+                        label: {...this.current_label}
                     }
                     this.relations = [...this.relations, new_relation]
                 }
