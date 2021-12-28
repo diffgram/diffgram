@@ -85,30 +85,17 @@
                             {{ token.word }}
                         </text>
                     </g>
-                    <g
+                    <text_label
                         v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
-                        @mouseover="on_annotation_hover(annotation.id)"
-                        @mouseout="on_stop_hover"
-                        @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
-                    >
-                        <rect 
-                            :x="annotation.set_x" 
-                            :y="annotation.set_y" 
-                            :width="annotation.selecction_width"
-                            height="20" 
-                            :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
-                            opacity="0.4"
-                            style="cursor: pointer"
-                        />
-                        <text 
-                            :x="annotation.set_x" 
-                            :y="annotation.set_y + 30" 
-                            :stroke="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
-                            style="font-size: 10px"
-                            >
-                                {{ annotation.label.label.name }}
-                        </text>
-                    </g>
+                        :key="`annotation_id_${annotation.id}_for_sentence_${sentense_index}`"
+                        :annotation="annotation"
+                        :hover_id="hover_id"
+                        :relation_hover="relation_hover"
+                        :sentence_index="sentense_index"
+                        @on_annotation_hover="on_annotation_hover"
+                        @on_stop_hover="on_stop_hover"
+                        @on_add_relation="on_add_relation"
+                    />
                 </svg>
             </div>
         </div>
@@ -119,11 +106,13 @@
 <script>
 import Vue from "vue";
 import text_toolbar from "./text-toolbar.vue"
+import text_label from "./text_label.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
     components: {
-        text_toolbar
+        text_toolbar,
+        text_label
     },
     props: {
         project_string_id: {
@@ -305,6 +294,7 @@ export default Vue.extend({
             this.path.Q1 = coordX_local  / 2
         },
         on_add_relation: function(event, sentense_index, annotation_id) {
+            console.log(event, sentense_index, annotation_id)
             if (this.drawing_relation) {
                 const start_annotation = this.annotations.find(annotation => annotation.id === this.path.start_annotation_id)
                 const M1 = start_annotation.set_x + start_annotation.selecction_width / 2
