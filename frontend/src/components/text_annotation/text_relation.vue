@@ -4,6 +4,11 @@
     @mouseover="on_relation_hover"
     @mouseout="on_relation_stop_hover"
 >
+    <circle :cx="relation.M1" :cy="relation.M2" r="3" :fill="current_color"/>
+    <path 
+        :d="relation_arrow_path" 
+        :fill="current_color" 
+    />
     <path
         fill="transparent"
         :d="relation_path" 
@@ -49,6 +54,9 @@ export default Vue.extend({
         },
         relation_path: function() {
             return `M ${this.relation.M1} ${this.relation.M2} v -10 H ${this.relation.H} v 10`
+        },
+        relation_arrow_path: function() {
+            return `M ${this.relation.H} ${this.relation.M2} l -5, -5 l 10, 0 l -5, 5`
         }
     }
 })
