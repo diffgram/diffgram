@@ -1,118 +1,116 @@
 <template>
-<div style="display: flex; flex-direction: row;">
-    <div>
+<div>
+    <text_toolbar 
+        :label_list="label_list" 
+        :project_string_id="project_string_id"
+        :label_file_colour_map="label_file_colour_map"
+        @change_label="change_label"
+        :loading="loading"
+        :request_refresh_from_project="true"
+        :show_visibility_toggle="true"
+    />
+    <div style="display: flex; flex-direction: row;">
         <div>
-            <h3>Select label: </h3>
-            <label_select_annotation
-                :project_string_id="project_string_id"
-                :label_file_list="label_list"
-                :label_file_colour_map="label_file_colour_map"
-                @change="change_label"
-                :loading="loading"
-                :request_refresh_from_project="true"
-                :show_visibility_toggle="true"
-                @update_label_file_visible="$emit('update_label_file_visibility', $event)"
-            />
-        </div>
-        <div>
-            <h3 :style="`width: ${element_width_dev}px`">Labels: </h3>
-            <ul>
-                <li 
-                    class="annotation-list"
-                    @mouseover="on_annotation_hover(annotation.id)"
-                    @mouseout="on_stop_hover"
-                    v-for="annotation in annotations"
-                >
-                    {{annotation.label.label.name}}
-                </li>
-            </ul>
-        </div>
-        <br />
-        <div>
-            <h3 :style="`width: ${element_width_dev}px`">Relations: </h3>
-            <ul>
-                <li 
-                    class="annotation-list"
-                    @mouseover="on_relation_hover(relation.id)"
-                    @mouseout="on_relation_stop_hover"
-                    v-for="relation in relations"
-                >
-                    {{relation.label.label.name}}
-                </li>
-            </ul>
-        </div>
-    </div>
-    <div style="width: 100%">
-        <div 
-            v-for="(sentense, sentense_index) in text_tokenized" 
-            style="display: flex; flex-direction: row; border-bottom: 1px solid black;"
-        >
-            <div>{{sentense_index + 1}}.</div>
-            <svg 
-                @mousedown="(e) => on_selection_start(e, sentense_index)" 
-                @mouseup="(e) => on_selection_end(e, sentense_index)" 
-                width="90%" 
-                style="height: 120px; margin-left: 10px;" 
-                id="trial"
-            >
-                <path
-                    v-if="path.M1 && path.M2 && path.Q1 && path.Q2 && path.Q3 && path.Q4 && path.sentense_index === sentense_index" 
-                    :d="`M ${path.M1} ${path.M2} Q ${path.Q1} ${path.Q2} ${path.Q3} ${path.Q4}`" 
-                    stroke="black" 
-                    fill="transparent"
-                />
-                <g v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)">
-                    <path
-                        :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
-                        :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
+            <div>
+                <h3 :style="`width: ${element_width_dev}px`">Labels: </h3>
+                <ul>
+                    <li 
+                        class="annotation-list"
+                        @mouseover="on_annotation_hover(annotation.id)"
+                        @mouseout="on_stop_hover"
+                        v-for="annotation in annotations"
+                    >
+                        {{annotation.label.label.name}}
+                    </li>
+                </ul>
+            </div>
+            <br />
+            <div>
+                <h3 :style="`width: ${element_width_dev}px`">Relations: </h3>
+                <ul>
+                    <li 
+                        class="annotation-list"
                         @mouseover="on_relation_hover(relation.id)"
                         @mouseout="on_relation_stop_hover"
+                        v-for="relation in relations"
+                    >
+                        {{relation.label.label.name}}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div style="width: 100%">
+            <div 
+                v-for="(sentense, sentense_index) in text_tokenized" 
+                style="display: flex; flex-direction: row; border-bottom: 1px solid black;"
+            >
+                <div>{{sentense_index + 1}}.</div>
+                <svg 
+                    @mousedown="(e) => on_selection_start(e, sentense_index)" 
+                    @mouseup="(e) => on_selection_end(e, sentense_index)" 
+                    width="90%" 
+                    style="height: 120px; margin-left: 10px;" 
+                    id="trial"
+                >
+                    <path
+                        v-if="path.M1 && path.M2 && path.Q1 && path.Q2 && path.Q3 && path.Q4 && path.sentense_index === sentense_index" 
+                        :d="`M ${path.M1} ${path.M2} Q ${path.Q1} ${path.Q2} ${path.Q3} ${path.Q4}`" 
+                        stroke="black" 
                         fill="transparent"
                     />
-                    <text 
-                        :x="relation.M1" 
-                        :y="relation.M2 - 15" 
-                        :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
-                        style="font-size: 10px"
+                    <g v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)">
+                        <path
+                            :d="`M ${relation.M1} ${relation.M2} v -10 H ${relation.H} v 10`" 
+                            :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
+                            @mouseover="on_relation_hover(relation.id)"
+                            @mouseout="on_relation_stop_hover"
+                            fill="transparent"
+                        />
+                        <text 
+                            :x="relation.M1" 
+                            :y="relation.M2 - 15" 
+                            :stroke="relation_hover.relation_hover_id === relation.id ? 'red' : relation.label.colour.hex" 
+                            style="font-size: 10px"
+                            >
+                                {{ relation.label.label.name }}
+                        </text>
+                    </g>
+                    <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
+                        <text 
+                            class="words" 
+                            :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
+                            :x="token.token_start_coordinate" 
+                            v-for="token in sentense"
                         >
-                            {{ relation.label.label.name }}
-                    </text>
-                </g>
-                <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
-                    <text 
-                        class="words" 
-                        :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
-                        :x="token.token_start_coordinate" 
-                        v-for="token in sentense"
+                            {{ token.word }}
+                        </text>
+                    </g>
+                    <g
+                        v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
+                        @mouseover="on_annotation_hover(annotation.id)"
+                        @mouseout="on_stop_hover"
+                        @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
                     >
-                        {{ token.word }}
-                    </text>
-                </g>
-                <g
-                    v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
-                    @mouseover="on_annotation_hover(annotation.id)"
-                    @mouseout="on_stop_hover"
-                    @mousedown.prevent="(e) => on_add_relation(e, sentense_index, annotation.id)"
-                >
-                    <rect 
-                        :x="annotation.set_x" 
-                        :y="annotation.set_y" 
-                        :width="annotation.selecction_width"
-                        height="20" 
-                        :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
-                        opacity="0.4"
-                        style="cursor: pointer"
-                    />
-                    <text 
-                        :x="annotation.set_x" 
-                        :y="annotation.set_y + 30" 
-                        :stroke="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
-                        style="font-size: 10px"
-                        >
-                            {{ annotation.label.label.name }}
-                    </text>
-                </g>
-            </svg>
+                        <rect 
+                            :x="annotation.set_x" 
+                            :y="annotation.set_y" 
+                            :width="annotation.selecction_width"
+                            height="20" 
+                            :fill="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
+                            opacity="0.4"
+                            style="cursor: pointer"
+                        />
+                        <text 
+                            :x="annotation.set_x" 
+                            :y="annotation.set_y + 30" 
+                            :stroke="(hover_id && hover_id === annotation.id) || relation_hover.start_label_id === annotation.id || relation_hover.end_label_id === annotation.id ? 'red' : annotation.label.colour.hex"
+                            style="font-size: 10px"
+                            >
+                                {{ annotation.label.label.name }}
+                        </text>
+                    </g>
+                </svg>
+            </div>
         </div>
     </div>
 </div>
@@ -120,12 +118,12 @@
 
 <script>
 import Vue from "vue";
-import label_select_annotation from "../label/label_select_annotation.vue";
+import text_toolbar from "./text-toolbar.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
     components: {
-        label_select_annotation
+        text_toolbar
     },
     props: {
         project_string_id: {
