@@ -43,9 +43,9 @@
             <div 
                 v-for="(sentense, sentense_index) in text_tokenized"
                 :key="`${sentense}_${sentense_index}`"
-                style="display: flex; flex-direction: row; border-bottom: 1px solid black;"
+                :style="`display: flex; flex-direction: row; border-bottom: 1px solid rgba(29, 209, 161, 0.5); background-color: ${sentense_is_odd(sentense_index) ? 'rgba(29, 209, 161, 0.1)' : 'white'}`"
             >
-                <div>{{sentense_index + 1}}.</div>
+                <div style="display: flex; align-items: center; justify-content: center">{{ sentense_index + 1 }}.</div>
                 <svg 
                     @mousedown="(e) => on_selection_start(e, sentense_index)" 
                     @mouseup="(e) => on_selection_end(e, sentense_index)" 
@@ -67,7 +67,7 @@
                         @on_relation_hover="on_relation_hover"
                         @on_relation_stop_hover="on_relation_stop_hover"
                     />
-                    <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
+                    <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 65)">
                         <text 
                             class="words"
                             :key="`text_token_${token.index}_sentense_index_${token.sentense_index}`"
@@ -98,7 +98,7 @@
 
 <script>
 import Vue from "vue";
-import text_toolbar from "./text-toolbar.vue"
+import text_toolbar from "./text_toolbar.vue"
 import text_label from "./text_label.vue"
 import text_relation from "./text_relation.vue"
 
@@ -166,6 +166,9 @@ export default Vue.extend({
         this.current_label = this.label_list[0]
     },
     methods: {
+        sentense_is_odd: function (sentense_index) {
+            return sentense_index % 2
+        }, 
         change_label: function(label) {
             this.current_label = label
         },
