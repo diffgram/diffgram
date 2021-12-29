@@ -41,7 +41,8 @@
         </div>
         <div style="width: 100%">
             <div 
-                v-for="(sentense, sentense_index) in text_tokenized" 
+                v-for="(sentense, sentense_index) in text_tokenized"
+                :key="`${sentense}_${sentense_index}`"
                 style="display: flex; flex-direction: row; border-bottom: 1px solid black;"
             >
                 <div>{{sentense_index + 1}}.</div>
@@ -68,7 +69,8 @@
                     />
                     <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 60)">
                         <text 
-                            class="words" 
+                            class="words"
+                            :key="`text_token_${token.index}_sentense_index_${token.sentense_index}`"
                             :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :x="token.token_start_coordinate" 
                             v-for="token in sentense"
