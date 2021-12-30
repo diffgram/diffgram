@@ -26,17 +26,17 @@
             >
                 <div style="display: flex; align-items: center; justify-content: center">{{ sentense_index + 1 }}.</div>
                 <svg 
+                    width="90%" 
+                    style="height: 120px; margin-left: 10px;"
+                    ref="svg_main_container"
                     @mousedown="(e) => on_selection_start(e, sentense_index)" 
                     @mouseup="(e) => on_selection_end(e, sentense_index)" 
-                    width="90%" 
-                    style="height: 120px; margin-left: 10px;" 
-                    id="trial"
                 >
                     <path
-                        v-if="path.M1 && path.M2 && path.Q1 && path.Q2 && path.Q3 && path.Q4 && path.sentense_index === sentense_index" 
-                        :d="`M ${path.M1} ${path.M2} Q ${path.Q1} ${path.Q2} ${path.Q3} ${path.Q4}`" 
+                        v-if="path_is_been_drawn(sentense_index)" 
                         stroke="black" 
                         fill="transparent"
+                        :d="draw_arc" 
                     />
                     <text_relation 
                         v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
@@ -46,13 +46,18 @@
                         @on_relation_hover="on_relation_hover"
                         @on_relation_stop_hover="on_relation_stop_hover"
                     />
-                    <g :id="`text-to-annotate_${sentense_index}`" transform="translate(0, 65)">
+                    <g 
+                        :id="`text-to-annotate_${sentense_index}`" 
+                        :ref="`text_to_annotate_${sentense_index}`" 
+                        transform="translate(0, 65)"
+                    >
                         <text 
+                            v-for="token in sentense"
                             class="words"
                             :key="`text_token_${token.index}_sentense_index_${token.sentense_index}`"
                             :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
+                            :ref="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :x="token.token_start_coordinate" 
-                            v-for="token in sentense"
                         >
                             {{ token.word }}
                         </text>
@@ -146,6 +151,16 @@ export default Vue.extend({
         }, 2000)
         this.current_label = this.label_list[0]
     },
+    computed: {
+        path_is_been_drawn: function() {
+            const { M1, M2, Q1, Q2, Q3, Q4, sentense_index } = this.path
+            return sentense_index_cuuernt => M1 && M2 && Q1 && Q2 && Q3 && Q4 && sentense_index === sentense_index_cuuernt
+        },
+        draw_arc: function() {
+            const { M1, M2, Q1, Q2, Q3, Q4 } = this.path
+            return `M ${M1} ${M2} Q ${Q1} ${Q2} ${Q3} ${Q4}`
+        }
+    },
     methods: {
         sentense_is_odd: function (sentense_index) {
             return sentense_index % 2
@@ -166,7 +181,7 @@ export default Vue.extend({
             const measure_words = this.text_tokenized.map(sentence => {
                 let length_counter = 10;
                 const updated_sentense = sentence.map(token => {
-                    var element = document.getElementById(`text_token_${token.index}_sentense_index_${token.sentense_index}`);
+                    const element = this.$refs[`text_token_${token.index}_sentense_index_${token.sentense_index}`][0]
                     const width_of_token = element.clientWidth
                     const updated_token = {...token, token_start_coordinate: length_counter}
                     length_counter += (width_of_token + 5)
@@ -180,10 +195,10 @@ export default Vue.extend({
         },
         on_svg_click: function(event, sentense_index) {
             const coordX_global = event.clientX;
-            var element = document.getElementById('trial');
-            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
+            const used_svg_wrapper_component = this.$refs.svg_main_container[sentense_index];
+            var text_element = this.$refs[`text_to_annotate_${sentense_index}`][0]
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
-            var leftPos = element.getBoundingClientRect().left + window.scrollX;
+            var leftPos = used_svg_wrapper_component.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
             const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
@@ -201,7 +216,7 @@ export default Vue.extend({
             this.set_x = this.set_x - token_start
 
             const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
-                var element_width = document.getElementById(`text_token_${currentValue.index}_sentense_index_${sentense_index}`).clientWidth;
+                var element_width = this.$refs[`text_token_${currentValue.index}_sentense_index_${sentense_index}`][0].clientWidth;
                 const delta = element_width  - (this.set_x + this.selecction_width) + this.element_width_dev
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
@@ -264,8 +279,8 @@ export default Vue.extend({
         on_mouse_move_listen: function(event) {
             console.log("arroy moving")
             const coordX_global = event.clientX;
-            var element = document.getElementById('trial');
-            var leftPos = element.getBoundingClientRect().left + window.scrollX;
+            const element = this.$refs.svg_main_container[0];
+            const leftPos = element.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
 
@@ -308,10 +323,10 @@ export default Vue.extend({
             console.log('Draw relation arrow')
             this.drawing_relation = true
             const coordX_global = event.clientX;
-            var element = document.getElementById('trial');
-            var text_element = document.getElementById(`text-to-annotate_${sentense_index}`);
+            var used_svg_wrapper_component = this.$refs.svg_main_container[sentense_index];
+            var text_element = this.$refs[`text_to_annotate_${sentense_index}`][0];
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
-            var leftPos = element.getBoundingClientRect().left + window.scrollX;
+            var leftPos = used_svg_wrapper_component.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
             const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
