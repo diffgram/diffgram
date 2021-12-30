@@ -10,35 +10,14 @@
         :show_visibility_toggle="true"
     />
     <div style="display: flex; flex-direction: row;">
-        <div>
-            <div>
-                <h3 :style="`width: ${element_width_dev}px`">Labels: </h3>
-                <ul>
-                    <li 
-                        class="annotation-list"
-                        @mouseover="on_annotation_hover(annotation.id)"
-                        @mouseout="on_stop_hover"
-                        v-for="annotation in annotations"
-                    >
-                        {{annotation.label.label.name}}
-                    </li>
-                </ul>
-            </div>
-            <br />
-            <div>
-                <h3 :style="`width: ${element_width_dev}px`">Relations: </h3>
-                <ul>
-                    <li 
-                        class="annotation-list"
-                        @mouseover="on_relation_hover(relation.id)"
-                        @mouseout="on_relation_stop_hover"
-                        v-for="relation in relations"
-                    >
-                        {{relation.label.label.name}}
-                    </li>
-                </ul>
-            </div>
-        </div>
+        <text_sidebar
+            :annotations="annotations"
+            :relations="relations"
+            @on_annotation_hover="on_annotation_hover"
+            @on_stop_hover="on_stop_hover"
+            @on_relation_hover="on_relation_hover"
+            @on_relation_stop_hover="on_relation_stop_hover"
+        />
         <div style="width: 100%">
             <div 
                 v-for="(sentense, sentense_index) in text_tokenized"
@@ -101,13 +80,15 @@ import Vue from "vue";
 import text_toolbar from "./text_toolbar.vue"
 import text_label from "./text_label.vue"
 import text_relation from "./text_relation.vue"
+import text_sidebar from "./text_sidebar.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
     components: {
         text_toolbar,
         text_label,
-        text_relation
+        text_relation,
+        text_sidebar
     },
     props: {
         project_string_id: {
@@ -348,9 +329,4 @@ export default Vue.extend({
 })
 </script>
 
-<style scoped>
-.annotation-list:hover {
-    text-decoration: underline;
-    cursor: pointer;
-}
-</style>
+
