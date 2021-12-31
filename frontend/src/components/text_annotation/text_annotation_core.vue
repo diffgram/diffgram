@@ -4,10 +4,10 @@
         :label_list="label_list" 
         :project_string_id="project_string_id"
         :label_file_colour_map="label_file_colour_map"
-        @change_label="change_label"
         :loading="loading"
         :request_refresh_from_project="true"
         :show_visibility_toggle="true"
+        @change_label="change_label"
     />
     <div style="display: flex; flex-direction: row;">
         <text_sidebar
@@ -217,11 +217,11 @@ export default Vue.extend({
 
             const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
                 var element_width = this.$refs[`text_token_${currentValue.index}_sentense_index_${sentense_index}`][0].clientWidth;
-                const delta = element_width  - (this.set_x + this.selecction_width) + this.element_width_dev
+                const delta = element_width  - (this.set_x + this.selecction_width)
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
-            this.selecction_width = this.selecction_width + token_end - this.element_width_dev
+            this.selecction_width = this.selecction_width + token_end
         },
         on_selection_start: function(event, sentense_index) {
             if (!event.toElement.id) return
@@ -248,8 +248,15 @@ export default Vue.extend({
             const coordX_global = event.clientX;
             const selection_exists = Math.abs(this.set_x - coordX_global) > 10
 
+            const sel = window.getSelection();
+            const range = sel.getRangeAt(0)
+            const width = range.getBoundingClientRect().width;
+
             if (selection_exists) {
-                this.selecction_width = Math.abs(this.set_x - coordX_global)
+                this.selecction_width = width
+                if (this.set_x - coordX_global + 300 > 0) {
+                    this.set_x = this.set_x - width
+                }
                 this.spread_selection(sentense_index)
                 this.annotations = [...this.annotations, { id: this.annotations.length + 1, set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index, label: {...this.current_label}} ]
                 document.getSelection().removeAllRanges()
