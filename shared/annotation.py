@@ -80,6 +80,7 @@ class Annotation_Update():
     new_created_sequence_list: list = field(default_factory = lambda: [])
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
+    added_sequence_ids: list = None
 
     count_instances_changed = 0
 
@@ -1350,7 +1351,13 @@ class Annotation_Update():
 
         self.instance_count_updates()
 
-        self.sequence_update(instance = self.instance)
+        sequence = self.sequence_update(instance = self.instance)
+
+        if sequence:
+            print("Attempting to add keyframe")
+            sequence.add_keyframe_to_cache(self.session, self.instance)
+            self.session.add(sequence)
+
 
     def update_sequence_id_in_cache_list(self, instance):
         """
@@ -1366,6 +1373,7 @@ class Annotation_Update():
             existing_serialized_instance = self.instance_list_kept_serialized[i]
             if existing_serialized_instance.get('id') == instance.id:
                 existing_serialized_instance['sequence_id'] = instance.sequence_id
+
 
     def update_cache_single_instance_in_list_context(self):
         """
@@ -1457,6 +1465,7 @@ class Annotation_Update():
             # and then handle other related concerns seperetly
             self.file = File.copy_file_from_existing(
                 self.session, directory, self.file)
+
 
     def instance_limits(self, validate_label_file = True):
         """
@@ -1746,25 +1755,6 @@ class Annotation_Update():
         logger.debug('Updating sequence Mode:{} Instance:{} VideoParent:{}'.format(self.video_mode,
                                                                                    self.instance.id,
                                                                                    self.video_parent_file))
-
-        """
-        in new context can be *multiple* sequences
-        (eg current and prior) that get updated in one save 
-        suggest following the pattern of add_instances and using a list
-        and then serializing and returning that list.
-        Because it's now updating in the deleted contexts
-        """
-        # sequence = self.session.query(Sequence).filter(
-        #     Sequence.id == instance.sequence_id,
-        #     Sequence.archived == False
-        # ).first()
-
-        # if sequence and sequence.keyframe_list:
-        #     frame_list = sequence.keyframe_list.get('frame_number_list')
-        #     if frame_list and len(frame_list) > 100:
-        #         logger.warning('Skipping sequence update due to large frame list {}'.format(len(frame_list)))
-        #         return
-
         # For "Human" updates only
         if update_existing_only is False:
 
@@ -1780,6 +1770,7 @@ class Annotation_Update():
             if is_new_sequence:
                 self.new_created_sequence_list.append(self.sequence)
             self.update_sequence_id_in_cache_list(instance = instance)
+            return updated_sequence
         else:
             # Eg for deleting when sequence is changed on existing instance
             sequence = Sequence.update_single_existing_sequence(
@@ -1789,14 +1780,10 @@ class Annotation_Update():
             )
             self.update_sequence_id_in_cache_list(instance = instance)
 
-    def check_polygon_points_and_build_bounds(self):
-        """
-        TODO state goal of this / clarify motivation / need
+            return sequence
 
-        # POLYGON
-        # This is for box building for mask rcnn, maybe seperate function?
-        # [ ] Is this the same as coco bounding box? would want to test that I guess
-        """
+
+    def check_polygon_points_and_build_bounds(self):
         self.instance.x_min = 99999
         self.instance.x_max = 0
         self.instance.y_min = 99999
@@ -1870,6 +1857,11 @@ class Annotation_Update():
         """
         if self.instance_list_existing is None:
             return
+
+        self.added_sequence_ids = []
+        for instance in self.new_added_instances:
+            self.added_sequence_ids.append(instance.sequence_id)
+
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]
@@ -1887,6 +1879,7 @@ class Annotation_Update():
             if instance.hash != prior_hash:
                 self.declare_newly_deleted_instance(instance = instance)
 
+
     def declare_newly_deleted_instance(
         self,
         instance):
@@ -1901,9 +1894,16 @@ class Annotation_Update():
         if not instance.deleted_time:
             instance.deleted_time = datetime.datetime.utcnow()
 
-        self.sequence_update(
+        sequence = self.sequence_update(
             instance = instance,
             update_existing_only = True)
+
+        if sequence:
+            print(sequence.id, self.added_sequence_ids)
+            if sequence.id not in self.added_sequence_ids:
+                print("Deleting keyframe")
+                sequence.remove_keyframe_to_cache(self.session, instance)
+                self.session.add(sequence)
 
         self.count_instances_changed += 1
 
