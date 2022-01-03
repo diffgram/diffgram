@@ -511,11 +511,11 @@ def build_text_packet(
     Generic method to generate a dict of information given a file
     """
 
-    file.text_file.regenerate_url()
+    file.text_file.regenerate_url(session = session)
     text_dict = {
         'original_filename': file.text_file.original_filename,
-        'image_signed_expiry': file.image.url_signed_expiry,
-        'image_signed_url': file.image.url_signed,
+        'signed_expiry': file.text_file.url_signed_expiry,
+        'signed_url': file.text_file.url_signed,
     }
 
     instance_dict_list = []

@@ -46,7 +46,7 @@
             :initialize_empty="true"
             :disabled="loading"
             @change="get_input_list"
-                       >
+          >
           </date_picker>
 
           <v-select
@@ -65,7 +65,7 @@
             label="Filter by Batch ID"
             :disabled="loading"
             @change="get_input_list"
-                        >
+          >
           </v-text-field>
 
           <v-text-field
@@ -74,7 +74,7 @@
             v-model="task_id_filter"
             label="Filter by Task ID"
             @change="get_input_list"
-                        >
+          >
           </v-text-field>
 
           <v-text-field
@@ -83,7 +83,7 @@
             v-model="file_id_filter"
             label="Filter by File ID"
             @change="get_input_list"
-                        >
+          >
           </v-text-field>
 
 
@@ -151,7 +151,7 @@
 
           <!-- appears to have to be item for vuetify syntax-->
           <template slot="item" slot-scope="props">
-            <tr >
+            <tr>
               <td>
                 <v-checkbox
 
@@ -204,7 +204,6 @@
                   </div>
 
 
-
                   <!-- Update log
                        As of Sept 3 2020 this is just errors
                        In future could be other updates too
@@ -221,7 +220,7 @@
 
                     <template slot="content">
                       <v-layout column>
-                        <h4 >Description: </h4>
+                        <h4>Description: </h4>
                         <p class="text--error">
                           {{ props.item.description}}
                         </p>
@@ -289,14 +288,31 @@
                     color="primary">
                   </tooltip_icon>
 
-<!--                  <p  v-if="props.item.log && props.item.status == 'failed'" class="error&#45;&#45;text">{{JSON.stringify(props.item.log)}}</p>-->
-<!--                  <p  v-if="props.item.status == 'failed'" class="error&#45;&#45;text">{{props.item.status_text}}</p>-->
-                  <button_with_menu
-                    v-if="props.item.status == 'failed'"
-                    icon="error"
-                    color="error">
-                    <template slot="content">
-                      <v-layout column>
+                  <!--                  <p  v-if="props.item.log && props.item.status == 'failed'" class="error&#45;&#45;text">{{JSON.stringify(props.item.log)}}</p>-->
+                  <!--                  <p  v-if="props.item.status == 'failed'" class="error&#45;&#45;text">{{props.item.status_text}}</p>-->
+
+                  <div class="error-status-container">
+                    <tooltip_button
+                      v-if="props.item.status === 'failed' &&
+                    props.item.update_log &&
+                    props.item.update_log.error &&
+                    props.item.update_log.error.free_tier_limit"
+                      @click="open_free_tier_limit_dialog(
+                        'The file upload failed because you reached your one of the in the free tier of Diffgram.',
+                        props.item.update_log.error.free_tier_limit)"
+                      icon="error"
+                      :icon_style="true"
+                      :tooltip_message="'Free tier limit reached! Click for details'"
+                      color="error">
+                      <v-icon>mdi-alert</v-icon>
+
+                    </tooltip_button>
+                    <button_with_menu
+                      v-else-if="props.item.status === 'failed'"
+                      icon="error"
+                      color="error">
+                      <template slot="content">
+                        <v-layout column>
 
 
                         <span v-if="props.item.status_text">
@@ -305,32 +321,36 @@
                           </v-alert>
                         </span>
 
-                        <div v-if="props.item.description">
-                          <h4>Description: </h4>
-                          <p>
-                            {{ props.item.description}}
-                          </p>
-                        </div>
+                          <div v-if="props.item.description">
+                            <h4>Description: </h4>
+                            <p>
+                              {{ props.item.description}}
+                            </p>
+                          </div>
 
-                        <div v-if="props.item.update_log &&
+                          <div v-if="props.item.update_log &&
                                    props.item.update_log.error &&
                                    Object.keys(props.item.update_log.error).length">
-                          <h4>Log: </h4>
+                            <h4>Log: </h4>
 
-                          <v_error_multiple :error="props.item.update_log.error">
-                          </v_error_multiple>
+                            <v_error_multiple :error="props.item.update_log.error">
+                            </v_error_multiple>
 
-                        </div>
+                          </div>
 
-                        <v_info_multiple :info="props.item.update_log.info">
-                        </v_info_multiple>
+                          <v_info_multiple :info="props.item.update_log.info">
+                          </v_info_multiple>
 
-                        <!-- Not showing info messages here yet -->
+                          <!-- Not showing info messages here yet -->
 
-                      </v-layout>
+                        </v-layout>
 
-                    </template>
-                  </button_with_menu>
+                      </template>
+                    </button_with_menu>
+
+
+                  </div>
+
 
                   <tooltip_icon
                     v-if="props.item.status == 'success'"
@@ -387,10 +407,10 @@
                   {{ props.item.file_id}}
                 </a>
                 <div v-if='props.item.newly_copied_file_id'>
-                Copied to ->
+                  Copied to ->
                 </div>
                 <a v-if='props.item.newly_copied_file_id'
-                  :href="'/file/' + props.item.newly_copied_file_id">
+                   :href="'/file/' + props.item.newly_copied_file_id">
                   {{ props.item.newly_copied_file_id}}
                 </a>
 
@@ -522,7 +542,6 @@
                   </tooltip_button>
 
 
-
                 </v-layout>
 
 
@@ -585,6 +604,13 @@
 
     </input_payload_dialog>
 
+    <free_tier_limit_dialog
+      :message="message_free_tier_limit"
+      :details="details_free_tier_limit"
+      ref="free_tier_limit_dialog">
+
+    </free_tier_limit_dialog>
+
   </div>
 </template>
 
@@ -592,13 +618,15 @@
 
   import axios from 'axios';
   import input_payload_dialog from './input_payload_dialog'
+  import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
   import Vue from "vue";
   import sizeof from 'object-sizeof'
 
   export default Vue.extend({
       name: 'input_view',
-      components:{
-        input_payload_dialog
+      components: {
+        input_payload_dialog,
+        free_tier_limit_dialog,
       },
       props: {
         'project_string_id': {
@@ -620,7 +648,7 @@
         'show_filters': {
           default: true
         },
-        'initial_status_filter':{
+        'initial_status_filter': {
           default: undefined
         },
         'title': {
@@ -640,6 +668,8 @@
           metadata_limit: 10,
 
           date: undefined,
+          message_free_tier_limit: '',
+          details_free_tier_limit: '',
           selected_input: {},
 
           status_filters_list: [
@@ -762,7 +792,7 @@
         request_refresh(state) {
           this.get_input_list()
         },
-        task_id: function(old, new_val){
+        task_id: function (old, new_val) {
           this.get_input_list();
         }
       },
@@ -779,7 +809,7 @@
             self.get_input_list()
           },
         )
-        if(this.$props.initial_status_filter){
+        if (this.$props.initial_status_filter) {
           this.status_filter = this.$props.initial_status_filter;
         }
         this.get_input_list()
@@ -791,12 +821,17 @@
       },
 
       methods: {
-        open_input_payload_dialog: function(input){
+        open_free_tier_limit_dialog: function(message, details){
+          this.message_free_tier_limit = message
+          this.details_free_tier_limit = details
+          this.$refs.free_tier_limit_dialog.open()
+        },
+        open_input_payload_dialog: function (input) {
           this.selected_input = input;
           this.$refs.payload_dialog.open();
 
         },
-        filter_by_batch: function(batch_id){
+        filter_by_batch: function (batch_id) {
           this.batch_id_filter = batch_id;
           this.get_input_list()
         },
@@ -812,7 +847,7 @@
           this.loading = true
 
           let task_id_to_use = this.$props.task_id
-          if(this.task_id_filter) {
+          if (this.task_id_filter) {
             task_id_to_use = parseInt(this.task_id_filter)
           }
           try {

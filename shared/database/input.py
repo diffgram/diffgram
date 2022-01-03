@@ -158,6 +158,12 @@ class Input(Base):
     # Context of video
     video_parent_length = Column(Integer)  # This way don't have to check video each time. To see where it ends
 
+    member_created_id = Column(Integer, ForeignKey('member.id'))
+    member_created = relationship("Member", foreign_keys = [member_created_id])
+
+    member_updated_id = Column(Integer, ForeignKey('member.id'))
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
     __table_args__ = (
         Index('index__processing_deferred__archived',
               "processing_deferred", "archived",
@@ -195,7 +201,8 @@ class Input(Base):
             parent_input_id: int = None,
             batch_id: int = None,
             video_split_duration: int = None,
-            file_metadata: dict = None
+            file_metadata: dict = None,
+            member_created_id: int = None
     ):
         """
         Helps insure not forgetting stuff...
@@ -230,7 +237,8 @@ class Input(Base):
             video_split_duration=video_split_duration,
             batch_id=batch_id,
             copy_instance_list=copy_instance_list,
-            file_metadata=file_metadata
+            file_metadata=file_metadata,
+            member_created_id=member_created_id
         )
         input.parent_file_id = parent_file_id
 
