@@ -84,7 +84,7 @@ class FeatureChecker:
         )
         return plan
 
-    def get_flag(self, flag_name):
+    def get_limit_from_plan(self, flag_name):
         print('GET FLAGS', flag_name)
         if flag_name not in self.FEATURE_FLAGS:
             return None

@@ -22,6 +22,7 @@ def serialize_public_env_variables():
         'DIFFGRAM_SYSTEM_MODE': settings.DIFFGRAM_SYSTEM_MODE,
         'DIFFGRAM_VERSION_TAG': settings.DIFFGRAM_VERSION_TAG,
         'DIFFGRAM_HOST_OS': settings.DIFFGRAM_HOST_OS,
+        'IS_OPEN_SOURCE': settings.IS_OPEN_SOURCE,
         'URL_BASE': settings.URL_BASE,
         'RUNNING_LOCALLY': settings.RUNNING_LOCALLY,
         'DATABASE_URL': bool(settings.DATABASE_URL),

@@ -1,4 +1,3 @@
-
 from methods.regular.regular_api import *
 from methods.video.video import New_video
 
@@ -60,6 +59,7 @@ csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
 STOP_PROCESSING_DATA = False
+
 
 @dataclass(order = True)
 class PrioritizedItem:
@@ -198,7 +198,6 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 
 
 # https://diffgram.com/docs/process-media-local-worker-queues
-
 
 
 def add_item_to_queue(item):
@@ -478,7 +477,6 @@ class Process_Media():
                 logger.error('Error updating instances: {}'.format(str(self.log['error'])))
                 return
 
-
             return
 
         if self.input.type not in ["from_url", "from_video_split"]:
@@ -614,7 +612,7 @@ class Process_Media():
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
-            self.input.update_log = {'error' : {
+            self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }
             return False
@@ -1037,22 +1035,13 @@ class Process_Media():
 
         directory = self.input.directory
 
-        file_count_dir = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = directory.id,
-            limit = None,
-            counts_only = True
-        )
         user_id = None
         user = None
         if self.input.member_created:
             user = self.input.member_created.user
             if user:
                 user_id = user.id
-        print('member input', self.input.member_created)
-        logger.info('Free tier check for user: {} DIR[{}] File count: {}'.format(user_id,
-                                                                                 directory.id,
-                                                                                 file_count_dir))
+
         feature_checker = FeatureChecker(
             session = self.session,
             user = user,
@@ -1060,20 +1049,33 @@ class Process_Media():
         )
 
         if self.input.media_type == 'video':
-            max_file_count = feature_checker.get_flag('MAX_VIDEOS_PER_DATASET')
+            max_file_count = feature_checker.get_limit_from_plan('MAX_VIDEOS_PER_DATASET')
 
         elif self.input.media_type == 'image':
-            max_file_count = feature_checker.get_flag('MAX_VIDEOS_PER_DATASET')
+            max_file_count = feature_checker.get_limit_from_plan('MAX_VIDEOS_PER_DATASET')
 
         elif self.input.media_type == 'text':
-            max_file_count = feature_checker.get_flag('MAX_TEXT_FILES_PER_DATASET')
+            max_file_count = feature_checker.get_limit_from_plan('MAX_TEXT_FILES_PER_DATASET')
 
         elif self.input.media_type == 'sensor_fusion':
-            max_file_count = feature_checker.get_flag('MAX_SENSOR_FUSION_FILES_PER_DATASET')
+            max_file_count = feature_checker.get_limit_from_plan('MAX_SENSOR_FUSION_FILES_PER_DATASET')
         else:
             return
 
+        # Small optimization, avoid querying DB if no check is required (ie Premium Plans)
+        if max_file_count is None:
+            return
 
+        file_count_dir = WorkingDirFileLink.file_list(
+            session = self.session,
+            working_dir_id = directory.id,
+            limit = None,
+            counts_only = True
+        )
+
+        logger.info('Free tier check for user: {} DIR[{}] File count: {}'.format(user_id,
+                                                                                 directory.id,
+                                                                                 file_count_dir))
         if max_file_count is not None and max_file_count <= file_count_dir:
             message = 'Free Tier Limit Reached - Max Files Allowed: {}. But Directory with ID: {} has {}'.format(
                 max_file_count,

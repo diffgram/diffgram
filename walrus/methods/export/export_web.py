@@ -306,7 +306,7 @@ def check_export_billing(
         project = project
     )
 
-    max_allowed_instances = checker.get_flag('MAX_INSTANCES_PER_EXPORT')
+    max_allowed_instances = checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
     print('MAX ALLOWED INSTANCES', max_allowed_instances)
     if max_allowed_instances is None:
         return log
