@@ -40,13 +40,24 @@ class FeatureChecker:
             'MAX_PROJECTS',
         ]
 
+    def get_free_plan_template(self):
+        if settings.IS_OPEN_SOURCE:
+            return PlanTemplate.get_by_internal_name(
+                session = self.session,
+                internal_name = 'open_source_free_plan'
+            )
+        else:
+            return PlanTemplate.get_by_internal_name(
+                session = self.session,
+                internal_name = 'default_free_plan'
+            )
+
     def get_or_create_free_plan(self):
-        plan_template = PlanTemplate.get_by_public_name(
-            session = self.session,
-            public_name = 'Free'
-        )
+        plan_template = self.get_free_plan_template()
         if not plan_template:
             plan_template = PlanTemplate.create_free_plan(session = self.session)
+
+        PlanTemplate.update_default_free_plan_values(session = self.session, plan_template = plan_template)
 
         plan = Plan.new(
             session = self.session,
@@ -74,9 +85,7 @@ class FeatureChecker:
         return plan
 
     def get_flag(self, flag_name):
-        if not settings.ALLOW_PLANS:
-            return None
-
+        print('GET FLAGS', flag_name)
         if flag_name not in self.FEATURE_FLAGS:
             return None
 
@@ -118,6 +127,7 @@ class FeatureChecker:
         if flag_name == 'MAX_FRAMES_PER_VIDEO':
             return plan_template.limit_files
         if flag_name == 'MAX_INSTANCES_PER_EXPORT':
+            print('RESULT IS', plan_template, plan_template.limit_instances, plan_template.internal_name)
             return plan_template.limit_instances
         if flag_name == 'MAX_PROJECTS':
             return plan_template.limit_projects

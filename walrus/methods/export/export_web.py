@@ -300,7 +300,15 @@ def check_export_billing(
     if settings.ALLOW_STRIPE_BILLING is False:
         return log
 
-    if settings.ALLOW_PLANS is False:
+    checker = FeatureChecker(
+        session = session,
+        user = member.user,
+        project = project
+    )
+
+    max_allowed_instances = checker.get_flag('MAX_INSTANCES_PER_EXPORT')
+    print('MAX ALLOWED INSTANCES', max_allowed_instances)
+    if max_allowed_instances is None:
         return log
 
     # Careful if it's a large project,
@@ -317,13 +325,6 @@ def check_export_billing(
     )
 
     new_instance_count = 0
-
-    checker = FeatureChecker(
-        session = session,
-        user = member.user,
-        project = project
-    )
-    max_allowed_instances = checker.get_flag('MAX_INSTANCES_PER_EXPORT')
 
     for file in file_list:
         new_instance_count += Instance.list(

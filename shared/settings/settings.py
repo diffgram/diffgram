@@ -164,9 +164,6 @@ DIFFGRAM_SERVICE_NAME = os.getenv('DIFFGRAM_SERVICE_NAME')
 EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', 'support@diffgram.com')
 
 # Plans Features
-ALLOW_PLANS = env_adapter.bool(os.getenv('ALLOW_PLANS', False))
-
-
 IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
 
 print('DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE',DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE)

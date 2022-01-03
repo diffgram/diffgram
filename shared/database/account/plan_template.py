@@ -1,5 +1,11 @@
 from shared.database.common import *
 
+OPEN_SOURCE_USERS_PER_PROJECT_LIMIT = 20
+OPEN_SOURCE_FRAMES_PER_FILE_LIMIT = None
+OPEN_SOURCE_FILES_LIMIT = None
+OPEN_SOURCE_PROJECT_LIMIT = None
+OPEN_SOURCE_INSTANCES_LIMIT = None
+
 
 class PlanTemplate(Base):
     __tablename__ = 'plan_template'
@@ -81,6 +87,15 @@ class PlanTemplate(Base):
         }
 
     @staticmethod
+    def get_by_internal_name(
+        session,
+        internal_name):
+        query = session.query(PlanTemplate).filter(
+            PlanTemplate.internal_name == internal_name)
+
+        return query.first()
+
+    @staticmethod
     def get_by_public_name(
         session,
         public_name):
@@ -90,31 +105,73 @@ class PlanTemplate(Base):
         return query.first()
 
     @staticmethod
-    def create_free_plan(session):
-        template = PlanTemplate.new(
-            session = session,
-            public_name = 'Free',
-            internal_name = 'default_free_plan',
-            kind = 'default',
-            limit_instances = 100,
-            limit_projects = 3,
-            limit_files = 100,
-            limit_users_per_project = 3,
-            limit_video_frames_per_file = 300,
-            included_monthly_training_credits = 100,
-            cost_monthly = 0,
-            may_buy_instances = False,
-            cost_per_1000_instances = 0,
-            cost_annual = 0,
-            feature_sla = 'no_support',
-            feature_support = 'no_support',
-            feature_user_management = 'no_support',
-            is_available = True,
-            is_public = True,
-            is_free = True,
-            export_models_allowed = True,
+    def update_default_free_plan_values(session, plan_template):
+        """
+            Only used on open source installations. Sets, the default values for the open source plans.
+        :param session:
+        :param plan_template:
+        :return:
+        """
+        if settings.IS_OPEN_SOURCE:
+            plan_template.limit_instances = OPEN_SOURCE_INSTANCES_LIMIT
+            plan_template.limit_projects = OPEN_SOURCE_PROJECT_LIMIT
+            plan_template.limit_files = OPEN_SOURCE_FILES_LIMIT
+            plan_template.limit_files = OPEN_SOURCE_FILES_LIMIT
+            plan_template.limit_video_frames_per_file = OPEN_SOURCE_FRAMES_PER_FILE_LIMIT
+            session.add(plan_template)
 
-        )
+    @staticmethod
+    def create_free_plan(session):
+        if settings.IS_OPEN_SOURCE:
+            template = PlanTemplate.new(
+                session = session,
+                public_name = 'Free Open Source Plan',
+                internal_name = 'open_source_free_plan',
+                kind = 'default',
+                limit_instances = OPEN_SOURCE_INSTANCES_LIMIT,
+                limit_projects = OPEN_SOURCE_PROJECT_LIMIT,
+                limit_files = OPEN_SOURCE_FILES_LIMIT,
+                limit_users_per_project = OPEN_SOURCE_USERS_PER_PROJECT_LIMIT,
+                limit_video_frames_per_file = OPEN_SOURCE_FRAMES_PER_FILE_LIMIT,
+                included_monthly_training_credits = 999999,
+                cost_monthly = 0,
+                may_buy_instances = False,
+                cost_per_1000_instances = 0,
+                cost_annual = 0,
+                feature_sla = 'no_support',
+                feature_support = 'no_support',
+                feature_user_management = 'no_support',
+                is_available = True,
+                is_public = True,
+                is_free = True,
+                export_models_allowed = True,
+
+            )
+        else:
+            template = PlanTemplate.new(
+                session = session,
+                public_name = 'Free',
+                internal_name = 'default_free_plan',
+                kind = 'default',
+                limit_instances = 100,
+                limit_projects = 3,
+                limit_files = 100,
+                limit_users_per_project = 3,
+                limit_video_frames_per_file = 300,
+                included_monthly_training_credits = 100,
+                cost_monthly = 0,
+                may_buy_instances = False,
+                cost_per_1000_instances = 0,
+                cost_annual = 0,
+                feature_sla = 'no_support',
+                feature_support = 'no_support',
+                feature_user_management = 'no_support',
+                is_available = True,
+                is_public = True,
+                is_free = True,
+                export_models_allowed = True,
+
+            )
 
         return template
 
