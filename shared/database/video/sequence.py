@@ -405,7 +405,6 @@ class Sequence(Base):
 
         if label_file:
             sequence.label_file_id = label_file.id
-            sequence.single_frame = label_file.label.default_sequences_to_single_frame
         else:
             logger.info(
                 "label_file is None, this is unusual. video_file_id was: " + str(video_file_id) + " number was " + str(
@@ -464,6 +463,7 @@ class Sequence(Base):
             video = video,
             instance = instance)
 
+
     def regenerate_keyframe_list(
         self,
         session):
@@ -471,30 +471,40 @@ class Sequence(Base):
 
         """
 
-        # Not yet tested.
-        # does not add to session
-
         instance_list = Instance.list(  # Using this checks for soft deleted by default
             session = session,
             sequence_id = self.id,
             limit = None)
 
-        # print("len instance_list", len(instance_list))
+        frame_number_list = self.regenerate_keyframes_for_whole_series(instance_list)
+        print("Running")
+        self.keyframe_list['frame_number_list'] = frame_number_list
 
+
+    def regenerate_keyframes_for_whole_series(self, instance_list):
+        # Assumes entire list is provided and just want to recreate the list.
+        frame_number_list = []
         for instance in instance_list:
-            self.update_frame_number_list(session, instance)
+            if self.is_keyframe_missing_from_list(instance, frame_number_list) is True:
+                bisect.insort(frame_number_list, instance.frame_number)
+        return frame_number_list
 
-    # print(self.keyframe_list['frame_number_list'])
+
+    def is_keyframe_missing_from_list(instance, frame_number_list):
+        if instance.soft_delete is False or instance.soft_delete is None:
+            if instance.frame_number is not None:
+                if instance.frame_number not in frame_number_list:
+                    return True
+
 
     def update_frame_number_list(self, session, instance):
-        # Use instance for frame number and flag...
+        # Assumes from a single instance to avoid computation
 
         frame_number_list = self.keyframe_list['frame_number_list']
-        default_sequences_to_single_frame = instance.label_file.label.default_sequences_to_single_frame
-        if instance.soft_delete is False or instance.soft_delete is None:
-            if instance.frame_number not in frame_number_list and instance.frame_number is not None:
-                bisect.insort(frame_number_list, instance.frame_number)
-        elif instance.soft_delete and not default_sequences_to_single_frame:
+        
+        if self.is_keyframe_missing_from_list(instance, frame_number_list) is True:
+            bisect.insort(frame_number_list, instance.frame_number)
+        else:
             try:
                 del frame_number_list[bisect.bisect_left(
                     frame_number_list, instance.frame_number)]
