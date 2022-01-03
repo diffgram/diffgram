@@ -85,7 +85,6 @@ class FeatureChecker:
         return plan
 
     def get_limit_from_plan(self, flag_name):
-        print('GET FLAGS', flag_name)
         if flag_name not in self.FEATURE_FLAGS:
             return None
 
@@ -127,7 +126,6 @@ class FeatureChecker:
         if flag_name == 'MAX_FRAMES_PER_VIDEO':
             return plan_template.limit_files
         if flag_name == 'MAX_INSTANCES_PER_EXPORT':
-            print('RESULT IS', plan_template, plan_template.limit_instances, plan_template.internal_name)
             return plan_template.limit_instances
         if flag_name == 'MAX_PROJECTS':
             return plan_template.limit_projects
