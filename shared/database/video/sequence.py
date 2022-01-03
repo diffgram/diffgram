@@ -492,18 +492,7 @@ class Sequence(Base):
         frame_number_list = self.keyframe_list['frame_number_list']
         default_sequences_to_single_frame = instance.label_file.label.default_sequences_to_single_frame
         if instance.soft_delete is False or instance.soft_delete is None:
-
-            # there wasn't a super obvious way to use built in
-            # bisect for this test and since we expect this list to
-            # generally be < 100 elements just leaving it.
-
-            # this (not in) test is here because it was doubling up
-            # keyframes, somethign to do with the way attributes were
-            # saving maybe? but it was suprisingly glaring bug
-            # on front end
-
             if instance.frame_number not in frame_number_list and instance.frame_number is not None:
-                # binary search based insertion
                 bisect.insort(frame_number_list, instance.frame_number)
         elif instance.soft_delete and not default_sequences_to_single_frame:
             try:
@@ -511,41 +500,5 @@ class Sequence(Base):
                     frame_number_list, instance.frame_number)]
             except:
                 pass
-
-        # NOTE we previously had concept of if len(frame_number_list) == 0:
-        # Which could then call delete_sequence_shared()
-        # This was not fully implmented so leaving for now, but this is the "hook"
-        # where we would put it (at least in prior knowledge conextex.)
-        elif instance.soft_delete and default_sequences_to_single_frame:
-            # Opportunity to have some sort of cache to avoid querying here since this can sometimes be called
-            # Inside a for loop.
-            """
-            1) Future idea. All of this info should be available on 
-            `instance_list_kept_serialized`... because, generally speaking
-            we have all the instances already so shouldn't have to do a second
-            query.
-            2) There could be a timing issue here, we seem to do this update
-            "opportunistically", eg as each instance completes ... 
-            but what if more then one change in the one save event
-            """
-            count_instances_on_same_frame_and_sequence = Instance.list(
-                session = session,
-                sequence_id = instance.sequence_id,
-                file_id = instance.file_id,
-                frame_number = instance.frame_number,
-                label_file_id = instance.label_file_id,
-                limit = None,
-                return_kind = "count"
-            )
-
-            # logger.info(count_instances_on_same_frame_and_sequence)
-
-            if count_instances_on_same_frame_and_sequence == 1:
-                # Delete frame number list if its the last instance on this keyframe from same seq #.
-                try:
-                    del frame_number_list[bisect.bisect_left(
-                        frame_number_list, instance.frame_number)]
-                except:
-                    pass
 
         self.keyframe_list['frame_number_list'] = frame_number_list
