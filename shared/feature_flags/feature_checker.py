@@ -67,7 +67,7 @@ class FeatureChecker:
             is_annual_pricing = False,
             calculated_charge = -1,
             per_user_final = -1,
-            marketing_promo_code = '',
+            marketing_promo_code = None,
             marketing_promo_rate_found = -1,
             marketing_plan_rate = -1,
             marketing_savings = -1,
