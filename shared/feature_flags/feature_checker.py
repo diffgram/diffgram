@@ -61,7 +61,7 @@ class FeatureChecker:
 
         plan = Plan.new(
             session = self.session,
-            member = self.user.member,
+            member = self.user.member if self.user else None,
             plan_template = plan_template,
             premium_plan_user_count = -1,
             is_annual_pricing = False,
