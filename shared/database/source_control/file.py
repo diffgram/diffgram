@@ -367,10 +367,7 @@ class File(Base, Caching):
 
         file = self.serialize_base_file()
 
-        # WIP... Things like complete status from video
-        # if self.video_parent_file_id:
-        #	file['video_file_parent'] = self.video_parent_file(session)
-        print('serialize with type', self.type)
+        #print('serialize with type', self.type)
         if self.type == "image":
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
