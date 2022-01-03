@@ -477,7 +477,6 @@ class Sequence(Base):
             limit = None)
 
         frame_number_list = self.regenerate_keyframes_for_whole_series(instance_list)
-        print("Running")
         self.keyframe_list['frame_number_list'] = frame_number_list
 
 
@@ -490,7 +489,7 @@ class Sequence(Base):
         return frame_number_list
 
 
-    def is_keyframe_missing_from_list(instance, frame_number_list):
+    def is_keyframe_missing_from_list(self, instance, frame_number_list):
         if instance.soft_delete is False or instance.soft_delete is None:
             if instance.frame_number is not None:
                 if instance.frame_number not in frame_number_list:

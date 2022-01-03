@@ -1382,7 +1382,6 @@ class Annotation_Update():
         """
         # Prevent from adding the same instances with ID None (cases where list has the same instance twice)
         # And both instances have the same hash and no ID.
-        print('SERALIZED INSTANCE', self.instance   )
         if self.instance.id is None:
             return
 
