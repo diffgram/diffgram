@@ -10,7 +10,6 @@ describe("tasks_detail_pagination", () => {
         preserve: ["session"]
       });
       cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
     });
 
     it("Submit task to review", () => {
