@@ -27,8 +27,8 @@
           x-large
           class="mt-4"
           color="success">
-          <v-icon>mdi-star-shooting</v-icon>
-          Upgrade to Premium
+          <v-icon left>mdi-star-shooting</v-icon>
+          Upgrade
         </v-btn>
 
       </v-card-text>
