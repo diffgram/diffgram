@@ -91,7 +91,10 @@ export class TextInterface {
     }
 
     public redo() {
-        console.log("REDO")
+        if (this.currentSnapshotIndex === this.history.length) return;
+        const setHistorySnapshot = this.history[this.currentSnapshotIndex]
+        this.currentSnapshotIndex = this.currentSnapshotIndex + 1
+        this.instances = setHistorySnapshot.get()
     }
 
     public undo() {
