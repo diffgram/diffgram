@@ -1,5 +1,9 @@
 <template>
 <div>
+    <div style="display: flex; flex-direction: row;">
+        <v-btn @click="() => instances.undo()">Undo</v-btn>
+        <v-btn @click="() => instances.redo()">Redo</v-btn>
+    </div>
     <text_toolbar 
         :label_list="label_list" 
         :project_string_id="project_string_id"

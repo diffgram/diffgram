@@ -4,10 +4,12 @@ import { TextInstance, TextLabelInstanse, TextRelationInstance } from "./Interfa
 export class TextInterface {
     private instances: TextInstance[];
     private history: any[];
+    private currentSnapshotIndex: number;
 
     constructor() {
         this.instances = []
         this.history = []
+        this.currentSnapshotIndex = 0
     }
     
     get(type = null) {
@@ -19,6 +21,7 @@ export class TextInterface {
 
     private makeSnapshot() {
         const snapshot = new TextInstanceSnapshot([...this.instances])
+        this.currentSnapshotIndex = this.history.length + 1
         this.history.push(snapshot)
     }
  
@@ -88,10 +91,19 @@ export class TextInterface {
     }
 
     public redo() {
-        console.log("REDU")
+        console.log("REDO")
     }
 
     public undo() {
-        console.log("UNDO")
+        if (this.currentSnapshotIndex === 0) return;
+        const currentSnapshotIndex = this.currentSnapshotIndex - 1
+        const setHistorySnapshot = this.history[currentSnapshotIndex - 1]
+        this.currentSnapshotIndex = currentSnapshotIndex
+        
+        if (setHistorySnapshot) {
+            this.instances = setHistorySnapshot.get()
+            return
+        }
+        this.instances = []
     }
 }
