@@ -199,7 +199,7 @@ class Sequence(Base):
                 instance = self.get_preview_instance(session = session)
 
                 if instance:
-                    logger.info("Rebuilding Instance {} Preview".format(instance.id))
+                    logger.debug("Rebuilding Instance {} Preview".format(instance.id))
 
                     self.instance_preview_cache = instance.serialize_for_sequence_preview(
                         session = session)
@@ -229,7 +229,7 @@ class Sequence(Base):
             the instance we are getting has a thumbnail.
         """
         if instance:
-            logger.info('Regenerating instance thumb for {}'.format(instance.id))
+            logger.debug('Regenerating instance thumb for {}'.format(instance.id))
             self.regenerate_instance_thumb(
                 session = session,
                 instance = instance)
@@ -369,7 +369,7 @@ class Sequence(Base):
         if label_file:
             sequence.label_file_id = label_file.id
         else:
-            logger.info(
+            logger.debug(
                 "label_file is None, this is unusual. video_file_id was: " + str(video_file_id) + " number was " + str(
                     number))
 
@@ -473,6 +473,7 @@ class Sequence(Base):
 
     def add_keyframe_to_cache(self, session, instance):
         # Assumes from a single instance to avoid computation
+        # Assumes will ignore duplicates
 
         frame_number_list = self.keyframe_list['frame_number_list']       
         if self.is_keyframe_alive(instance) is True:
@@ -485,6 +486,6 @@ class Sequence(Base):
                 return
             try:
                 bisect.insort(frame_number_list, instance.frame_number)
-            except:
-                pass
+            except Exception as e:
+                print(e)
         self.keyframe_list['frame_number_list'] = frame_number_list
