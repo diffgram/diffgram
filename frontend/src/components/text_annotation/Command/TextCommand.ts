@@ -82,6 +82,11 @@ export class TextInterface {
         return instance
     }
 
+    public get_relation_by_id(id: number): TextInstance {
+        const instance = [...this.instances].find(instance => instance.type === "relation" && instance.id === id)
+        return instance
+    }
+
     public redo() {
         console.log("REDU")
     }
