@@ -420,7 +420,7 @@ class Annotation_Update():
                 ids_not_included
             )
             self.log['warning'][
-                'information'] = 'Error: outdated instance list sent. This can happen when 2 users are working on the same file at the same time.' \
+                'information'] = 'Error: outdated instance list sent.' \
                                  'Please try reloading page, clicking the refresh file data button or check your network connection. ' \
                                  'Please contact use if this persists.'
             self.log['warning']['missing_ids'] = ids_not_included
@@ -437,8 +437,7 @@ class Annotation_Update():
                 member_id = self.member.id if self.member else None,
                 error_log = self.log,
                 success = False)
-            # Do not return an error state for now, we are recording the event.
-            # return False
+            return False
         return True
 
     def append_new_instance_list_hash(self, instance):
