@@ -3866,7 +3866,16 @@ mplate_has_keypoints_type: function (instance_template) {
         this.current_frame
       );
     },
-
+    set_frame_pending_save: function(frame_number){
+      if(frame_number == undefined){
+        return
+      }
+      if (this.instance_buffer_metadata[frame_number]) {
+        this.instance_buffer_metadata[frame_number].pending_save = true;
+      } else {
+        this.instance_buffer_metadata[frame_number] = { pending_save: true };
+      }
+    },
     add_instance_to_frame_buffer: function (instance, frame_number) {
       if (!this.video_mode) {
         return;
@@ -3886,11 +3895,8 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       // Set Metadata to manage saving frames
-      if (this.instance_buffer_metadata[frame_number]) {
-        this.instance_buffer_metadata[frame_number].pending_save = true;
-      } else {
-        this.instance_buffer_metadata[frame_number] = { pending_save: true };
-      }
+      this.set_frame_pending_save(frame_number)
+
     },
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
@@ -3919,6 +3925,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.has_changed = true;
 
       if (this.video_mode == true) {
+        this.set_frame_pending_save(frame_number)
         let was_saved = await this.save();
         if (!was_saved) {
           // If instance was not saved, because of concurrent saves. We still set it to pending
@@ -7653,6 +7660,54 @@ mplate_has_keypoints_type: function (instance_template) {
         console.error(error);
       }
     },
+    move_instance: function(instance_clipboard){
+      /*
+      * Mostly used for pasting instances on same image/frame, so that they don't
+      * get pasted on the exact same position.
+      * */
+      if (instance_clipboard.type === "point") {
+        instance_clipboard.points[0].x += 50;
+        instance_clipboard.points[0].y += 50;
+      }
+      else if (instance_clipboard.type === "box") {
+        instance_clipboard.x_min += 50;
+        instance_clipboard.x_max += 50;
+        instance_clipboard.y_min += 50;
+        instance_clipboard.y_max += 50;
+      }
+      else if (instance_clipboard.type === "line" || instance_clipboard.type === "polygon") {
+        for (const point of instance_clipboard.points) {
+          point.x += 50;
+          point.y += 50;
+        }
+      }
+      else if (instance_clipboard.type === "keypoints") {
+        for (const node of instance_clipboard.nodes) {
+          node.x += 50;
+          node.y += 50;
+        }
+      }
+      else if (instance_clipboard.type === "cuboid") {
+        for (let key in instance_clipboard.front_face) {
+          if (["width", "height"].includes(key)) {
+            continue;
+          }
+          instance_clipboard.front_face[key].x += 85;
+          instance_clipboard.front_face[key].y += 85;
+          instance_clipboard.rear_face[key].x += 85;
+          instance_clipboard.rear_face[key].y += 85;
+        }
+      } else if (instance_clipboard.type === "ellipse") {
+        instance_clipboard.center_y += 50;
+        instance_clipboard.center_x += 50;
+      } else if (instance_clipboard.type === "curve") {
+        instance_clipboard.p1.x += 50;
+        instance_clipboard.p1.y += 50;
+        instance_clipboard.p2.x += 50;
+        instance_clipboard.p2.y += 50;
+      }
+      return instance_clipboard
+    },
     add_pasted_instance_to_instance_list: async function (
       instance_clipboard,
       next_frames,
@@ -7671,56 +7726,10 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.$props.task && this.$props.task.file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
-      if (instance_clipboard.type === "point" && !on_new_frame_or_file) {
-        instance_clipboard.points[0].x += 50;
-        instance_clipboard.points[0].y += 50;
-      } else if (instance_clipboard.type === "box" && !on_new_frame_or_file) {
-        instance_clipboard.x_min += 50;
-        instance_clipboard.x_max += 50;
-        instance_clipboard.y_min += 50;
-        instance_clipboard.y_max += 50;
-      } else if (
-        (instance_clipboard.type === "line" ||
-          instance_clipboard.type === "polygon") &&
-        !on_new_frame_or_file
-      ) {
-        for (const point of instance_clipboard.points) {
-          point.x += 50;
-          point.y += 50;
-        }
-      } else if (
-        instance_clipboard.type === "keypoints" &&
-        !on_new_frame_or_file
-      ) {
-        for (const node of instance_clipboard.nodes) {
-          node.x += 50;
-          node.y += 50;
-        }
-      } else if (
-        instance_clipboard.type === "cuboid" &&
-        !on_new_frame_or_file
-      ) {
-        for (let key in instance_clipboard.front_face) {
-          if (["width", "height"].includes(key)) {
-            continue;
-          }
-          instance_clipboard.front_face[key].x += 85;
-          instance_clipboard.front_face[key].y += 85;
-          instance_clipboard.rear_face[key].x += 85;
-          instance_clipboard.rear_face[key].y += 85;
-        }
-      } else if (
-        instance_clipboard.type === "ellipse" &&
-        !on_new_frame_or_file
-      ) {
-        instance_clipboard.center_y += 50;
-        instance_clipboard.center_x += 50;
-      } else if (instance_clipboard.type === "curve" && !on_new_frame_or_file) {
-        instance_clipboard.p1.x += 50;
-        instance_clipboard.p1.y += 50;
-        instance_clipboard.p2.x += 50;
-        instance_clipboard.p2.y += 50;
+      if(!on_new_frame_or_file){
+        instance_clipboard = this.move_instance(instance_clipboard)
       }
+
       // Deselect instances.
       for (const instance of this.instance_list) {
         instance.selected = false;
@@ -7780,6 +7789,7 @@ mplate_has_keypoints_type: function (instance_template) {
       // We need to duplicate on each paste to avoid double ID's on the instance list.
       const new_clipboard_instance_list = [];
       for (const instance_clipboard of this.clipboard.instance_list) {
+        this.set_frame_pending_save(this.current_frame)
         let instance_clipboard_dup =
           this.duplicate_instance(instance_clipboard);
         await this.add_pasted_instance_to_instance_list(
@@ -8069,14 +8079,8 @@ mplate_has_keypoints_type: function (instance_template) {
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
 
-        if (this.instance_buffer_metadata[this.current_frame]) {
-          this.instance_buffer_metadata[this.current_frame].pending_save =
-            false;
-        } else {
-          this.instance_buffer_metadata[this.current_frame] = {
-            pending_save: false,
-          };
-        }
+        this.set_frame_pending_save(this.current_frame)
+
 
         if (response.data.sequence) {
           // Because: new color thing based on sequence id but seq id not assigned till response
@@ -8164,6 +8168,20 @@ mplate_has_keypoints_type: function (instance_template) {
         return false;
       }
     },
+<<<<<<< Updated upstream
+=======
+    add_keyframe_to_sequence(instance, current_frame_cache) {
+      if (instance.action_type == "created" ||
+          instance.action_type == "new_instance" ||
+          instance.action_type == "undeleted")      // not 'edited'
+      {
+        this.$refs.sequence_list.add_frame_number_to_sequence(
+          instance.sequence_id,
+          current_frame_cache
+        );
+      }
+    },
+>>>>>>> Stashed changes
     complete_task() {
       if (!this.task) {
         return;
