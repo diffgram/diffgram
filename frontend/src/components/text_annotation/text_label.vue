@@ -8,15 +8,15 @@
             height="20" 
             class="cursor"
             opacity="0.4"
-            :x="annotation.set_x" 
-            :y="annotation.set_y" 
-            :width="annotation.selecction_width"
+            :x="annotation.x" 
+            :y="annotation.y" 
+            :width="annotation.width"
             :fill="current_color"
         />
         <text 
             class="annotation-font-size"
-            :x="annotation.set_x" 
-            :y="annotation.set_y + 30" 
+            :x="annotation.x" 
+            :y="annotation.y + 30" 
             :stroke="current_color"
         >
             {{ annotation.label.label.name }}

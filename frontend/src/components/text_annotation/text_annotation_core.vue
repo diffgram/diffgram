@@ -11,8 +11,8 @@
     />
     <div style="display: flex; flex-direction: row;">
         <text_sidebar
-            :annotations="annotations"
-            :relations="relations"
+            :annotations="labels_to_render"
+            :relations="relations_to_render"
             @on_annotation_hover="on_annotation_hover"
             @on_stop_hover="on_stop_hover"
             @on_relation_hover="on_relation_hover"
@@ -39,7 +39,7 @@
                         :d="draw_arc" 
                     />
                     <text_relation 
-                        v-for="relation in relations.filter(rel => rel.sentense_index === sentense_index)"
+                        v-for="relation in relations_to_render.filter(rel => rel.sentense_index === sentense_index)"
                         :key="`relation_${relation.id}`"
                         :relation="relation"
                         :relation_hover="relation_hover"
@@ -63,7 +63,7 @@
                         </text>
                     </g>
                     <text_label
-                        v-for="annotation in annotations.filter(ann => ann.sentense_index === sentense_index)"
+                        v-for="annotation in labels_to_render.filter(label => label.sentense_index === sentense_index)"
                         :key="`annotation_id_${annotation.id}`"
                         :annotation="annotation"
                         :hover_id="hover_id"
@@ -86,6 +86,7 @@ import text_toolbar from "./text_toolbar.vue"
 import text_label from "./text_label.vue"
 import text_relation from "./text_relation.vue"
 import text_sidebar from "./text_sidebar.vue"
+import { TextInterface } from "./Command/TextCommand"
 
 export default Vue.extend({
     name: "text_annotation_core",
@@ -118,8 +119,7 @@ export default Vue.extend({
             set_y: null,
             selecction_width: 0,
             current_label: null,
-            annotations: [],
-            relations: [],
+            instances: new TextInterface(),
             element_width_dev: 300,
             hover_id: null,
             relation_hover: {
@@ -159,6 +159,12 @@ export default Vue.extend({
         draw_arc: function() {
             const { M1, M2, Q1, Q2, Q3, Q4 } = this.path
             return `M ${M1} ${M2} Q ${Q1} ${Q2} ${Q3} ${Q4}`
+        },
+        labels_to_render: function() {
+            return this.instances.get("label")
+        },
+        relations_to_render: function() {
+            return this.instances.get("relation")
         }
     },
     methods: {
@@ -215,9 +221,13 @@ export default Vue.extend({
             }, 10000000000000000)
             this.set_x = this.set_x - token_start
 
+            const sel = window.getSelection();
+            const range = sel.getRangeAt(0)
+            const right = range.getBoundingClientRect().right - 300;
+
             const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
-                var element_width = this.$refs[`text_token_${currentValue.index}_sentense_index_${sentense_index}`][0].clientWidth;
-                const delta = element_width  - (this.set_x + this.selecction_width)
+                const element_width = this.$refs[`text_token_${currentValue.index}_sentense_index_${sentense_index}`][0].clientWidth;
+                const delta = element_width - (this.set_x + this.selecction_width)
                 if (delta < 0) return prevValue
                 return Math.min(prevValue, delta)
             }, 10000000000000000)
@@ -258,7 +268,7 @@ export default Vue.extend({
                     this.set_x = this.set_x - width
                 }
                 this.spread_selection(sentense_index)
-                this.annotations = [...this.annotations, { id: this.annotations.length + 1, set_x: this.set_x, set_y: this.set_y, selecction_width: this.selecction_width, sentense_index, label: {...this.current_label}} ]
+                this.instances.addLabelInstance(this.set_x, this.set_y, this.selecction_width, sentense_index, {...this.current_label})
                 document.getSelection().removeAllRanges()
             }
         },
@@ -269,12 +279,8 @@ export default Vue.extend({
             this.hover_id = null
         },
         on_relation_hover: function(id) {
-            const relation_object = this.relations.find(rel => rel.id === id)
-            this.relation_hover = {
-                relation_hover_id: relation_object.id,
-                start_label_id: relation_object.start_label,
-                end_label_id: relation_object.end_label
-            }
+            const relation_object = this.instances.get_relation_by_id(id)
+            this.relation_hover = relation_object
         },
         on_relation_stop_hover: function() {
             this.relation_hover = {
@@ -284,7 +290,6 @@ export default Vue.extend({
             }
         },
         on_mouse_move_listen: function(event) {
-            console.log("arroy moving")
             const coordX_global = event.clientX;
             const element = this.$refs.svg_main_container[0];
             const leftPos = element.getBoundingClientRect().left + window.scrollX;
@@ -295,24 +300,13 @@ export default Vue.extend({
             this.path.Q1 = coordX_local  / 2
         },
         on_add_relation: function(event, sentense_index, annotation_id) {
-            console.log(event, sentense_index, annotation_id)
             if (this.drawing_relation) {
-                const start_annotation = this.annotations.find(annotation => annotation.id === this.path.start_annotation_id)
-                const M1 = start_annotation.set_x + start_annotation.selecction_width / 2
-                const end_annotation = this.annotations.find(annotation => annotation.id === annotation_id)
-                const H = end_annotation.set_x + end_annotation.selecction_width / 2
-                if (start_annotation.id !== end_annotation.id && !this.relations.find(rel => rel.start_label === start_annotation.id && rel.end_label === end_annotation.id)) {
-                    const new_relation = {
-                        id: this.relations.length + 1,
-                        M1,
-                        M2: this.path.M2,
-                        H,
-                        sentense_index,
-                        start_label: start_annotation.id,
-                        end_label: end_annotation.id,
-                        label: {...this.current_label}
-                    }
-                    this.relations = [...this.relations, new_relation]
+                const start_annotation = this.instances.get_label_by_id(this.path.start_annotation_id)
+                const M1 = start_annotation.x + start_annotation.width / 2
+                const end_annotation = this.instances.get_label_by_id(annotation_id)
+                const H = end_annotation.x + end_annotation.width / 2
+                if (start_annotation.id !== end_annotation.id && !this.relations_to_render.find(rel => rel.start_label === start_annotation.id && rel.end_label === end_annotation.id)) {
+                    this.instances.addRelationInstance(M1, this.path.M2, H, start_annotation.id, end_annotation.id, sentense_index, {...this.current_label})
                 }
                 this.path = {
                     M1: null,

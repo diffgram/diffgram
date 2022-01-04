@@ -31,7 +31,6 @@
   import Vue from "vue";
   import label_select_annotation from "../label/label_select_annotation.vue";
 
-
   export default Vue.extend({
       name: 'text_toolbar',
       components: {
