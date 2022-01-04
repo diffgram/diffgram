@@ -283,12 +283,13 @@
               </v-btn>
             </ahref_seo_optimal>
             <v-btn
-              v-if="$store.state.user.logged_in == true"
+              v-if="$store.state.user.logged_in == true
+                   && $store.state.org && !$store.state.org.current.id"
               @click="go_to_order_page"
               outlined
               color="success">
-              <v-icon>mdi-star-shooting</v-icon>
-              Upgrade to Premium
+              <v-icon left>mdi-star-shooting</v-icon>
+              Upgrade
             </v-btn>
 
             <v_profile_in_menu class="hidden-xs-only">
