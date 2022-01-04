@@ -463,11 +463,15 @@ class Sequence(Base):
 
         frame_number_list = self.keyframe_list['frame_number_list']
         index = bisect.bisect_left(frame_number_list, instance.frame_number)
-        if instance.frame_number == 0 and index == 0:
-            del frame_number_list[index]
+        if frame_number_list:
+            try:
+                if instance.frame_number == 0 and index == 0:
+                    del frame_number_list[index]
 
-        if index != 0 and index < len(frame_number_list):
-            del frame_number_list[index]
+                if index != 0 and index < len(frame_number_list):
+                    del frame_number_list[index]
+            except Exception as e:
+                logger.error(e)
         self.keyframe_list['frame_number_list'] = frame_number_list
 
 
@@ -487,5 +491,5 @@ class Sequence(Base):
             try:
                 bisect.insort(frame_number_list, instance.frame_number)
             except Exception as e:
-                print(e)
+                logger.error(e)
         self.keyframe_list['frame_number_list'] = frame_number_list

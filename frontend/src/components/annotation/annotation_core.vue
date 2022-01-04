@@ -7915,15 +7915,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
     },
-
-    refresh_sequence_frame_list: function (instance_list, frame_number) {
-      for (const instance of instance_list) {
-        this.$refs.sequence_list.add_frame_number_to_sequence(
-          instance.sequence_id,
-          frame_number
-        );
-      }
-    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -8118,10 +8109,16 @@ mplate_has_keypoints_type: function (instance_template) {
             }
           }
           if (this.video_mode) {
-            this.refresh_sequence_frame_list(
-              instance_list_request_frame,
-              video_data.current_frame
-            );
+
+            for (var instance of response.data.added_instances) {
+              this.add_keyframe_to_sequence(instance)
+
+              if (instance.action_type == "deleted") {
+                this.$refs.sequence_list.remove_frame_number_from_sequence(
+                  instance.sequence_id,
+                  this.current_frame)
+              }
+            }
           }
         }
 
@@ -8163,6 +8160,17 @@ mplate_has_keypoints_type: function (instance_template) {
         //this.logout()
         return false;
       }
+    },
+    add_keyframe_to_sequence(instance) {
+      if (instance.action_type == "created" ||
+          instance.action_type == "new_instance" ||
+          instance.action_type == "undeleted")      // not 'edited'
+      {
+        this.$refs.sequence_list.add_frame_number_to_sequence(
+          instance.sequence_id,
+          this.current_frame
+        );   
+      }     
     },
     complete_task() {
       if (!this.task) {

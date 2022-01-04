@@ -1897,7 +1897,6 @@ class Annotation_Update():
             update_existing_only = True)
 
         if sequence:
-            print(sequence.id, self.added_sequence_ids)
             if sequence.id not in self.added_sequence_ids:
                 sequence.remove_keyframe_to_cache(self.session, instance)
                 self.session.add(sequence)
