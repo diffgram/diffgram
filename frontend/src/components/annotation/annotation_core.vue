@@ -8112,12 +8112,12 @@ mplate_has_keypoints_type: function (instance_template) {
 
             for (var instance of response.data.added_instances) {
 
-              this.add_keyframe_to_sequence(instance)
+              this.add_keyframe_to_sequence(instance, current_frame_cache)
 
               if (instance.action_type == "deleted") {
                 this.$refs.sequence_list.remove_frame_number_from_sequence(
                   instance.sequence_id,
-                  this.current_frame)
+                  current_frame_cache)
               }
             }
           }
@@ -8162,14 +8162,14 @@ mplate_has_keypoints_type: function (instance_template) {
         return false;
       }
     },
-    add_keyframe_to_sequence(instance) {
+    add_keyframe_to_sequence(instance, current_frame_cache) {
       if (instance.action_type == "created" ||
           instance.action_type == "new_instance" ||
           instance.action_type == "undeleted")      // not 'edited'
       {
         this.$refs.sequence_list.add_frame_number_to_sequence(
           instance.sequence_id,
-          this.current_frame
+          current_frame_cache
         );   
       }     
     },
