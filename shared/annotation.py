@@ -80,7 +80,7 @@ class Annotation_Update():
     new_created_sequence_list: list = field(default_factory = lambda: [])
     allowed_model_run_id_list: list = None
     allowed_model_id_list: list = None
-    added_sequence_ids: list = None
+    added_sequence_ids: list = field(default_factory = lambda: [])
 
     count_instances_changed = 0
 
@@ -1354,9 +1354,11 @@ class Annotation_Update():
         sequence = self.sequence_update(instance = self.instance)
 
         if sequence:
-            print("Attempting to add keyframe")
-            sequence.add_keyframe_to_cache(self.session, self.instance)
-            self.session.add(sequence)
+            if not self.instance.soft_delete:
+                sequence.add_keyframe_to_cache(self.session, self.instance)
+                self.session.add(sequence)
+                
+                self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
 
     def update_sequence_id_in_cache_list(self, instance):
@@ -1858,10 +1860,6 @@ class Annotation_Update():
         if self.instance_list_existing is None:
             return
 
-        self.added_sequence_ids = []
-        for instance in self.new_added_instances:
-            self.added_sequence_ids.append(instance.sequence_id)
-
         for remaining_hash in self.hash_list:
             index = self.hash_old_cross_reference[remaining_hash]
             instance = self.instance_list_existing[index]
@@ -1901,7 +1899,6 @@ class Annotation_Update():
         if sequence:
             print(sequence.id, self.added_sequence_ids)
             if sequence.id not in self.added_sequence_ids:
-                print("Deleting keyframe")
                 sequence.remove_keyframe_to_cache(self.session, instance)
                 self.session.add(sequence)
 
