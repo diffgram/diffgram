@@ -8168,8 +8168,6 @@ mplate_has_keypoints_type: function (instance_template) {
         return false;
       }
     },
-<<<<<<< Updated upstream
-=======
     add_keyframe_to_sequence(instance, current_frame_cache) {
       if (instance.action_type == "created" ||
           instance.action_type == "new_instance" ||
@@ -8181,7 +8179,6 @@ mplate_has_keypoints_type: function (instance_template) {
         );
       }
     },
->>>>>>> Stashed changes
     complete_task() {
       if (!this.task) {
         return;
