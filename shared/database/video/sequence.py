@@ -443,6 +443,7 @@ class Sequence(Base):
 
     def regenerate_keyframes_for_whole_series(self, instance_list):
         # Assumes entire list is provided and just want to recreate the list.
+        logger.debug("regenerate_keyframes_for_whole_series")
         frame_number_list = []
         for instance in instance_list:
             if self.is_keyframe_alive(instance) is True:
@@ -462,6 +463,7 @@ class Sequence(Base):
     def remove_keyframe_to_cache(self, session, instance):
 
         frame_number_list = self.keyframe_list['frame_number_list']
+        logger.debug(frame_number_list)
         index = bisect.bisect_left(frame_number_list, instance.frame_number)
         if frame_number_list:
             try:
@@ -472,6 +474,7 @@ class Sequence(Base):
                     del frame_number_list[index]
             except Exception as e:
                 logger.error(e)
+        logger.debug(frame_number_list)
         self.keyframe_list['frame_number_list'] = frame_number_list
 
 
@@ -479,17 +482,20 @@ class Sequence(Base):
         # Assumes from a single instance to avoid computation
         # Assumes will ignore duplicates
 
-        frame_number_list = self.keyframe_list['frame_number_list']       
+        frame_number_list = self.keyframe_list['frame_number_list']
+        logger.debug(frame_number_list)
+        logger.debug(instance.number)
         if self.is_keyframe_alive(instance) is True:
 
             # prevent duplicates by checking if it exists
             index = bisect.bisect_left(frame_number_list, instance.frame_number)
             if index < len(frame_number_list):
                 return
-            if index == 0 and instance.frame_number != 0:
+            if len(frame_number_list) != 0 and index == 0 and instance.frame_number != 0:
                 return
             try:
                 bisect.insort(frame_number_list, instance.frame_number)
             except Exception as e:
                 logger.error(e)
+        logger.debug(frame_number_list)
         self.keyframe_list['frame_number_list'] = frame_number_list

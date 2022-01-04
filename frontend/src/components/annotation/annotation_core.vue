@@ -8111,6 +8111,7 @@ mplate_has_keypoints_type: function (instance_template) {
           if (this.video_mode) {
 
             for (var instance of response.data.added_instances) {
+
               this.add_keyframe_to_sequence(instance)
 
               if (instance.action_type == "deleted") {
