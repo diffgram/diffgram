@@ -1196,7 +1196,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
         print('ann_update.log', ann_update.log)
-        self.assertFalse(result)
+        self.assertTrue(result)
         self.assertTrue(len(ann_update.log['warning'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['warning'])
         self.assertTrue('information' in ann_update.log['warning'])
@@ -1219,7 +1219,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
 
-        self.assertFalse(result)
+        self.assertTrue(result)
         self.assertTrue(len(ann_update.log['warning'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['warning'])
         self.assertTrue('information' in ann_update.log['warning'])
