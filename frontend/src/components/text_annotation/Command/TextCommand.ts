@@ -1,5 +1,6 @@
 import { TextInstanceSnapshot } from "./CreateSnapshot"
 import { TextInstance, TextLabelInstanse, TextRelationInstance } from "./Interfaces"
+import {v4 as uuidv4 } from 'uuid'
 
 export class TextInterface {
     private instances: TextInstance[];
@@ -43,6 +44,7 @@ export class TextInterface {
         ): void {
         const newTextInstance: TextLabelInstanse = {
             id: this.instances.length + 1,
+            creation_ref_id: uuidv4(),
             type: "label",
             x,
             y,
@@ -66,6 +68,7 @@ export class TextInterface {
         ): void {
         const newTextInstance: TextRelationInstance = {
             id: this.instances.length + 1,
+            creation_ref_id: uuidv4(),
             type: "relation",
             M1,
             M2,

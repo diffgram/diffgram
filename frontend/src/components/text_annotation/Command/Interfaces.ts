@@ -3,6 +3,7 @@ export interface TextInstance {
     type: string;
     sentense_index: number;
     label: any;
+    creation_ref_id: string;
 }
 
 export interface TextLabelInstanse extends TextInstance {
