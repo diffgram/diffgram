@@ -258,10 +258,20 @@ export default Vue.extend({
             if (50 + end_token_y > this.set_y) {
                 labelItems = [
                     {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].width.baseVal.value},
-                    {x: 10, y: end_token_y + 50, width: token_width - 10},
+                    // {x: 10, y: end_token_y + 50, width: token_width - 10},
                 ]
-                
+                const number_of_lines = (end_token_y + 50 - this.set_y) / 20
+                for (let i = 1; i <= number_of_lines; i++) {
+                    if (i === number_of_lines) {
+                        labelItems.push({x: 10, y: end_token_y + 50, width: token_width - 10})
+                    } 
+                    else {
+                        labelItems.push({x: 10, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].width.baseVal.value})
+                    }
+                } 
             }
+
+            console.log(labelItems)
 
             this.instances.addLabelInstance(labelItems, sentense_index, {...this.current_label})
             document.getSelection().removeAllRanges()
