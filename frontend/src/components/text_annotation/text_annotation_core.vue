@@ -73,6 +73,7 @@
                             :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :ref="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :x="token.token_start_coordinate" 
+                            :y="token.token_start_height"
                         >
                             {{ token.word }}
                         </text>
@@ -123,7 +124,7 @@ export default Vue.extend({
         },
         text: {
             type: String,
-            default: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
+            default: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus nascetur ridiculus mus cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
         }
     },
     data() {
@@ -199,13 +200,19 @@ export default Vue.extend({
             this.text_tokenized.push(tokenized_text)
         },
         text_render_width: function() {
+            const max_width = this.$refs.svg_main_container[0].width.baseVal.value
             const measure_words = this.text_tokenized.map(sentence => {
                 let length_counter = 10;
+                let height_counter = 0;
                 const updated_sentense = sentence.map(token => {
                     const element = this.$refs[`text_token_${token.index}_sentense_index_${token.sentense_index}`][0]
                     const width_of_token = element.clientWidth
-                    const updated_token = {...token, token_start_coordinate: length_counter}
+                    const updated_token = {...token, token_start_coordinate: length_counter, token_start_height: height_counter}
                     length_counter += (width_of_token + 5)
+                    if (length_counter > max_width) {
+                        length_counter = 10
+                        height_counter += 20
+                    }
                     return updated_token
                 })
 
@@ -216,13 +223,14 @@ export default Vue.extend({
         },
         on_svg_click: function(event, sentense_index) {
             const coordX_global = event.clientX;
+            const coordY_global = event.clientY;
             const used_svg_wrapper_component = this.$refs.svg_main_container[sentense_index];
             var text_element = this.$refs[`text_to_annotate_${sentense_index}`][0]
             var topPos = text_element.getBoundingClientRect().top + window.scrollY;
             var leftPos = used_svg_wrapper_component.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
-            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
+            const coordY_local = coordY_global - topPos + 42
 
             this.set_x = coordX_local
             this.set_y = coordY_local
