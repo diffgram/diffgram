@@ -5,11 +5,13 @@ export class TextInterface {
     private instances: TextInstance[];
     private history: any[];
     private currentSnapshotIndex: number;
+    private resetHead: boolean;
 
     constructor() {
         this.instances = []
         this.history = []
         this.currentSnapshotIndex = 0
+        this.resetHead = false
     }
     
     get(type = null) {
@@ -19,9 +21,16 @@ export class TextInterface {
         return label_instances
     }
 
+    private resetHistoryHead() {
+        const history = [...this.history].splice(0, this.currentSnapshotIndex)
+        this.history = history
+        this.resetHead = false
+    }
+
     private makeSnapshot() {
+        if (this.resetHead) this.resetHistoryHead()
         const snapshot = new TextInstanceSnapshot([...this.instances])
-        this.currentSnapshotIndex = this.history.length + 1
+        this.currentSnapshotIndex = this.currentSnapshotIndex + 1
         this.history.push(snapshot)
     }
  
@@ -91,7 +100,7 @@ export class TextInterface {
     }
 
     public redo() {
-        if (this.currentSnapshotIndex === this.history.length) return;
+        if (this.currentSnapshotIndex === this.history.length) return this.resetHead = false;
         const setHistorySnapshot = this.history[this.currentSnapshotIndex]
         this.currentSnapshotIndex = this.currentSnapshotIndex + 1
         this.instances = setHistorySnapshot.get()
@@ -99,6 +108,7 @@ export class TextInterface {
 
     public undo() {
         if (this.currentSnapshotIndex === 0) return;
+        this.resetHead = true
         const currentSnapshotIndex = this.currentSnapshotIndex - 1
         const setHistorySnapshot = this.history[currentSnapshotIndex - 1]
         this.currentSnapshotIndex = currentSnapshotIndex

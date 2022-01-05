@@ -35,13 +35,24 @@
                     ref="svg_main_container"
                     @mousedown="(e) => on_selection_start(e, sentense_index)" 
                     @mouseup="(e) => on_selection_end(e, sentense_index)" 
-                >
-                    <path
-                        v-if="path_is_been_drawn(sentense_index)" 
-                        stroke="black" 
-                        fill="transparent"
-                        :d="draw_arc" 
-                    />
+                >   
+                    <g v-if="path_is_been_drawn(sentense_index)">
+                        <circle 
+                            :cx="path.M1" 
+                            :cy="path.M2" 
+                            r="3" 
+                            fill="black"
+                        />
+                        <path
+                            stroke="black" 
+                            fill="transparent"
+                            :d="draw_arc" 
+                        />
+                        <path 
+                            :d="`M ${path.Q3} ${path.M2} l -5, -5 l 10, 0 l -5, 5`" 
+                            fill="black" 
+                        />
+                    </g>
                     <text_relation 
                         v-for="relation in relations_to_render.filter(rel => rel.sentense_index === sentense_index)"
                         :key="`relation_${relation.id}`"
@@ -162,7 +173,7 @@ export default Vue.extend({
         },
         draw_arc: function() {
             const { M1, M2, Q1, Q2, Q3, Q4 } = this.path
-            return `M ${M1} ${M2} Q ${Q1} ${Q2} ${Q3} ${Q4}`
+            return `M ${M1} ${M2} Q ${Q1} ${Q2} ${Q3} ${Q4 - 5}`
         },
         labels_to_render: function() {
             return this.instances.get("label")
