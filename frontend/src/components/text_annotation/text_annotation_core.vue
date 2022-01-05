@@ -129,11 +129,16 @@ export default Vue.extend({
     },
     data() {
         return {
+            //text transformation
             text_stringified: [],
             text_tokenized: [],
+            //creating instances
             set_x: null,
             set_y: null,
             selecction_width: 0,
+            start_token_id: null,
+            end_token_id: null,
+            // labels
             current_label: null,
             instances: new TextInterface(),
             element_width_dev: 300,
@@ -221,55 +226,16 @@ export default Vue.extend({
 
             this.text_tokenized = measure_words
         },
-        on_svg_click: function(event, sentense_index) {
-            const coordX_global = event.clientX;
-            const coordY_global = event.clientY;
-            const used_svg_wrapper_component = this.$refs.svg_main_container[sentense_index];
-            var text_element = this.$refs[`text_to_annotate_${sentense_index}`][0]
-            var topPos = text_element.getBoundingClientRect().top + window.scrollY;
-            var leftPos = used_svg_wrapper_component.getBoundingClientRect().left + window.scrollX;
-
-            const coordX_local = coordX_global - leftPos
-            const coordY_local = coordY_global - topPos + 42
-
-            this.set_x = coordX_local
-            this.set_y = coordY_local
-        },
-        spread_selection: function(sentense_index) {
-            console.log("SPEREADING SELECT")
-            const token_start = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
-                const delta = this.set_x - currentValue.token_start_coordinate
-                if (delta < 0) return prevValue
-                return Math.min(prevValue, delta)
-            }, 10000000000000000)
-            this.set_x = this.set_x - token_start
-
-            const sel = window.getSelection();
-            const range = sel.getRangeAt(0)
-            const right = range.getBoundingClientRect().right - 300;
-
-            const token_end = this.text_tokenized[sentense_index].reduce((prevValue, currentValue) => {
-                const element_width = this.$refs[`text_token_${currentValue.index}_sentense_index_${sentense_index}`][0].clientWidth;
-                const delta = element_width - (this.set_x + this.selecction_width)
-                if (delta < 0) return prevValue
-                return Math.min(prevValue, delta)
-            }, 10000000000000000)
-            this.selecction_width = this.selecction_width + token_end
-        },
-        on_selection_start: function(event, sentense_index) {
-            if (!event.toElement.id) return
-            const token_x = event.toElement.x.baseVal[0].value
-            const token_y = 50 + event.toElement.y.baseVal[0].value
-            console.log(token_y)
-            const token_width = event.toElement.clientWidth
-            console.log(token_x, token_width)
+        on_selection_start: function(event) {
             console.log("ON KEY DOWN")
-            this.set_x = token_x
-            this.set_y = token_y
-            this.selecction_width = token_width - token_x
-            // this.on_svg_click(event, sentense_index)
+            if (!event.toElement.id) return
+            this.set_x = event.toElement.x.baseVal[0].value
+            this.set_y = 50 + event.toElement.y.baseVal[0].value
+            this.selecction_width = event.toElement.clientWidth - this.set_x
+            this.start_token_id = event.toElement.id
         },
         on_selection_end: function(event, sentense_index) {
+            console.log("ON KEY UP")
             if (!event.toElement.id) return
             if (this.drawing_relation) {
                 this.drawing_relation = false
@@ -284,23 +250,11 @@ export default Vue.extend({
                 }
                 return
             }
-            console.log("ON KEY UP")
-            const coordX_global = event.clientX;
-            const selection_exists = Math.abs(this.set_x - coordX_global) > 10
+            const token_width = event.toElement.clientWidth
+            this.selecction_width = token_width - this.set_x
 
-            const sel = window.getSelection();
-            const range = sel.getRangeAt(0)
-            const width = range.getBoundingClientRect().width;
-
-            if (selection_exists) {
-                // this.selecction_width = width
-                // if (this.set_x - coordX_global + 300 > 0) {
-                //     this.set_x = this.set_x - width
-                // }
-                // this.spread_selection(sentense_index)
-                this.instances.addLabelInstance(this.set_x, this.set_y, this.selecction_width, sentense_index, {...this.current_label})
-                document.getSelection().removeAllRanges()
-            }
+            this.instances.addLabelInstance(this.set_x, this.set_y, this.selecction_width, sentense_index, {...this.current_label})
+            document.getSelection().removeAllRanges()
         },
         on_annotation_hover: function(id) {
             this.hover_id = id
