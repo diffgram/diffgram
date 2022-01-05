@@ -2316,8 +2316,13 @@ mplate_has_keypoints_type: function (instance_template) {
       y_min,
       x_max,
       y_max,
-      userscript_id = undefined
+      userscript_id = undefined,
+      frame_number = undefined
     ) {
+      /*
+      * Used in context of userscripts.
+      * TODO: Might need to be moved to a separate userscript functions file.
+      * */
       if (
         x_min == undefined ||
         y_min == undefined ||
@@ -2352,7 +2357,7 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
 
       this.event_create_instance = new_instance;
@@ -2412,13 +2417,16 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     create_instance_from_keypoints: function (x, y) {
+      /*
+      * Used in context of userscripts.
+      * */
       let new_instance = {
         ...this.current_instance,
         points: [...this.current_instance.points.map((p) => ({ ...p }))],
       };
       new_instance.type = "point";
       new_instance.points = [{ x: x, y: y }];
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
     },
 
@@ -2458,6 +2466,9 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     create_polygon: function (points_list, userscript_id = undefined) {
+      /*
+      * Used in context of userscripts
+      * */
       let new_instance = {
         ...this.current_instance,
         points: [...this.current_instance.points.map((p) => ({ ...p }))],
@@ -2476,16 +2487,20 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
     },
 
     __bodypix_points_to_instances: function (keypoints_list) {
+      /*
+      * Used in context of userscripts.
+      * */
+
       // TODO also need to set instance type
 
       for (let keypoint of keypoints_list) {
         this.current_instance.points = [keypoint.position];
-        const command = new CreateInstanceCommand(this.current_instance, this);
+        const command = new CreateInstanceCommand(this.current_instance, this, this.current_frame);
         this.command_manager.executeCommand(command);
       }
     },
@@ -2771,7 +2786,7 @@ mplate_has_keypoints_type: function (instance_template) {
       let instance_to_unmerge = this.duplicate_instance(instance);
       // Remove point and just leave the points in the figure
       instance_to_unmerge.points = figure_points;
-      this.push_instance_to_instance_list_and_buffer(
+      this.add_instance_to_file(
         instance_to_unmerge,
         this.current_frame
       );
@@ -3861,7 +3876,7 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     insert_tag_type: function () {
-      this.push_instance_to_instance_list_and_buffer(
+      this.add_instance_to_file(
         this.current_instance,
         this.current_frame
       );
@@ -3876,12 +3891,12 @@ mplate_has_keypoints_type: function (instance_template) {
         this.instance_buffer_metadata[frame_number] = { pending_save: true };
       }
     },
-    add_instance_to_frame_buffer: function (instance, frame_number) {
+    add_instance_to_frame_buffer: async function (instance, frame_number) {
       if (!this.video_mode) {
         return;
       }
       if (frame_number == undefined) {
-        throw "frame number undefined in video mode (push_instance_to_instance_list_and_buffer)";
+        throw "frame number undefined in video mode (add_instance_to_frame_buffer)";
       }
       if (instance == undefined) {
         throw "instance is undefined in add_instance_to_frame_buffer()";
@@ -3896,42 +3911,51 @@ mplate_has_keypoints_type: function (instance_template) {
 
       // Set Metadata to manage saving frames
       this.set_frame_pending_save(frame_number)
+      // TODO: MIGHT NEED TO REMOVE THIS!!!!!!! (OR PASS FRAME_NUMBER TO SAVE)
+      if (this.video_mode == true) {
+        let was_saved = await this.save(frame_number);
+        if (!was_saved) {
+          // If instance was not saved, because of concurrent saves. We still set it to pending
+          this.has_changed = true;
+        }
+      }
 
     },
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
+    add_instance_to_file: async function(instance, frame_number = undefined){
 
-    push_instance_to_instance_list_and_buffer: async function (
+      if(this.video_mode){
+        if(!frame_number){
+          console.error('Please provide a frame number to call add_instance_to_file()')
+          return
+        }
+        this.add_instance_to_frame_buffer(instance, frame_number)
+      }
+      else{
+        this.push_instance_to_image_file(instance, frame_number)
+      }
+
+    },
+
+    push_instance_to_image_file: async function (
       instance = undefined,
       frame_number = undefined
     ) {
       if (this.video_mode == true && frame_number == undefined) {
         throw "frame number undefined in video mode (push_instance_to_instance_list)";
       }
-      let instance_to_push = this.current_instance;
+      instance.creation_ref_id = uuidv4();
+      instance.client_created_time = new Date().toISOString();
 
-      if (instance != undefined) {
-        instance_to_push = instance;
-      }
-      instance_to_push.creation_ref_id = uuidv4();
-      instance_to_push.client_created_time = new Date().toISOString();
-
-      if (!instance_to_push.change_source) {
-        instance_to_push.change_source = "ui_diffgram_frontend";
+      if (!instance.change_source) {
+        instance.change_source = "ui_diffgram_frontend";
       }
 
-      this.instance_list.push(instance_to_push);
+      this.instance_list.push(instance);
 
       this.has_changed = true;
 
-      if (this.video_mode == true) {
-        this.set_frame_pending_save(frame_number)
-        let was_saved = await this.save();
-        if (!was_saved) {
-          // If instance was not saved, because of concurrent saves. We still set it to pending
-          this.has_changed = true;
-        }
-      }
       // polygon point thing applies to a few different types
       // so for now just run it
 
@@ -5796,7 +5820,15 @@ mplate_has_keypoints_type: function (instance_template) {
       this.auto_border_polygon_p2_instance_index = undefined;
       this.show_polygon_border_context_menu = false;
     },
-    polygon_insert_point: function () {
+    finish_polygon_drawing: function(instance, frame_number = undefined){
+      const command = new CreateInstanceCommand(
+        instance,
+        this,
+        frame_number
+      );
+      this.command_manager.executeCommand(command);
+    },
+    polygon_insert_point: function (frame_number = undefined) {
       const current_point = this.polygon_point_limits();
 
       // check if we should auto complete polygon (or can use enter)
@@ -5807,11 +5839,7 @@ mplate_has_keypoints_type: function (instance_template) {
           this.point_is_intersecting_circle(this.mouse_position, first_point) &&
           this.instance_type === "polygon"
         ) {
-          const command = new CreateInstanceCommand(
-            this.current_instance,
-            this
-          );
-          this.command_manager.executeCommand(command);
+          this.finish_polygon_drawing(this.current_instance, frame_number);
           return;
         }
       }
@@ -5825,12 +5853,12 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
 
-    curve_mouse_up: function () {
+    curve_mouse_up: function (frame_number = undefined) {
       if (
         this.instance_type == "curve" &&
         this.current_polygon_point_list.length == 2
       ) {
-        const command = new CreateInstanceCommand(this.current_instance, this);
+        const command = new CreateInstanceCommand(this.current_instance, this, frame_number);
         this.command_manager.executeCommand(command);
       }
     },
@@ -6074,6 +6102,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
     mouse_up: function () {
       // start LIMITS, returns immediately
+      let locked_frame_number = this.current_frame;
       if (this.$props.view_only_mode == true) {
         return;
       }
@@ -6114,13 +6143,13 @@ mplate_has_keypoints_type: function (instance_template) {
       // TODO clarify difference between mode, and action, ie drawing.
       if (this.draw_mode == true) {
         if (this.instance_type == "cuboid") {
-          this.cuboid_mouse_up();
+          this.cuboid_mouse_up(locked_frame_number);
         }
         if (this.instance_type == "ellipse") {
           this.ellipse_mouse_up();
         }
         if (this.instance_template_selected) {
-          this.instance_template_mouse_up();
+          this.instance_template_mouse_up(locked_frame_number);
         }
 
         // careful, polygon does not want to take off active drawing until
@@ -6129,7 +6158,7 @@ mplate_has_keypoints_type: function (instance_template) {
         // polygon sets is_actively_drawing to false with "enter"
         if (["polygon", "line", "curve"].includes(this.instance_type)) {
           this.is_actively_drawing = true;
-          this.polygon_insert_point();
+          this.polygon_insert_point(locked_frame_number);
         }
 
         if (
@@ -6138,22 +6167,24 @@ mplate_has_keypoints_type: function (instance_template) {
         ) {
           const command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            locked_frame_number
           );
           this.command_manager.executeCommand(command);
         }
 
         if (this.instance_type == "point") {
-          this.polygon_insert_point();
+          this.polygon_insert_point(locked_frame_number);
           const command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            locked_frame_number
           );
           this.command_manager.executeCommand(command);
         }
 
         if (this.instance_type == "curve") {
-          this.curve_mouse_up();
+          this.curve_mouse_up(locked_frame_number);
         }
 
         if (this.instance_type == "box") {
@@ -6207,7 +6238,7 @@ mplate_has_keypoints_type: function (instance_template) {
         this.ellipse_current_drawing_face = false;
       }
     },
-    cuboid_mouse_up: function () {
+    cuboid_mouse_up: function (frame_number = undefined) {
       if (!this.cuboid_current_drawing_face) {
         this.is_actively_drawing = true;
         this.cuboid_current_drawing_face = "first";
@@ -6217,7 +6248,8 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         const create_box_command = new CreateInstanceCommand(
           this.current_instance,
-          this
+          this,
+          frame_number
         );
         this.command_manager.executeCommand(create_box_command);
         this.cuboid_current_rear_face = undefined;
@@ -6288,11 +6320,12 @@ mplate_has_keypoints_type: function (instance_template) {
         },
       };
     },
-    ellipse_mouse_down: function () {
+    ellipse_mouse_down: function (frame_number = undefined) {
       if (this.ellipse_current_drawing_face && this.draw_mode) {
         const create_box_command = new CreateInstanceCommand(
           this.current_instance,
-          this
+          this,
+          frame_number
         );
         this.command_manager.executeCommand(create_box_command);
       }
@@ -6391,7 +6424,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.trigger_refresh_current_instance = Date.now();
     },
 
-    bounding_box_mouse_down: function () {
+    bounding_box_mouse_down: function (frame_number) {
       if (this.$store.state.annotation_state.draw == true) {
         if (
           this.current_instance.x_max - this.current_instance.x_min >= 5 &&
@@ -6399,7 +6432,8 @@ mplate_has_keypoints_type: function (instance_template) {
         ) {
           const create_box_command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            frame_number
           );
           this.command_manager.executeCommand(create_box_command);
           this.create_instance_events();
@@ -6574,7 +6608,7 @@ mplate_has_keypoints_type: function (instance_template) {
       instance.label_file_id = this.current_label_file_id;
       return instance;
     },
-    add_instance_template_to_instance_list() {
+    add_instance_template_to_instance_list(frame_number) {
       this.current_instance_template.instance_list.forEach((instance) => {
         let new_instance = this.duplicate_instance(instance);
         if (this.video_mode == true) {
@@ -6605,17 +6639,17 @@ mplate_has_keypoints_type: function (instance_template) {
             point.y += y_diff;
           });
         }
-        this.push_instance_to_instance_list_and_buffer(
+        this.add_instance_to_file(
           new_instance,
-          this.current_frame
+          frame_number
         );
         //const command = new CreateInstanceCommand(new_instance, this);
         //this.command_manager.executeCommand(command);
       });
     },
-    instance_template_mouse_up: function () {
+    instance_template_mouse_up: function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
-        this.add_instance_template_to_instance_list();
+        this.add_instance_template_to_instance_list(frame_number);
         this.instance_template_draw_started = undefined;
         this.is_actively_drawing = undefined;
         this.instance_template_start_point = undefined;
@@ -6634,7 +6668,7 @@ mplate_has_keypoints_type: function (instance_template) {
             y: this.mouse_position.y,
           };
         } else {
-          this.add_instance_template_to_instance_list();
+          this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
           this.is_actively_drawing = undefined;
           this.instance_template_start_point = undefined;
@@ -6665,6 +6699,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
       // TODO new method ie
       // this.is_actively_drawing = true
+      let locked_frame_number = this.current_frame;
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
       if (this.$props.view_only_mode == true) {
@@ -6693,10 +6728,10 @@ mplate_has_keypoints_type: function (instance_template) {
         }
 
         if (this.instance_type == "ellipse") {
-          this.ellipse_mouse_down();
+          this.ellipse_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "box") {
-          this.bounding_box_mouse_down();
+          this.bounding_box_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "keypoints") {
           this.key_points_mouse_down();
@@ -7367,6 +7402,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // Caution must be near top to prevent when typing
       }
+      let locked_frame_number = this.current_frame;
 
       this.set_control_key(event);
 
@@ -7396,10 +7432,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (event.keyCode === 13) {
         // enter
         if (this.instance_type == "polygon") {
-          this.push_instance_to_instance_list_and_buffer(
-            this.current_instance,
-            this.current_frame
-          );
+          this.finish_polygon_drawing(this.current_instance, locked_frame_number);
         }
       }
 
@@ -7767,7 +7800,7 @@ mplate_has_keypoints_type: function (instance_template) {
         await this.save_multiple_frames(frames_to_save);
         this.show_success_paste();
       } else {
-        this.push_instance_to_instance_list_and_buffer(
+        this.add_instance_to_file(
           pasted_instance,
           this.current_frame
         );
@@ -7937,6 +7970,9 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       let current_frame = undefined;
       let instance_list = this.instance_list;
+
+      this.instance_list_cache = instance_list.slice();
+
       if (this.video_mode) {
         if (frame_number_param == undefined) {
           current_frame = parseInt(this.current_frame, 10);
@@ -7986,8 +8022,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
         return;
       }
-      this.instance_list_cache = instance_list.slice();
-      let current_frame_cache = this.current_frame;
+
       let current_video_file_id_cache = this.current_video_file_id;
       let video_mode_cache = this.video_mode;
 
@@ -8116,12 +8151,12 @@ mplate_has_keypoints_type: function (instance_template) {
 
             for (var instance of response.data.added_instances) {
 
-              this.add_keyframe_to_sequence(instance, current_frame_cache)
+              this.add_keyframe_to_sequence(instance, current_frame)
 
               if (instance.action_type == "deleted") {
                 this.$refs.sequence_list.remove_frame_number_from_sequence(
                   instance.sequence_id,
-                  current_frame_cache)
+                  current_frame)
               }
             }
           }
@@ -8151,6 +8186,7 @@ mplate_has_keypoints_type: function (instance_template) {
         console.error(error);
         this.set_save_loading(false, current_frame);
         if (
+          error.response &&
           error.response.data &&
           error.response.data.log &&
           error.response.data.log.error &&
@@ -8166,16 +8202,16 @@ mplate_has_keypoints_type: function (instance_template) {
         return false;
       }
     },
-    add_keyframe_to_sequence(instance, current_frame_cache) {
+    add_keyframe_to_sequence(instance, frame_number) {
       if (instance.action_type == "created" ||
           instance.action_type == "new_instance" ||
           instance.action_type == "undeleted")      // not 'edited'
       {
         this.$refs.sequence_list.add_frame_number_to_sequence(
           instance.sequence_id,
-          current_frame_cache
-        );   
-      }     
+          frame_number
+        );
+      }
     },
     complete_task() {
       if (!this.task) {

@@ -83,8 +83,7 @@
                       text-color="primary"
                       >No more pages.</v-chip>
               </div>
-              <div v-else
-                   class="pl-2 pt-4">
+              <div v-else class="pl-2 pt-4">
 
                 <v-chip color="white"
                         text-color="primary"
@@ -623,18 +622,19 @@
                                  :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
                                  ['unsselected-box']: !selected.includes(item),
                                  ['selected-box']: selected.includes(item)}"
-                                 style="width: 100px; height: 100px; " v-else>
+                                 style="width: 100px; height: 100px; " >
                       <v-icon size="32" class="ma-0 pa-0">
                         mdi-video-3d-variant
                       </v-icon>
                       <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
-                    <v-container v-else  class="d-flex flex-column justify-center align-center"
-                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
-                      <v-icon>
+                    <v-container v-else-if="item.type === 'text'"
+                                 class="d-flex flex-column justify-center align-center pa-0"
+                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;">
+                      <v-icon size="28" class="ma-0 pa-0">
                         mdi-script-text
                       </v-icon>
-                      <p class="mt-4">{{item.original_filename}}</p>
+                      <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
 
                   </div>
