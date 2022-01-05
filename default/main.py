@@ -53,6 +53,8 @@ def log_request_info():
 	try:
 		if request.path in do_not_log_these_routes:		# sensitive routes
 			return
+		if request.path.endswith("annotation/update"):
+			return
 		out = request.get_json(force=True)
 		out['path'] = request.path	# Because may not log in line with normal path printing.
 		logger.info(out)

@@ -643,6 +643,7 @@ export default Vue.extend( {
   },
   methods: {
     add_frame_number_to_sequence(sequence_id, frame_number){
+
       if(frame_number == undefined){
         return
       }
@@ -654,6 +655,19 @@ export default Vue.extend( {
           existing_frames.sort(function(a, b) {
             return a - b;
           });
+        }
+      }
+    },
+    remove_frame_number_from_sequence(sequence_id, frame_number){
+      if(frame_number == undefined){
+        return
+      }
+      let sequence = this.sequence_list.find(seq => seq.id === sequence_id);
+      if(sequence){
+        let existing_frames = sequence.keyframe_list.frame_number_list;
+        let index = existing_frames.indexOf(frame_number)
+        if (index !== -1) {
+         existing_frames.splice(index, 1)
         }
       }
     },
