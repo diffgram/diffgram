@@ -5,12 +5,13 @@
         @mousedown.prevent="on_add_relation"
     >
         <rect 
+            v-for="labelItem in annotation.labelItems"
             height="20" 
             class="cursor"
             opacity="0.4"
-            :x="annotation.x" 
-            :y="annotation.y" 
-            :width="annotation.width"
+            :x="labelItem.x" 
+            :y="labelItem.y" 
+            :width="labelItem.width"
             :fill="current_color"
         />
         <text 

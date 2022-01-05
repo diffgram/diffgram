@@ -136,8 +136,7 @@ export default Vue.extend({
             set_x: null,
             set_y: null,
             selecction_width: 0,
-            start_token_id: null,
-            end_token_id: null,
+            label_items: [],
             // labels
             current_label: null,
             instances: new TextInterface(),
@@ -251,9 +250,20 @@ export default Vue.extend({
                 return
             }
             const token_width = event.toElement.clientWidth
+            const end_token_y = event.toElement.y.baseVal[0].value
             this.selecction_width = token_width - this.set_x
 
-            this.instances.addLabelInstance(this.set_x, this.set_y, this.selecction_width, sentense_index, {...this.current_label})
+            let labelItems = [{x: this.set_x, y: this.set_y, width: this.selecction_width}]
+
+            if (50 + end_token_y > this.set_y) {
+                labelItems = [
+                    {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].width.baseVal.value},
+                    {x: 10, y: end_token_y + 50, width: token_width - 10},
+                ]
+                
+            }
+
+            this.instances.addLabelInstance(labelItems, sentense_index, {...this.current_label})
             document.getSelection().removeAllRanges()
         },
         on_annotation_hover: function(id) {
