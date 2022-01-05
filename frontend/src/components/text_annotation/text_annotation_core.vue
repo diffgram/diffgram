@@ -258,9 +258,16 @@ export default Vue.extend({
         },
         on_selection_start: function(event, sentense_index) {
             if (!event.toElement.id) return
+            const token_x = event.toElement.x.baseVal[0].value
+            const token_y = 50 + event.toElement.y.baseVal[0].value
+            console.log(token_y)
+            const token_width = event.toElement.clientWidth
+            console.log(token_x, token_width)
             console.log("ON KEY DOWN")
-            this.selecction_width = 0
-            this.on_svg_click(event, sentense_index)
+            this.set_x = token_x
+            this.set_y = token_y
+            this.selecction_width = token_width - token_x
+            // this.on_svg_click(event, sentense_index)
         },
         on_selection_end: function(event, sentense_index) {
             if (!event.toElement.id) return
@@ -286,11 +293,11 @@ export default Vue.extend({
             const width = range.getBoundingClientRect().width;
 
             if (selection_exists) {
-                this.selecction_width = width
-                if (this.set_x - coordX_global + 300 > 0) {
-                    this.set_x = this.set_x - width
-                }
-                this.spread_selection(sentense_index)
+                // this.selecction_width = width
+                // if (this.set_x - coordX_global + 300 > 0) {
+                //     this.set_x = this.set_x - width
+                // }
+                // this.spread_selection(sentense_index)
                 this.instances.addLabelInstance(this.set_x, this.set_y, this.selecction_width, sentense_index, {...this.current_label})
                 document.getSelection().removeAllRanges()
             }
