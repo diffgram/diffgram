@@ -6,6 +6,7 @@
     >
         <rect 
             v-for="labelItem in annotation.labelItems"
+            :key="`lable_item_${labelItem.x}_${label_item.y}_${label_item.width}`"
             height="20" 
             class="cursor"
             opacity="0.4"
