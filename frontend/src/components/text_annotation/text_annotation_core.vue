@@ -257,8 +257,7 @@ export default Vue.extend({
 
             if (50 + end_token_y > this.set_y) {
                 labelItems = [
-                    {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].width.baseVal.value},
-                    // {x: 10, y: end_token_y + 50, width: token_width - 10},
+                    {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].clientWidth - this.set_x},
                 ]
                 const number_of_lines = (end_token_y + 50 - this.set_y) / 20
                 for (let i = 1; i <= number_of_lines; i++) {
@@ -266,7 +265,7 @@ export default Vue.extend({
                         labelItems.push({x: 10, y: end_token_y + 50, width: token_width - 10})
                     } 
                     else {
-                        labelItems.push({x: 10, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].width.baseVal.value})
+                        labelItems.push({x: 10, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].clientWidth - 10})
                     }
                 } 
             }
