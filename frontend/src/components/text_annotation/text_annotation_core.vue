@@ -31,7 +31,7 @@
                 <div style="display: flex; align-items: center; justify-content: center">{{ sentense_index + 1 }}.</div>
                 <svg 
                     width="90%" 
-                    style="height: 120px; margin-left: 10px;"
+                    :style="`height: ${svg_element_heigth.length > 0 ? 120 + svg_element_heigth[sentense_index] : 120}px; margin-left: 10px;`"
                     ref="svg_main_container"
                     @mousedown="(e) => on_selection_start(e, sentense_index)" 
                     @mouseup="(e) => on_selection_end(e, sentense_index)" 
@@ -141,6 +141,8 @@ export default Vue.extend({
             element_width_dev: 300,
             left_margin: 10,
             top_padding: 50,
+            text_line_height: 40,
+            svg_element_heigth: [],
             // labels
             current_label: null,
             instances: new TextInterface(),
@@ -218,11 +220,11 @@ export default Vue.extend({
                     length_counter += (width_of_token + 5)
                     if (length_counter > max_width) {
                         length_counter = this.left_margin
-                        height_counter += 20
+                        height_counter += this.text_line_height
                     }
                     return updated_token
                 })
-
+                this.svg_element_heigth.push(height_counter)
                 return updated_sentense
             })
 
@@ -262,13 +264,13 @@ export default Vue.extend({
                 labelItems = [
                     {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].clientWidth - this.set_x},
                 ]
-                const number_of_lines = (end_token_y + this.top_padding - this.set_y) / 20
+                const number_of_lines = (end_token_y + this.top_padding - this.set_y) / this.text_line_height
                 for (let i = 1; i <= number_of_lines; i++) {
                     if (i === number_of_lines) {
                         labelItems.push({x: this.left_margin, y: end_token_y + this.top_padding, width: token_width - this.left_margin})
                     } 
                     else {
-                        labelItems.push({x: this.left_margin, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].clientWidth - this.left_margin})
+                        labelItems.push({x: this.left_margin, y: this.set_y + i * this.text_line_height, width: this.$refs.svg_main_container[0].clientWidth - this.left_margin})
                     }
                 } 
             }
