@@ -3934,18 +3934,12 @@ mplate_has_keypoints_type: function (instance_template) {
         this.add_instance_to_frame_buffer(instance, frame_number)
       }
       else{
-        this.push_instance_to_image_file(instance, frame_number)
+        this.push_instance_to_image_file(instance)
       }
 
     },
 
-    push_instance_to_image_file: async function (
-      instance = undefined,
-      frame_number = undefined
-    ) {
-      if (this.video_mode == true && frame_number == undefined) {
-        throw "frame number undefined in video mode (push_instance_to_instance_list)";
-      }
+    push_instance_to_image_file: async function (instance = undefined) {
       instance.creation_ref_id = uuidv4();
       instance.client_created_time = new Date().toISOString();
 
@@ -3956,11 +3950,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.instance_list.push(instance);
 
       this.has_changed = true;
-
-      // polygon point thing applies to a few different types
-      // so for now just run it
-
-      this.current_polygon_point_list = []; // reset list
 
       // Caution, this feeds into current instance, so it can look like it's dramatically not working
       // if this is set incorrectly.
@@ -5828,10 +5817,12 @@ mplate_has_keypoints_type: function (instance_template) {
         frame_number
       );
       this.command_manager.executeCommand(command);
+      this.is_actively_drawing = false;
+      this.current_polygon_point_list = []; // reset list
     },
     polygon_insert_point: function (frame_number = undefined) {
       const current_point = this.polygon_point_limits();
-
+      console.log('POLYGON INSERT POINT', frame_number)
       // check if we should auto complete polygon (or can use enter)
       if (this.current_polygon_point_list.length >= 2) {
         let first_point = this.current_polygon_point_list[0];
