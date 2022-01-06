@@ -137,10 +137,13 @@ export default Vue.extend({
             set_y: null,
             selecction_width: 0,
             label_items: [],
+            // Constants for rendering
+            element_width_dev: 300,
+            left_margin: 10,
+            top_padding: 50,
             // labels
             current_label: null,
             instances: new TextInterface(),
-            element_width_dev: 300,
             hover_id: null,
             relation_hover: {
                 relation_hover_id: null,
@@ -206,7 +209,7 @@ export default Vue.extend({
         text_render_width: function() {
             const max_width = this.$refs.svg_main_container[0].width.baseVal.value
             const measure_words = this.text_tokenized.map(sentence => {
-                let length_counter = 10;
+                let length_counter = this.left_margin;
                 let height_counter = 0;
                 const updated_sentense = sentence.map(token => {
                     const element = this.$refs[`text_token_${token.index}_sentense_index_${token.sentense_index}`][0]
@@ -214,7 +217,7 @@ export default Vue.extend({
                     const updated_token = {...token, token_start_coordinate: length_counter, token_start_height: height_counter}
                     length_counter += (width_of_token + 5)
                     if (length_counter > max_width) {
-                        length_counter = 10
+                        length_counter = this.left_margin
                         height_counter += 20
                     }
                     return updated_token
@@ -255,17 +258,17 @@ export default Vue.extend({
 
             let labelItems = [{x: this.set_x, y: this.set_y, width: this.selecction_width}]
 
-            if (50 + end_token_y > this.set_y) {
+            if (this.top_padding + end_token_y > this.set_y) {
                 labelItems = [
                     {x: this.set_x, y: this.set_y, width: this.$refs.svg_main_container[0].clientWidth - this.set_x},
                 ]
-                const number_of_lines = (end_token_y + 50 - this.set_y) / 20
+                const number_of_lines = (end_token_y + this.top_padding - this.set_y) / 20
                 for (let i = 1; i <= number_of_lines; i++) {
                     if (i === number_of_lines) {
-                        labelItems.push({x: 10, y: end_token_y + 50, width: token_width - 10})
+                        labelItems.push({x: this.left_margin, y: end_token_y + this.top_padding, width: token_width - this.left_margin})
                     } 
                     else {
-                        labelItems.push({x: 10, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].clientWidth - 10})
+                        labelItems.push({x: this.left_margin, y: this.set_y + i * 20, width: this.$refs.svg_main_container[0].clientWidth - this.left_margin})
                     }
                 } 
             }
@@ -333,7 +336,7 @@ export default Vue.extend({
             var leftPos = used_svg_wrapper_component.getBoundingClientRect().left + window.scrollX;
 
             const coordX_local = coordX_global - leftPos
-            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - 10 + 37
+            const coordY_local = text_element.getBoundingClientRect().bottom - topPos - this.left_margin + 37
 
             this.path.sentense_index = sentense_index
             this.path.M1 = coordX_local
