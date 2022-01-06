@@ -18,9 +18,9 @@
             :height="50"
             :command_manager="command_manager"
             :save_loading="
-              this.video_mode
-                ? this.save_loading_frame[this.current_frame]
-                : this.save_loading_image
+              video_mode
+                ? save_loading_frames_list.length > 0
+                : save_loading_image
             "
             :annotations_loading="annotations_loading"
             :loading="loading"
@@ -30,7 +30,7 @@
             :task="task"
             :file="file"
             :canvas_scale_local="zoom_value"
-            :has_changed="has_changed"
+            :has_changed="has_changed || has_pending_frames"
             :label_list="label_list"
             :draw_mode="draw_mode"
             :label_file_colour_map="label_file_colour_map"
@@ -654,8 +654,8 @@
               @on_click_polygon_merge="start_polygon_select_for_merge"
               @delete_polygon_point="polygon_delete_point"
               @copy_instance="on_context_menu_copy_instance"
-              @paste_instance="paste_instance"
-              @paste_instance_on_next_frames="paste_instance"
+              @paste_instance="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
+              @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
               @create_instance_template="create_instance_template"
               @open_instance_history_panel="show_instance_history_panel"
               @close_instance_history_panel="show_instance_history_panel"
@@ -680,9 +680,9 @@
             @pause="video_playing = false"
             @seeking_update="seeking_update($event)"
             :project_string_id="project_string_id"
-            @change_frame_from_video_event="
-              change_frame_from_video_event($event)
-            "
+
+            @go_to_keyframe_loading_started="set_keyframe_loading(true)"
+            @go_to_keyframe_loading_ended="on_key_frame_loaded($event)"
             @video_animation_unit_of_work="video_animation_unit_of_work($event)"
             @video_current_frame_guess="current_frame = parseInt($event)"
             @slide_start="detect_is_ok_to_save()"
@@ -695,6 +695,7 @@
             :video_play_request="video_play"
             :task="task"
             :loading="any_loading"
+            :any_frame_saving="any_frame_saving"
             :view_only_mode="view_only_mode"
             :has_changed="has_changed"
             :canvas_width_scaled="canvas_width_scaled"
@@ -1079,6 +1080,7 @@ export default Vue.extend({
   data() {
     return {
       submitted_to_review: false,
+      go_to_keyframe_loading: false,
       instance_rotate_control_mouse_hover: null,
 
       snapped_to_instance: undefined,
@@ -1187,6 +1189,8 @@ export default Vue.extend({
 
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
+      unsaved_frames: [],
+      save_loading_frames_list: [],
 
       is_editing_ui_schema: true,
 
@@ -1256,7 +1260,7 @@ export default Vue.extend({
 
       annotations_loading: false,
       save_loading_image: false,
-      save_loading_frame: {},
+
       minimize_issues_sidepanel: false,
 
       source_control_menu: false,
@@ -1449,6 +1453,12 @@ export default Vue.extend({
     };
   },
   computed: {
+    any_frame_saving: function(){
+      return this.save_loading_frames_list.length > 0;
+    },
+    has_pending_frames: function(){
+      return this.unsaved_frames.length > 0;
+    },
     filtered_instance_type_list: function () {
       if (!this.$props.task || !this.$props.task.job) {
         return this.instance_type_list;
@@ -2006,7 +2016,6 @@ export default Vue.extend({
     this.remove_event_listeners();
 
     // watcher removal
-    this.get_instances_watcher();
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
@@ -2138,21 +2147,24 @@ export default Vue.extend({
 
     get_save_loading: function (frame_number) {
       if (this.video_mode) {
-        if (!this.save_loading_frame[frame_number]) {
-          return false;
-        } else {
-          return true;
-        }
+        return this.save_loading_frames_list.includes(frame_number)
       } else {
         return this.save_loading_image;
       }
     },
-    set_save_loading(value, frame) {
+    set_save_loading: function(value, frame) {
       if (this.video_mode) {
-        this.save_loading_frame[frame] = value;
+        if(value){
+          this.save_loading_frames_list.push(frame)
+        }
+        else{
+          this.save_loading_frames_list = this.save_loading_frames_list.filter(elm => elm != frame)
+        }
+
       } else {
         this.save_loading_image = value;
       }
+
       this.$forceUpdate();
     },
     // userscript (to be placed in class once context figured)
@@ -3225,14 +3237,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.canvas_wrapper.style.display = "";
 
       var self = this;
-      this.get_instances_watcher = this.$store.watch(
-        (state) => {
-          return this.$store.state.annotation_state.get_instances;
-        },
-        (new_val, old_val) => {
-          self.get_instances();
-        }
-      );
 
       this.refresh_video_buffer_watcher = this.$store.watch(
         (state) => {
@@ -3573,38 +3577,33 @@ mplate_has_keypoints_type: function (instance_template) {
       instance_clipboard.creation_ref_id = null; // we expect this will be set once user accepts it
       this.ghost_instance_list.push(instance_clipboard);
     },
-
-    change_frame_from_video_event: function (url) {
+    set_keyframe_loading: function(value){
+      this.go_to_keyframe_loading = value
+    },
+    on_key_frame_loaded: async function(url){
+      await this.load_frame_instances(url)
+      this.set_keyframe_loading(false);
+    },
+    load_frame_instances: async function (url) {
       /* Careful to call get_instances() since this handles
        * if we are on a keyframe and  don't need to call instance buffer
        * this method supercedes the old video_file_update()
        */
-      this.get_instances();
-      this.ghost_refresh_instances();
       if (url) {
-        this.add_image_process(url);
+        await this.add_image_process(url);
       }
+      await this.get_instances();
+      await this.ghost_refresh_instances();
+
     },
 
-    add_image_process: function (url) {
-      /*
-       * Question, is it correct this is ONLY for
-       * pulling the frame? ie this will NOT be called during video play?
-       *
-       */
-
-      var self = this;
-      self.addImageProcess(url).then((image) => {
-        // this gets instances if it needs to
-        //  (ie the instance buffer)
-        self.html_image = image;
-
-        self.canvas_wrapper.style.display = "";
-        self.loading = false;
-
-        // Jan 15, 2020 Did we not have this prior??
-        self.trigger_refresh_with_delay();
-      });
+    add_image_process: async function (url) {
+      const image = await this.addImageProcess(url);
+      // this gets instances if it needs to
+      this.html_image = image;
+      this.canvas_wrapper.style.display = "";
+      this.loading = false;
+      this.trigger_refresh_with_delay();
     },
 
     current_file_updates: async function (file) {
@@ -3881,15 +3880,27 @@ mplate_has_keypoints_type: function (instance_template) {
         this.current_frame
       );
     },
-    set_frame_pending_save: function(frame_number){
+    set_frame_pending_save: function(value, frame_number){
       if(frame_number == undefined){
         return
       }
       if (this.instance_buffer_metadata[frame_number]) {
-        this.instance_buffer_metadata[frame_number].pending_save = true;
+        // We need to recreate object so that computed props get triggered
+        this.instance_buffer_metadata[frame_number].pending_save = value;
+
       } else {
-        this.instance_buffer_metadata[frame_number] = { pending_save: true };
+        this.instance_buffer_metadata[frame_number] = {
+          pending_save: value
+        }
       }
+      // Keep unsaved_frames list to enable/disable save button
+      if(value){
+        this.unsaved_frames.push(frame_number)
+      }
+      else{
+        this.unsaved_frames = this.unsaved_frames.filter(elm => elm != frame_number)
+      }
+
     },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
       if (!this.video_mode) {
@@ -3910,23 +3921,13 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       // Set Metadata to manage saving frames
-      this.set_frame_pending_save(frame_number)
-      // TODO: MIGHT NEED TO REMOVE THIS!!!!!!! (OR PASS FRAME_NUMBER TO SAVE)
-      if (this.video_mode == true) {
-        let was_saved = await this.save(frame_number);
-        if (!was_saved) {
-          // If instance was not saved, because of concurrent saves. We still set it to pending
-          this.has_changed = true;
-        }
-      }
-
+      this.set_frame_pending_save(true, frame_number)
     },
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
     add_instance_to_file: async function(instance, frame_number = undefined){
-
       if(this.video_mode){
-        if(!frame_number){
+        if(frame_number == undefined){
           console.error('Please provide a frame number to call add_instance_to_file()')
           return
         }
@@ -5034,7 +5035,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.has_changed = true; // otherwise user click event won't trigger change detection
 
       let instance = this.ghost_instance_list[ghost_index];
-      this.add_instance_to_frame_buffer(instance, this.current_frame); // this handles the creation_ref_id stuff too
+      this.add_instance_to_file(instance, this.current_frame); // this handles the creation_ref_id stuff too
       this.ghost_instance_list.splice(ghost_index, 1); // remove from ghost list
     },
 
@@ -6818,28 +6819,6 @@ mplate_has_keypoints_type: function (instance_template) {
         this.loading = false;
       }
     },
-
-    get_instances_file_diff: async function () {
-      try {
-        const response = await axios.get(
-          "/api/project/" +
-            this.project_string_id +
-            "/file/" +
-            this.$props.file.id +
-            "/diff/previous"
-        );
-        if (response.data.success === true) {
-          this.instance_list = this.create_instance_list_with_class_types(
-            response.data.instance_list
-          );
-          this.annotations_loading = false;
-          this.show_annotations = true;
-        }
-        this.loading = false;
-      } catch (error) {
-        console.error(error);
-      }
-    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -6909,6 +6888,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     get_instances: async function (play_after_success = false) {
+      console.log('get_instances')
       if (this.get_instances_loading) {
         return;
       }
@@ -7039,7 +7019,7 @@ mplate_has_keypoints_type: function (instance_template) {
        * permissions ie file/:file_id
        *
        */
-
+      console.log('get_video_instance_buffer')
       this.show_annotations = false;
       this.loading = true;
       this.annotations_loading = true;
@@ -7531,7 +7511,7 @@ mplate_has_keypoints_type: function (instance_template) {
         cKey = 67;
 
       this.set_control_key(event);
-
+      let frame_number_locked = this.current_frame;
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
@@ -7590,7 +7570,7 @@ mplate_has_keypoints_type: function (instance_template) {
         this.copy_instance(true);
       }
       if (this.ctrl_key && event.keyCode == vKey) {
-        this.paste_instance();
+        this.paste_instance(undefined, undefined, frame_number_locked);
       }
 
       if (event.keyCode === 90 && this.ctrl_key) {
@@ -7744,7 +7724,8 @@ mplate_has_keypoints_type: function (instance_template) {
     add_pasted_instance_to_instance_list: async function (
       instance_clipboard,
       next_frames,
-      original_file_id
+      original_file_id,
+      frame_number = undefined
     ) {
       let on_new_frame_or_file = false;
       if (
@@ -7778,6 +7759,7 @@ mplate_has_keypoints_type: function (instance_template) {
             missing_frames.push(i)
           }
         }
+        console.log('MISSING FRAMES', missing_frames)
         let min_frame = Math.min(...missing_frames);
         let max_frame = Math.max(...missing_frames);
         let url = this.get_url_instance_buffer();
@@ -7785,14 +7767,17 @@ mplate_has_keypoints_type: function (instance_template) {
         if(!new_instance_buffer){
           return
         }
-        this.instance_buffer_dict = new_instance_buffer;
+        this.instance_buffer_dict = {
+          ...this.instance_buffer_dict,
+          ...new_instance_buffer
+        };
         for ( let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add;i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = this.duplicate_instance(pasted_instance);
           new_frame_instance = this.initialize_instance(new_frame_instance);
           // Set the last argument to true, to prevent to push to the instance_list here.
-          this.add_instance_to_frame_buffer(new_frame_instance, i);
+          this.add_instance_to_file(new_frame_instance, i);
           frames_to_save.push(i);
         }
         this.create_instance_events();
@@ -7802,7 +7787,7 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         this.add_instance_to_file(
           pasted_instance,
-          this.current_frame
+          frame_number
         );
         // Auto select on label view detail for inmediate attribute edition.
         this.create_instance_events();
@@ -7810,9 +7795,18 @@ mplate_has_keypoints_type: function (instance_template) {
     },
     paste_instance: async function (
       next_frames = undefined,
-      instance_hover_index = undefined
+      instance_hover_index = undefined,
+      frame_number = undefined
     ) {
       const clipboard = this.clipboard;
+      if(this.any_frame_saving || this.any_loading){
+        console.log('returning',this.any_frame_saving, this.any_loading)
+        return
+      }
+      if(this.go_to_keyframe_loading){
+        console.log('block paste_instance go_to_keyframe_loading')
+        return
+      }
       if (!clipboard && instance_hover_index == undefined) {
         return;
       }
@@ -7822,17 +7816,29 @@ mplate_has_keypoints_type: function (instance_template) {
       // We need to duplicate on each paste to avoid double ID's on the instance list.
       const new_clipboard_instance_list = [];
       for (const instance_clipboard of this.clipboard.instance_list) {
-        this.set_frame_pending_save(this.current_frame)
         let instance_clipboard_dup =
           this.duplicate_instance(instance_clipboard);
         await this.add_pasted_instance_to_instance_list(
           instance_clipboard_dup,
           next_frames,
-          this.clipboard.file_id
+          this.clipboard.file_id,
+          frame_number
         );
         new_clipboard_instance_list.push(instance_clipboard_dup);
       }
+      console.log('SAVING PASTED INSTANCES....')
+
       this.set_clipboard(new_clipboard_instance_list);
+    },
+    get_pending_save_frames: function(){
+      let result = [];
+      for(let frame_num of Object.keys(this.instance_buffer_metadata)){
+        let frame_metadata = this.instance_buffer_metadata[frame_num]
+        if(frame_metadata.pending_save){
+          result.push(parseInt(frame_num, 10))
+        }
+      }
+      return result;
     },
     set_clipboard: function (instance_list) {
       let file_id = undefined;
@@ -7965,26 +7971,33 @@ mplate_has_keypoints_type: function (instance_template) {
     ) {
       this.save_error = {};
       this.save_warning = {};
+      if(this.go_to_keyframe_loading){
+        console.log('block save go_to_keyframe_loading')
+        return
+      }
       if (this.$props.view_only_mode == true) {
         return;
       }
-      let current_frame = undefined;
+      let frame_number = undefined;
       let instance_list = this.instance_list;
 
       this.instance_list_cache = instance_list.slice();
 
       if (this.video_mode) {
         if (frame_number_param == undefined) {
-          current_frame = parseInt(this.current_frame, 10);
+          frame_number = parseInt(this.current_frame, 10);
         } else {
-          current_frame = parseInt(frame_number_param, 10);
+          frame_number = parseInt(frame_number_param, 10);
         }
 
         if (instance_list_param != undefined) {
           instance_list = instance_list_param;
         }
+        else{
+          instance_list = this.instance_buffer_dict[frame_number]
+        }
       }
-      if (this.get_save_loading(current_frame) == true) {
+      if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
 
@@ -7993,20 +8006,26 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.any_loading == true) {
         return;
       }
+      if(this.instance_buffer_dict[frame_number] == undefined || this.annotations_loading){
+        return
+      }
 
-      this.set_save_loading(true, current_frame);
+      this.set_save_loading(true, frame_number);
+      console.log('innstance_list', instance_list)
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         AnnotationSavePrechecks.has_duplicate_instances(instance_list);
       let dup_instance_list = dup_indexes.map((i) => ({
         ...instance_list[i],
         original_index: i,
       }));
+
       dup_instance_list.sort(function (a, b) {
         return (
           moment(b.client_created_time, "YYYY-MM-DD HH:mm") -
           moment(a.client_created_time, "YYYY-MM-DD HH:mm")
         );
       });
+      console.log('has_duplicate_instances', has_duplicate_instances)
       if (has_duplicate_instances) {
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
@@ -8018,7 +8037,7 @@ mplate_has_keypoints_type: function (instance_template) {
           undefined
         );
 
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
 
         return;
       }
@@ -8059,7 +8078,7 @@ mplate_has_keypoints_type: function (instance_template) {
         var video_data = {
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
-          current_frame: current_frame,
+          current_frame: frame_number,
         };
       }
 
@@ -8074,26 +8093,6 @@ mplate_has_keypoints_type: function (instance_template) {
         });
         this.save_loading_image = false
         this.has_changed = false
-        /*
-         * TODO important,
-         * in context of video, and wanting to allow the user to save and not wait for save
-         * response from server, is there any of this stuff that gets "returned"
-         * that we should *not* be updating?
-         *
-         * Context of https://github.com/swirlingsand/ai_vision/commit/ba405b6ab75de64457fc27f6e47cc7962328075c
-         *
-         * Basically realizing that so long as save succeeds, for video,
-         * it should make minimal assumptions about the state.
-         * ie the state after saving may not be the same as when save was initiated
-         *
-         * rightn now we blindly pass the updated sequence (which we DO want if the user stays
-         * on the frame), and trust sequence to handle this distction, ie checking albel file id
-         * is the same. As mentioned IF there ends up being some unified sequence thing
-         * that may help avoid that issue, but either way anything chained to this could be
-         * effected ... ie need to trace what save_response_callback was doing.
-         *
-         */
-
         this.save_count += 1;
         AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
           response,
@@ -8104,8 +8103,6 @@ mplate_has_keypoints_type: function (instance_template) {
         )
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
-
-        this.set_frame_pending_save(this.current_frame)
 
 
         if (response.data.sequence) {
@@ -8148,26 +8145,18 @@ mplate_has_keypoints_type: function (instance_template) {
             }
           }
           if (this.video_mode) {
-
             for (var instance of response.data.added_instances) {
-
-              this.add_keyframe_to_sequence(instance, current_frame)
-
+              this.add_keyframe_to_sequence(instance, frame_number)
               if (instance.action_type == "deleted") {
                 this.$refs.sequence_list.remove_frame_number_from_sequence(
                   instance.sequence_id,
-                  current_frame)
+                  frame_number)
               }
             }
           }
         }
-
-        /* When we save the file and go to next, we don't rely upon the
-         * newly returned file to be anything related to the next task
-         * We simply go to the "well" so to speak and request the next task here
-         * using the "change_file".
-         */
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
+        this.set_frame_pending_save(false, frame_number)
         this.has_changed = false;
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
@@ -8181,6 +8170,13 @@ mplate_has_keypoints_type: function (instance_template) {
           }
         }
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        if(this.video_mode){
+          let pending_frames = this.get_pending_save_frames();
+          console.log('pending frames', pending_frames)
+          if(pending_frames.length > 0){
+            await this.save_multiple_frames(pending_frames)
+          }
+        }
         return true;
       } catch (error) {
         console.error(error);

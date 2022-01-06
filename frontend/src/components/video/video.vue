@@ -267,7 +267,8 @@
             :disabled="loading
                     || go_to_keyframe_loading
                     || playing
-                    || running_interpolation"
+                    || running_interpolation
+                    || any_frame_saving"
             :value="video_current_frame_guess"
             :step="video_settings.step_size"
             ticks
@@ -461,6 +462,9 @@ export default Vue.extend( {
       },
       'show_video_nav_bar':{
         default: true
+      },
+      'any_frame_saving':{
+          default: false
       }
     },
   components: {
@@ -607,6 +611,7 @@ export default Vue.extend( {
       return this.$store.watch(() => {
         return this.$store.state.video.go_to_keyframe_refresh },
          (new_val, old_val) => {
+          console.log('go_to_keyframe_refresh watcher')
           this.go_to_keyframe(this.$store.state.video.keyframe)
         },
       )
@@ -863,6 +868,7 @@ export default Vue.extend( {
     },
 
     slide_change: function (event) {
+      console.log('slide_change')
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },
@@ -885,6 +891,7 @@ export default Vue.extend( {
       frame_number = parseInt(frame_number) // We expect it to be Int like
 
       if (frame_number != this.slider_end_cache) {
+        this.$emit('go_to_keyframe_loading_started')
         this.slider_end_cache = frame_number
         this.video_current_frame_guess = frame_number
         if (typeof this.video_current_frame_guess != "undefined") {
@@ -902,7 +909,7 @@ export default Vue.extend( {
        * Caution need to test both next/previos frame and play
        *
        */
-
+      console.log('update_from_slider')
       if (!this.slide_active) {
         return
       }
@@ -1284,20 +1291,17 @@ export default Vue.extend( {
           try{
             await this.add_new_frame_list_to_buffer(all_new_frames);
             const new_url = this.frame_url_buffer[frame_number]
-            this.$emit('change_frame_from_video_event', new_url)
             this.go_to_keyframe_loading = false
 
             this.refresh = Date.now()
-            this.$emit('set_canvas_dimensions')
-            this.$emit('update_canvas');
+
             this.prior_frame_number = frame_number
+              this.$emit('go_to_keyframe_loading_ended', new_url)
           }
           catch(error){
 
             // Soft fail, ie can't get image and just want to annotate
             // of of video screen
-            this.$emit('change_frame_from_video_event', false)
-
             /* Context that on first load if it fails then need to "play" it to get first frame
              */
             if (this.first_play == true){
@@ -1307,15 +1311,19 @@ export default Vue.extend( {
 
             this.go_to_keyframe_loading = false
             this.error = this.$route_api_errors(error)
+              this.$emit('go_to_keyframe_loading_ended')
+          }
+          finally {
+
+              this.$emit('set_canvas_dimensions')
+              this.$emit('update_canvas');
           }
         }
         else{
           const new_url = this.frame_url_buffer[frame_number]
-          this.$emit('change_frame_from_video_event', new_url)
           this.go_to_keyframe_loading = false
           this.refresh = Date.now()
-          this.$emit('set_canvas_dimensions')
-          this.$emit('update_canvas');
+
           this.prior_frame_number = frame_number
           const missing_frame = this.get_missing_frames_ahead(frame_number, 5);
           if(missing_frame != -1){
@@ -1326,6 +1334,9 @@ export default Vue.extend( {
             // It should be a background fetch.
             this.add_new_frame_list_to_buffer(lookahead_frames);
           }
+          this.$emit('go_to_keyframe_loading_ended', new_url)
+          this.$emit('set_canvas_dimensions')
+          this.$emit('update_canvas');
         }
 
 
