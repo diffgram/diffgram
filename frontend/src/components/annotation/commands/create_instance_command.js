@@ -70,8 +70,7 @@ export class CreateInstanceCommand {
           },
           this.frame_number
         );
-        this.created_instance_index =
-          this.ann_core_ctx.instance_list.length - 1;
+        this.created_instance_index = this.ann_core_ctx.instance_list.length - 1;
         // Get the pushed instance to have the creation ref ID in future redo's
         this.instance = this._copyInstance(
           this.ann_core_ctx.instance_list[this.created_instance_index]

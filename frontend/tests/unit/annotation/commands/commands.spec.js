@@ -5,7 +5,7 @@ describe("Instance creation class", () => {
   let instance;
 
   beforeEach(() => {
-    instanceShape = ["ann_core_ctx", "instance", "created_instance_index"];
+    instanceShape = ["ann_core_ctx", "instance", "frame_number",  "created_instance_index"];
     instance = {
       initialized: false,
       type: "curve",
