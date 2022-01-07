@@ -61,7 +61,6 @@ export class CreateInstanceCommand {
         instance => instance.creation_ref_id === this.instance.creation_ref_id
       );
       if (existing_instance.length === 0) {
-        console.log('CREATE', this.frame_number)
         this.instance.soft_delete = false;
         this.ann_core_ctx.add_instance_to_file(
           {

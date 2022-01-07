@@ -2439,6 +2439,7 @@ mplate_has_keypoints_type: function (instance_template) {
       new_instance.points = [{ x: x, y: y }];
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
+      return new_instance
     },
 
     update_polygon_width_height: function (instance) {
@@ -2500,6 +2501,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
+      return new_instance;
     },
 
     __bodypix_points_to_instances: function (keypoints_list) {
@@ -6854,13 +6856,11 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     get_instances: async function (play_after_success = false) {
-      console.log('get_instances')
       if (this.annotations_loading) {
         return;
       }
       this.annotations_loading = true;
       this.show_annotations = false;
-      console.log(' start annotations_loading', this.annotations_loading)
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {
         /*  Caution, if this is firing twice
@@ -6883,7 +6883,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;
-      console.log(' end annotations_loading', this.annotations_loading)
       this.update_canvas();
     },
 
@@ -6977,7 +6976,7 @@ mplate_has_keypoints_type: function (instance_template) {
        */
       this.show_annotations = false;
       this.loading = true;
-      console.log('video annotations loading', this.annotations_loading)
+
       this.annotations_loading = true;
 
       this.instance_buffer_error = {};
@@ -7923,7 +7922,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.save_error = {};
       this.save_warning = {};
       if(this.go_to_keyframe_loading){
-        console.log('go_to_keyframe_loading')
         return
       }
       if (this.$props.view_only_mode == true) {

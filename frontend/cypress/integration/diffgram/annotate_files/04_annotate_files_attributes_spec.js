@@ -134,10 +134,12 @@ describe('Annotate Files Tests', () => {
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
         cy.wait(3000);
-        cy.mousedowncanvas(95, 95);
+        cy.mousedowncanvas(110, 110);
         cy.mouseupcanvas();
         cy.get('[data-cy="save_button"]').click({force: true})
         // Select The Attribute
+        cy.mousedowncanvas(110, 110);
+        cy.mouseupcanvas();
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_textfield"]`).first().click({force: true})
         cy.get(`[data-cy="${selectAttribute.prompt}_value_textfield"]`).first().type('sample text attribute value')
