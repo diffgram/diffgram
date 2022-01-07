@@ -1386,7 +1386,6 @@ export default Vue.extend({
 
       instance_list: [],
       show_text_file_place_holder: false,
-      instance_list_cache: [],
 
       current_polygon_point_list: [],
 
@@ -3578,7 +3577,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.ghost_instance_list.push(instance_clipboard);
     },
     set_keyframe_loading: function(value){
-      console.log('loadkng frame', value)
       this.go_to_keyframe_loading = value
     },
     on_key_frame_loaded: async function(url){
@@ -3613,7 +3611,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       if (file.type == "image") {
         this.video_mode = false;
-        console.log('PROPERTIES IMAGE', file.image);
         this.canvas_width = file.image.width;
         this.canvas_height = file.image.height;
 
@@ -5545,8 +5542,6 @@ mplate_has_keypoints_type: function (instance_template) {
         transform
       );
 
-      //console.log(min_point.x, min_point.y)
-
       // Propose Position with Movement
       let x_min_proposed = Math.max(0 + movementX, 0);
       let y_min_proposed = Math.max(0 + movementY, 0);
@@ -6880,7 +6875,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     get_instances: async function (play_after_success = false) {
-      console.log('get_instances')
       if (this.get_instances_loading) {
         return;
       }
@@ -7011,7 +7005,6 @@ mplate_has_keypoints_type: function (instance_template) {
        * permissions ie file/:file_id
        *
        */
-      console.log('get_video_instance_buffer')
       this.show_annotations = false;
       this.loading = true;
       this.annotations_loading = true;
@@ -7348,11 +7341,6 @@ mplate_has_keypoints_type: function (instance_template) {
         // delete
         this.delete_instance();
       }
-    },
-
-    copy_previous_instance_list: function () {
-      // TODO: For now I'm commenting this this as we'll need a bit more discussion on what this feature is for.
-      // this.instance_list = this.instance_list.concat(this.instance_list_cache);
     },
 
     keyboard_events_local_down: function (event) {},
@@ -7751,7 +7739,7 @@ mplate_has_keypoints_type: function (instance_template) {
             missing_frames.push(i)
           }
         }
-        console.log('MISSING FRAMES', missing_frames)
+
         let min_frame = Math.min(...missing_frames);
         let max_frame = Math.max(...missing_frames);
         let url = this.get_url_instance_buffer();
@@ -7792,11 +7780,9 @@ mplate_has_keypoints_type: function (instance_template) {
     ) {
       const clipboard = this.clipboard;
       if(this.any_frame_saving || this.any_loading){
-        console.log('returning',this.any_frame_saving, this.any_loading)
         return
       }
       if(this.go_to_keyframe_loading){
-        console.log('block paste_instance go_to_keyframe_loading')
         return
       }
       if (!clipboard && instance_hover_index == undefined) {
@@ -7818,7 +7804,7 @@ mplate_has_keypoints_type: function (instance_template) {
         );
         new_clipboard_instance_list.push(instance_clipboard_dup);
       }
-      console.log('SAVING PASTED INSTANCES....')
+
 
       this.set_clipboard(new_clipboard_instance_list);
     },
@@ -7964,7 +7950,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.save_error = {};
       this.save_warning = {};
       if(this.go_to_keyframe_loading){
-        console.log('block save go_to_keyframe_loading')
         return
       }
       if (this.$props.view_only_mode == true) {
@@ -7972,8 +7957,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       let frame_number = undefined;
       let instance_list = this.instance_list;
-
-      this.instance_list_cache = instance_list.slice();
 
       if (this.video_mode) {
         if (frame_number_param == undefined) {
@@ -8003,7 +7986,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       this.set_save_loading(true, frame_number);
-      console.log('innstance_list', instance_list)
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         AnnotationSavePrechecks.has_duplicate_instances(instance_list);
       let dup_instance_list = dup_indexes.map((i) => ({
@@ -8017,7 +7999,7 @@ mplate_has_keypoints_type: function (instance_template) {
           moment(a.client_created_time, "YYYY-MM-DD HH:mm")
         );
       });
-      console.log('has_duplicate_instances', has_duplicate_instances)
+
       if (has_duplicate_instances) {
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
@@ -8076,7 +8058,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
       try {
         const response = await axios.post(url, {
-          instance_list: this.instance_list_cache,
+          instance_list: instance_list,
           and_complete: and_complete,
           directory_id:
             this.$store.state.project.current_directory.directory_id,
@@ -8164,7 +8146,6 @@ mplate_has_keypoints_type: function (instance_template) {
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         if(this.video_mode){
           let pending_frames = this.get_pending_save_frames();
-          console.log('pending frames', pending_frames)
           if(pending_frames.length > 0){
             await this.save_multiple_frames(pending_frames)
           }

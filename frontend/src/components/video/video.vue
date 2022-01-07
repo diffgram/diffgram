@@ -611,7 +611,6 @@ export default Vue.extend( {
       return this.$store.watch(() => {
         return this.$store.state.video.go_to_keyframe_refresh },
          (new_val, old_val) => {
-          console.log('go_to_keyframe_refresh watcher')
           this.go_to_keyframe(this.$store.state.video.keyframe)
         },
       )
@@ -869,7 +868,6 @@ export default Vue.extend( {
     },
 
     slide_change: function (event) {
-      console.log('slide_change')
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },
@@ -910,7 +908,6 @@ export default Vue.extend( {
        * Caution need to test both next/previos frame and play
        *
        */
-      console.log('update_from_slider')
       if (!this.slide_active) {
         return
       }
