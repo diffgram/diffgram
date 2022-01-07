@@ -897,6 +897,7 @@ import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
+import v_sequence_list from "../video/sequence_list"
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -915,6 +916,7 @@ export default Vue.extend({
   name: "annotation_core",
   components: {
     create_issue_panel,
+    v_sequence_list,
     instance_detail_list_view,
     autoborder_avaiable_alert,
     instance_template_creation_dialog,
@@ -961,9 +963,9 @@ export default Vue.extend({
     request_save: {},
     annotator_email: {},
     file: {
-      default: {
+      default: () => ({
         image: {},
-      },
+      }),
     },
     model_run_id_list: {
       default: null,
@@ -1109,7 +1111,6 @@ export default Vue.extend({
       show_instance_history: false,
       regenerate_file_cache_loading: false,
       display_refresh_cache_button: false,
-      get_instances_loading: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
       snackbar_message: undefined,
@@ -1628,8 +1629,7 @@ export default Vue.extend({
         this.full_file_loading ||
         this.annotations_loading ||
         this.loading ||
-        this.loading_sequences ||
-        this.get_instances_loading
+        this.loading_sequences
       );
     },
 
@@ -6785,27 +6785,6 @@ mplate_has_keypoints_type: function (instance_template) {
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
 
-    get_instance_list_diff: async function () {
-      this.loading = true;
-      try {
-        const response = await axios.post("/api/v1/task/diff", {
-          task_alpha_id: this.$props.task.id,
-          mode_data: this.task_mode_prop, // TODO clarify task_mode_prop vs mode_data
-        });
-        if (response.data.log.success === true) {
-          this.instance_list = this.create_instance_list_with_class_types(
-            response.data.instance_list
-          );
-          this.annotations_loading = false;
-          this.show_annotations = true;
-        }
-      } catch (error) {
-        this.loading = false;
-        console.error(error);
-      } finally {
-        this.loading = false;
-      }
-    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -6875,23 +6854,13 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     get_instances: async function (play_after_success = false) {
-      if (this.get_instances_loading) {
+      console.log('get_instances')
+      if (this.annotations_loading) {
         return;
       }
-      this.get_instances_loading = true;
       this.annotations_loading = true;
       this.show_annotations = false;
-
-      // Diffing Context
-      // TODO: discuss if should remove or move to another place (separate component)
-      if (this.$props.task) {
-        if (this.task_mode_prop == "compare_review_to_draw") {
-          await this.get_instance_list_diff();
-          this.get_instances_loading = false;
-          return;
-        }
-      }
-
+      console.log(' start annotations_loading', this.annotations_loading)
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {
         /*  Caution, if this is firing twice
@@ -6913,7 +6882,8 @@ mplate_has_keypoints_type: function (instance_template) {
         await this.get_instance_list_for_image();
       }
       this.add_override_colors_for_model_runs();
-      this.get_instances_loading = false;
+      this.annotations_loading = false;
+      console.log(' end annotations_loading', this.annotations_loading)
       this.update_canvas();
     },
 
@@ -7007,6 +6977,7 @@ mplate_has_keypoints_type: function (instance_template) {
        */
       this.show_annotations = false;
       this.loading = true;
+      console.log('video annotations loading', this.annotations_loading)
       this.annotations_loading = true;
 
       this.instance_buffer_error = {};
@@ -7273,6 +7244,8 @@ mplate_has_keypoints_type: function (instance_template) {
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;
           this.update_canvas();
+
+
         } catch (error) {
           console.error(error);
         }
@@ -7950,6 +7923,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.save_error = {};
       this.save_warning = {};
       if(this.go_to_keyframe_loading){
+        console.log('go_to_keyframe_loading')
         return
       }
       if (this.$props.view_only_mode == true) {
@@ -7981,7 +7955,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.any_loading == true) {
         return;
       }
-      if(this.instance_buffer_dict[frame_number] == undefined || this.annotations_loading){
+      if(this.video_mode && (this.instance_buffer_dict[frame_number] == undefined || this.annotations_loading)){
         return
       }
 

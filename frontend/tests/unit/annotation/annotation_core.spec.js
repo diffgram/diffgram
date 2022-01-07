@@ -4,6 +4,7 @@ import { shallowMount, createLocalVue } from "@vue/test-utils";
 import annotation_core from "@/components/annotation/annotation_core.vue";
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
+import '@/vue-canvas.js'
 localVue.use(Vuex);
 
 describe("Test annotation_core", () => {
@@ -41,5 +42,19 @@ describe("Test annotation_core", () => {
   it("Tests if annotation_core mounts successfully", () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     expect(wrapper.html().includes('id="annotation_core"')).toBeTruthy();
+  });
+
+  it("Tests if any_frame_saving returns correct value", () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    let result = wrapper.vm.any_frame_saving;
+
+    expect(result).toBe(false)
+
+    wrapper.setData({
+      save_loading_frames_list: [1,2,3]
+    })
+    let result2 = wrapper.vm.any_frame_saving;
+
+    expect(result2).toBe(true)
   });
 });

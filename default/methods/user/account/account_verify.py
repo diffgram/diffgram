@@ -70,7 +70,6 @@ def start_verify_via_email_api():
 
 		user = User.get(session)
 
-		print(user)
 
 		result, log = start_verify_via_email( session = session, 
 												user = user,

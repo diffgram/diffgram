@@ -56,8 +56,10 @@ describe('Annotate Files Tests', () => {
           cy.mousedowncanvas(box.max_x, box.max_x);
           cy.wait(500)
           cy.mouseupcanvas();
-
+          cy.wait(500)
+          cy.get('[data-cy="save_button"]').click({force: true})
           cy.wait(2000)
+
         }
 
 
