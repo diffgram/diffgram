@@ -29,6 +29,9 @@ describe("Test annotation_core", () => {
                 studio_box_info: {}
               }
             },
+            clipboard: {
+              clipboard_data: {instance_list: [{x: 1}, {x: 2}]}
+            },
             project: {
               current_directory: {
                 directory_id: -1
@@ -41,6 +44,17 @@ describe("Test annotation_core", () => {
           },
           getters: {
             get_view_issue_mode: () => {
+            },
+            get_clipboard: {
+              instance_list: [{x: 1}, {x: 2}]
+            }
+          },
+          mutations: {
+            set_clipboard(state, data) {
+              state.clipboard_data = data
+            },
+            clear_clipboard(state) {
+              state.clipboard_data = undefined;
             }
           }
         },
@@ -140,8 +154,10 @@ describe("Test annotation_core", () => {
 
   it("correctly calls create_polygon()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.$refs.autoborder_alert.show_alert = () => {};
-    wrapper.vm.$store.commit = () => {};
+    wrapper.vm.$refs.autoborder_alert.show_alert = () => {
+    };
+    wrapper.vm.$store.commit = () => {
+    };
     // Image Case
     let points = [{x: 20, y: 20}, {x: 50, y: 50}, {x: 80, y: 80}];
     let id = 'test_id'
@@ -164,9 +180,12 @@ describe("Test annotation_core", () => {
 
   it("correctly calls on_key_frame_loaded()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.$store.commit = () => {};
-    wrapper.vm.load_frame_instances = () => {};
-    wrapper.vm.set_keyframe_loading = () => {};
+    wrapper.vm.$store.commit = () => {
+    };
+    wrapper.vm.load_frame_instances = () => {
+    };
+    wrapper.vm.set_keyframe_loading = () => {
+    };
     const spy = jest.spyOn(wrapper.vm, 'load_frame_instances')
     const spy2 = jest.spyOn(wrapper.vm, 'set_keyframe_loading')
     await wrapper.vm.on_key_frame_loaded();
@@ -177,10 +196,14 @@ describe("Test annotation_core", () => {
 
   it("correctly calls load_frame_instances()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.$store.commit = () => {};
-    wrapper.vm.add_image_process = () => {};
-    wrapper.vm.get_instances = () => {};
-    wrapper.vm.ghost_refresh_instances = () => {};
+    wrapper.vm.$store.commit = () => {
+    };
+    wrapper.vm.add_image_process = () => {
+    };
+    wrapper.vm.get_instances = () => {
+    };
+    wrapper.vm.ghost_refresh_instances = () => {
+    };
     const spy = jest.spyOn(wrapper.vm, 'add_image_process')
     const spy2 = jest.spyOn(wrapper.vm, 'get_instances')
     const spy3 = jest.spyOn(wrapper.vm, 'ghost_refresh_instances')
@@ -192,20 +215,20 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls add_image_process()", async () => {
-    const wrapper = shallowMount(annotation_core, {...props, canvas_wrapper:{
-
-      }}, localVue);
+    const wrapper = shallowMount(annotation_core, {
+      ...props, canvas_wrapper: {}
+    }, localVue);
     wrapper.setData({
       canvas_wrapper: {
-        style:{
-
-        }
+        style: {}
       }
     })
-    wrapper.vm.$store.commit = () => {};
+    wrapper.vm.$store.commit = () => {
+    };
     let testValue = "test";
     wrapper.vm.addImageProcess = () => testValue;
-    wrapper.vm.trigger_refresh_with_delay = () => {};
+    wrapper.vm.trigger_refresh_with_delay = () => {
+    };
     const spy = jest.spyOn(wrapper.vm, 'addImageProcess')
     const spy2 = jest.spyOn(wrapper.vm, 'trigger_refresh_with_delay')
     await wrapper.vm.add_image_process('https://google.com');
@@ -290,6 +313,51 @@ describe("Test annotation_core", () => {
       instance_buffer_dict: {}
     })
     wrapper.vm.add_instance_to_file(test_instance, frame_num);
+
+  });
+
+  it("correctly calls finish_polygon_drawing()", async () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    wrapper.vm.command_manager.executeCommand = () => {
+    }
+    wrapper.setData({
+      video_mode: true,
+      instance_buffer_dict: {}
+    })
+    let test_instance = {};
+    let frame_num = 6;
+    const spy = jest.spyOn(wrapper.vm.command_manager, 'executeCommand');
+    wrapper.vm.finish_polygon_drawing(test_instance, frame_num);
+    expect(wrapper.vm.is_actively_drawing).toEqual(false);
+    expect(wrapper.vm.current_polygon_point_list).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+
+  });
+
+
+  it("correctly calls paste_instance()", async () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    wrapper.vm.duplicate_instance = () => {}
+    wrapper.vm.$store.commit = () => {}
+
+    wrapper.vm.add_pasted_instance_to_instance_list = () => {
+    }
+
+    let test_instance = {};
+    let frame_num = 6;
+
+    const spy = jest.spyOn(wrapper.vm, 'copy_instance');
+    const spy2 = jest.spyOn(wrapper.vm, 'duplicate_instance');
+    const spy3 = jest.spyOn(wrapper.vm, 'add_pasted_instance_to_instance_list');
+    const spy4 = jest.spyOn(wrapper.vm, 'set_clipboard');
+
+
+    await wrapper.vm.paste_instance(undefined, 1, undefined);
+
+    expect(spy).toHaveBeenCalled();
+    expect(spy2).toHaveBeenCalledTimes(2);
+    expect(spy3).toHaveBeenCalledTimes(2);
+    expect(spy4).toHaveBeenCalled();
 
   });
 

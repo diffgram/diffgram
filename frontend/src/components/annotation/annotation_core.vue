@@ -7766,6 +7766,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       // We need to duplicate on each paste to avoid double ID's on the instance list.
       const new_clipboard_instance_list = [];
+
       for (const instance_clipboard of this.clipboard.instance_list) {
         let instance_clipboard_dup =
           this.duplicate_instance(instance_clipboard);
