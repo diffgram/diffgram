@@ -1086,6 +1086,7 @@ export default Vue.extend({
       instance_rotate_control_mouse_hover: null,
 
       snapped_to_instance: undefined,
+      canvas_wrapper: undefined,
 
       snackbar_paste_message: "",
       ghost_instance_hover_index: null,

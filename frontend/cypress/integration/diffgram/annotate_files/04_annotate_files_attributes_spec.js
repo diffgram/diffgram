@@ -128,6 +128,7 @@ describe('Annotate Files Tests', () => {
 
         cy.goToStudioFromToolbar()
 
+        cy.select_label('car with Attributes');
         // Draw a box
         cy.mousedowncanvas(75, 75);
         cy.mouseupcanvas();
