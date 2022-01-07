@@ -765,6 +765,7 @@ export default Vue.extend( {
 
       this.go_to_keyframe_loading = true
       const save_and_await_result = await this.save_and_await();
+      this.$emit('go_to_keyframe_loading_started')
       if (save_and_await_result == false) {
 
         this.go_to_keyframe_loading = false

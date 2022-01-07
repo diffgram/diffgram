@@ -3578,6 +3578,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.ghost_instance_list.push(instance_clipboard);
     },
     set_keyframe_loading: function(value){
+      console.log('loadkng frame', value)
       this.go_to_keyframe_loading = value
     },
     on_key_frame_loaded: async function(url){
@@ -5822,7 +5823,6 @@ mplate_has_keypoints_type: function (instance_template) {
     },
     polygon_insert_point: function (frame_number = undefined) {
       const current_point = this.polygon_point_limits();
-      console.log('POLYGON INSERT POINT', frame_number)
       // check if we should auto complete polygon (or can use enter)
       if (this.current_polygon_point_list.length >= 2) {
         let first_point = this.current_polygon_point_list[0];
@@ -6173,6 +6173,7 @@ mplate_has_keypoints_type: function (instance_template) {
             locked_frame_number
           );
           this.command_manager.executeCommand(command);
+          this.current_polygon_point_list = [];
         }
 
         if (this.instance_type == "curve") {
