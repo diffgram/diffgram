@@ -30,12 +30,12 @@ describe('Annotate Files Tests', () => {
        })
 
        it('Creates Select Attribute', () => {
-      
+
          cy.createAndSelectNewAttributeGroup()
 
          cy.get('[data-cy=attribute_kind_select]').click({force: true});
          cy.get('.v-list.v-select-list div').contains('Select').click({force: true})
-    
+
        })
 
       it('Names Select Attribute', () => {
@@ -53,17 +53,17 @@ describe('Annotate Files Tests', () => {
 
          cy.get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
          cy.createAttributeOptions(selectAttribute.options)
-    
+
        })
-    
+
        it('Sets the value for the select attribute in the studio', () =>{
          cy.wait(3000);
          const selectAttribute = labelsForAttributes[0].attributes.filter(attr => attr.type === 'select')[0];
-    
+
          cy.goToStudioFromToolbar()
 
          cy.select_label('car with Attributes');
-    
+
          // Draw a box
          cy.mousedowncanvas(75, 75);
          cy.mouseupcanvas();
@@ -80,7 +80,7 @@ describe('Annotate Files Tests', () => {
          // Save The attribute
          cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
          cy.get('body').type('{esc}');
-    
+
          cy.get('[data-cy="save_button"]').click({force: true})
          cy.wait('@annotation_update')
            .should(({request, response}) => {
@@ -90,7 +90,7 @@ describe('Annotate Files Tests', () => {
              expect(response.statusCode, 'response status').to.eq(200)
            })
        })
-    
+
      })
 
     context('[Free Text] It Creates And Sets Value of Free Text Type', () => {
@@ -134,8 +134,9 @@ describe('Annotate Files Tests', () => {
         cy.mousedowncanvas(120, 120);
         cy.mouseupcanvas();
         cy.wait(3000);
-        cy.mousedowncanvas(90, 90);
+        cy.mousedowncanvas(95, 95);
         cy.mouseupcanvas();
+        cy.get('[data-cy="save_button"]').click({force: true})
         // Select The Attribute
         cy.get(`[data-cy="attribute_group_header_${selectAttribute.prompt}"]`).first().click({force: true});
         cy.get(`[data-cy="${selectAttribute.prompt}_value_textfield"]`).first().click({force: true})
@@ -170,7 +171,7 @@ describe('Annotate Files Tests', () => {
          cy.get('[data-cy=attribute_kind_select]').click({force: true});
 
          cy.get('.v-list.v-select-list div').contains('Multiple Select').click({force: true})
-    
+
        })
 
       it('Names Select Attribute', () => {
@@ -239,7 +240,7 @@ describe('Annotate Files Tests', () => {
          cy.get('[data-cy=attribute_kind_select]').click({force: true});
 
          cy.get('.v-list.v-select-list div').contains('Radio').click({force: true})
-    
+
        })
 
       it('[Radio Button] Names', () => {

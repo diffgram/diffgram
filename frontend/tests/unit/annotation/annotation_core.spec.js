@@ -57,4 +57,40 @@ describe("Test annotation_core", () => {
 
     expect(result2).toBe(true)
   });
+
+  it("Tests if has_pending_frames returns correct value", () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    let result = wrapper.vm.has_pending_frames;
+
+    expect(result).toBe(false)
+
+    wrapper.setData({
+      unsaved_frames: [1,2,3]
+    })
+    let result2 = wrapper.vm.has_pending_frames;
+
+    expect(result2).toBe(true)
+  });
+
+  it("Tests correctly calls get_save_loading", () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+
+    // Image Case
+    let result = wrapper.vm.get_save_loading();
+    expect(result).toBe(false)
+    wrapper.setData({
+      save_loading_image: true
+    })
+    result = wrapper.vm.get_save_loading();
+    expect(result).toBe(true)
+
+    // Video Case
+    wrapper.setData({
+      save_loading_frames_list: [1,2,3],
+      video_mode: true
+    });
+    result = wrapper.vm.get_save_loading();
+    expect(result).toBe(true)
+
+  });
 });
