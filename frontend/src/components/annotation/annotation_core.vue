@@ -6922,7 +6922,6 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         // Save Any pending frames before refreshing buffer (This line might be removed when we stop
         // resetting the frame buffer on each fetch)
-        console.log('SAVE BEFORE GET NEW BUFFER')
         await this.save();
         await this.get_video_instance_buffer(play_after_success);
       }
@@ -8116,7 +8115,6 @@ mplate_has_keypoints_type: function (instance_template) {
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         if(this.video_mode){
           let pending_frames = this.get_pending_save_frames();
-          console.log('PENDING FRAMES', pending_frames)
           if(pending_frames.length > 0){
             await this.save_multiple_frames(pending_frames)
           }

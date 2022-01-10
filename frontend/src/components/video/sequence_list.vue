@@ -690,7 +690,6 @@ export default Vue.extend( {
       this.highest_sequence_number = new_sequence.number
     },
     clear_sequence_list_cache: function () {
-      //console.log("clear_sequence_list_cache")
       this.cache_sequence_list = {}
     },
 
@@ -914,7 +913,6 @@ export default Vue.extend( {
       }
 
       if (  this.force_new == true) {
-        console.log('force', this.highest_sequence_number)
         this.current_sequence.number = this.highest_sequence_number + 1
       }
 
@@ -1002,7 +1000,6 @@ export default Vue.extend( {
     },
 
     remove_sequence(sequence_id, index = undefined) {
-      console.log('remove sequence', sequence_id, index)
       if(sequence_id == undefined && index !=undefined){
         let seq_to_remove = this.sequence_list[index];
         this.sequence_list.splice(index, 1);
@@ -1040,7 +1037,7 @@ export default Vue.extend( {
           this.loading = false
         })
         .catch(e => {
-          console.log(e)
+          console.error(e)
         })
 
 
@@ -1061,7 +1058,6 @@ export default Vue.extend( {
     },
     recalculate_highest_sequence_number: function(){
       let numbers_list = this.sequence_list.map(elm => elm.number);
-      console.log('recalculating', numbers_list)
       if(numbers_list.length === 0){
         this.highest_sequence_number = 0;
         return
@@ -1124,7 +1120,7 @@ export default Vue.extend( {
         .catch(e => {
           this.loading = false
           this.error = e.response.data.log.error
-          console.log(e)
+          console.error(e)
         })
 
 
