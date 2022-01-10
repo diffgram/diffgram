@@ -858,6 +858,7 @@ import axios from "axios";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
+import SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
@@ -3585,6 +3586,7 @@ mplate_has_keypoints_type: function (instance_template) {
     on_key_frame_loaded: async function(url){
       await this.load_frame_instances(url)
       this.set_keyframe_loading(false);
+      this.seeking = false;
     },
     load_frame_instances: async function (url) {
       /* Careful to call get_instances() since this handles
@@ -7918,6 +7920,34 @@ mplate_has_keypoints_type: function (instance_template) {
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
     },
+    update_sequence_data: function(instance_list, response){
+      /*
+      * Updates ID's and color data from server response
+      * */
+
+      SequenceUpdateHelpers.populate_empty_sequence_ids(
+        instance_list,
+        response.data.new_sequence_list
+      )
+
+      // Update any new created sequences
+      if (response.data.new_sequence_list) {
+        for (let new_seq of response.data.new_sequence_list) {
+          this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
+        }
+      }
+
+      // Add new Keyframe Numbers to Sequence from the created instances.
+      for (var instance of response.data.added_instances) {
+        this.add_keyframe_to_sequence(instance, frame_number)
+        if (instance.action_type == "deleted") {
+          this.$refs.sequence_list.remove_frame_number_from_sequence(
+            instance.sequence_id,
+            frame_number
+          )
+        }
+      }
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -8055,56 +8085,11 @@ mplate_has_keypoints_type: function (instance_template) {
         this.$emit("save_response_callback", true);
 
 
-        if (response.data.sequence) {
-          // Because: new color thing based on sequence id but seq id not assigned till response
-          // not good code. just placeholder in current constraints until we can figure out something better.
-          // ie maybe whole instance should be getting replaced
-          let instance_list_request_frame = this.instance_list;
-          if (this.video_mode) {
-            // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
-            // Because it could have potentially changed during save.
-            instance_list_request_frame =
-              this.instance_buffer_dict[video_data.current_frame];
-          }
-          let instance_index = instance_list_request_frame.findIndex(
-            (x) =>
-              x.label_file_id == response.data.sequence.label_file_id &&
-              x.soft_delete === false &&
-              x.number == response.data.sequence.number
-          );
-          // just in case so we don't overwrite
-          // maybe don't need this, but going to look at other options in the future there too
-          // doesn't cover buffer case?
-          if (
-            instance_index &&
-            instance_list_request_frame[instance_index] &&
-            instance_list_request_frame[instance_index].sequence_id ==
-              undefined &&
-            instance_list_request_frame[instance_index].label_file_id ==
-              response.data.sequence.label_file_id
-          ) {
-            instance_list_request_frame[instance_index].sequence_id =
-              response.data.sequence.id;
-          }
-          // end of temp sequence thing
-
-          // Update any new created sequences
-          if (response.data.new_sequence_list) {
-            for (let new_seq of response.data.new_sequence_list) {
-              this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
-            }
-          }
-          if (this.video_mode) {
-            for (var instance of response.data.added_instances) {
-              this.add_keyframe_to_sequence(instance, frame_number)
-              if (instance.action_type == "deleted") {
-                this.$refs.sequence_list.remove_frame_number_from_sequence(
-                  instance.sequence_id,
-                  frame_number)
-              }
-            }
-          }
+        // Update Sequence ID's and Keyframes.
+        if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
+          this.update_sequence_data(instance_list);
         }
+
         this.set_save_loading(false, frame_number);
         this.set_frame_pending_save(false, frame_number)
         this.has_changed = false;

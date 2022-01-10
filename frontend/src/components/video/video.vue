@@ -793,6 +793,7 @@ export default Vue.extend( {
 
       }
       this.updateFrameUrl(frame);
+      this.go_to_keyframe_loading = false;
     },
 
     detect_end_from_keyframe: function () {
