@@ -371,26 +371,6 @@
           return `${project_name.slice(0, 15)}...`;
         return project_name;
       },
-      items_super_admin: function () {
-        var array = [
-          {
-            text: "Annotation assignment",
-            icon: "edit",
-            action: "/annotation_assignment/studio/annotate",
-          },
-          {
-            text: "New user",
-            icon: "add",
-            action: "/user/new",
-          },
-          {
-            text: "Annotation assignment review",
-            icon: "verified_user",
-            action: "/annotation_assignment/studio/review",
-          },
-        ];
-        return this.items_logged_in.concat(array);
-      },
       route_home: function () {
         if (this.$store.state.user.logged_in == true) {
           return "/home/dashboard";

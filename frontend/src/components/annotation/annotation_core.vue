@@ -2928,7 +2928,7 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     detect_is_ok_to_save: async function () {
-      if (this.has_changed) {
+      if (this.has_changed || this.has_pending_frames) {
         await this.save();
       }
     },
@@ -6909,6 +6909,10 @@ mplate_has_keypoints_type: function (instance_template) {
           this.has_changed = true;
         }
       } else {
+        // Save Any pending frames before refreshing buffer (This line might be removed when we stop
+        // resetting the frame buffer on each fetch)
+        console.log('SAVE BEFORE GET NEW BUFFER')
+        await this.save();
         await this.get_video_instance_buffer(play_after_success);
       }
     },
@@ -6999,8 +7003,6 @@ mplate_has_keypoints_type: function (instance_template) {
         }
         this.instance_buffer_dict = new_instance_buffer_dict;
 
-
-        this.instance_buffer_metadata = {};
         // Now set the current list from buffer
         if (this.instance_buffer_dict) {
           // We want to do the equals because that creates the reference on the instance list to buffer dict
@@ -8120,6 +8122,7 @@ mplate_has_keypoints_type: function (instance_template) {
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         if(this.video_mode){
           let pending_frames = this.get_pending_save_frames();
+          console.log('PENDING FRAMES', pending_frames)
           if(pending_frames.length > 0){
             await this.save_multiple_frames(pending_frames)
           }

@@ -259,7 +259,8 @@
 
           --->
           <v-slider
-
+            ref="slider"
+            data-cy="video_player_slider"
             class="pl-4 pr-4 pt-0"
             @input="update_from_slider(parseInt($event))"
             @end="slider_end(parseInt($event))"
@@ -580,7 +581,9 @@ export default Vue.extend( {
     }
   },
   mounted() {
-
+    if (window.Cypress) {   // only when testing
+      window.video_player = this;
+    }
       this.keyframe_watcher = this.create_keyframe_watcher()
   },
   watch: {
@@ -724,6 +727,7 @@ export default Vue.extend( {
        *    data ownership in vue components. like logically video should be a seperate thing
        *    but the channel between video and annotation core is not great
        */
+      console.log('SAVE AND AWAIT', this.$props.parent_save);
       if(!this.$props.parent_save){
         return
       }
@@ -871,8 +875,8 @@ export default Vue.extend( {
       this.update_slide_start() // saveing hook
       this.slider_end(event)
     },
-    update_slide_start: function () {
-
+    update_slide_start: async function () {
+      await this.save_and_await();
       this.slide_active = true
       this.$emit("seeking_update", true)
       if (typeof this.video_current_frame_guess != "undefined") {
