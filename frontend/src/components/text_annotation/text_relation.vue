@@ -55,7 +55,7 @@ export default Vue.extend({
             return this.relation_hover.relation_hover_id === this.relation.id ? 'red' : this.relation.label.colour.hex
         },
         relation_paths: function() {
-            const paths = this.relation.relationItems.map(path_item => `M ${path_item.M1} ${path_item.M2} v -10 H ${path_item.H} v 10`)
+            const paths = this.relation.relationItems.map((path_item, index) => `M ${path_item.M1} ${path_item.M2} v ${index > 0 ? 0 : -10} H ${path_item.H} v 10`)
             return paths
         },
         relation_arrow_path: function() {

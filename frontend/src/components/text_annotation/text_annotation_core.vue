@@ -315,7 +315,19 @@ export default Vue.extend({
                 const end_annotation = this.instances.get_label_by_id(annotation_id)
                 const H = end_annotation.labelItems[0].x + end_annotation.labelItems[0].width / 2
                 if (start_annotation.id !== end_annotation.id && !this.relations_to_render.find(rel => rel.start_label === start_annotation.id && rel.end_label === end_annotation.id)) {
-                    this.instances.addRelationInstance([{ M1, M2: this.path.M2, H }], { x: M1, y: this.path.M2 }, { x: H, y: this.path.M2 }, start_annotation.id, end_annotation.id, sentense_index, {...this.current_label})
+                    if (start_annotation.labelItems[0].y !== end_annotation.labelItems[0].y) console.log("HERE WE ARE CALCULATING PATHS")
+                    this.instances.addRelationInstance(
+                        [
+                            { M1, M2: this.path.M2, H: 10000 },
+                            { M1: 10, M2: this.path.M2 + 30, H },
+                        ], 
+                        { x: M1, y: this.path.M2 }, 
+                        { x: H, y: end_annotation.labelItems[0].y }, 
+                        start_annotation.id, 
+                        end_annotation.id, 
+                        sentense_index, 
+                        {...this.current_label}
+                        )
                 }
                 this.path = {
                     M1: null,
