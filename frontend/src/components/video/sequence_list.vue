@@ -294,10 +294,11 @@
               </div>
              -->
 
-              <div v-if="props.index==hover_index
-                 || menu_open == true &&
-                    props.index == hover_click_index ">
+              <div v-if="props.index==hover_index ||
+                    menu_open == true &&
+                    props.index == hover_click_index">
                 <button_with_confirm
+                    v-if="props.item.id != undefined"
                     tooltip_message="Edit Label"
                     @confirm_click="update_sequence(
                                       props.item.id,
@@ -330,7 +331,7 @@
 
 
               <button_with_confirm
-                @confirm_click="remove_sequence(props.item.id)"
+                @confirm_click="remove_sequence(props.item.id, props.index)"
                 :confirm_message="'Confirm Archive Sequence #' + props.item.number"
                 @menu_open="menu_open = $event,
                             hover_click_index=props.index"
@@ -1000,8 +1001,17 @@ export default Vue.extend( {
       this.$emit('new_instance_request', instance_group)
     },
 
-    remove_sequence(sequence_id) {
-
+    remove_sequence(sequence_id, index = undefined) {
+      console.log('remove sequence', sequence_id, index)
+      if(sequence_id == undefined && index !=undefined){
+        let seq_to_remove = this.sequence_list[index];
+        this.sequence_list.splice(index, 1);
+        this.recalculate_highest_sequence_number();
+        if(seq_to_remove.number === this.current_sequence.number){
+          this.current_sequence = {};
+        }
+        return;
+      }
       this.loading = true
 
       let url = ""
@@ -1052,7 +1062,12 @@ export default Vue.extend( {
     recalculate_highest_sequence_number: function(){
       let numbers_list = this.sequence_list.map(elm => elm.number);
       console.log('recalculating', numbers_list)
+      if(numbers_list.length === 0){
+        this.highest_sequence_number = 0;
+        return
+      }
       this.highest_sequence_number = Math.max(...numbers_list);
+
     },
     may_auto_advance_sequence: function () {
       if(this.$props.label_settings.on_instance_creation_advance_sequence == true){
