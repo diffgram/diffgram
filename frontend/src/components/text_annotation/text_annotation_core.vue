@@ -27,6 +27,7 @@
                 v-for="(sentense, sentense_index) in text_tokenized"
                 :key="`${sentense}_${sentense_index}`"
                 :style="`display: flex; flex-direction: row; border-bottom: 1px solid rgba(29, 209, 161, 0.5); background-color: ${sentense_is_odd(sentense_index) ? 'rgba(29, 209, 161, 0.1)' : 'white'}`"
+                :ref="`svg_item_${sentense_index}`"
             >
                 <div style="display: flex; align-items: center; justify-content: center">{{ sentense_index + 1 }}.</div>
                 <svg 
@@ -49,7 +50,7 @@
                             :d="draw_arc" 
                         />
                         <path 
-                            :d="`M ${path.Q3} ${path.M2} l -5, -5 l 10, 0 l -5, 5`" 
+                            :d="`M ${path.Q3} ${path.Q4} l -5, -5 l 10, 0 l -5, 5`" 
                             fill="black" 
                         />
                     </g>
@@ -137,6 +138,7 @@ export default Vue.extend({
             set_y: null,
             selecction_width: 0,
             label_items: [],
+            set_top_svg_position: null,
             // Constants for rendering
             element_width_dev: 300,
             left_margin: 10,
@@ -306,6 +308,7 @@ export default Vue.extend({
 
             this.path.Q3 = coordX_local
             this.path.Q1 = coordX_local  / 2
+            this.path.Q4 = event.clientY - this.set_top_svg_position + 5
         },
         on_add_relation: function(event, sentense_index, annotation_id) {
             if (this.drawing_relation) {
@@ -325,11 +328,14 @@ export default Vue.extend({
                     Q4: null,
                     sentense_index: null
                 }
+                this.set_top_svg_position = null
                 window.removeEventListener("mousemove", this.on_mouse_move_listen, true)
                 this.drawing_relation = false
                 return
             }
             console.log('Draw relation arrow')
+
+            this.set_top_svg_position = this.$refs[`svg_item_${sentense_index}`][0].getBoundingClientRect().top
             this.drawing_relation = true
             const coordX_global = event.clientX;
             var used_svg_wrapper_component = this.$refs.svg_main_container[sentense_index];
@@ -342,7 +348,7 @@ export default Vue.extend({
 
             this.path.sentense_index = sentense_index
             this.path.M1 = coordX_local
-            this.path.M2 = coordY_local
+            this.path.M2 = event.toElement.y.baseVal.value
             this.path.Q2 = coordY_local - 30
             this.path.Q4 = coordY_local
             this.path.start_annotation_id = annotation_id

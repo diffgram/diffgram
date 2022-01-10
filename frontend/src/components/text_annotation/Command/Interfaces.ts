@@ -18,8 +18,9 @@ export interface TextRelationInstance extends TextInstance {
     end_label: number;
 }
 
-interface DrawLabelItem {
+export interface DrawLabelItem {
     x: number;
     y: number;
     width: number;
 }
+
