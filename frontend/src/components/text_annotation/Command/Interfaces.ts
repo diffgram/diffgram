@@ -12,6 +12,8 @@ export interface TextLabelInstanse extends TextInstance {
 
 export interface TextRelationInstance extends TextInstance {
     relationItems: DrawRelationItem[];
+    start_marker: MarkerPosition;
+    end_marker: MarkerPosition;
     start_label: number;
     end_label: number;
 }
@@ -26,5 +28,10 @@ export interface DrawRelationItem {
     M1: number;
     M2: number;
     H: number;
+}
+
+export interface MarkerPosition {
+    x: number;
+    y: number;
 }
 

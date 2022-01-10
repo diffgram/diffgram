@@ -4,7 +4,8 @@ import {
     TextLabelInstanse, 
     TextRelationInstance, 
     DrawLabelItem,
-    DrawRelationItem
+    DrawRelationItem,
+    MarkerPosition
 } from "./Interfaces"
 import {v4 as uuidv4 } from 'uuid'
 
@@ -61,6 +62,8 @@ export class TextInterface {
 
     public addRelationInstance(
         relationItems: DrawRelationItem[],
+        start_marker: MarkerPosition,
+        end_marker: MarkerPosition,
         start_label: number, 
         end_label: number, 
         sentense_index: number, 
@@ -71,6 +74,8 @@ export class TextInterface {
             creation_ref_id: uuidv4(),
             type: "relation",
             relationItems,
+            start_marker,
+            end_marker,
             start_label,
             end_label,
             sentense_index,
