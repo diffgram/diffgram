@@ -277,8 +277,6 @@ export default Vue.extend({
                 } 
             }
 
-            console.log(labelItems)
-
             this.instances.addLabelInstance(labelItems, sentense_index, {...this.current_label})
             document.getSelection().removeAllRanges()
         },
@@ -313,11 +311,11 @@ export default Vue.extend({
         on_add_relation: function(event, sentense_index, annotation_id) {
             if (this.drawing_relation) {
                 const start_annotation = this.instances.get_label_by_id(this.path.start_annotation_id)
-                const M1 = start_annotation.x + start_annotation.width / 2
+                const M1 = start_annotation.labelItems[0].x + start_annotation.labelItems[0].width / 2
                 const end_annotation = this.instances.get_label_by_id(annotation_id)
-                const H = end_annotation.x + end_annotation.width / 2
+                const H = end_annotation.labelItems[0].x + end_annotation.labelItems[0].width / 2
                 if (start_annotation.id !== end_annotation.id && !this.relations_to_render.find(rel => rel.start_label === start_annotation.id && rel.end_label === end_annotation.id)) {
-                    this.instances.addRelationInstance(M1, this.path.M2, H, start_annotation.id, end_annotation.id, sentense_index, {...this.current_label})
+                    this.instances.addRelationInstance([{ M1, M2: this.path.M2, H }], start_annotation.id, end_annotation.id, sentense_index, {...this.current_label})
                 }
                 this.path = {
                     M1: null,

@@ -4,7 +4,7 @@
     @mouseover="on_relation_hover"
     @mouseout="on_relation_stop_hover"
 >
-    <circle :cx="relation.M1" :cy="relation.M2" r="3" :fill="current_color"/>
+    <circle :cx="this.relation.relationItems[0].M1" :cy="this.relation.relationItems[0].M2" r="3" :fill="current_color"/>
     <path 
         :d="relation_arrow_path" 
         :fill="current_color" 
@@ -53,10 +53,12 @@ export default Vue.extend({
             return this.relation_hover.relation_hover_id === this.relation.id ? 'red' : this.relation.label.colour.hex
         },
         relation_path: function() {
-            return `M ${this.relation.M1} ${this.relation.M2} v -10 H ${this.relation.H} v 10`
+            const path = this.relation.relationItems[0]
+            return `M ${path.M1} ${path.M2} v -10 H ${path.H} v 10`
         },
         relation_arrow_path: function() {
-            return `M ${this.relation.H} ${this.relation.M2} l -5, -5 l 10, 0 l -5, 5`
+            const path = this.relation.relationItems[0]
+            return `M ${path.H} ${path.M2} l -5, -5 l 10, 0 l -5, 5`
         }
     }
 })

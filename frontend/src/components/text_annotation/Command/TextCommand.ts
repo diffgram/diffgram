@@ -1,5 +1,11 @@
 import { TextInstanceSnapshot } from "./CreateSnapshot"
-import { TextInstance, TextLabelInstanse, TextRelationInstance, DrawLabelItem } from "./Interfaces"
+import { 
+    TextInstance, 
+    TextLabelInstanse, 
+    TextRelationInstance, 
+    DrawLabelItem,
+    DrawRelationItem
+} from "./Interfaces"
 import {v4 as uuidv4 } from 'uuid'
 
 export class TextInterface {
@@ -54,9 +60,7 @@ export class TextInterface {
     }
 
     public addRelationInstance(
-        M1: number, 
-        M2: number, 
-        H: number, 
+        relationItems: DrawRelationItem[],
         start_label: number, 
         end_label: number, 
         sentense_index: number, 
@@ -66,9 +70,7 @@ export class TextInterface {
             id: this.instances.length + 1,
             creation_ref_id: uuidv4(),
             type: "relation",
-            M1,
-            M2,
-            H,
+            relationItems,
             start_label,
             end_label,
             sentense_index,
