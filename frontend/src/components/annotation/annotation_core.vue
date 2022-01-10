@@ -858,7 +858,7 @@ import axios from "axios";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
-import SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
+import * as SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
@@ -3922,7 +3922,15 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         this.instance_buffer_dict[frame_number] = [instance];
       }
-
+      if(instance.number === this.$refs.sequence_list.highest_sequence_number || this.$refs.sequence_list.highest_sequence_number === 0){
+        if(this.$refs.sequence_list.highest_sequence_number === 0){
+          this.$refs.sequence_list.may_auto_advance_sequence()
+          this.$refs.sequence_list.may_auto_advance_sequence()
+        }
+        else{
+          this.$refs.sequence_list.may_auto_advance_sequence()
+        }
+      }
       // Set Metadata to manage saving frames
       this.set_frame_pending_save(true, frame_number)
     },
@@ -6189,6 +6197,7 @@ mplate_has_keypoints_type: function (instance_template) {
             this.$store.commit("finish_draw");
           }
         }
+
       }
 
       // For new Refactored instance types
@@ -7920,7 +7929,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
     },
-    update_sequence_data: function(instance_list, response){
+    update_sequence_data: function(instance_list, frame_number, response){
       /*
       * Updates ID's and color data from server response
       * */
@@ -7933,7 +7942,7 @@ mplate_has_keypoints_type: function (instance_template) {
       // Update any new created sequences
       if (response.data.new_sequence_list) {
         for (let new_seq of response.data.new_sequence_list) {
-          this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
+          this.$refs.sequence_list.add_or_update_existing_sequence(new_seq);
         }
       }
 
@@ -8087,7 +8096,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
         // Update Sequence ID's and Keyframes.
         if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
-          this.update_sequence_data(instance_list);
+          this.update_sequence_data(instance_list, frame_number, response);
         }
 
         this.set_save_loading(false, frame_number);
