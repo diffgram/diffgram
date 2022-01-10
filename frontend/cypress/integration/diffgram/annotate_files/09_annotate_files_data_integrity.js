@@ -209,8 +209,12 @@ describe('Annotate Files Tests', () => {
                       expect(annotation_core.unsaved_frames.length).to.equal(0)
                       let pending_save_frames = Object.keys(annotation_core.instance_buffer_metadata);
                       for(let key of pending_save_frames){
-                        expect(annotation_core.instance_buffer_metadata[key].pending_save).to.be.falsy;
+                        expect(annotation_core.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
+                          return val === false || val === undefined
+                        });
+
                       }
+                      
                     })
                   })
             })
