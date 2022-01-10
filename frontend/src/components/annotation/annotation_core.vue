@@ -3906,15 +3906,18 @@ mplate_has_keypoints_type: function (instance_template) {
 
     },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
+      console.log('add_instance_to_frame_buffer 000',)
       if (!this.video_mode) {
         return;
       }
+      console.log('add_instance_to_frame_buffer 111',)
       if (frame_number == undefined) {
         throw "frame number undefined in video mode (add_instance_to_frame_buffer)";
       }
       if (instance == undefined) {
         throw "instance is undefined in add_instance_to_frame_buffer()";
       }
+      console.log('add_instance_to_frame_buffer 111.5',)
       instance.creation_ref_id = uuidv4();
       instance.client_created_time = new Date().toISOString();
       if (this.instance_buffer_dict[frame_number]) {
@@ -3922,7 +3925,9 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         this.instance_buffer_dict[frame_number] = [instance];
       }
-      if(instance.number === this.$refs.sequence_list.highest_sequence_number || this.$refs.sequence_list.highest_sequence_number === 0){
+      if(this.$refs.sequence_list &&
+        instance.number != undefined &&
+        (instance.number === this.$refs.sequence_list.highest_sequence_number || this.$refs.sequence_list.highest_sequence_number === 0)){
         if(this.$refs.sequence_list.highest_sequence_number === 0){
           this.$refs.sequence_list.may_auto_advance_sequence()
           this.$refs.sequence_list.may_auto_advance_sequence()
