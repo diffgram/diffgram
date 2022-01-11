@@ -685,20 +685,22 @@ class Task(Base):
     def serialize_for_list_view_builder(self, session = None):
 
         file = None
+        task_assignees = []
+        task_reviewers = []
         if session:
             file = self.file.serialize_with_type(session = session)
 
-        task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
-        task_assignees = []
+            task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
 
-        for assignee in task_assignees_query:
-            task_assignees.append(assignee.serialize())
 
-        task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
-        task_reviewers = []
+            for assignee in task_assignees_query:
+                task_assignees.append(assignee.serialize())
 
-        for assignee in task_reviewers_query:
-            task_reviewers.append(assignee.serialize())
+            task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+
+
+            for assignee in task_reviewers_query:
+                task_reviewers.append(assignee.serialize())
 
         return {
             'id': self.id,
