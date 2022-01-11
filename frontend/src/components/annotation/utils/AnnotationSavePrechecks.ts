@@ -142,6 +142,9 @@ export let check_if_pending_created_instance = function (instance_list) {
   // Sets the pending changes flag if there are any instances that have not been saved yet.
   for (let i = 0; i < instance_list.length; i++) {
     let instance = instance_list[i];
+    if(instance.soft_delete){
+      continue
+    }
     if (!instance.id) {
       return true
     }

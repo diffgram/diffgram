@@ -18,9 +18,9 @@
             :height="50"
             :command_manager="command_manager"
             :save_loading="
-              this.video_mode
-                ? this.save_loading_frame[this.current_frame]
-                : this.save_loading_image
+              video_mode
+                ? save_loading_frames_list.length > 0
+                : save_loading_image
             "
             :annotations_loading="annotations_loading"
             :loading="loading"
@@ -30,7 +30,7 @@
             :task="task"
             :file="file"
             :canvas_scale_local="zoom_value"
-            :has_changed="has_changed"
+            :has_changed="has_changed || has_pending_frames"
             :label_list="label_list"
             :draw_mode="draw_mode"
             :label_file_colour_map="label_file_colour_map"
@@ -654,8 +654,8 @@
               @on_click_polygon_merge="start_polygon_select_for_merge"
               @delete_polygon_point="polygon_delete_point"
               @copy_instance="on_context_menu_copy_instance"
-              @paste_instance="paste_instance"
-              @paste_instance_on_next_frames="paste_instance"
+              @paste_instance="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
+              @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
               @create_instance_template="create_instance_template"
               @open_instance_history_panel="show_instance_history_panel"
               @close_instance_history_panel="show_instance_history_panel"
@@ -680,9 +680,9 @@
             @pause="video_playing = false"
             @seeking_update="seeking_update($event)"
             :project_string_id="project_string_id"
-            @change_frame_from_video_event="
-              change_frame_from_video_event($event)
-            "
+
+            @go_to_keyframe_loading_started="set_keyframe_loading(true)"
+            @go_to_keyframe_loading_ended="on_key_frame_loaded($event)"
             @video_animation_unit_of_work="video_animation_unit_of_work($event)"
             @video_current_frame_guess="current_frame = parseInt($event)"
             @slide_start="detect_is_ok_to_save()"
@@ -695,6 +695,7 @@
             :video_play_request="video_play"
             :task="task"
             :loading="any_loading"
+            :any_frame_saving="any_frame_saving"
             :view_only_mode="view_only_mode"
             :has_changed="has_changed"
             :canvas_width_scaled="canvas_width_scaled"
@@ -857,6 +858,7 @@ import axios from "axios";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
+import * as SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
@@ -896,6 +898,7 @@ import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
+import v_sequence_list from "../video/sequence_list"
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -914,6 +917,7 @@ export default Vue.extend({
   name: "annotation_core",
   components: {
     create_issue_panel,
+    v_sequence_list,
     instance_detail_list_view,
     autoborder_avaiable_alert,
     instance_template_creation_dialog,
@@ -960,9 +964,9 @@ export default Vue.extend({
     request_save: {},
     annotator_email: {},
     file: {
-      default: {
+      default: () => ({
         image: {},
-      },
+      }),
     },
     model_run_id_list: {
       default: null,
@@ -1079,9 +1083,11 @@ export default Vue.extend({
   data() {
     return {
       submitted_to_review: false,
+      go_to_keyframe_loading: false,
       instance_rotate_control_mouse_hover: null,
 
       snapped_to_instance: undefined,
+      canvas_wrapper: undefined,
 
       snackbar_paste_message: "",
       ghost_instance_hover_index: null,
@@ -1107,7 +1113,6 @@ export default Vue.extend({
       show_instance_history: false,
       regenerate_file_cache_loading: false,
       display_refresh_cache_button: false,
-      get_instances_loading: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
       snackbar_message: undefined,
@@ -1187,6 +1192,8 @@ export default Vue.extend({
 
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
+      unsaved_frames: [],
+      save_loading_frames_list: [],
 
       is_editing_ui_schema: true,
 
@@ -1256,7 +1263,7 @@ export default Vue.extend({
 
       annotations_loading: false,
       save_loading_image: false,
-      save_loading_frame: {},
+
       minimize_issues_sidepanel: false,
 
       source_control_menu: false,
@@ -1382,7 +1389,6 @@ export default Vue.extend({
 
       instance_list: [],
       show_text_file_place_holder: false,
-      instance_list_cache: [],
 
       current_polygon_point_list: [],
 
@@ -1449,6 +1455,12 @@ export default Vue.extend({
     };
   },
   computed: {
+    any_frame_saving: function(){
+      return this.save_loading_frames_list.length > 0;
+    },
+    has_pending_frames: function(){
+      return this.unsaved_frames.length > 0;
+    },
     filtered_instance_type_list: function () {
       if (!this.$props.task || !this.$props.task.job) {
         return this.instance_type_list;
@@ -1619,8 +1631,7 @@ export default Vue.extend({
         this.full_file_loading ||
         this.annotations_loading ||
         this.loading ||
-        this.loading_sequences ||
-        this.get_instances_loading
+        this.loading_sequences
       );
     },
 
@@ -2006,7 +2017,6 @@ export default Vue.extend({
     this.remove_event_listeners();
 
     // watcher removal
-    this.get_instances_watcher();
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
@@ -2138,21 +2148,24 @@ export default Vue.extend({
 
     get_save_loading: function (frame_number) {
       if (this.video_mode) {
-        if (!this.save_loading_frame[frame_number]) {
-          return false;
-        } else {
-          return true;
-        }
+        return this.save_loading_frames_list.includes(frame_number)
       } else {
         return this.save_loading_image;
       }
     },
-    set_save_loading(value, frame) {
+    set_save_loading: function(value, frame) {
       if (this.video_mode) {
-        this.save_loading_frame[frame] = value;
+        if(value){
+          this.save_loading_frames_list.push(frame)
+        }
+        else{
+          this.save_loading_frames_list = this.save_loading_frames_list.filter(elm => elm != frame)
+        }
+
       } else {
         this.save_loading_image = value;
       }
+
       this.$forceUpdate();
     },
     // userscript (to be placed in class once context figured)
@@ -2316,8 +2329,13 @@ mplate_has_keypoints_type: function (instance_template) {
       y_min,
       x_max,
       y_max,
-      userscript_id = undefined
+      userscript_id = undefined,
+      frame_number = undefined
     ) {
+      /*
+      * Used in context of userscripts.
+      * TODO: Might need to be moved to a separate userscript functions file.
+      * */
       if (
         x_min == undefined ||
         y_min == undefined ||
@@ -2352,7 +2370,7 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
 
       this.event_create_instance = new_instance;
@@ -2412,14 +2430,18 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     create_instance_from_keypoints: function (x, y) {
+      /*
+      * Used in context of userscripts.
+      * */
       let new_instance = {
         ...this.current_instance,
         points: [...this.current_instance.points.map((p) => ({ ...p }))],
       };
       new_instance.type = "point";
       new_instance.points = [{ x: x, y: y }];
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
+      return new_instance
     },
 
     update_polygon_width_height: function (instance) {
@@ -2458,6 +2480,9 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     create_polygon: function (points_list, userscript_id = undefined) {
+      /*
+      * Used in context of userscripts
+      * */
       let new_instance = {
         ...this.current_instance,
         points: [...this.current_instance.points.map((p) => ({ ...p }))],
@@ -2476,16 +2501,21 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this);
+      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
+      return new_instance;
     },
 
     __bodypix_points_to_instances: function (keypoints_list) {
+      /*
+      * Used in context of userscripts.
+      * */
+
       // TODO also need to set instance type
 
       for (let keypoint of keypoints_list) {
         this.current_instance.points = [keypoint.position];
-        const command = new CreateInstanceCommand(this.current_instance, this);
+        const command = new CreateInstanceCommand(this.current_instance, this, this.current_frame);
         this.command_manager.executeCommand(command);
       }
     },
@@ -2771,7 +2801,7 @@ mplate_has_keypoints_type: function (instance_template) {
       let instance_to_unmerge = this.duplicate_instance(instance);
       // Remove point and just leave the points in the figure
       instance_to_unmerge.points = figure_points;
-      this.push_instance_to_instance_list_and_buffer(
+      this.add_instance_to_file(
         instance_to_unmerge,
         this.current_frame
       );
@@ -2899,7 +2929,7 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     detect_is_ok_to_save: async function () {
-      if (this.has_changed) {
+      if (this.has_changed || this.has_pending_frames) {
         await this.save();
       }
     },
@@ -3210,14 +3240,6 @@ mplate_has_keypoints_type: function (instance_template) {
       this.canvas_wrapper.style.display = "";
 
       var self = this;
-      this.get_instances_watcher = this.$store.watch(
-        (state) => {
-          return this.$store.state.annotation_state.get_instances;
-        },
-        (new_val, old_val) => {
-          self.get_instances();
-        }
-      );
 
       this.refresh_video_buffer_watcher = this.$store.watch(
         (state) => {
@@ -3440,7 +3462,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       let keyframes_to_sequences = this.build_keyframes_to_sequences_dict();
-
+      console.log('keyframes_to_sequences', keyframes_to_sequences)
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(
         keyframes_to_sequences
       );
@@ -3475,13 +3497,13 @@ mplate_has_keypoints_type: function (instance_template) {
        *
        */
       let keyframes_to_sequences = {};
-
+      console.log('sequence_list_local_copy', this.sequence_list_local_copy)
       for (let sequence of this.sequence_list_local_copy) {
         if (!sequence.keyframe_list) {
-          return;
+          continue;
         }
         if (!sequence.keyframe_list.frame_number_list) {
-          return;
+          continue;
         }
 
         let frame_number_list = sequence.keyframe_list.frame_number_list;
@@ -3558,38 +3580,34 @@ mplate_has_keypoints_type: function (instance_template) {
       instance_clipboard.creation_ref_id = null; // we expect this will be set once user accepts it
       this.ghost_instance_list.push(instance_clipboard);
     },
-
-    change_frame_from_video_event: function (url) {
+    set_keyframe_loading: function(value){
+      this.go_to_keyframe_loading = value
+    },
+    on_key_frame_loaded: async function(url){
+      await this.load_frame_instances(url)
+      this.set_keyframe_loading(false);
+      this.seeking = false;
+    },
+    load_frame_instances: async function (url) {
       /* Careful to call get_instances() since this handles
        * if we are on a keyframe and  don't need to call instance buffer
        * this method supercedes the old video_file_update()
        */
-      this.get_instances();
-      this.ghost_refresh_instances();
       if (url) {
-        this.add_image_process(url);
+        await this.add_image_process(url);
       }
+      await this.get_instances();
+      await this.ghost_refresh_instances();
+
     },
 
-    add_image_process: function (url) {
-      /*
-       * Question, is it correct this is ONLY for
-       * pulling the frame? ie this will NOT be called during video play?
-       *
-       */
-
-      var self = this;
-      self.addImageProcess(url).then((image) => {
-        // this gets instances if it needs to
-        //  (ie the instance buffer)
-        self.html_image = image;
-
-        self.canvas_wrapper.style.display = "";
-        self.loading = false;
-
-        // Jan 15, 2020 Did we not have this prior??
-        self.trigger_refresh_with_delay();
-      });
+    add_image_process: async function (url) {
+      const image = await this.addImageProcess(url);
+      // this gets instances if it needs to
+      this.html_image = image;
+      this.canvas_wrapper.style.display = "";
+      this.loading = false;
+      this.trigger_refresh_with_delay();
     },
 
     current_file_updates: async function (file) {
@@ -3598,7 +3616,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       if (file.type == "image") {
         this.video_mode = false;
-        console.log('PROPERTIES IMAGE', file.image);
         this.canvas_width = file.image.width;
         this.canvas_height = file.image.height;
 
@@ -3861,18 +3878,39 @@ mplate_has_keypoints_type: function (instance_template) {
     },
 
     insert_tag_type: function () {
-      this.push_instance_to_instance_list_and_buffer(
+      this.add_instance_to_file(
         this.current_instance,
         this.current_frame
       );
     },
+    set_frame_pending_save: function(value, frame_number){
+      if(frame_number == undefined){
+        return
+      }
+      if (this.instance_buffer_metadata[frame_number]) {
+        // We need to recreate object so that computed props get triggered
+        this.instance_buffer_metadata[frame_number].pending_save = value;
 
-    add_instance_to_frame_buffer: function (instance, frame_number) {
+      } else {
+        this.instance_buffer_metadata[frame_number] = {
+          pending_save: value
+        }
+      }
+      // Keep unsaved_frames list to enable/disable save button
+      if(value){
+        this.unsaved_frames.push(frame_number)
+      }
+      else{
+        this.unsaved_frames = this.unsaved_frames.filter(elm => elm != frame_number)
+      }
+
+    },
+    add_instance_to_frame_buffer: async function (instance, frame_number) {
       if (!this.video_mode) {
         return;
       }
       if (frame_number == undefined) {
-        throw "frame number undefined in video mode (push_instance_to_instance_list_and_buffer)";
+        throw "frame number undefined in video mode (add_instance_to_frame_buffer)";
       }
       if (instance == undefined) {
         throw "instance is undefined in add_instance_to_frame_buffer()";
@@ -3884,51 +3922,48 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         this.instance_buffer_dict[frame_number] = [instance];
       }
-
-      // Set Metadata to manage saving frames
-      if (this.instance_buffer_metadata[frame_number]) {
-        this.instance_buffer_metadata[frame_number].pending_save = true;
-      } else {
-        this.instance_buffer_metadata[frame_number] = { pending_save: true };
+      if(this.$refs.sequence_list &&
+        instance.number != undefined &&
+        (instance.number === this.$refs.sequence_list.highest_sequence_number || this.$refs.sequence_list.highest_sequence_number === 0)){
+        if(this.$refs.sequence_list.highest_sequence_number === 0){
+          this.$refs.sequence_list.may_auto_advance_sequence()
+          this.$refs.sequence_list.may_auto_advance_sequence()
+        }
+        else{
+          this.$refs.sequence_list.may_auto_advance_sequence()
+        }
       }
+      this.ghost_refresh_instances();
+      // Set Metadata to manage saving frames
+      this.set_frame_pending_save(true, frame_number)
     },
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
-
-    push_instance_to_instance_list_and_buffer: async function (
-      instance = undefined,
-      frame_number = undefined
-    ) {
-      if (this.video_mode == true && frame_number == undefined) {
-        throw "frame number undefined in video mode (push_instance_to_instance_list)";
+    add_instance_to_file: async function(instance, frame_number = undefined){
+      if(this.video_mode){
+        if(frame_number == undefined){
+          console.error('Please provide a frame number to call add_instance_to_file()')
+          return
+        }
+        this.add_instance_to_frame_buffer(instance, frame_number)
       }
-      let instance_to_push = this.current_instance;
-
-      if (instance != undefined) {
-        instance_to_push = instance;
-      }
-      instance_to_push.creation_ref_id = uuidv4();
-      instance_to_push.client_created_time = new Date().toISOString();
-
-      if (!instance_to_push.change_source) {
-        instance_to_push.change_source = "ui_diffgram_frontend";
+      else{
+        this.push_instance_to_image_file(instance)
       }
 
-      this.instance_list.push(instance_to_push);
+    },
+
+    push_instance_to_image_file: async function (instance = undefined) {
+      instance.creation_ref_id = uuidv4();
+      instance.client_created_time = new Date().toISOString();
+
+      if (!instance.change_source) {
+        instance.change_source = "ui_diffgram_frontend";
+      }
+
+      this.instance_list.push(instance);
 
       this.has_changed = true;
-
-      if (this.video_mode == true) {
-        let was_saved = await this.save();
-        if (!was_saved) {
-          // If instance was not saved, because of concurrent saves. We still set it to pending
-          this.has_changed = true;
-        }
-      }
-      // polygon point thing applies to a few different types
-      // so for now just run it
-
-      this.current_polygon_point_list = []; // reset list
 
       // Caution, this feeds into current instance, so it can look like it's dramatically not working
       // if this is set incorrectly.
@@ -5003,7 +5038,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.has_changed = true; // otherwise user click event won't trigger change detection
 
       let instance = this.ghost_instance_list[ghost_index];
-      this.add_instance_to_frame_buffer(instance, this.current_frame); // this handles the creation_ref_id stuff too
+      this.add_instance_to_file(instance, this.current_frame); // this handles the creation_ref_id stuff too
       this.ghost_instance_list.splice(ghost_index, 1); // remove from ghost list
     },
 
@@ -5523,8 +5558,6 @@ mplate_has_keypoints_type: function (instance_template) {
         transform
       );
 
-      //console.log(min_point.x, min_point.y)
-
       // Propose Position with Movement
       let x_min_proposed = Math.max(0 + movementX, 0);
       let y_min_proposed = Math.max(0 + movementY, 0);
@@ -5789,9 +5822,18 @@ mplate_has_keypoints_type: function (instance_template) {
       this.auto_border_polygon_p2_instance_index = undefined;
       this.show_polygon_border_context_menu = false;
     },
-    polygon_insert_point: function () {
+    finish_polygon_drawing: function(instance, frame_number = undefined){
+      const command = new CreateInstanceCommand(
+        instance,
+        this,
+        frame_number
+      );
+      this.command_manager.executeCommand(command);
+      this.is_actively_drawing = false;
+      this.current_polygon_point_list = []; // reset list
+    },
+    polygon_insert_point: function (frame_number = undefined) {
       const current_point = this.polygon_point_limits();
-
       // check if we should auto complete polygon (or can use enter)
       if (this.current_polygon_point_list.length >= 2) {
         let first_point = this.current_polygon_point_list[0];
@@ -5800,11 +5842,7 @@ mplate_has_keypoints_type: function (instance_template) {
           this.point_is_intersecting_circle(this.mouse_position, first_point) &&
           this.instance_type === "polygon"
         ) {
-          const command = new CreateInstanceCommand(
-            this.current_instance,
-            this
-          );
-          this.command_manager.executeCommand(command);
+          this.finish_polygon_drawing(this.current_instance, frame_number);
           return;
         }
       }
@@ -5818,12 +5856,12 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
 
-    curve_mouse_up: function () {
+    curve_mouse_up: function (frame_number = undefined) {
       if (
         this.instance_type == "curve" &&
         this.current_polygon_point_list.length == 2
       ) {
-        const command = new CreateInstanceCommand(this.current_instance, this);
+        const command = new CreateInstanceCommand(this.current_instance, this, frame_number);
         this.command_manager.executeCommand(command);
       }
     },
@@ -6067,6 +6105,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
     mouse_up: function () {
       // start LIMITS, returns immediately
+      let locked_frame_number = this.current_frame;
       if (this.$props.view_only_mode == true) {
         return;
       }
@@ -6107,13 +6146,13 @@ mplate_has_keypoints_type: function (instance_template) {
       // TODO clarify difference between mode, and action, ie drawing.
       if (this.draw_mode == true) {
         if (this.instance_type == "cuboid") {
-          this.cuboid_mouse_up();
+          this.cuboid_mouse_up(locked_frame_number);
         }
         if (this.instance_type == "ellipse") {
           this.ellipse_mouse_up();
         }
         if (this.instance_template_selected) {
-          this.instance_template_mouse_up();
+          this.instance_template_mouse_up(locked_frame_number);
         }
 
         // careful, polygon does not want to take off active drawing until
@@ -6122,7 +6161,7 @@ mplate_has_keypoints_type: function (instance_template) {
         // polygon sets is_actively_drawing to false with "enter"
         if (["polygon", "line", "curve"].includes(this.instance_type)) {
           this.is_actively_drawing = true;
-          this.polygon_insert_point();
+          this.polygon_insert_point(locked_frame_number);
         }
 
         if (
@@ -6131,22 +6170,25 @@ mplate_has_keypoints_type: function (instance_template) {
         ) {
           const command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            locked_frame_number
           );
           this.command_manager.executeCommand(command);
         }
 
         if (this.instance_type == "point") {
-          this.polygon_insert_point();
+          this.polygon_insert_point(locked_frame_number);
           const command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            locked_frame_number
           );
           this.command_manager.executeCommand(command);
+          this.current_polygon_point_list = [];
         }
 
         if (this.instance_type == "curve") {
-          this.curve_mouse_up();
+          this.curve_mouse_up(locked_frame_number);
         }
 
         if (this.instance_type == "box") {
@@ -6158,6 +6200,7 @@ mplate_has_keypoints_type: function (instance_template) {
             this.$store.commit("finish_draw");
           }
         }
+
       }
 
       // For new Refactored instance types
@@ -6200,7 +6243,7 @@ mplate_has_keypoints_type: function (instance_template) {
         this.ellipse_current_drawing_face = false;
       }
     },
-    cuboid_mouse_up: function () {
+    cuboid_mouse_up: function (frame_number = undefined) {
       if (!this.cuboid_current_drawing_face) {
         this.is_actively_drawing = true;
         this.cuboid_current_drawing_face = "first";
@@ -6210,7 +6253,8 @@ mplate_has_keypoints_type: function (instance_template) {
       } else {
         const create_box_command = new CreateInstanceCommand(
           this.current_instance,
-          this
+          this,
+          frame_number
         );
         this.command_manager.executeCommand(create_box_command);
         this.cuboid_current_rear_face = undefined;
@@ -6281,11 +6325,12 @@ mplate_has_keypoints_type: function (instance_template) {
         },
       };
     },
-    ellipse_mouse_down: function () {
+    ellipse_mouse_down: function (frame_number = undefined) {
       if (this.ellipse_current_drawing_face && this.draw_mode) {
         const create_box_command = new CreateInstanceCommand(
           this.current_instance,
-          this
+          this,
+          frame_number
         );
         this.command_manager.executeCommand(create_box_command);
       }
@@ -6384,7 +6429,7 @@ mplate_has_keypoints_type: function (instance_template) {
       this.trigger_refresh_current_instance = Date.now();
     },
 
-    bounding_box_mouse_down: function () {
+    bounding_box_mouse_down: function (frame_number) {
       if (this.$store.state.annotation_state.draw == true) {
         if (
           this.current_instance.x_max - this.current_instance.x_min >= 5 &&
@@ -6392,7 +6437,8 @@ mplate_has_keypoints_type: function (instance_template) {
         ) {
           const create_box_command = new CreateInstanceCommand(
             this.current_instance,
-            this
+            this,
+            frame_number
           );
           this.command_manager.executeCommand(create_box_command);
           this.create_instance_events();
@@ -6567,7 +6613,7 @@ mplate_has_keypoints_type: function (instance_template) {
       instance.label_file_id = this.current_label_file_id;
       return instance;
     },
-    add_instance_template_to_instance_list() {
+    add_instance_template_to_instance_list(frame_number) {
       this.current_instance_template.instance_list.forEach((instance) => {
         let new_instance = this.duplicate_instance(instance);
         if (this.video_mode == true) {
@@ -6598,17 +6644,17 @@ mplate_has_keypoints_type: function (instance_template) {
             point.y += y_diff;
           });
         }
-        this.push_instance_to_instance_list_and_buffer(
+        this.add_instance_to_file(
           new_instance,
-          this.current_frame
+          frame_number
         );
         //const command = new CreateInstanceCommand(new_instance, this);
         //this.command_manager.executeCommand(command);
       });
     },
-    instance_template_mouse_up: function () {
+    instance_template_mouse_up: function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
-        this.add_instance_template_to_instance_list();
+        this.add_instance_template_to_instance_list(frame_number);
         this.instance_template_draw_started = undefined;
         this.is_actively_drawing = undefined;
         this.instance_template_start_point = undefined;
@@ -6627,7 +6673,7 @@ mplate_has_keypoints_type: function (instance_template) {
             y: this.mouse_position.y,
           };
         } else {
-          this.add_instance_template_to_instance_list();
+          this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
           this.is_actively_drawing = undefined;
           this.instance_template_start_point = undefined;
@@ -6658,6 +6704,7 @@ mplate_has_keypoints_type: function (instance_template) {
 
       // TODO new method ie
       // this.is_actively_drawing = true
+      let locked_frame_number = this.current_frame;
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
       if (this.$props.view_only_mode == true) {
@@ -6686,10 +6733,10 @@ mplate_has_keypoints_type: function (instance_template) {
         }
 
         if (this.instance_type == "ellipse") {
-          this.ellipse_mouse_down();
+          this.ellipse_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "box") {
-          this.bounding_box_mouse_down();
+          this.bounding_box_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "keypoints") {
           this.key_points_mouse_down();
@@ -6755,49 +6802,6 @@ mplate_has_keypoints_type: function (instance_template) {
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
 
-    get_instance_list_diff: async function () {
-      this.loading = true;
-      try {
-        const response = await axios.post("/api/v1/task/diff", {
-          task_alpha_id: this.$props.task.id,
-          mode_data: this.task_mode_prop, // TODO clarify task_mode_prop vs mode_data
-        });
-        if (response.data.log.success === true) {
-          this.instance_list = this.create_instance_list_with_class_types(
-            response.data.instance_list
-          );
-          this.annotations_loading = false;
-          this.show_annotations = true;
-        }
-      } catch (error) {
-        this.loading = false;
-        console.error(error);
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    get_instances_file_diff: async function () {
-      try {
-        const response = await axios.get(
-          "/api/project/" +
-            this.project_string_id +
-            "/file/" +
-            this.$props.file.id +
-            "/diff/previous"
-        );
-        if (response.data.success === true) {
-          this.instance_list = this.create_instance_list_with_class_types(
-            response.data.instance_list
-          );
-          this.annotations_loading = false;
-          this.show_annotations = true;
-        }
-        this.loading = false;
-      } catch (error) {
-        console.error(error);
-      }
-    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -6867,23 +6871,11 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     get_instances: async function (play_after_success = false) {
-      if (this.get_instances_loading) {
+      if (this.annotations_loading) {
         return;
       }
-      this.get_instances_loading = true;
       this.annotations_loading = true;
       this.show_annotations = false;
-
-      // Diffing Context
-      // TODO: discuss if should remove or move to another place (separate component)
-      if (this.$props.task) {
-        if (this.task_mode_prop == "compare_review_to_draw") {
-          await this.get_instance_list_diff();
-          this.get_instances_loading = false;
-          return;
-        }
-      }
-
       // Fetch Instance list for either video or image.
       if (this.video_mode == true) {
         /*  Caution, if this is firing twice
@@ -6905,7 +6897,7 @@ mplate_has_keypoints_type: function (instance_template) {
         await this.get_instance_list_for_image();
       }
       this.add_override_colors_for_model_runs();
-      this.get_instances_loading = false;
+      this.annotations_loading = false;
       this.update_canvas();
     },
 
@@ -6931,6 +6923,9 @@ mplate_has_keypoints_type: function (instance_template) {
           this.has_changed = true;
         }
       } else {
+        // Save Any pending frames before refreshing buffer (This line might be removed when we stop
+        // resetting the frame buffer on each fetch)
+        await this.save();
         await this.get_video_instance_buffer(play_after_success);
       }
     },
@@ -6997,9 +6992,9 @@ mplate_has_keypoints_type: function (instance_template) {
        * permissions ie file/:file_id
        *
        */
-
       this.show_annotations = false;
       this.loading = true;
+
       this.annotations_loading = true;
 
       this.instance_buffer_error = {};
@@ -7021,8 +7016,6 @@ mplate_has_keypoints_type: function (instance_template) {
         }
         this.instance_buffer_dict = new_instance_buffer_dict;
 
-
-        this.instance_buffer_metadata = {};
         // Now set the current list from buffer
         if (this.instance_buffer_dict) {
           // We want to do the equals because that creates the reference on the instance list to buffer dict
@@ -7266,6 +7259,8 @@ mplate_has_keypoints_type: function (instance_template) {
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;
           this.update_canvas();
+
+
         } catch (error) {
           console.error(error);
         }
@@ -7336,11 +7331,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
 
-    copy_previous_instance_list: function () {
-      // TODO: For now I'm commenting this this as we'll need a bit more discussion on what this feature is for.
-      // this.instance_list = this.instance_list.concat(this.instance_list_cache);
-    },
-
     keyboard_events_local_down: function (event) {},
 
     set_control_key: function (event) {
@@ -7360,6 +7350,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // Caution must be near top to prevent when typing
       }
+      let locked_frame_number = this.current_frame;
 
       this.set_control_key(event);
 
@@ -7389,10 +7380,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (event.keyCode === 13) {
         // enter
         if (this.instance_type == "polygon") {
-          this.push_instance_to_instance_list_and_buffer(
-            this.current_instance,
-            this.current_frame
-          );
+          this.finish_polygon_drawing(this.current_instance, locked_frame_number);
         }
       }
 
@@ -7491,7 +7479,7 @@ mplate_has_keypoints_type: function (instance_template) {
         cKey = 67;
 
       this.set_control_key(event);
-
+      let frame_number_locked = this.current_frame;
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
@@ -7550,7 +7538,7 @@ mplate_has_keypoints_type: function (instance_template) {
         this.copy_instance(true);
       }
       if (this.ctrl_key && event.keyCode == vKey) {
-        this.paste_instance();
+        this.paste_instance(undefined, undefined, frame_number_locked);
       }
 
       if (event.keyCode === 90 && this.ctrl_key) {
@@ -7653,10 +7641,59 @@ mplate_has_keypoints_type: function (instance_template) {
         console.error(error);
       }
     },
+    move_instance: function(instance_clipboard){
+      /*
+      * Mostly used for pasting instances on same image/frame, so that they don't
+      * get pasted on the exact same position.
+      * */
+      if (instance_clipboard.type === "point") {
+        instance_clipboard.points[0].x += 50;
+        instance_clipboard.points[0].y += 50;
+      }
+      else if (instance_clipboard.type === "box") {
+        instance_clipboard.x_min += 50;
+        instance_clipboard.x_max += 50;
+        instance_clipboard.y_min += 50;
+        instance_clipboard.y_max += 50;
+      }
+      else if (instance_clipboard.type === "line" || instance_clipboard.type === "polygon") {
+        for (const point of instance_clipboard.points) {
+          point.x += 50;
+          point.y += 50;
+        }
+      }
+      else if (instance_clipboard.type === "keypoints") {
+        for (const node of instance_clipboard.nodes) {
+          node.x += 50;
+          node.y += 50;
+        }
+      }
+      else if (instance_clipboard.type === "cuboid") {
+        for (let key in instance_clipboard.front_face) {
+          if (["width", "height"].includes(key)) {
+            continue;
+          }
+          instance_clipboard.front_face[key].x += 85;
+          instance_clipboard.front_face[key].y += 85;
+          instance_clipboard.rear_face[key].x += 85;
+          instance_clipboard.rear_face[key].y += 85;
+        }
+      } else if (instance_clipboard.type === "ellipse") {
+        instance_clipboard.center_y += 50;
+        instance_clipboard.center_x += 50;
+      } else if (instance_clipboard.type === "curve") {
+        instance_clipboard.p1.x += 50;
+        instance_clipboard.p1.y += 50;
+        instance_clipboard.p2.x += 50;
+        instance_clipboard.p2.y += 50;
+      }
+      return instance_clipboard
+    },
     add_pasted_instance_to_instance_list: async function (
       instance_clipboard,
       next_frames,
-      original_file_id
+      original_file_id,
+      frame_number = undefined
     ) {
       let on_new_frame_or_file = false;
       if (
@@ -7671,56 +7708,10 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.$props.task && this.$props.task.file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
-      if (instance_clipboard.type === "point" && !on_new_frame_or_file) {
-        instance_clipboard.points[0].x += 50;
-        instance_clipboard.points[0].y += 50;
-      } else if (instance_clipboard.type === "box" && !on_new_frame_or_file) {
-        instance_clipboard.x_min += 50;
-        instance_clipboard.x_max += 50;
-        instance_clipboard.y_min += 50;
-        instance_clipboard.y_max += 50;
-      } else if (
-        (instance_clipboard.type === "line" ||
-          instance_clipboard.type === "polygon") &&
-        !on_new_frame_or_file
-      ) {
-        for (const point of instance_clipboard.points) {
-          point.x += 50;
-          point.y += 50;
-        }
-      } else if (
-        instance_clipboard.type === "keypoints" &&
-        !on_new_frame_or_file
-      ) {
-        for (const node of instance_clipboard.nodes) {
-          node.x += 50;
-          node.y += 50;
-        }
-      } else if (
-        instance_clipboard.type === "cuboid" &&
-        !on_new_frame_or_file
-      ) {
-        for (let key in instance_clipboard.front_face) {
-          if (["width", "height"].includes(key)) {
-            continue;
-          }
-          instance_clipboard.front_face[key].x += 85;
-          instance_clipboard.front_face[key].y += 85;
-          instance_clipboard.rear_face[key].x += 85;
-          instance_clipboard.rear_face[key].y += 85;
-        }
-      } else if (
-        instance_clipboard.type === "ellipse" &&
-        !on_new_frame_or_file
-      ) {
-        instance_clipboard.center_y += 50;
-        instance_clipboard.center_x += 50;
-      } else if (instance_clipboard.type === "curve" && !on_new_frame_or_file) {
-        instance_clipboard.p1.x += 50;
-        instance_clipboard.p1.y += 50;
-        instance_clipboard.p2.x += 50;
-        instance_clipboard.p2.y += 50;
+      if(!on_new_frame_or_file){
+        instance_clipboard = this.move_instance(instance_clipboard)
       }
+
       // Deselect instances.
       for (const instance of this.instance_list) {
         instance.selected = false;
@@ -7736,6 +7727,7 @@ mplate_has_keypoints_type: function (instance_template) {
             missing_frames.push(i)
           }
         }
+
         let min_frame = Math.min(...missing_frames);
         let max_frame = Math.max(...missing_frames);
         let url = this.get_url_instance_buffer();
@@ -7743,14 +7735,17 @@ mplate_has_keypoints_type: function (instance_template) {
         if(!new_instance_buffer){
           return
         }
-        this.instance_buffer_dict = new_instance_buffer;
+        this.instance_buffer_dict = {
+          ...this.instance_buffer_dict,
+          ...new_instance_buffer
+        };
         for ( let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add;i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = this.duplicate_instance(pasted_instance);
           new_frame_instance = this.initialize_instance(new_frame_instance);
           // Set the last argument to true, to prevent to push to the instance_list here.
-          this.add_instance_to_frame_buffer(new_frame_instance, i);
+          this.add_instance_to_file(new_frame_instance, i);
           frames_to_save.push(i);
         }
         this.create_instance_events();
@@ -7758,9 +7753,9 @@ mplate_has_keypoints_type: function (instance_template) {
         await this.save_multiple_frames(frames_to_save);
         this.show_success_paste();
       } else {
-        this.push_instance_to_instance_list_and_buffer(
+        this.add_instance_to_file(
           pasted_instance,
-          this.current_frame
+          frame_number
         );
         // Auto select on label view detail for inmediate attribute edition.
         this.create_instance_events();
@@ -7768,9 +7763,16 @@ mplate_has_keypoints_type: function (instance_template) {
     },
     paste_instance: async function (
       next_frames = undefined,
-      instance_hover_index = undefined
+      instance_hover_index = undefined,
+      frame_number = undefined
     ) {
       const clipboard = this.clipboard;
+      if(this.any_frame_saving || this.any_loading){
+        return
+      }
+      if(this.go_to_keyframe_loading){
+        return
+      }
       if (!clipboard && instance_hover_index == undefined) {
         return;
       }
@@ -7779,17 +7781,31 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       // We need to duplicate on each paste to avoid double ID's on the instance list.
       const new_clipboard_instance_list = [];
+
       for (const instance_clipboard of this.clipboard.instance_list) {
         let instance_clipboard_dup =
           this.duplicate_instance(instance_clipboard);
         await this.add_pasted_instance_to_instance_list(
           instance_clipboard_dup,
           next_frames,
-          this.clipboard.file_id
+          this.clipboard.file_id,
+          frame_number
         );
         new_clipboard_instance_list.push(instance_clipboard_dup);
       }
+
+
       this.set_clipboard(new_clipboard_instance_list);
+    },
+    get_pending_save_frames: function(){
+      let result = [];
+      for(let frame_num of Object.keys(this.instance_buffer_metadata)){
+        let frame_metadata = this.instance_buffer_metadata[frame_num]
+        if(frame_metadata.pending_save){
+          result.push(parseInt(frame_num, 10))
+        }
+      }
+      return result;
     },
     set_clipboard: function (instance_list) {
       let file_id = undefined;
@@ -7915,6 +7931,34 @@ mplate_has_keypoints_type: function (instance_template) {
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
     },
+    update_sequence_data: function(instance_list, frame_number, response){
+      /*
+      * Updates ID's and color data from server response
+      * */
+
+      SequenceUpdateHelpers.populate_empty_sequence_ids(
+        instance_list,
+        response.data.new_sequence_list
+      )
+
+      // Update any new created sequences
+      if (response.data.new_sequence_list) {
+        for (let new_seq of response.data.new_sequence_list) {
+          this.$refs.sequence_list.add_or_update_existing_sequence(new_seq);
+        }
+      }
+
+      // Add new Keyframe Numbers to Sequence from the created instances.
+      for (var instance of response.data.added_instances) {
+        this.add_keyframe_to_sequence(instance, frame_number)
+        if (instance.action_type == "deleted") {
+          this.$refs.sequence_list.remove_frame_number_from_sequence(
+            instance.sequence_id,
+            frame_number
+          )
+        }
+      }
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -7922,23 +7966,30 @@ mplate_has_keypoints_type: function (instance_template) {
     ) {
       this.save_error = {};
       this.save_warning = {};
+      if(this.go_to_keyframe_loading){
+        return
+      }
       if (this.$props.view_only_mode == true) {
         return;
       }
-      let current_frame = undefined;
+      let frame_number = undefined;
       let instance_list = this.instance_list;
+
       if (this.video_mode) {
         if (frame_number_param == undefined) {
-          current_frame = parseInt(this.current_frame, 10);
+          frame_number = parseInt(this.current_frame, 10);
         } else {
-          current_frame = parseInt(frame_number_param, 10);
+          frame_number = parseInt(frame_number_param, 10);
         }
 
         if (instance_list_param != undefined) {
           instance_list = instance_list_param;
         }
+        else{
+          instance_list = this.instance_buffer_dict[frame_number]
+        }
       }
-      if (this.get_save_loading(current_frame) == true) {
+      if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
 
@@ -7947,20 +7998,25 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.any_loading == true) {
         return;
       }
+      if(this.video_mode && (this.instance_buffer_dict[frame_number] == undefined || this.annotations_loading)){
+        return
+      }
 
-      this.set_save_loading(true, current_frame);
+      this.set_save_loading(true, frame_number);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         AnnotationSavePrechecks.has_duplicate_instances(instance_list);
       let dup_instance_list = dup_indexes.map((i) => ({
         ...instance_list[i],
         original_index: i,
       }));
+
       dup_instance_list.sort(function (a, b) {
         return (
           moment(b.client_created_time, "YYYY-MM-DD HH:mm") -
           moment(a.client_created_time, "YYYY-MM-DD HH:mm")
         );
       });
+
       if (has_duplicate_instances) {
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
@@ -7972,12 +8028,11 @@ mplate_has_keypoints_type: function (instance_template) {
           undefined
         );
 
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
 
         return;
       }
-      this.instance_list_cache = instance_list.slice();
-      let current_frame_cache = this.current_frame;
+
       let current_video_file_id_cache = this.current_video_file_id;
       let video_mode_cache = this.video_mode;
 
@@ -8014,13 +8069,13 @@ mplate_has_keypoints_type: function (instance_template) {
         var video_data = {
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
-          current_frame: current_frame,
+          current_frame: frame_number,
         };
       }
 
       try {
         const response = await axios.post(url, {
-          instance_list: this.instance_list_cache,
+          instance_list: instance_list,
           and_complete: and_complete,
           directory_id:
             this.$store.state.project.current_directory.directory_id,
@@ -8029,26 +8084,6 @@ mplate_has_keypoints_type: function (instance_template) {
         });
         this.save_loading_image = false
         this.has_changed = false
-        /*
-         * TODO important,
-         * in context of video, and wanting to allow the user to save and not wait for save
-         * response from server, is there any of this stuff that gets "returned"
-         * that we should *not* be updating?
-         *
-         * Context of https://github.com/swirlingsand/ai_vision/commit/ba405b6ab75de64457fc27f6e47cc7962328075c
-         *
-         * Basically realizing that so long as save succeeds, for video,
-         * it should make minimal assumptions about the state.
-         * ie the state after saving may not be the same as when save was initiated
-         *
-         * rightn now we blindly pass the updated sequence (which we DO want if the user stays
-         * on the frame), and trust sequence to handle this distction, ie checking albel file id
-         * is the same. As mentioned IF there ends up being some unified sequence thing
-         * that may help avoid that issue, but either way anything chained to this could be
-         * effected ... ie need to trace what save_response_callback was doing.
-         *
-         */
-
         this.save_count += 1;
         AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
           response,
@@ -8059,76 +8094,15 @@ mplate_has_keypoints_type: function (instance_template) {
         )
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
+        console.log('saveeed')
 
-        if (this.instance_buffer_metadata[this.current_frame]) {
-          this.instance_buffer_metadata[this.current_frame].pending_save =
-            false;
-        } else {
-          this.instance_buffer_metadata[this.current_frame] = {
-            pending_save: false,
-          };
+        // Update Sequence ID's and Keyframes.
+        if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
+          this.update_sequence_data(instance_list, frame_number, response);
         }
 
-        if (response.data.sequence) {
-          // Because: new color thing based on sequence id but seq id not assigned till response
-          // not good code. just placeholder in current constraints until we can figure out something better.
-          // ie maybe whole instance should be getting replaced
-          let instance_list_request_frame = this.instance_list;
-          if (this.video_mode) {
-            // Get the instance_list of the updated frame. Getting it from this.instance_list is bad
-            // Because it could have potentially changed during save.
-            instance_list_request_frame =
-              this.instance_buffer_dict[video_data.current_frame];
-          }
-          let instance_index = instance_list_request_frame.findIndex(
-            (x) =>
-              x.label_file_id == response.data.sequence.label_file_id &&
-              x.soft_delete === false &&
-              x.number == response.data.sequence.number
-          );
-          // just in case so we don't overwrite
-          // maybe don't need this, but going to look at other options in the future there too
-          // doesn't cover buffer case?
-          if (
-            instance_index &&
-            instance_list_request_frame[instance_index] &&
-            instance_list_request_frame[instance_index].sequence_id ==
-              undefined &&
-            instance_list_request_frame[instance_index].label_file_id ==
-              response.data.sequence.label_file_id
-          ) {
-            instance_list_request_frame[instance_index].sequence_id =
-              response.data.sequence.id;
-          }
-          // end of temp sequence thing
-
-          // Update any new created sequences
-          if (response.data.new_sequence_list) {
-            for (let new_seq of response.data.new_sequence_list) {
-              this.$refs.sequence_list.add_new_sequence_to_list(new_seq);
-            }
-          }
-          if (this.video_mode) {
-
-            for (var instance of response.data.added_instances) {
-
-              this.add_keyframe_to_sequence(instance, current_frame_cache)
-
-              if (instance.action_type == "deleted") {
-                this.$refs.sequence_list.remove_frame_number_from_sequence(
-                  instance.sequence_id,
-                  current_frame_cache)
-              }
-            }
-          }
-        }
-
-        /* When we save the file and go to next, we don't rely upon the
-         * newly returned file to be anything related to the next task
-         * We simply go to the "well" so to speak and request the next task here
-         * using the "change_file".
-         */
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
+        this.set_frame_pending_save(false, frame_number)
         this.has_changed = false;
         if (and_complete == true) {
           // now that complete completes whole video, we can move to next as expected.
@@ -8142,11 +8116,20 @@ mplate_has_keypoints_type: function (instance_template) {
           }
         }
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        if(this.video_mode){
+          let pending_frames = this.get_pending_save_frames();
+          if(pending_frames.length > 0){
+            await this.save_multiple_frames(pending_frames)
+          }
+        }
+        console.log('ghost_refresh_instances save')
+        this.ghost_refresh_instances();
         return true;
       } catch (error) {
         console.error(error);
         this.set_save_loading(false, current_frame);
         if (
+          error.response &&
           error.response.data &&
           error.response.data.log &&
           error.response.data.log.error &&
@@ -8162,16 +8145,16 @@ mplate_has_keypoints_type: function (instance_template) {
         return false;
       }
     },
-    add_keyframe_to_sequence(instance, current_frame_cache) {
+    add_keyframe_to_sequence(instance, frame_number) {
       if (instance.action_type == "created" ||
           instance.action_type == "new_instance" ||
           instance.action_type == "undeleted")      // not 'edited'
       {
         this.$refs.sequence_list.add_frame_number_to_sequence(
           instance.sequence_id,
-          current_frame_cache
-        );   
-      }     
+          frame_number
+        );
+      }
     },
     complete_task() {
       if (!this.task) {

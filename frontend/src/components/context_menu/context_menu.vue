@@ -119,8 +119,11 @@
       },
       member: function () {
         return this.$store.state.project.current.member_list.find(x => {
-          return x.member_id == this.instance_list[
-            this.instance_hover_index_locked].member_created_id
+          let instance = this.instance_list[this.instance_hover_index_locked]
+          if(instance){
+            return x.member_id == instance.member_created_id
+          }
+          return false;
         })
       },
 
@@ -363,7 +366,6 @@
       max-width="300"
       tile
     >
-
       <!--  Change Sequence -->
       <!-- I like idea of hiding this behind a button but seems like
         it adds an extra step maybe-->
@@ -394,7 +396,8 @@
           :sequence_list="sequence_list"
           :select_this_id="selected_instance.sequence_id"
           :attach="true"
-          @change="change_sequence($event)">
+          @change="change_sequence($event)"
+        >
           <!-- Important attach must be true otherwise it
             won't be part of the event detection for clicking,
             and the hover index will become None-->
@@ -404,18 +407,17 @@
       </div>
 
       <v-list-item
-        dense
         v-if="video_mode
-              && instance_hover_index_locked != null"
+          && instance_hover_index_locked != null"
+        dense
         @click="pause_object()"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Pause Object"
             icon="mdi-pause-octagon"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -425,18 +427,17 @@
       </v-list-item>
 
       <v-list-item
-        dense
         v-if="video_mode && (instance_hover_index_locked != null || instance_clipboard)"
+        dense
         data-cy="show_menu_paste_next_frames"
         @click="display_paste_menu"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Paste Instance"
             icon="mdi-clipboard-multiple-outline"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -461,19 +462,27 @@
           <v-card-text>
             Paste instance to the next
             <v-text-field
-              data-cy="paste_frame_count"
               v-model="num_frames"
+              data-cy="paste_frame_count"
               @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
             ></v-text-field>
             Frames ahead.
-
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="show_paste_menu = false,
-                           $store.commit('set_user_is_typing_or_menu_open', false)">Close
+            <v-btn
+              @click="show_paste_menu = false,
+                      $store.commit('set_user_is_typing_or_menu_open', false)"
+            >
+              Close
             </v-btn>
-            <v-btn data-cy="paste_next_frames" @click="emit_paste_to_next_frames" color="success">Paste</v-btn>
+            <v-btn
+              data-cy="paste_next_frames"
+              color="success"
+              @click="emit_paste_to_next_frames"
+            >
+              Paste
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-menu>
@@ -481,9 +490,9 @@
       <v-divider></v-divider>
 
       <v-list-item
+        v-if="instance_clipboard && !draw_mode"
         link
         dense
-        v-if="instance_clipboard && !draw_mode"
         data-cy="paste_instance"
         @click="on_click_paste_instance"
       >
@@ -492,7 +501,7 @@
             tooltip_message="Paste Instance"
             icon="mdi-content-paste"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -503,10 +512,10 @@
 
 
       <v-list-item
+        v-if="instance_hover_index_locked != null && !draw_mode"
         link
         dense
         data-cy="copy_instance"
-        v-if="instance_hover_index_locked != null && !draw_mode"
         @click="on_click_copy_instance"
       >
         <v-list-item-icon>
@@ -514,7 +523,7 @@
             tooltip_message="Copy"
             icon="mdi-content-copy"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -541,20 +550,28 @@
             ></v-text-field>
           </v-card-text>
           <v-card-actions>
-            <v-btn @click="show_instance_template_menu = false,
-                           $store.commit('set_user_is_typing_or_menu_open', false)">Close
+            <v-btn
+              @click="show_instance_template_menu = false,
+                      $store.commit('set_user_is_typing_or_menu_open', false)"
+            >
+              Close
             </v-btn>
-            <v-btn @click="create_instance_template" color="success">Create Instance Template</v-btn>
+            <v-btn
+              color="success"
+              @click="create_instance_template"
+            >
+              Create Instance Template
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-menu>
 
 
       <v-list-item
+        v-if="instance_hover_index_locked != null"
         link
         dense
         data-cy="create_instance_template"
-        v-if="instance_hover_index_locked != null"
         @click="on_click_create_instance_template"
       >
         <v-list-item-icon>
@@ -562,7 +579,7 @@
             tooltip_message="Create Instance Template"
             icon="mdi-shape-plus"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -571,22 +588,21 @@
         </v-list-item-content>
       </v-list-item>
       <v-list-item
+        v-if="instance_hover_index_locked != undefined
+          && is_unmerged_instance(instance_hover_index_locked)
+          && selected_instance.type == 'polygon' // only polygon supported for now
+        "
         link
         dense
         data-cy="merge_polygon"
-        v-if="instance_hover_index_locked != undefined
-           && is_unmerged_instance(instance_hover_index_locked)
-           && selected_instance.type == 'polygon' // only polygon supported for now
-           "
         @click="on_click_merge_polygon"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Merge Polygon"
             icon="mdi-merge"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -595,22 +611,21 @@
         </v-list-item-content>
       </v-list-item>
       <v-list-item
+        v-if="instance_hover_index_locked != undefined
+          && !is_unmerged_instance(instance_hover_index_locked)
+          && selected_instance.type == 'polygon' // only polygon supported for now
+        "
         link
         dense
         data-cy="unmerge_polygon"
-        v-if="instance_hover_index_locked != undefined
-            && !is_unmerged_instance(instance_hover_index_locked)
-            && selected_instance.type == 'polygon' // only polygon supported for now
-             "
         @click="on_click_unmerge_polygon"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Unmerge Polygon"
             icon="mdi-source-branch-remove"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -628,20 +643,19 @@
       </v-menu>
 
       <v-list-item
+        v-if="polygon_point_hover_locked"
         link
         dense
         data-cy="delete_polygon_point"
-        v-if="polygon_point_hover_locked"
         @click="on_click_delete_polygon_point"
       >
-
         <v-list-item-icon>
           <tooltip_icon
 
             tooltip_message="Delete"
             icon="mdi-vector-polyline-minus"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -651,13 +665,12 @@
       </v-list-item>
 
       <v-list-item
+        v-if="node_hover_index_locked != undefined"
         link
         dense
         data-cy="set_node_name_dialog_button"
-        v-if="node_hover_index_locked != undefined"
         @click="on_click_set_node_name()"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Set Node Name"
@@ -670,8 +683,6 @@
             Set Node Name
           </v-list-item-title>
         </v-list-item-content>
-
-
       </v-list-item>
       <v-menu
         v-if="show_set_node_name_menu"
@@ -692,13 +703,12 @@
         ></node_name_editor_keypoint_instance>
       </v-menu>
       <v-list-item
+        v-if="node_hover_index_locked != undefined"
         link
         dense
         data-cy="mark_occluded_button"
-        v-if="node_hover_index_locked != undefined"
         @click="on_click_update_point_attribute()"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Mark Occluded"
@@ -715,19 +725,18 @@
 
 
       <v-list-item
+        v-if="instance_hover_index_locked != undefined"
         link
         dense
         data-cy="delete_instance"
-        v-if="instance_hover_index_locked != undefined"
         @click="on_click_delete_instance"
       >
-
         <v-list-item-icon>
           <tooltip_icon
             tooltip_message="Delete Instance"
             icon="delete"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -736,10 +745,10 @@
         </v-list-item-content>
       </v-list-item>
       <v-list-item
+        v-if="instance_hover_index_locked != undefined"
         link
         dense
         data-cy="share_instance"
-        v-if="instance_hover_index_locked != undefined"
         @click="show_share_context_menu"
       >
         <v-list-item-icon>
@@ -747,7 +756,7 @@
             tooltip_message="Share"
             icon="share"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -757,10 +766,10 @@
       </v-list-item>
 
       <v-list-item
+        v-if="instance_hover_index_locked != undefined"
         link
         dense
         data-cy="instance_history"
-        v-if="instance_hover_index_locked != undefined"
         @click="show_instance_history_panel"
       >
         <v-list-item-icon>
@@ -768,7 +777,7 @@
             tooltip_message="Show Instance History"
             icon="mdi-history"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -788,7 +797,7 @@
             tooltip_message="Create Issue"
             icon="mdi-alert-circle"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -809,7 +818,7 @@
             tooltip_message="Source"
             icon="mdi-file-question"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
@@ -821,7 +830,7 @@
 
       <v-list-item
         v-if="instance_hover_index_locked != undefined &&
-              selected_instance.created_time"
+          selected_instance.created_time"
         dense
       >
         <v-list-item-icon>
@@ -829,49 +838,45 @@
             tooltip_message="Version & Created"
             icon="mdi-clock-outline"
             color="primary"
-          />
+          ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
             #{{ selected_instance.version }} @
-            {{selected_instance.created_time | moment("M-DD-YY H:mm:ss a")}}
+            {{ selected_instance.created_time | moment("M-DD-YY H:mm:ss a") }}
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
 
       <v-list-item
-        dense
         v-if="instance_hover_index_locked != undefined &&
-              member && member.first_name"
+          member && member.first_name"
+        dense
       >
         <v-list-item-icon>
           <user_icon
             :size="25"
             class="pb-2"
-            :user="member"/>
+            :user="member"
+          ></user_icon>
         </v-list-item-icon>
 
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            By: {{member.first_name}} {{member.last_name}}
+            By: {{ member.first_name }} {{ member.last_name }}
           </v-list-item-title>
         </v-list-item-content>
-
       </v-list-item>
-
-
     </v-card>
 
-    <share_instance_dialog :show_share_instance_menu="show_share_instance_menu"
-                           :project_string_id="project_string_id"
-                           @share_dialog_close="close_share_dialog"
-                           @click:outside="close_share_dialog()"
-
+    <share_instance_dialog
+      :show_share_instance_menu="show_share_instance_menu"
+      :project_string_id="project_string_id"
+      @share_dialog_close="close_share_dialog"
+      @click:outside="close_share_dialog()"
     ></share_instance_dialog>
-
   </div>
-
 </template>
 <style>
   .context-menu {
