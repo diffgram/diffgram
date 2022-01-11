@@ -1,9 +1,11 @@
+import uuid
+import hashlib
+
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from base64 import b64encode
 from shared.annotation import Annotation_Update
-import uuid
 from unittest.mock import patch
 
 
@@ -1258,12 +1260,19 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         # 3. We change the hashing algorithm (with a mock)
         def dummy_hashing_algorithm(instance):
+            print('dummy hashing', instance)
+            hash_data = [
+                instance.id
+            ]
 
-        ann_update = Annotation_Update(
-            session = self.session,
-            project = self.project,
-            instance_list_new = instance_list,
-            file = file1,
-            do_init_existing_instances = True
-        )
-        ann_update.main()
+            instance.hash = hashlib.sha256(json.dumps(hash_data,
+                                                  sort_keys = True).encode('utf-8')).hexdigest()
+        with patch.object(Instance, 'hash', dummy_hashing_algorithm):
+            ann_update = Annotation_Update(
+                session = self.session,
+                project = self.project,
+                instance_list_new = instance_list,
+                file = file1,
+                do_init_existing_instances = True
+            )
+            ann_update.main()
