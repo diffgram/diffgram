@@ -11,7 +11,9 @@
         :loading="loading"
         :request_refresh_from_project="true"
         :show_visibility_toggle="true"
+        :sentance_mode="sentance_mode"
         @change_label="change_label"
+        @change_text_mode="change_text_mode"
     />
     <div style="display: flex; flex-direction: row;">
         <text_sidebar
@@ -29,7 +31,12 @@
                 :style="`display: flex; flex-direction: row; border-bottom: 1px solid rgba(29, 209, 161, 0.5); background-color: ${sentense_is_odd(sentense_index) ? 'rgba(29, 209, 161, 0.1)' : 'white'}`"
                 :ref="`svg_item_${sentense_index}`"
             >
-                <div style="display: flex; align-items: center; justify-content: center">{{ sentense_index + 1 }}.</div>
+                <div 
+                    v-if="sentance_mode" 
+                    style="display: flex; align-items: center; justify-content: center"
+                    >
+                        {{ sentense_index + 1 }}.
+                </div>
                 <svg 
                     width="90%" 
                     :style="`height: ${svg_element_heigth.length > 0 ? 120 + svg_element_heigth[sentense_index] : 120}px; margin-left: 10px;`"
@@ -69,7 +76,6 @@
                     >
                         <text 
                             v-for="token in sentense"
-                            class="words"
                             :key="`text_token_${token.index}_sentense_index_${token.sentense_index}`"
                             :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :ref="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
@@ -125,11 +131,13 @@ export default Vue.extend({
         },
         text: {
             type: String,
-            default: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus nascetur ridiculus mus cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus."
+            default: 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nunc congue nisi vitae suscipit tellus mauris a diam maecenas. Est ultricies integer quis auctor elit sed vulputate mi sit. Dignissim sodales ut eu sem integer. Eget nullam non nisi est sit amet facilisis magna. Sed ullamcorper morbi tincidunt ornare massa eget egestas purus viverra. Urna duis convallis convallis tellus id interdum. Interdum velit euismod in pellentesque massa placerat duis. Proin sagittis nisl rhoncus mattis rhoncus urna neque viverra. Diam sit amet nisl suscipit adipiscing bibendum est ultricies integer. Aliquet lectus proin nibh nisl condimentum id. Quam pellentesque nec nam aliquam sem. Risus viverra adipiscing at in tellus integer. Amet nisl suscipit adipiscing bibendum. Eros in cursus turpis massa tincidunt dui. Accumsan sit amet nulla facilisi morbi tempus iaculis urna. Sagittis id consectetur purus ut faucibus pulvinar elementum. Aliquam malesuada bibendum arcu vitae elementum curabitur vitae nunc sed. Condimentum lacinia quis vel eros donec ac odio tempor.'
         }
     },
     data() {
         return {
+            sentance_mode: false,
+            rerender: false,
             //text transformation
             text_stringified: [],
             text_tokenized: [],
@@ -169,13 +177,7 @@ export default Vue.extend({
         }
     },
     mounted() {
-        this.stringify_test(this.text)
-        this.text_stringified.map((sentence, sentense_index) => {
-            this.tokenize_text(sentence, sentense_index)
-        })
-        setTimeout(() => {
-            this.text_render_width()
-        }, 2000)
+        this.render_text()
         this.current_label = this.label_list[0]
     },
     computed: {
@@ -195,6 +197,21 @@ export default Vue.extend({
         }
     },
     methods: {
+        render_text: function() {
+            this.stringify_test(this.text)
+            this.text_stringified.map((sentence, sentense_index) => {
+                this.tokenize_text(sentence, sentense_index)
+            })
+            setTimeout(() => {
+                this.text_render_width()
+            }, 2000)
+        },
+        change_text_mode: function() {
+            this.text_tokenized = []
+            this.text_stringified = []
+            this.sentance_mode = !this.sentance_mode
+            this.render_text()
+        },
         sentense_is_odd: function (sentense_index) {
             return sentense_index % 2
         }, 
@@ -202,6 +219,10 @@ export default Vue.extend({
             this.current_label = label
         },
         stringify_test: function(text) {
+            if (!this.sentance_mode) {
+                this.text_stringified = [text]
+                return
+            }
             const stringified = text.split('. ')
             this.text_stringified = stringified
         },

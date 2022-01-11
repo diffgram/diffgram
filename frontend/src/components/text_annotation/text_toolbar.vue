@@ -22,6 +22,14 @@
                     />
                 </div>
             </div>
+            <v-divider vertical />
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%">
+                <v-switch
+                    v-model="sentance_mode"
+                    label="Sentense mode"
+                    @change="$emit('change_text_mode')"
+                />
+            </div>
         </v-toolbar-items>
     </v-toolbar>
 </template>
@@ -40,6 +48,10 @@
           label_list: {
               type: Array,
               default:[]
+          },
+          sentance_mode: {
+              type: Boolean,
+              required: true
           }
       },
       data() {
