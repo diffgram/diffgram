@@ -301,7 +301,6 @@ export default Vue.extend({
 
     get_labels_from_project: async function () {
       try {
-        console.log('labels_list_from_project', this.labels_list_from_project, this.computed_project_string_id)
         if (
           this.labels_list_from_project &&
           this.computed_project_string_id ==
@@ -315,7 +314,6 @@ export default Vue.extend({
         var url =
           "/api/project/" + this.computed_project_string_id + "/labels/refresh";
         const response = await axios.get(url, {});
-        console.log('res', response)
         this.labels_list_from_project = response.data.labels_out;
         this.label_file_colour_map_from_project =
           response.data.label_file_colour_map;

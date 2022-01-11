@@ -307,7 +307,6 @@ export default Vue.extend({
       } catch (error) {
         console.error(error);
         this.error = this.$route_api_errors(error);
-        console.log("errro", this.error);
         if (this.error.job_id) {
           this.error.info = "Please complete all the steps to launch the job.";
         }
