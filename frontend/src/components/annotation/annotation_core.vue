@@ -3462,7 +3462,6 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       let keyframes_to_sequences = this.build_keyframes_to_sequences_dict();
-      console.log('keyframes_to_sequences', keyframes_to_sequences)
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(
         keyframes_to_sequences
       );
@@ -3497,7 +3496,6 @@ mplate_has_keypoints_type: function (instance_template) {
        *
        */
       let keyframes_to_sequences = {};
-      console.log('sequence_list_local_copy', this.sequence_list_local_copy)
       for (let sequence of this.sequence_list_local_copy) {
         if (!sequence.keyframe_list) {
           continue;
@@ -8094,7 +8092,6 @@ mplate_has_keypoints_type: function (instance_template) {
         )
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
-        console.log('saveeed')
 
         // Update Sequence ID's and Keyframes.
         if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
@@ -8122,7 +8119,6 @@ mplate_has_keypoints_type: function (instance_template) {
             await this.save_multiple_frames(pending_frames)
           }
         }
-        console.log('ghost_refresh_instances save')
         this.ghost_refresh_instances();
         return true;
       } catch (error) {

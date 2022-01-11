@@ -396,7 +396,6 @@
     },
     methods: {
       go_to_order_page: function(){
-        console.log('window.location.host', window.location.host)
         if(window.location.host === 'diffgram.com'){
           window.open(`https://diffgram.com/order/premium`, '_blank')
 
@@ -417,7 +416,6 @@
         } else {
           this.$store.commit("set_current_public_project", {});
         }
-        console.log('ITEMMM', item)
         this.$store.commit("set_project", item);
         this.$router.push({path: "/home/dashboard"});
         this.$emit("exit", true);

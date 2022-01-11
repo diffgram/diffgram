@@ -152,7 +152,6 @@
         await new Promise(resolve => setTimeout(resolve, 500));
         this.compute_attached_instance_per_file();
         this.summarized_file_list = this.file_list_for_summary();
-        console.log('FILE LIST SUMMARY', this.summarized_file_list)
         this.preparing_payload = false;
       },
 
@@ -303,21 +302,18 @@
                       );
 
                       if(response.data.input_batch.download_status_pre_labeled_data === 'success'){
-                        console.log('success', download_pending, num_request)
                         download_pending = false;
                       }
                       else if(response.data.input_batch.download_status_pre_labeled_data === 'failed'){
                         this.batch_error = {};
                         this.batch_error.creation_failed = 'Prelabels creation failed.';
                         download_pending = false;
-                        console.log('timeout_pre_labels', download_pending, num_request)
                         return false
                       }
                       if(num_request > 4800){
                         this.batch_error = {};
                         this.batch_error.timeout_pre_labels = 'Timed out waiting for prelabels creation.';
                         download_pending = false;
-                        console.log('timeout_pre_labels', download_pending, num_request)
                         return false
                       }
                       num_request += 1;
@@ -541,7 +537,6 @@
           let labels_payload = undefined;
           if(this.$props.upload_mode === 'from_diffgram_export'){
             labels_payload = this.$props.diffgram_export_ingestor.get_payload_for_batch_creation();
-            console.log('labels payloadd', labels_payload)
           }
           else{
              labels_payload = this.prepare_pre_labeled_data_payload(
