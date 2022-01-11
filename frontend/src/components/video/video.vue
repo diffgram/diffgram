@@ -727,7 +727,7 @@ export default Vue.extend( {
        *    data ownership in vue components. like logically video should be a seperate thing
        *    but the channel between video and annotation core is not great
        */
-      console.log('SAVE AND AWAIT', this.$props.parent_save);
+
       if(!this.$props.parent_save){
         return
       }

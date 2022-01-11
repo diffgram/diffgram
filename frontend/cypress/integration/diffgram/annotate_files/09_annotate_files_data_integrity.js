@@ -174,12 +174,13 @@ describe('Annotate Files Tests', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
         // Draw 1 boxes
         cy.wait(2000)
+          .get('[data-cy="edit_toggle"]').click({force: true})
         const boxes = [
           {
-            min_x: 250,
-            min_y: 250,
-            max_x: 354,
-            max_y: 354,
+            min_x: 25,
+            min_y: 25,
+            max_x: 50,
+            max_y: 50,
           },
         ]
         for (let box of boxes) {

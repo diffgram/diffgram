@@ -3462,7 +3462,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       let keyframes_to_sequences = this.build_keyframes_to_sequences_dict();
-
+      console.log('keyframes_to_sequences', keyframes_to_sequences)
       this.populate_ghost_list_with_most_recent_instances_from_keyframes(
         keyframes_to_sequences
       );
@@ -3497,13 +3497,13 @@ mplate_has_keypoints_type: function (instance_template) {
        *
        */
       let keyframes_to_sequences = {};
-
+      console.log('sequence_list_local_copy', this.sequence_list_local_copy)
       for (let sequence of this.sequence_list_local_copy) {
         if (!sequence.keyframe_list) {
-          return;
+          continue;
         }
         if (!sequence.keyframe_list.frame_number_list) {
-          return;
+          continue;
         }
 
         let frame_number_list = sequence.keyframe_list.frame_number_list;
@@ -3906,18 +3906,15 @@ mplate_has_keypoints_type: function (instance_template) {
 
     },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
-      console.log('add_instance_to_frame_buffer 000',)
       if (!this.video_mode) {
         return;
       }
-      console.log('add_instance_to_frame_buffer 111',)
       if (frame_number == undefined) {
         throw "frame number undefined in video mode (add_instance_to_frame_buffer)";
       }
       if (instance == undefined) {
         throw "instance is undefined in add_instance_to_frame_buffer()";
       }
-      console.log('add_instance_to_frame_buffer 111.5',)
       instance.creation_ref_id = uuidv4();
       instance.client_created_time = new Date().toISOString();
       if (this.instance_buffer_dict[frame_number]) {
@@ -3936,6 +3933,7 @@ mplate_has_keypoints_type: function (instance_template) {
           this.$refs.sequence_list.may_auto_advance_sequence()
         }
       }
+      this.ghost_refresh_instances();
       // Set Metadata to manage saving frames
       this.set_frame_pending_save(true, frame_number)
     },
@@ -8096,7 +8094,7 @@ mplate_has_keypoints_type: function (instance_template) {
         )
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
         this.$emit("save_response_callback", true);
-
+        console.log('saveeed')
 
         // Update Sequence ID's and Keyframes.
         if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
@@ -8124,6 +8122,8 @@ mplate_has_keypoints_type: function (instance_template) {
             await this.save_multiple_frames(pending_frames)
           }
         }
+        console.log('ghost_refresh_instances save')
+        this.ghost_refresh_instances();
         return true;
       } catch (error) {
         console.error(error);

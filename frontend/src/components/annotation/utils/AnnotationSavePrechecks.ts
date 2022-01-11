@@ -98,13 +98,9 @@ export let add_ids_to_new_instances_and_delete_old = function (response,
   // Add instance ID's to the newly created instances
   const new_added_instances = response.data.added_instances;
   const new_deleted_instances = response.data.deleted_instances;
-  console.log('instance_list', instance_list)
-  console.log('request_video_data', request_video_data)
-  console.log('instance_buffer_dict', instance_buffer_dict)
   if (video_mode) {
     instance_list = instance_buffer_dict[request_video_data.current_frame]
   }
-  console.log('instance_list after', instance_list)
   for (let i = 0; i < instance_list.length; i++) {
     const current_instance = instance_list[i]
     //console.log('CURRENT INSTANCE', current_instance)
