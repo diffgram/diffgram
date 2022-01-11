@@ -57,7 +57,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
              'type': 'polygon',
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -67,10 +67,11 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         ann_update.instance = data_mocking.create_instance(
             {'creation_ref_id': str(uuid.uuid4()),
              'type': 'polygon',
-             'points': {'points':  [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'}, {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
+             'points': {'points': [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'},
+                                   {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -172,7 +173,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_min, inst1['y_min'])
         self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_max, inst1['y_max'])
         self.assertEqual(len(deleted_instances), 0)
-
 
     def test_overlap_existing_instances(self):
         """
@@ -1227,3 +1227,43 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertTrue(instance2.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance3.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance4.id not in ann_update.log['warning']['missing_ids'])
+
+    def test_hashing_algorithm_changes(self):
+        """
+            This case handles when the instance.hash() function changes, ie we add or remove
+            an element for the hash creation. We check things like:
+
+            - Avoid tracking this hash change and marking it as a system event.
+            - Making sure this change is not attached to the user who saved the file
+            - Avoiding the "restored" state on the instance history.
+            - Checking overall instance history is valid.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        # 1. Initial State 2 Saved Instances
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2, 'x_max': 10, 'y_min': 1, 'y_max': 10, 'file_id': file1.id, 'label_file_id': label_file.id},
+            self.session
+        )
+        instance_list = [x.serialize_with_label() for x in [instance1, instance2]]
+
+        # 2. We Edit One Instance, the other one stays the same
+        instance_list[1]['x_max'] = 25
+        instance_list[1]['y_max'] = 25
+
+        # 3. We change the hashing algorithm (with a mock)
+        def dummy_hashing_algorithm(instance):
+
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
