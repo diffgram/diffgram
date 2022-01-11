@@ -294,10 +294,11 @@
               </div>
              -->
 
-              <div v-if="props.index==hover_index
-                 || menu_open == true &&
-                    props.index == hover_click_index ">
+              <div v-if="props.index==hover_index ||
+                    menu_open == true &&
+                    props.index == hover_click_index">
                 <button_with_confirm
+                    v-if="props.item.id != undefined"
                     tooltip_message="Edit Label"
                     @confirm_click="update_sequence(
                                       props.item.id,
@@ -330,7 +331,7 @@
 
 
               <button_with_confirm
-                @confirm_click="remove_sequence(props.item.id)"
+                @confirm_click="remove_sequence(props.item.id, props.index)"
                 :confirm_message="'Confirm Archive Sequence #' + props.item.number"
                 @menu_open="menu_open = $event,
                             hover_click_index=props.index"
@@ -671,17 +672,24 @@ export default Vue.extend( {
         }
       }
     },
+    add_or_update_existing_sequence: function(new_sequence){
+      let exiting_sequence = this.sequence_list.find(elm => elm.number === new_sequence.number);
+      if(exiting_sequence){
+        let index = this.sequence_list.indexOf(exiting_sequence);
+        this.sequence_list.splice(index, 1, new_sequence)
+      }
+      else{
+        this.add_new_sequence_to_list(new_sequence)
+      }
+    },
     add_new_sequence_to_list: function(new_sequence){
       this.sequence_list.push(new_sequence)
 
       // prior we expected to this from the response
       // same concept.
       this.highest_sequence_number = new_sequence.number
-
-      this.may_auto_advance_sequence()
     },
     clear_sequence_list_cache: function () {
-      //console.log("clear_sequence_list_cache")
       this.cache_sequence_list = {}
     },
 
@@ -902,7 +910,7 @@ export default Vue.extend( {
 
       this.current_sequence = {
         id : null
-        }
+      }
 
       if (  this.force_new == true) {
         this.current_sequence.number = this.highest_sequence_number + 1
@@ -966,6 +974,9 @@ export default Vue.extend( {
       // run for all
       this.emit_current_sequence()
 
+      return this.current_sequence;
+
+
     },
 
     emit_current_sequence() {
@@ -975,7 +986,9 @@ export default Vue.extend( {
 
     force_new_sequence() {
       this.force_new = true
-      this.change_current_sequence(null)
+      let newly_changed_sequence = this.change_current_sequence(null)
+      this.add_new_sequence_to_list(this.current_sequence);
+      this.recalculate_highest_sequence_number();
       this.force_new = false
     },
 
@@ -986,8 +999,16 @@ export default Vue.extend( {
       this.$emit('new_instance_request', instance_group)
     },
 
-    remove_sequence(sequence_id) {
-
+    remove_sequence(sequence_id, index = undefined) {
+      if(sequence_id == undefined && index !=undefined){
+        let seq_to_remove = this.sequence_list[index];
+        this.sequence_list.splice(index, 1);
+        this.recalculate_highest_sequence_number();
+        if(seq_to_remove.number === this.current_sequence.number){
+          this.current_sequence = {};
+        }
+        return;
+      }
       this.loading = true
 
       let url = ""
@@ -1016,7 +1037,7 @@ export default Vue.extend( {
           this.loading = false
         })
         .catch(e => {
-          console.log(e)
+          console.error(e)
         })
 
 
@@ -1032,9 +1053,18 @@ export default Vue.extend( {
       }
 
       this.change_current_sequence(this.sequence_list[0])
+      this.recalculate_highest_sequence_number();
 
     },
+    recalculate_highest_sequence_number: function(){
+      let numbers_list = this.sequence_list.map(elm => elm.number);
+      if(numbers_list.length === 0){
+        this.highest_sequence_number = 0;
+        return
+      }
+      this.highest_sequence_number = Math.max(...numbers_list);
 
+    },
     may_auto_advance_sequence: function () {
       if(this.$props.label_settings.on_instance_creation_advance_sequence == true){
         this.force_new_sequence()
@@ -1090,7 +1120,7 @@ export default Vue.extend( {
         .catch(e => {
           this.loading = false
           this.error = e.response.data.log.error
-          console.log(e)
+          console.error(e)
         })
 
 

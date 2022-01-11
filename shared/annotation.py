@@ -413,7 +413,11 @@ class Annotation_Update():
                 ids_not_included.append(instance.id)
 
         if len(ids_not_included) > 0:
+            frame_numbers_instance_list_new = [x.get('frame_number') for x in self.instance_list_new]
             logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
+            logger.error('Frame Number {}'.format(self.frame_number))
+            logger.error('frame_numbers_instance_list_new: {}'.format(frame_numbers_instance_list_new))
+            logger.error('File ID {}'.format(self.file.id))
             self.log['warning'] = {}
             self.log['warning'][
                 'new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
@@ -425,6 +429,7 @@ class Annotation_Update():
                                  'Please contact use if this persists.'
             self.log['warning']['missing_ids'] = ids_not_included
             self.log['warning']['instance_list_new'] = self.instance_list_new
+            self.log['warning']['frame_number'] = self.frame_number
             self.log['warning']['instance_list_existing_ids'] = [x.id for x in self.instance_list_existing]
             # TODO: Temporarly removing this hard block since it's causing lots of user experience issue during annotation process
             # We record this a an event and revisit it in the future
@@ -1065,8 +1070,6 @@ class Annotation_Update():
                 return 0, 0
             return min([p['x'] for p in instance.nodes['nodes']]), min([p['y'] for p in instance.nodes['nodes']])
         elif instance.type == 'cuboid_3d':
-            print('instance', instance.dimensions_3d)
-            print('instance', instance.center_3d)
             return instance.center_3d['x'] - (instance.dimensions_3d['width'] / 2), \
                    instance.center_3d['y'] - (instance.dimensions_3d['height'] / 2), \
                    instance.center_3d['z'] - (instance.dimensions_3d['depth'] / 2)
@@ -1625,7 +1628,7 @@ class Annotation_Update():
         if special_case_result is False: return False
 
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
-        # print('existing index', self.existing_instance_index)
+
         if self.existing_instance_index is not None:
             is_new_instance = False
             # the current self.instance is the newly created one,
