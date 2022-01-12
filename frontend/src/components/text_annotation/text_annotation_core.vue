@@ -42,6 +42,8 @@
             >
                 <text 
                     v-for="(token, index) in tokens.filter(token => token.line === index)"
+                    @mousedown="() => on_start_draw_label(token)"
+                    @mouseup="() => on_finish_draw_label(token)"
                     :key="`token_${index}`"
                     :x="token.start_x"
                 >
@@ -70,26 +72,9 @@ export default Vue.extend({
             initial_words_measures: [],
             lines: [],
             tokens: [],
-            labels: [
-                {
-                    id: 1,
-                    start_token: 2,
-                    end_token: 7,
-                    color: "red"
-                },
-                {
-                    id: 2,
-                    start_token: 30,
-                    end_token: 100,
-                    color: 'green'
-                },
-                {
-                    id: 3,
-                    start_token: 200,
-                    end_token: 120,
-                    color: 'orange'
-                },
-            ]
+            labels: [],
+            //Helpers
+            label_in_progress: null
         }
     },
     mounted() {
@@ -127,6 +112,28 @@ export default Vue.extend({
             this.tokens = tokens
             this.rendering = false
         },
+        on_start_draw_label: function(start_token) {
+            this.label_in_progress = {
+                id: this.labels.length,
+                start_token: start_token.id,
+                color: 'red'
+            }
+        },
+        on_finish_draw_label: function(end_token) {
+            this.label_in_progress.end_token = end_token.id
+            this.labels.push(this.label_in_progress)
+            this.label_in_progress = null
+            if (window.getSelection) {
+                if (window.getSelection().empty) {  // Chrome
+                    window.getSelection().empty();
+                } else if (window.getSelection().removeAllRanges) {  // Firefox
+                    window.getSelection().removeAllRanges();
+                }
+                } else if (document.selection) {  // IE?
+                document.selection.empty();
+            }
+        },
+        // draw_label - is only returning rects that have to be drawn
         draw_label: function(label) {
             const starting_token = this.tokens.find(token => token.id === label.start_token)
             const end_token = this.tokens.find(token => token.id === label.end_token)
@@ -228,7 +235,6 @@ export default Vue.extend({
                     return rects
                 }
             }
-
             const trial_rect = {
                 x: this.tokens[label.start_token].start_x,
                 y: this.lines[this.tokens[label.start_token].line].y + 3,
