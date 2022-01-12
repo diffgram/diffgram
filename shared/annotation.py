@@ -663,8 +663,9 @@ class Annotation_Update():
                     new_hash
                 ))
                 self.system_upgrade_hash_changes.append([prev_hash, new_hash])
+                self.session.add(instance)
             result.append(instance)
-            self.session.add(instance)
+
         return result
 
     def init_existing_instances(self):
