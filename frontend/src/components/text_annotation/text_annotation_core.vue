@@ -41,8 +41,6 @@
                     width="90%" 
                     :style="`height: ${svg_element_heigth.length > 0 ? 120 + svg_element_heigth[sentense_index] : 120}px; margin-left: 10px;`"
                     ref="svg_main_container"
-                    @mousedown="(e) => on_selection_start(e, sentense_index)" 
-                    @mouseup="(e) => on_selection_end(e, sentense_index)" 
                 >   
                     <g v-if="path_is_been_drawn(sentense_index)">
                         <circle 
@@ -76,11 +74,13 @@
                     >
                         <text 
                             v-for="token in sentense"
+                            @mousedown="(e) => on_selection_start(e, sentense_index, token)" 
+                            @mouseup="(e) => on_selection_end(e, sentense_index, token)" 
                             :key="`text_token_${token.index}_sentense_index_${token.sentense_index}`"
                             :id="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :ref="`text_token_${token.index}_sentense_index_${token.sentense_index}`" 
                             :x="token.token_start_coordinate" 
-                            :y="token.token_start_height"
+                            :y="token.line > -1 && lines[token.line] ? lines[token.line].top_position : token.token_start_height"
                         >
                             {{ token.word }}
                         </text>
@@ -141,6 +141,7 @@ export default Vue.extend({
             //text transformation
             text_stringified: [],
             text_tokenized: [],
+            lines: [],
             //creating instances
             set_x: null,
             set_y: null,
@@ -226,6 +227,15 @@ export default Vue.extend({
             const stringified = text.split('. ')
             this.text_stringified = stringified
         },
+        update_line_top_position: function(update_line_index) {
+            const updated_lines = [...this.lines].map((line, index) => {
+                if (index < update_line_index) return line
+                console.log(index)
+                line.top_position = line.top_position + 20
+                return line
+            })
+            this.lines = updated_lines
+        },
         tokenize_text: function(text, sentense_index) {
             const string_to_array = text.split(' ')
             const tokenized_text = string_to_array.map((word, index) => ({ word, index, sentense_index, token_start_coordinate: 0}))
@@ -239,9 +249,10 @@ export default Vue.extend({
                 const updated_sentense = sentence.map(token => {
                     const element = this.$refs[`text_token_${token.index}_sentense_index_${token.sentense_index}`][0]
                     const width_of_token = element.clientWidth
-                    const updated_token = {...token, token_start_coordinate: length_counter, token_start_height: height_counter}
+                    const updated_token = {...token, token_start_coordinate: length_counter, token_start_height: height_counter, line: this.lines.length}
                     length_counter += (width_of_token + 5)
                     if (length_counter > max_width) {
+                        this.lines.push({ top_position: height_counter })
                         length_counter = this.left_margin
                         height_counter += this.text_line_height
                     }
@@ -261,7 +272,7 @@ export default Vue.extend({
             this.selecction_width = event.toElement.clientWidth - this.set_x
             this.start_token_id = event.toElement.id
         },
-        on_selection_end: function(event, sentense_index) {
+        on_selection_end: function(event, sentense_index, token) {
             console.log("ON KEY UP")
             if (!event.toElement.id) return
             if (this.drawing_relation) {
@@ -297,6 +308,8 @@ export default Vue.extend({
                     }
                 } 
             }
+
+            this.update_line_top_position(token.line)
 
             this.instances.addLabelInstance(labelItems, sentense_index, {...this.current_label})
             document.getSelection().removeAllRanges()
@@ -404,5 +417,3 @@ export default Vue.extend({
     }
 })
 </script>
-
-

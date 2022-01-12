@@ -1,13 +1,23 @@
 <template>
-    <g
+    <g  
         @mouseover="on_annotation_hover"
         @mouseout="on_stop_hover"
         @mousedown.prevent="on_add_relation"
     >
+        <text 
+            v-for="labelItem in annotation.labelItems"
+            :key="`text_lable_item_${labelItem.x}_${labelItem.y}_${labelItem.width}`"
+            class="annotation-font-size"
+            :x="labelItem.x" 
+            :y="labelItem.y - 5" 
+            :stroke="current_color"
+        >
+            {{ annotation.label.label.name }}
+        </text>
         <rect 
             v-for="labelItem in annotation.labelItems"
             :key="`lable_item_${labelItem.x}_${labelItem.y}_${labelItem.width}`"
-            height="20" 
+            height="2" 
             class="cursor"
             opacity="0.4"
             :x="labelItem.x" 
@@ -15,14 +25,6 @@
             :width="labelItem.width"
             :fill="current_color"
         />
-        <text 
-            class="annotation-font-size"
-            :x="annotation.x" 
-            :y="annotation.y + 30" 
-            :stroke="current_color"
-        >
-            {{ annotation.label.label.name }}
-        </text>
     </g>
 </template>
 
@@ -80,6 +82,6 @@ export default Vue.extend({
 }
 
 .annotation-font-size {
-    font-size: 10px !important;
+    font-size: 15px !important;
 }
 </style>
