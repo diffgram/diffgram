@@ -63,6 +63,7 @@ class Annotation_Update():
     new_deleted_instances: list = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
+    system_upgrade_hash_changes: list = field(default_factory = lambda: [])
 
     directory = None
     external_map: ExternalMap = None
@@ -447,7 +448,6 @@ class Annotation_Update():
         return True
 
     def append_new_instance_list_hash(self, instance):
-        print('appending ', instance.id, instance.hash)
         if instance.soft_delete is False:
             self.new_instance_dict_hash[instance.hash] = instance
             return True
@@ -654,7 +654,6 @@ class Annotation_Update():
         result = []
         for instance in instance_list:
             prev_hash = instance.hash
-            print('rehashing', instance.id)
             instance.hash_instance()
             new_hash = instance.hash
             if prev_hash != new_hash:
@@ -663,6 +662,7 @@ class Annotation_Update():
                     prev_hash,
                     new_hash
                 ))
+                self.system_upgrade_hash_changes.append([prev_hash, new_hash])
             result.append(instance)
             self.session.add(instance)
         return result
@@ -957,7 +957,6 @@ class Annotation_Update():
         if not valid_models or not valid_runs:
             return False
         for instance_proposed in cleaned_instance_list:
-            print('INSTANCE', instance_proposed)
             # For other checks that are specific to
             # to certain instance types
             self.instance_proposed = instance_proposed
@@ -1221,7 +1220,6 @@ class Annotation_Update():
         called for HUMAN updated ones.) that part still needs clarification
 
         """
-        print('updating...', id)
         member_created_id = None
         if self.member:
             member_created_id = self.member.id
@@ -1275,11 +1273,11 @@ class Annotation_Update():
             'root_id': root_id,
             'center_x': center_x,
             'center_y': center_y,
-            'center_3d': center_3d,
-            'rotation_euler_angles': rotation_euler_angles,
-            'position_3d': position_3d,
-            'dimensions_3d': dimensions_3d,
-            'angle': angle,
+            'center_3d': center_3d if center_3d is not None else {},
+            'rotation_euler_angles': rotation_euler_angles if rotation_euler_angles is not None else {},
+            'position_3d': position_3d if position_3d is not None else {},
+            'dimensions_3d': dimensions_3d if dimensions_3d is not None else {},
+            'angle': float(angle) if angle is not None else 0.0,
             'width': width,
             'height': height,
             'cp': cp,
@@ -1343,10 +1341,10 @@ class Annotation_Update():
         """
         # Here we assume that instance template will not have a hast (since we don't need versioning here)
         if hash_instances:
-            print('instance_update hash', self.instance.id)
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
+
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance)
         except Exception as e:
@@ -1498,6 +1496,9 @@ class Annotation_Update():
         I'm not a huge fan of having so many self.instance things
         but don't see a great alterative...
         """
+        # Initialize default Values
+        self.instance.points = {'points': []}
+
         if validate_label_file:
             if self.validate_label_file_id() is False:
                 return False
@@ -1680,6 +1681,7 @@ class Annotation_Update():
 
         if self.instance.previous_id is None and not self.creating_for_instance_template:
             self.instance.root_id = self.instance.id
+            self.instance.hash_instance()
             self.previous_next_instance_map[self.instance.previous_id] = self.instance.id
 
         self.new_added_instances.append(self.instance)
@@ -1871,7 +1873,6 @@ class Annotation_Update():
         for index, item in enumerate(self.instance_list_existing):
             self.hash_list.append(item.hash)
             self.hash_old_cross_reference[item.hash] = index
-        print('hash existing', self.hash_old_cross_reference)
     # Would be curious to have this as like a "log level" or something
 
     def left_over_instance_deletion(self):
@@ -1893,7 +1894,6 @@ class Annotation_Update():
                 instance.deletion_type = 'system_deletion'
             instance.next_id = self.previous_next_instance_map.get(instance.id)
             # We need to rehash the instance in order to have the soft_delete and next_id be part of the hash.
-            print('hash leftrover_instance', instance.id)
             instance.hash_instance()
 
             # logger.info(instance.hash == prior_hash)

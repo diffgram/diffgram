@@ -360,9 +360,9 @@ class Instance(Base):
             self.pause_object
         ]
 
+
         self.hash = hashlib.sha256(json.dumps(
             hash_data, sort_keys = True).encode('utf-8')).hexdigest()
-
     """
     WIP would like to send less information per instance
     (ie just the label_file_id) but need to build stronger 
