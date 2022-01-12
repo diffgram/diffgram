@@ -2885,7 +2885,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       let new_frame = direction + this.current_frame;
-      this.$store.commit("go_to_keyframe_via_store", new_frame);
+      this.$refs.video_controllers.move_frame(direction)
     },
 
     hide_context_menu: function () {
