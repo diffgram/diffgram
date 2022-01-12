@@ -227,13 +227,14 @@ export default Vue.extend({
             const stringified = text.split('. ')
             this.text_stringified = stringified
         },
-        update_line_top_position: function(update_line_index) {
+        update_line_top_position: function(sentense_index, update_line_index) {
             const updated_lines = [...this.lines].map((line, index) => {
                 if (index < update_line_index) return line
                 console.log(index)
                 line.top_position = line.top_position + 20
                 return line
             })
+            this.svg_element_heigth[sentense_index] = this.svg_element_heigth[sentense_index] + 20
             this.lines = updated_lines
         },
         tokenize_text: function(text, sentense_index) {
@@ -258,6 +259,7 @@ export default Vue.extend({
                     }
                     return updated_token
                 })
+                this.lines.push({ top_position: height_counter })
                 this.svg_element_heigth.push(height_counter)
                 return updated_sentense
             })
@@ -309,7 +311,7 @@ export default Vue.extend({
                 } 
             }
 
-            this.update_line_top_position(token.line)
+            this.update_line_top_position(sentense_index, token.line)
 
             this.instances.addLabelInstance(labelItems, sentense_index, {...this.current_label})
             document.getSelection().removeAllRanges()
