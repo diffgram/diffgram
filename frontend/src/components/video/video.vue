@@ -262,7 +262,7 @@
             ref="slider"
             data-cy="video_player_slider"
             class="pl-4 pr-4 pt-0"
-            @input="update_from_slider(parseInt($event))"
+
             @end="slider_end(parseInt($event))"
             @change="slide_change(parseInt($event))"
             :disabled="loading
@@ -749,7 +749,6 @@ export default Vue.extend( {
 
 
     go_to_keyframe: async function (frame) {
-
       if (this.go_to_keyframe_loading == true) { // swallow spamming
         return
       }
@@ -782,7 +781,6 @@ export default Vue.extend( {
         this.video_current_frame_guess = frame
         // TODO how we want to push this back to annotations component?
         //this.show_annotations = false
-
         this.$emit('go_to_keyframe');
 
         this.detect_end_from_keyframe()
@@ -790,7 +788,6 @@ export default Vue.extend( {
         this.push_key_frame()
 
         await this.get_video_single_image(this.video_current_frame_guess)
-
       }
       this.updateFrameUrl(frame);
       this.go_to_keyframe_loading = false;
@@ -865,7 +862,6 @@ export default Vue.extend( {
     move_frame: function(direction) {
       // direction is an int where:
       // -1 to go back, 1 go forward
-
       let new_frame = this.video_current_frame_guess + direction
       this.go_to_keyframe(new_frame)
       // Better reuse of existing go to keyframe function.
