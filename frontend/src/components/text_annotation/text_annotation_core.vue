@@ -23,15 +23,18 @@
             <g 
                 v-for="label in labels"
                 :key="`label_${label.id}`"
+                @mouseenter="() => on_label_hover(label)"
+                @mouseleave="on_label_stop_hover"
             >
+                <text>{{ label.text }}</text>
                 <rect 
                     v-for="rect in draw_label(label)"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
                     :x="rect.x"
                     :y="rect.y"
                     :width="rect.width"
+                    :fill="hover_label && hover_label.id === label.id ? 'red' : label.color"
                     opacity="0.4"
-                    :fill="label.color"
                     height="2"
                 />
             </g>
@@ -46,6 +49,7 @@
                     @mouseup="() => on_finish_draw_label(token)"
                     :key="`token_${index}`"
                     :x="token.start_x"
+                    :fill="hover_label && ((hover_label.start_token <= token.id && token.id <= hover_label.end_token) || (hover_label.start_token >= token.id && token.id >= hover_label.end_token)) ? 'red' : 'black'"
                 >
                     {{ token.word }}
                 </text>
@@ -68,11 +72,17 @@ export default Vue.extend({
     },
     data() {
         return {
+            current_label: {
+                text: "First",
+                color: "blue"
+            },
             rendering: true,
             initial_words_measures: [],
             lines: [],
             tokens: [],
             labels: [],
+            //effects
+            hover_label: null,
             //Helpers
             label_in_progress: null
         }
@@ -112,13 +122,24 @@ export default Vue.extend({
             this.tokens = tokens
             this.rendering = false
         },
+        //function to hover on label
+        on_label_hover: function(label) {
+            this.hover_label = label
+        },
+        on_label_stop_hover: function() {
+            this.hover_label = null
+        },
+        // function to initialize drawing new label
         on_start_draw_label: function(start_token) {
             this.label_in_progress = {
                 id: this.labels.length,
                 start_token: start_token.id,
-                color: 'red'
+                color: this.current_label.color,
+                text: this.current_label.text,
+                level: 0
             }
         },
+        // function to finish drawing label and remove selection
         on_finish_draw_label: function(end_token) {
             this.label_in_progress.end_token = end_token.id
             this.labels.push(this.label_in_progress)
@@ -141,6 +162,7 @@ export default Vue.extend({
                 const rect = {
                     x: this.tokens[label.start_token].start_x,
                     y: this.lines[this.tokens[label.start_token].line].y + 3,
+                    line: starting_token.line,
                     width: this.tokens[label.start_token].width
                 }
                 return [rect]
@@ -151,6 +173,7 @@ export default Vue.extend({
                     const rect = {
                         x: this.tokens[label.start_token].start_x,
                         y: this.lines[this.tokens[label.start_token].line].y + 3,
+                        line: starting_token.line,
                         width: this.tokens[label.end_token].start_x + this.tokens[label.end_token].width - this.tokens[label.start_token].start_x
                     }
     
@@ -159,6 +182,7 @@ export default Vue.extend({
                     const rect = {
                         x: this.tokens[label.end_token].start_x,
                         y: this.lines[this.tokens[label.end_token].line].y + 3,
+                        line: starting_token.line,
                         width: this.tokens[label.start_token].start_x + this.tokens[label.start_token].width - this.tokens[label.end_token].start_x
                     }
     
@@ -175,6 +199,7 @@ export default Vue.extend({
                             const rect = {
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
+                                line: i,
                                 width: this.tokens[label.start_token].start_x + this.tokens[label.start_token].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
@@ -184,6 +209,7 @@ export default Vue.extend({
                             const rect = {
                                 x: this.tokens[label.end_token].start_x,
                                 y: this.lines[this.tokens[label.end_token].line].y + 3,
+                                line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[label.end_token].start_x
                             }
                             rects.push(rect)
@@ -194,6 +220,7 @@ export default Vue.extend({
                             const rect = {
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
+                                line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
@@ -208,6 +235,7 @@ export default Vue.extend({
                             const rect = {
                                 x: this.tokens[label.start_token].start_x,
                                 y: this.lines[this.tokens[label.start_token].line].y + 3,
+                                line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[label.start_token].start_x
                             }
                             rects.push(rect)
@@ -217,6 +245,7 @@ export default Vue.extend({
                             const rect = {
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
+                                line: i,
                                 width: this.tokens[label.end_token].start_x + this.tokens[label.end_token].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
@@ -227,6 +256,7 @@ export default Vue.extend({
                             const rect = {
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
+                                line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
