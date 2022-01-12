@@ -1346,7 +1346,7 @@ class Annotation_Update():
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
 
         try:  # wrap new concept in try block just in case
-            self.instance = self.__validate_user_deletion(self.instance)
+            self.instance = self.__validate_user_deletion(self.instance, is_new_instance)
         except Exception as e:
             logger.error(str(e) + ' trace_82j2j__validate_user_deletion')
             communicate_via_email.send(settings.DEFAULT_ENGINEERING_EMAIL, '[Exception] __validate_user_deletion',
@@ -1687,7 +1687,7 @@ class Annotation_Update():
         self.new_added_instances.append(self.instance)
         return is_new_instance
 
-    def __validate_user_deletion(self, instance):
+    def __validate_user_deletion(self, instance, is_new_instance):
         """
             Determines and sets the deletion_type to user if the previouse instance was not deleted
             and new version is.
@@ -1711,7 +1711,8 @@ class Annotation_Update():
                 self.instance.action_type = 'deleted'
                 self.session.add(previous_instance)
                 self.session.add(self.instance)
-            if previous_instance.soft_delete is True and instance.soft_delete is False:
+
+            if previous_instance.soft_delete is True and instance.soft_delete is False and is_new_instance:
                 self.instance.action_type = 'undeleted'
                 self.session.add(previous_instance)
                 self.session.add(self.instance)

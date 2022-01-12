@@ -267,12 +267,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         new_instance_list = updated_frame_file.cache_dict['instance_list']
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
-        for x in new_instance_list:
-            print('aaa', x)
 
-        print(inst1['id'], 'id')
-        print(inst2['id'], 'id')
-        print('deleted_instances', deleted_instances)
         self.assertEqual(len(added_instances), 0)
         self.assertEqual(len(new_instance_list), 1)
         self.assertEqual(len(deleted_instances), 1)
@@ -693,8 +688,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         updated_frame_file = File.get_by_id(self.session, frame.id)
 
         new_instance_list = updated_frame_file.cache_dict['instance_list']
-        for x in new_instance_list:
-            print('instance new', x)
+
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
 
@@ -1076,7 +1070,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         ann_update.instance_list_new = inst_list
-        print('orders', ann_update.instance_list_new)
         ann_update.order_new_instances_by_date()
 
         self.assertEqual(ann_update.instance_list_new[0], inst3)
@@ -1189,7 +1182,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
-        print('ann_update.log', ann_update.log)
+
         self.assertTrue(result)
         self.assertTrue(len(ann_update.log['warning'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['warning'])
@@ -1270,7 +1263,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         # 3. We change the hashing algorithm (with a mock)
         def dummy_hashing_algorithm(instance):
-            print('dummy hashing', instance.id)
             hash_data = [
                 instance.x_min,
                 instance.x_max,
@@ -1368,8 +1360,8 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
         self.session.commit()
         session2 = sessionMaker.session_factory()
+
         # 3. Re save with no changes
-        print('*************************SAVE 2************')
         ann_update2 = Annotation_Update(
             session = session2,
             project = self.project,
@@ -1379,3 +1371,119 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         )
         ann_update2.main()
         self.assertEqual(len(ann_update2.system_upgrade_hash_changes), 0)
+
+    def test__saving_untouched_instance_list_does_not_restore(self):
+        """
+            We had a bug that whenever we resaved an instance and there where no changes
+            we would mark the instance as restored even though we were not restoring anything.
+
+            This was because we were not checking the is_new_instance flag in the
+            __validate_user_deletion() function of shared/annotation.py
+
+            This regression test case covers this bug
+        :return:
+        """
+        """
+            Sometimes default values can make the hash change after
+            saving to DB. This test checks that is not happening.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 1 Unsaved Instance
+        inst1 = {'type': 'box',
+                 'file_id': file1.id,
+                 'label_file_id': label_file.id,
+                 'soft_delete': False,
+                 'x_min': 10,
+                 'y_min': 10,
+                 'x_max': 28,
+                 'y_max': 28,
+                 'deletion_type': None,
+                 'created_time': '2022-01-12T18:31:59.530816',
+                 'action_type': 'created',
+                 'deleted_time': None,
+                 'change_source': None,
+                 'p1': None,
+                 'p2': None,
+                 'cp': None,
+                 'center_x': None,
+                 'center_y': None,
+                 'creation_ref_id': '10460e33-c02b-459d-a412-ab7b4512gdghf',
+                 'number': None,
+                 'interpolated': False,
+                 'machine_made': False,
+                 'model_id': None,
+                 'model_run_id': None,
+                 'sequence_id': None,
+                 'fan_made': None,
+                 'front_face': None,
+                 'rear_face': None,
+                 'rating': None,
+                 'attribute_groups': None,
+                 'member_created_id': None,
+                 'previous_id': None,
+                 'next_id': None,
+                 'root_id': 1,
+                 'version': 1,
+                 'nodes': [],
+                 'edges': [],
+                 'pause_object': None,
+                 'label_file': {'id': 2, 'hash': None, 'type': 'image', 'state': 'added',
+                                'created_time': '2022-01-12T18:31:59.508361', 'time_last_updated': None,
+                                'ann_is_complete': None, 'original_filename': 'ykzwdu', 'video_id': None,
+                                'video_parent_file_id': None, 'count_instances_changed': None,
+                                'image': {'original_filename': None, 'width': None, 'height': None,
+                                          'soft_delete': False, 'url_signed': None, 'url_signed_thumb': None,
+                                          'annotation_status': None}}
+                 }
+        instance_list = [inst1]
+
+        # 2. save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+
+        new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
+        self.session.commit()
+
+        session2 = sessionMaker.session_factory()
+        new_instance_list[0]['x_min'] += 10
+        new_instance_list[0]['x_max'] += 10
+        new_instance_list[0]['y_max'] += 10
+        new_instance_list[0]['y_min'] += 10
+
+        # 3. Move the instance and resave
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        self.assertEqual(len(ann_update2.new_added_instances), 1)
+
+        instance_list_result = ann_update2.file.instance_list
+        new_instance_list = [x.serialize_with_label() for x in instance_list_result]
+        session2.commit()
+        # 4. Resave with no changes
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        instance_list_result = ann_update2.file.instance_list
+
+        self.assertEqual(len(instance_list_result), 2)
+        self.assertEqual(len(ann_update2.new_added_instances), 0)
+        self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
