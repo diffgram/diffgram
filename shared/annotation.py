@@ -447,7 +447,7 @@ class Annotation_Update():
         return True
 
     def append_new_instance_list_hash(self, instance):
-
+        print('appending ', instance.id, instance.hash)
         if instance.soft_delete is False:
             self.new_instance_dict_hash[instance.hash] = instance
             return True
@@ -588,7 +588,8 @@ class Annotation_Update():
                                                with_for_update = True,
                                                nowait = True)
                 except Exception as e:
-                    self.log['error']['file_lock'] = "File is locked or being saved by another user, please try saving again."
+                    self.log['error'][
+                        'file_lock'] = "File is locked or being saved by another user, please try saving again."
                     self.log['error']['trace'] = traceback.format_exc()
             return
 
@@ -642,10 +643,28 @@ class Annotation_Update():
                 # Collision detected, we keep the newest instance by created time (which was order sorted).
                 # So this one is just to be deleted and not added to results.
                 logger.warning('Collision detected on {} instance id: {}'.format(inst.hash, inst.id))
+                logger.warning('hashes_dict: {}'.format(hashes_dict))
                 inst.soft_delete = True
                 inst.action_type = "from_collision"
                 self.session.add(inst)
 
+        return result
+
+    def rehash_existing_instances(self, instance_list):
+        result = []
+        for instance in instance_list:
+            prev_hash = instance.hash
+            print('rehashing', instance.id)
+            instance.hash_instance()
+            new_hash = instance.hash
+            if prev_hash != new_hash:
+                logger.warning('Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+                    instance.id,
+                    prev_hash,
+                    new_hash
+                ))
+            result.append(instance)
+            self.session.add(instance)
         return result
 
     def init_existing_instances(self):
@@ -669,6 +688,8 @@ class Annotation_Update():
                                                     exclude_removed = False,
                                                     with_for_update = True)
         self.instance_list_existing = self.detect_and_remove_collisions(self.instance_list_existing)
+        self.instance_list_existing = self.rehash_existing_instances(self.instance_list_existing)
+
         for instance in self.instance_list_existing:
             self.instance_list_existing_dict[instance.id] = instance
 
@@ -936,6 +957,7 @@ class Annotation_Update():
         if not valid_models or not valid_runs:
             return False
         for instance_proposed in cleaned_instance_list:
+            print('INSTANCE', instance_proposed)
             # For other checks that are specific to
             # to certain instance types
             self.instance_proposed = instance_proposed
@@ -1199,6 +1221,7 @@ class Annotation_Update():
         called for HUMAN updated ones.) that part still needs clarification
 
         """
+        print('updating...', id)
         member_created_id = None
         if self.member:
             member_created_id = self.member.id
@@ -1320,6 +1343,7 @@ class Annotation_Update():
         """
         # Here we assume that instance template will not have a hast (since we don't need versioning here)
         if hash_instances:
+            print('instance_update hash', self.instance.id)
             self.instance.hash_instance()
 
         is_new_instance = self.determine_if_new_instance_and_update_current(old_id = id)
@@ -1360,9 +1384,8 @@ class Annotation_Update():
             if not self.instance.soft_delete:
                 sequence.add_keyframe_to_cache(self.session, self.instance)
                 self.session.add(sequence)
-                
-                self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
+                self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
     def update_sequence_id_in_cache_list(self, instance):
         """
@@ -1378,7 +1401,6 @@ class Annotation_Update():
             existing_serialized_instance = self.instance_list_kept_serialized[i]
             if existing_serialized_instance.get('id') == instance.id:
                 existing_serialized_instance['sequence_id'] = instance.sequence_id
-
 
     def update_cache_single_instance_in_list_context(self):
         """
@@ -1470,7 +1492,6 @@ class Annotation_Update():
             # and then handle other related concerns seperetly
             self.file = File.copy_file_from_existing(
                 self.session, directory, self.file)
-
 
     def instance_limits(self, validate_label_file = True):
         """
@@ -1787,7 +1808,6 @@ class Annotation_Update():
 
             return sequence
 
-
     def check_polygon_points_and_build_bounds(self):
         self.instance.x_min = 99999
         self.instance.x_max = 0
@@ -1851,7 +1871,7 @@ class Annotation_Update():
         for index, item in enumerate(self.instance_list_existing):
             self.hash_list.append(item.hash)
             self.hash_old_cross_reference[item.hash] = index
-
+        print('hash existing', self.hash_old_cross_reference)
     # Would be curious to have this as like a "log level" or something
 
     def left_over_instance_deletion(self):
@@ -1873,13 +1893,13 @@ class Annotation_Update():
                 instance.deletion_type = 'system_deletion'
             instance.next_id = self.previous_next_instance_map.get(instance.id)
             # We need to rehash the instance in order to have the soft_delete and next_id be part of the hash.
+            print('hash leftrover_instance', instance.id)
             instance.hash_instance()
 
             # logger.info(instance.hash == prior_hash)
 
             if instance.hash != prior_hash:
                 self.declare_newly_deleted_instance(instance = instance)
-
 
     def declare_newly_deleted_instance(
         self,
