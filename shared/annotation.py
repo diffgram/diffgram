@@ -657,7 +657,7 @@ class Annotation_Update():
             instance.hash_instance()
             new_hash = instance.hash
             if prev_hash != new_hash:
-                logger.warning('Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+                logger.info('Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
                     instance.id,
                     prev_hash,
                     new_hash
