@@ -20,9 +20,9 @@ draw_cuboid_top_face(front_face, rear_face, ctx, fill=false, lineDash = 0){
   // Drawing lines for Top Face
   ctx.setLineDash([lineDash])
   this.draw_cuboid_side_line(front_face.top_right, front_face.top_left, ctx, lineDash)
-  // this.draw_line(rear_face.top_left, ctx, lineDash)
-  // this.draw_line(rear_face.top_right, ctx, lineDash)
-  // this.draw_line(front_face.top_right, ctx, lineDash)
+  this.draw_line(rear_face.top_left, ctx, lineDash)
+  this.draw_line(rear_face.top_right, ctx, lineDash)
+  this.draw_line(front_face.top_right, ctx, lineDash)
   if(fill){
     ctx.globalAlpha = 1;
     ctx.fillStyle = "rgba(" + 117 + "," + 117 + "," + 117 + ", 0.4";
@@ -59,10 +59,10 @@ draw_cuboid_right_face(front_face, rear_face, ctx, fill=false, lineDash = 0){
 draw_cuboid_down_face(front_face, rear_face, ctx, fill=false, lineDash = 0){
   // Drawing lines for Down Face
   ctx.setLineDash([lineDash])
-  // this.draw_cuboid_side_line(front_face.bot_left, rear_face.bot_left, ctx, lineDash)
-  // this.draw_line(rear_face.bot_right, ctx, lineDash)
-  // this.draw_line(front_face.bot_right, ctx, lineDash)
-  // this.draw_line(front_face.bot_left, ctx, lineDash)
+  this.draw_cuboid_side_line(front_face.bot_left, rear_face.bot_left, ctx, lineDash)
+  this.draw_line(rear_face.bot_right, ctx, lineDash)
+  this.draw_line(front_face.bot_right, ctx, lineDash)
+  this.draw_line(front_face.bot_left, ctx, lineDash)
   if(fill){
     ctx.globalAlpha = 1;
     ctx.fillStyle = "rgba(" + 117 + "," + 117 + "," + 117 + ", 0.4";

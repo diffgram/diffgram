@@ -79,7 +79,7 @@ describe('Annotate Files Tests', () => {
         cy.get('.v-list.v-select-list div').contains('Point').click({force: true})
         cy.select_label()
         cy.wait(1000)
-        const point = {x: 25, y:25};
+        const point = {x: 25, y: 25};
         cy.mousedowncanvas(point.x, point.y);
         cy.mouseupcanvas()
         cy.wait(1000);
@@ -114,7 +114,7 @@ describe('Annotate Files Tests', () => {
         cy.get('.v-list.v-select-list div').contains('Line').click({force: true})
         cy.select_label()
         cy.wait(1000)
-        cy.mousedowncanvas(points[0].x,points[0].y);
+        cy.mousedowncanvas(points[0].x, points[0].y);
         cy.mouseupcanvas()
 
         cy.mousedowncanvas(points[1].x, points[1].y);
@@ -129,7 +129,7 @@ describe('Annotate Files Tests', () => {
             expect(annCore.instance_list[1]).to.exist;
 
             // We want to skip the last point since that is the initial point. That's why its length - 1
-            for(let i = 0; i < points.length - 1; i++){
+            for (let i = 0; i < points.length - 1; i++) {
               const point = points[i];
               const clientX = point.x + canvas_client_box.x;
               const clientY = point.y + canvas_client_box.y;
@@ -253,8 +253,11 @@ describe('Annotate Files Tests', () => {
 
       it('Correctly Saves The created instances', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
-        cy.get('[data-cy="save_button"]').click({force: true})
-        cy.wait('@annotation_update')
+          .window().then((window) => {
+          window.AnnotationCore.has_changed = true;
+        })
+          .get('[data-cy="save_button"]').click({force: true})
+          .wait('@annotation_update')
           .should(({request, response}) => {
             expect(request.method).to.equal('POST')
             // it is a good practice to add assertion messages
@@ -320,10 +323,10 @@ describe('Annotate Files Tests', () => {
 
       it('Correcly Moves a Cuboid', () => {
         cy.get('[data-cy="ok_autoborder"]').click({force: true})
-        .mousedowncanvas(180, 180)
-        .mouseupcanvas()
-        .dragcanvas(180, 180, 225, 225)
-        .wait(1000)
+          .mousedowncanvas(180, 180)
+          .mouseupcanvas()
+          .dragcanvas(180, 180, 225, 225)
+          .wait(1000)
 
       })
 
@@ -331,15 +334,18 @@ describe('Annotate Files Tests', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
         cy.window().then((window) => {
           window.AnnotationCore.has_changed = true;
-          cy.get('[data-cy="save_button"]').click({force: true})
-          cy.wait('@annotation_update')
-            .should(({request, response}) => {
-              expect(request.method).to.equal('POST')
-              // it is a good practice to add assertion messages
-              // as the 2nd argument to expect()
-              expect(response.statusCode, 'response status').to.eq(200)
-            })
+
         })
+          .then(() => {
+            cy.get('[data-cy="save_button"]').click({force: true})
+              .wait('@annotation_update')
+              .should(({request, response}) => {
+                expect(request.method).to.equal('POST')
+                // it is a good practice to add assertion messages
+                // as the 2nd argument to expect()
+                expect(response.statusCode, 'response status').to.eq(200)
+              })
+          })
 
       })
     })
