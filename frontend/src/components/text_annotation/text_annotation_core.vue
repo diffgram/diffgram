@@ -157,7 +157,14 @@ export default Vue.extend({
         // function to finish drawing label and remove selection
         on_finish_draw_label: function(end_token) {
             this.label_in_progress.end_token = end_token.id
-            this.labels.push(this.label_in_progress)
+            const label_exists = this.labels.find(label => 
+                label.start_token === this.label_in_progress.start_token && label.end_token === this.label_in_progress.end_token
+                ||
+                label.end_token === this.label_in_progress.start_token && label.start_token === this.label_in_progress.end_token
+                )
+            if (!label_exists) {
+                this.labels.push(this.label_in_progress)
+            }
             this.label_in_progress = null
             if (window.getSelection) {
                 if (window.getSelection().empty) {  // Chrome
