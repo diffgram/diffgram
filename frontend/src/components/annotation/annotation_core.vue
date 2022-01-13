@@ -682,7 +682,7 @@
             :project_string_id="project_string_id"
 
             @go_to_keyframe_loading_started="set_keyframe_loading(true)"
-            @go_to_keyframe_loading_ended="on_key_frame_loaded($event)"
+            @go_to_keyframe_loading_ended="on_key_frame_loaded"
             @video_animation_unit_of_work="video_animation_unit_of_work($event)"
             @video_current_frame_guess="current_frame = parseInt($event)"
             @slide_start="detect_is_ok_to_save()"
@@ -3581,7 +3581,16 @@ mplate_has_keypoints_type: function (instance_template) {
     set_keyframe_loading: function(value){
       this.go_to_keyframe_loading = value
     },
-    on_key_frame_loaded: async function(url){
+    on_key_frame_loaded: async function(url, frame_number){
+      let existing_image = this.$refs.video_controllers.frame_image_buffer[frame_number];
+      if(existing_image){
+        this.set_new_image_on_canvas(existing_image)
+      }
+      else{
+        if(url){
+          await this.add_image_process(url);
+        }
+      }
       await this.load_frame_instances(url)
       this.set_keyframe_loading(false);
       this.seeking = false;
@@ -3591,21 +3600,20 @@ mplate_has_keypoints_type: function (instance_template) {
        * if we are on a keyframe and  don't need to call instance buffer
        * this method supercedes the old video_file_update()
        */
-      if (url) {
-        await this.add_image_process(url);
-      }
       await this.get_instances();
       await this.ghost_refresh_instances();
 
     },
-
-    add_image_process: async function (url) {
-      const image = await this.addImageProcess(url);
+    set_new_image_on_canvas: function(image){
       // this gets instances if it needs to
       this.html_image = image;
       this.canvas_wrapper.style.display = "";
       this.loading = false;
       this.trigger_refresh_with_delay();
+    },
+    add_image_process: async function (url) {
+      const image = await this.addImageProcess(url);
+      this.set_new_image_on_canvas(image);
     },
 
     current_file_updates: async function (file) {
