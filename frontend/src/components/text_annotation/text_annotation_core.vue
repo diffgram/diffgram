@@ -91,6 +91,11 @@ export default Vue.extend({
         this.initial_words_measures = this.text.split(' ')
         setTimeout(() => this.initialize_token_render(), 1000)
     },
+    watch: {
+        labels: function() {
+            this.find_intersections()
+        }
+    },
     methods: {
         initialize_token_render: function() {
             const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
@@ -153,6 +158,23 @@ export default Vue.extend({
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
             }
+        },
+        find_intersections: function() {
+            this.labels.forEach((label, index) => {
+                const current_label = [label.start_token, label.end_token]
+                this.labels.forEach((label_compare, index_comapre) => {
+                    const compare_label = [label_compare.start_token, label_compare.end_token]
+                    if (index_comapre === index) return
+                    if (current_label[0] >= compare_label[0] && current_label[1] <= compare_label[1] && label.level === label_compare.level) {
+                        const label_length = current_label[0] - current_label[1]
+                        const compare_label_length = compare_label[0] - compare_label[1]
+                        if (label_length > compare_label_length) {
+                            this.labels[index].level = this.labels[index].level+1
+                        } 
+                        console.log("Intersepopn")
+                    }
+                })
+            })
         },
         // draw_label - is only returning rects that have to be drawn
         draw_label: function(label) {
