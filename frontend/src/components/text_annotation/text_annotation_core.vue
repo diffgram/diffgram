@@ -31,7 +31,7 @@
                     v-for="rect in draw_label(label)"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
                     :x="rect.x"
-                    :y="rect.y"
+                    :y="rect.y - label.level * additional_line_space"
                     :width="rect.width"
                     :fill="hover_label && hover_label.id === label.id ? 'red' : label.color"
                     opacity="0.4"
@@ -84,7 +84,9 @@ export default Vue.extend({
             //effects
             hover_label: null,
             //Helpers
-            label_in_progress: null
+            label_in_progress: null,
+            //Render constants
+            additional_line_space: 15
         }
     },
     mounted() {
@@ -159,6 +161,7 @@ export default Vue.extend({
                 document.selection.empty();
             }
         },
+        // Find intersection and update level of the label
         find_intersections: function() {
             this.labels.forEach((label, index) => {
                 const current_label = [label.start_token, label.end_token]
@@ -168,12 +171,24 @@ export default Vue.extend({
                     if (current_label[0] >= compare_label[0] && current_label[1] <= compare_label[1] && label.level === label_compare.level) {
                         const label_length = current_label[0] - current_label[1]
                         const compare_label_length = compare_label[0] - compare_label[1]
-                        if (label_length > compare_label_length) {
-                            this.labels[index].level = this.labels[index].level+1
-                        } 
-                        console.log("Intersepopn")
+                        if (label_length < compare_label_length) {
+                            this.labels[index].level = this.labels[index].level + 1
+                        } else {
+                            this.labels[index_comapre].level = this.labels[index_comapre].level + 1
+                            this.update_line_height(this.labels[index_comapre])
+                        }
                     }
                 })
+            })
+        },
+        // Update line height if there are few levels of labels
+        update_line_height: function(updated_label) {
+            const start_token = this.tokens.find(token => updated_label.start_token === token.id)
+            const line_to_update = this.lines.find(line => start_token.line === line.id)
+            this.lines.map(line => {
+                if (line.id >= line_to_update.id) {
+                    line.y = line.y + this.additional_line_space
+                }
             })
         },
         // draw_label - is only returning rects that have to be drawn
