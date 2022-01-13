@@ -163,6 +163,7 @@ export default Vue.extend({
         },
         // Find intersection and update level of the label
         find_intersections: function() {
+            let already_increased = false;
             this.labels.forEach((label, index) => {
                 const current_label = [label.start_token, label.end_token]
                 this.labels.forEach((label_compare, index_comapre) => {
@@ -175,7 +176,8 @@ export default Vue.extend({
                             this.labels[index].level = this.labels[index].level + 1
                         } else {
                             this.labels[index_comapre].level = this.labels[index_comapre].level + 1
-                            this.update_line_height(this.labels[index_comapre])
+                            if (!already_increased) this.update_line_height(this.labels[index_comapre])
+                            already_increased = true
                         }
                     }
                 })
