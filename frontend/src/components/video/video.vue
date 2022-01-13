@@ -1306,14 +1306,10 @@ export default Vue.extend( {
       return result
     },
     fetch_next_images: async function(frame_number){
-      console.log('fetch_next_images', frame_number)
       let next_frames = this.range(frame_number, frame_number + this.MAX_NUM_IMAGE_BUFFER, 1)
-      console.log('frame now is', frame_number)
       let prev_frames = this.range(frame_number, frame_number - this.MAX_NUM_IMAGE_BUFFER, 1);
       next_frames.filter(frame => frame <= this.current_video.frame_count)
       prev_frames.filter(frame => frame >= 0)
-      console.log('next_frames', next_frames)
-      console.log('prev_frames', prev_frames)
       let frames_to_fetch = []
       if(frame_number === 0){
         frames_to_fetch = [...next_frames];
@@ -1333,7 +1329,7 @@ export default Vue.extend( {
 
       if(frames_with_no_image.length > 0) {
         try {
-          const limit = pLimit(15); // 15 Max concurrent request.
+          const limit = pLimit(25); // 25 Max concurrent request.
           const promises = frames_with_no_image.map((frame_num) => {
             return limit(() => {
               let url = this.frame_url_buffer[frame_num];
@@ -1345,10 +1341,7 @@ export default Vue.extend( {
             if(result){
               this.frame_image_buffer[result.frame_num] = result.image
             }
-
           }
-
-
         } catch (e) {
           console.error(e)
         }
