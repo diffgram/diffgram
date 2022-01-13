@@ -25,8 +25,16 @@
                 :key="`label_${label.id}`"
                 @mouseenter="() => on_label_hover(label)"
                 @mouseleave="on_label_stop_hover"
+                style="cursor: pointer"
             >
-                <text>{{ label.text }}</text>
+                <text 
+                    :x="draw_label(label)[0].x" 
+                    :y="draw_label(label)[0].y - label.level * additional_line_space - 3"
+                    :fill="hover_label && hover_label.id === label.id ? 'red' : label.color"
+                    style="font-size: 10px; background-color: 'red'"
+                    >
+                    {{ label.text }}
+                </text>
                 <rect 
                     v-for="rect in draw_label(label)"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
@@ -86,7 +94,7 @@ export default Vue.extend({
             //Helpers
             label_in_progress: null,
             //Render constants
-            additional_line_space: 15
+            additional_line_space: 20
         }
     },
     mounted() {
