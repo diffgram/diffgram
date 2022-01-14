@@ -17,7 +17,10 @@
                   :icon="icon_style"
                   :text="text_style"
                   :large="large"
+                  :outlined="outlined"
+                  :color="button_color"
                   >
+            {{button_text}}
              <v-icon
                 :color=color
                 :large=large>
@@ -26,7 +29,7 @@
 
           </v-btn>
         </template>
-       
+
           <v-card>
 
             <v-card-title>
@@ -91,8 +94,8 @@ For more complex usage include a template ie:
 
   <template slot="content">
     <v-layout column>
-          
-         
+
+
     </v-layout>
   </template>
 
@@ -102,7 +105,7 @@ Named slot since we may add more slots later
 so that way hopefully less existing stuff to change / more clear
 
 For spacing issues check :icon_style="true" and text_style not enabled
- * 
+ *
  */
 
 import Vue from "vue"; export default Vue.extend( {
@@ -147,6 +150,15 @@ import Vue from "vue"; export default Vue.extend( {
     },
     'large': {
       default: false
+    },
+    'button_text':{
+      default: undefined
+    },
+    'outlined': {
+      default: false
+    },
+    'button_color':{
+      default: 'primary'
     }
   },
   data() {
