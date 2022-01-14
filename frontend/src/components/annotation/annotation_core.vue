@@ -3582,7 +3582,10 @@ mplate_has_keypoints_type: function (instance_template) {
       this.go_to_keyframe_loading = value
     },
     on_key_frame_loaded: async function(url, frame_number){
-      let existing_image = this.$refs.video_controllers.frame_image_buffer[frame_number];
+      let existing_image = null;
+      if(this.$refs.video_controllers){
+        existing_image = this.$refs.video_controllers.frame_image_buffer[frame_number];
+      }
       if(existing_image){
         this.set_new_image_on_canvas(existing_image)
       }
