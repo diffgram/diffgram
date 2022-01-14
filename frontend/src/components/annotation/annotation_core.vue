@@ -1469,7 +1469,11 @@ export default Vue.extend({
         return this.instance_type_list;
       }
       let ui_schema = this.$props.task.job.ui_schema;
-      let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+      let allowed_types = undefined;
+
+      if(ui_schema && ui_schema.instance_selector){
+        let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+      }
       if (!allowed_types) {
         return this.instance_type_list;
       } else {
@@ -6661,6 +6665,17 @@ mplate_has_keypoints_type: function (instance_template) {
         //this.command_manager.executeCommand(command);
       });
     },
+    instance_template_has_keypoints_type: function(instance_template){
+      if(!instance_template || !instance_template.instance_list){
+        return
+      }
+      for(let instance of instance_template.instance_list){
+        if(instance.type === 'keypoints'){
+          return true
+        }
+      }
+      return false;
+    },
     instance_template_mouse_up: function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
         this.add_instance_template_to_instance_list(frame_number);
@@ -6669,7 +6684,6 @@ mplate_has_keypoints_type: function (instance_template) {
         this.instance_template_start_point = undefined;
       } else {
         // TODO: Might need to change this logic when we support more than one instance per instance template.
-
         if (
           this.instance_template_has_keypoints_type(
             this.current_instance_template
