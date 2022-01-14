@@ -404,7 +404,7 @@
 
 import axios from 'axios';
 import frame_previewVue from './frame_preview.vue'
-
+import pLimit from "p-limit";
 import Vue from "vue";
 
 export default Vue.extend( {
@@ -475,7 +475,7 @@ export default Vue.extend( {
     return {
 
       error: {},
-
+      MAX_NUM_URL_BUFFER: 15,
       mouse_x: null,
       mouse_y: null,
       mouse_page_x: null,
@@ -487,6 +487,7 @@ export default Vue.extend( {
 
       preview_frame_url: null,
       preview_frame_url_dict : {},
+      frame_image_buffer: {},
       frame_url_buffer : {},
       preview_frame_loading : false,
 
@@ -553,6 +554,10 @@ export default Vue.extend( {
     }
   },
   computed: {
+    MAX_NUM_IMAGE_BUFFER: function(){
+      // This is to ensure we always have the urls available for fetching.
+      return this.MAX_NUM_URL_BUFFER - 5;
+    },
     video_settings: function () {
       if (this.current_video) {
 
@@ -1265,7 +1270,84 @@ export default Vue.extend( {
 
 
     },
+    fetch_image_from_url: function (src, frame_num) {
+      return new Promise((resolve, reject) => {
+        if(!src){
+          resolve(undefined)
+        }
 
+        let image = new Image();
+        image.src = src;
+        if (process.env.NODE_ENV === "testing") {
+          image.crossOrigin = "anonymous";
+        }
+        image.onload = () => resolve({image: image, frame_num: frame_num});
+        image.onerror = reject;
+      });
+    },
+    range: function(start=0, end=null, step=1) {
+      if (end == null) {
+        end = start;
+        start = 0;
+      }
+      let result = []
+      if(start <= end){
+        for (let i=start; i < end; i+=step) {
+          result.push(i)
+        }
+      }
+      else{
+        for (let i=start; i >= end; i-=step) {
+          result.push(i)
+        }
+      }
+
+
+      return result
+    },
+    fetch_next_images: async function(frame_number){
+      let next_frames = this.range(frame_number, frame_number + this.MAX_NUM_IMAGE_BUFFER, 1)
+      let prev_frames = this.range(frame_number, frame_number - this.MAX_NUM_IMAGE_BUFFER, 1);
+      next_frames.filter(frame => frame <= this.current_video.frame_count)
+      prev_frames.filter(frame => frame >= 0)
+      let frames_to_fetch = []
+      if(frame_number === 0){
+        frames_to_fetch = [...next_frames];
+
+      }
+      else{
+        frames_to_fetch = [...prev_frames, ...next_frames];
+      }
+
+      // Get current frames with no images
+      let frames_with_no_image = [];
+      for(let frame of frames_to_fetch){
+        if(!this.frame_image_buffer[frame]){
+          frames_with_no_image.push(frame)
+        }
+      }
+
+      if(frames_with_no_image.length > 0) {
+        try {
+          const limit = pLimit(25); // 25 Max concurrent request.
+          const promises = frames_with_no_image.map((frame_num) => {
+            return limit(() => {
+              let url = this.frame_url_buffer[frame_num];
+              return this.fetch_image_from_url(url, frame_num)
+            });
+          });
+          let new_images_responses = await Promise.all(promises);
+          for (let result of new_images_responses){
+            if(result){
+              this.frame_image_buffer[result.frame_num] = result.image
+            }
+          }
+        } catch (e) {
+          console.error(e)
+        }
+      }
+
+    },
     get_video_single_image: async function (frame_number) {
       if (isNaN(frame_number)) { return }
       // hacky work around so file update doesn't file twice
@@ -1277,14 +1359,15 @@ export default Vue.extend( {
         ) {
         return
       }
-
+      console.log('get_video_single_image')
       this.get_video_single_image_last_fired = new Date().getTime()
 
       this.video_current_frame_guess_update()
-      const next_frames = this.get_next_n_frames(frame_number, 15)
-      const prev_frames = this.get_previous_n_frames(frame_number, 15)
+      const next_frames = this.get_next_n_frames(frame_number, this.MAX_NUM_URL_BUFFER)
+      const prev_frames = this.get_previous_n_frames(frame_number, this.MAX_NUM_URL_BUFFER)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
       if (frame_number != this.prior_frame_number) {
+        console.log('frame_number != this.prior_frame_number')
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
           try{
@@ -1295,7 +1378,7 @@ export default Vue.extend( {
             this.refresh = Date.now()
 
             this.prior_frame_number = frame_number
-              this.$emit('go_to_keyframe_loading_ended', new_url)
+              this.$emit('go_to_keyframe_loading_ended', new_url, frame_number)
           }
           catch(error){
 
@@ -1310,7 +1393,7 @@ export default Vue.extend( {
 
             this.go_to_keyframe_loading = false
             this.error = this.$route_api_errors(error)
-              this.$emit('go_to_keyframe_loading_ended')
+              this.$emit('go_to_keyframe_loading_ended', undefined, frame_number)
           }
           finally {
 
@@ -1333,10 +1416,13 @@ export default Vue.extend( {
             // It should be a background fetch.
             this.add_new_frame_list_to_buffer(lookahead_frames);
           }
-          this.$emit('go_to_keyframe_loading_ended', new_url)
+          this.$emit('go_to_keyframe_loading_ended', new_url, frame_number)
           this.$emit('set_canvas_dimensions')
           this.$emit('update_canvas');
         }
+
+        // Proactively fetch next frames
+        await this.fetch_next_images(frame_number);
 
 
       }

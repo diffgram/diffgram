@@ -184,13 +184,15 @@ describe("Test annotation_core", () => {
     };
     wrapper.vm.load_frame_instances = () => {
     };
-    wrapper.vm.set_keyframe_loading = () => {
-    };
+    wrapper.vm.set_keyframe_loading = () => {};
+    wrapper.vm.add_image_process = () => {};
     const spy = jest.spyOn(wrapper.vm, 'load_frame_instances')
     const spy2 = jest.spyOn(wrapper.vm, 'set_keyframe_loading')
-    await wrapper.vm.on_key_frame_loaded();
+    const spy3 = jest.spyOn(wrapper.vm, 'add_image_process')
+    await wrapper.vm.on_key_frame_loaded('https://google.com');
     expect(spy).toHaveBeenCalled();
     expect(spy2).toHaveBeenCalled();
+    expect(spy3).toHaveBeenCalled();
 
   });
 
@@ -198,17 +200,13 @@ describe("Test annotation_core", () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.vm.$store.commit = () => {
     };
-    wrapper.vm.add_image_process = () => {
-    };
     wrapper.vm.get_instances = () => {
     };
     wrapper.vm.ghost_refresh_instances = () => {
     };
-    const spy = jest.spyOn(wrapper.vm, 'add_image_process')
     const spy2 = jest.spyOn(wrapper.vm, 'get_instances')
     const spy3 = jest.spyOn(wrapper.vm, 'ghost_refresh_instances')
     await wrapper.vm.load_frame_instances('https://google.com');
-    expect(spy).toHaveBeenCalled();
     expect(spy2).toHaveBeenCalled();
     expect(spy3).toHaveBeenCalled();
 
