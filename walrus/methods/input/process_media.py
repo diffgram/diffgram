@@ -12,7 +12,7 @@ import tempfile
 import csv
 import gc
 import shutil
-
+from urllib.parse import urlsplit
 from random import randrange
 
 from werkzeug.utils import secure_filename
@@ -203,8 +203,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
     from methods.input.process_media_queue_manager import process_media_queue_manager
-
-    if item.media_type and item.media_type in ["frame", "image", "text"]:
+    if item.media_type and item.media_type in ["frame", "image", "text", "csv_url"]:
 
         wait_until_queue_pressure_is_lower(
             queue = process_media_queue_manager.FRAME_QUEUE,
@@ -1855,7 +1854,6 @@ class Process_Media():
         """
 
         row_limit = 10000
-
         with open(self.input.temp_dir_path_and_filename) as csv_file:
 
             csv_reader = csv.reader(csv_file)
@@ -1878,7 +1876,7 @@ class Process_Media():
                 row_input.url = row[0]
                 row_input.allow_csv = False
                 row_input.type = "from_url"
-
+                row_input.media_type = "csv_url"
                 self.try_to_commit()
 
                 # Spawn a new instance for each url
@@ -1887,7 +1885,7 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-
+                item.media_type = 'csv_url'
                 add_item_to_queue(item)
 
         # TODO how to handle removing from directory
@@ -1996,6 +1994,7 @@ class Process_Media():
             self.log['error']['status_text'] = self.input.status_text
             return
 
+        split_url = urlsplit(self.input.url)
         response = requests.get(self.input.url, stream = True)
 
         if response.status_code != 200:
@@ -2181,7 +2180,6 @@ class Process_Media():
         or both?
         """
         extension = extension.lower()
-        print('INPUT TYPE', extension)
 
         if extension in images_allowed_file_names:
             return "image"

@@ -355,7 +355,7 @@
           return {
             init: function () {
               this.on("addedfile", function (file) {
-                if (file.type === 'application/json' || file.type === 'text/csv') {
+                if (file.type === 'application/json' || (file.type === 'text/csv' && $vm.with_prelabeled)) {
                   file.data_type = 'Annotations';
                 } else {
                   file.data_type = 'Raw Media';
