@@ -66,9 +66,7 @@ def save_pre_labeled_data_to_db(batch_id):
                 batch.download_status_pre_labeled_data = 'downloading'
                 session.add(batch)
                 session.commit()
-
                 json_str = data_tools.get_string_from_blob(batch.data_temp_dir)
-
                 json_data = json.loads(json_str)
                 batch.pre_labeled_data = json_data
                 batch.download_status_pre_labeled_data = 'success'
@@ -110,7 +108,8 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
             url = data_tools.create_resumable_upload_session(
                 blob_path = temp_dir_path,
                 content_type = 'application/json',
-                input = None
+                input = None,
+                batch = batch
             )
             batch.data_temp_dir = url
             session.add(batch)
