@@ -35,17 +35,16 @@
                     >
                     {{ label.text }}
                 </text>
-                <rect 
-                    v-for="rect in draw_label(label)"
-                    :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                    :x="rect.x"
-                    :y="rect.y - label.level * additional_line_space"
-                    :width="rect.width"
-                    :fill="hover_label && hover_label.id === label.id ? 'red' : label.color"
-                    opacity="0.4"
-                    height="2"
-                />
             </g>
+            <rect 
+                v-for="rect in render_rects"
+                :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
+                :x="rect.x"
+                :y="rect.y"
+                :width="rect.width"
+                opacity="0.4"
+                height="2"
+                />
             <g 
                 v-for="(line, index) in lines"
                 :transform="`translate(0, ${25 + line.y})`"
@@ -104,6 +103,17 @@ export default Vue.extend({
     watch: {
         labels: function() {
             this.find_intersections()
+        }
+    },
+    computed: {
+        render_rects: function() {
+            let rects_to_draw = [];
+            this.labels.map(label => {
+                const label_rects = this.draw_label(label)
+                rects_to_draw = [...rects_to_draw, ...label_rects]
+            })
+            this.find_intersections(rects_to_draw)
+            return rects_to_draw
         }
     },
     methods: {
@@ -177,33 +187,22 @@ export default Vue.extend({
             }
         },
         // Find intersection and update level of the label
-        find_intersections: function() {
-            let already_increased = false;
-            this.labels.forEach((label, index) => {
-                const current_label = [label.start_token, label.end_token]
-                this.labels.forEach((label_compare, index_comapre) => {
-                    const compare_label = [label_compare.start_token, label_compare.end_token]
-                    if (index_comapre === index) return
-                    if (current_label[0] >= compare_label[0] && current_label[1] <= compare_label[1] && label.level === label_compare.level) {
-                        const label_length = current_label[0] - current_label[1]
-                        const compare_label_length = compare_label[0] - compare_label[1]
-                        if (label_length < compare_label_length) {
-                            this.labels[index].level = this.labels[index].level + 1
-                        } else {
-                            this.labels[index_comapre].level = this.labels[index_comapre].level + 1
-                            if (!already_increased) this.update_line_height(this.labels[index_comapre])
-                            already_increased = true
-                        }
+        find_intersections: function(rects_to_draw) {
+            rects_to_draw.map((rect, index) => {
+                rects_to_draw.map((comp_rect, comp_index) => {
+                    if (index === comp_index) return
+                    if (rect.line !== comp_rect.line) return
+                    if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
+                        if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
+                        comp_rect.y = comp_rect.y - this.additional_line_space
                     }
                 })
             })
         },
         // Update line height if there are few levels of labels
-        update_line_height: function(updated_label) {
-            const start_token = this.tokens.find(token => updated_label.start_token === token.id)
-            const line_to_update = this.lines.find(line => start_token.line === line.id)
+        update_line_height: function(line_id) {
             this.lines.map(line => {
-                if (line.id >= line_to_update.id) {
+                if (line.id >= line_id) {
                     line.y = line.y + this.additional_line_space
                 }
             })
