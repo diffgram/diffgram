@@ -20,31 +20,30 @@
             </text>
         </g>
         <g v-else>
-            <g 
+            <text 
                 v-for="instance in instances"
                 :key="`instance_${instance.id}`"
-                @mouseenter="() => on_instance_hover(instance)"
+                :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
+                :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
+                :fill="hover_instance && hover_instance.id === instance.id ? 'red' : current_label.color"
+                @mouseenter="() => on_instance_hover(instance.id)"
                 @mouseleave="on_instance_stop_hover"
-                style="cursor: pointer"
+                style="font-size: 10px; cursor: pointer"
             >
-                <text 
-                    :x="draw_instance(instance)[0].x" 
-                    :y="draw_instance(instance)[0].y - instance.level * additional_line_space - 3"
-                    :fill="hover_instance && hover_instance.id === instance.id ? 'red' : instance.color"
-                    style="font-size: 10px; background-color: 'red'"
-                    >
-                    {{ instance.text }}
-                </text>
-            </g>
+                {{ current_label.text }}
+            </text>
             <rect 
                 v-for="rect in render_rects"
                 :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
+                :fill="hover_instance && hover_instance.id === rect.instance_id ? 'red' : current_label.color"
                 :x="rect.x"
                 :y="rect.y"
                 :width="rect.width"
-                opacity="0.4"
+                @mouseenter="() => on_instance_hover(rect.instance_id)"
+                @mouseleave="on_instance_stop_hover"
                 height="2"
-                />
+                style="cursor: pointer"
+            />
             <g 
                 v-for="(line, index) in lines"
                 :transform="`translate(0, ${25 + line.y})`"
@@ -80,6 +79,7 @@ export default Vue.extend({
     data() {
         return {
             current_label: {
+                id: 0,
                 text: "First",
                 color: "blue"
             },
@@ -149,8 +149,8 @@ export default Vue.extend({
             this.rendering = false
         },
         //function to hover on instance
-        on_instance_hover: function(instance) {
-            this.hover_instance = instance
+        on_instance_hover: function(instance_id) {
+            this.hover_instance = this.instances.find(instance => instance.id === instance_id)
         },
         on_instance_stop_hover: function() {
             this.hover_instance = null
@@ -160,8 +160,7 @@ export default Vue.extend({
             this.instance_in_progress = {
                 id: this.instances.length,
                 start_token: start_token.id,
-                color: this.current_label.color,
-                text: this.current_label.text,
+                label_id: this.current_label.id,
                 level: 0
             }
         },
@@ -243,10 +242,11 @@ export default Vue.extend({
             const end_token = this.tokens.find(token => token.id === instance.end_token)
             if (starting_token.id === end_token.id) {
                 const rect = {
+                    instance_id: instance.id,
                     x: this.tokens[instance.start_token].start_x,
                     y: this.lines[this.tokens[instance.start_token].line].y + 3,
                     line: starting_token.line,
-                    width: this.tokens[instance.start_token].width
+                    width: this.tokens[instance.start_token].width,
                 }
                 return [rect]
             }
@@ -254,6 +254,7 @@ export default Vue.extend({
             if (starting_token.line === end_token.line) {
                 if (starting_token.id < end_token.id) {
                     const rect = {
+                        instance_id: instance.id,
                         x: this.tokens[instance.start_token].start_x,
                         y: this.lines[this.tokens[instance.start_token].line].y + 3,
                         line: starting_token.line,
@@ -263,6 +264,7 @@ export default Vue.extend({
                     return [rect]
                 } else {
                     const rect = {
+                        instance_id: instance.id,
                         x: this.tokens[instance.end_token].start_x,
                         y: this.lines[this.tokens[instance.end_token].line].y + 3,
                         line: starting_token.line,
@@ -280,6 +282,7 @@ export default Vue.extend({
                         if (i === starting_token.line) {
                             const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
                             const rect = {
+                                instance_id: instance.id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -290,6 +293,7 @@ export default Vue.extend({
                         else if (i === end_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
                             const rect = {
+                                instance_id: instance.id,
                                 x: this.tokens[instance.end_token].start_x,
                                 y: this.lines[this.tokens[instance.end_token].line].y + 3,
                                 line: i,
@@ -301,6 +305,7 @@ export default Vue.extend({
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
+                                instance_id: instance.id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -316,6 +321,7 @@ export default Vue.extend({
                         if (i === starting_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
                             const rect = {
+                                instance_id: instance.id,
                                 x: this.tokens[instance.start_token].start_x,
                                 y: this.lines[this.tokens[instance.start_token].line].y + 3,
                                 line: i,
@@ -326,6 +332,7 @@ export default Vue.extend({
                         else if (i === end_token.line) {
                             const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
                             const rect = {
+                                instance_id: instance.id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -337,6 +344,7 @@ export default Vue.extend({
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
+                                instance_id: instance.id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
