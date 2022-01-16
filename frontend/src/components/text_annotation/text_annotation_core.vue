@@ -194,6 +194,19 @@ export default Vue.extend({
                     if (index === comp_index) return
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
+                        console.log(rect, comp_rect)
+                        if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
+                        comp_rect.y = comp_rect.y - this.additional_line_space
+                        this.find_intersections(rects_to_draw)
+                    }
+                })
+            })
+            rects_to_draw.map((rect, index) => {
+                rects_to_draw.map((comp_rect, comp_index) => {
+                    if (index === comp_index) return
+                    if (rect.line !== comp_rect.line) return
+                    if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
+                        console.log(rect, comp_rect)
                         if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
                         comp_rect.y = comp_rect.y - this.additional_line_space
                         this.find_intersections(rects_to_draw)
