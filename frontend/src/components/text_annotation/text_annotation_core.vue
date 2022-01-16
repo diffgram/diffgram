@@ -100,14 +100,15 @@ export default Vue.extend({
         this.initial_words_measures = this.text.split(' ')
         setTimeout(() => this.initialize_token_render(), 1000)
     },
-    watch: {
-        labels: function() {
-            this.find_intersections()
-        }
-    },
     computed: {
         render_rects: function() {
             let rects_to_draw = [];
+            this.labels.map(label => {
+                const label_rects = this.draw_label(label)
+                rects_to_draw = [...rects_to_draw, ...label_rects]
+            })
+            this.find_intersections(rects_to_draw)
+            rects_to_draw = [];
             this.labels.map(label => {
                 const label_rects = this.draw_label(label)
                 rects_to_draw = [...rects_to_draw, ...label_rects]
@@ -126,10 +127,10 @@ export default Vue.extend({
                 const current_token_width = this.$refs[`word_${index}`][0].getBoundingClientRect().width
 
                 if (this.lines.length === 0) {
-                    this.lines.push({ id: 0, y: 5 })
+                    this.lines.push({ id: 0, y: 5, initial_y: 5 })
                 }
                 if (token_x_position + current_token_width > fixed_svg_width) {
-                    this.lines.push({id: this.lines.length, y: this.lines[this.lines.length - 1].y + 40 })
+                    this.lines.push({id: this.lines.length, y: this.lines[this.lines.length - 1].y + 40, initial_y: this.lines[this.lines.length - 1].y + 40 })
                     token_x_position = 40
                 }
 
@@ -195,15 +196,31 @@ export default Vue.extend({
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
                         if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
                         comp_rect.y = comp_rect.y - this.additional_line_space
+                        this.find_intersections(rects_to_draw)
                     }
                 })
             })
+
+            const rects_lines_map = rects_to_draw.reduce(
+                (entryMap, e) => entryMap.set(e.line, [...entryMap.get(e.line)||[], e]),
+                new Map()
+            )
+
+            this.lines.forEach(line => line.y = line.initial_y)
+            
+            this.lines.map(line => {
+                if (rects_lines_map.get(line.id)) {
+                    const rect_levels = [...rects_lines_map.get(line.id).map(rect => rect.y)]
+                    const move_strings_level = (Math.max(...rect_levels) - Math.min(...rect_levels)) / this.additional_line_space
+                    this.update_line_height(line.id, move_strings_level)
+                }
+            })
         },
         // Update line height if there are few levels of labels
-        update_line_height: function(line_id) {
+        update_line_height: function(line_id, level) {
             this.lines.map(line => {
                 if (line.id >= line_id) {
-                    line.y = line.y + this.additional_line_space
+                    line.y = line.y + level * this.additional_line_space
                 }
             })
         },
