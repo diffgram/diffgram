@@ -21,19 +21,19 @@
         </g>
         <g v-else>
             <g 
-                v-for="label in labels"
-                :key="`label_${label.id}`"
-                @mouseenter="() => on_label_hover(label)"
-                @mouseleave="on_label_stop_hover"
+                v-for="instance in instances"
+                :key="`instance_${instance.id}`"
+                @mouseenter="() => on_instance_hover(instance)"
+                @mouseleave="on_instance_stop_hover"
                 style="cursor: pointer"
             >
                 <text 
-                    :x="draw_label(label)[0].x" 
-                    :y="draw_label(label)[0].y - label.level * additional_line_space - 3"
-                    :fill="hover_label && hover_label.id === label.id ? 'red' : label.color"
+                    :x="draw_instance(instance)[0].x" 
+                    :y="draw_instance(instance)[0].y - instance.level * additional_line_space - 3"
+                    :fill="hover_instance && hover_instance.id === instance.id ? 'red' : instance.color"
                     style="font-size: 10px; background-color: 'red'"
                     >
-                    {{ label.text }}
+                    {{ instance.text }}
                 </text>
             </g>
             <rect 
@@ -52,11 +52,11 @@
             >
                 <text 
                     v-for="(token, index) in tokens.filter(token => token.line === index)"
-                    @mousedown="() => on_start_draw_label(token)"
-                    @mouseup="() => on_finish_draw_label(token)"
+                    @mousedown="() => on_start_draw_instance(token)"
+                    @mouseup="() => on_finish_draw_instance(token)"
                     :key="`token_${index}`"
                     :x="token.start_x"
-                    :fill="hover_label && ((hover_label.start_token <= token.id && token.id <= hover_label.end_token) || (hover_label.start_token >= token.id && token.id >= hover_label.end_token)) ? 'red' : 'black'"
+                    :fill="hover_instance && ((hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) || (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)) ? 'red' : 'black'"
                 >
                     {{ token.word }}
                 </text>
@@ -87,11 +87,11 @@ export default Vue.extend({
             initial_words_measures: [],
             lines: [],
             tokens: [],
-            labels: [],
+            instances: [],
             //effects
-            hover_label: null,
+            hover_instance: null,
             //Helpers
-            label_in_progress: null,
+            instance_in_progress: null,
             //Render constants
             additional_line_space: 20
         }
@@ -103,15 +103,15 @@ export default Vue.extend({
     computed: {
         render_rects: function() {
             let rects_to_draw = [];
-            this.labels.map(label => {
-                const label_rects = this.draw_label(label)
-                rects_to_draw = [...rects_to_draw, ...label_rects]
+            this.instances.map(instance => {
+                const instance_rects = this.draw_instance(instance)
+                rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
-            this.labels.map(label => {
-                const label_rects = this.draw_label(label)
-                rects_to_draw = [...rects_to_draw, ...label_rects]
+            this.instances.map(instance => {
+                const instance_rects = this.draw_instance(instance)
+                rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
             this.find_intersections(rects_to_draw)
             return rects_to_draw
@@ -148,35 +148,35 @@ export default Vue.extend({
             this.tokens = tokens
             this.rendering = false
         },
-        //function to hover on label
-        on_label_hover: function(label) {
-            this.hover_label = label
+        //function to hover on instance
+        on_instance_hover: function(instance) {
+            this.hover_instance = instance
         },
-        on_label_stop_hover: function() {
-            this.hover_label = null
+        on_instance_stop_hover: function() {
+            this.hover_instance = null
         },
-        // function to initialize drawing new label
-        on_start_draw_label: function(start_token) {
-            this.label_in_progress = {
-                id: this.labels.length,
+        // function to initialize drawing new instance
+        on_start_draw_instance: function(start_token) {
+            this.instance_in_progress = {
+                id: this.instances.length,
                 start_token: start_token.id,
                 color: this.current_label.color,
                 text: this.current_label.text,
                 level: 0
             }
         },
-        // function to finish drawing label and remove selection
-        on_finish_draw_label: function(end_token) {
-            this.label_in_progress.end_token = end_token.id
-            const label_exists = this.labels.find(label => 
-                label.start_token === this.label_in_progress.start_token && label.end_token === this.label_in_progress.end_token
+        // function to finish drawing instance and remove selection
+        on_finish_draw_instance: function(end_token) {
+            this.instance_in_progress.end_token = end_token.id
+            const instance_exists = this.instances.find(instance => 
+                instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
                 ||
-                label.end_token === this.label_in_progress.start_token && label.start_token === this.label_in_progress.end_token
+                instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token
                 )
-            if (!label_exists) {
-                this.labels.push(this.label_in_progress)
+            if (!instance_exists) {
+                this.instances.push(this.instance_in_progress)
             }
-            this.label_in_progress = null
+            this.instance_in_progress = null
             if (window.getSelection) {
                 if (window.getSelection().empty) {  // Chrome
                     window.getSelection().empty();
@@ -187,7 +187,7 @@ export default Vue.extend({
                 document.selection.empty();
             }
         },
-        // Find intersection and update level of the label
+        // Find intersection and update level of the instance
         find_intersections: function(rects_to_draw) {
             rects_to_draw.map((rect, index) => {
                 rects_to_draw.map((comp_rect, comp_index) => {
@@ -216,7 +216,7 @@ export default Vue.extend({
                 }
             })
         },
-        // Update line height if there are few levels of labels
+        // Update line height if there are few levels of instances
         update_line_height: function(line_id, level) {
             this.lines.map(line => {
                 if (line.id >= line_id) {
@@ -224,16 +224,16 @@ export default Vue.extend({
                 }
             })
         },
-        // draw_label - is only returning rects that have to be drawn
-        draw_label: function(label) {
-            const starting_token = this.tokens.find(token => token.id === label.start_token)
-            const end_token = this.tokens.find(token => token.id === label.end_token)
+        // draw_instance - is only returning rects that have to be drawn
+        draw_instance: function(instance) {
+            const starting_token = this.tokens.find(token => token.id === instance.start_token)
+            const end_token = this.tokens.find(token => token.id === instance.end_token)
             if (starting_token.id === end_token.id) {
                 const rect = {
-                    x: this.tokens[label.start_token].start_x,
-                    y: this.lines[this.tokens[label.start_token].line].y + 3,
+                    x: this.tokens[instance.start_token].start_x,
+                    y: this.lines[this.tokens[instance.start_token].line].y + 3,
                     line: starting_token.line,
-                    width: this.tokens[label.start_token].width
+                    width: this.tokens[instance.start_token].width
                 }
                 return [rect]
             }
@@ -241,19 +241,19 @@ export default Vue.extend({
             if (starting_token.line === end_token.line) {
                 if (starting_token.id < end_token.id) {
                     const rect = {
-                        x: this.tokens[label.start_token].start_x,
-                        y: this.lines[this.tokens[label.start_token].line].y + 3,
+                        x: this.tokens[instance.start_token].start_x,
+                        y: this.lines[this.tokens[instance.start_token].line].y + 3,
                         line: starting_token.line,
-                        width: this.tokens[label.end_token].start_x + this.tokens[label.end_token].width - this.tokens[label.start_token].start_x
+                        width: this.tokens[instance.end_token].start_x + this.tokens[instance.end_token].width - this.tokens[instance.start_token].start_x
                     }
     
                     return [rect]
                 } else {
                     const rect = {
-                        x: this.tokens[label.end_token].start_x,
-                        y: this.lines[this.tokens[label.end_token].line].y + 3,
+                        x: this.tokens[instance.end_token].start_x,
+                        y: this.lines[this.tokens[instance.end_token].line].y + 3,
                         line: starting_token.line,
-                        width: this.tokens[label.start_token].start_x + this.tokens[label.start_token].width - this.tokens[label.end_token].start_x
+                        width: this.tokens[instance.start_token].start_x + this.tokens[instance.start_token].width - this.tokens[instance.end_token].start_x
                     }
     
                     return [rect]
@@ -270,17 +270,17 @@ export default Vue.extend({
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
-                                width: this.tokens[label.start_token].start_x + this.tokens[label.start_token].width - first_token_in_the_line.start_x
+                                width: this.tokens[instance.start_token].start_x + this.tokens[instance.start_token].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
                         }
                         else if (i === end_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
                             const rect = {
-                                x: this.tokens[label.end_token].start_x,
-                                y: this.lines[this.tokens[label.end_token].line].y + 3,
+                                x: this.tokens[instance.end_token].start_x,
+                                y: this.lines[this.tokens[instance.end_token].line].y + 3,
                                 line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[label.end_token].start_x
+                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[instance.end_token].start_x
                             }
                             rects.push(rect)
                         }
@@ -303,10 +303,10 @@ export default Vue.extend({
                         if (i === starting_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
                             const rect = {
-                                x: this.tokens[label.start_token].start_x,
-                                y: this.lines[this.tokens[label.start_token].line].y + 3,
+                                x: this.tokens[instance.start_token].start_x,
+                                y: this.lines[this.tokens[instance.start_token].line].y + 3,
                                 line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[label.start_token].start_x
+                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - this.tokens[instance.start_token].start_x
                             }
                             rects.push(rect)
                         }
@@ -316,7 +316,7 @@ export default Vue.extend({
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
-                                width: this.tokens[label.end_token].start_x + this.tokens[label.end_token].width - first_token_in_the_line.start_x
+                                width: this.tokens[instance.end_token].start_x + this.tokens[instance.end_token].width - first_token_in_the_line.start_x
                             }
                             rects.push(rect)
                         }
@@ -336,9 +336,9 @@ export default Vue.extend({
                 }
             }
             const trial_rect = {
-                x: this.tokens[label.start_token].start_x,
-                y: this.lines[this.tokens[label.start_token].line].y + 3,
-                width: this.tokens[label.start_token].width
+                x: this.tokens[instance.start_token].start_x,
+                y: this.lines[this.tokens[instance.start_token].line].y + 3,
+                width: this.tokens[instance.start_token].width
             }
             return [trial_rect]
         }
