@@ -173,6 +173,9 @@ class Instance(Base):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
+    # Derived from the InstanceRelation table
+    instance_relations_cache = Column(MutableDict.as_mutable(JSONB))
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
