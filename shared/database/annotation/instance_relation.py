@@ -24,10 +24,10 @@ class InstanceRelation(Base):
     type = Column(String())
 
     from_instance_id =  Column(Integer, ForeignKey('instance.id'))
-    from_instance = relationship("Member", foreign_keys = [from_instance_id])
+    from_instance = relationship("Instance", foreign_keys = [from_instance_id])
 
     to_instance_id =  Column(Integer, ForeignKey('instance.id'))
-    to_instance = relationship("Member", foreign_keys = [from_instance_id])
+    to_instance = relationship("Instance", foreign_keys = [to_instance_id])
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -42,8 +42,8 @@ class InstanceRelation(Base):
 
         return {
             'id': self.id,
-            'created_time': self.created_time,
-            'last_updated_time': self.last_updated_time,
+            'created_time': self.time_created,
+            'last_updated_time': self.time_updated,
             'type': self.type,
             'from_instance_id': self.from_instance_id,
             'to_instance_id': self.to_instance_id,

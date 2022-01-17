@@ -1487,3 +1487,25 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(instance_list_result), 2)
         self.assertEqual(len(ann_update2.new_added_instances), 0)
         self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
+
+    def test_add_new_relation(self):
+        """
+            Tests adding a new relation to an instance.
+        :return:
+        """
+
+    def test_remove_relation(self):
+        """
+            Tests removing a relation from an instance
+        :return:
+        """
+
+    def test_update_existing_relations(self):
+        """
+            Tests updating all the relations from an existing instance when it gets changed.
+            Example:
+                - I create a relation between instance A => B
+                - The is means: A.relations = [B]
+                - If I then move B, I have to update all Instances who have instance B in their relations.
+        :return:
+        """

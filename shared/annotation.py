@@ -1047,7 +1047,8 @@ class Annotation_Update():
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
-                pause_object = input['pause_object']
+                pause_object = input['pause_object'],
+                relations_list = input['relations_list']
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1147,6 +1148,12 @@ class Annotation_Update():
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
 
+    def create_instance_relations(self, relations_list):
+        """
+            Creates Instance relations based on the list given
+        :return:
+        """
+
     def update_instance(self,
                         type: str,
                         x_min: int,
@@ -1197,7 +1204,8 @@ class Annotation_Update():
                         hash_instances = True,
                         overwrite_existing_instances = True,
                         validate_label_file = True,
-                        pause_object = None):
+                        pause_object = None,
+                        relations_list = None):
         """
         Assumes a "system" level context
 
@@ -1295,6 +1303,7 @@ class Annotation_Update():
                 setattr(self.instance, key, value)
         else:
             self.instance = Instance(**instance_attrs)
+            self.create_instance_relations(relations_list = relations_list)
 
         self.instance_limits(validate_label_file = validate_label_file)
 
