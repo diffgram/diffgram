@@ -10,13 +10,13 @@
         <g v-if="rendering" transform="translate(0, 23.5)">
             <text 
                 v-for="(word, index) in initial_words_measures"
-                :key="word"
+                :key="word.value"
                 :ref="`word_${index}`"
                 x="40" 
                 y="5" 
                 fill="white" 
                 text-anchor="middle">
-                    {{ word }}
+                    {{ word.value }}
             </text>
         </g>
         <g v-else>
@@ -90,6 +90,7 @@
 
 <script>
 import Vue from "vue";
+import Tokenizer from "wink-tokenizer"
 
 export default Vue.extend({
     name: "text_annotation_core",
@@ -123,7 +124,7 @@ export default Vue.extend({
         }
     },
     mounted() {
-        this.initial_words_measures = this.text.split(' ')
+        this.initial_words_measures = Tokenizer().tokenize(this.text)
         setTimeout(() => this.initialize_token_render(), 1000)
     },
     computed: {
@@ -175,14 +176,15 @@ export default Vue.extend({
                 }
 
                 const token = {
-                    word,
                     id: index,
+                    word: word.value,
+                    tag: word.tag,
                     width: current_token_width,
-                    start_x: token_x_position,
+                    start_x: word.tag === 'word' ? token_x_position : token_x_position - 5,
                     line: this.lines.length - 1
                 }
                 tokens.push(token)
-                token_x_position = token_x_position + current_token_width + 5
+                token_x_position = word.tag === 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
             })
 
             this.tokens = tokens
