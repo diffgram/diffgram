@@ -42,6 +42,7 @@ class DataToolsGCP:
         input: 'Input',
         blob_path: str,
         content_type: str = None,
+        batch: 'InputBatch' = None
     ):
         """
         Create an upload session url where the user can upload a file to be stored
