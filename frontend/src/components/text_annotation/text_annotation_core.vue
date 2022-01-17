@@ -20,6 +20,25 @@
             </text>
         </g>
         <g v-else>
+            <g
+                v-if="relation_drawing"
+            >
+                <circle 
+                    :cx="render_drawing_arrow.marker.x" 
+                    :cy="render_drawing_arrow.marker.y" 
+                    :fill="current_label.color"
+                    r="3" 
+                />
+                <path
+                    :stroke="current_label.color" 
+                    :d="render_drawing_arrow.path" 
+                    fill="transparent"
+                />
+                <path 
+                    :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
+                    :fill="current_label.color"
+                />
+            </g>
             <text 
                 v-for="instance in instances"
                 :key="`instance_${instance.id}`"
@@ -27,6 +46,7 @@
                 :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
                 :fill="hover_instance && hover_instance.id === instance.id ? 'red' : current_label.color"
                 @mouseenter="() => on_instance_hover(instance.id)"
+                @mousedown="() => on_start_draw_relation(instance.id)"
                 @mouseleave="on_instance_stop_hover"
                 style="font-size: 10px; cursor: pointer"
             >
@@ -84,6 +104,7 @@ export default Vue.extend({
                 color: "blue"
             },
             rendering: true,
+            relation_drawing: false,
             initial_words_measures: [],
             lines: [],
             tokens: [],
@@ -92,6 +113,7 @@ export default Vue.extend({
             hover_instance: null,
             //Helpers
             instance_in_progress: null,
+            path: {},
             //Render constants
             additional_line_space: 20
         }
@@ -115,6 +137,20 @@ export default Vue.extend({
             })
             this.find_intersections(rects_to_draw)
             return rects_to_draw
+        },
+        render_drawing_arrow: function() {
+            const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
+            return { 
+                marker: {
+                    x,
+                    y
+                },
+                arrow: {
+                    x: this.path.x,
+                    y: this.path.y
+                },
+                path: `M ${x} ${y} Q ${this.path.x} ${this.path.y} ${this.path.x} ${this.path.y}`
+             }
         }
     },
     methods: {
@@ -147,6 +183,33 @@ export default Vue.extend({
 
             this.tokens = tokens
             this.rendering = false
+        },
+        // function to draw relations between instances
+        on_start_draw_relation: function(instance_id) {
+            if (!this.relation_drawing) {
+                this.relation_drawing = true
+                this.instance_in_progress = {
+                    id: this.instances.length,
+                    type: "relation",
+                    start_instance: instance_id,
+                    label_id: this.current_label.id,
+                    level: 0
+                }
+                window.addEventListener('mousemove', this.draw_relation_listener)
+                return
+            }
+
+            this.relation_drawing = false;
+            this.instance_in_progress.end_instance = instance_id;
+            this.instance_in_progress = null;
+            this.path = {};
+            window.removeEventListener('mousemove', this.draw_relation_listener)
+        },
+        draw_relation_listener: function(e) {
+            this.path = {
+                x: e.clientX,
+                y: e.clientY
+            }
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
