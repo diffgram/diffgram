@@ -258,7 +258,13 @@ export default Vue.extend({
                     if (index === comp_index) return
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
-                        if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
+                        if (rect.width === comp_rect.width) {
+                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            else {
+                                return rect.y = rect.y - this.additional_line_space
+                            }
+                        }
+                        if (rect.width > comp_rect.width) return rect.y = rect.y - this.additional_line_space
                         comp_rect.y = comp_rect.y - this.additional_line_space
                         this.find_intersections(rects_to_draw)
                     }
@@ -269,7 +275,13 @@ export default Vue.extend({
                     if (index === comp_index) return
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
-                        if (rect.width >= comp_rect.width) return rect.y = rect.y - this.additional_line_space
+                        if (rect.width === comp_rect.width) {
+                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            else {
+                                return rect.y = rect.y - this.additional_line_space
+                            }
+                        }
+                        if (rect.width > comp_rect.width) return rect.y = rect.y - this.additional_line_space
                         comp_rect.y = comp_rect.y - this.additional_line_space
                         this.find_intersections(rects_to_draw)
                     }
@@ -307,7 +319,6 @@ export default Vue.extend({
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {
-                console.log("Drawing relation")
                 const start_instance = this.instances.find(find_instance => find_instance.id === instance.start_instance)
                 starting_token = this.tokens.find(token => token.id === start_instance.start_token)
                 const end_instance = this.instances.find(find_instance => find_instance.id === instance.end_instance)
