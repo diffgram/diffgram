@@ -14,10 +14,20 @@
             v-if="
               $store.state.job.current.id == this.job_id && edit_name != true
             "
-            class="font-weight-normal pl-2"
+            class="font-weight-normal pl-2 d-flex align-center"
             @dblclick="edit_name = true"
           >
             {{ job_name }}
+            <tooltip_button
+              v-if="edit_name == false"
+              tooltip_message="Edit Name"
+              tooltip_direction="bottom"
+              @click="edit_name = true"
+              icon="edit"
+              :icon_style="true"
+              color="primary"
+            >
+            </tooltip_button>
           </div>
 
           <v-text-field
@@ -27,7 +37,8 @@
             @keyup.enter="(edit_name = false), api_update_job()"
             solo
             flat
-            style="font-size: 22pt"
+            style="font-size: 22pt; border: 1px solid grey; height: 55px"
+            color="blue"
           >
           </v-text-field>
 
@@ -71,7 +82,7 @@
       </v-btn>
     </div>
 
-    <v-tabs v-model="tab" color="primary">
+    <v-tabs v-model="tab" color="primary" style="height: 100%">
       <v-tab v-for="item in items" :key="item.text">
         <v-icon left>{{ item.icon }}</v-icon>
         {{ item.text }}
@@ -196,16 +207,7 @@
           <!-- Settings -->
           <v_info_multiple :info="info"> </v_info_multiple>
 
-          <tooltip_button
-            v-if="edit_name == false"
-            tooltip_message="Edit Name"
-            tooltip_direction="bottom"
-            @click="edit_name = true"
-            icon="edit"
-            :icon_style="true"
-            color="primary"
-          >
-          </tooltip_button>
+
 
           <v-layout>
             <v-spacer> </v-spacer>
@@ -234,16 +236,11 @@
           >
           </v_credential_list>
 
-          <v-card>
-            <v-container>
-              <h2>Actions</h2>
-              <v_job_cancel
-                v-if="$store.state.job.current"
-                :job="$store.state.job.current"
-              >
-              </v_job_cancel>
-            </v-container>
-          </v-card>
+          <v_job_cancel_actions_button_container
+            v-if="$store.state.job.current"
+            :job="$store.state.job.current"
+          >
+          </v_job_cancel_actions_button_container>
         </v-tab-item>
       </v-tabs-items>
     </v-tabs>
@@ -252,6 +249,7 @@
 
 <script lang="ts">
 import v_job_detail_builder from "./job_detail_builder";
+import v_job_cancel_actions_button_container from "./job_cancel_actions_button_container";
 import v_job_detail_trainer from "./job_detail_trainer";
 import task_template_discussions from "../../discussions/task_template_discussions";
 import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
@@ -267,6 +265,7 @@ export default Vue.extend({
   props: ["job_id"],
   components: {
     v_job_detail_builder,
+    v_job_cancel_actions_button_container,
     task_template_discussions,
     v_job_detail_trainer,
     job_pipeline_mxgraph,
@@ -423,5 +422,6 @@ export default Vue.extend({
 .job-detail-container {
   padding: 0 10rem;
   margin-top: 2rem;
+  height: 100%;
 }
 </style>
