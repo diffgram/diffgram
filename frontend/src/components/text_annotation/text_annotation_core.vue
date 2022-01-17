@@ -44,7 +44,7 @@
                 :key="`instance_${instance.id}`"
                 :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
                 :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
-                :fill="hover_instance && hover_instance.id === instance.id ? 'red' : current_label.color"
+                :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.start_instance === instance.id || hover_instance.end_instance === instance.id) ? 'red' : current_label.color"
                 @mouseenter="() => on_instance_hover(instance.id)"
                 @mousedown="() => on_start_draw_relation(instance.id)"
                 @mouseleave="on_instance_stop_hover"
@@ -55,7 +55,7 @@
             <rect 
                 v-for="rect in render_rects"
                 :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                :fill="hover_instance && hover_instance.id === rect.instance_id ? 'red' : current_label.color"
+                :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.start_instance === rect.instance_id || hover_instance.end_instance === rect.instance_id) ? 'red' : current_label.color"
                 :x="rect.x"
                 :y="rect.y"
                 :width="rect.width"
@@ -75,7 +75,11 @@
                     @mouseup="() => on_finish_draw_instance(token)"
                     :key="`token_${index}`"
                     :x="token.start_x"
-                    :fill="hover_instance && ((hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) || (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)) ? 'red' : 'black'"
+                    :fill="hover_instance && 
+                        (
+                            (hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) || 
+                            (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)
+                        ) ? 'red' : 'black'"
                 >
                     {{ token.word }}
                 </text>
@@ -214,7 +218,8 @@ export default Vue.extend({
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
-            this.hover_instance = this.instances.find(instance => instance.id === instance_id)
+            const instance = {...this.instances.find(instance => instance.id === instance_id)}
+            this.hover_instance = instance
         },
         on_instance_stop_hover: function() {
             this.hover_instance = null
