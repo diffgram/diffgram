@@ -159,6 +159,7 @@ export default Vue.extend({
         on_start_draw_instance: function(start_token) {
             this.instance_in_progress = {
                 id: this.instances.length,
+                type: "annotation",
                 start_token: start_token.id,
                 label_id: this.current_label.id,
                 level: 0
