@@ -264,7 +264,7 @@
         create_batch: async function (labels_payload) {
           try {
             this.loading_create_batch = true;
-            const chunk_size_bytes = 2 * 1024 * 1024; // 2 mb
+            const chunk_size_bytes = 6 * 1024 * 1024; // 6 mb
             // const chunk_size_bytes = 256 * 1024 // 256KB;
             const str = JSON.stringify(labels_payload);
             const bytes = new TextEncoder().encode(str);
@@ -272,7 +272,7 @@
               type: "application/json;charset=utf-8"
             });
             const total_size = blob.size;
-
+            console.log('total size', total_size, chunk_size_bytes)
             if (total_size < chunk_size_bytes){
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
                 pre_labeled_data: {...labels_payload}

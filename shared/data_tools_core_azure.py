@@ -30,7 +30,8 @@ class DataToolsAzure:
         self,
         input: 'Input',
         blob_path: str,
-        content_type: str = None
+        content_type: str = None,
+        batch: 'InputBatch' = None
     ):
         """
           Azure has no concept of creating a resumable session, so for now this does nothing.
