@@ -108,6 +108,9 @@ import Vue from "vue";
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
+import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
+import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
+import { TextAnnotationInstance } from "../vue_canvas/instances/TextInstance"
 
 export default Vue.extend({
     name: "text_annotation_core",
@@ -135,6 +138,7 @@ export default Vue.extend({
             lines: [],
             tokens: [],
             instances: [],
+            instance_list: [],
             //effects
             hover_instance: null,
             //Helpers
@@ -142,10 +146,13 @@ export default Vue.extend({
             path: {},
             //Render constants
             additional_line_space: 20,
-            show_default_navigation: true
+            show_default_navigation: true,
+            // Command
+            command_manager: undefined,
         }
     },
     mounted() {
+        this.command_manager = new CommandManagerAnnotationCore()
         this.initial_words_measures = Tokenizer().tokenize(this.text)
         setTimeout(() => this.initialize_token_render(), 1000)
     },
@@ -268,6 +275,16 @@ export default Vue.extend({
                 )
             if (!instance_exists) {
                 this.instances.push(this.instance_in_progress)
+                const created_instance = new TextAnnotationInstance();
+                created_instance.create_instance(
+                    this.instance_list.length,
+                    this.instance_in_progress.starting_token, 
+                    this.instance_in_progress.end_token,
+                    this.current_label
+                )
+                this.instance_list.push(created_instance)
+                const command = new CreateInstanceCommand(created_instance, this)
+                this.command_manager.executeCommand(command)
             }
             this.instance_in_progress = null
             if (window.getSelection) {

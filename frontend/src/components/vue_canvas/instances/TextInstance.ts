@@ -4,9 +4,14 @@ import { v4 as uuidv4 } from 'uuid'
 export class TextAnnotationInstance extends Instance {
     public start_token: string = null;
     public end_token: string = null;
+    public initialized: boolean = true;
 
-    constructor(start_token, end_token, label_file) {
+    constructor() {
         super();
+    }
+
+    public create_instance(id, start_token, end_token, label_file): void {
+        this.id = id;
         this.type = "text_annotation";
         this.creation_ref_id = uuidv4();
         this.start_token = start_token;
