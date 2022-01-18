@@ -1,4 +1,6 @@
 <template>
+<div style="display: flex; flex-direction: column">
+    <text_toolbar />
     <svg 
         ref="initial_svg_element" 
         version="1.1" 
@@ -86,14 +88,19 @@
             </g>
         </g>
     </svg>
+</div>
 </template>
 
 <script>
 import Vue from "vue";
 import Tokenizer from "wink-tokenizer"
+import text_toolbar from "./text_toolbar.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
+    components: {
+        text_toolbar
+    },
     props: {
         file: {},
         text: {
