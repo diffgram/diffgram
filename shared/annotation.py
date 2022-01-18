@@ -41,7 +41,7 @@ class Annotation_Update():
     session: Any
     file: Any  # Video or Image file.
     instance_list_new: list = None  # New from external
-    instance: object = None  # New from external
+    instance: Instance = None  # New from external
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
@@ -1410,10 +1410,21 @@ class Annotation_Update():
             Creates instances relations for the given
         :return:
         """
+        result = []
         for relation in relations_list:
-            InstanceRelation.new(
-
+            relation = InstanceRelation.new(
+                from_instance_id = relation.get('from_instance_id'),
+                to_instance_id = relation.get('to_instance_id'),
+                type = relation.get('type'),
+                member_created_id = self.member.id
             )
+            serialized_relation = relation.serialize()
+            result.append(serialized_relation)
+
+        self.instance.set_cache_by_key(
+            'relations_list',
+            result
+        )
 
     def update_sequence_id_in_cache_list(self, instance):
         """
