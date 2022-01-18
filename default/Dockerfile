@@ -6,7 +6,7 @@ LABEL python_version=python3.7.2
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
 RUN for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done
 RUN apt-get update
-RUN apt-get install -y libpq-dev python3.7-dev build-essential postgresql postgresql-contrib
+RUN apt-get install -y libpq-dev python3-dev build-essential postgresql postgresql-contrib
 ADD default/requirements.txt /app/
 RUN pip3 install --upgrade pip
 RUN pip3 install -r /app/requirements.txt
