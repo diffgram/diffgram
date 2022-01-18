@@ -62,6 +62,7 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+    updated_relations: list = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -329,7 +330,14 @@ class Annotation_Update():
         {'pause_object': {
             'kind': bool,
             'required': False
-        }}
+        }},
+        {
+            'relations_list': {
+                'kind': list,
+                'default': [],
+                'required': False
+            }
+        }
     ])
 
     # If we want this.
@@ -499,6 +507,8 @@ class Annotation_Update():
         self.update_file_hash()
 
         self.left_over_instance_deletion()
+
+        self.determine_updated_relations()
 
         self.instance_list_cache_update()
 
@@ -1425,6 +1435,23 @@ class Annotation_Update():
             'relations_list',
             result
         )
+
+    def determine_updated_relations(self):
+        """
+
+            :return:
+        """
+        added_instances = self.new_added_instances
+
+        id_list_to_update = {}
+        for instance in added_instances:
+            if instance.previous_id:
+                id_list_to_update[instance.previous_id] = instance.id
+
+        updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session, id_list_to_update = id_list_to_update)
+        updated_rels_serialized = [rel.serialize() for rel in updated_rels]
+        self.updated_relations = updated_rels_serialized
+        return self.updated_relations
 
     def update_sequence_id_in_cache_list(self, instance):
         """

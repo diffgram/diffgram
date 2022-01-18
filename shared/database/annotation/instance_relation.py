@@ -7,6 +7,7 @@ from sqlalchemy.schema import Index
 from shared.database.model.model import Model
 from shared.database.model.model_run import ModelRun
 from shared.shared_logger import get_shared_logger
+
 logger = get_shared_logger()
 
 
@@ -23,10 +24,10 @@ class InstanceRelation(Base):
 
     type = Column(String())
 
-    from_instance_id =  Column(Integer, ForeignKey('instance.id'))
+    from_instance_id = Column(Integer, ForeignKey('instance.id'))
     from_instance = relationship("Instance", foreign_keys = [from_instance_id])
 
-    to_instance_id =  Column(Integer, ForeignKey('instance.id'))
+    to_instance_id = Column(Integer, ForeignKey('instance.id'))
     to_instance = relationship("Instance", foreign_keys = [to_instance_id])
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
@@ -62,6 +63,23 @@ class InstanceRelation(Base):
 
         return relation
 
+    def update_relations_to_new_instance_version(self, session, id_list_to_update: dict):
+        """
+
+        :param session:
+        :param id_list_to_update: List of dicts with the shape {'old_id': 'new_id'}
+        :return: The updated relations objects.
+        """
+        old_id_list = id_list_to_update.keys()
+        relations_to_update = session.query(InstanceRelation).filter(
+            InstanceRelation.to_instance_id.in_(old_id_list)
+        )
+
+        for rel in relations_to_update:
+            old_id = rel.to_instance_id
+            rel.to_instance_id = id_list_to_update[old_id]
+            session.add(rel)
+        return relations_to_update
 
     def serialize(self):
 
@@ -75,4 +93,3 @@ class InstanceRelation(Base):
             'member_created_id': self.member_created_id,
 
         }
-
