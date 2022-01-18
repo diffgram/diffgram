@@ -1493,6 +1493,52 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             Tests adding a new relation to an instance.
         :return:
         """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+
+        inst1 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        inst2 = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        instance_list = [inst1, inst2]
+
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
 
     def test_remove_relation(self):
         """
