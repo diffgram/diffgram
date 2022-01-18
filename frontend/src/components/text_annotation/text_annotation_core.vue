@@ -1,93 +1,105 @@
 <template>
 <div style="display: flex; flex-direction: column">
-    <text_toolbar />
-    <svg 
-        ref="initial_svg_element" 
-        version="1.1" 
-        xmlns="http://www.w3.org/2000/svg" 
-        direction="ltr" 
-        id="svg0:60" 
-        width="95%" 
-        style="height: 1000.5px">
-        <g v-if="rendering" transform="translate(0, 23.5)">
-            <text 
-                v-for="(word, index) in initial_words_measures"
-                :key="word.value"
-                :ref="`word_${index}`"
-                x="40" 
-                y="5" 
-                fill="white" 
-                text-anchor="middle">
-                    {{ word.value }}
-            </text>
-        </g>
-        <g v-else>
-            <g
-                v-if="relation_drawing"
-            >
-                <circle 
-                    :cx="render_drawing_arrow.marker.x" 
-                    :cy="render_drawing_arrow.marker.y" 
-                    :fill="current_label.color"
-                    r="3" 
-                />
-                <path
-                    :stroke="current_label.color" 
-                    :d="render_drawing_arrow.path" 
-                    fill="transparent"
-                />
-                <path 
-                    :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
-                    :fill="current_label.color"
-                />
-            </g>
-            <text 
-                v-for="instance in instances"
-                :key="`instance_${instance.id}`"
-                :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
-                :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
-                :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.start_instance === instance.id || hover_instance.end_instance === instance.id) ? 'red' : current_label.color"
-                @mouseenter="() => on_instance_hover(instance.id)"
-                @mousedown="() => on_start_draw_relation(instance.id)"
-                @mouseleave="on_instance_stop_hover"
-                style="font-size: 10px; cursor: pointer"
-            >
-                {{ current_label.text }}
-            </text>
-            <rect 
-                v-for="rect in render_rects"
-                :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.start_instance === rect.instance_id || hover_instance.end_instance === rect.instance_id) ? 'red' : current_label.color"
-                :x="rect.x"
-                :y="rect.y"
-                :width="rect.width"
-                @mouseenter="() => on_instance_hover(rect.instance_id)"
-                @mouseleave="on_instance_stop_hover"
-                :height="rect.instance_type === 'annotation' ? 3 : 1"
-                style="cursor: pointer"
-            />
-            <g 
-                v-for="(line, index) in lines"
-                :transform="`translate(0, ${25 + line.y})`"
-                :key="`line_${index}`"
-            >
+    <div style="position: relative">
+      <main_menu
+        :height="`${show_default_navigation ? '100px' : '50px'}`"
+        :show_default_navigation="show_default_navigation"
+      >
+        <template slot="second_row">
+            <text_toolbar />
+        </template>
+      </main_menu>
+    </div>
+    <div style="display: flex; flex-direction: row">
+        <text_sidebar />
+        <svg 
+            ref="initial_svg_element" 
+            version="1.1" 
+            xmlns="http://www.w3.org/2000/svg" 
+            direction="ltr" 
+            id="svg0:60" 
+            width="90%" 
+            style="height: 1000.5px">
+            <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
-                    v-for="(token, index) in tokens.filter(token => token.line === index)"
-                    @mousedown="() => on_start_draw_instance(token)"
-                    @mouseup="() => on_finish_draw_instance(token)"
-                    :key="`token_${index}`"
-                    :x="token.start_x"
-                    :fill="hover_instance && 
-                        (
-                            (hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) || 
-                            (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)
-                        ) ? 'red' : 'black'"
-                >
-                    {{ token.word }}
+                    v-for="(word, index) in initial_words_measures"
+                    :key="word.value"
+                    :ref="`word_${index}`"
+                    x="40" 
+                    y="5" 
+                    fill="white" 
+                    text-anchor="middle">
+                        {{ word.value }}
                 </text>
             </g>
-        </g>
-    </svg>
+            <g v-else>
+                <g
+                    v-if="relation_drawing"
+                >
+                    <circle 
+                        :cx="render_drawing_arrow.marker.x" 
+                        :cy="render_drawing_arrow.marker.y" 
+                        :fill="current_label.color"
+                        r="3" 
+                    />
+                    <path
+                        :stroke="current_label.color" 
+                        :d="render_drawing_arrow.path" 
+                        fill="transparent"
+                    />
+                    <path 
+                        :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
+                        :fill="current_label.color"
+                    />
+                </g>
+                <text 
+                    v-for="instance in instances"
+                    :key="`instance_${instance.id}`"
+                    :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
+                    :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.start_instance === instance.id || hover_instance.end_instance === instance.id) ? 'red' : current_label.color"
+                    @mouseenter="() => on_instance_hover(instance.id)"
+                    @mousedown="() => on_start_draw_relation(instance.id)"
+                    @mouseleave="on_instance_stop_hover"
+                    style="font-size: 10px; cursor: pointer"
+                >
+                    {{ current_label.text }}
+                </text>
+                <rect 
+                    v-for="rect in render_rects"
+                    :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
+                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.start_instance === rect.instance_id || hover_instance.end_instance === rect.instance_id) ? 'red' : current_label.color"
+                    :x="rect.x"
+                    :y="rect.y"
+                    :width="rect.width"
+                    @mouseenter="() => on_instance_hover(rect.instance_id)"
+                    @mouseleave="on_instance_stop_hover"
+                    :height="rect.instance_type === 'annotation' ? 3 : 1"
+                    style="cursor: pointer"
+                />
+                <g 
+                    v-for="(line, index) in lines"
+                    :transform="`translate(0, ${25 + line.y})`"
+                    :key="`line_${index}`"
+                >
+                    <text 
+                        v-for="(token, index) in tokens.filter(token => token.line === index)"
+                        @mousedown="() => on_start_draw_instance(token)"
+                        @mouseup="() => on_finish_draw_instance(token)"
+                        :key="`token_${index}`"
+                        :x="token.start_x"
+                        :fill="hover_instance && 
+                            (
+                                (hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) || 
+                                (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)
+                            ) ? 'red' : 'black'"
+                    >
+                        {{ token.word }}
+                    </text>
+                </g>
+            </g>
+        </svg>
+    </div>
 </div>
 </template>
 
@@ -95,11 +107,13 @@
 import Vue from "vue";
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
+import text_sidebar from "./text_sidebar.vue"
 
 export default Vue.extend({
     name: "text_annotation_core",
     components: {
-        text_toolbar
+        text_toolbar,
+        text_sidebar
     },
     props: {
         file: {},
@@ -127,7 +141,8 @@ export default Vue.extend({
             instance_in_progress: null,
             path: {},
             //Render constants
-            additional_line_space: 20
+            additional_line_space: 20,
+            show_default_navigation: true
         }
     },
     mounted() {
