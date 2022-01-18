@@ -10,7 +10,7 @@ from shared.shared_logger import get_shared_logger
 logger = get_shared_logger()
 
 
-class Instance(Base):
+class Instance(Base, Caching):
     """
     An individual annotation instance
 
@@ -173,8 +173,8 @@ class Instance(Base):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    # Derived from the InstanceRelation table
-    instance_relations_cache = Column(MutableDict.as_mutable(JSONB))
+    # Used to store data from InstanceRelation table
+    cache_dict = Column(MutableDict.as_mutable(JSONB))
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])

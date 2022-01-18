@@ -43,3 +43,19 @@ class TestInstanceRelation(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result['id'], relation.id)
         self.assertEqual(result['from_instance_id'], instance1.id)
         self.assertEqual(result['to_instance_id'], instance2.id)
+
+    def test_new(self):
+        instance1 = data_mocking.create_instance({'root_id': None}, self.session)
+        instance2 = data_mocking.create_instance({'root_id': None}, self.session)
+        rel = InstanceRelation.new(
+            session = self.session,
+            from_instance_id = instance1.id,
+            to_instance_id = instance2.id,
+            member_created_id = self.member.id,
+            member_updated_id = self.member.id
+        )
+
+        self.assertEqual(rel.from_instance_id, instance1.id)
+        self.assertEqual(rel.to_instance_id, instance2.id)
+        self.assertEqual(rel.member_created_id, self.member.id)
+        self.assertEqual(rel.member_updated_id, self.member.id)

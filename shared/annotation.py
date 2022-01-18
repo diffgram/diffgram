@@ -18,6 +18,7 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
+from shared.database.annotation.instance_relation import InstanceRelation
 from shared.database.label import Label
 from shared.helpers.permissions import LoggedIn, defaultRedirect, get_gcs_service_account
 from shared.helpers.permissions import getUserID
@@ -1148,11 +1149,19 @@ class Annotation_Update():
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
 
-    def create_instance_relations(self, relations_list):
+    def set_instance_relations_cache(self, relations_list):
         """
-            Creates Instance relations based on the list given
+            Sets the cache dict of the self.instance to be the given relations_list.
         :return:
         """
+
+        if not self.instance:
+            return
+
+        if not self.instance.cache_dict:
+            self.instance.cache_dict = {}
+
+        self.instance.cache_dict['relations_list'] = relations_list
 
     def update_instance(self,
                         type: str,
@@ -1303,7 +1312,7 @@ class Annotation_Update():
                 setattr(self.instance, key, value)
         else:
             self.instance = Instance(**instance_attrs)
-            self.create_instance_relations(relations_list = relations_list)
+            self.set_instance_relations_cache(relations_list = relations_list)
 
         self.instance_limits(validate_label_file = validate_label_file)
 
@@ -1388,12 +1397,23 @@ class Annotation_Update():
 
         sequence = self.sequence_update(instance = self.instance)
 
+        self.create_instance_relations(relations_list)
         if sequence:
             if not self.instance.soft_delete:
                 sequence.add_keyframe_to_cache(self.session, self.instance)
                 self.session.add(sequence)
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
+
+    def create_instance_relations(self, relations_list):
+        """
+            Creates instances relations for the given
+        :return:
+        """
+        for relation in relations_list:
+            InstanceRelation.new(
+
+            )
 
     def update_sequence_id_in_cache_list(self, instance):
         """

@@ -29,9 +29,9 @@ def upgrade():
 
                     )
 
-    op.add_column('instance', sa.Column('instance_relations_cache', sa.dialects.postgresql.JSONB, default = []))
+    op.add_column('instance', sa.Column('cache_dict', sa.dialects.postgresql.JSONB, default = []))
 
 
 def downgrade():
-    op.drop_column('instance', 'instance_relations_cache')
+    op.drop_column('instance', 'cache_dict')
     op.drop_table('instance_relation')

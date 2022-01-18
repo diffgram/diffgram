@@ -38,6 +38,31 @@ class InstanceRelation(Base):
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
+    def new(self,
+            session,
+            from_instance_id,
+            to_instance_id,
+            type = 'default',
+            member_created_id = None,
+            member_updated_id = None,
+            add_to_session = True,
+            flush_session = True):
+
+        relation = InstanceRelation(
+            from_instance_id = from_instance_id,
+            to_instance_id = to_instance_id,
+            type = type,
+            member_created_id = member_created_id,
+            member_updated_id = member_updated_id
+        )
+        if add_to_session:
+            session.add(relation)
+        if flush_session:
+            session.flush()
+
+        return relation
+
+
     def serialize(self):
 
         return {
