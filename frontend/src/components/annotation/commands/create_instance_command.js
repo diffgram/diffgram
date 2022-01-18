@@ -1,3 +1,5 @@
+import { TextAnnotationInstance } from "../../vue_canvas/instances/TextInstance";
+
 export class CreateInstanceCommand {
   _copyInstance(instance) {
     if (instance.initialized != true) {
@@ -37,6 +39,12 @@ export class CreateInstanceCommand {
       );
       return initializedInstance;
     }
+    if (instance.type == "text_annotation") {
+      let newInstance = instance.get_instance_data();
+      let initializedInstance = new TextAnnotationInstance()
+      initializedInstance.populate_from_instance_obj(newInstance)
+      return initializedInstance;
+    }
   }
 
   constructor(instance, ann_core_ctx) {
@@ -59,7 +67,7 @@ export class CreateInstanceCommand {
       const existing_instance = this.ann_core_ctx.instance_list.filter(
         instance => instance.creation_ref_id === this.instance.creation_ref_id
       );
-      if (existing_instance.length === 0) {
+      if (existing_instance.length === 0 && this.instance.type !== "text_annoattaion") {
         this.instance.soft_delete = false;
         this.ann_core_ctx.push_instance_to_instance_list_and_buffer(
           {
