@@ -1,5 +1,7 @@
 <template>
-    <h1>Side panel</h1>
+    <div style="width: 350px; border-right: 1px solid grey;">
+        <h1 style="width: 350px;">Side panel</h1>
+    </div>
 </template>
 
 <script lang="ts">

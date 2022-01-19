@@ -21,8 +21,8 @@
             xmlns="http://www.w3.org/2000/svg" 
             direction="ltr" 
             id="svg0:60" 
-            width="90%" 
-            style="height: 1000.5px">
+            width="100%" 
+            style="height: 1000.5px;">
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
                     v-for="(word, index) in initial_words_measures"
