@@ -60,7 +60,7 @@
                     :key="`instance_${instance.id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
                     :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.start_instance === instance.id || hover_instance.end_instance === instance.id) ? 'red' : current_label.color"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : current_label.color"
                     @mouseenter="() => on_instance_hover(instance.id)"
                     @mousedown="() => on_draw_relation(instance.id)"
                     @mouseleave="on_instance_stop_hover"
@@ -71,7 +71,7 @@
                 <rect 
                     v-for="rect in render_rects"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.start_instance === rect.instance_id || hover_instance.end_instance === rect.instance_id) ? 'red' : current_label.color"
+                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : current_label.color"
                     :x="rect.x"
                     :y="rect.y"
                     :width="rect.width"
@@ -261,7 +261,7 @@ export default Vue.extend({
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
-            const instance = {...this.instances.find(instance => instance.id === instance_id)}
+            const instance = {...this.instance_list.find(instance => instance.id === instance_id)}
             this.hover_instance = instance
         },
         on_instance_stop_hover: function() {
