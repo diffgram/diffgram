@@ -6,7 +6,9 @@
         :show_default_navigation="show_default_navigation"
       >
         <template slot="second_row">
-            <text_toolbar />
+            <text_toolbar
+              @undo="undo()"
+            />
         </template>
       </main_menu>
     </div>
@@ -53,7 +55,7 @@
                     />
                 </g>
                 <text 
-                    v-for="instance in instances"
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete)"
                     :key="`instance_${instance.id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
                     :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
@@ -74,7 +76,7 @@
                     :width="rect.width"
                     @mouseenter="() => on_instance_hover(rect.instance_id)"
                     @mouseleave="on_instance_stop_hover"
-                    :height="rect.instance_type === 'annotation' ? 3 : 1"
+                    :height="rect.instance_type === 'text_annotation' ? 3 : 1"
                     style="cursor: pointer"
                 />
                 <g 
@@ -159,13 +161,13 @@ export default Vue.extend({
     computed: {
         render_rects: function() {
             let rects_to_draw = [];
-            this.instances.map(instance => {
+            this.instance_list.filter(instance => !instance.soft_delete).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
-            this.instances.map(instance => {
+            this.instance_list.filter(instance => !instance.soft_delete).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
@@ -278,7 +280,7 @@ export default Vue.extend({
                 const created_instance = new TextAnnotationInstance();
                 created_instance.create_instance(
                     this.instance_list.length,
-                    this.instance_in_progress.starting_token, 
+                    this.instance_in_progress.start_token, 
                     this.instance_in_progress.end_token,
                     this.current_label
                 )
@@ -295,6 +297,15 @@ export default Vue.extend({
                 }
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
+            }
+        },
+        undo: function () {
+            if (!this.command_manager) {
+                return;
+            }
+            let undone = this.command_manager.undo();
+            if (undone) {
+                this.has_changed = true;
             }
         },
         // Find intersection and update level of the instance
@@ -361,7 +372,7 @@ export default Vue.extend({
         draw_instance: function(instance) {
             let starting_token;
             let end_token;
-            if (instance.type === 'annotation') {
+            if (instance.type === 'text_annotation') {
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {

@@ -30,13 +30,15 @@ export class TextAnnotationInstance extends Instance {
 
     public get_instance_data(): object {
         return {
+            id: this.id,
             type: this.type,
             selected: this.selected,
             start_token: this.start_token,
             end_token: this.end_token,
             label_file: this.label_file,
             label_file_id: this.label_file_id,
-            soft_delete: this.soft_delete
+            soft_delete: this.soft_delete,
+            creation_ref_id: this.creation_ref_id
         }
     }
 }
