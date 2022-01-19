@@ -59,6 +59,7 @@ export class CreateInstanceCommand {
       for (let i = 0; i <= this.ann_core_ctx.instance_list.length; i++) {
         const current = this.ann_core_ctx.instance_list[i];
         if (current.id === this.instance.id) {
+          current.soft_delete = false;
           this.created_instance_index = i;
           break;
         }
@@ -106,7 +107,7 @@ export class CreateInstanceCommand {
     const instance = this.ann_core_ctx.instance_list[
       this.created_instance_index
     ];
-    
+
     // We don't want to delete instances that already have an ID on backend, just soft delete them.
     instance.soft_delete = true;
     this.ann_core_ctx.instance_list.splice(

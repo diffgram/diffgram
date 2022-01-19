@@ -8,6 +8,7 @@
         <template slot="second_row">
             <text_toolbar
               @undo="undo()"
+              @redo="redo()"
             />
         </template>
       </main_menu>
@@ -305,6 +306,15 @@ export default Vue.extend({
             }
             let undone = this.command_manager.undo();
             if (undone) {
+                this.has_changed = true;
+            }
+        },
+        redo: function () {
+            if (!this.command_manager) {
+                return;
+            }
+            let redone = this.command_manager.redo();
+            if (redone) {
                 this.has_changed = true;
             }
         },
