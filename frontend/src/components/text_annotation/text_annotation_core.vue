@@ -7,8 +7,9 @@
       >
         <template slot="second_row">
             <text_toolbar
-              @undo="undo()"
-              @redo="redo()"
+                @change_label_file="change_label_file"
+                @undo="undo()"
+                @redo="redo()"
             />
         </template>
       </main_menu>
@@ -42,17 +43,17 @@
                     <circle 
                         :cx="render_drawing_arrow.marker.x" 
                         :cy="render_drawing_arrow.marker.y" 
-                        :fill="current_label.color"
+                        :fill="current_label.colour.hex"
                         r="3" 
                     />
                     <path
-                        :stroke="current_label.color" 
+                        :stroke="current_label.colour.hex" 
                         :d="render_drawing_arrow.path" 
                         fill="transparent"
                     />
                     <path 
                         :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
-                        :fill="current_label.color"
+                        :fill="current_label.colour.hex"
                     />
                 </g>
                 <text 
@@ -60,18 +61,18 @@
                     :key="`instance_${instance.id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
                     :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : current_label.color"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
                     @mouseenter="() => on_instance_hover(instance.id)"
                     @mousedown="() => on_draw_relation(instance.id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                 >
-                    {{ current_label.text }}
+                    {{ instance.label_file.label.name }}
                 </text>
                 <rect 
                     v-for="rect in render_rects"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : current_label.color"
+                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
                     :x="rect.x"
                     :y="rect.y"
                     :width="rect.width"
@@ -123,6 +124,10 @@ export default Vue.extend({
     },
     props: {
         file: {},
+        label_list: {
+            type: Array,
+            requered: true
+        },
         text: {
             type: String,
             default: `There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc. There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.`
@@ -130,11 +135,7 @@ export default Vue.extend({
     },
     data() {
         return {
-            current_label: {
-                id: 0,
-                text: "First",
-                color: "blue"
-            },
+            current_label: null,
             rendering: true,
             relation_drawing: false,
             initial_words_measures: [],
@@ -222,6 +223,9 @@ export default Vue.extend({
             this.tokens = tokens
             this.rendering = false
         },
+        change_label_file: function(event) {
+            this.current_label = event
+        },
         // function to draw relations between instances
         on_draw_relation: function(instance_id) {
             if (!this.relation_drawing) {
@@ -244,7 +248,7 @@ export default Vue.extend({
                 this.instance_list.length,
                 this.instance_in_progress.start_instance, 
                 this.instance_in_progress.end_instance,
-                this.current_label
+                {...this.current_label}
             )
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
@@ -292,7 +296,7 @@ export default Vue.extend({
                     this.instance_list.length,
                     this.instance_in_progress.start_token, 
                     this.instance_in_progress.end_token,
-                    this.current_label
+                    {...this.current_label}
                 )
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
@@ -407,7 +411,8 @@ export default Vue.extend({
                     y: this.lines[starting_token.line].y + 3,
                     line: starting_token.line,
                     width: starting_token.width,
-                    instance_type: instance.type
+                    instance_type: instance.type,
+                    color: instance.label_file.colour.hex
                 }
                 return [rect]
             }
@@ -420,7 +425,8 @@ export default Vue.extend({
                         y: this.lines[starting_token.line].y + 3,
                         line: starting_token.line,
                         width: end_token.start_x + end_token.width - starting_token.start_x,
-                        instance_type: instance.type
+                        instance_type: instance.type,
+                        color: instance.label_file.colour.hex
                     }
     
                     return [rect]
@@ -431,7 +437,8 @@ export default Vue.extend({
                         y: this.lines[end_token.line].y + 3,
                         line: starting_token.line,
                         width: starting_token.start_x + starting_token.width - end_token.start_x,
-                        instance_type: instance.type
+                        instance_type: instance.type,
+                        color: instance.label_file.colour.hex
                     }
     
                     return [rect]
@@ -450,7 +457,8 @@ export default Vue.extend({
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
                                 width: starting_token.start_x + starting_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }
@@ -462,7 +470,8 @@ export default Vue.extend({
                                 y: this.lines[end_token.line].y + 3,
                                 line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }
@@ -475,7 +484,8 @@ export default Vue.extend({
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }
@@ -492,7 +502,8 @@ export default Vue.extend({
                                 y: this.lines[starting_token.line].y + 3,
                                 line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - starting_token.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }
@@ -504,7 +515,8 @@ export default Vue.extend({
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
                                 width: end_token.start_x + end_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }
@@ -517,7 +529,8 @@ export default Vue.extend({
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
                                 width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type
+                                instance_type: instance.type,
+                                color: instance.label_file.colour.hex
                             }
                             rects.push(rect)
                         }

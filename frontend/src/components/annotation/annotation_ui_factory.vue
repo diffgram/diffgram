@@ -42,7 +42,10 @@
         </sensor_fusion_editor>
       </div>
       <div v-else-if="annotation_interface === 'text'">
-        <text_annotation_core :file="current_file" />
+        <text_annotation_core 
+          :file="current_file" 
+          :label_list="label_list"
+        />
       </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
