@@ -183,10 +183,10 @@ export default Vue.extend({
                     y
                 },
                 arrow: {
-                    x: this.path.x,
-                    y: this.path.y
+                    x: this.path.x - 350,
+                    y: this.path.y - 100
                 },
-                path: `M ${x} ${y} Q ${this.path.x} ${this.path.y} ${this.path.x} ${this.path.y}`
+                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100} ${this.path.x - 350} ${this.path.y - 100}`
              }
         }
     },
