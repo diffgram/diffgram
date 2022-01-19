@@ -1694,11 +1694,11 @@ class Process_Media():
                                                                 self.new_image.url_signed_expiry)
 
     def save_raw_text_file(self):
-
-        self.new_text_file.url_signed_expiry = int(time.time() + 2592000)  # 1 month
+        offset = 2592000
+        self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
 
         self.new_text_file.url_signed_blob_path = settings.PROJECT_TEXT_FILES_BASE_DIR + \
-                                                  str(self.project_id) + "/" + str(self.new_text_file.id)
+                                                str(self.project_id) + "/" + str(self.new_text_file.id)
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug('Uploading text file from {}'.format(self.input.temp_dir_path_and_filename))
@@ -1710,7 +1710,7 @@ class Process_Media():
         )
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
-                                                                    self.new_text_file.url_signed_expiry)
+                                                                    offset)
 
     def save_raw_image_thumb(self):
         """

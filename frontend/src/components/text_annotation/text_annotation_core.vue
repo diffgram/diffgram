@@ -111,6 +111,7 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios"
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
@@ -202,7 +203,9 @@ export default Vue.extend({
         }
     },
     methods: {
-        initialize_token_render: function() {
+        initialize_token_render: async function() {
+            const file = await axios.get("https://diffgram-storage-v.s3.amazonaws.com/projects/text/1/3?response-content-disposition=attachment%3B%20filename%3D3&AWSAccessKeyId=AKIA535AFYPJW3DLD67J&Signature=gjRQMt7DeH7e6Bm1wlqxqepdyyU%3D&Expires=1645211863")
+        console.log(file)
             const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
             const tokens = [];
             let token_x_position = 40;
