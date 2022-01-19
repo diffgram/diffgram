@@ -54,9 +54,9 @@ export class CreateInstanceCommand {
   }
 
   execute() {
-    if (this.instance.id) {
+    if (this.instance.id || this.instance.id === 0) {
       this.instance.soft_delete = false;
-      for (let i = 0; i < this.ann_core_ctx.instance_list.length; i++) {
+      for (let i = 0; i <= this.ann_core_ctx.instance_list.length; i++) {
         const current = this.ann_core_ctx.instance_list[i];
         if (current.id === this.instance.id) {
           this.created_instance_index = i;
@@ -67,7 +67,7 @@ export class CreateInstanceCommand {
       const existing_instance = this.ann_core_ctx.instance_list.filter(
         instance => instance.creation_ref_id === this.instance.creation_ref_id
       );
-      if (existing_instance.length === 0 && this.instance.type !== "text_annoattaion") {
+      if (existing_instance.length === 0) {
         this.instance.soft_delete = false;
         this.ann_core_ctx.push_instance_to_instance_list_and_buffer(
           {
@@ -106,7 +106,7 @@ export class CreateInstanceCommand {
     const instance = this.ann_core_ctx.instance_list[
       this.created_instance_index
     ];
-
+    
     // We don't want to delete instances that already have an ID on backend, just soft delete them.
     instance.soft_delete = true;
     this.ann_core_ctx.instance_list.splice(
