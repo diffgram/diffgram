@@ -62,7 +62,7 @@
                     :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
                     :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.start_instance === instance.id || hover_instance.end_instance === instance.id) ? 'red' : current_label.color"
                     @mouseenter="() => on_instance_hover(instance.id)"
-                    @mousedown="() => on_start_draw_relation(instance.id)"
+                    @mousedown="() => on_draw_relation(instance.id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                 >
@@ -113,7 +113,7 @@ import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
 import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
-import { TextAnnotationInstance } from "../vue_canvas/instances/TextInstance"
+import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 
 export default Vue.extend({
     name: "text_annotation_core",
@@ -223,12 +223,12 @@ export default Vue.extend({
             this.rendering = false
         },
         // function to draw relations between instances
-        on_start_draw_relation: function(instance_id) {
+        on_draw_relation: function(instance_id) {
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
                     id: this.instances.length,
-                    type: "relation",
+                    type: "text_relation",
                     start_instance: instance_id,
                     label_id: this.current_label.id,
                     level: 0
@@ -239,7 +239,16 @@ export default Vue.extend({
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
-            this.instances.push(this.instance_in_progress)
+            const created_instance = new TextRelationInstance();
+            created_instance.create_instance(
+                this.instance_list.length,
+                this.instance_in_progress.start_instance, 
+                this.instance_in_progress.end_instance,
+                this.current_label
+            )
+            this.instance_list.push(created_instance)
+            const command = new CreateInstanceCommand(created_instance, this)
+            this.command_manager.executeCommand(command)
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
@@ -262,7 +271,7 @@ export default Vue.extend({
         on_start_draw_instance: function(start_token) {
             this.instance_in_progress = {
                 id: this.instances.length,
-                type: "annotation",
+                type: "text_annotation",
                 start_token: start_token.id,
                 label_id: this.current_label.id,
                 level: 0
@@ -326,7 +335,7 @@ export default Vue.extend({
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
                         if (rect.width === comp_rect.width) {
-                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            if (comp_rect.instance_type === "text_relation") return comp_rect.y = comp_rect.y - this.additional_line_space
                             else {
                                 return rect.y = rect.y - this.additional_line_space
                             }
@@ -343,7 +352,7 @@ export default Vue.extend({
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
                         if (rect.width === comp_rect.width) {
-                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            if (comp_rect.instance_type === "text_relation") return comp_rect.y = comp_rect.y - this.additional_line_space
                             else {
                                 return rect.y = rect.y - this.additional_line_space
                             }
@@ -386,9 +395,9 @@ export default Vue.extend({
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {
-                const start_instance = this.instances.find(find_instance => find_instance.id === instance.start_instance)
+                const start_instance = this.instance_list.find(find_instance => find_instance.id === instance.from_instance_id)
                 starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-                const end_instance = this.instances.find(find_instance => find_instance.id === instance.end_instance)
+                const end_instance = this.instance_list.find(find_instance => find_instance.id === instance.to_instance_id)
                 end_token = this.tokens.find(token => token.id === end_instance.end_token)
             }
             if (starting_token.id === end_token.id) {
