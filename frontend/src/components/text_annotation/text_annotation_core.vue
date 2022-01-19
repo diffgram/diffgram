@@ -7,6 +7,8 @@
       >
         <template slot="second_row">
             <text_toolbar
+                :undo_disabled="undo_disabled"
+                :redo_disabled="redo_disabled"
                 @change_label_file="change_label_file"
                 @undo="undo()"
                 @redo="redo()"
@@ -189,6 +191,14 @@ export default Vue.extend({
                 },
                 path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100} ${this.path.x - 350} ${this.path.y - 100}`
              }
+        },
+        undo_disabled: function() {
+            const { command_manager } = this;
+            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == undefined
+        },
+        redo_disabled: function() {
+            const { command_manager } = this;
+            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == command_manager.command_history.length - 1
         }
     },
     methods: {

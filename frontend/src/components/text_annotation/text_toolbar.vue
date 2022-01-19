@@ -11,22 +11,24 @@
             <div style="width: 10px" />
             <tooltip_button
                 color="primary"
-                :icon_style="true"
                 icon="mdi-undo"
                 tooltip_message="Undo (ctrl+z)"
-                @click="$emit('undo')"
-                :bottom="true"
                 ui_schema_name="undo"
+                :disabled="undo_disabled"
+                :icon_style="true"
+                :bottom="true"
+                @click="$emit('undo')"
             />
 
             <tooltip_button
                 color="primary"
-                :icon_style="true"
                 icon="mdi-redo"
                 tooltip_message="Redo (ctrl+y)"
-                @click="$emit('redo')"
-                :bottom="true"
                 ui_schema_name="redo"
+                :disabled="redo_disabled"
+                :icon_style="true"
+                :bottom="true"
+                @click="$emit('redo')"
             />
 
             <v-divider vertical></v-divider>
@@ -61,6 +63,16 @@ export default Vue.extend({
     name: "text_toolbar",
     components: {
         label_select_annotation
+    },
+    props: {
+        undo_disabled: {
+            type: Boolean,
+            required: true
+        },
+        redo_disabled: {
+            type: Boolean,
+            required: true
+        }
     }
 })
 </script>
