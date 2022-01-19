@@ -39,8 +39,8 @@ class InstanceRelation(Base):
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
-    def new(self,
-            session,
+    @staticmethod
+    def new(session,
             from_instance_id,
             to_instance_id,
             type = 'default',
@@ -63,7 +63,16 @@ class InstanceRelation(Base):
 
         return relation
 
-    def update_relations_to_new_instance_version(self, session, id_list_to_update: dict):
+    @staticmethod
+    def get_by_id(session, relation_id):
+        result = session.query(InstanceRelation).filter(
+            InstanceRelation.id == relation_id
+        ).first()
+
+        return result
+
+    @staticmethod
+    def update_relations_to_new_instance_version(session, id_list_to_update: dict):
         """
 
         :param session:
@@ -85,8 +94,8 @@ class InstanceRelation(Base):
 
         return {
             'id': self.id,
-            'created_time': self.time_created,
-            'last_updated_time': self.time_updated,
+            'time_created': self.time_created.strftime('%Y-%m-%d') if self.time_created else None,
+            'time_updated': self.time_updated.strftime('%Y-%m-%d') if self.time_updated else None,
             'type': self.type,
             'from_instance_id': self.from_instance_id,
             'to_instance_id': self.to_instance_id,

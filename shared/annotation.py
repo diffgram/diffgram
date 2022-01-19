@@ -62,6 +62,8 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+    # This array will keep track of any new instance relations that did not have instance IDs
+    new_instance_relations_dict: dict = field(default_factory = lambda: {})
     updated_relations: list = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
@@ -335,7 +337,8 @@ class Annotation_Update():
             'relations_list': {
                 'kind': list,
                 'default': [],
-                'required': False
+                'required': False,
+                'allow_empty': True
             }
         }
     ])
@@ -507,6 +510,8 @@ class Annotation_Update():
         self.update_file_hash()
 
         self.left_over_instance_deletion()
+
+        self.create_new_instance_relations()
 
         self.determine_updated_relations()
 
@@ -1383,6 +1388,8 @@ class Annotation_Update():
 
         self.__perform_external_map_action()
 
+        self.create_existing_instance_relations(relations_list)
+
         self.update_cache_single_instance_in_list_context()
         logger.debug('is_new_instance {}'.format(is_new_instance))
         if is_new_instance is False:
@@ -1407,7 +1414,7 @@ class Annotation_Update():
 
         sequence = self.sequence_update(instance = self.instance)
 
-        self.create_instance_relations(relations_list)
+
         if sequence:
             if not self.instance.soft_delete:
                 sequence.add_keyframe_to_cache(self.session, self.instance)
@@ -1415,14 +1422,102 @@ class Annotation_Update():
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
-    def create_instance_relations(self, relations_list):
+    def find_serialized_instance_index(self, id):
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            instance = self.instance_list_kept_serialized[i]
+            if instance.get('id') == id:
+                return i
+
+    def create_new_instance_relations(self):
+
+        for instance in self.new_added_instances:
+            if self.new_instance_relations_dict.get(instance.id) is None:
+                continue
+            relations_list = self.new_instance_relations_dict.get(instance.id)
+            for relation in relations_list:
+                from_instance_id = None
+                to_instance_id = None
+
+                # Get From Instance ID
+                if relation.get('from_instance_id'):
+                    from_instance_id = relation.get('from_instance_id')
+                elif relation.get('from_creation_ref_id'):
+                    # Search the instance by creation ref on the new added instances
+                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['from_creation_ref_id'])
+                    if result is None:
+                        message = 'Invalid relation sent. from_instance_creation_ref_id was not found. {}'.format(relation)
+                        logger.error(message)
+                        self.log['error']['invalid_relation'] = message
+                    from_instance_id = result.id
+                else:
+                    message = 'Invalid relation sent. Must provide from_instance_id or from_creation_ref_id. {}'.format(relation)
+                    logger.error(message)
+                    self.log['error']['invalid_relation'] = message
+                    return
+
+                # Get to_instance_id
+                if relation.get('to_instance_id'):
+                    to_instance_id = relation.get('to_instance_id')
+                elif relation.get('to_creation_ref_id'):
+                    # Search the instance by creation ref on the new added instances
+                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['to_creation_ref_id'])
+                    if result is None:
+                        message = 'Invalid relation sent. to_creation_ref_id was not found. {}'.format(relation)
+                        logger.error(message)
+                        self.log['error']['invalid_relation'] = message
+                    to_instance_id = result.id
+                else:
+                    message = 'Invalid relation sent. Must provide from_instance_id or to_creation_ref_id. {}'.format(relation)
+                    logger.error(message)
+                    self.log['error']['invalid_relation'] = message
+                    return
+
+                # Now create relation
+                relation = InstanceRelation.new(
+                    session = self.session,
+                    from_instance_id = from_instance_id,
+                    to_instance_id = to_instance_id,
+                    type = relation.get('type'),
+                    member_created_id = self.member.id
+                )
+
+                # Get existing cache
+                existing_rels = instance.cache_dict.get('relations_list')
+                if existing_rels is None:
+                    existing_rels = []
+                existing_rels.append(relation.serialize())
+                instance.set_cache_by_key(
+                    'relations_list',
+                    existing_rels
+                )
+
+                # Rehash updated instance
+                instance.hash_instance()
+
+                # Find instance_list_kept_serialized and replace
+                index_to_replace = self.find_serialized_instance_index(instance.id)
+                self.instance_list_kept_serialized[index_to_replace] = instance.serialize_with_label()
+
+
+    def create_existing_instance_relations(self, relations_list):
         """
-            Creates instances relations for the given
+            Creates instances relations for the given IDs.
+            This will skip any relations for new instances (ie relations with creation_ref_ids and
+            not DB ids)
+            Theese skipped relations should be handled in the create_new_instance_relations() function
         :return:
         """
         result = []
+        print('INSTANCE IS: ', self.instance.id)
         for relation in relations_list:
+            if relation.get('from_instance_id') is None or relation.get('to_instance_id') is None:
+                if self.new_instance_relations_dict.get(self.instance.id) is None:
+                    self.new_instance_relations_dict[self.instance.id] = [relation]
+                else:
+                    self.new_instance_relations_dict[self.instance.id].append(relation)
+                continue
             relation = InstanceRelation.new(
+                session = self.session,
                 from_instance_id = relation.get('from_instance_id'),
                 to_instance_id = relation.get('to_instance_id'),
                 type = relation.get('type'),

@@ -1488,42 +1488,40 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(ann_update2.new_added_instances), 0)
         self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
 
-    def test_add_new_relation(self):
+    def test_add_new_instances_relation(self):
         """
             Tests adding a new relation to an instance.
+            This relation has creation_ref_ids and not existing ids.
         :return:
         """
         file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
         label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
-
-        instance1 = data_mocking.create_instance(
-            {'x_min': 1,
-             'x_max': 10,
-             'y_min': 1,
-             'y_max': 10,
-             'file_id': file1.id,
-             'label_file_id': label_file.id,
-             'type': 'box'
-             },
-            self.session
-        )
-
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        inst1_uid = str(uuid.uuid4())
+        inst2_uid = str(uuid.uuid4())
         inst1 = {
-            'creation_ref_id': str(uuid.uuid4()),
+            'creation_ref_id':inst1_uid ,
             'x_min': 1,
             'y_min': 1,
             'x_max': 18,
             'y_max': 18,
             'soft_delete': False,
             'label_file_id': label_file.id,
-            'type': 'box'
+            'type': 'box',
+            'relations_list': [
+                {
+                    'from_creation_ref_id': inst1_uid,
+                    'to_creation_ref_id': inst2_uid,
+                }
+            ]
         }
+
         inst2 = {
-            'creation_ref_id': str(uuid.uuid4()),
-            'x_min': 1,
-            'y_min': 1,
-            'x_max': 18,
-            'y_max': 18,
+            'creation_ref_id': inst2_uid,
+            'x_min': 15,
+            'y_min': 15,
+            'x_max': 26,
+            'y_max': 26,
             'soft_delete': False,
             'label_file_id': label_file.id,
             'type': 'box'
@@ -1536,9 +1534,23 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             project = self.project,
             instance_list_new = instance_list,
             file = file1,
+            member = self.member,
             do_init_existing_instances = True
         )
         ann_update.main()
+        self.session.commit()
+        # Check the relation is now present on the new added instances with the IDs
+        self.assertEqual(len(ann_update.new_added_instances), 2)
+        instance_with_rels = next(x for x in ann_update.new_added_instances if x.creation_ref_id == inst1_uid)
+        instance_with_no_rels = next(x for x in ann_update.new_added_instances if x.creation_ref_id == inst2_uid)
+        self.assertIsNotNone(instance_with_rels)
+        self.assertIsNotNone(instance_with_rels.cache_dict.get('relations_list'))
+        self.assertEqual(len(instance_with_rels.cache_dict['relations_list']), 1)
+        self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['from_instance_id'], instance_with_rels.id)
+        self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['to_instance_id'], instance_with_no_rels.id)
+        self.assertIsNotNone(instance_with_rels.cache_dict['relations_list'][0]['id'])
+
+
 
     def test_remove_relation(self):
         """
