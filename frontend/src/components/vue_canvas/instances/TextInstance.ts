@@ -43,22 +43,35 @@ export class TextAnnotationInstance extends Instance {
     }
 }
 
-export class TexrRelationInstance extends Instance {
+export class TextRelationInstance extends Instance {
     public from_instance_id: number = null;
     public to_instance_id: number = null;
 
     constructor() {
         super();
-        this.creation_ref_id = uuidv4();
+    }
+
+    public create_instance(id, start_instance, end_instance, label_file): void {
+        this.id = id;
         this.type = "text_relation";
+        this.creation_ref_id = uuidv4();
+        this.from_instance_id = start_instance;
+        this.to_instance_id = end_instance;
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
     }
 
     public get_instance_data(): object {
         return {
+            id: this.id,
             type: this.type,
             selected: this.selected,
             from_instance_id: this.from_instance_id,
-            to_instance_id: this.to_instance_id
+            to_instance_id: this.to_instance_id,
+            label_file: this.label_file,
+            label_file_id: this.label_file_id,
+            soft_delete: this.soft_delete,
+            creation_ref_id: this.creation_ref_id
         }
     }
 }
