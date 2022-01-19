@@ -1428,6 +1428,8 @@ class Annotation_Update():
             if instance.get('id') == id:
                 return i
 
+
+
     def create_new_instance_relations(self):
 
         for instance in self.new_added_instances:
@@ -1443,6 +1445,8 @@ class Annotation_Update():
                     from_instance_id = relation.get('from_instance_id')
                 elif relation.get('from_creation_ref_id'):
                     # Search the instance by creation ref on the new added instances
+
+
                     result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['from_creation_ref_id'])
                     if result is None:
                         message = 'Invalid relation sent. from_instance_creation_ref_id was not found. {}'.format(relation)
@@ -1483,6 +1487,7 @@ class Annotation_Update():
 
                 # Get existing cache
                 existing_rels = instance.cache_dict.get('relations_list')
+                print('EXISTING RELS', existing_rels)
                 if existing_rels is None:
                     existing_rels = []
                 existing_rels.append(relation.serialize())
@@ -1496,7 +1501,8 @@ class Annotation_Update():
 
                 # Find instance_list_kept_serialized and replace
                 index_to_replace = self.find_serialized_instance_index(instance.id)
-                self.instance_list_kept_serialized[index_to_replace] = instance.serialize_with_label()
+                if index_to_replace is not None:
+                    self.instance_list_kept_serialized[index_to_replace] = instance.serialize_with_label()
 
 
     def create_existing_instance_relations(self, relations_list):
@@ -1508,7 +1514,6 @@ class Annotation_Update():
         :return:
         """
         result = []
-        print('INSTANCE IS: ', self.instance.id)
         for relation in relations_list:
             if relation.get('from_instance_id') is None or relation.get('to_instance_id') is None:
                 if self.new_instance_relations_dict.get(self.instance.id) is None:
@@ -1543,7 +1548,8 @@ class Annotation_Update():
             if instance.previous_id:
                 id_list_to_update[instance.previous_id] = instance.id
 
-        updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session, id_list_to_update = id_list_to_update)
+        updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session,
+                                                                                 id_list_to_update = id_list_to_update)
         updated_rels_serialized = [rel.serialize() for rel in updated_rels]
         self.updated_relations = updated_rels_serialized
         return self.updated_relations

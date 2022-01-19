@@ -368,7 +368,8 @@ class Instance(Base, Caching):
             self.sequence_id,
             self.nodes,
             self.edges,
-            self.pause_object
+            self.pause_object,
+            self.cache_dict
         ]
 
 

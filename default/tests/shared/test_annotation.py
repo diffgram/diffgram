@@ -1488,6 +1488,100 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(ann_update2.new_added_instances), 0)
         self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
 
+    def test_create_new_instance_relations(self):
+        """
+            relations_list = {'from_instance_id', 'to_instance_id'}
+            relations_list = {'from_creation_ref', 'to_creation_ref'}
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.instance_list_kept_serialized = [instance1.serialize_with_label(), instance2.serialize_with_label(), instance3.serialize_with_label()]
+
+        # Test ID available case
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.new_instance_relations_dict = {
+            instance1.id: [{'type': 'test', 'from_instance_id': instance1.id, 'to_instance_id': instance2.id}]
+        }
+        ann_update.create_new_instance_relations()
+        self.session.commit()
+        rels = instance1.cache_dict['relations_list']
+        self.assertEqual(len(rels), 1)
+        self.assertEqual(rels[0]['from_instance_id'], instance1.id)
+        self.assertEqual(rels[0]['to_instance_id'], instance2.id)
+        self.assertEqual(rels[0]['type'], 'test')
+        self.assertEqual(ann_update.instance_list_kept_serialized[0], instance1.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[1], instance2.serialize_with_label())
+        self.assertNotEqual(old_hash, instance1.hash)
+
+        # TEST NO ID available
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.new_instance_relations_dict = {
+            instance1.id: [{'type': 'test', 'from_creation_ref_id': ref1, 'to_creation_ref_id': ref3}]
+        }
+        ann_update.create_new_instance_relations()
+        self.session.commit()
+        rels = instance1.cache_dict['relations_list']
+        self.assertEqual(len(rels), 2)
+        self.assertEqual(rels[1]['from_instance_id'], instance1.id)
+        self.assertEqual(rels[1]['to_instance_id'], instance3.id)
+        self.assertEqual(rels[1]['type'], 'test')
+        self.assertEqual(ann_update.instance_list_kept_serialized[0], instance1.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[1], instance2.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[2], instance3.serialize_with_label())
+        self.assertNotEqual(old_hash, instance1.hash)
+
     def test_add_new_instances_relation(self):
         """
             Tests adding a new relation to an instance.
@@ -1546,6 +1640,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertIsNotNone(instance_with_rels)
         self.assertIsNotNone(instance_with_rels.cache_dict.get('relations_list'))
         self.assertEqual(len(instance_with_rels.cache_dict['relations_list']), 1)
+
         self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['from_instance_id'], instance_with_rels.id)
         self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['to_instance_id'], instance_with_no_rels.id)
         self.assertIsNotNone(instance_with_rels.cache_dict['relations_list'][0]['id'])
