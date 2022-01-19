@@ -1535,6 +1535,7 @@ class Annotation_Update():
             'relations_list',
             result
         )
+        return result
 
     def determine_updated_relations(self):
         """
@@ -1550,6 +1551,8 @@ class Annotation_Update():
 
         updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session,
                                                                                  id_list_to_update = id_list_to_update)
+
+        print('updaa', updated_rels)
         updated_rels_serialized = [rel.serialize() for rel in updated_rels]
         self.updated_relations = updated_rels_serialized
         return self.updated_relations

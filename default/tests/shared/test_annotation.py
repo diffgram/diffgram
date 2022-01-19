@@ -1488,6 +1488,148 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(ann_update2.new_added_instances), 0)
         self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
 
+    def test_create_existing_instance_relations(self):
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.instance = instance1
+        relations_list = [
+            {'from_instance_id': instance1.id, 'to_instance_id': instance2.id},
+            {'from_instance_id': instance1.id, 'to_instance_id': instance3.id}
+        ]
+        result = ann_update.create_existing_instance_relations(relations_list)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['from_instance_id'], instance1.id)
+        self.assertEqual(result[1]['from_instance_id'], instance1.id)
+        self.assertEqual(result[0]['to_instance_id'], instance2.id)
+        self.assertEqual(result[1]['to_instance_id'], instance3.id)
+
+    def test_determine_updated_relations(self):
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance0 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        rel = data_mocking.create_instance_relation({
+            'from_instance_id': instance3.id, 'to_instance_id': instance0.id
+        }, session = self.session)
+        instance1.previous_id = instance0.id
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.determine_updated_relations()
+        self.assertEqual(len(ann_update.updated_relations), 1)
+        self.assertEqual(ann_update.updated_relations[0]['id'], rel.id)
+        self.assertEqual(ann_update.updated_relations[0]['to_instance_id'], instance1.id)
+
     def test_create_new_instance_relations(self):
         """
             relations_list = {'from_instance_id', 'to_instance_id'}

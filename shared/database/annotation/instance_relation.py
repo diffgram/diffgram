@@ -82,7 +82,7 @@ class InstanceRelation(Base):
         old_id_list = id_list_to_update.keys()
         relations_to_update = session.query(InstanceRelation).filter(
             InstanceRelation.to_instance_id.in_(old_id_list)
-        )
+        ).all()
 
         for rel in relations_to_update:
             old_id = rel.to_instance_id
