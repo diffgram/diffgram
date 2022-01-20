@@ -73,12 +73,10 @@ export default Vue.extend( {
       this.$emit('close')
     },
     set_node_name: function(){
-      console.log('AAAA', this.current_instance)
       if(this.current_instance == undefined){return}
       let instance = this.current_instance;
       let node = instance.nodes[this.node_index];
       node.name = this.node_name;
-      this.$emit('node_updated')
     }
 
   }

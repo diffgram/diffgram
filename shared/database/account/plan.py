@@ -106,6 +106,7 @@ class Plan(Base):
 
     @staticmethod
     def new(
+        session,
         member,
         plan_template,
 
@@ -156,6 +157,8 @@ class Plan(Base):
             roi_total_benefit = roi_total_benefit,
             roi_multiple = roi_multiple
         )
+        session.add(plan)
+        session.flush()
 
         return plan
 

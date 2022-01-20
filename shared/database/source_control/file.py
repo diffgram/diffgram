@@ -5,6 +5,7 @@ import json
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from werkzeug.exceptions import Forbidden
 from shared.database.text_file import TextFile
+from shared.database.point_cloud.point_cloud import PointCloud
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
 from shared.database.label import Label
@@ -104,6 +105,9 @@ class File(Base, Caching):
 
     image_id = Column(Integer, ForeignKey('image.id'))
     image = relationship("Image")
+
+    point_cloud_id = Column(Integer, ForeignKey('point_cloud.id'))
+    point_cloud = relationship(PointCloud)
 
     text_file_id = Column(Integer, ForeignKey('text_file.id'))
     text_file = relationship(TextFile, foreign_keys=[text_file_id])
@@ -352,17 +356,20 @@ class File(Base, Caching):
                 return self.text_file.url_signed_blob_path
         return None
 
+    def get_child_point_cloud_file(self, session):
 
+        file = session.query(File).filter(
+            File.type == 'point_cloud_3d',
+            File.parent_id == self.id
+        ).first()
+        return file
     def serialize_with_type(self,
                             session=None
                             ):
 
         file = self.serialize_base_file()
 
-        # WIP... Things like complete status from video
-        # if self.video_parent_file_id:
-        #	file['video_file_parent'] = self.video_parent_file(session)
-
+        #print('serialize with type', self.type)
         if self.type == "image":
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
@@ -377,8 +384,12 @@ class File(Base, Caching):
             if self.text_file:
                 file['text'] = self.text_file.serialize()
 
-        # Could also get parent file information here too...
+        if self.type == "sensor_fusion":
+            point_cloud_file = self.get_child_point_cloud_file(session = session)
+            if point_cloud_file and point_cloud_file.point_cloud:
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
+        # Could also get parent file information here too...
         if self.type == "label":
             if self.label:
 
@@ -501,6 +512,16 @@ class File(Base, Caching):
             }
         if self.type == "video":
             return self.serialize_with_video(session)
+
+        if self.type == 'sensor_fusion':
+            return {
+                'id': self.id,
+                'type': self.type,
+                'hash': self.hash,
+                'state': self.state,
+                'point_cloud_3d_file': self.point_cloud.serialize(session) if self.point_cloud else None,
+                'instance_list': [instance.serialize_with_label() for instance in instance_list]
+            }
 
     def serialize_annotations_only(self):
 
@@ -843,6 +864,7 @@ class File(Base, Caching):
             project_id=None,
             file_type=None,
             image_id=None,
+            point_cloud_id=None,
             text_file_id=None,
             video_id=None,
             frame_number=None,
@@ -887,6 +909,7 @@ class File(Base, Caching):
         file = File(
             original_filename=original_filename,
             image_id=image_id,
+            point_cloud_id=point_cloud_id,
             state="added",
             type=file_type,
             project_id=project_id,

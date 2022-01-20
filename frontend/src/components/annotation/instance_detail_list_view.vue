@@ -66,6 +66,7 @@
                 </v-expansion-panel>
             </v-expansion-panels>
 
+            </v-card-title>
             <attribute_group_list
                 style="overflow-y:auto; max-height: 400px"
                 v-if="attribute_group_list_prop.length != 0"
@@ -164,7 +165,7 @@
                             <!-- TODO error handling here -->
                             <div  class="color-box"
                                   @click="change_instance(props.item, props.item.instance_list_index),show_all()"
-                                  v-if="label_file_colour_map[props.item.label_file.id]">
+                                  v-if="label_file_colour_map[props.item.label_file_id]">
 
                               <div v-if="props.item.type =='box'">
                                 <v-icon :style="get_instance_color(props.item)">
@@ -209,6 +210,13 @@
                               <tooltip_icon
                                 tooltip_message="Cuboid"
                                 v-if="props.item.type == 'cuboid'"
+                                icon="mdi-cube-outline"
+                                :icon_style="get_instance_color(props.item)">
+                              </tooltip_icon>
+
+                              <tooltip_icon
+                                tooltip_message="Cuboid"
+                                v-if="props.item.type == 'cuboid_3d'"
                                 icon="mdi-cube-outline"
                                 :icon_style="get_instance_color(props.item)">
                               </tooltip_icon>
@@ -291,7 +299,7 @@
                           <!-- Full item comparison because
                               new objects won't have id-->
 
-                          <div v-if="props.item == current_instance"
+                          <div v-if="props.item.id == current_instance.id"
                                style="position: absolute; right: 0; top: 0">
 
                             <v-badge v-if="view_only_mode != true"
@@ -303,7 +311,8 @@
 
                           </div>
 
-                          <div v-if="props.item.label_file">
+                          <div v-if="props.item.label_file &&
+                                     props.item.label_file.label">
 
                             <!-- Context, when a user focuses an instance, we expect it to select it
                                  However, when a user *just* selects an instance, we expect it to lose focus-->
@@ -311,8 +320,8 @@
                               :style="style_instance_selected_color(props.item)"
                               @click="change_instance(props.item, props.item.instance_list_index),
                                  show_all()">
-                        {{props.item.label_file.label.name}}
-                      </span>
+                              {{props.item.label_file.label.name}}
+                            </span>
                           </div>
 
 
@@ -733,7 +742,7 @@ import Vue from "vue";
 
         for (var label of this.label_list) {
 
-            if (this.current_instance.label_file.id == label.id) {
+            if (this.current_instance.label_file_id == label.id) {
               return label.attribute_group_list
 
           }
@@ -1051,7 +1060,7 @@ import Vue from "vue";
           return this.style_color(instance.override_color)
         }
         else{
-          return this.style_color(this.label_file_colour_map[instance.label_file.id].hex)
+          return this.style_color(this.label_file_colour_map[instance.label_file_id].hex)
         }
       },
       style_color: function (hex) {

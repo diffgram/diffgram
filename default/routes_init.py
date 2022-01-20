@@ -56,6 +56,7 @@ def do_routes_importing():
     from methods.task.task.task_annotator_request import task_next_by_job_api
     from methods.task.task.task_user_add import api_task_user_add
     from methods.task.task.task_user_remove import api_task_user_remove
+    from methods.task.task.task_user_modify import api_task_user_modify
 
     from methods.task.guide.guide_new import guide_new_api
     from methods.task.guide.guide_edit import guide_edit_api
@@ -150,6 +151,6 @@ def do_routes_importing():
     from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api
     from methods.task.credential.credential_type_update import update_credential_type_image_api
 
-    from methods.task.stats.fast_stats import job_stat, jon_user_stats
+    from methods.task.stats.fast_stats import job_stat, job_user_stats
 
 

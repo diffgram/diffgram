@@ -132,12 +132,21 @@ class Instance(Base):
     y_min = Column(Integer)
     x_max = Column(Integer)
     y_max = Column(Integer)
+
     width = Column(Integer)
     height = Column(Integer)
 
     # For Ellipse Instances
     center_x = Column(Integer)
     center_y = Column(Integer)
+    # For Cuboids 3D
+    rotation_euler_angles = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+    position_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+    center_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+    max_point_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+    min_point_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+    dimensions_3d = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
+
     angle = Column(Float)  # For ellipse rotation, and probably other instance in the future
 
     # Bezier curve [quadratic]
@@ -323,6 +332,10 @@ class Instance(Base):
             self.cp,
             self.center_x,
             self.center_y,
+            self.rotation_euler_angles,
+            self.position_3d,
+            self.center_3d,
+            self.dimensions_3d,
             self.angle,
             self.width,
             self.height,
@@ -348,9 +361,9 @@ class Instance(Base):
             self.pause_object
         ]
 
+
         self.hash = hashlib.sha256(json.dumps(
             hash_data, sort_keys = True).encode('utf-8')).hexdigest()
-
     """
     WIP would like to send less information per instance
     (ie just the label_file_id) but need to build stronger 
@@ -399,6 +412,10 @@ class Instance(Base):
             'cp': self.cp,
             'center_x': self.center_x,
             'center_y': self.center_y,
+            'rotation_euler_angles': self.rotation_euler_angles,
+            'position_3d': self.position_3d,
+            'center_3d': self.center_3d,
+            'dimensions_3d': self.dimensions_3d,
             'angle': self.angle,
             'creation_ref_id': self.creation_ref_id,
             'width': self.width,

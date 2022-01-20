@@ -8,13 +8,14 @@ import datetime
 import traceback
 from shared.helpers.sessionMaker import AfterCommitAction
 
+
 # TODO would like to have this as a mixin
 def try_to_commit(self):
-	try:
-		self.session.commit()
-	except:
-		self.session.rollback()
-		raise
+    try:
+        self.session.commit()
+    except:
+        self.session.rollback()
+        raise
 
 
 def commit_with_rollback(session):
@@ -35,14 +36,14 @@ def clean_up_temp_dir(path):
 
 
 def transmit_interservice_request_after_commit(
-        session: object,
-        message: str,
-        logger: dict,
-        service_target: str = 'walrus',
-        id: int = None,
-        base_class_string: str = None,
-        project_string_id: str = None,
-        extra_params: dict = {}
+    session: object,
+    message: str,
+    logger: dict,
+    service_target: str = 'walrus',
+    id: int = None,
+    base_class_string: str = None,
+    project_string_id: str = None,
+    extra_params: dict = {}
 
 ):
     AfterCommitAction(session = session,
@@ -57,15 +58,16 @@ def transmit_interservice_request_after_commit(
                           'extra_params': extra_params
                       })
 
+
 def transmit_interservice_request(
-        message: str,
-        logger = None,
-        service_target: str = 'walrus',
-        id: int = None,
-        base_class_string: str = None,
-        project_string_id: str = None,
-        extra_params: dict = {},
-        ):
+    message: str,
+    logger = None,
+    service_target: str = 'walrus',
+    id: int = None,
+    base_class_string: str = None,
+    project_string_id: str = None,
+    extra_params: dict = {},
+):
     """
     Example usage
 
@@ -100,13 +102,13 @@ def transmit_interservice_request(
         'base_class_string': base_class_string,
         'project_string_id': project_string_id,
         'extra_params': extra_params
-        }
+    }
     if service_target == 'walrus':
 
         endpoint = settings.WALRUS_SERVICE_URL_BASE + 'api/walrus/v1/interservice/receive'
     else:
         raise NotImplementedError
-    response = requests.post(endpoint, data=json.dumps(data))
+    response = requests.post(endpoint, data = json.dumps(data))
     try:
         data = response.json()
         if logger: logger.info('[Interservice]' + str(data))
@@ -114,14 +116,13 @@ def transmit_interservice_request(
         if logger: logger.info('[Interservice]' + str(response))
 
 
-
 def regular_query(
-        query,
-        date_from_string: str = None,
-        date_to_string: str = None,
-        base_class = None,
-        created_time_string: str = 'time_created'
-        ):
+    query,
+    date_from_string: str = None,
+    date_to_string: str = None,
+    base_class = None,
+    created_time_string: str = 'time_created'
+):
     """
     Example usage
 
@@ -152,37 +153,37 @@ def regular_query(
 
 
 def loop_forever_with_random_load_balancing(
-		log_start_message="",
-		log_heartbeat_message="",
-		function_call=None,		# note we assume that self. is passed if needed
-		function_args={},
-		thread_sleep_time_min=1,
-		thread_sleep_time_max=2,
-		logger=None):
-	"""
-	-> Idea with it is that way we get coverage / load balance without having to know which of the workers last did it. 
-	Basically it's a poor man's load balancing. eg 5 workers, each one gets it at a random time
-	-> Want the sleep to first - because otherwise when the server starts up, it spams it times the number of workers.
+    log_start_message = "",
+    log_heartbeat_message = "",
+    function_call = None,  # note we assume that self. is passed if needed
+    function_args = {},
+    thread_sleep_time_min = 1,
+    thread_sleep_time_max = 2,
+    logger = None):
+    """
+    -> Idea with it is that way we get coverage / load balance without having to know which of the workers last did it.
+    Basically it's a poor man's load balancing. eg 5 workers, each one gets it at a random time
+    -> Want the sleep to first - because otherwise when the server starts up, it spams it times the number of workers.
 
-	Example Usage:
+    Example Usage:
 
-	regular_methods.loop_forever_with_random_load_balancing(
-		log_start_message='Starting SyncActionsHandlerThread Queue handler... ',
-		log_heartbeat_message='[SyncActions Queue heartbeat]',
-		function_call=self.check_for_new_sync_actions,
-		function_args={},
-		thread_sleep_time_min=self.thread_sleep_time_min,
-		thread_sleep_time_max=self.thread_sleep_time_max,
-		logger=logger
-		)
-	"""
+    regular_methods.loop_forever_with_random_load_balancing(
+        log_start_message='Starting SyncActionsHandlerThread Queue handler... ',
+        log_heartbeat_message='[SyncActions Queue heartbeat]',
+        function_call=self.check_for_new_sync_actions,
+        function_args={},
+        thread_sleep_time_min=self.thread_sleep_time_min,
+        thread_sleep_time_max=self.thread_sleep_time_max,
+        logger=logger
+        )
+    """
 
-	if logger: logger.info(log_start_message)
-	while True:
-		deferred_time = random.randint(thread_sleep_time_min, thread_sleep_time_max)
-		time.sleep(deferred_time)
-		if logger: logger.info(log_heartbeat_message + str(deferred_time))
-		try:
-			function_call(**function_args)
-		except Exception as exception:
-			if logger: logger.error(traceback.format_exc())
+    if logger: logger.info(log_start_message)
+    while True:
+        deferred_time = random.randint(thread_sleep_time_min, thread_sleep_time_max)
+        time.sleep(deferred_time)
+        if logger: logger.info(log_heartbeat_message + str(deferred_time))
+        try:
+            function_call(**function_args)
+        except Exception as exception:
+            if logger: logger.error(traceback.format_exc())

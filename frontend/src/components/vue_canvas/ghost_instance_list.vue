@@ -1124,6 +1124,8 @@
            * then draws the 4 side lines
            */
           const instance_colour = this.get_instance_colour();
+
+          ctx.setLineDash([3])
           let r = instance_colour.rgba.r
           let g = instance_colour.rgba.g
           let b = instance_colour.rgba.b
@@ -1131,20 +1133,21 @@
 
           ctx.stokeStyle = "rgba(" + r + "," + g + "," + b + ", 1)";
           ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 0)";
-          this.$cuboid.draw_cuboid_face(instance.front_face, ctx, false)
+          this.$cuboid.draw_cuboid_face(instance.front_face, ctx, false, 3)
           // Rear face has fill
           ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .4)";
-          this.$cuboid.draw_cuboid_face(instance.rear_face, ctx, true)
+          this.$cuboid.draw_cuboid_face(instance.rear_face, ctx, true, 3)
 
           // Lateral Faces
           // Top Face
-          this.$cuboid.draw_cuboid_top_face(instance.front_face, instance.rear_face, ctx, false);
+          this.$cuboid.draw_cuboid_top_face(instance.front_face, instance.rear_face, ctx, false, 3);
           // Left Face
-          this.$cuboid.draw_cuboid_left_face(instance.front_face, instance.rear_face, ctx, false)
+          this.$cuboid.draw_cuboid_left_face(instance.front_face, instance.rear_face, ctx, false, 3)
           // Right Face
-          this.$cuboid.draw_cuboid_right_face(instance.front_face, instance.rear_face, ctx, false)
+          this.$cuboid.draw_cuboid_right_face(instance.front_face, instance.rear_face, ctx, false, 3)
           // Bottom Face
-          this.$cuboid.draw_cuboid_down_face(instance.front_face, instance.rear_face, ctx, false)
+          this.$cuboid.draw_cuboid_down_face(instance.front_face, instance.rear_face, ctx, false, 3)
+         ctx.setLineDash([3])
           ctx.stroke();
 
           let hover_corner = false
@@ -1173,7 +1176,8 @@
 
           let message = ""
 
-          if (this.label_settings.show_label_text == true) {
+          if (this.label_settings.show_label_text == true &&
+              instance.label_file.label) {
             message += instance.label_file.label.name
             if (instance.number != undefined) {
               message += " " + instance.number

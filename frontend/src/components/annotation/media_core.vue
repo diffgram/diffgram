@@ -83,8 +83,7 @@
                       text-color="primary"
                       >No more pages.</v-chip>
               </div>
-              <div v-else
-                   class="pl-2 pt-4">
+              <div v-else class="pl-2 pt-4">
 
                 <v-chip color="white"
                         text-color="primary"
@@ -220,7 +219,8 @@
                   <v-select :items="filter_media_type_option_list"
                             v-model="filter_media_type_setting"
                             label="File Type"
-                            item-value="text"
+                            item-value="value"
+                            item-text="name"
                             :disabled="loading"
                             @change="item_changed"></v-select>
 
@@ -618,12 +618,23 @@
                       @on_image_error="on_image_error(index)"
                     >
                     </thumbnail>
-                    <v-container class="d-flex flex-column justify-center align-center"
-                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
-                      <v-icon>
+                    <v-container v-else-if="item.type === 'sensor_fusion'"
+                                 :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
+                                 ['unsselected-box']: !selected.includes(item),
+                                 ['selected-box']: selected.includes(item)}"
+                                 style="width: 100px; height: 100px; " >
+                      <v-icon size="32" class="ma-0 pa-0">
+                        mdi-video-3d-variant
+                      </v-icon>
+                      <p class="title-file">{{item.original_filename}}</p>
+                    </v-container>
+                    <v-container v-else-if="item.type === 'text'"
+                                 class="d-flex flex-column justify-center align-center pa-0"
+                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;">
+                      <v-icon size="28" class="ma-0 pa-0">
                         mdi-script-text
                       </v-icon>
-                      <p class="mt-4">{{item.original_filename}}</p>
+                      <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
 
                   </div>
@@ -971,7 +982,28 @@ import Vue from "vue";
       loading: true,
       inference_selected_loading: false,
 
-      filter_media_type_option_list: ["All", "Image", "Video"],
+      filter_media_type_option_list: [
+        {
+          name: "All",
+          value: "All"
+        },
+        {
+          name: "Image",
+          value: "image",
+        },
+        {
+          name: "Video",
+          value: "video",
+        },
+        {
+          name: "Text",
+          value: "text",
+        },
+        {
+          name: "Sensor Fusion",
+          value: "sensor_fusion"
+        }
+      ],
       filter_media_type_setting: "All", // Video
 
       annotations_are_machine_made_items: ["All", "Predictions only", "Human only"],
@@ -1455,14 +1487,15 @@ import Vue from "vue";
 
     },
 
-    change_directory(event) {
+    async change_directory(event) {
 
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
       this.page_number = 1;
 
-      this.get_media(false);
+      await this.get_media(false);
+      this.$emit('file_changed', this.current_file)
 
 
     },
@@ -1706,3 +1739,23 @@ import Vue from "vue";
 }
 
 ) </script>
+<style scoped>
+  .title-file{
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    width: 90px;
+    font-size: 10px;
+    color: #757575;
+    font-weight: bold;
+    text-overflow: ellipsis;
+    text-align: center;
+    overflow: hidden
+  }
+  .selected-box{
+    border: 3px solid #2196f3;
+  }
+  .unsselected-box{
+    border: 1px solid #bdbdbd;
+  }
+</style>

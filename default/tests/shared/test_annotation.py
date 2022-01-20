@@ -1,9 +1,11 @@
+import uuid
+import hashlib
+
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from base64 import b64encode
 from shared.annotation import Annotation_Update
-import uuid
 from unittest.mock import patch
 
 
@@ -57,7 +59,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
              'type': 'polygon',
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -67,10 +69,11 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         ann_update.instance = data_mocking.create_instance(
             {'creation_ref_id': str(uuid.uuid4()),
              'type': 'polygon',
-             'points': {'points':  [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'}, {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
+             'points': {'points': [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'},
+                                   {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -173,7 +176,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_max, inst1['y_max'])
         self.assertEqual(len(deleted_instances), 0)
 
-
     def test_overlap_existing_instances(self):
         """
         2 instances with ids are in different position and then one is placed on the exact position as the other one
@@ -265,12 +267,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         new_instance_list = updated_frame_file.cache_dict['instance_list']
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
-        for x in new_instance_list:
-            print('aaa', x)
 
-        print(inst1['id'], 'id')
-        print(inst2['id'], 'id')
-        print('deleted_instances', deleted_instances)
         self.assertEqual(len(added_instances), 0)
         self.assertEqual(len(new_instance_list), 1)
         self.assertEqual(len(deleted_instances), 1)
@@ -473,11 +470,10 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
 
-        self.assertEqual(len(added_instances), 2)
+        self.assertEqual(len(added_instances), 1)
         self.assertEqual(len(new_instance_list), 2)
-        self.assertEqual(len(deleted_instances), 2)
+        self.assertEqual(len(deleted_instances), 1)
         self.assertEqual(deleted_instances[0], newest_id)
-        self.assertEqual(deleted_instances[1], deleted_id)
         self.assertEqual(new_instance_list[0]['x_min'], inst_redone['x_min'])
         self.assertEqual(new_instance_list[0]['y_min'], inst_redone['y_min'])
         self.assertEqual(new_instance_list[0]['x_max'], inst_redone['x_max'])
@@ -485,13 +481,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertNotEqual(inst_redone['id'], new_instance_list[0]['id'])
         self.assertNotEqual(new_instance_list[0]['id'], deleted_id)
         self.assertFalse(new_instance_list[0]['soft_delete'])
-
-        self.assertEqual(new_instance_list[1]['x_min'], inst1['x_min'])
-        self.assertEqual(new_instance_list[1]['y_min'], inst1['y_min'])
-        self.assertEqual(new_instance_list[1]['x_max'], inst1['x_max'])
-        self.assertEqual(new_instance_list[1]['y_max'], inst1['y_max'])
-        self.assertTrue(new_instance_list[1]['soft_delete'])
-        self.assertNotEqual(new_instance_list[1]['id'], newest_id)
 
     def test_update_on_duplicate_instance_undo_case(self):
         """
@@ -699,8 +688,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         updated_frame_file = File.get_by_id(self.session, frame.id)
 
         new_instance_list = updated_frame_file.cache_dict['instance_list']
-        for x in new_instance_list:
-            print('instance new', x)
+
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
 
@@ -1082,7 +1070,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         ann_update.instance_list_new = inst_list
-        print('orders', ann_update.instance_list_new)
         ann_update.order_new_instances_by_date()
 
         self.assertEqual(ann_update.instance_list_new[0], inst3)
@@ -1195,7 +1182,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
-        print('ann_update.log', ann_update.log)
+
         self.assertTrue(result)
         self.assertTrue(len(ann_update.log['warning'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['warning'])
@@ -1227,3 +1214,276 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertTrue(instance2.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance3.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance4.id not in ann_update.log['warning']['missing_ids'])
+
+    def test_hashing_algorithm_changes(self):
+        """
+            This case handles when the instance.hash() function changes, ie we add or remove
+            an element for the hash creation. We check things like:
+
+            - Avoid tracking this hash change and marking it as a system event.
+            - Making sure this change is not attached to the user who saved the file
+            - Avoiding the "restored" state on the instance history.
+            - Checking overall instance history is valid.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 2 Saved Instances
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        instance2.hash_instance()
+        self.session.commit()
+        instance_list = [x.serialize_with_label() for x in [instance1, instance2]]
+
+        # 2. We Edit One Instance, the other one stays the same
+        instance_list[1]['x_max'] = 25
+        instance_list[1]['y_max'] = 25
+
+        # 3. We change the hashing algorithm (with a mock)
+        def dummy_hashing_algorithm(instance):
+            hash_data = [
+                instance.x_min,
+                instance.x_max,
+                instance.y_min,
+                instance.y_max,
+            ]
+
+            instance.hash = hashlib.sha256(json.dumps(hash_data,
+                                                      sort_keys = True).encode('utf-8')).hexdigest()
+
+        with patch.object(Instance, 'hash_instance', dummy_hashing_algorithm):
+            # 4. Re-save the instance.
+            ann_update = Annotation_Update(
+                session = self.session,
+                project = self.project,
+                instance_list_new = instance_list,
+                file = file1,
+                do_init_existing_instances = True
+            )
+            ann_update.main()
+        # 5. Expect just one changed instance (Even though hasing algo changed, it was not a user edit).
+        self.assertEqual(len(ann_update.new_added_instances), 1)
+
+    def test_no_changes_in_hashes_by_default_values(self):
+        """
+            Sometimes default values can make the hash change after
+            saving to DB. This test checks that is not happening.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 1 Unsaved Instance
+        inst1 = {'id': 1,
+                 'type': 'box',
+                 'file_id': 1,
+                 'label_file_id': 2,
+                 'soft_delete': False,
+                 'x_min': 10,
+                 'y_min': 10,
+                 'x_max': 28,
+                 'y_max': 28,
+                 'deletion_type': None,
+                 'created_time': '2022-01-12T18:31:59.530816',
+                 'action_type': 'created',
+                 'deleted_time': None,
+                 'change_source': None,
+                 'p1': None,
+                 'p2': None,
+                 'cp': None,
+                 'center_x': None,
+                 'center_y': None,
+                 'creation_ref_id': '10460e33-c02b-459d-a412-ab7b4512cc7c',
+                 'width': 18,
+                 'height': 18,
+                 'number': None,
+                 'interpolated': False,
+                 'machine_made': False,
+                 'model_id': None,
+                 'model_run_id': None,
+                 'sequence_id': None,
+                 'fan_made': None,
+                 'front_face': None,
+                 'rear_face': None,
+                 'rating': None,
+                 'attribute_groups': None,
+                 'member_created_id': None,
+                 'previous_id': None,
+                 'next_id': None,
+                 'root_id': 1,
+                 'version': 1,
+                 'nodes': [],
+                 'edges': [],
+                 'pause_object': None,
+                 'label_file': {'id': 2, 'hash': None, 'type': 'image', 'state': 'added',
+                                'created_time': '2022-01-12T18:31:59.508361', 'time_last_updated': None,
+                                'ann_is_complete': None, 'original_filename': 'ykzwdu', 'video_id': None,
+                                'video_parent_file_id': None, 'count_instances_changed': None,
+                                'image': {'original_filename': None, 'width': None, 'height': None,
+                                          'soft_delete': False, 'url_signed': None, 'url_signed_thumb': None,
+                                          'annotation_status': None}}
+                 }
+        instance_list = [inst1]
+
+        # 2. save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+
+        new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
+        self.session.commit()
+        session2 = sessionMaker.session_factory()
+
+        # 3. Re save with no changes
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        self.assertEqual(len(ann_update2.system_upgrade_hash_changes), 0)
+
+    def test__saving_untouched_instance_list_does_not_restore(self):
+        """
+            We had a bug that whenever we resaved an instance and there where no changes
+            we would mark the instance as restored even though we were not restoring anything.
+
+            This was because we were not checking the is_new_instance flag in the
+            __validate_user_deletion() function of shared/annotation.py
+
+            This regression test case covers this bug
+        :return:
+        """
+        """
+            Sometimes default values can make the hash change after
+            saving to DB. This test checks that is not happening.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 1 Unsaved Instance
+        inst1 = {'type': 'box',
+                 'file_id': file1.id,
+                 'label_file_id': label_file.id,
+                 'soft_delete': False,
+                 'x_min': 10,
+                 'y_min': 10,
+                 'x_max': 28,
+                 'y_max': 28,
+                 'deletion_type': None,
+                 'created_time': '2022-01-12T18:31:59.530816',
+                 'action_type': 'created',
+                 'deleted_time': None,
+                 'change_source': None,
+                 'p1': None,
+                 'p2': None,
+                 'cp': None,
+                 'center_x': None,
+                 'center_y': None,
+                 'creation_ref_id': '10460e33-c02b-459d-a412-ab7b4512gdghf',
+                 'number': None,
+                 'interpolated': False,
+                 'machine_made': False,
+                 'model_id': None,
+                 'model_run_id': None,
+                 'sequence_id': None,
+                 'fan_made': None,
+                 'front_face': None,
+                 'rear_face': None,
+                 'rating': None,
+                 'attribute_groups': None,
+                 'member_created_id': None,
+                 'previous_id': None,
+                 'next_id': None,
+                 'root_id': 1,
+                 'version': 1,
+                 'nodes': [],
+                 'edges': [],
+                 'pause_object': None,
+                 'label_file': {'id': 2, 'hash': None, 'type': 'image', 'state': 'added',
+                                'created_time': '2022-01-12T18:31:59.508361', 'time_last_updated': None,
+                                'ann_is_complete': None, 'original_filename': 'ykzwdu', 'video_id': None,
+                                'video_parent_file_id': None, 'count_instances_changed': None,
+                                'image': {'original_filename': None, 'width': None, 'height': None,
+                                          'soft_delete': False, 'url_signed': None, 'url_signed_thumb': None,
+                                          'annotation_status': None}}
+                 }
+        instance_list = [inst1]
+
+        # 2. save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+
+        new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
+        self.session.commit()
+
+        session2 = sessionMaker.session_factory()
+        new_instance_list[0]['x_min'] += 10
+        new_instance_list[0]['x_max'] += 10
+        new_instance_list[0]['y_max'] += 10
+        new_instance_list[0]['y_min'] += 10
+
+        # 3. Move the instance and resave
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        self.assertEqual(len(ann_update2.new_added_instances), 1)
+
+        instance_list_result = ann_update2.file.instance_list
+        new_instance_list = [x.serialize_with_label() for x in instance_list_result]
+        session2.commit()
+        # 4. Resave with no changes
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        instance_list_result = ann_update2.file.instance_list
+
+        self.assertEqual(len(instance_list_result), 2)
+        self.assertEqual(len(ann_update2.new_added_instances), 0)
+        self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')

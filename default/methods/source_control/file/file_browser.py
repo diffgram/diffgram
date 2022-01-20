@@ -586,13 +586,19 @@ class File_Browser():
         media_type = self.metadata.get("media_type", None)
 
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text"]
+            media_type_query = ["image", "video", "text", "sensor_fusion"]
 
-        if media_type == "Image":
+        if media_type in ['Image', 'image']:
             media_type_query = "image"
 
-        if media_type == "Video":
+        if media_type in ['Video', 'video']:
             media_type_query = "video"
+
+        if media_type in ['Text', 'text']:
+            media_type_query = "text"
+
+        if media_type in ['Sensor Fusion', 'sensor_fusion']:
+            media_type_query = "sensor_fusion"
 
         exclude_removed = True
         if self.metadata['file_view_mode'] in ["changes"]:
@@ -629,6 +635,7 @@ class File_Browser():
                 return False
             file_count += count
         else:
+
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,

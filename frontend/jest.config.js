@@ -1,13 +1,29 @@
 module.exports = {
-  preset: "@vue/cli-plugin-unit-jest/presets/no-babel",
   moduleFileExtensions: ["js", "ts", "json", "vue"],
   transform: {
+    "^.+\\.js$": "babel-jest",
     ".*\\.(vue)$": "vue-jest",
-    "^.+\\.tsx?$": "ts-jest"
+    "^.+\\.tsx?$": "ts-jest",
+  },
+  transformIgnorePatterns: [
+    "node_modules/(?!(three"
+    + "|another-module"
+    + "|yet-another-module"
+    + ")/)",
+
+  ],
+  setupFiles: ["<rootDir>/tests/unit/index.js"],
+  "modulePaths": ["<rootDir>/src"],
+  roots: ["<rootDir>/tests/"],
+  moduleNameMapper: {
+    "\\.(css|less)$": "<rootDir>/__mocks__/styleMock.js",
+    "@/(.*)": "<rootDir>/src/$1",
+
   },
   globals: {
     "ts-jest": {
-      tsConfig: "src/tsconfig.json"
+      tsconfig: "src/tsconfig.json"
     }
-  }
+  },
 };
+

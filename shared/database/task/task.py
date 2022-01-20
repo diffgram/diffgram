@@ -9,6 +9,7 @@ from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
 from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
+from shared.database.task.task_event import TaskEvent
 from shared.database.user import User
 
 TASK_STATUSES = {
@@ -149,7 +150,7 @@ class Task(Base):
     # QUESTION should we be using "member" here?
     # Current assumption is that tasks are only done by users which is maybe
     # wrong
-    assignee_user_id = Column(Integer, ForeignKey('userbase.id'))
+    assignee_user_id = Column(Integer, ForeignKey('userbase.id')) #DEPRECATED
     # assignee_user = relationship("User", back_populates = "task_list" )
     assignee_user = relationship("User",
                                  foreign_keys = [assignee_user_id],
@@ -465,7 +466,7 @@ class Task(Base):
             'file': self.file.serialize_with_annotations(session = session),
             'guide': guide,
             'label_dict': self.label_dict,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
         }
 
     def serialize_builder_view_by_id(self, session):
@@ -484,6 +485,11 @@ class Task(Base):
             if self.job.default_userscript:
                 default_userscript = self.job.default_userscript.serialize()
 
+        task_comment = ""
+        
+        if self.status == "complete" or self.status == "requires_changes":
+            task_comment = TaskEvent.get_last_task_comment(session, self.id, self.job_id, self.project_id)
+
         return {
             'id': self.id,
             'job_id': self.job_id,
@@ -499,7 +505,8 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'default_userscript': default_userscript,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
+            'task_comment': task_comment
         }
 
     def get_by_job_and_file(
@@ -662,7 +669,7 @@ class Task(Base):
             "in_review": in_review,
             "requires_changes": requires_changes,
             "in_progress": in_progress,
-            "instaces_created": instances_created
+            "instances_created": instances_created
         }
         return tasks_stats
     
@@ -678,8 +685,22 @@ class Task(Base):
     def serialize_for_list_view_builder(self, session = None):
 
         file = None
+        task_assignees = []
+        task_reviewers = []
         if session:
             file = self.file.serialize_with_type(session = session)
+
+            task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
+
+
+            for assignee in task_assignees_query:
+                task_assignees.append(assignee.serialize())
+
+            task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+
+
+            for assignee in task_reviewers_query:
+                task_reviewers.append(assignee.serialize())
 
         return {
             'id': self.id,
@@ -696,8 +717,10 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'time_created': self.time_created.isoformat(),
-            'assignee_user_id': self.assignee_user_id,
-            'file': file
+            'assignee_user_id': self.assignee_user_id, #Legacy way to return assignees, now task_assignees should be used
+            'file': file,
+            'task_assignees': task_assignees,
+            'task_reviewers': task_reviewers
 
         }
 

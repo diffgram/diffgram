@@ -20,6 +20,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Correctly raises an error when frontend sends invalid instance list.', () => {
       it('Correctly raises an instance_list integrity error.', () => {
+        cy.wait(1000)
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
 
 
@@ -44,6 +45,7 @@ describe('Annotate Files Tests', () => {
             max_y: 320,
           }
         ]
+        cy.wait(1000)
         for (let box of boxes) {
           cy.mousedowncanvas(box.min_x, box.min_x);
           cy.wait(500)
@@ -54,8 +56,10 @@ describe('Annotate Files Tests', () => {
           cy.mousedowncanvas(box.max_x, box.max_x);
           cy.wait(500)
           cy.mouseupcanvas();
-
+          cy.wait(500)
+          cy.get('[data-cy="save_button"]').click({force: true})
           cy.wait(2000)
+
         }
 
 
@@ -162,6 +166,61 @@ describe('Annotate Files Tests', () => {
             expect(xhrs[4].response, 'request status').to.have.property('statusCode', 200)
             expect(xhrs[5].response, 'request status').to.have.property('statusCode', 200)
           })
+      });
+    })
+
+    context('It Correctly saves all pending frames when fetching a new frame buffer.', () => {
+      it('Checks no frames are pending save when re fetching frame buffer.', () => {
+        cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
+        // Draw 1 boxes
+        cy.wait(2000)
+          .get('[data-cy="edit_toggle"]').click({force: true})
+        const boxes = [
+          {
+            min_x: 25,
+            min_y: 25,
+            max_x: 50,
+            max_y: 50,
+          },
+        ]
+        for (let box of boxes) {
+          cy.mousedowncanvas(box.min_x, box.min_x)
+            .wait(500)
+            .mouseupcanvas()
+            .wait(1000)
+            .mousedowncanvas(box.max_x, box.max_x)
+            .wait(500)
+            .mouseupcanvas()
+            .wait(2000)
+        }
+        cy.wait(5000)
+          .window().its('video_player').then(video_player_component => {
+            const slider_component = video_player_component.$refs.slider;
+            slider_component.$emit('start');
+            cy.wait(1000).then(() => {
+              slider_component.$emit('end', 65);
+              cy.wait(2000).then(() => {
+                  cy.get('@annotation_update.all').should('have.length.at.least', 1)
+                  .then((xhrs) => {
+                    expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
+                    expect(xhrs[0].request.body.video_data.current_frame, 'request status').to.equal(0)
+
+                    cy.window().its('AnnotationCore').then(annotation_core => {
+                      cy.log('annotation_core0aassd', annotation_core)
+                      expect(annotation_core.unsaved_frames.length).to.equal(0)
+                      let pending_save_frames = Object.keys(annotation_core.instance_buffer_metadata);
+                      for(let key of pending_save_frames){
+                        expect(annotation_core.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
+                          return val === false || val === undefined
+                        });
+
+                      }
+
+                    })
+                  })
+            })
+          })
+        })
       });
     })
   })
