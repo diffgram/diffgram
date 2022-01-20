@@ -329,6 +329,10 @@ class Annotation_Update():
             'kind': str,
             'required': False
         }},
+        {'text_tokenizer': {
+            'kind': str,
+            'required': False
+        }},
         {'pause_object': {
             'kind': bool,
             'required': False
@@ -1064,6 +1068,7 @@ class Annotation_Update():
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
                 pause_object = input['pause_object'],
+                text_tokenizer = input['text_tokenizer'],
                 relations_list = input['relations_list']
             )
 
@@ -1229,6 +1234,7 @@ class Annotation_Update():
                         overwrite_existing_instances = True,
                         validate_label_file = True,
                         pause_object = None,
+                        text_tokenizer = 'wink',
                         relations_list = None):
         """
         Assumes a "system" level context
@@ -1313,6 +1319,7 @@ class Annotation_Update():
             'angle': float(angle) if angle is not None else 0.0,
             'width': width,
             'height': height,
+            'text_tokenizer': text_tokenizer,
             'cp': cp,
             'p1': p1,
             'p2': p2,
