@@ -17,7 +17,11 @@
       </main_menu>
     </div>
     <div style="display: flex; flex-direction: row">
-        <text_sidebar />
+        <text_sidebar 
+            :instance_list="instance_list.filter(instance => !instance.soft_delete)"
+            @on_instance_hover="on_instance_hover"
+            @on_instance_stop_hover="on_instance_stop_hover"
+        />
         <svg 
             ref="initial_svg_element" 
             version="1.1" 
