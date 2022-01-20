@@ -111,13 +111,13 @@
 
 <script>
 import Vue from "vue";
-import axios from "axios"
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
 import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
+import getTextService from "../../services/getTextService"
 
 export default Vue.extend({
     name: "text_annotation_core",
@@ -126,18 +126,18 @@ export default Vue.extend({
         text_sidebar
     },
     props: {
-        file: {},
+        file: {
+            type: Object,
+            requered: true
+        },
         label_list: {
             type: Array,
             requered: true
-        },
-        text: {
-            type: String,
-            default: `There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc. There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.`
         }
     },
     data() {
         return {
+            text: null,
             current_label: null,
             rendering: true,
             relation_drawing: false,
@@ -158,7 +158,8 @@ export default Vue.extend({
             command_manager: undefined,
         }
     },
-    mounted() {
+    async mounted() {
+        this.text = await getTextService(this.file.text.url_signed)
         this.command_manager = new CommandManagerAnnotationCore()
         this.initial_words_measures = Tokenizer().tokenize(this.text)
         setTimeout(() => this.initialize_token_render(), 1000)
@@ -204,8 +205,6 @@ export default Vue.extend({
     },
     methods: {
         initialize_token_render: async function() {
-            const file = await axios.get("https://diffgram-storage-v.s3.amazonaws.com/projects/text/1/3?response-content-disposition=attachment%3B%20filename%3D3&AWSAccessKeyId=AKIA535AFYPJW3DLD67J&Signature=gjRQMt7DeH7e6Bm1wlqxqepdyyU%3D&Expires=1645211863")
-        console.log(file)
             const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
             const tokens = [];
             let token_x_position = 40;
