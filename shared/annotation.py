@@ -18,6 +18,7 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
+from shared.database.annotation.instance_relation import InstanceRelation
 from shared.database.label import Label
 from shared.helpers.permissions import LoggedIn, defaultRedirect, get_gcs_service_account
 from shared.helpers.permissions import getUserID
@@ -40,7 +41,7 @@ class Annotation_Update():
     session: Any
     file: Any  # Video or Image file.
     instance_list_new: list = None  # New from external
-    instance: object = None  # New from external
+    instance: Instance = None  # New from external
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
@@ -61,6 +62,9 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+    # This array will keep track of any new instance relations that did not have instance IDs
+    new_instance_relations_dict: dict = field(default_factory = lambda: {})
+    updated_relations: list = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -328,7 +332,15 @@ class Annotation_Update():
         {'pause_object': {
             'kind': bool,
             'required': False
-        }}
+        }},
+        {
+            'relations_list': {
+                'kind': list,
+                'default': [],
+                'required': False,
+                'allow_empty': True
+            }
+        }
     ])
 
     # If we want this.
@@ -498,6 +510,10 @@ class Annotation_Update():
         self.update_file_hash()
 
         self.left_over_instance_deletion()
+
+        self.create_new_instance_relations()
+
+        self.determine_updated_relations()
 
         self.instance_list_cache_update()
 
@@ -1047,7 +1063,8 @@ class Annotation_Update():
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
-                pause_object = input['pause_object']
+                pause_object = input['pause_object'],
+                relations_list = input['relations_list']
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1147,6 +1164,20 @@ class Annotation_Update():
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
 
+    def set_instance_relations_cache(self, relations_list):
+        """
+            Sets the cache dict of the self.instance to be the given relations_list.
+        :return:
+        """
+
+        if not self.instance:
+            return
+
+        if not self.instance.cache_dict:
+            self.instance.cache_dict = {}
+
+        self.instance.cache_dict['relations_list'] = relations_list
+
     def update_instance(self,
                         type: str,
                         x_min: int,
@@ -1197,7 +1228,8 @@ class Annotation_Update():
                         hash_instances = True,
                         overwrite_existing_instances = True,
                         validate_label_file = True,
-                        pause_object = None):
+                        pause_object = None,
+                        relations_list = None):
         """
         Assumes a "system" level context
 
@@ -1295,6 +1327,7 @@ class Annotation_Update():
                 setattr(self.instance, key, value)
         else:
             self.instance = Instance(**instance_attrs)
+            self.set_instance_relations_cache(relations_list = relations_list)
 
         self.instance_limits(validate_label_file = validate_label_file)
 
@@ -1355,6 +1388,8 @@ class Annotation_Update():
 
         self.__perform_external_map_action()
 
+        self.create_existing_instance_relations(relations_list)
+
         self.update_cache_single_instance_in_list_context()
         logger.debug('is_new_instance {}'.format(is_new_instance))
         if is_new_instance is False:
@@ -1379,12 +1414,145 @@ class Annotation_Update():
 
         sequence = self.sequence_update(instance = self.instance)
 
+
         if sequence:
             if not self.instance.soft_delete:
                 sequence.add_keyframe_to_cache(self.session, self.instance)
                 self.session.add(sequence)
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
+
+    def find_serialized_instance_index(self, id):
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            instance = self.instance_list_kept_serialized[i]
+            if instance.get('id') == id:
+                return i
+
+
+
+    def create_new_instance_relations(self):
+
+        for instance in self.new_added_instances:
+            if self.new_instance_relations_dict.get(instance.id) is None:
+                continue
+            relations_list = self.new_instance_relations_dict.get(instance.id)
+            for relation in relations_list:
+                from_instance_id = None
+                to_instance_id = None
+
+                # Get From Instance ID
+                if relation.get('from_instance_id'):
+                    from_instance_id = relation.get('from_instance_id')
+                elif relation.get('from_creation_ref_id'):
+                    # Search the instance by creation ref on the new added instances
+
+
+                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['from_creation_ref_id'])
+                    if result is None:
+                        message = 'Invalid relation sent. from_instance_creation_ref_id was not found. {}'.format(relation)
+                        logger.error(message)
+                        self.log['error']['invalid_relation'] = message
+                    from_instance_id = result.id
+                else:
+                    message = 'Invalid relation sent. Must provide from_instance_id or from_creation_ref_id. {}'.format(relation)
+                    logger.error(message)
+                    self.log['error']['invalid_relation'] = message
+                    return
+
+                # Get to_instance_id
+                if relation.get('to_instance_id'):
+                    to_instance_id = relation.get('to_instance_id')
+                elif relation.get('to_creation_ref_id'):
+                    # Search the instance by creation ref on the new added instances
+                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['to_creation_ref_id'])
+                    if result is None:
+                        message = 'Invalid relation sent. to_creation_ref_id was not found. {}'.format(relation)
+                        logger.error(message)
+                        self.log['error']['invalid_relation'] = message
+                    to_instance_id = result.id
+                else:
+                    message = 'Invalid relation sent. Must provide from_instance_id or to_creation_ref_id. {}'.format(relation)
+                    logger.error(message)
+                    self.log['error']['invalid_relation'] = message
+                    return
+
+                # Now create relation
+                relation = InstanceRelation.new(
+                    session = self.session,
+                    from_instance_id = from_instance_id,
+                    to_instance_id = to_instance_id,
+                    type = relation.get('type'),
+                    member_created_id = self.member.id
+                )
+
+                # Get existing cache
+                existing_rels = instance.cache_dict.get('relations_list')
+                if existing_rels is None:
+                    existing_rels = []
+                existing_rels.append(relation.serialize())
+                instance.set_cache_by_key(
+                    'relations_list',
+                    existing_rels
+                )
+
+                # Rehash updated instance
+                instance.hash_instance()
+
+                # Find instance_list_kept_serialized and replace
+                index_to_replace = self.find_serialized_instance_index(instance.id)
+                if index_to_replace is not None:
+                    self.instance_list_kept_serialized[index_to_replace] = instance.serialize_with_label()
+
+
+    def create_existing_instance_relations(self, relations_list):
+        """
+            Creates instances relations for the given IDs.
+            This will skip any relations for new instances (ie relations with creation_ref_ids and
+            not DB ids)
+            Theese skipped relations should be handled in the create_new_instance_relations() function
+        :return:
+        """
+        result = []
+        for relation in relations_list:
+            if relation.get('from_instance_id') is None or relation.get('to_instance_id') is None:
+                if self.new_instance_relations_dict.get(self.instance.id) is None:
+                    self.new_instance_relations_dict[self.instance.id] = [relation]
+                else:
+                    self.new_instance_relations_dict[self.instance.id].append(relation)
+                continue
+            relation = InstanceRelation.new(
+                session = self.session,
+                from_instance_id = relation.get('from_instance_id'),
+                to_instance_id = relation.get('to_instance_id'),
+                type = relation.get('type'),
+                member_created_id = self.member.id
+            )
+            serialized_relation = relation.serialize()
+            result.append(serialized_relation)
+
+        self.instance.set_cache_by_key(
+            'relations_list',
+            result
+        )
+        return result
+
+    def determine_updated_relations(self):
+        """
+
+            :return:
+        """
+        added_instances = self.new_added_instances
+        id_list_to_update = {}
+        for instance in added_instances:
+            if instance.previous_id:
+                id_list_to_update[instance.previous_id] = instance.id
+
+        updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session,
+                                                                                 id_list_to_update = id_list_to_update)
+
+        updated_rels_serialized = [rel.serialize() for rel in updated_rels]
+        self.updated_relations = updated_rels_serialized
+        return self.updated_relations
 
     def update_sequence_id_in_cache_list(self, instance):
         """
