@@ -49,6 +49,82 @@
             </div>
 
             <v-divider vertical></v-divider>
+
+            <div>
+                <tooltip_button
+                    ui_schema_name="save"
+                    @click="$emit('save')"
+                    datacy="save_button"
+                    :loading="save_loading"
+                    :disabled="
+                        !has_changed ||
+                        save_loading ||
+                        view_only_mode ||
+                        (file == undefined && task == undefined)
+                    "
+                    color="primary"
+                    icon="save"
+                    tooltip_message="Save Image / Frame"
+                    :icon_style="true"
+                    :bottom="true"
+                    >
+                </tooltip_button>
+            </div>
+            <div class="has-changed">
+                <div style="width: 100px">
+                <span v-if="save_loading"> Saving. </span>
+                <span v-else>
+                    <span v-if="has_changed">Changes Detected...</span>
+                    <span v-else>Saved</span>
+                </span>
+                </div>
+            </div>
+
+            <v-divider vertical></v-divider>
+
+            <div>
+                <tooltip_button
+                tooltip_message="Previous File"
+                @click="$emit('change_file', 'previous')"
+                :disabled="
+                    loading || annotations_loading || full_file_loading || !file
+                "
+                color="primary"
+                icon="mdi-chevron-left-circle"
+                :icon_style="true"
+                :bottom="true"
+                >
+                </tooltip_button>
+                <!-- TODO Move some of disabled logic into functions don't like having
+                    so much of it here as it gets more complext -->
+            </div>
+            <div>
+                <tooltip_button
+                tooltip_message="Next File"
+                @click="$emit('change_file', 'next')"
+                :disabled="
+                    loading || annotations_loading || full_file_loading || !file
+                "
+                color="primary"
+                icon="mdi-chevron-right-circle"
+                :icon_style="true"
+                :bottom="true"
+                >
+                </tooltip_button>
+            </div>
+
+            <v-divider vertical></v-divider>
+
+            <button_with_menu
+                tooltip_message="Hotkeys"
+                color="primary"
+                icon="mdi-keyboard-settings"
+                :close_by_button="true"
+            >
+            </button_with_menu>
+
+            <v-divider vertical></v-divider>
+
         </v-toolbar-items>
     </v-toolbar>
 </template>
