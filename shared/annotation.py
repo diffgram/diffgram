@@ -1487,7 +1487,6 @@ class Annotation_Update():
 
                 # Get existing cache
                 existing_rels = instance.cache_dict.get('relations_list')
-                print('EXISTING RELS', existing_rels)
                 if existing_rels is None:
                     existing_rels = []
                 existing_rels.append(relation.serialize())
@@ -1543,7 +1542,6 @@ class Annotation_Update():
             :return:
         """
         added_instances = self.new_added_instances
-        print('determine_updated_relations', added_instances)
         id_list_to_update = {}
         for instance in added_instances:
             if instance.previous_id:
@@ -1552,7 +1550,6 @@ class Annotation_Update():
         updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session,
                                                                                  id_list_to_update = id_list_to_update)
 
-        print('updaa', updated_rels)
         updated_rels_serialized = [rel.serialize() for rel in updated_rels]
         self.updated_relations = updated_rels_serialized
         return self.updated_relations
