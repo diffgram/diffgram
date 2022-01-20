@@ -156,6 +156,13 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(to.query);
     },
+    current_file: {
+      handler(newVal, oldVal) {
+        if (newVal && newVal != oldVal) {
+          this.$addQueriesToLocation({ file: newVal.id });
+        }
+      },
+    },
   },
   created() {
     if (this.$route.query.edit_schema) {
