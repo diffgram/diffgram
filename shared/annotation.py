@@ -1543,7 +1543,7 @@ class Annotation_Update():
             :return:
         """
         added_instances = self.new_added_instances
-
+        print('determine_updated_relations', added_instances)
         id_list_to_update = {}
         for instance in added_instances:
             if instance.previous_id:
