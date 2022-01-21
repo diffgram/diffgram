@@ -12,7 +12,7 @@ export class TextAnnotationInstance extends Instance {
 
     public create_instance(id, start_token, end_token, label_file): void {
         this.id = id;
-        this.type = "text_annotation";
+        this.type = "text_token";
         this.creation_ref_id = uuidv4();
         this.start_token = start_token;
         this.end_token = end_token;

@@ -84,7 +84,7 @@
                     :width="rect.width"
                     @mouseenter="() => on_instance_hover(rect.instance_id)"
                     @mouseleave="on_instance_stop_hover"
-                    :height="rect.instance_type === 'text_annotation' ? 3 : 1"
+                    :height="rect.instance_type === 'text_token' ? 3 : 1"
                     style="cursor: pointer"
                 />
                 <g 
@@ -115,6 +115,7 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios";
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
@@ -124,7 +125,7 @@ import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/inst
 import getTextService from "../../services/getTextService"
 
 export default Vue.extend({
-    name: "text_annotation_core",
+    name: "text_token_core",
     components: {
         text_toolbar,
         text_sidebar
@@ -291,14 +292,14 @@ export default Vue.extend({
         on_start_draw_instance: function(start_token) {
             this.instance_in_progress = {
                 id: this.instances.length,
-                type: "text_annotation",
+                type: "text_token",
                 start_token: start_token.id,
                 label_id: this.current_label.id,
                 level: 0
             }
         },
         // function to finish drawing instance and remove selection
-        on_finish_draw_instance: function(end_token) {
+        on_finish_draw_instance: async function(end_token) {
             this.instance_in_progress.end_token = end_token.id
             const instance_exists = this.instances.find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
@@ -317,6 +318,9 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
+
+                const res = await axios.post(`/api/project/quiverboar/file/${this.file.id}/annotation/update`, {instance_list: this.instance_list})
+                console.log
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -411,7 +415,7 @@ export default Vue.extend({
         draw_instance: function(instance) {
             let starting_token;
             let end_token;
-            if (instance.type === 'text_annotation') {
+            if (instance.type === 'text_token') {
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {
