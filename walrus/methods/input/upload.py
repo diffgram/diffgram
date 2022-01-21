@@ -35,11 +35,12 @@ def api_project_upload_large(project_string_id):
     with sessionMaker.session_scope() as session:
 
         project = Project.get(session, project_string_id)
-
+        member = get_member(session)
         upload = Upload(
             session=session,
             project=project,
-            request=request)
+            request=request,
+            member = member)
 
         upload.route_from_unique_id()
         if len(upload.log["error"].keys()) >= 1:
@@ -66,11 +67,13 @@ class Upload():
     def __init__(self,
                  session,
                  project,
-                 request):
+                 request,
+                 member):
 
         self.session = session
         self.project = project
         self.request = request
+        self.member = member
         self.log = regular_log.default()
 
     def get_project_labels(self):
@@ -160,10 +163,7 @@ class Upload():
         Perhaps is nice pattern to start thinking more in terms of external
         objects like  upload.attribute instead of self.attribute.
         """
-        print('reques filess', self.request.files)
         self.binary_file = self.request.files.get('file')
-        print('FILE NAME', self.binary_file.filename)
-
         # to distinguish from diffgram file which we normally just call 'file'
         if not self.binary_file:
             self.log['error']['binary_file'] = "No file provided"
@@ -177,7 +177,8 @@ class Upload():
             self.create_input(
                 project=self.project,
                 request=self.request,
-                filename=self.binary_file.filename)
+                filename=self.binary_file.filename,
+                member_created = self.member)
         else:
             print('dzuuid dzuuid', self.dzuuid)
             self.input = self.session.query(Input).filter(
@@ -251,7 +252,6 @@ class Upload():
 
         stream = self.binary_file.stream.read()
         content_size = len(stream)
-        logger.info('upload_large_api: stream {}'.format(stream))
         logger.info('upload_large_api: raw_data_blob_path {}'.format(input.raw_data_blob_path))
         logger.info('upload_large_api: input_type {}'.format(input.type))
         logger.info('upload_large_api: media_type {}'.format(input.media_type))
@@ -305,7 +305,8 @@ class Upload():
             self,
             project,
             request,
-            filename
+            filename,
+            member_created: 'Member' = None
     ):
 
         self.input = Input.new(
@@ -316,6 +317,7 @@ class Upload():
             directory_id=request.form.get('directory_id'),  # Not trusted
             video_split_duration=request.form.get('video_split_duration'),
             batch_id=request.form.get('input_batch_id'),
+            member_created_id = member_created.id if member_created else None
         )
         if request.form.get('input_batch_id') is not None:
             self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)

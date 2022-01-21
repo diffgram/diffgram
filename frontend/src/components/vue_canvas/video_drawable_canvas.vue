@@ -47,7 +47,9 @@
               @pause="video_playing = false"
               @seeking_update="seeking_update($event)"
               :project_string_id="project_string_id"
-              @change_frame_from_video_event="change_frame_from_video($event)"
+
+              @go_to_keyframe_loading_started="set_keyframe_loading"
+              @go_to_keyframe_loading_ended="change_frame_from_video"
               @video_animation_unit_of_work="video_animation_unit_of_work($event)"
               @video_current_frame_guess="current_frame = parseInt($event)"
               @slide_start="() => {}"
@@ -151,6 +153,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         refresh_video_buffer: new Date(),
         html_image: new Image(),
         video_playing: false,
+        go_to_keyframe_loading: false,
         video_play: null,
         video_pause: null,
         current_frame: 0,
@@ -189,6 +192,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
 
     },
     methods:{
+      set_keyframe_loading: function(value){
+        this.go_to_keyframe_loading = value
+      },
       initialize_video: async function(){
         this.$refs.video_controllers.reset_cache();
         await this.get_instances();

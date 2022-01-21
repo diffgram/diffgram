@@ -93,7 +93,6 @@
       methods: {
         on_change_guide: function (guide) {
           this.job.guide = guide;
-          console.log('changeee', guide)
           this.attach_selected(guide.id, 'default', 'update')
         },
         on_next_button_click: function () {

@@ -441,7 +441,7 @@
 
           <template slot="Action" slot-scope="props">
             <tooltip_button
-              tooltip_message="Review"
+              tooltip_message="Go to Task"
               @click.stop.prevent="route_task(props.item.id)"
               v-if="!integration_name"
               icon="mdi-file-find"

@@ -232,6 +232,7 @@ jobs:
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
       ALLOW_EVENTHUB: ${{ secrets.ALLOW_EVENTHUB }}
+      IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -294,6 +295,7 @@ jobs:
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
           diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
+          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -350,6 +352,7 @@ jobs:
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
           diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
+          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "32G"
           walrusService.limits.memory: "32G"
@@ -419,6 +422,7 @@ jobs:
       EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       ALLOW_EVENTHUB: ${{ secrets.ALLOW_EVENTHUB }}
+      IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
@@ -479,6 +483,7 @@ jobs:
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
           diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
+          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
@@ -538,6 +543,7 @@ jobs:
           diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
           diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
           diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
+          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           defaultService.numReplicas: 1
           walrusService.numReplicas: 1

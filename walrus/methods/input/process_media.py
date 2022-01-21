@@ -1,4 +1,3 @@
-
 from methods.regular.regular_api import *
 from methods.video.video import New_video
 
@@ -13,7 +12,7 @@ import tempfile
 import csv
 import gc
 import shutil
-
+from urllib.parse import urlsplit
 from random import randrange
 
 from werkzeug.utils import secure_filename
@@ -47,6 +46,7 @@ from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileP
 import numpy as np
 from shared.regular.regular_log import log_has_error
 import os
+from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 
 data_tools = Data_tools().data_tools
@@ -59,6 +59,7 @@ csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
 STOP_PROCESSING_DATA = False
+
 
 @dataclass(order = True)
 class PrioritizedItem:
@@ -199,12 +200,10 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 # https://diffgram.com/docs/process-media-local-worker-queues
 
 
-
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
     from methods.input.process_media_queue_manager import process_media_queue_manager
-
-    if item.media_type and item.media_type in ["frame", "image", "text"]:
+    if item.media_type and item.media_type in ["frame", "image", "text", "csv_url"]:
 
         wait_until_queue_pressure_is_lower(
             queue = process_media_queue_manager.FRAME_QUEUE,
@@ -477,7 +476,6 @@ class Process_Media():
                 logger.error('Error updating instances: {}'.format(str(self.log['error'])))
                 return
 
-
             return
 
         if self.input.type not in ["from_url", "from_video_split"]:
@@ -559,6 +557,10 @@ class Process_Media():
         ###
 
         ### Main
+        self.check_free_tier_limits()
+
+        if log_has_error(self.log):
+            return False
 
         self.route_based_on_media_type()
 
@@ -609,7 +611,7 @@ class Process_Media():
         if existing_file_list:
             self.input.status = "failed"
             self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
-            self.input.update_log = {'error' : {
+            self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }
             return False
@@ -1026,13 +1028,71 @@ class Process_Media():
             self.input.status = 'failed'
             self.input.update_log = self.log
 
+    def check_free_tier_limits(self):
+        if self.input.media_type not in ['image', 'text', 'sensor_fusion', 'video']:
+            return
+
+        directory = self.input.directory
+
+        user_id = None
+        user = None
+        if self.input.member_created:
+            user = self.input.member_created.user
+            if user:
+                user_id = user.id
+
+        feature_checker = FeatureChecker(
+            session = self.session,
+            user = user,
+            project = self.input.project
+        )
+
+        if self.input.media_type == 'video':
+            max_file_count = feature_checker.get_limit_from_plan('MAX_VIDEOS_PER_DATASET')
+
+        elif self.input.media_type == 'image':
+            max_file_count = feature_checker.get_limit_from_plan('MAX_VIDEOS_PER_DATASET')
+
+        elif self.input.media_type == 'text':
+            max_file_count = feature_checker.get_limit_from_plan('MAX_TEXT_FILES_PER_DATASET')
+
+        elif self.input.media_type == 'sensor_fusion':
+            max_file_count = feature_checker.get_limit_from_plan('MAX_SENSOR_FUSION_FILES_PER_DATASET')
+        else:
+            return
+
+        # Small optimization, avoid querying DB if no check is required (ie Premium Plans)
+        if max_file_count is None:
+            return
+
+        file_count_dir = WorkingDirFileLink.file_list(
+            session = self.session,
+            working_dir_id = directory.id,
+            limit = None,
+            counts_only = True
+        )
+
+        logger.info('Free tier check for user: {} DIR[{}] File count: {}'.format(user_id,
+                                                                                 directory.id,
+                                                                                 file_count_dir))
+        if max_file_count is not None and max_file_count <= file_count_dir:
+            message = 'Free Tier Limit Reached - Max Files Allowed: {}. But Directory with ID: {} has {}'.format(
+                max_file_count,
+                directory.id,
+                file_count_dir)
+            logger.error(message)
+            self.log['error']['free_tier_limit'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
+            return False
+
     def route_based_on_media_type(self):
         """
 
         Route to function based on self.input.media_type
 
         """
-        print('OPERATION', self.input.media_type)
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
@@ -1794,7 +1854,6 @@ class Process_Media():
         """
 
         row_limit = 10000
-
         with open(self.input.temp_dir_path_and_filename) as csv_file:
 
             csv_reader = csv.reader(csv_file)
@@ -1817,7 +1876,7 @@ class Process_Media():
                 row_input.url = row[0]
                 row_input.allow_csv = False
                 row_input.type = "from_url"
-
+                row_input.media_type = "csv_url"
                 self.try_to_commit()
 
                 # Spawn a new instance for each url
@@ -1826,7 +1885,7 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-
+                item.media_type = 'csv_url'
                 add_item_to_queue(item)
 
         # TODO how to handle removing from directory
@@ -1935,6 +1994,7 @@ class Process_Media():
             self.log['error']['status_text'] = self.input.status_text
             return
 
+        split_url = urlsplit(self.input.url)
         response = requests.get(self.input.url, stream = True)
 
         if response.status_code != 200:
@@ -2120,7 +2180,6 @@ class Process_Media():
         or both?
         """
         extension = extension.lower()
-        print('INPUT TYPE', extension)
 
         if extension in images_allowed_file_names:
             return "image"

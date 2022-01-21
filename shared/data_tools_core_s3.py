@@ -34,7 +34,8 @@ class DataToolsS3:
         self,
         input: 'Input',
         blob_path: str,
-        content_type: str = None
+        content_type: str = None,
+        batch: 'InputBatch' = None
     ):
         """
             Creates an S3 Multipart upload session and attached the upload ID
@@ -53,7 +54,12 @@ class DataToolsS3:
             Key = blob_path,
             ContentType = content_type
         )
-        input.upload_aws_id = response['UploadId']
+        if input is not None:
+            input.upload_aws_id = response['UploadId']
+
+        if batch is not None:
+            batch.upload_aws_id = response['UploadId']
+        return response['UploadId']
 
     def transmit_chunk_of_resumable_upload(
         self,
@@ -96,31 +102,26 @@ class DataToolsS3:
         """
         # - 1 seems to be needed
         # it's "includsive" ?
+        parts_obj = None
+        if input:
+            parts_obj = input
+
+        if batch:
+            parts_obj = batch
 
         part = self.s3_client.upload_part(
             Body = stream,
             Bucket = self.s3_bucket_name,
             Key = blob_path,
-            UploadId = input.upload_aws_id,
+            UploadId = parts_obj.upload_aws_id,
             PartNumber = int(chunk_index) + 1)
-        if input:
-            if input.upload_aws_parts_list is None or \
-                input.upload_aws_parts_list.get('parts') is None:
-                input.upload_aws_parts_list = {
+        if parts_obj:
+            if parts_obj.upload_aws_parts_list is None or parts_obj.upload_aws_parts_list.get('parts') is None:
+                parts_obj.upload_aws_parts_list = {
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
             else:
-                input.upload_aws_parts_list['parts'].append(
-                    {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
-                )
-        elif not input and batch:
-            if batch.upload_aws_parts_list is None or \
-                batch.upload_aws_parts_list.get('parts') is None:
-                batch.upload_aws_parts_list = {
-                    'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
-                }
-            else:
-                batch.upload_aws_parts_list['parts'].append(
+                parts_obj.upload_aws_parts_list['parts'].append(
                     {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
                 )
 
@@ -128,9 +129,8 @@ class DataToolsS3:
             result = self.s3_client.complete_multipart_upload(
                 Bucket = self.s3_bucket_name,
                 Key = blob_path,
-                UploadId = input.upload_aws_id if input else batch.upload_aws_id,
-                MultipartUpload = {
-                    "Parts": input.upload_aws_parts_list['parts'] if input else batch.upload_aws_parts_list['parts']}
+                UploadId = parts_obj.upload_aws_id,
+                MultipartUpload = {"Parts": parts_obj.upload_aws_parts_list['parts']}
             )
         return True
 
@@ -249,7 +249,11 @@ class DataToolsS3:
         :param blob_name: path to the blob on the cloud providers's bucket
         :return: string data of the downloaded blob
         """
-        raise NotImplementedError
+        bytes_buffer = BytesIO()
+        self.s3_client.download_fileobj(Bucket = self.s3_bucket_name, Key = blob_name, Fileobj = bytes_buffer)
+        byte_value = bytes_buffer.getvalue()
+        str_value = byte_value.decode()
+        return str_value
 
     def rebuild_secure_urls_image(self, session: 'Session', image: 'Image'):
         """

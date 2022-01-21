@@ -20,6 +20,7 @@ from shared.database.input import Input
 
 from methods.input import process_media
 from shared.data_tools_core import Data_tools
+from shared.feature_flags.feature_checker import FeatureChecker
 import traceback
 # Design doc
 
@@ -85,6 +86,36 @@ class New_video():
         )
 
         video.file_signed_url = data_tools.build_secure_url(video.file_blob_path, 2592000)
+
+    def check_free_tier_frame_count(self, frame_count):
+
+        member = self.input.member_created
+        user = None
+        if member:
+            user = member.user
+
+        checker = FeatureChecker(
+            session = self.session,
+            user = user,
+            project = self.project
+        )
+
+        max_frames = checker.get_limit_from_plan('MAX_FRAMES_PER_VIDEO')
+        if max_frames is not None and frame_count >= max_frames:
+            self.input.status = "failed"
+            message = 'Free Tier Limit Reached - Max Frames Per Video Allowed: {}. But Video has {}'.format(
+                max_frames,
+                frame_count)
+            self.input.status_text = message
+            # only for internal use
+            # could look at storing in DB later or Using event logging.
+            logger.error(message)
+            self.input.update_log['error'] = {}
+            self.input.update_log['error']['free_tier_limit'] = message
+            return False
+
+        return True
+
 
     def load(self,
              video_file_name,
@@ -157,6 +188,10 @@ class New_video():
         # we update fps properly
         # otherwise have fps of say 0 and it's funny
         length = int(clip.duration * fps)  # Frame count (ESTIMATED) otherwise requires iteration / loop to get exact
+
+        result = self.check_free_tier_frame_count(length)
+        if not result:
+            return None
 
         # temp higher limit for testing stuff
         # enough for a 120fps 5 minutes, or 60 fps 10 minutes

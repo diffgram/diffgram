@@ -115,7 +115,7 @@ def upgrade():
     op.add_column('plan', sa.Column('is_annual_pricing', sa.Boolean))
     op.add_column('plan', sa.Column('calculated_charge', sa.Integer))
     op.add_column('plan', sa.Column('per_user_final', sa.Integer))
-    op.add_column('plan', sa.Column('marketing_promo_code', sa.Integer))
+    op.add_column('plan', sa.Column('marketing_promo_code', sa.String))
     op.add_column('plan', sa.Column('marketing_promo_rate_found', sa.Float))
     op.add_column('plan', sa.Column('marketing_plan_rate', sa.Integer))
     op.add_column('plan', sa.Column('marketing_savings', sa.Integer))

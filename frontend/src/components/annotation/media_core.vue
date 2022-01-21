@@ -83,8 +83,7 @@
                       text-color="primary"
                       >No more pages.</v-chip>
               </div>
-              <div v-else
-                   class="pl-2 pt-4">
+              <div v-else class="pl-2 pt-4">
 
                 <v-chip color="white"
                         text-color="primary"
@@ -220,7 +219,8 @@
                   <v-select :items="filter_media_type_option_list"
                             v-model="filter_media_type_setting"
                             label="File Type"
-                            item-value="text"
+                            item-value="value"
+                            item-text="name"
                             :disabled="loading"
                             @change="item_changed"></v-select>
 
@@ -622,18 +622,19 @@
                                  :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
                                  ['unsselected-box']: !selected.includes(item),
                                  ['selected-box']: selected.includes(item)}"
-                                 style="width: 100px; height: 100px; " v-else>
+                                 style="width: 100px; height: 100px; " >
                       <v-icon size="32" class="ma-0 pa-0">
                         mdi-video-3d-variant
                       </v-icon>
                       <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
-                    <v-container v-else  class="d-flex flex-column justify-center align-center"
-                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;" v-else>
-                      <v-icon>
+                    <v-container v-else-if="item.type === 'text'"
+                                 class="d-flex flex-column justify-center align-center pa-0"
+                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;">
+                      <v-icon size="28" class="ma-0 pa-0">
                         mdi-script-text
                       </v-icon>
-                      <p class="mt-4">{{item.original_filename}}</p>
+                      <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
 
                   </div>
@@ -981,7 +982,28 @@ import Vue from "vue";
       loading: true,
       inference_selected_loading: false,
 
-      filter_media_type_option_list: ["All", "Image", "Video"],
+      filter_media_type_option_list: [
+        {
+          name: "All",
+          value: "All"
+        },
+        {
+          name: "Image",
+          value: "image",
+        },
+        {
+          name: "Video",
+          value: "video",
+        },
+        {
+          name: "Text",
+          value: "text",
+        },
+        {
+          name: "Sensor Fusion",
+          value: "sensor_fusion"
+        }
+      ],
       filter_media_type_setting: "All", // Video
 
       annotations_are_machine_made_items: ["All", "Predictions only", "Human only"],

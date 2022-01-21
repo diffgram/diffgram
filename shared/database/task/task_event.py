@@ -1,5 +1,7 @@
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import desc
+from shared.database.discussion.discussion_comment import DiscussionComment
 
 
 class TaskEvent(Base, SerializerMixin):
@@ -50,6 +52,21 @@ class TaskEvent(Base, SerializerMixin):
         if self.comment_id:
             data['comment'] = self.comment.serialize()
         return data
+
+    @staticmethod
+    def get_last_task_comment(session, task_id, job_id, project_id):
+        latest_comment = session.query(TaskEvent).filter(
+            TaskEvent.task_id == task_id,
+            TaskEvent.job_id == job_id,
+            TaskEvent.project_id == project_id,
+            TaskEvent.event_type == 'comment'
+        ).order_by(desc(TaskEvent.time_created)).first()
+
+        if (latest_comment == None):
+            return ""
+
+        comment_display = session.query(DiscussionComment).filter(DiscussionComment.id == latest_comment.comment_id).first()
+        return comment_display.content
 
     @staticmethod
     def generate_task_creation_event(session, task, member) -> 'TaskEvent':

@@ -32,8 +32,10 @@ export class CreateInstanceCommand {
       }
       return newInstance;
     }
+
     if (instance.type == "keypoints") {
       let newInstance = instance.get_instance_data();
+
       let initializedInstance = this.ann_core_ctx.initialize_instance(
         newInstance
       );
@@ -53,9 +55,10 @@ export class CreateInstanceCommand {
     }
   }
 
-  constructor(instance, ann_core_ctx) {
+  constructor(instance, ann_core_ctx, frame_number = undefined) {
     this.ann_core_ctx = ann_core_ctx;
     this.instance = this._copyInstance(instance);
+    this.frame_number = frame_number;
     this.created_instance_index = undefined;
   }
 
@@ -76,15 +79,14 @@ export class CreateInstanceCommand {
       );
       if (existing_instance.length === 0) {
         this.instance.soft_delete = false;
-        this.ann_core_ctx.push_instance_to_instance_list_and_buffer(
+        this.ann_core_ctx.add_instance_to_file(
           {
             ...this.instance,
             points: [...this.instance.points.map(p => ({ ...p }))]
           },
-          this.ann_core_ctx.current_frame
+          this.frame_number
         );
-        this.created_instance_index =
-          this.ann_core_ctx.instance_list.length - 1;
+        this.created_instance_index = this.ann_core_ctx.instance_list.length - 1;
         // Get the pushed instance to have the creation ref ID in future redo's
         this.instance = this._copyInstance(
           this.ann_core_ctx.instance_list[this.created_instance_index]
