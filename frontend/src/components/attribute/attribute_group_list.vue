@@ -89,6 +89,7 @@
         :key="group.id"
       >
         <v-expansion-panel-header
+                        style="border: 1px solid #e0e0e0"
                         :data-cy="`attribute_group_header_${group.prompt}`"
                         @click="update_url_with_current_group(group)"
                         class="d-flex justify-start text-left">

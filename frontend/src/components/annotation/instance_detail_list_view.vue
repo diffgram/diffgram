@@ -10,18 +10,14 @@
     </v-alert>
       <v-layout row >
         <v-flex >
-          <v-card :color="header_colour">
-          
-            <v-chip v-if="current_instance
-                        && current_instance.id
-                        && $store.state.user.current.is_super_admin == true">
-            ID: {{current_instance.id}}
-            </v-chip>
-    
+          <v-card :color="header_colour" elevation="0">
             <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
 
           <!-- global_attribute_groups_list -->
+         <div class="pa-2" v-if="global_attribute_groups_list.length != 0">
+           <h4>Global File Attributes: </h4>
+         </div>
           <v-expansion-panels
                 v-model="openedGlobalPanel"
                 :accordion="true"
@@ -65,8 +61,9 @@
 
                 </v-expansion-panel>
             </v-expansion-panels>
-
-            </v-card-title>
+            <div class="pa-2" v-if="attribute_group_list_prop.length != 0">
+              <h4>Instance Level Attributes: </h4>
+            </div>
             <attribute_group_list
                 style="overflow-y:auto; max-height: 400px"
                 v-if="attribute_group_list_prop.length != 0"
@@ -108,6 +105,11 @@
                   </div>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
+                  <v-chip v-if="current_instance
+                        && current_instance.id
+                        && $store.state.user.current.is_super_admin == true" x-small class="ma-2" color="secondary">
+                    <span class="font-weight-bold mr-2">Selected: </span> <span >{{current_instance.id}}</span>
+                  </v-chip>
                   <v-data-table v-if="grouped_list &&
                                       grouped_list.instance_list.length > 0"
                                 style="overflow-y:auto; max-height: 450px"
@@ -490,7 +492,7 @@
             </v-expansion-panels>
 
 
-              <v-chip x-small>
+              <v-chip x-small v-if="instance_list_count > 0">
               {{instance_list_count}}
               </v-chip>
 

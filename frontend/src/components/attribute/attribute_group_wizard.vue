@@ -29,6 +29,18 @@
           <v-stepper-step
             editable
             :complete="step > 3"
+            step="2"
+          >
+            Local or Global
+          </v-stepper-step>
+
+
+
+          <v-divider></v-divider>
+
+          <v-stepper-step
+            editable
+            :complete="step > 4"
             step="3">
             Visible When
           </v-stepper-step>
@@ -37,7 +49,7 @@
 
           <v-stepper-step
             editable
-            :complete="step > 4"
+            :complete="step > 5"
             step="4">
             User Choices
           </v-stepper-step>
@@ -45,7 +57,7 @@
           <v-divider></v-divider>
           <v-stepper-step
             editable
-            :complete="step > 5"
+            :complete="step > 6"
             step="5">
             Defaults
           </v-stepper-step>
@@ -145,6 +157,26 @@
 
           <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
+            <h2> Instance Level Attribute Or File Level Attribute? </h2>
+
+            <p>File Level Attributes are global attributes for a file. Instance Level are extra information that can be attached to the instance.</p>
+            <v-layout>
+              <v-btn> Instance Level</v-btn>
+            </v-layout>
+
+            <wizard_navigation
+              @next="go_to_step(3)"
+              @back="go_back_a_step()"
+              :disabled_next="!group.prompt"
+              :skip_visible="false"
+            >
+            </wizard_navigation>
+
+          </v-stepper-content>
+
+
+          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_3">
+
             <h2 class="pb-2"> When Do You Want to Show This? </h2>
 
             <label_select_only
@@ -169,8 +201,7 @@
 
           </v-stepper-content>
 
-
-          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_4">
 
           <v-layout column>
 
@@ -178,8 +209,19 @@
             </v_error_multiple>
 
             <h2 class="pb-2">
-            Options
+            Options:
             </h2>
+              <!-- Globals -->
+              <div class="pt-0 ">
+                <v-checkbox
+                  v-model="group.is_global"
+                  label="Global Attribute of the File"
+                  :disabled="loading || view_only_mode"
+                  @change="$emit('change')"
+                >
+                </v-checkbox>
+              </div>
+
 
             <div class="pa-2">
               <button_with_menu

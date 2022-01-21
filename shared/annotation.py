@@ -757,10 +757,6 @@ class Annotation_Update():
     def init_video_input(self):
 
         # TODO, we aren't actually 'raising" this error very well here.
-        # Also this will fire an error "wrongly"
-        # which makes a check success at the end not quite work right.
-
-        # Currently rely on front end to send a Null dict here then?
 
         if not self.video_data:
             return
@@ -787,6 +783,9 @@ class Annotation_Update():
             }
             }
         ]
+
+        if self.instance_proposed.get('type') == 'global':
+            self.instance_proposed['label_file_id'] = -1  # to bypass check
 
         self.log, input = regular_input.input_check_many(
             spec_list = spec_list,
@@ -1353,27 +1352,6 @@ class Annotation_Update():
 
         self.deduct_spatial_coordinates()
 
-        if self.instance.type in ['cuboid_3d']:
-            self.instance.min_point_3d = {
-                'min': {
-                    'x': min_coords[0],
-                    'y': min_coords[1],
-                    'z': min_coords[2]
-                }
-            }
-            self.instance.max_point_3d = {
-                'max': {
-                    'x': max_coords[0],
-                    'y': max_coords[1],
-                    'z': max_coords[2]
-                }
-            }
-        else:
-            self.instance.x_min = int(min_coords[0])
-            self.instance.y_min = int(min_coords[1])
-
-            self.instance.x_max = int(max_coords[0])
-            self.instance.y_max = int(max_coords[1])
 
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
@@ -1436,19 +1414,34 @@ class Annotation_Update():
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
-
     def deduct_spatial_coordinates(self):
 
         if self.instance.type == "global":
             return
 
-        # After instance limits to make sure points are available.
-        deducted_x_min, deducted_y_min = self.get_min_coordinates_instance(self.instance)
-        deducted_x_max, deducted_y_max = self.get_max_coordinates_instance(self.instance)
-        self.instance.x_min = int(deducted_x_min)
-        self.instance.y_min = int(deducted_y_min)
-        self.instance.x_max = int(deducted_x_max)
-        self.instance.y_max = int(deducted_y_max)
+        min_coords = self.get_min_coordinates_instance(self.instance)
+        max_coords = self.get_max_coordinates_instance(self.instance)
+
+        if self.instance.type in ['cuboid_3d']:
+            self.instance.min_point_3d = {
+                'min': {
+                    'x': min_coords[0],
+                    'y': min_coords[1],
+                    'z': min_coords[2]
+                }
+            }
+            self.instance.max_point_3d = {
+                'max': {
+                    'x': max_coords[0],
+                    'y': max_coords[1],
+                    'z': max_coords[2]
+                }
+            }
+        else:
+            self.instance.x_min = int(min_coords[0])
+            self.instance.y_min = int(min_coords[1])
+            self.instance.x_max = int(max_coords[0])
+            self.instance.y_max = int(max_coords[1])
 
 
     def find_serialized_instance_index(self, id):

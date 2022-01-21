@@ -887,6 +887,7 @@ import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 import { KeypointInstance } from "../vue_canvas/instances/KeypointInstance";
+import { Instance } from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import { sha256 } from "js-sha256";
@@ -984,6 +985,7 @@ export default Vue.extend({
     finish_annotation_show: {
       default: false,
     },
+    'global_attribute_groups_list': {},
   },
   watch: {
     finish_annotation_show: function (val) {
@@ -1091,7 +1093,7 @@ export default Vue.extend({
       canvas_wrapper: undefined,
 
           current_global_instance: null,
-          global_instance_list: [],
+          instance_list_global: [],
 
           snackbar_paste_message: '',
           ghost_instance_hover_index: null,
@@ -2336,25 +2338,20 @@ mplate_has_keypoints_type: function (instance_template) {
 
         get_and_set_global_instance: function () {
           this.current_global_instance = this.get_global_instance()
-          this.global_instance_list.push(this.current_global_instance)
-          console.log("current_global_instance", this.current_global_instance)
+          this.instance_list_global.push(this.current_global_instance)
         },
 
         get_global_instance: function () {
-          if (this.global_instance_list.length >= 1){
-            return this.global_instance_list[0]
+          if (this.instance_list_global.length >= 1){
+            return this.instance_list_global[0]
           } else
           return this.new_global_instance()
         },
 
         new_global_instance: function () {
 
-          let new_instance = {
-            'type': 'global',
-            // 'global_type': 'file',  // future expansion direction
-            'soft_delete' : false
-            }
-
+          let new_instance = new Instance();
+          new_instance.type = 'global'
           return new_instance
 
         },
@@ -2663,23 +2660,25 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       for (let i = 0; i < instance_list.length; i++) {
         let current_instance = instance_list[i];
-
-            // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
-            // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-            let initialized_instance = this.initialize_instance(current_instance)
-            if (initialized_instance) {
-              result.push(initialized_instance);
-            }
-          }
-          return result;
-        },
-        initialize_instance_buffer_dict_frame: function(frame_number){
-          /**
-           * This function initializes the instances of a frame's instance list.
-           * We just do this once per frame, so this function should only be executed
-           * one time per frame number. To control this we have the instance_buffer_metadata
-           * to know which ones have been initialized.
-           * */
+        // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
+        // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
+        console.log('current before', current_instance)
+        let initialized_instance = this.initialize_instance(current_instance)
+        console.log('initialized_instance after', initialized_instance)
+        if (initialized_instance) {
+          result.push(initialized_instance);
+        }
+      }
+      console.log('RESULT', result)
+      return result;
+    },
+    initialize_instance_buffer_dict_frame: function(frame_number){
+      /**
+       * This function initializes the instances of a frame's instance list.
+       * We just do this once per frame, so this function should only be executed
+       * one time per frame number. To control this we have the instance_buffer_metadata
+       * to know which ones have been initialized.
+       * */
 
       if (frame_number == undefined) {
         return;
@@ -3012,21 +3011,24 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-          let index = update.index
-          if (index == undefined) { return }  // careful 0 is ok.
-          let initial_instance = {...this.instance_list[index], initialized: false}
-          initial_instance = this.initialize_instance(initial_instance);
-          // since sharing list type component need to determine which list to update
-          // could also use render mode but may be different contexts
-          if (!update.list_type || update.list_type == "default") {
-            var instance = this.instance_list[index]
-          }
-          else if (update.list_type == "gold_standard") {
-            var instance = this.gold_standard_file.instance_list[index]
-          }
-          else if (update.list_type == "global") {
-            var instance = this.global_instance_list[index]
-          }
+      let index = update.index
+      if (index == undefined) { return }  // careful 0 is ok.
+      let initial_instance = {...this.instance_list[index], initialized: false}
+      initial_instance = this.initialize_instance(initial_instance);
+      // since sharing list type component need to determine which list to update
+      // could also use render mode but may be different contexts
+      let instance;
+      if (!update.list_type || update.list_type == "default") {
+        instance = this.instance_list[index]
+      }
+      else if (update.list_type == "gold_standard") {
+        instance = this.gold_standard_file.instance_list[index]
+      }
+      else if (update.list_type == "global") {
+        console.log('INSTANCE UPDATEE', update)
+        instance = this.instance_list_global[index]
+        console.log('INSTANCE instanceinstance', instance)
+      }
 
       if (!instance) {
         console.debug("Invalid index");
@@ -3122,13 +3124,15 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       // end instance update
+      if(instance.type !== 'global'){
+        let insert_instance_result = this.insert_instance(
+          index,
+          instance,
+          initial_instance,
+          update
+        );
+      }
 
-      let insert_instance_result = this.insert_instance(
-        index,
-        instance,
-        initial_instance,
-        update
-      );
 
       this.has_changed = true;
       this.trigger_refresh_with_delay();
@@ -6823,13 +6827,18 @@ mplate_has_keypoints_type: function (instance_template) {
       // since may use in other contexts
       this.show_annotations = true
       this.current_global_instance = null // reset
-      this.global_instance_list = []  // reset
+      this.instance_list_global = []  // reset
 
       // Not sure if a "silent" null check is right here
       if (response.data['file_serialized']) {
-        this.instance_list = this.create_instance_list_with_class_types(
+        console.log('beforee list', response.data['file_serialized']['instance_list'])
+        let new_instance_list = this.create_instance_list_with_class_types(
           response.data['file_serialized']['instance_list']
         );
+        console.log('new_instance_list list', new_instance_list)
+        this.instance_list = new_instance_list
+
+
       }
       this.get_and_set_global_instance()
 
@@ -7151,7 +7160,7 @@ mplate_has_keypoints_type: function (instance_template) {
           this.instance_buffer_dict = {}
           this.instance_buffer_metadata = {}
           this.instance_list = []
-          this.global_instance_list = []
+          this.instance_list_global = []
           if(this.video_mode){
             this.$refs.video_controllers.reset_cache();
           }
@@ -7661,7 +7670,7 @@ mplate_has_keypoints_type: function (instance_template) {
         return initialized_instance
       }
       else if (instance.type === 'global') {
-        this.global_instance_list.push(instance)
+        this.instance_list_global.push(instance)
         return
       }
       else {
@@ -8077,7 +8086,10 @@ mplate_has_keypoints_type: function (instance_template) {
 
         return;
       }
-
+      // if (this.instance_list_global.length > 0) {
+      //   instance_list = instance_list.concat(this.instance_list_global.slice())
+      //   console.log('new instance_list', instance_list)
+      // }
       let current_video_file_id_cache = this.current_video_file_id;
       let video_mode_cache = this.video_mode;
       // a video file can now be
@@ -8164,7 +8176,7 @@ mplate_has_keypoints_type: function (instance_template) {
         return true;
       } catch (error) {
         console.error(error);
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
         if (
           error.response &&
           error.response.data &&
