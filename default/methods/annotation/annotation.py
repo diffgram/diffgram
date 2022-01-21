@@ -10,7 +10,6 @@ from shared.annotation import task_annotation_update
               methods = ['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
 def annotation_update_via_project_api(project_string_id, file_id):
-
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
 

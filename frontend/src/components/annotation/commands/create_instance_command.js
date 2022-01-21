@@ -41,7 +41,7 @@ export class CreateInstanceCommand {
       );
       return initializedInstance;
     }
-    if (instance.type === "text_annotation") {
+    if (instance.type === "text_token") {
       let newInstance = instance.get_instance_data();
       let initializedInstance = new TextAnnotationInstance()
       initializedInstance.populate_from_instance_obj(newInstance)
