@@ -148,7 +148,6 @@ export default class AnnotationScene3D {
   }
 
   private on_mouse_double_click(event) {
-    console.log('docoobl clickkk')
     event.stopPropagation();
     if (this.draw_mode) {
       this.on_double_click_draw_mode(event)
@@ -270,7 +269,6 @@ export default class AnnotationScene3D {
       let object = intersects[i].object as THREE.Mesh;
       (object.material as THREE.MeshBasicMaterial).opacity = 0.5;
       // intersects[i].object.material.color.set(0xFFFFFF);
-      console.log('aaa', object.userData.instance_index)
       if (object.userData.instance_index != undefined) {
         this.instance_hovered_index = object.userData.instance_index
         let instance = this.instance_list[this.instance_hovered_index];

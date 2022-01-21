@@ -1,6 +1,6 @@
 <template>
   <div v-cloak>
-    <v-card>
+    <v-card elevation="0">
 
       <v-card-title>
         Awards & Credentials
@@ -146,7 +146,7 @@
 
       <v-container
             v-if="$store.state.builder_or_trainer.mode == 'trainer'
-                   && mode_options != 'job_detail' "
+                   && mode_options != 'job_detail' && credential_list.length > 0 "
             container--fluid
             grid-list-md
                  >
@@ -183,8 +183,11 @@
 
         </v-flex>
       </v-layout>
+    </v-container>
 
-
+    <v-container  fluid style="border: 1px solid #ababab" v-if="credential_list.length === 0" class="d-flex flex-column align-center justify-center ma-0">
+      <h1>No Credentials to Display</h1>
+      <v-icon size="250">mdi-shield-star-outline</v-icon>
     </v-container>
 
       <!-- End icons for trainers -->
@@ -193,7 +196,7 @@
     <!--  Job Detail
          Maybe should be a seperate component?
         -->
-      <v-layout  v-if="mode_options == 'job_detail' ">
+      <v-layout  v-if="mode_options == 'job_detail' && credential_list.length > 0">
         <v-flex>
 
           <v-card>

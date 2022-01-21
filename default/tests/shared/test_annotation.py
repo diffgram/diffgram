@@ -1,9 +1,12 @@
+import uuid
+import hashlib
+
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from base64 import b64encode
 from shared.annotation import Annotation_Update
-import uuid
+from shared.database.annotation.instance_relation import InstanceRelation
 from unittest.mock import patch
 
 
@@ -57,7 +60,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
              'type': 'polygon',
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -67,10 +70,11 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         ann_update.instance = data_mocking.create_instance(
             {'creation_ref_id': str(uuid.uuid4()),
              'type': 'polygon',
-             'points': {'points':  [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'}, {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
+             'points': {'points': [{'x': 1, 'y': 1, 'figure_id': 'a'}, {'x': 2, 'y': 2, 'figure_id': 'a'},
+                                   {'x': 3, 'y': 3, 'figure_id': 'b'}, {'x': 4, 'y': 4, 'figure_id': 'b'}]},
              'file_id': file1.id,
              'label_file_id': label_file.id
-            },
+             },
             self.session
         )
         result = ann_update.check_polygon_points_and_build_bounds()
@@ -173,7 +177,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(ann_update.duplicate_hash_new_instance_list[0].y_max, inst1['y_max'])
         self.assertEqual(len(deleted_instances), 0)
 
-
     def test_overlap_existing_instances(self):
         """
         2 instances with ids are in different position and then one is placed on the exact position as the other one
@@ -265,12 +268,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         new_instance_list = updated_frame_file.cache_dict['instance_list']
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
-        for x in new_instance_list:
-            print('aaa', x)
 
-        print(inst1['id'], 'id')
-        print(inst2['id'], 'id')
-        print('deleted_instances', deleted_instances)
         self.assertEqual(len(added_instances), 0)
         self.assertEqual(len(new_instance_list), 1)
         self.assertEqual(len(deleted_instances), 1)
@@ -473,11 +471,10 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
 
-        self.assertEqual(len(added_instances), 2)
+        self.assertEqual(len(added_instances), 1)
         self.assertEqual(len(new_instance_list), 2)
-        self.assertEqual(len(deleted_instances), 2)
+        self.assertEqual(len(deleted_instances), 1)
         self.assertEqual(deleted_instances[0], newest_id)
-        self.assertEqual(deleted_instances[1], deleted_id)
         self.assertEqual(new_instance_list[0]['x_min'], inst_redone['x_min'])
         self.assertEqual(new_instance_list[0]['y_min'], inst_redone['y_min'])
         self.assertEqual(new_instance_list[0]['x_max'], inst_redone['x_max'])
@@ -485,13 +482,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertNotEqual(inst_redone['id'], new_instance_list[0]['id'])
         self.assertNotEqual(new_instance_list[0]['id'], deleted_id)
         self.assertFalse(new_instance_list[0]['soft_delete'])
-
-        self.assertEqual(new_instance_list[1]['x_min'], inst1['x_min'])
-        self.assertEqual(new_instance_list[1]['y_min'], inst1['y_min'])
-        self.assertEqual(new_instance_list[1]['x_max'], inst1['x_max'])
-        self.assertEqual(new_instance_list[1]['y_max'], inst1['y_max'])
-        self.assertTrue(new_instance_list[1]['soft_delete'])
-        self.assertNotEqual(new_instance_list[1]['id'], newest_id)
 
     def test_update_on_duplicate_instance_undo_case(self):
         """
@@ -699,8 +689,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         updated_frame_file = File.get_by_id(self.session, frame.id)
 
         new_instance_list = updated_frame_file.cache_dict['instance_list']
-        for x in new_instance_list:
-            print('instance new', x)
+
         deleted_instances = ann_update.new_deleted_instances
         added_instances = ann_update.new_added_instances
 
@@ -1082,7 +1071,6 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         ann_update.instance_list_new = inst_list
-        print('orders', ann_update.instance_list_new)
         ann_update.order_new_instances_by_date()
 
         self.assertEqual(ann_update.instance_list_new[0], inst3)
@@ -1195,7 +1183,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         result = ann_update._Annotation_Update__check_all_instances_available_in_new_instance_list()
-        print('ann_update.log', ann_update.log)
+
         self.assertTrue(result)
         self.assertTrue(len(ann_update.log['warning'].keys()) > 0)
         self.assertTrue('new_instance_list_missing_ids' in ann_update.log['warning'])
@@ -1227,3 +1215,749 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertTrue(instance2.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance3.id in ann_update.log['warning']['missing_ids'])
         self.assertTrue(instance4.id not in ann_update.log['warning']['missing_ids'])
+
+    def test_hashing_algorithm_changes(self):
+        """
+            This case handles when the instance.hash() function changes, ie we add or remove
+            an element for the hash creation. We check things like:
+
+            - Avoid tracking this hash change and marking it as a system event.
+            - Making sure this change is not attached to the user who saved the file
+            - Avoiding the "restored" state on the instance history.
+            - Checking overall instance history is valid.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 2 Saved Instances
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        instance2.hash_instance()
+        self.session.commit()
+        instance_list = [x.serialize_with_label() for x in [instance1, instance2]]
+
+        # 2. We Edit One Instance, the other one stays the same
+        instance_list[1]['x_max'] = 25
+        instance_list[1]['y_max'] = 25
+
+        # 3. We change the hashing algorithm (with a mock)
+        def dummy_hashing_algorithm(instance):
+            hash_data = [
+                instance.x_min,
+                instance.x_max,
+                instance.y_min,
+                instance.y_max,
+            ]
+
+            instance.hash = hashlib.sha256(json.dumps(hash_data,
+                                                      sort_keys = True).encode('utf-8')).hexdigest()
+
+        with patch.object(Instance, 'hash_instance', dummy_hashing_algorithm):
+            # 4. Re-save the instance.
+            ann_update = Annotation_Update(
+                session = self.session,
+                project = self.project,
+                instance_list_new = instance_list,
+                file = file1,
+                do_init_existing_instances = True
+            )
+            ann_update.main()
+        # 5. Expect just one changed instance (Even though hasing algo changed, it was not a user edit).
+        self.assertEqual(len(ann_update.new_added_instances), 1)
+
+    def test_no_changes_in_hashes_by_default_values(self):
+        """
+            Sometimes default values can make the hash change after
+            saving to DB. This test checks that is not happening.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 1 Unsaved Instance
+        inst1 = {'id': 1,
+                 'type': 'box',
+                 'file_id': 1,
+                 'label_file_id': 2,
+                 'soft_delete': False,
+                 'x_min': 10,
+                 'y_min': 10,
+                 'x_max': 28,
+                 'y_max': 28,
+                 'deletion_type': None,
+                 'created_time': '2022-01-12T18:31:59.530816',
+                 'action_type': 'created',
+                 'deleted_time': None,
+                 'change_source': None,
+                 'p1': None,
+                 'p2': None,
+                 'cp': None,
+                 'center_x': None,
+                 'center_y': None,
+                 'creation_ref_id': '10460e33-c02b-459d-a412-ab7b4512cc7c',
+                 'width': 18,
+                 'height': 18,
+                 'number': None,
+                 'interpolated': False,
+                 'machine_made': False,
+                 'model_id': None,
+                 'model_run_id': None,
+                 'sequence_id': None,
+                 'fan_made': None,
+                 'front_face': None,
+                 'rear_face': None,
+                 'rating': None,
+                 'attribute_groups': None,
+                 'member_created_id': None,
+                 'previous_id': None,
+                 'next_id': None,
+                 'root_id': 1,
+                 'version': 1,
+                 'nodes': [],
+                 'edges': [],
+                 'pause_object': None,
+                 'label_file': {'id': 2, 'hash': None, 'type': 'image', 'state': 'added',
+                                'created_time': '2022-01-12T18:31:59.508361', 'time_last_updated': None,
+                                'ann_is_complete': None, 'original_filename': 'ykzwdu', 'video_id': None,
+                                'video_parent_file_id': None, 'count_instances_changed': None,
+                                'image': {'original_filename': None, 'width': None, 'height': None,
+                                          'soft_delete': False, 'url_signed': None, 'url_signed_thumb': None,
+                                          'annotation_status': None}}
+                 }
+        instance_list = [inst1]
+
+        # 2. save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+
+        new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
+        self.session.commit()
+        session2 = sessionMaker.session_factory()
+
+        # 3. Re save with no changes
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        self.assertEqual(len(ann_update2.system_upgrade_hash_changes), 0)
+
+    def test__saving_untouched_instance_list_does_not_restore(self):
+        """
+            We had a bug that whenever we resaved an instance and there where no changes
+            we would mark the instance as restored even though we were not restoring anything.
+
+            This was because we were not checking the is_new_instance flag in the
+            __validate_user_deletion() function of shared/annotation.py
+
+            This regression test case covers this bug
+        :return:
+        """
+        """
+            Sometimes default values can make the hash change after
+            saving to DB. This test checks that is not happening.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        # 1. Initial State 1 Unsaved Instance
+        inst1 = {'type': 'box',
+                 'file_id': file1.id,
+                 'label_file_id': label_file.id,
+                 'soft_delete': False,
+                 'x_min': 10,
+                 'y_min': 10,
+                 'x_max': 28,
+                 'y_max': 28,
+                 'deletion_type': None,
+                 'created_time': '2022-01-12T18:31:59.530816',
+                 'action_type': 'created',
+                 'deleted_time': None,
+                 'change_source': None,
+                 'p1': None,
+                 'p2': None,
+                 'cp': None,
+                 'center_x': None,
+                 'center_y': None,
+                 'creation_ref_id': '10460e33-c02b-459d-a412-ab7b4512gdghf',
+                 'number': None,
+                 'interpolated': False,
+                 'machine_made': False,
+                 'model_id': None,
+                 'model_run_id': None,
+                 'sequence_id': None,
+                 'fan_made': None,
+                 'front_face': None,
+                 'rear_face': None,
+                 'rating': None,
+                 'attribute_groups': None,
+                 'member_created_id': None,
+                 'previous_id': None,
+                 'next_id': None,
+                 'root_id': 1,
+                 'version': 1,
+                 'nodes': [],
+                 'edges': [],
+                 'pause_object': None,
+                 'label_file': {'id': 2, 'hash': None, 'type': 'image', 'state': 'added',
+                                'created_time': '2022-01-12T18:31:59.508361', 'time_last_updated': None,
+                                'ann_is_complete': None, 'original_filename': 'ykzwdu', 'video_id': None,
+                                'video_parent_file_id': None, 'count_instances_changed': None,
+                                'image': {'original_filename': None, 'width': None, 'height': None,
+                                          'soft_delete': False, 'url_signed': None, 'url_signed_thumb': None,
+                                          'annotation_status': None}}
+                 }
+        instance_list = [inst1]
+
+        # 2. save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+
+        new_instance_list = [x.serialize_with_label() for x in ann_update.new_added_instances]
+        self.session.commit()
+
+        session2 = sessionMaker.session_factory()
+        new_instance_list[0]['x_min'] += 10
+        new_instance_list[0]['x_max'] += 10
+        new_instance_list[0]['y_max'] += 10
+        new_instance_list[0]['y_min'] += 10
+
+        # 3. Move the instance and resave
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        self.assertEqual(len(ann_update2.new_added_instances), 1)
+
+        instance_list_result = ann_update2.file.instance_list
+        new_instance_list = [x.serialize_with_label() for x in instance_list_result]
+        session2.commit()
+        # 4. Resave with no changes
+        ann_update2 = Annotation_Update(
+            session = session2,
+            project = self.project,
+            instance_list_new = new_instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update2.main()
+        instance_list_result = ann_update2.file.instance_list
+
+        self.assertEqual(len(instance_list_result), 2)
+        self.assertEqual(len(ann_update2.new_added_instances), 0)
+        self.assertNotEqual(instance_list_result[1].action_type, 'undeleted')
+
+    def test_create_existing_instance_relations(self):
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.instance = instance1
+        relations_list = [
+            {'from_instance_id': instance1.id, 'to_instance_id': instance2.id},
+            {'from_instance_id': instance1.id, 'to_instance_id': instance3.id}
+        ]
+        result = ann_update.create_existing_instance_relations(relations_list)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['from_instance_id'], instance1.id)
+        self.assertEqual(result[1]['from_instance_id'], instance1.id)
+        self.assertEqual(result[0]['to_instance_id'], instance2.id)
+        self.assertEqual(result[1]['to_instance_id'], instance3.id)
+
+    def test_determine_updated_relations(self):
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance0 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        rel = data_mocking.create_instance_relation({
+            'from_instance_id': instance3.id, 'to_instance_id': instance0.id
+        }, session = self.session)
+        instance1.previous_id = instance0.id
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.determine_updated_relations()
+        self.assertEqual(len(ann_update.updated_relations), 1)
+        self.assertEqual(ann_update.updated_relations[0]['id'], rel.id)
+        self.assertEqual(ann_update.updated_relations[0]['to_instance_id'], instance1.id)
+
+    def test_create_new_instance_relations(self):
+        """
+            relations_list = {'from_instance_id', 'to_instance_id'}
+            relations_list = {'from_creation_ref', 'to_creation_ref'}
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        ref1 = str(uuid.uuid4())
+        ref2 = str(uuid.uuid4())
+        ref3 = str(uuid.uuid4())
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'creation_ref_id': ref1,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref2,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': ref3,
+             'type': 'box'
+             },
+            self.session
+        )
+        instance1.hash_instance()
+        old_hash = instance1.hash
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.instance_list_kept_serialized = [instance1.serialize_with_label(), instance2.serialize_with_label(),
+                                                    instance3.serialize_with_label()]
+
+        # Test ID available case
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.new_instance_relations_dict = {
+            instance1.id: [{'type': 'test', 'from_instance_id': instance1.id, 'to_instance_id': instance2.id}]
+        }
+        ann_update.create_new_instance_relations()
+        self.session.commit()
+        rels = instance1.cache_dict['relations_list']
+        self.assertEqual(len(rels), 1)
+        self.assertEqual(rels[0]['from_instance_id'], instance1.id)
+        self.assertEqual(rels[0]['to_instance_id'], instance2.id)
+        self.assertEqual(rels[0]['type'], 'test')
+        self.assertEqual(ann_update.instance_list_kept_serialized[0], instance1.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[1], instance2.serialize_with_label())
+        self.assertNotEqual(old_hash, instance1.hash)
+
+        # TEST NO ID available
+        ann_update.new_added_instances = [instance1, instance2, instance3]
+        ann_update.new_instance_relations_dict = {
+            instance1.id: [{'type': 'test', 'from_creation_ref_id': ref1, 'to_creation_ref_id': ref3}]
+        }
+        ann_update.create_new_instance_relations()
+        self.session.commit()
+        rels = instance1.cache_dict['relations_list']
+        self.assertEqual(len(rels), 2)
+        self.assertEqual(rels[1]['from_instance_id'], instance1.id)
+        self.assertEqual(rels[1]['to_instance_id'], instance3.id)
+        self.assertEqual(rels[1]['type'], 'test')
+        self.assertEqual(ann_update.instance_list_kept_serialized[0], instance1.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[1], instance2.serialize_with_label())
+        self.assertEqual(ann_update.instance_list_kept_serialized[2], instance3.serialize_with_label())
+        self.assertNotEqual(old_hash, instance1.hash)
+
+    def test_add_new_instances_relation(self):
+        """
+            Tests adding a new relation to an instance.
+            This relation has creation_ref_ids and not existing ids.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        inst1_uid = str(uuid.uuid4())
+        inst2_uid = str(uuid.uuid4())
+        inst1 = {
+            'creation_ref_id': inst1_uid,
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box',
+            'relations_list': [
+                {
+                    'from_creation_ref_id': inst1_uid,
+                    'to_creation_ref_id': inst2_uid,
+                }
+            ]
+        }
+
+        inst2 = {
+            'creation_ref_id': inst2_uid,
+            'x_min': 15,
+            'y_min': 15,
+            'x_max': 26,
+            'y_max': 26,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        instance_list = [inst1, inst2]
+
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        self.session.commit()
+        # Check the relation is now present on the new added instances with the IDs
+        self.assertEqual(len(ann_update.new_added_instances), 2)
+        instance_with_rels = next(x for x in ann_update.new_added_instances if x.creation_ref_id == inst1_uid)
+        instance_with_no_rels = next(x for x in ann_update.new_added_instances if x.creation_ref_id == inst2_uid)
+        self.assertIsNotNone(instance_with_rels)
+        self.assertIsNotNone(instance_with_rels.cache_dict.get('relations_list'))
+        self.assertEqual(len(instance_with_rels.cache_dict['relations_list']), 1)
+
+        self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['from_instance_id'], instance_with_rels.id)
+        self.assertEqual(instance_with_rels.cache_dict['relations_list'][0]['to_instance_id'], instance_with_no_rels.id)
+        self.assertIsNotNone(instance_with_rels.cache_dict['relations_list'][0]['id'])
+
+    def test_remove_relation(self):
+        """
+            Tests removing a relation from an instance
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        inst1_uid = str(uuid.uuid4())
+        inst2_uid = str(uuid.uuid4())
+        inst1 = {
+            'creation_ref_id': inst1_uid,
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box',
+            'relations_list': [
+                {
+                    'from_creation_ref_id': inst1_uid,
+                    'to_creation_ref_id': inst2_uid,
+                }
+            ]
+        }
+
+        inst2 = {
+            'creation_ref_id': inst2_uid,
+            'x_min': 15,
+            'y_min': 15,
+            'x_max': 26,
+            'y_max': 26,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box'
+        }
+        instance_list = [inst1, inst2]
+
+        # 2. Save the instance.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        self.session.commit()
+        new_instances = ann_update.new_added_instances
+        instance1 = new_instances[0]
+        rel = self.session.query(InstanceRelation).filter(
+            InstanceRelation.from_instance_id == new_instances[0].id,
+            InstanceRelation.to_instance_id == new_instances[1].id
+        ).first()
+        self.assertIsNotNone(rel)
+
+        # Resave, but now with no relations
+        new_instances_serialized = [x.serialize_with_label() for x in new_instances]
+        self.assertEqual(len(new_instances_serialized[0]['relations_list']), 1)
+        new_instances_serialized[0]['relations_list'] = []
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = new_instances_serialized,
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        new_instances = ann_update.new_added_instances
+        new_instance1 = new_instances[0]
+        self.assertEqual(new_instance1.previous_id, instance1.id)
+        self.assertEqual(new_instance1.cache_dict['relations_list'], [])
+        self.assertEqual(new_instance1.creation_ref_id, inst1_uid)
+
+    def test_update_existing_relations(self):
+        """
+            Tests updating all the relations from an existing instance when it gets changed.
+            Example:
+                - I create a relation between instance A => B
+                - The is means: A.relations = [B]
+                - If I then move B, I have to update all Instances who have instance B in their relations.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        inst1_uid = str(uuid.uuid4())
+        inst2_uid = str(uuid.uuid4())
+        instance3 = data_mocking.create_instance(
+            {'x_min': 6,
+             'x_max': 15,
+             'y_min': 6,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'creation_ref_id': None,
+             'type': 'box'
+             },
+            self.session
+        )
+        inst1 = {
+            'creation_ref_id': inst1_uid,
+            'x_min': 1,
+            'y_min': 1,
+            'x_max': 18,
+            'y_max': 18,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box',
+            'relations_list': [
+                {
+                    'from_creation_ref_id': inst1_uid,
+                    'to_instance_id': instance3.id,
+                }
+            ]
+        }
+
+        inst2 = {
+            'creation_ref_id': inst2_uid,
+            'x_min': 15,
+            'y_min': 15,
+            'x_max': 26,
+            'y_max': 26,
+            'soft_delete': False,
+            'label_file_id': label_file.id,
+            'type': 'box',
+            'relations_list': [
+                {
+                    'from_creation_ref_id': inst1_uid,
+                    'to_instance_id': instance3.id,
+                }
+            ]
+        }
+
+        instance_list = [inst1, inst2, instance3.serialize_with_label()]
+
+        # 1. Save the instances.
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        self.assertEqual(len(ann_update.new_added_instances), 3)
+        self.session.commit()
+
+        # 2. Resave with instance 3 updated and check if relations were updated
+        new_instance_list = ann_update.new_added_instances
+        new_instance_list_ser = [x.serialize_with_label() for x in new_instance_list]
+        new_instance_list_ser[2]['x_min'] = 8
+        new_instance_list_ser[2]['y_min'] = 8
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = new_instance_list_ser,
+            file = file1,
+            member = self.member,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        self.session.commit()
+        new_instances = ann_update.new_added_instances
+        self.assertEqual(len(ann_update.updated_relations), 2)
+        self.assertEqual(len(ann_update.new_added_instances), 1)
+        self.assertEqual(ann_update.updated_relations[0]['to_instance_id'], new_instances[0].id)
+        self.assertEqual(ann_update.updated_relations[1]['to_instance_id'], new_instances[0].id)

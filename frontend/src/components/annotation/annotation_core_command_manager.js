@@ -16,7 +16,6 @@ export class CommandManagerAnnotationCore {
       this.command_index = 0;
     }
     else{
-      //console.log('qqqq', this.command_index, this.command_history.length - 1)
       if(this.command_index < this.command_history.length - 1){
         this.command_history.length = this.command_index + 1;
       }

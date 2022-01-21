@@ -260,8 +260,12 @@
       },
       member: function () {
         return this.$store.state.project.current.member_list.find(x => {
-          return x.member_id == this.instance_list[
-            this.instance_hover_index_locked].member_created_id
+          let instance = this.instance_list[this.instance_hover_index_locked]
+          if(instance){
+            return x.member_id == instance.member_created_id
+          }
+          return false;
+
         })
       },
 

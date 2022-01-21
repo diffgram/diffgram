@@ -103,7 +103,7 @@ export let add_ids_to_new_instances_and_delete_old = function (response,
   }
   for (let i = 0; i < instance_list.length; i++) {
     const current_instance = instance_list[i]
-    console.log('CURRENT INSTANCE', current_instance)
+    //console.log('CURRENT INSTANCE', current_instance)
     if (!current_instance.id) {
       // Case of a new instance added
       const new_instance = new_added_instances.filter(x => x.creation_ref_id === current_instance.creation_ref_id)
@@ -142,6 +142,9 @@ export let check_if_pending_created_instance = function (instance_list) {
   // Sets the pending changes flag if there are any instances that have not been saved yet.
   for (let i = 0; i < instance_list.length; i++) {
     let instance = instance_list[i];
+    if(instance.soft_delete){
+      continue
+    }
     if (!instance.id) {
       return true
     }

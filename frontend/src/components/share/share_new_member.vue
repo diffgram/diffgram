@@ -101,7 +101,12 @@
     </v-card>
 
 
+    <free_tier_limit_dialog
+      :message="message_free_tier_limit"
+      :details="details_free_tier_limit"
+      ref="free_tier_limit_dialog">
 
+    </free_tier_limit_dialog>
   </div>
 </template>
 
@@ -109,12 +114,14 @@
 
 import axios from 'axios'
 import auth_api_new from '../auth/api/auth_api_new'
+import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
 
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'share_new',
   components: {
-    auth_api_new
+    auth_api_new,
+    free_tier_limit_dialog
   },
   props:{
     'project_string_id':{
@@ -139,7 +146,8 @@ import Vue from "vue"; export default Vue.extend( {
       notify: true,
 
       error: {}, // new standard error
-
+      message_free_tier_limit: '',
+      details_free_tier_limit: '',
       // careful this is 'human' and 'api' on back end.
       member_kind_list: ['User', 'Developer Authentication (API/SDK)'],
       member_kind: 'User',
@@ -190,7 +198,16 @@ import Vue from "vue"; export default Vue.extend( {
           this.$emit('member_invited')
 
         } else {
-          this.errors = response.data['errors'],
+          console.log('response', response)
+          if(response['data']['errors']['free_tier_limit']){
+            this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+            this.details_free_tier_limit = response['data']['errors']['free_tier_limit']
+            this.$refs.free_tier_limit_dialog.open();
+          }
+          else{
+            this.errors = response.data['errors']
+          }
+
           this.loading = false
         }
       })
@@ -201,7 +218,17 @@ import Vue from "vue"; export default Vue.extend( {
 
          if (error.response) {
           if (error.response.status == 400) {
-            this.error = error.response.data.log.error
+            if(error.response.data &&
+              error.response.data.log &&
+              error.response.data.log.error.free_tier_limit){
+              this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+              this.details_free_tier_limit = error.response.data.log.error.free_tier_limit;
+              this.$refs.free_tier_limit_dialog.open();
+            }
+            else{
+              this.error = error.response.data.log.error
+            }
+
           }
 
           if (error.response.status == 429) {

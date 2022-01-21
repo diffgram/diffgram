@@ -9,25 +9,32 @@
           :text_style="true"
         >
         <template slot="content">
-            <v-stepper class="elevation-0" v-model="step">
-                <v-stepper-header>
-                    <v-stepper-step :complete="step > 1" step="1">
-                        In progress
-                    </v-stepper-step>
+            <div>
+                <v-stepper class="elevation-0" v-model="step">
+                    <v-stepper-header>
+                        <v-stepper-step :complete="step > 1" step="1">
+                            In progress
+                        </v-stepper-step>
 
-                    <v-stepper-step v-if="!need_changes && allow_reviews" :complete="step > 2" step="2">
-                        In review
-                    </v-stepper-step>
+                        <v-stepper-step v-if="!need_changes && allow_reviews" :complete="step > 2" step="2">
+                            In review
+                        </v-stepper-step>
 
-                    <v-stepper-step :rules="[() => false]" v-if="need_changes && allow_reviews" step="2">
-                        Requires changes
-                    </v-stepper-step>
+                        <v-stepper-step :rules="[() => false]" v-if="need_changes && allow_reviews" step="2">
+                            Requires changes
+                        </v-stepper-step>
 
-                    <v-stepper-step :complete="step > 2" :step="allow_reviews ? '3' : '2'">
-                        Completed
-                    </v-stepper-step>
-                </v-stepper-header>
-            </v-stepper>
+                        <v-stepper-step :complete="step > 2" :step="allow_reviews ? '3' : '2'">
+                            Completed
+                        </v-stepper-step>
+                    </v-stepper-header>
+                </v-stepper>
+                <p 
+                    class="review-content" 
+                    v-if="task_status == 'requires_changes' && task_comment.length > 0"
+                >
+                <strong>Comment:</strong> {{ task_comment }}</p>
+            </div>
         </template>
     </button_with_menu>
 </div>
@@ -47,6 +54,10 @@ import Vue from "vue";
         allow_reviews: {
             type: Boolean,
             default: false
+        },
+        task_comment: {
+            type: String,
+            default: ""
         }
     },
     computed: {
@@ -79,5 +90,9 @@ import Vue from "vue";
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.review-content {
+    padding: 10px 24px;
 }
 </style>
