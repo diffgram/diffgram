@@ -43,7 +43,7 @@
                         :request_refresh_from_project="true"
                         :show_visibility_toggle="true"
                         @change="$emit('change_label_file', $event)"
-                        @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+                        @update_label_file_visible="$emit('change_label_visibility', $event)"
                     />
                 </div>
             </div>
