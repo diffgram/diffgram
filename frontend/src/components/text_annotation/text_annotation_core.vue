@@ -259,7 +259,7 @@ export default Vue.extend({
                 this.relation_drawing = true
                 this.instance_in_progress = {
                     id: this.instances.length,
-                    type: "text_relation",
+                    type: "relation",
                     start_instance: instance_id,
                     label_id: this.current_label.id,
                     level: 0
@@ -328,8 +328,6 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
-
-                this.save()
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -344,13 +342,20 @@ export default Vue.extend({
         },
         change_instance_label: function(event) {
             const { instance, label } = event
-            const { id, start_token, end_token, label_file, creation_ref_id } = instance.get_instance_data()
+            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
             if (label.id === label_file.id) return
-            const initial_instance = new TextAnnotationInstance()
-            initial_instance.create_instance(id, start_token, end_token, label_file)
+
+            let initial_instance;
+
+            if (instance.type === "text_token") {
+                initial_instance = new TextAnnotationInstance()
+                initial_instance.create_instance(id, start_token, end_token, label_file)
+            } else {
+                initial_instance = new TextRelationInstance()
+                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
+            }
             initial_instance.initialized = false
             initial_instance.initialized = creation_ref_id
-
             instance.label_file = {...label}
             instance.label_file_id = label.id
 
@@ -399,7 +404,7 @@ export default Vue.extend({
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
                         if (rect.width === comp_rect.width) {
-                            if (comp_rect.instance_type === "text_relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
                             else {
                                 return rect.y = rect.y - this.additional_line_space
                             }
@@ -416,7 +421,7 @@ export default Vue.extend({
                     if (rect.line !== comp_rect.line) return
                     if (rect.x <= comp_rect.x && rect.x + rect.width > comp_rect.x && rect.y === comp_rect.y) {
                         if (rect.width === comp_rect.width) {
-                            if (comp_rect.instance_type === "text_relation") return comp_rect.y = comp_rect.y - this.additional_line_space
+                            if (comp_rect.instance_type === "relation") return comp_rect.y = comp_rect.y - this.additional_line_space
                             else {
                                 return rect.y = rect.y - this.additional_line_space
                             }

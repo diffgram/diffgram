@@ -19,7 +19,7 @@
                     </td>
                     <td class="centered-table-items">
                         <v-icon 
-                            v-if="item.type === 'text_relation'"
+                            v-if="item.type === 'relation'"
                             :color="item.label_file.colour.hex"
                         >
                             mdi-relation-one-to-one
