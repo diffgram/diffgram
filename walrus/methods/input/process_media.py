@@ -1793,8 +1793,8 @@ class Process_Media():
         logger.info('Saved Tokens on: {}'.format(self.new_text_file.tokens_url_signed_blob_path))
 
     def save_raw_text_file(self):
-
-        self.new_text_file.url_signed_expiry = int(time.time() + 2592000)  # 1 month
+        offset = 2592000
+        self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
 
         self.new_text_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
                                                                    str(self.project_id),
@@ -1810,7 +1810,7 @@ class Process_Media():
         )
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
-                                                                    self.new_text_file.url_signed_expiry)
+                                                                    offset)
 
         # Now Save Tokens
 

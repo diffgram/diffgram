@@ -1074,8 +1074,13 @@ class Annotation_Update():
 
     def get_min_coordinates_instance(self, instance):
         logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_min, instance.y_min
+
         elif instance.type == 'line':
             return min([p['x'] for p in instance.points['points']]), min([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
@@ -1123,8 +1128,13 @@ class Annotation_Update():
 
     def get_max_coordinates_instance(self, instance):
         logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_max, instance.y_max
+
         elif instance.type == 'line':
             return max([p['x'] for p in instance.points['points']]), max([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
