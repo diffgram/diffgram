@@ -47,7 +47,7 @@ export class CreateInstanceCommand {
       initializedInstance.populate_from_instance_obj(newInstance)
       return initializedInstance;
     }
-    if (instance.type === "text_relation") {
+    if (instance.type === "relation") {
       let newInstance = instance.get_instance_data();
       let initializedInstance = new TextRelationInstance()
       initializedInstance.populate_from_instance_obj(newInstance)

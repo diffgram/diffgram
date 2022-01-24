@@ -46,6 +46,7 @@ export class TextAnnotationInstance extends Instance {
 export class TextRelationInstance extends Instance {
     public from_instance_id: number = null;
     public to_instance_id: number = null;
+    public initialized: boolean = true;
 
     constructor() {
         super();
@@ -53,7 +54,7 @@ export class TextRelationInstance extends Instance {
 
     public create_instance(id, start_instance, end_instance, label_file): void {
         this.id = id;
-        this.type = "text_relation";
+        this.type = "relation";
         this.creation_ref_id = uuidv4();
         this.from_instance_id = start_instance;
         this.to_instance_id = end_instance;
