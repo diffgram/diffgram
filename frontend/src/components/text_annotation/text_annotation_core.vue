@@ -12,6 +12,7 @@
                 :has_changed="has_changed"
                 :save_loading="save_loading"
                 @change_label_file="change_label_file"
+                @change_label_visibility="change_label_visibility"
                 @undo="undo()"
                 @redo="redo()"
             />
@@ -65,7 +66,7 @@
                     />
                 </g>
                 <text 
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete)"
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
                     :key="`instance_${instance.id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
                     :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
@@ -117,7 +118,6 @@
 
 <script>
 import Vue from "vue";
-import axios from "axios"
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
@@ -154,6 +154,7 @@ export default Vue.extend({
             tokens: [],
             instances: [],
             instance_list: [],
+            invisible_labels: [],
             //effects
             hover_instance: null,
             //Helpers
@@ -165,7 +166,7 @@ export default Vue.extend({
             // Command
             command_manager: undefined,
             has_changed: false,
-            save_loading: false
+            save_loading: false,
         }
     },
     async mounted() {
@@ -178,13 +179,13 @@ export default Vue.extend({
     computed: {
         render_rects: function() {
             let rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete).map(instance => {
+            this.instance_list.filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete).map(instance => {
+            this.instance_list.filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
@@ -338,9 +339,15 @@ export default Vue.extend({
                 document.selection.empty();
             }
         },
+        change_label_visibility: async function(label) {
+            if (label.is_visible) {
+                this.invisible_labels = this.invisible_labels.filter(label_id => label_id !== label.id)
+            } else {
+                this.invisible_labels.push(label.id)
+            }
+        },
         initialize_instance_list: async function () {
             const response = await getInstanceList(this.$route.params.project_string_id, this.file.id)
-            console.log(response)
         },
         save: async function () {
             this.save_loading = true
