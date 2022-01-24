@@ -9,6 +9,8 @@
             <text_toolbar
                 :undo_disabled="undo_disabled"
                 :redo_disabled="redo_disabled"
+                :has_changed="has_changed"
+                :save_loading="save_loading"
                 @change_label_file="change_label_file"
                 @undo="undo()"
                 @redo="redo()"
@@ -115,7 +117,6 @@
 
 <script>
 import Vue from "vue";
-import axios from "axios";
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
@@ -123,6 +124,7 @@ import { CommandManagerAnnotationCore } from "../annotation/annotation_core_comm
 import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import getTextService from "../../services/getTextService"
+import { postInstanceList } from "../../services/instanceList"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -161,6 +163,8 @@ export default Vue.extend({
             show_default_navigation: true,
             // Command
             command_manager: undefined,
+            has_changed: false,
+            save_loading: false
         }
     },
     async mounted() {
@@ -319,8 +323,7 @@ export default Vue.extend({
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
 
-                const res = await axios.post(`/api/project/quiverboar/file/${this.file.id}/annotation/update`, {instance_list: this.instance_list})
-                console.log
+                this.save()
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -332,6 +335,11 @@ export default Vue.extend({
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
             }
+        },
+        save: async function () {
+            this.save_loading = true
+            await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+            this.save_loading = false
         },
         undo: function () {
             if (!this.command_manager) {
