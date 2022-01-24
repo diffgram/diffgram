@@ -41,17 +41,11 @@
                                 color="primary"
                                 :close_by_button="true"
                               >
-
                                 <template slot="content">
-                                    <label_select_annotation
-                                        :project_string_id="project_string_id"
-                                        :label_file_list="label_list"
-                                        :label_file_colour_map="label_file_colour_map"
-                                        :loading="loading"
-                                        :request_refresh_from_project="true"
-                                        :show_visibility_toggle="true"
-                                        @change="$emit('change_label_file', $event)"
-                                        @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+                                    <label_select_only
+                                      :label_file_list_prop="label_list"
+                                      :select_this_id_at_load="item.label_file_id"
+                                      @label_file="$emit('change_instance_label', { label: $event, instance: item })"
                                     />
                                 </template>
                         </button_with_menu>
@@ -72,17 +66,21 @@
 import Vue from 'vue'
 import instance_detail_list_view from "../annotation/instance_detail_list_view.vue";
 import button_with_menu from '../regular/button_with_menu.vue';
-import label_select_annotation from "../label/label_select_annotation.vue"
+import label_select_only from '../label/label_select_only.vue'
 
 export default Vue.extend({
     name: "text_sidepanel",
     components: {
         instance_detail_list_view,
         button_with_menu,
-        label_select_annotation
+        label_select_only
     },
     props: {
         instance_list: {
+            type: Array,
+            default: []
+        },
+        label_list: {
             type: Array,
             default: []
         }

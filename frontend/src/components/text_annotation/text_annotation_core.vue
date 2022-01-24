@@ -22,8 +22,10 @@
     <div style="display: flex; flex-direction: row">
         <text_sidebar 
             :instance_list="instance_list.filter(instance => !instance.soft_delete)"
+            :label_list="label_list"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
+            @change_instance_label="change_instance_label"
         />
         <svg 
             ref="initial_svg_element" 
@@ -123,9 +125,10 @@ import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
 import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
+import { UpdateInstanceCommand } from "../annotation/commands/update_instance_command"
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
-import getTextService from "../../services/getTextService"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
+import getTextService from "../../services/getTextService"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -338,6 +341,22 @@ export default Vue.extend({
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
             }
+        },
+        change_instance_label: function(event) {
+            const { instance, label } = event
+            const { id, start_token, end_token, label_file, creation_ref_id } = instance.get_instance_data()
+            if (label.id === label_file.id) return
+            const initial_instance = new TextAnnotationInstance()
+            initial_instance.create_instance(id, start_token, end_token, label_file)
+            initial_instance.initialized = false
+            initial_instance.initialized = creation_ref_id
+
+            instance.label_file = {...label}
+            instance.label_file_id = label.id
+
+            const instance_index = this.instance_list.indexOf(event.instance)
+            const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
+            this.command_manager.executeCommand(command)
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
