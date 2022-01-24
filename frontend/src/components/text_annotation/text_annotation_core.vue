@@ -117,6 +117,7 @@
 
 <script>
 import Vue from "vue";
+import axios from "axios"
 import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
@@ -124,7 +125,7 @@ import { CommandManagerAnnotationCore } from "../annotation/annotation_core_comm
 import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import getTextService from "../../services/getTextService"
-import { postInstanceList } from "../../services/instanceList"
+import { postInstanceList, getInstanceList } from "../../services/instanceList"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -172,6 +173,7 @@ export default Vue.extend({
         this.command_manager = new CommandManagerAnnotationCore()
         this.initial_words_measures = Tokenizer().tokenize(this.text)
         setTimeout(() => this.initialize_token_render(), 1000)
+        this.initialize_instance_list()
     },
     computed: {
         render_rects: function() {
@@ -335,6 +337,10 @@ export default Vue.extend({
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
             }
+        },
+        initialize_instance_list: async function () {
+            const response = await getInstanceList(this.$route.params.project_string_id, this.file.id)
+            console.log(response)
         },
         save: async function () {
             this.save_loading = true
