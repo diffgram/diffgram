@@ -151,7 +151,7 @@ class File(Base, Caching):
     # Concept that the first file created, ie a new "import" is the "root"
     # So if a new file media was uploaded this would effect that...
 
-    text_tokenizer = Column(String(), default = 'wink')
+    text_tokenizer = Column(String(), default = 'nltk')
 
     is_root = Column(Boolean) 
     root_id = Column(BIGINT, ForeignKey('file.id'))
@@ -872,6 +872,7 @@ class File(Base, Caching):
             colour=None,
             original_filename=None,
             video_parent_file=None,
+            text_tokenizer=None,
             input_id=None,
             parent_id=None,
             task=None,
@@ -922,7 +923,8 @@ class File(Base, Caching):
             input_id=input_id,
             parent_id=parent_id,
             task=task,
-            file_metadata=file_metadata
+            file_metadata=file_metadata,
+            text_tokenizer=text_tokenizer
         )
 
         File.new_file_new_frame(file, video_parent_file)

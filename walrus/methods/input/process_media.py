@@ -48,6 +48,7 @@ from shared.regular.regular_log import log_has_error
 import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
+from walrus.methods.text_data.text_tokenizer import TextTokenizer
 
 data_tools = Data_tools().data_tools
 
@@ -1471,59 +1472,71 @@ class Process_Media():
             This function will process a single text file and Create a Row in Table
             TextFile()
         """
-        logger.debug('Started processing text file from input: {}'.format(self.input_id))
-        result = self.read_raw_text_file()
-        if not result:
-            logger.error('Error reading text file {}'.format(self.input.temp_dir_path_and_filename))
-        # Why is content_type needed here?
-        # self.content_type = "image/" + str(self.input.extension)
+        try:
+            logger.debug('Started processing text file from input: {}'.format(self.input_id))
+            result = self.read_raw_text_file()
+            if not result:
+                logger.error('Error reading text file {}'.format(self.input.temp_dir_path_and_filename))
+            # Why is content_type needed here?
+            # self.content_type = "image/" + str(self.input.extension)
 
-        # Image() subclass
-        self.new_text_file = TextFile(original_filename = self.input.original_filename)
-        self.session.add(self.new_text_file)
-        self.session.flush()
+            # Image() subclass
+            self.new_text_file = TextFile(original_filename = self.input.original_filename)
+            self.session.add(self.new_text_file)
+            self.session.flush()
 
-        self.try_to_commit()
+            self.try_to_commit()
 
-        if self.project:
-            # with either object or id... this assumes we don't have project_id set.
-            self.project_id = self.project.id
+            if self.project:
+                # with either object or id... this assumes we don't have project_id set.
+                self.project_id = self.project.id
 
-        ### Main
-        self.save_raw_text_file()
+            ### Main
+            self.save_raw_text_file()
 
-        self.input.file = File.new(
-            session = self.session,
-            working_dir_id = self.working_dir_id,
-            file_type = "text",
-            text_file_id = self.new_text_file.id,
-            original_filename = self.input.original_filename,
-            project_id = self.project_id,
-            input_id = self.input.id,
-            file_metadata = self.input.file_metadata,
-        )
-        # Set success state for input.
-        if self.input.media_type == 'text':
+            self.input.file = File.new(
+                session = self.session,
+                working_dir_id = self.working_dir_id,
+                file_type = "text",
+                text_file_id = self.new_text_file.id,
+                original_filename = self.input.original_filename,
+                project_id = self.project_id,
+                input_id = self.input.id,
+                file_metadata = self.input.file_metadata,
+                text_tokenizer = 'nltk'
+            )
+            raw_text = result.read()
+            raw_text = raw_text.decode('utf-8')
+            self.save_text_tokens(raw_text, self.input.file)
+            # Set success state for input.
+            if self.input.media_type == 'text':
 
-            if self.input.status != "failed":  # if we haven't already set a status
-                # May need this on video too
-                # Context of for example the packet for instances attached to it
-                # Not loading successfully
-                # We default this to init so 'failed' string instead of None
-                self.input.status = "success"
-                self.input.percent_complete = 100
-                self.input.time_completed = datetime.datetime.utcnow()
+                if self.input.status != "failed":  # if we haven't already set a status
+                    # May need this on video too
+                    # Context of for example the packet for instances attached to it
+                    # Not loading successfully
+                    # We default this to init so 'failed' string instead of None
+                    self.input.status = "success"
+                    self.input.percent_complete = 100
+                    self.input.time_completed = datetime.datetime.utcnow()
 
-            # Question, could we just call close() on temp_dir_path_and_filename instead here?
-            # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-            # basically, if the default is that delete=True on close, hmmm
+                # Question, could we just call close() on temp_dir_path_and_filename instead here?
+                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+                # basically, if the default is that delete=True on close, hmmm
 
-            # allow_csv is True by default but gets set to False by process csv...
-            try:
-                shutil.rmtree(self.input.temp_dir)  # delete directory
-            except OSError as exc:
-                logger.error("shutil error")
-                pass
+                # allow_csv is True by default but gets set to False by process csv...
+                try:
+                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                except OSError as exc:
+                    logger.error("shutil error")
+                    pass
+        except Exception as e:
+            message = traceback.format_exc()
+            logger.error(message)
+            self.log['error']['text_file_upload'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
 
         return True
 
@@ -1753,12 +1766,39 @@ class Process_Media():
         self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
                                                                 self.new_image.url_signed_expiry)
 
+    def save_text_tokens(self, raw_text: str, file: File) -> None:
+        # By Default, file has NLTK tokenizer.
+        print('tokenizerr', file.text_tokenizer, raw_text)
+        tokenizer = TextTokenizer(type = file.text_tokenizer)
+
+        word_tokens = tokenizer.tokenize_words(raw_text)
+        sentences_tokens = tokenizer.tokenize_sentences(raw_text)
+
+        json_data = {
+            file.text_tokenizer: {
+                'words': word_tokens,
+                'sentences': sentences_tokens
+            }
+        }
+        json_string_data = json.dumps(json_data)
+        self.new_text_file.tokens_url_signed_blob_path = '{}{}/{}_tokens.json'.format(
+            settings.PROJECT_TEXT_FILES_BASE_DIR,
+            str(self.project_id),
+            str(self.new_text_file.id))
+        data_tools.upload_from_string(self.new_text_file.tokens_url_signed_blob_path,
+                                      json_string_data,
+                                      content_type = 'application/json')
+        self.new_text_file.tokens_url_signed = data_tools.build_secure_url(self.new_text_file.tokens_url_signed_blob_path,
+                                                                           self.new_text_file.tokens_url_signed_expiry)
+        logger.info('Saved Tokens on: {}'.format(self.new_text_file.tokens_url_signed_blob_path))
+
     def save_raw_text_file(self):
 
         self.new_text_file.url_signed_expiry = int(time.time() + 2592000)  # 1 month
 
-        self.new_text_file.url_signed_blob_path = settings.PROJECT_TEXT_FILES_BASE_DIR + \
-                                                  str(self.project_id) + "/" + str(self.new_text_file.id)
+        self.new_text_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
+                                                                   str(self.project_id),
+                                                                   str(self.new_text_file.id))
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug('Uploading text file from {}'.format(self.input.temp_dir_path_and_filename))
@@ -1771,6 +1811,8 @@ class Process_Media():
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
                                                                     self.new_text_file.url_signed_expiry)
+
+        # Now Save Tokens
 
     def save_raw_image_thumb(self):
         """
