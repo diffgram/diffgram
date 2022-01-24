@@ -25,7 +25,7 @@
                             mdi-relation-one-to-one
                         </v-icon>
                         <v-icon 
-                            v-if="item.type === 'text_annotation'"
+                            v-if="item.type === 'text_token'"
                             :color="item.label_file.colour.hex"
                         >
                             mdi-label

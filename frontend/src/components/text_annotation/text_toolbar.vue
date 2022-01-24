@@ -146,6 +146,14 @@ export default Vue.extend({
         redo_disabled: {
             type: Boolean,
             required: true
+        },
+        has_changed: {
+            type: Boolean,
+            default: false
+        },
+        save_loading: {
+            type: Boolean,
+            default: false
         }
     }
 })
