@@ -512,14 +512,16 @@ def build_text_packet(
     """
 
     file.text_file.regenerate_url(session = session)
+    tokens = file.text_file.get_text_tokens(file.text_tokenizer)
     text_dict = {
         'original_filename': file.text_file.original_filename,
         'signed_expiry': file.text_file.url_signed_expiry,
         'signed_url': file.text_file.url_signed,
+        'tokens': tokens
     }
 
     instance_dict_list = []
-
+    relations_list = []
     if file_comparison_mode == "latest":
 
         instance_list = Instance.list(
@@ -527,7 +529,14 @@ def build_text_packet(
             file_id = file.id)
 
         for instance in instance_list:
+            if instance.type == 'relation':
+                continue
             instance_dict_list.append(build_instance(instance))
+
+        for relation in instance_list:
+            if relation.type != 'relation':
+                continue
+            relations_list.append(build_relation(relation = relation))
 
     if file_comparison_mode == "vs_original":
         # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
@@ -619,6 +628,21 @@ def build_sensor_fusion_packet(
         'point_cloud': point_cloud_dict,
         'instance_list': instance_dict_list
     }
+
+
+def build_relation(relation: Instance):
+    out = {  # 'hash'  : instance.hash,
+        'type': relation.type,
+        'label_file_id': relation.label_file_id,  # for images
+        'frame_number': relation.frame_number,
+        'global_frame_number': relation.global_frame_number,
+        'number': relation.number,
+        'attribute_groups': relation.attribute_groups,
+        'from_instance_id': relation.from_instance_id,
+        'to_instance_id': relation.to_instance_id,
+        # 'local_sequence_number' : instance.number,
+    }
+    return out
 
 
 def build_instance(instance, include_label = False):
