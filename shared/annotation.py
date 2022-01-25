@@ -524,7 +524,7 @@ class Annotation_Update():
         ### Main work
 
         self.update_instance_list()
-
+        self.add_missing_ids_to_new_relations()
         ###
 
         # Early exit if errors, eg from instance limits
@@ -534,6 +534,8 @@ class Annotation_Update():
             logger.error('Error updating annotation {}'.format(str(self.log)))
             logger.error('Instance list is: {}'.format(self.instance_list_new))
             return self.return_orginal_file_type()
+
+
 
         self.update_file_hash()
 
@@ -1606,6 +1608,9 @@ class Annotation_Update():
                 if new_instance:
                     instance.to_instance_id = new_instance.id
 
+            instance.hash_instance()
+            self.session.add(instance)
+
     def check_relations_id_existence(self, from_id, to_id, from_ref, to_ref):
         """
             Checks if current instance is a relations and if ID's are available for saving.
@@ -1619,10 +1624,11 @@ class Annotation_Update():
 
         if from_id is None and not from_ref:
             self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
+            return
 
         if to_id is None and not to_ref:
-            self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
-
+            self.log['error']['to_id'] = 'Provide from_instance_id or from_creation_ref'
+            return
         if from_id is None or to_id is None:
             self.new_instance_relations_list_no_ids.append({'instance': self.instance,
                                                           'from_ref': from_ref,
@@ -1787,7 +1793,6 @@ class Annotation_Update():
 
         special_case_result = self.detect_special_duplicate_data_cases_from_existing_ids(old_id)
         if special_case_result is False: return False
-
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
 
         if self.existing_instance_index is not None:
@@ -2045,7 +2050,7 @@ class Annotation_Update():
         self,
         instance):
 
-        logger.info("Newly Deleted")
+        logger.info("Newly Deleted {}".format(instance.id))
 
         self.new_deleted_instances.append(instance.id)
 

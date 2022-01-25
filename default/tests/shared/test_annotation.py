@@ -1494,7 +1494,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             Tests verifications of from_id to_id fields.
         :return:
         """
-        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'video'}, self.session)
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
         frame = data_mocking.create_file(
             {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
             self.session)
@@ -1517,8 +1517,8 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'creation_ref_id': ref2,
             'x_min': 1,
             'y_min': 1,
-            'x_max': 18,
-            'y_max': 18,
+            'x_max': 54,
+            'y_max': 54,
             'soft_delete': False,
             'label_file_id': label_file.id,
             'type': 'box'
@@ -1531,7 +1531,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'label_file_id': None,
             'type': 'relation'
         }
-        instance_list = [inst1, inst1, relation]
+        instance_list = [inst1, inst2, relation]
         ann_update2 = Annotation_Update(
             session = self.session,
             project = self.project,
@@ -1540,21 +1540,167 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             do_init_existing_instances = True
         )
         ann_update2.main()
+        self.session.commit()
         new_instances = ann_update2.new_added_instances
         self.assertEqual(len(new_instances), 3)
+        self.assertEqual(len(ann_update2.new_instance_relations_list_no_ids), 1)
         self.assertEqual(new_instances[2].type, 'relation')
         self.assertEqual(new_instances[2].from_instance_id, new_instances[0].id)
         self.assertEqual(new_instances[2].to_instance_id, new_instances[1].id)
+        ## Test Adding Instances With IDs
+        relation2 = {
+            'from_instance_id': new_instances[1].id,
+            'to_instance_id': new_instances[0].id,
+            'creation_ref_id': str(uuid.uuid4()),
+            'soft_delete': False,
+            'label_file_id': None,
+            'type': 'relation'
+        }
+        self.session.commit()
+        instance_list = [new_instances[0].serialize_with_label(),
+                         new_instances[1].serialize_with_label(),
+                         new_instances[2].serialize_with_label(),
+                         relation2]
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.main()
+        new_instances2 = ann_update.new_added_instances
+        self.assertEqual(len(new_instances2), 1)
+        self.assertEqual(len(ann_update.new_instance_relations_list_no_ids), 0)
+        self.assertEqual(new_instances2[0].type, 'relation')
+        self.assertEqual(new_instances2[0].from_instance_id, new_instances[1].id)
+        self.assertEqual(new_instances2[0].to_instance_id, new_instances[0].id)
 
     def test_check_relations_id_existence(self):
         """
             Check calls to check_relations_id_existence
         :return:
         """
-        raise NotImplementedError
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        # 2 Exactly equal instances
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'relation'
+             },
+            self.session
+        )
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        ann_update2 = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            do_init_existing_instances = True
+        )
+
+        ann_update2.instance = instance1
+        # Check Error State
+        ann_update2.check_relations_id_existence(None, None, None, None)
+        self.assertTrue('from_id' in ann_update2.log['error'])
+        # Check IDs available
+        ann_update2.log['error'] = {}
+        ann_update2.instance.from_instance_id = 1
+        ann_update2.instance.to_instance_id = 1
+        ann_update2.check_relations_id_existence(ann_update2.instance.from_instance_id,
+                                                 ann_update2.instance.to_instance_id,
+                                                 None,
+                                                 None)
+        self.assertEqual(len(ann_update2.log['error'].keys()), 0)
+        self.assertEqual(len(ann_update2.new_instance_relations_list_no_ids), 0)
+        # Check IDs Not available
+        ann_update2.check_relations_id_existence(None,
+                                                 None,
+                                                 str(uuid.uuid4()),
+                                                 str(uuid.uuid4()))
+        self.assertEqual(len(ann_update2.log['error'].keys()), 0)
+        self.assertEqual(len(ann_update2.new_instance_relations_list_no_ids), 1)
 
     def test_add_missing_ids_to_new_relations(self):
         """
             Tests calss to add_missing_ids_to_new_relations()
         :return:
         """
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        # 2 Exactly equal instances
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+        instance1 = data_mocking.create_instance(
+            {'x_min': 1,
+             'x_max': 10,
+             'y_min': 1,
+             'y_max': 10,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'relation'
+             },
+            self.session
+        )
+        instance1.creation_ref_id = str(uuid.uuid4())
+        instance2 = data_mocking.create_instance(
+            {'x_min': 2,
+             'x_max': 15,
+             'y_min': 2,
+             'y_max': 15,
+             'file_id': file1.id,
+             'label_file_id': label_file.id,
+             'type': 'box'
+             },
+            self.session
+        )
+        relation = data_mocking.create_instance(
+            {
+                'file_id': file1.id,
+                'label_file_id': None,
+                'type': 'relation'
+            },
+            self.session
+        )
+        relation.hash_instance()
+        old_hash = relation.hash
+
+        instance2.creation_ref_id = str(uuid.uuid4())
+        self.session.commit()
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = [],
+            file = file1,
+            do_init_existing_instances = True
+        )
+        ann_update.new_added_instances = [instance1, instance2]
+        ann_update.new_instance_relations_list_no_ids = [{'instance': relation,
+                                                          'from_ref': instance1.creation_ref_id,
+                                                          'to_ref': instance2.creation_ref_id}]
+        ann_update.add_missing_ids_to_new_relations()
+
+        self.assertEqual(relation.from_instance_id, instance1.id)
+        self.assertEqual(relation.to_instance_id, instance2.id)
+        self.assertNotEqual(old_hash, relation.hash)

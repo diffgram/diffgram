@@ -324,7 +324,6 @@ class Instance(Base):
         since every instance will be "new".
 
         """
-        assert self.label_file_id is not None
 
         hash_data = [
             self.type,
@@ -363,7 +362,9 @@ class Instance(Base):
             self.sequence_id,
             self.nodes,
             self.edges,
-            self.pause_object
+            self.pause_object,
+            self.to_instance_id,
+            self.from_instance_id
         ]
 
 
@@ -412,6 +413,8 @@ class Instance(Base):
             'action_type': self.action_type,
             'deleted_time': self.deleted_time.isoformat() if self.deleted_time else None,
             'change_source': self.change_source,
+            'from_instance_id': self.from_instance_id,
+            'to_instance_id': self.to_instance_id,
             'p1': self.p1,
             'p2': self.p2,
             'cp': self.cp,
