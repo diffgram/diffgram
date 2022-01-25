@@ -80,7 +80,6 @@ class SystemEvents(Base):
                 shut_down_time = None,
                 created_date = datetime.datetime.utcnow()
             )
-
             SystemEvents.check_version_upgrade(session = session, service_name = service_name)
             SystemEvents.check_os_change(session = session, service_name = service_name)
             return True

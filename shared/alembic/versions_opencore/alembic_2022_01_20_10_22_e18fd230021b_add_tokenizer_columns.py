@@ -17,9 +17,9 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('instance', sa.Column('text_tokenizer', sa.String, default = 'wink'))
-    op.add_column('file', sa.Column('text_tokenizer', sa.String, default = 'wink'))
-    op.add_column('task', sa.Column('text_tokenizer', sa.String, default = 'wink'))
+    op.add_column('instance', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
+    op.add_column('file', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
+    op.add_column('task', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
 
 
 def downgrade():

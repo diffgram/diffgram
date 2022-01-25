@@ -1,3 +1,5 @@
+import { TextAnnotationInstance, TextRelationInstance } from "../../vue_canvas/instances/TextInstance";
+
 export class CreateInstanceCommand {
   _copyInstance(instance) {
     if (instance.initialized != true) {
@@ -39,6 +41,18 @@ export class CreateInstanceCommand {
       );
       return initializedInstance;
     }
+    if (instance.type === "text_token") {
+      let newInstance = instance.get_instance_data();
+      let initializedInstance = new TextAnnotationInstance()
+      initializedInstance.populate_from_instance_obj(newInstance)
+      return initializedInstance;
+    }
+    if (instance.type === "relation") {
+      let newInstance = instance.get_instance_data();
+      let initializedInstance = new TextRelationInstance()
+      initializedInstance.populate_from_instance_obj(newInstance)
+      return initializedInstance;
+    }
   }
 
   constructor(instance, ann_core_ctx, frame_number = undefined) {
@@ -49,11 +63,12 @@ export class CreateInstanceCommand {
   }
 
   execute() {
-    if (this.instance.id) {
+    if (this.instance.id || this.instance.id === 0) {
       this.instance.soft_delete = false;
-      for (let i = 0; i < this.ann_core_ctx.instance_list.length; i++) {
+      for (let i = 0; i <= this.ann_core_ctx.instance_list.length; i++) {
         const current = this.ann_core_ctx.instance_list[i];
         if (current.id === this.instance.id) {
+          current.soft_delete = false;
           this.created_instance_index = i;
           break;
         }

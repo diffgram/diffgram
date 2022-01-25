@@ -31,9 +31,20 @@ class TextFile(Base):
 
     url_signed_expiry = Column(Integer)
 
+    tokens_url_signed = Column(String())
+    tokens_url_signed_blob_path = Column(String())
+
+    tokens_url_signed_expiry = Column(Integer)
+
     url_signed_expiry_force_refresh = Column(Integer)
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
+
+    def get_text(self):
+        """
+            Download Raw text from blob.
+        :return:
+        """
 
     def get_by_id(session, id):
         return session.query(TextFile).filter(TextFile.id == id).first()
@@ -57,6 +68,7 @@ class TextFile(Base):
             'url_signed': self.url_signed,
             'id': self.id,
             'is_inference': self.is_inference,
+            'tokens_url_signed': self.tokens_url_signed,
             'is_annotation_example': self.is_annotation_example,
             'annotation_status': self.annotation_status
         }
@@ -82,10 +94,37 @@ class TextFile(Base):
             'original_filename': self.original_filename,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
+            'tokens_url_signed': self.tokens_url_signed,
             'annotation_status': self.annotation_status
         }
 
+    def regenerate_tokens_urls(self, session):
+        """
+            Refresh signed URL for tokens Blob of the text file.
+        :param session:
+        :return:
+        """
+        if session and self.tokens_url_signed_blob_path:
+
+            # We assume a significant delta between minimum days
+            # and new offset (ie at least 10 minutes)
+            minimum_days_valid = 30 * 12  # this should always be lower then new offset
+            new_offset_days_valid = 30 * 14
+            time_to_check = time.time() + (86400 * minimum_days_valid)
+
+            if self.tokens_url_signed_expiry is None or self.tokens_url_signed_expiry <= time_to_check:
+                new_offset_in_seconds = 86400 * new_offset_days_valid
+
+                self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path, new_offset_in_seconds)
+                self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
+                session.add(self)
+
     def regenerate_url(self, session):
+        """
+            Refresh signed URL for the raw Text blob.
+        :param session:
+        :return:
+        """
         if session and self.url_signed_blob_path:
 
             # We assume a significant delta between minimum days
@@ -100,3 +139,5 @@ class TextFile(Base):
                 self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
                 self.url_signed_expiry = time.time() + new_offset_in_seconds
                 session.add(self)
+
+        self.regenerate_tokens_urls(session)

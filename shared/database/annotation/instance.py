@@ -1,4 +1,5 @@
 # OPENCORE - ADD
+from asyncio.proactor_events import constants
 from shared.database.common import *
 import shared.data_tools_core as data_tools_core
 import hashlib
@@ -443,7 +444,9 @@ class Instance(Base):
             'version': self.version,
             'nodes': nodes,
             'edges': edges,
-            'pause_object': self.pause_object
+            'pause_object': self.pause_object,
+            'start_token': self.start_token,
+            'end_token': self.end_token,
 
         }
 
