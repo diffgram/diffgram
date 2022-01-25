@@ -169,7 +169,7 @@ class Annotation_Update():
             'kind': str,
             'required': True,
             'valid_values_list': ['box', 'polygon', 'point', 'cuboid', 'tag', 'line', 'text_token', 'ellipse', 'curve',
-                                  'keypoints', 'cuboid_3d']
+                                  'keypoints', 'cuboid_3d', 'relation']
         }
         },
         {'rating': {
@@ -1075,7 +1075,7 @@ class Annotation_Update():
     def get_min_coordinates_instance(self, instance):
         logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
 
-        if instance.type in ['text_token']:
+        if instance.type in ['text_token', 'relation']:
             return 0, 0
 
         if instance.type in ['box', 'polygon', 'point']:
@@ -1129,7 +1129,7 @@ class Annotation_Update():
     def get_max_coordinates_instance(self, instance):
         logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
 
-        if instance.type in ['text_token']:
+        if instance.type in ['text_token', 'relation']:
             return 0, 0
 
         if instance.type in ['box', 'polygon', 'point']:
