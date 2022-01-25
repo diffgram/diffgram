@@ -454,7 +454,9 @@ class Instance(Base, Caching):
             'version': self.version,
             'nodes': nodes,
             'edges': edges,
-            'pause_object': self.pause_object
+            'pause_object': self.pause_object,
+            'start_token': self.start_token,
+            'end_token': self.end_token,
 
         }
 
