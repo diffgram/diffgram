@@ -8,11 +8,10 @@ from sqlalchemy.schema import Index
 from shared.database.model.model import Model
 from shared.database.model.model_run import ModelRun
 from shared.shared_logger import get_shared_logger
-from shared.database.annotation.instance_relation import InstanceRelation
 logger = get_shared_logger()
 
 
-class Instance(Base, Caching):
+class Instance(Base):
     """
     An individual annotation instance
 
@@ -177,8 +176,8 @@ class Instance(Base, Caching):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    # Used to store data from InstanceRelation table
-    cache_dict = Column(MutableDict.as_mutable(JSONB), default = {})
+    from_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
+    to_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -287,13 +286,6 @@ class Instance(Base, Caching):
         if return_kind == "objects":
             return query.all()
 
-    def get_serialized_instance_relations(self, session):
-        relations = session.query(InstanceRelation).filter(
-            InstanceRelation.from_instance_id == self.id
-        )
-        result = [x.serialize() for x in relations]
-        return result
-
     def do_soft_delete(self) -> None:
         """
         Context of wanting to hash afterwards
@@ -332,7 +324,6 @@ class Instance(Base, Caching):
         since every instance will be "new".
 
         """
-        assert self.label_file_id is not None
 
         hash_data = [
             self.type,
@@ -372,7 +363,8 @@ class Instance(Base, Caching):
             self.nodes,
             self.edges,
             self.pause_object,
-            self.cache_dict
+            self.to_instance_id,
+            self.from_instance_id
         ]
 
 
@@ -410,7 +402,6 @@ class Instance(Base, Caching):
             'id': self.id,
             'type': self.type,
             'file_id': self.file_id,
-            'relations_list': self.cache_dict.get('relations_list') if self.cache_dict else [],
             'label_file_id': self.label_file_id,
             'soft_delete': self.soft_delete,
             'x_min': self.x_min,
@@ -422,6 +413,8 @@ class Instance(Base, Caching):
             'action_type': self.action_type,
             'deleted_time': self.deleted_time.isoformat() if self.deleted_time else None,
             'change_source': self.change_source,
+            'from_instance_id': self.from_instance_id,
+            'to_instance_id': self.to_instance_id,
             'p1': self.p1,
             'p2': self.p2,
             'cp': self.cp,
