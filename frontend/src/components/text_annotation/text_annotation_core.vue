@@ -283,6 +283,7 @@ export default Vue.extend({
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
+            this.save()
         },
         draw_relation_listener: function(e) {
             this.path = {
@@ -328,6 +329,7 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
+                this.save()
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -362,6 +364,7 @@ export default Vue.extend({
             const instance_index = this.instance_list.indexOf(event.instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
+            this.save()
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
@@ -375,7 +378,10 @@ export default Vue.extend({
         },
         save: async function () {
             this.save_loading = true
-            await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+            const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+            added_instances.map(add_insatnce => {
+                this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+            })
             this.save_loading = false
         },
         undo: function () {
