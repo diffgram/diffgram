@@ -11,15 +11,15 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'e18fd230021b'
-down_revision = 'eee80271ae05'
+down_revision = 'e25f886d921a'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('instance', sa.Column('text_tokenizer', sa.String, default = 'wink'))
-    op.add_column('file', sa.Column('text_tokenizer', sa.String, default = 'wink'))
-    op.add_column('task', sa.Column('text_tokenizer', sa.String, default = 'wink'))
+    op.add_column('instance', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
+    op.add_column('file', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
+    op.add_column('task', sa.Column('text_tokenizer', sa.String, default = 'nltk'))
 
 
 def downgrade():

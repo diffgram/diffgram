@@ -18,7 +18,6 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
-from shared.database.annotation.instance_relation import InstanceRelation
 from shared.database.label import Label
 from shared.helpers.permissions import LoggedIn, defaultRedirect, get_gcs_service_account
 from shared.helpers.permissions import getUserID
@@ -63,8 +62,7 @@ class Annotation_Update():
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
     # This array will keep track of any new instance relations that did not have instance IDs
-    new_instance_relations_dict: dict = field(default_factory = lambda: {})
-    updated_relations: list = field(default_factory = lambda: [])
+    new_instance_relations_list_no_ids: dict = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -168,8 +166,18 @@ class Annotation_Update():
             'default': None,
             'kind': str,
             'required': True,
-            'valid_values_list': ['box', 'polygon', 'point', 'cuboid', 'tag', 'line', 'text_token', 'ellipse', 'curve',
-                                  'keypoints', 'cuboid_3d']
+            'valid_values_list': ['box',
+                                  'polygon',
+                                  'point',
+                                  'cuboid',
+                                  'tag',
+                                  'line',
+                                  'text_token',
+                                  'ellipse',
+                                  'curve',
+                                  'keypoints',
+                                  'cuboid_3d',
+                                  'relation']
         }
         },
         {'rating': {
@@ -337,6 +345,22 @@ class Annotation_Update():
             'kind': bool,
             'required': False
         }},
+        {'from_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'to_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'from_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
+        {'to_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
         {
             'relations_list': {
                 'kind': list,
@@ -500,7 +524,7 @@ class Annotation_Update():
         ### Main work
 
         self.update_instance_list()
-
+        self.add_missing_ids_to_new_relations()
         ###
 
         # Early exit if errors, eg from instance limits
@@ -511,13 +535,11 @@ class Annotation_Update():
             logger.error('Instance list is: {}'.format(self.instance_list_new))
             return self.return_orginal_file_type()
 
+
+
         self.update_file_hash()
 
         self.left_over_instance_deletion()
-
-        self.create_new_instance_relations()
-
-        self.determine_updated_relations()
 
         self.instance_list_cache_update()
 
@@ -745,6 +767,9 @@ class Annotation_Update():
         """
         if self.instance.type == "global":
             self.instance.label_file_id = None  # Prevent spoofing label_file_ids by passing global as type
+            return True
+
+        if self.instance.label_file_id is None:
             return True
 
         if self.instance.label_file_id in self.allowed_label_file_id_list:
@@ -986,6 +1011,10 @@ class Annotation_Update():
             # For other checks that are specific to
             # to certain instance types
             self.instance_proposed = instance_proposed
+            if self.instance_proposed['type'] == 'relation':
+                for elm in self.per_instance_spec_list:
+                    if 'label_file_id' in elm:
+                        elm['label_file_id']['required'] = False
 
             if self.instance_proposed.get('type') == 'global':
                 self.instance_proposed['label_file_id'] = -1    # to bypass check
@@ -1077,13 +1106,21 @@ class Annotation_Update():
                 overwrite_existing_instances = overwrite_existing_instances,
                 pause_object = input['pause_object'],
                 text_tokenizer = input['text_tokenizer'],
-                relations_list = input['relations_list']
+                from_instance_id = input['from_instance_id'],
+                to_instance_id = input['to_instance_id'],
+                from_creation_ref = input['from_creation_ref'],
+                to_creation_ref = input['to_creation_ref'],
             )
 
     def get_min_coordinates_instance(self, instance):
         logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token', 'relation']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_min, instance.y_min
+
         elif instance.type == 'line':
             return min([p['x'] for p in instance.points['points']]), min([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
@@ -1131,8 +1168,13 @@ class Annotation_Update():
 
     def get_max_coordinates_instance(self, instance):
         logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token', 'relation']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_max, instance.y_max
+
         elif instance.type == 'line':
             return max([p['x'] for p in instance.points['points']]), max([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
@@ -1243,7 +1285,10 @@ class Annotation_Update():
                         validate_label_file = True,
                         pause_object = None,
                         text_tokenizer = 'wink',
-                        relations_list = None):
+                        from_instance_id = None,
+                        to_instance_id = None,
+                        from_creation_ref = None,
+                        to_creation_ref = None):
         """
         Assumes a "system" level context
 
@@ -1333,7 +1378,9 @@ class Annotation_Update():
             'p2': p2,
             'nodes': {'nodes': nodes},
             'edges': {'edges': edges},
-            'pause_object': pause_object
+            'pause_object': pause_object,
+            'from_instance_id': from_instance_id,
+            'to_instance_id': to_instance_id,
         }
 
         if overwrite_existing_instances and id is not None:
@@ -1342,9 +1389,13 @@ class Annotation_Update():
                 setattr(self.instance, key, value)
         else:
             self.instance = Instance(**instance_attrs)
-            self.set_instance_relations_cache(relations_list = relations_list)
 
         self.instance_limits(validate_label_file = validate_label_file)
+
+        self.check_relations_id_existence(from_id = from_instance_id,
+                                          to_id = to_instance_id,
+                                          from_ref = from_creation_ref,
+                                          to_ref = to_creation_ref)
 
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
@@ -1379,8 +1430,6 @@ class Annotation_Update():
                                        str(self.log))
 
         self.__perform_external_map_action()
-
-        self.create_existing_instance_relations(relations_list)
 
         self.update_cache_single_instance_in_list_context()
         logger.debug('is_new_instance {}'.format(is_new_instance))
@@ -1449,132 +1498,6 @@ class Annotation_Update():
             instance = self.instance_list_kept_serialized[i]
             if instance.get('id') == id:
                 return i
-
-
-
-    def create_new_instance_relations(self):
-
-        for instance in self.new_added_instances:
-            if self.new_instance_relations_dict.get(instance.id) is None:
-                continue
-            relations_list = self.new_instance_relations_dict.get(instance.id)
-            for relation in relations_list:
-                from_instance_id = None
-                to_instance_id = None
-
-                # Get From Instance ID
-                if relation.get('from_instance_id'):
-                    from_instance_id = relation.get('from_instance_id')
-                elif relation.get('from_creation_ref_id'):
-                    # Search the instance by creation ref on the new added instances
-
-
-                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['from_creation_ref_id'])
-                    if result is None:
-                        message = 'Invalid relation sent. from_instance_creation_ref_id was not found. {}'.format(relation)
-                        logger.error(message)
-                        self.log['error']['invalid_relation'] = message
-                    from_instance_id = result.id
-                else:
-                    message = 'Invalid relation sent. Must provide from_instance_id or from_creation_ref_id. {}'.format(relation)
-                    logger.error(message)
-                    self.log['error']['invalid_relation'] = message
-                    return
-
-                # Get to_instance_id
-                if relation.get('to_instance_id'):
-                    to_instance_id = relation.get('to_instance_id')
-                elif relation.get('to_creation_ref_id'):
-                    # Search the instance by creation ref on the new added instances
-                    result = next(x for x in self.new_added_instances if x.creation_ref_id == relation['to_creation_ref_id'])
-                    if result is None:
-                        message = 'Invalid relation sent. to_creation_ref_id was not found. {}'.format(relation)
-                        logger.error(message)
-                        self.log['error']['invalid_relation'] = message
-                    to_instance_id = result.id
-                else:
-                    message = 'Invalid relation sent. Must provide from_instance_id or to_creation_ref_id. {}'.format(relation)
-                    logger.error(message)
-                    self.log['error']['invalid_relation'] = message
-                    return
-
-                # Now create relation
-                relation = InstanceRelation.new(
-                    session = self.session,
-                    from_instance_id = from_instance_id,
-                    to_instance_id = to_instance_id,
-                    type = relation.get('type'),
-                    member_created_id = self.member.id
-                )
-
-                # Get existing cache
-                existing_rels = instance.cache_dict.get('relations_list')
-                if existing_rels is None:
-                    existing_rels = []
-                existing_rels.append(relation.serialize())
-                instance.set_cache_by_key(
-                    'relations_list',
-                    existing_rels
-                )
-
-                # Rehash updated instance
-                instance.hash_instance()
-
-                # Find instance_list_kept_serialized and replace
-                index_to_replace = self.find_serialized_instance_index(instance.id)
-                if index_to_replace is not None:
-                    self.instance_list_kept_serialized[index_to_replace] = instance.serialize_with_label()
-
-
-    def create_existing_instance_relations(self, relations_list):
-        """
-            Creates instances relations for the given IDs.
-            This will skip any relations for new instances (ie relations with creation_ref_ids and
-            not DB ids)
-            Theese skipped relations should be handled in the create_new_instance_relations() function
-        :return:
-        """
-        result = []
-        for relation in relations_list:
-            if relation.get('from_instance_id') is None or relation.get('to_instance_id') is None:
-                if self.new_instance_relations_dict.get(self.instance.id) is None:
-                    self.new_instance_relations_dict[self.instance.id] = [relation]
-                else:
-                    self.new_instance_relations_dict[self.instance.id].append(relation)
-                continue
-            relation = InstanceRelation.new(
-                session = self.session,
-                from_instance_id = relation.get('from_instance_id'),
-                to_instance_id = relation.get('to_instance_id'),
-                type = relation.get('type'),
-                member_created_id = self.member.id
-            )
-            serialized_relation = relation.serialize()
-            result.append(serialized_relation)
-
-        self.instance.set_cache_by_key(
-            'relations_list',
-            result
-        )
-        return result
-
-    def determine_updated_relations(self):
-        """
-
-            :return:
-        """
-        added_instances = self.new_added_instances
-        id_list_to_update = {}
-        for instance in added_instances:
-            if instance.previous_id:
-                id_list_to_update[instance.previous_id] = instance.id
-
-        updated_rels = InstanceRelation.update_relations_to_new_instance_version(self.session,
-                                                                                 id_list_to_update = id_list_to_update)
-
-        updated_rels_serialized = [rel.serialize() for rel in updated_rels]
-        self.updated_relations = updated_rels_serialized
-        return self.updated_relations
 
     def update_sequence_id_in_cache_list(self, instance):
         """
@@ -1681,6 +1604,52 @@ class Annotation_Update():
             # and then handle other related concerns seperetly
             self.file = File.copy_file_from_existing(
                 self.session, directory, self.file)
+
+    def add_missing_ids_to_new_relations(self):
+
+        for relation_elm in self.new_instance_relations_list_no_ids:
+            instance = relation_elm['instance']
+            from_ref = relation_elm['from_ref']
+            to_ref = relation_elm['to_ref']
+            if instance.from_instance_id is None:
+                new_instance = next((item for item in self.new_added_instances if item.creation_ref_id == from_ref),
+                                    None)
+                if new_instance:
+                    instance.from_instance_id = new_instance.id
+
+            if instance.to_instance_id is None:
+                new_instance = next((item for item in self.new_added_instances if item.creation_ref_id == to_ref),
+                                    None)
+                if new_instance:
+                    instance.to_instance_id = new_instance.id
+
+            instance.hash_instance()
+            self.session.add(instance)
+
+    def check_relations_id_existence(self, from_id, to_id, from_ref, to_ref):
+        """
+            Checks if current instance is a relations and if ID's are available for saving.
+            If not avaialable, fallback to creation_refs and add IDs after creation_refs are saved.
+            If non are available we throw error.
+
+        :return:
+        """
+        if self.instance.type != 'relation':
+            return
+
+        if from_id is None and not from_ref:
+            self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
+            return
+
+        if to_id is None and not to_ref:
+            self.log['error']['to_id'] = 'Provide from_instance_id or from_creation_ref'
+            return
+        if from_id is None or to_id is None:
+            self.new_instance_relations_list_no_ids.append({'instance': self.instance,
+                                                          'from_ref': from_ref,
+                                                          'to_ref': to_ref})
+
+
 
     def instance_limits(self, validate_label_file = True):
         """
@@ -1839,7 +1808,6 @@ class Annotation_Update():
 
         special_case_result = self.detect_special_duplicate_data_cases_from_existing_ids(old_id)
         if special_case_result is False: return False
-
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
 
         if self.existing_instance_index is not None:
@@ -2097,7 +2065,7 @@ class Annotation_Update():
         self,
         instance):
 
-        logger.info("Newly Deleted")
+        logger.info("Newly Deleted {}".format(instance.id))
 
         self.new_deleted_instances.append(instance.id)
 

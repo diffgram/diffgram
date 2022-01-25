@@ -1,10 +1,12 @@
 import * as instance_utils from '../../../utils/instance_utils';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../vue_canvas/instances/Instance";
+import { TextAnnotationInstance, TextRelationInstance } from '../../vue_canvas/instances/TextInstance';
 
 const CLASS_INSTANCE_TYPES = [
   'keypoints',
-  'cuboid_3d'
+  'cuboid_3d',
+  'text_token'
 ]
 
 interface ComponentWithInstanceList extends Vue {
@@ -61,6 +63,22 @@ export class UpdateInstanceCommand {
         this.ann_core_ctx,
       );
       return initializedInstance;
+    }
+    else if (instance.type === 'text_token') {
+      const { id, start_token, end_token, label_file, creation_ref_id } = instance.get_instance_data()
+      const newInstance = new TextAnnotationInstance()
+      newInstance.create_instance(id, start_token, end_token, label_file)
+      newInstance.initialized = true
+      newInstance.initialized = creation_ref_id
+      return newInstance
+    }
+    else if (instance.type === 'relation') {
+      const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance.get_instance_data()
+      const newInstance = new TextRelationInstance()
+      newInstance.create_instance(id, from_instance_id, to_instance_id, label_file)
+      newInstance.initialized = true
+      newInstance.initialized = creation_ref_id
+      return newInstance
     }
     else if(instance.type === 'cuboid_3d'){
       let newInstance = instance.get_instance_data();
