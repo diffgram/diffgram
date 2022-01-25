@@ -173,11 +173,7 @@ export default Vue.extend({
         }
     },
     async mounted() {
-        this.text = await getTextService(this.file.text.url_signed)
-        this.command_manager = new CommandManagerAnnotationCore()
-        this.initial_words_measures = Tokenizer().tokenize(this.text)
-        setTimeout(() => this.initialize_token_render(), 1000)
-        this.initialize_instance_list()
+        this.on_mount()
     },
     computed: {
         render_rects: function() {
@@ -224,9 +220,23 @@ export default Vue.extend({
                 this.has_changed = false;
                 this.save()
             }
+        },
+        file: function(newValue) {
+            this.on_mount()
         }
     },
     methods: {
+        on_mount: async function() {
+            this.instance_list = [];
+            this.text = '';
+            this.command_manager = null;
+            this.initial_words_measures = [];
+            this.text = await getTextService(this.file.text.url_signed)
+            this.command_manager = new CommandManagerAnnotationCore()
+            this.initial_words_measures = Tokenizer().tokenize(this.text)
+            setTimeout(() => this.initialize_token_render(), 1000)
+            this.initialize_instance_list()
+        },
         initialize_token_render: async function() {
             const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
             const tokens = [];
