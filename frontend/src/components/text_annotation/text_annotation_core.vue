@@ -375,6 +375,7 @@ export default Vue.extend({
         },
         initialize_instance_list: async function () {
             const response = await getInstanceList(this.$route.params.project_string_id, this.file.id)
+            console.log(response)
         },
         save: async function () {
             this.save_loading = true
