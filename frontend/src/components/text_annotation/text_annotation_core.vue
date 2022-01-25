@@ -218,6 +218,14 @@ export default Vue.extend({
             return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == command_manager.command_history.length - 1
         }
     },
+    watch: {
+        has_changed: async function(newValue) {
+            if (newValue) {
+                this.has_changed = false;
+                this.save()
+            }
+        }
+    },
     methods: {
         initialize_token_render: async function() {
             const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
@@ -342,7 +350,7 @@ export default Vue.extend({
                 document.selection.empty();
             }
         },
-        change_instance_label: function(event) {
+        change_instance_label: async function(event) {
             const { instance, label } = event
             const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
             if (label.id === label_file.id) return
@@ -362,9 +370,9 @@ export default Vue.extend({
             instance.label_file_id = label.id
 
             const instance_index = this.instance_list.indexOf(event.instance)
+            await this.save(instance_index)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
-            this.save()
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
@@ -374,14 +382,25 @@ export default Vue.extend({
             }
         },
         initialize_instance_list: async function () {
-            const response = await getInstanceList(this.$route.params.project_string_id, this.file.id)
-            console.log(response)
+            const { file_serialized: { instance_list } } = await getInstanceList(this.$route.params.project_string_id, this.file.id)
+            instance_list.map(instance => {
+                if (instance.type === "text_token") {
+                    const { id, start_token, end_token, label_file, creation_ref_id } = instance
+                    const new_instance = new TextAnnotationInstance()
+                    new_instance.create_instance(id, start_token, end_token, label_file, creation_ref_id)
+                    this.instance_list.push(new_instance)
+                }
+            })
         },
-        save: async function () {
+        save: async function (index = null) {
             this.save_loading = true
             const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
             added_instances.map(add_insatnce => {
-                this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                if (!index) {
+                    this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                } else {
+                    this.instance_list[index].id = add_insatnce.id
+                }
             })
             this.save_loading = false
         },

@@ -72,7 +72,7 @@
             </div>
             <div class="has-changed">
                 <div style="width: 100px">
-                <span v-if="save_loading"> Saving. </span>
+                <span v-if="save_loading"> Saving </span>
                 <span v-else>
                     <span v-if="has_changed">Changes Detected...</span>
                     <span v-else>Saved</span>
