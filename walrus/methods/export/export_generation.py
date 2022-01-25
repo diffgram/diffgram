@@ -512,10 +512,12 @@ def build_text_packet(
     """
 
     file.text_file.regenerate_url(session = session)
+    tokens = file.text_file.get_text_tokens(file.text_tokenizer)
     text_dict = {
         'original_filename': file.text_file.original_filename,
         'signed_expiry': file.text_file.url_signed_expiry,
         'signed_url': file.text_file.url_signed,
+        'tokens': tokens
     }
 
     instance_dict_list = []
