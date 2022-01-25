@@ -176,9 +176,6 @@ class Instance(Base, Caching):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    # Used to store data from InstanceRelation table
-    cache_dict = Column(MutableDict.as_mutable(JSONB), default = {})
-
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -372,7 +369,6 @@ class Instance(Base, Caching):
             self.nodes,
             self.edges,
             self.pause_object,
-            self.cache_dict
         ]
 
 
@@ -410,7 +406,6 @@ class Instance(Base, Caching):
             'id': self.id,
             'type': self.type,
             'file_id': self.file_id,
-            'relations_list': self.cache_dict.get('relations_list') if self.cache_dict else [],
             'label_file_id': self.label_file_id,
             'soft_delete': self.soft_delete,
             'x_min': self.x_min,
