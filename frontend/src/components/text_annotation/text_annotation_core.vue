@@ -222,15 +222,17 @@ export default Vue.extend({
             }
         },
         file: function(newValue) {
+            this.rendering = true
+            this.instance_list = [];
+            this.text = null;
+            this.command_manager = null;
+            this.initial_words_measures = [];
+            this.lines = []
             this.on_mount()
         }
     },
     methods: {
         on_mount: async function() {
-            this.instance_list = [];
-            this.text = '';
-            this.command_manager = null;
-            this.initial_words_measures = [];
             this.text = await getTextService(this.file.text.url_signed)
             this.command_manager = new CommandManagerAnnotationCore()
             this.initial_words_measures = Tokenizer().tokenize(this.text)
