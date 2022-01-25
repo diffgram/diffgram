@@ -513,6 +513,7 @@ export default Vue.extend( {
       else{
         group.is_global = false
       }
+      this.$emit('change')
     },
     update_label_files: function(new_label_file_list){
       this.$refs.label_selector.set_label_list(new_label_file_list)

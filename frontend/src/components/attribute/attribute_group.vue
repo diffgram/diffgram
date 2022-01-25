@@ -322,7 +322,7 @@
               @change="api_group_update('UPDATE')"
             >
             </v-checkbox>
-          </div>     
+          </div>
 
         </v-row>
 
@@ -857,6 +857,9 @@
             this.internal_selected = []
             // value is an array now
             for (let single_selected of value) {
+              if(!single_selected){
+                return
+              }
               this.internal_selected.push(this.select_format.find(
                 attribute => {
                   return attribute.id == single_selected.id

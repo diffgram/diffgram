@@ -177,6 +177,7 @@ class Annotation_Update():
                                   'curve',
                                   'keypoints',
                                   'cuboid_3d',
+                                  'global',
                                   'relation']
         }
         },

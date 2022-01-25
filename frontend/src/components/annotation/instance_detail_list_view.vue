@@ -14,53 +14,13 @@
             <div v-if="render_mode=='gold_standard'">Gold standard instances </div>
 
 
-          <!-- global_attribute_groups_list -->
-         <div class="pa-2" v-if="global_attribute_groups_list.length != 0">
-           <h4>Global File Attributes: </h4>
-         </div>
-          <v-expansion-panels
-                v-model="openedGlobalPanel"
-                :accordion="true"
-                :inset="false"
-                :multiple="false"
-                :focusable="true"
-                :disabled="false"
-                :flat="false"
-                :hover="false"
-                :tile="true"
-              >
-                <v-expansion-panel>
-                  <v-expansion-panel-content>
-
-                    <!--
-                    <v-expansion-panel-header>
-                      <h3>
-                        <tooltip_icon
-                            tooltip_message="Globals"
-                            icon="mdi-earth"
-                            color="primary">
-                        </tooltip_icon>
-                       </h3>
-                    </v-expansion-panel-header>
-                    -->
-
-                    <attribute_group_list
-                        style="overflow-y:auto; max-height: 400px"
-                        v-if="current_global_instance
-                              && global_attribute_groups_list
-                              && global_attribute_groups_list.length != 0"
-                        :mode=" 'annotate' "
-                        :view_only_mode="view_only_mode"
-                        :attribute_group_list_prop = "global_attribute_groups_list"
-                        :current_instance = "current_global_instance"
-                        @attribute_change="global_attribute_change($event)"
-                        key="global_attribute_groups_list"
-                            >
-                    </attribute_group_list>
-                  </v-expansion-panel-content>
-
-                </v-expansion-panel>
-            </v-expansion-panels>
+            <global_attributes_list
+              :global_attribute_groups_list="global_attribute_groups_list"
+              :open="openedGlobalPanel"
+              :current_global_instance="current_global_instance"
+              :view_only_mode="view_only_mode"
+              @attribute_change="global_attribute_change($event)"
+            ></global_attributes_list>
             <div class="pa-2" v-if="attribute_group_list_prop.length != 0">
               <h4>Instance Level Attributes: </h4>
             </div>
@@ -517,7 +477,7 @@
 import rating_review from './rating_review'
 import attribute_group_list from '../attribute/attribute_group_list.vue';
 import label_select_only from '../label/label_select_only.vue'
-
+import global_attributes_list from '../attribute/global_attributes_list'
 import Vue from "vue";
 
   export default Vue.extend( {
@@ -525,7 +485,8 @@ import Vue from "vue";
     components: {
       rating_review,
       attribute_group_list,
-      label_select_only
+      label_select_only,
+      global_attributes_list
     },
     // TODO defaults with dicts here
     props: [
@@ -702,7 +663,7 @@ import Vue from "vue";
         const instance_list = this.instance_list.map((inst, i) => ({
           ...inst,
           instance_list_index: i
-        }))
+        })).filter(elm => elm.type !== 'global')
         if(this.model_run_list && this.model_run_list.length > 0){
           const result = [];
           for(const model_run of this.model_run_list){
