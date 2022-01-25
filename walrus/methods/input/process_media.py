@@ -1768,7 +1768,6 @@ class Process_Media():
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:
         # By Default, file has NLTK tokenizer.
-        print('tokenizerr', file.text_tokenizer, raw_text)
         tokenizer = TextTokenizer(type = file.text_tokenizer)
 
         word_tokens = tokenizer.tokenize_words(raw_text)
