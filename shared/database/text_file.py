@@ -2,6 +2,7 @@
 from shared.database.common import *
 from shared.database.common import data_tools
 from shared.settings import settings
+import json
 
 
 class TextFile(Base):
@@ -40,11 +41,19 @@ class TextFile(Base):
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
+    def get_text_tokens(self, tokenizer_type):
+        data = data_tools.get_string_from_blob(self.tokens_url_signed_blob_path)
+        data_dict = json.loads(data)
+        result = data_dict[tokenizer_type]
+        return result
+
     def get_text(self):
         """
             Download Raw text from blob.
         :return:
         """
+        data = data_tools.get_string_from_blob(self.tokens_url_signed_blob_path)
+        return data
 
     def get_by_id(session, id):
         return session.query(TextFile).filter(TextFile.id == id).first()
@@ -115,7 +124,8 @@ class TextFile(Base):
             if self.tokens_url_signed_expiry is None or self.tokens_url_signed_expiry <= time_to_check:
                 new_offset_in_seconds = 86400 * new_offset_days_valid
 
-                self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path, new_offset_in_seconds)
+                self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path,
+                                                                     new_offset_in_seconds)
                 self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
                 session.add(self)
 
