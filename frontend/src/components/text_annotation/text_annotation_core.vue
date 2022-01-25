@@ -399,6 +399,11 @@ export default Vue.extend({
                     const new_instance = new TextAnnotationInstance()
                     new_instance.create_instance(id, start_token, end_token, label_file, creation_ref_id)
                     this.instance_list.push(new_instance)
+                } else {
+                    const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance
+                    const new_instance = new TextRelationInstance()
+                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, creation_ref_id)
+                    this.instance_list.push(new_instance)
                 }
             })
         },
