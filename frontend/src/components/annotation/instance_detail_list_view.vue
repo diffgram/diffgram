@@ -24,7 +24,7 @@
             <div class="pt-2" v-if="attribute_group_list_prop.length != 0">
 
             <v-expansion-panels
-                v-model="open"
+                v-model="instance_detail_open"
                 :accordion="true"
                 :inset="false"
                 :multiple="false"
@@ -582,6 +582,7 @@ import Vue from "vue";
       return {
 
         openedGlobalPanel: 0,
+        instance_detail_open: true,
         current_global_instance_index: 0, // hard coded until support multiple
 
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
