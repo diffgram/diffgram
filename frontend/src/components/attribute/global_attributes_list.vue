@@ -1,7 +1,8 @@
 <template>
-<div class="global-attributes-display-container d-flex flex-column" v-if="global_attribute_groups_list">
+<div class="global-attributes-display-container
+     d-flex flex-column"
+     v-if="global_attribute_groups_list">
 
-  <h4 class="pa-2" v-if="global_attribute_groups_list.length != 0">Global File Attributes: </h4>
   <v-expansion-panels
     v-model="open"
     :accordion="true"
@@ -9,11 +10,14 @@
     :multiple="false"
     :focusable="true"
     :disabled="false"
-    :flat="false"
+    :flat="true"
     :hover="false"
     :tile="true"
   >
     <v-expansion-panel>
+
+      <v-expansion-panel-header> Global File Attributes </v-expansion-panel-header>
+
       <v-expansion-panel-content>
         <attribute_group_list
           style="overflow-y:auto; max-height: 400px"
@@ -53,9 +57,6 @@ import attribute_group_list from './attribute_group_list.vue';
       'global_attribute_groups_list' : {
         default: null
       },
-      'open':{
-        default: false
-      },
       'current_global_instance':{
         default: null
       },
@@ -69,7 +70,8 @@ import attribute_group_list from './attribute_group_list.vue';
 
         loading: false,
         error: {},
-        success: false
+        success: false,
+        open: true
       }
     },
 
