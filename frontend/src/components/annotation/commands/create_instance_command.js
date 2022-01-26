@@ -63,7 +63,7 @@ export class CreateInstanceCommand {
   }
 
   execute() {
-    if (this.instance.creation_ref_id || this.instance.creation_ref_id === 0) {
+    if (this.instance.creation_ref_id) {
       this.instance.soft_delete = false;
       for (let i = 0; i < this.ann_core_ctx.instance_list.length; i++) {
         const current = this.ann_core_ctx.instance_list[i];
