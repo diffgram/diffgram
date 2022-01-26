@@ -16,43 +16,64 @@
 
             <global_attributes_list
               :global_attribute_groups_list="global_attribute_groups_list"
-              :open="openedGlobalPanel"
               :current_global_instance="current_global_instance"
               :view_only_mode="view_only_mode"
               @attribute_change="global_attribute_change($event)"
             ></global_attributes_list>
-            <div class="pa-2" v-if="attribute_group_list_prop.length != 0">
-              <h4>Instance Level Attributes: </h4>
+
+            <div class="pt-2" v-if="attribute_group_list_prop.length != 0">
+
+            <v-expansion-panels
+                v-model="open"
+                :accordion="true"
+                :inset="false"
+                :multiple="false"
+                :focusable="true"
+                :disabled="false"
+                :flat="true"
+                :hover="false"
+                :tile="true"
+              >
+                <v-expansion-panel>
+
+                 <v-expansion-panel-header>
+                   Selected Annotation Detail
+                   <v-spacer></v-spacer>
+                   <v-chip x-small>
+                    {{attribute_group_list_prop.length}}
+                   </v-chip>
+                 </v-expansion-panel-header>
+
+                  <v-expansion-panel-content>
+
+                    <attribute_group_list
+                        style="overflow-y:auto; max-height: 400px"
+                        v-if="attribute_group_list_prop.length != 0"
+                        :mode=" 'annotate' "
+                        :view_only_mode="view_only_mode"
+                        :attribute_group_list_prop = "attribute_group_list_prop"
+                        :current_instance = "current_instance"
+                        @attribute_change="attribute_change($event)"
+                        key="attribute_groups_list"
+                            >
+                    </attribute_group_list>
+
+
+                  </v-expansion-panel-content>
+
+                </v-expansion-panel>
+              </v-expansion-panels>
+  
             </div>
-            <attribute_group_list
-                style="overflow-y:auto; max-height: 400px"
-                v-if="attribute_group_list_prop.length != 0"
-                :mode=" 'annotate' "
-                :view_only_mode="view_only_mode"
-                :attribute_group_list_prop = "attribute_group_list_prop"
-                :current_instance = "current_instance"
-                @attribute_change="attribute_change($event)"
-                key="attribute_groups_list"
-                    >
-            </attribute_group_list>
 
-            <!-- overflow / scrolling
-              context of not wanting to have to scroll main window
 
-              Not super happy with scroll bar as the solution here, ie maybe
-              should show all of height if no attributes...
-
-              Look into more user controlable here.
-              Overflow is part of it, but user controlable sizing is another part.
-
-              Or may want to move attributes around / display them
-              differently...
-               -->
             <v-divider class="mt-4"></v-divider>
 
             <v-expansion-panels accordion flat v-model="panels">
               <v-expansion-panel v-for="grouped_list in filtered_instance_set">
-                <v-expansion-panel-header  ripple v-if="grouped_list.model_run">
+
+                <v-expansion-panel-header
+                     ripple v-if="grouped_list.model_run">
                   <div class="d-flex justify-space-between">
 
                     <strong v-if="grouped_list.model_run.id !== -1"><v-icon :color="grouped_list.model_run.color">mdi-group</v-icon> {{grouped_list.model_run.reference_id}}</strong>
@@ -64,6 +85,15 @@
                     </v-btn>
                   </div>
                 </v-expansion-panel-header>
+
+                <v-expansion-panel-header>
+                  Annotations
+                  <v-spacer></v-spacer>
+                 <v-chip x-small v-if="instance_list_count > 0">
+                   {{instance_list_count}}
+                 </v-chip>
+                </v-expansion-panel-header>
+
                 <v-expansion-panel-content>
                   <v-chip v-if="current_instance
                         && current_instance.id
@@ -450,14 +480,6 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
-
-
-              <v-chip x-small v-if="instance_list_count > 0">
-              {{instance_list_count}}
-              </v-chip>
-
-
-
 
           <v-alert type="warning"
                   :value="label_settings.show_removed_instances == true">
