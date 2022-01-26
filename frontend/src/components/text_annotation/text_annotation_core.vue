@@ -13,6 +13,7 @@
                 :save_loading="save_loading"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
+                @change_file="change_file"
                 @undo="undo()"
                 @redo="redo()"
             />
@@ -437,6 +438,11 @@ export default Vue.extend({
             let redone = this.command_manager.redo();
             if (redone) {
                 this.has_changed = true;
+            }
+        },
+        change_file(direction, file) {
+            if (direction == "next" || direction == "previous") {
+                this.$emit("request_file_change", direction, file);
             }
         },
         // Find intersection and update level of the instance

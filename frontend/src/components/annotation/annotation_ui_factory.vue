@@ -45,6 +45,7 @@
         <text_annotation_core 
           :file="current_file" 
           :label_list="label_list"
+          @request_file_change="request_file_change"
         />
       </div>
       <div v-else-if="!annotation_interface">
