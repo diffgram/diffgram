@@ -107,28 +107,29 @@
               Untitled Attribute Group
             </div>
 
+            <v-spacer></v-spacer>
+            <!-- Archive button -->
+            <button_with_confirm
+              v-if="mode === 'edit'"
+              @confirm_click="api_group_archive(group)"
+              icon="archive"
+              color="red"
+              :loading="loading"
+              :disabled="loading"
+              :icon_style="true"
+              tooltip_message="Archive Entire Attribute and All Options"
+            >
+              <template slot="content">
+                <v-layout column>
+
+                  <v-alert type="error">
+                    Are you sure? This will remove all options too.
+                  </v-alert>
+
+                </v-layout>
+              </template>
+            </button_with_confirm>
           </h3>
-          <!-- Archive button -->
-          <button_with_confirm
-            v-if="mode === 'edit'"
-            @confirm_click="api_group_archive(group)"
-            icon="archive"
-            color="red"
-            :loading="loading"
-            :disabled="loading"
-            :icon_style="true"
-            tooltip_message="Archive Entire Attribute and All Options"
-          >
-            <template slot="content">
-              <v-layout column>
-
-                <v-alert type="error">
-                  Are you sure? This will remove all options too.
-                </v-alert>
-
-              </v-layout>
-            </template>
-          </button_with_confirm>
           <!-- Archive button -->
           <!-- TODO maybe, play with this more
             eg maybe in edit mode show internal tag-->
