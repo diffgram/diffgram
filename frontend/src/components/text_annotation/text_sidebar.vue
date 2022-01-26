@@ -1,10 +1,18 @@
 <template>
-    <div style="width: 350px; border-right: 1px solid grey;">
+    <div :style="`
+        width: 350px; 
+        border-right: 1px solid #e0e0e0; 
+        max-height: calc(100vh - ${toolbar_height});
+        position: sticky;
+        left: 0;
+        top: ${toolbar_height}
+        `">
         <v-data-table
-            style="width: 350px"
             hide-default-footer
+            :style="`width: 350px; max-height: 52%; overflow-y: scroll`"
             :headers="headers"
             :items="instance_list"
+            fixed-header
         >
             <template v-slot:body="{ items }">
                 <tbody v-if="items.length > 0">
@@ -35,20 +43,30 @@
                         {{ item.label_file.label.name }}
                     </td>
                     <td class="centered-table-items">
-                        <button_with_menu
-                                tooltip_message="Change Label Template"
-                                icon="mdi-format-paint"
+                        <v-layout justify-center>
+                            <button_with_menu
+                                    tooltip_message="Change Label Template"
+                                    icon="mdi-format-paint"
+                                    color="primary"
+                                    :close_by_button="true"
+                                >
+                                    <template slot="content">
+                                        <label_select_only
+                                        :label_file_list_prop="label_list"
+                                        :select_this_id_at_load="item.label_file_id"
+                                        @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+                                        />
+                                    </template>
+                            </button_with_menu>
+                            <tooltip_button
                                 color="primary"
-                                :close_by_button="true"
-                              >
-                                <template slot="content">
-                                    <label_select_only
-                                      :label_file_list_prop="label_list"
-                                      :select_this_id_at_load="item.label_file_id"
-                                      @label_file="$emit('change_instance_label', { label: $event, instance: item })"
-                                    />
-                                </template>
-                        </button_with_menu>
+                                icon="mdi-delete"
+                                tooltip_message="Delete instance"
+                                :icon_style="true"
+                                :bottom="true"
+                                >
+                            </tooltip_button>
+                        </v-layout>
                     </td>
                   </tr>
                 </tbody>
@@ -83,6 +101,10 @@ export default Vue.extend({
         label_list: {
             type: Array,
             default: []
+        },
+        toolbar_height: {
+            type: String,
+            default: '100px'
         }
     },
     data() {
