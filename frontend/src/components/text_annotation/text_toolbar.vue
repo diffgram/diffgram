@@ -5,7 +5,7 @@
         elevation="0"
         fixed
         :height="height"
-        style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0"
+        style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0; border-top: 1px solid #e0e0e0"
     >
         <v-toolbar-items>
             <div style="width: 10px" />
