@@ -86,9 +86,6 @@
                 <tooltip_button
                 tooltip_message="Previous File"
                 @click="$emit('change_file', 'previous')"
-                :disabled="
-                    loading || annotations_loading || full_file_loading || !file
-                "
                 color="primary"
                 icon="mdi-chevron-left-circle"
                 :icon_style="true"
@@ -102,9 +99,6 @@
                 <tooltip_button
                 tooltip_message="Next File"
                 @click="$emit('change_file', 'next')"
-                :disabled="
-                    loading || annotations_loading || full_file_loading || !file
-                "
                 color="primary"
                 icon="mdi-chevron-right-circle"
                 :icon_style="true"
