@@ -111,8 +111,8 @@ class TextFile(Base):
             minimum_days_valid = 30 * 12  # this should always be lower then new offset
             new_offset_days_valid = 30 * 14
             time_to_check = time.time() + (86400 * minimum_days_valid)
-
-            if self.tokens_url_signed_expiry is None or self.tokens_url_signed_expiry <= time_to_check:
+            print('aalala', type(self.tokens_url_signed_expiry), type(time_to_check))
+            if self.tokens_url_signed_expiry is None or float(self.tokens_url_signed_expiry) <= time_to_check:
                 new_offset_in_seconds = 86400 * new_offset_days_valid
 
                 self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path, new_offset_in_seconds)

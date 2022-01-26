@@ -644,29 +644,33 @@ class Annotation_Update():
             # Create frame file when first instance is created
             # Can be done prior to an instance - just current way
 
-            # Default case, file already exists.
-            self.file = File.get_frame_from_video(
-                session = self.session,
-                video_parent_file_id = self.video_parent_file.id,
-                frame_number = self.frame_number,
-                with_for_update = True,
-                nowait = True
-            )
+            # If this is set to true, we'll attach the instance list to the video parent file
+            if self.set_parent_instance_list:
+                self.file = self.video_parent_file
+            else:
+                # Default case, file already exists.
+                self.file = File.get_frame_from_video(
+                    session = self.session,
+                    video_parent_file_id = self.video_parent_file.id,
+                    frame_number = self.frame_number,
+                    with_for_update = True,
+                    nowait = True
+                )
 
-            if self.file:
-                return
+                if self.file:
+                    return
 
-            # File does not exist, so create it.
+                # File does not exist, so create it.
 
-            self.file = File.new(
-                session = self.session,
-                file_type = "frame",
-                video_parent_file = self.video_parent_file,
-                frame_number = self.frame_number,
-                project_id = self.project.id,
-                task = self.task
-            )
-            self.is_new_file = True
+                self.file = File.new(
+                    session = self.session,
+                    file_type = "frame",
+                    video_parent_file = self.video_parent_file,
+                    frame_number = self.frame_number,
+                    project_id = self.project.id,
+                    task = self.task
+                )
+                self.is_new_file = True
 
     def detect_and_remove_collisions(self, instance_list):
         result = []
@@ -807,11 +811,13 @@ class Annotation_Update():
                 'kind': int,
                 'required': True
             }
+            },
+            {'set_parent_instance_list': {
+                'kind': bool,
+                'required': False
+            }
             }
         ]
-
-        if self.instance_proposed.get('type') == 'global':
-            self.instance_proposed['label_file_id'] = -1  # to bypass check
 
         self.log, input = regular_input.input_check_many(
             spec_list = spec_list,
@@ -821,6 +827,7 @@ class Annotation_Update():
         if len(self.log["error"].keys()) >= 1:
             return False
 
+        self.set_parent_instance_list = input['set_parent_instance_list']
         self.video_mode = input['video_mode']
         self.video_parent_file_id = input['video_file_id']
         self.frame_number = input['current_frame']

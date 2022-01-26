@@ -1088,7 +1088,8 @@ export default Vue.extend({
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       instance_rotate_control_mouse_hover: null,
-
+      video_parent_file_instance_list: [],
+      video_global_attribute_changed: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -2330,13 +2331,19 @@ export default Vue.extend({
         },
 
         get_and_set_global_instance: function (instance_list) {
+          if(!this.global_attribute_groups_list){
+            return
+          }
+          if(this.global_attribute_groups_list.length === 0){
+            return
+          }
           let existing_global_instance = instance_list.find(inst => inst.type === 'global');
           if(existing_global_instance){
             this.current_global_instance = existing_global_instance;
           }
           else{
             this.current_global_instance = this.new_global_instance();
-            this.instance_list.push(this.current_global_instance)
+            instance_list.push(this.current_global_instance)
           }
 
         },
@@ -3014,7 +3021,13 @@ export default Vue.extend({
         instance = this.gold_standard_file.instance_list[index]
       }
       else if (update.list_type == "global") {
-        instance = this.instance_list[index]
+        if(this.video_mode){
+          instance = this.video_parent_file_instance_list[index]
+        }
+        else{
+          instance = this.instance_list[index]
+        }
+
       }
 
       if (!instance) {
@@ -3111,16 +3124,25 @@ export default Vue.extend({
       }
 
       // end instance update
-      if(instance.type !== 'global'){
-
+      if(instance.type === 'global' && this.video_mode){
+        this.video_global_attribute_changed = true;
       }
-      let insert_instance_result = this.insert_instance(
-        index,
-        instance,
-        initial_instance,
-        update
-      );
-
+      if(!this.video_mode){
+        let insert_instance_result = this.insert_instance(
+          index,
+          instance,
+          initial_instance,
+          update
+        );
+      }
+      if(this.video_mode && instance.type !== 'global'){
+        let insert_instance_result = this.insert_instance(
+          index,
+          instance,
+          initial_instance,
+          update
+        );
+      }
       this.has_changed = true;
       this.trigger_refresh_with_delay();
     },
@@ -6821,8 +6843,6 @@ export default Vue.extend({
           response.data['file_serialized']['instance_list']
         );
         this.instance_list = new_instance_list
-        this.get_and_set_global_instance(new_instance_list)
-
       }
 
       this.loading = false
@@ -6833,7 +6853,52 @@ export default Vue.extend({
     trigger_refresh_with_delay: function () {
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
+    get_parent_instance_list_for_video: async function(){
+      let url = undefined;
+      let file = this.$props.file;
+      let payload = {}
+      if (this.$store.getters.is_on_public_project) {
+        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+        payload = {
+          directory_id:
+          this.$store.state.project.current_directory.directory_id,
+          job_id: this.job_id,
+          attached_to_job: file.attached_to_job,
+        };
+      } else if (this.$store.state.builder_or_trainer.mode == "builder") {
+        if (this.task && this.task.id) {
+          // If a task is present, prefer this route to handle permissions
+          url = "/api/v1/task/" + this.task.id + "/annotation/list";
+          file = this.$props.task.file;
+        } else {
+          url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+        }
+        payload = {
+          directory_id:
+          this.$store.state.project.current_directory.directory_id,
+          job_id: this.job_id,
+          attached_to_job: file.attached_to_job,
+        };
+      }
+      else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        url = "/api/v1/task/" + this.task.id + "/annotation/list";
+      }
+      try {
+        const response = await axios.post(url, payload);
+        if (response.data['file_serialized']) {
+          let new_instance_list = this.create_instance_list_with_class_types(
+            response.data['file_serialized']['instance_list']
+          );
+          this.video_parent_file_instance_list = new_instance_list
+        }
+        this.annotations_loading = false;
+        this.trigger_refresh_with_delay();
+      } catch (error) {
+        console.error(error);
+        this.loading = false;
+      }
 
+    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -6902,6 +6967,9 @@ export default Vue.extend({
         }
       }
     },
+    set_global_instance_on_parent_instance_list: function(){
+      this.get_and_set_global_instance(this.video_parent_file_instance_list)
+    },
     get_instances: async function (play_after_success = false) {
       if (this.annotations_loading) {
         return;
@@ -6921,12 +6989,16 @@ export default Vue.extend({
          * seperetly for special event handling
          *
          */
+        await this.get_parent_instance_list_for_video();
         await this.update_instance_list_from_buffer_or_get_new_buffer(
           play_after_success
         );
+        this.set_global_instance_on_parent_instance_list();
       } else {
         // Context of Images Only
         await this.get_instance_list_for_image();
+
+        this.get_and_set_global_instance(this.new_instance_list)
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;
@@ -7256,7 +7328,7 @@ export default Vue.extend({
 
       // this.$addQueriesToLocation({ file: this.$props.file.id });
 
-          await this.refresh_attributes_from_current_file(this.$props.file);
+      await this.refresh_attributes_from_current_file(this.$props.file);
 
       this.current_file_updates(this.$props.file);
       await this.prepare_canvas_for_new_file();
@@ -8102,6 +8174,7 @@ export default Vue.extend({
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
           current_frame: frame_number,
+          set_parent_instance_list: false
         };
       }
       try {
@@ -8113,6 +8186,22 @@ export default Vue.extend({
           gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
           video_data: video_data,
         });
+        console.log('video_parent_file_instance_list', this.video_parent_file_instance_list)
+        console.log('video_global_attribute_changed', this.video_global_attribute_changed)
+        if(this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed){
+          video_data.set_parent_instance_list = true
+          const response_parent = await axios.post(url, {
+            instance_list: this.video_parent_file_instance_list,
+            and_complete: and_complete,
+            directory_id:
+            this.$store.state.project.current_directory.directory_id,
+            gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
+            video_data: video_data,
+          });
+          if(response_parent.status === 200){
+            this.video_global_attribute_changed = false;
+          }
+        }
         this.save_loading_image = false
         this.has_changed = false
         this.save_count += 1;

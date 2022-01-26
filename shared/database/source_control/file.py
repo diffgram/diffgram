@@ -513,8 +513,9 @@ class File(Base, Caching):
                 'instance_list': [instance.serialize_with_label() for instance in instance_list]
             }
         if self.type == "video":
-            return self.serialize_with_video(session)
-
+            result = self.serialize_with_video(session)
+            result['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
+            return result
         if self.type == 'sensor_fusion':
             return {
                 'id': self.id,
