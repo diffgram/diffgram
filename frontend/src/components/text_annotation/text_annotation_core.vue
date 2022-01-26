@@ -378,14 +378,14 @@ export default Vue.extend({
                 initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
             }
             initial_instance.initialized = false
-            initial_instance.initialized = creation_ref_id
+            initial_instance.creation_ref_id = creation_ref_id
             instance.label_file = {...label}
             instance.label_file_id = label.id
 
             const instance_index = this.instance_list.indexOf(event.instance)
-            await this.save(instance_index)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
+            await this.save()
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {

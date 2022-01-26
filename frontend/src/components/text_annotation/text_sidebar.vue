@@ -13,6 +13,7 @@
             :headers="headers"
             :items="instance_list"
             fixed-header
+            disable-pagination
         >
             <template v-slot:body="{ items }">
                 <tbody v-if="items.length > 0">
