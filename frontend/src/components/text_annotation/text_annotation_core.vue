@@ -274,7 +274,7 @@ export default Vue.extend({
             this.current_label = event
         },
         // function to draw relations between instances
-        on_draw_relation: function(instance_id) {
+        on_draw_relation: async function(instance_id) {
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
@@ -300,10 +300,10 @@ export default Vue.extend({
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
             this.command_manager.executeCommand(command)
+            await this.save()
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
-            this.save()
         },
         draw_relation_listener: function(e) {
             this.path = {
@@ -349,7 +349,7 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
-                this.save()
+                await this.save()
             }
             this.instance_in_progress = null
             if (window.getSelection) {
