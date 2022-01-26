@@ -238,7 +238,7 @@
             </v-alert>
           </div>
 
-          <instance_detail_list_view  class="pt-3 pl-2 pr-4"
+          <instance_detail_list_view  class="pl-2 pr-4"
                                       ref="instance_detail_list"
                                       v-if="!task_error.task_request"
                                       :instance_list="instance_list"

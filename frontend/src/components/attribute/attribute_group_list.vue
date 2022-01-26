@@ -202,8 +202,6 @@ import attribute_group_new from './attribute_group_new'
 
     watch: {
 
-      // WIP WIP WIP NOT test
-      // for "updates in place" to page.
       attribute_template_group_id() {
         this.api_attribute_group_list()
       },
