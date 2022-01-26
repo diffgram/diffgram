@@ -1,21 +1,6 @@
 <template>
 <div id="">
 
-<!--
-  Feb 21, 2020
-    It may be useful to set a 'max-height:900px' for
-    when it's in annotation context
-    but for editing in Admin "edit" mode, its annoying.
-
-    Could have a simple switch, but would like
-    to think more about user controable stuff here, ie so someone can choose how large the annotation
-    window height is to their preference
-
-  if we add in in future recall we need
-  ';' in between and also may need computer property to create
-  the style string, I think see annotation core for an example of that.
-  -->
-
 <div style="overflow-y:auto">
   <v-layout v-if="mode == 'edit' " class="pa-8">
 
@@ -41,25 +26,6 @@
 
 
   </v-layout>
-
- <!--
-    Context that it's confusing to show this if instance is deleted
-    BUT we don't have a great way to detect a deletion on "current instance"
-    and also not 100% sure what is a good way to handle "de selecting" a current instance
-    that's deleted (ie recall that can delete multiple ones.)
-
-   CAUTION CAUTION CAUTION
-   we do want to show this in edit mode
-
-   One of the directionaly things to think about here is
-    * Reuse for annotate vs edit is good, BUT
-    for TESTING it need to think about it becuase very different
-
-   For example here we want to show it if edit more,
-   or if current_instance (exists and is not deleleted)
-
-   This works but it feels awkward.
-  -->
 
   <!--  Caution     This is for  annotate mode too -->
   <v-layout column v-if="mode == 'edit'
