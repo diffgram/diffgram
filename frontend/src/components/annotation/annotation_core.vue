@@ -6926,6 +6926,7 @@ export default Vue.extend({
           )}/annotation/list`;
         }
         try {
+          console.log('AAAAAA', url, file)
           const response = await axios.post(url, {
             directory_id:
               this.$store.state.project.current_directory.directory_id,
@@ -6998,7 +6999,7 @@ export default Vue.extend({
         // Context of Images Only
         await this.get_instance_list_for_image();
 
-        this.get_and_set_global_instance(this.new_instance_list)
+        this.get_and_set_global_instance(this.instance_list)
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;

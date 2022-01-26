@@ -117,7 +117,7 @@ def view_file_diff(project_string_id, file_id):
 ## Allow post for now here
 #   See annotation_core get_instances() it defaults to a post
 # instance_list
-@routes.route('/api/v1/task/<int:task_id> /annotation/list',
+@routes.route('/api/v1/task/<int:task_id>/annotation/list',
               methods = ['GET', 'POST'])
 @Permission_Task.by_task_id(apis_user_list = ["builder_or_trainer"])
 def task_get_annotation_list_api(task_id):

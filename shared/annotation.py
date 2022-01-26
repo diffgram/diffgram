@@ -72,6 +72,7 @@ class Annotation_Update():
     external_map_action: str = None
     new_instance_dict_hash: dict = field(default_factory = lambda: {})  # Keep a hash of all
     do_create_new_file = False
+    set_parent_instance_list = False
     new_file = None
     frame_number = None
     video_mode = False
