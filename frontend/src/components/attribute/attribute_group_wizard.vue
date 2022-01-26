@@ -178,7 +178,7 @@
           </v-stepper-content>
 
 
-          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_3">
+          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
 
             <h2 class="pb-2" > 4. What Labels Are Attached? </h2>
 
@@ -213,7 +213,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_4">
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
           <v-layout column>
 
@@ -301,7 +301,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_5">
+          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -417,7 +417,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="7">
+          <v-stepper-content step="7" data-cy="attribute_wizard_step_7">
 
             <h2> Complete! Great work. </h2>
 
