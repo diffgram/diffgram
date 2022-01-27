@@ -7339,7 +7339,7 @@ export default Vue.extend({
       }
       this.reset_for_file_change_context();
 
-      // this.$addQueriesToLocation({ file: this.$props.file.id });
+      this.$addQueriesToLocation({ file: this.$props.file.id });
 
       await this.refresh_attributes_from_current_file(this.$props.file);
 
