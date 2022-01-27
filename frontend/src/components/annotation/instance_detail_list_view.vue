@@ -23,22 +23,31 @@
 
             <div class="pt-2" v-if="attribute_group_list_prop.length != 0">
 
-            <v-expansion-panels
-                v-model="instance_detail_open"
-                :accordion="true"
-                :inset="false"
-                :multiple="false"
-                :focusable="true"
-                :disabled="false"
-                :flat="true"
-                :hover="false"
-                :tile="true"
-              >
+              <v-divider></v-divider>
+
+              <v-expansion-panels
+                  v-model="instance_detail_open"
+                  :accordion="true"
+                  :inset="false"
+                  :multiple="false"
+                  :focusable="true"
+                  :disabled="false"
+                  :flat="true"
+                  :hover="false"
+                  :tile="true"
+                >
                 <v-expansion-panel>
 
                  <v-expansion-panel-header>
-                   Selected Annotation Detail
+
+                  <v-icon left color="primary" size="18">
+                    mdi-selection
+                  </v-icon>
+
+                    Selection
+
                    <v-spacer></v-spacer>
+
                    <v-chip x-small>
                     {{attribute_group_list_prop.length}}
                    </v-chip>
@@ -87,11 +96,18 @@
                 </v-expansion-panel-header>
 
                 <v-expansion-panel-header>
+
+                  <v-icon left color="primary" size="18">
+                    mdi-brush
+                  </v-icon>
+
                   Annotations
+
                   <v-spacer></v-spacer>
                  <v-chip x-small v-if="instance_list_count > 0">
                    {{instance_list_count}}
                  </v-chip>
+
                 </v-expansion-panel-header>
 
                 <v-expansion-panel-content>

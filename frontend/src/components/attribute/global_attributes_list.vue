@@ -16,7 +16,21 @@
   >
     <v-expansion-panel>
 
-      <v-expansion-panel-header> Global File Attributes </v-expansion-panel-header>
+      <v-expansion-panel-header>
+
+        <v-icon left color="primary" size="18">
+          mdi-file
+        </v-icon>
+
+        Global File Attributes
+
+        <v-spacer></v-spacer>
+
+        <v-chip x-small
+                >
+            {{global_attribute_groups_list.length}}
+        </v-chip>
+      </v-expansion-panel-header>
 
       <v-expansion-panel-content>
         <attribute_group_list
