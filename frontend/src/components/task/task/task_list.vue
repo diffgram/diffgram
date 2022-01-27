@@ -384,9 +384,10 @@
               </tooltip_button>
               <v_user_icon
                 style="z-index: 1"
-                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+                v-if="props.item.task_assignees && props.item.task_assignees.length > 0"
+                :user_id="props.item.task_assignees[0].user_id"
               />
-              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+              <v-tooltip v-if="props.item.task_assignees && props.item.task_assignees.length > 1" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
                     + {{ props.item.task_assignees.length - 1}}
@@ -697,7 +698,7 @@ export default Vue.extend({
       default: null,
     },
     job: {
-      default: undefined,
+      default: () => ({}),
     },
     mode_data: {
       default: "direct_route", // job_edit, job_detail, user_profile, general/account?
@@ -1127,6 +1128,7 @@ export default Vue.extend({
     async task_list_api() {
       this.loading = true;
       try {
+        console.log('task list apiiiii', this.job_id)
         const response = await axios.post(
           `/api/v1/job/${this.job_id}/task/list`,
           {

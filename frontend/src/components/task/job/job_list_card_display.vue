@@ -15,8 +15,15 @@
 
         <div style="position: absolute;
                   top: 0;
+                  left: 0"
+             class="text-right pa-2 mb-8">
+          <v-chip small v-if="job.type === 'Exam'" color="secondary"><v-icon>mdi-test-tube</v-icon> Exam </v-chip>
+        </div>
+        <div style="position: absolute;
+                  top: 0;
                   right: 0"
              class="text-right pa-2">
+
           <tooltip_button
             tooltip_message="Pin"
             v-if="!job.is_pinned"
@@ -46,6 +53,7 @@
 
         <v-card-title
           @click="job_detail_page_route_by_status(job)"
+          :class="{'mt-4': job.type === 'Exam'}"
           style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
           <span>
           {{job.name | truncate(40)}}
@@ -380,10 +388,18 @@
           }
         },
         job_detail_page_route_by_status(job) {
-          this.$router.push("/job/" + job.id)
           if (job.status == "draft") {
             this.$router.push("/job/new/" + job.id)
+            return
           }
+          if(job.type === 'exam_template'){
+            this.$router.push(`/${this.$props.project_string_id}/exam/${job.id}`)
+          }
+          else{
+            this.$router.push("/job/" + job.id)
+          }
+
+
         },
         pin_job: async function(job){
           try{

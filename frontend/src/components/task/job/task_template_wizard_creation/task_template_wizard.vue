@@ -278,6 +278,8 @@ export default Vue.extend({
       }
     },
     launch_task_template: async function () {
+
+      await this.job_update();
       this.error = {};
 
       this.loading = true;

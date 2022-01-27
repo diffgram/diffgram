@@ -26,6 +26,7 @@
                 v-model="job.type"
                 data-cy="jobtype-select"
                 label="Type"
+                item-text="display_name"
                 item-value="text"
                 :disabled="loading">
       </v-select>
@@ -94,7 +95,16 @@
           error: {},
           show_credentials: false,
           loading: false,
-          type_list: ['Normal', 'Exam'],
+          type_list: [
+            {
+            display_name: 'Normal',
+            value: 'Normal'
+            },
+            {
+              display_name: 'Exam',
+              value: 'exam_template'
+            }
+          ],
           share_list: [],
           file_handling_list: [
             {
