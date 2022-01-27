@@ -13,6 +13,7 @@
 
 
       <global_attributes_list
+         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_global_instance="current_global_instance"
         :view_only_mode="view_only_mode"
