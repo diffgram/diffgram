@@ -262,6 +262,7 @@ export default Vue.extend({
       this.tab = 1;
     }
     this.reset_local_info();
+    this.get_child_exams_list();
     this.job_current_watcher = this.$store.watch(
       (state) => {
         return this.$store.state.job.refresh;
@@ -275,9 +276,6 @@ export default Vue.extend({
   beforeDestroy() {
     this.job_current_watcher();
   },
-  beforeDestroy() {
-    this.job_current_watcher()
-  },
   methods: {
     reset_local_info() {
       this.job_name = this.$store.state.job.current.name;
@@ -286,10 +284,7 @@ export default Vue.extend({
     set_document_title() {
       document.title = this.job_name;
     },
-    get_child_exams_list: function(){
-      const child_exams_list = examsServices.get_child_exams_list(metadata)
 
-    },
     api_update_job: function () {
       /*
        * Assumes one job at a time
