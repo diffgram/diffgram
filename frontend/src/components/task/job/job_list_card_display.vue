@@ -17,7 +17,7 @@
                   top: 0;
                   left: 0"
              class="text-right pa-2 mb-8">
-          <v-chip small v-if="job.type === 'Exam'" color="secondary"><v-icon>mdi-test-tube</v-icon> Exam </v-chip>
+          <v-chip small v-if="job.type === 'exam_template'" color="secondary"><v-icon>mdi-test-tube</v-icon> Exam </v-chip>
         </div>
         <div style="position: absolute;
                   top: 0;
@@ -53,7 +53,7 @@
 
         <v-card-title
           @click="job_detail_page_route_by_status(job)"
-          :class="{'mt-4': job.type === 'Exam'}"
+          :class="{'mt-4': job.type === 'exam_template'}"
           style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
           <span>
           {{job.name | truncate(40)}}

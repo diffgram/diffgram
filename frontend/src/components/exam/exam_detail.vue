@@ -19,9 +19,7 @@
           </div>
 
           <div
-            v-if="
-              $store.state.job.current.id == this.exam_id && edit_name != true
-            "
+            v-if="edit_name != true"
             class="font-weight-normal pl-2 d-flex align-center"
             @dblclick="edit_name = true"
           >
@@ -177,6 +175,7 @@ import job_pipeline_mxgraph from "../task/job/job_pipeline_mxgraph";
 import axios from "axios";
 import job_type from "../task/job/job_type";
 import stats_panel from "../stats/stats_panel.vue";
+import * as examsServices from "../../services/examsService"
 import { nextTask } from "../../services/tasksServices";
 
 import Vue from "vue";
@@ -287,15 +286,9 @@ export default Vue.extend({
     set_document_title() {
       document.title = this.job_name;
     },
-    api_get_next_task_scoped_to_job: async function (exam_id) {
-      this.next_task_loading = true;
-      const response = await nextTask(exam_id);
-      if (response.status === 200) {
-        let task = response.data.task;
-        const routeData = `/task/${task.id}`;
-        this.$router.push(routeData);
-      }
-      this.next_task_loading = false;
+    get_child_exams_list: function(){
+      const child_exams_list = examsServices.get_child_exams_list(metadata)
+
     },
     api_update_job: function () {
       /*

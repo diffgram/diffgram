@@ -27,7 +27,7 @@
                 data-cy="jobtype-select"
                 label="Type"
                 item-text="display_name"
-                item-value="text"
+                item-value="value"
                 :disabled="loading">
       </v-select>
 
