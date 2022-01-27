@@ -30,8 +30,10 @@ export class CreateInstanceCommand {
       }
       return newInstance;
     }
+
     if (instance.type == "keypoints") {
       let newInstance = instance.get_instance_data();
+
       let initializedInstance = this.ann_core_ctx.initialize_instance(
         newInstance
       );
