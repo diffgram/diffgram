@@ -466,6 +466,9 @@ export default Vue.extend( {
       },
       'any_frame_saving':{
           default: false
+      },
+      'max_num_image_buffer':{
+        default: 3
       }
     },
   components: {
@@ -475,7 +478,6 @@ export default Vue.extend( {
     return {
 
       error: {},
-      MAX_NUM_URL_BUFFER: 15,
       mouse_x: null,
       mouse_y: null,
       mouse_page_x: null,
@@ -554,9 +556,8 @@ export default Vue.extend( {
     }
   },
   computed: {
-    MAX_NUM_IMAGE_BUFFER: function(){
-      // This is to ensure we always have the urls available for fetching.
-      return this.MAX_NUM_URL_BUFFER - 12;
+    MAX_NUM_URL_BUFFER: function(){
+      return this.$props.max_num_image_buffer + 5;
     },
     video_settings: function () {
       if (this.current_video) {
@@ -1306,8 +1307,8 @@ export default Vue.extend( {
       return result
     },
     fetch_next_images: async function(frame_number){
-      let next_frames = this.range(frame_number, frame_number + this.MAX_NUM_IMAGE_BUFFER, 1)
-      let prev_frames = this.range(frame_number, frame_number - this.MAX_NUM_IMAGE_BUFFER, 1);
+      let next_frames = this.range(frame_number, frame_number + this.max_num_image_buffer, 1)
+      let prev_frames = this.range(frame_number, frame_number - this.max_num_image_buffer, 1);
       next_frames.filter(frame => frame <= this.current_video.frame_count)
       prev_frames.filter(frame => frame >= 0)
       let frames_to_fetch = []
