@@ -178,6 +178,7 @@ class Annotation_Update():
                                   'curve',
                                   'keypoints',
                                   'cuboid_3d',
+                                  'global',
                                   'relation']
         }
         },
@@ -358,14 +359,10 @@ class Annotation_Update():
             'kind': str,
             'required': False
         }},
-        {
-            'relations_list': {
-                'kind': list,
-                'default': [],
-                'required': False,
-                'allow_empty': True
-            }
-        }
+        {'text_tokenizer': {
+            'kind': str,
+            'required': False
+        }}
     ])
 
     # If we want this.
@@ -1115,7 +1112,7 @@ class Annotation_Update():
     def get_min_coordinates_instance(self, instance):
         logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
 
-        if instance.type in ['text_token', 'relation']:
+        if instance.type in ['text_token', 'relation', 'global']:
             return 0, 0
 
         if instance.type in ['box', 'polygon', 'point']:
@@ -1169,7 +1166,7 @@ class Annotation_Update():
     def get_max_coordinates_instance(self, instance):
         logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
 
-        if instance.type in ['text_token', 'relation']:
+        if instance.type in ['text_token', 'relation', 'global']:
             return 0, 0
 
         if instance.type in ['box', 'polygon', 'point']:
@@ -1366,6 +1363,7 @@ class Annotation_Update():
             'pause_object': pause_object,
             'from_instance_id': from_instance_id,
             'to_instance_id': to_instance_id,
+            'text_tokenizer': text_tokenizer,
         }
 
         if overwrite_existing_instances and id is not None:
@@ -1447,6 +1445,34 @@ class Annotation_Update():
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
 
+    def deduct_spatial_coordinates(self):
+
+        if self.instance.type in ["global", "relation", "token"]:
+            return
+
+        min_coords = self.get_min_coordinates_instance(self.instance)
+        max_coords = self.get_max_coordinates_instance(self.instance)
+
+        if self.instance.type in ['cuboid_3d']:
+            self.instance.min_point_3d = {
+                'min': {
+                    'x': min_coords[0],
+                    'y': min_coords[1],
+                    'z': min_coords[2]
+                }
+            }
+            self.instance.max_point_3d = {
+                'max': {
+                    'x': max_coords[0],
+                    'y': max_coords[1],
+                    'z': max_coords[2]
+                }
+            }
+        else:
+            self.instance.x_min = int(min_coords[0])
+            self.instance.y_min = int(min_coords[1])
+            self.instance.x_max = int(max_coords[0])
+            self.instance.y_max = int(max_coords[1])
     def find_serialized_instance_index(self, id):
         for i in range(0, len(self.instance_list_kept_serialized)):
             instance = self.instance_list_kept_serialized[i]
