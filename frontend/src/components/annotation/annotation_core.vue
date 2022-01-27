@@ -1106,16 +1106,16 @@ export default Vue.extend({
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
-          current_global_instance: null,
-          instance_list_global: [],
+      current_global_instance: null,
+      instance_list_global: [],
 
-          snackbar_paste_message: '',
-          ghost_instance_hover_index: null,
-          default_instance_opacity: 0.25,
-          model_run_list: null,
-          ghost_instance_hover_type: null,
-          ghost_instance_list: [],
-          selected_instance_list: [],
+      snackbar_paste_message: '',
+      ghost_instance_hover_index: null,
+      default_instance_opacity: 0.25,
+      model_run_list: null,
+      ghost_instance_hover_type: null,
+      ghost_instance_list: [],
+      selected_instance_list: [],
 
       show_default_navigation: true,
       snackbar_merge_polygon: false,
@@ -6939,7 +6939,6 @@ export default Vue.extend({
           )}/annotation/list`;
         }
         try {
-          console.log('AAAAAA', url, file)
           const response = await axios.post(url, {
             directory_id:
               this.$store.state.project.current_directory.directory_id,
@@ -8200,8 +8199,6 @@ export default Vue.extend({
           gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
           video_data: video_data,
         });
-        console.log('video_parent_file_instance_list', this.video_parent_file_instance_list)
-        console.log('video_global_attribute_changed', this.video_global_attribute_changed)
         if(this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed){
           video_data.set_parent_instance_list = true
           const response_parent = await axios.post(url, {
