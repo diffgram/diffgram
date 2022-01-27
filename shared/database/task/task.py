@@ -191,6 +191,8 @@ class Task(Base):
     # if it has been reviewed or not (if that's even needed).
     gold_standard_missing = Column(Integer, default = 0)
 
+    text_tokenizer = Column(String(), default = 'wink')
+
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))
     default_external_map = relationship("ExternalMap",

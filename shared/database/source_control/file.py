@@ -151,6 +151,8 @@ class File(Base, Caching):
     # Concept that the first file created, ie a new "import" is the "root"
     # So if a new file media was uploaded this would effect that...
 
+    text_tokenizer = Column(String(), default = 'wink')
+
     is_root = Column(Boolean) 
     root_id = Column(BIGINT, ForeignKey('file.id'))
 
