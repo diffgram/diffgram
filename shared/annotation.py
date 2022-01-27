@@ -40,7 +40,7 @@ class Annotation_Update():
     session: Any
     file: Any  # Video or Image file.
     instance_list_new: list = None  # New from external
-    instance: Instance = None  # New from external
+    instance: object = None  # New from external
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
@@ -61,8 +61,6 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
-    # This array will keep track of any new instance relations that did not have instance IDs
-    new_instance_relations_list_no_ids: dict = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -339,38 +337,10 @@ class Annotation_Update():
             'kind': str,
             'required': False
         }},
-        {'text_tokenizer': {
-            'kind': str,
-            'required': False
-        }},
         {'pause_object': {
             'kind': bool,
             'required': False
-        }},
-        {'from_instance_id': {
-            'kind': int,
-            'required': False
-        }},
-        {'to_instance_id': {
-            'kind': int,
-            'required': False
-        }},
-        {'from_creation_ref': {
-            'kind': str,
-            'required': False
-        }},
-        {'to_creation_ref': {
-            'kind': str,
-            'required': False
-        }},
-        {
-            'relations_list': {
-                'kind': list,
-                'default': [],
-                'required': False,
-                'allow_empty': True
-            }
-        }
+        }}
     ])
 
     # If we want this.
@@ -1113,12 +1083,7 @@ class Annotation_Update():
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
-                pause_object = input['pause_object'],
-                text_tokenizer = input['text_tokenizer'],
-                from_instance_id = input['from_instance_id'],
-                to_instance_id = input['to_instance_id'],
-                from_creation_ref = input['from_creation_ref'],
-                to_creation_ref = input['to_creation_ref'],
+                pause_object = input['pause_object']
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1228,20 +1193,6 @@ class Annotation_Update():
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
 
-    def set_instance_relations_cache(self, relations_list):
-        """
-            Sets the cache dict of the self.instance to be the given relations_list.
-        :return:
-        """
-
-        if not self.instance:
-            return
-
-        if not self.instance.cache_dict:
-            self.instance.cache_dict = {}
-
-        self.instance.cache_dict['relations_list'] = relations_list
-
     def update_instance(self,
                         type: str,
                         x_min: int,
@@ -1292,12 +1243,7 @@ class Annotation_Update():
                         hash_instances = True,
                         overwrite_existing_instances = True,
                         validate_label_file = True,
-                        pause_object = None,
-                        text_tokenizer = 'wink',
-                        from_instance_id = None,
-                        to_instance_id = None,
-                        from_creation_ref = None,
-                        to_creation_ref = None):
+                        pause_object = None):
         """
         Assumes a "system" level context
 
@@ -1381,7 +1327,6 @@ class Annotation_Update():
             'angle': float(angle) if angle is not None else 0.0,
             'width': width,
             'height': height,
-            'text_tokenizer': text_tokenizer,
             'cp': cp,
             'p1': p1,
             'p2': p2,
@@ -1464,49 +1409,12 @@ class Annotation_Update():
 
         sequence = self.sequence_update(instance = self.instance)
 
-
         if sequence:
             if not self.instance.soft_delete:
                 sequence.add_keyframe_to_cache(self.session, self.instance)
                 self.session.add(sequence)
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
-
-    def deduct_spatial_coordinates(self):
-
-        if self.instance.type == "global":
-            return
-
-        min_coords = self.get_min_coordinates_instance(self.instance)
-        max_coords = self.get_max_coordinates_instance(self.instance)
-
-        if self.instance.type in ['cuboid_3d']:
-            self.instance.min_point_3d = {
-                'min': {
-                    'x': min_coords[0],
-                    'y': min_coords[1],
-                    'z': min_coords[2]
-                }
-            }
-            self.instance.max_point_3d = {
-                'max': {
-                    'x': max_coords[0],
-                    'y': max_coords[1],
-                    'z': max_coords[2]
-                }
-            }
-        else:
-            self.instance.x_min = int(min_coords[0])
-            self.instance.y_min = int(min_coords[1])
-            self.instance.x_max = int(max_coords[0])
-            self.instance.y_max = int(max_coords[1])
-
-
-    def find_serialized_instance_index(self, id):
-        for i in range(0, len(self.instance_list_kept_serialized)):
-            instance = self.instance_list_kept_serialized[i]
-            if instance.get('id') == id:
-                return i
 
     def update_sequence_id_in_cache_list(self, instance):
         """

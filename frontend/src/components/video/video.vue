@@ -475,7 +475,7 @@ export default Vue.extend( {
     return {
 
       error: {},
-      MAX_NUM_URL_BUFFER: 30,
+      MAX_NUM_URL_BUFFER: 15,
       mouse_x: null,
       mouse_y: null,
       mouse_page_x: null,
