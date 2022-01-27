@@ -1,9 +1,6 @@
 <template>
-<div class="global-attributes-display-container
-     d-flex flex-column"
-     v-if="global_attribute_groups_list">
-
   <v-expansion-panels
+    v-if="global_attribute_groups_list"
     v-model="open"
     :accordion="true"
     :inset="false"
@@ -16,18 +13,17 @@
   >
     <v-expansion-panel>
 
-      <v-expansion-panel-header>
+      <v-expansion-panel-header class="d-flex justify-start pa-0 sidebar-accordeon-header">
 
-        <v-icon left color="primary" size="18">
+        <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
           mdi-file
         </v-icon>
 
-        Global File Attributes
+        <h4>Global File Attributes</h4>
 
         <v-spacer></v-spacer>
 
-        <v-chip x-small
-                >
+        <v-chip x-small class="d-flex justify-center flex-grow-0">
             {{global_attribute_groups_list.length}}
         </v-chip>
       </v-expansion-panel-header>
@@ -51,7 +47,6 @@
     </v-expansion-panel>
   </v-expansion-panels>
 
-</div>
 </template>
 
 <script lang="ts">
@@ -104,3 +99,10 @@ import attribute_group_list from './attribute_group_list.vue';
     }
   }
 ) </script>
+
+<style scoped>
+.sidebar-accordeon-header{
+  border-bottom: 1px solid #e0e0e0;
+}
+</style>
+

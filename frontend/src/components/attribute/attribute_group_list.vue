@@ -59,7 +59,7 @@
                         :data-cy="`attribute_group_header_${group.prompt}`"
                         @click="update_url_with_current_group(group)"
                         class="d-flex justify-start text-left">
-          <h3 class="text-left d-flex align-center flex-grow-1">
+          <h4 class="text-left d-flex align-center flex-grow-1">
             <attribute_kind_icons
               class="pr-2"
               :kind=" group.kind "
@@ -95,7 +95,7 @@
                 </v-layout>
               </template>
             </button_with_confirm>
-          </h3>
+          </h4>
           <!-- Archive button -->
           <!-- TODO maybe, play with this more
             eg maybe in edit mode show internal tag-->

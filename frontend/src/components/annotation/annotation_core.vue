@@ -210,10 +210,11 @@
         <v-navigation-drawer
           permanent
           left
+          class="mr-2 pt-2"
+          style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
           v-if="!error_no_permissions.data"
           :width="label_settings.left_nav_width"
         >
-        <br />
           <v-alert
             v-if="
               $store.state.user.settings.studio_box_info == true &&
@@ -325,16 +326,16 @@
         >
           <v-expansion-panel>
 
-            <v-expansion-panel-header>
+            <v-expansion-panel-header class="d-flex justify-start pa-0 pr-1 align-center" style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
-              <v-icon left color="primary" size="18">
+              <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
                 mdi-language-javascript
               </v-icon>
 
-              Interactive Automations
+              <h4>Interactive Automations</h4>
 
               <v-spacer></v-spacer>
-    
+
             </v-expansion-panel-header>
 
             <v-expansion-panel-content>
