@@ -174,6 +174,9 @@ class Instance(Base):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
+    from_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
+    to_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -357,7 +360,9 @@ class Instance(Base):
             self.sequence_id,
             self.nodes,
             self.edges,
-            self.pause_object
+            self.pause_object,
+            self.to_instance_id,
+            self.from_instance_id
         ]
 
 

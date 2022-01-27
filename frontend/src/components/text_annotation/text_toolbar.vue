@@ -5,7 +5,7 @@
         elevation="0"
         fixed
         :height="height"
-        style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0"
+        style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0; border-top: 1px solid #e0e0e0"
     >
         <v-toolbar-items>
             <div style="width: 10px" />
@@ -86,9 +86,6 @@
                 <tooltip_button
                 tooltip_message="Previous File"
                 @click="$emit('change_file', 'previous')"
-                :disabled="
-                    loading || annotations_loading || full_file_loading || !file
-                "
                 color="primary"
                 icon="mdi-chevron-left-circle"
                 :icon_style="true"
@@ -102,9 +99,6 @@
                 <tooltip_button
                 tooltip_message="Next File"
                 @click="$emit('change_file', 'next')"
-                :disabled="
-                    loading || annotations_loading || full_file_loading || !file
-                "
                 color="primary"
                 icon="mdi-chevron-right-circle"
                 :icon_style="true"

@@ -1,9 +1,11 @@
 from shared.database.source_control.file import TextFile
 import nltk
+
 nltk.download('punkt')
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 from typing import Callable
+
 
 class TextTokenizer:
     type: str

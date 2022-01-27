@@ -65,11 +65,11 @@ export class UpdateInstanceCommand {
       return initializedInstance;
     }
     else if (instance.type === 'text_token') {
-      const { id, start_token, end_token, label_file, creation_ref_id } = instance.get_instance_data()
+      const { id, start_token, end_token, label_file, creation_ref_id, soft_delete } = instance.get_instance_data()
       const newInstance = new TextAnnotationInstance()
-      newInstance.create_instance(id, start_token, end_token, label_file)
+      newInstance.create_instance(id, start_token, end_token, label_file, soft_delete)
       newInstance.initialized = true
-      newInstance.initialized = creation_ref_id
+      newInstance.creation_ref_id = creation_ref_id
       return newInstance
     }
     else if (instance.type === 'relation') {
@@ -77,7 +77,7 @@ export class UpdateInstanceCommand {
       const newInstance = new TextRelationInstance()
       newInstance.create_instance(id, from_instance_id, to_instance_id, label_file)
       newInstance.initialized = true
-      newInstance.initialized = creation_ref_id
+      newInstance.creation_ref_id = creation_ref_id
       return newInstance
     }
     else if(instance.type === 'cuboid_3d'){

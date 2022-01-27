@@ -61,6 +61,8 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+    # This array will keep track of any new instance relations that did not have instance IDs
+    new_instance_relations_list_no_ids: dict = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -176,7 +178,6 @@ class Annotation_Update():
                                   'curve',
                                   'keypoints',
                                   'cuboid_3d',
-                                  'global',
                                   'relation']
         }
         },
@@ -340,7 +341,31 @@ class Annotation_Update():
         {'pause_object': {
             'kind': bool,
             'required': False
-        }}
+        }},
+        {'from_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'to_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'from_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
+        {'to_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
+        {
+            'relations_list': {
+                'kind': list,
+                'default': [],
+                'required': False,
+                'allow_empty': True
+            }
+        }
     ])
 
     # If we want this.
@@ -741,10 +766,6 @@ class Annotation_Update():
         """
 
         """
-        if self.instance.type == "global":
-            self.instance.label_file_id = None  # Prevent spoofing label_file_ids by passing global as type
-            return True
-
         if self.instance.label_file_id is None:
             return True
 
@@ -1083,7 +1104,12 @@ class Annotation_Update():
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
-                pause_object = input['pause_object']
+                pause_object = input['pause_object'],
+                text_tokenizer = input['text_tokenizer'],
+                from_instance_id = input['from_instance_id'],
+                to_instance_id = input['to_instance_id'],
+                from_creation_ref = input['from_creation_ref'],
+                to_creation_ref = input['to_creation_ref'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1243,7 +1269,12 @@ class Annotation_Update():
                         hash_instances = True,
                         overwrite_existing_instances = True,
                         validate_label_file = True,
-                        pause_object = None):
+                        pause_object = None,
+                        text_tokenizer = 'wink',
+                        from_instance_id = None,
+                        to_instance_id = None,
+                        from_creation_ref = None,
+                        to_creation_ref = None):
         """
         Assumes a "system" level context
 
@@ -1415,6 +1446,12 @@ class Annotation_Update():
                 self.session.add(sequence)
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
+
+    def find_serialized_instance_index(self, id):
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            instance = self.instance_list_kept_serialized[i]
+            if instance.get('id') == id:
+                return i
 
     def update_sequence_id_in_cache_list(self, instance):
         """
