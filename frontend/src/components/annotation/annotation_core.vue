@@ -310,42 +310,54 @@
             ref="view_edit_issue_panel"
           ></view_edit_issue_panel>
 
-          <v-card-title>
-            <v-icon left color="primary" size="28"
-              >mdi-language-javascript</v-icon
-            >
-            UserScripts
-            <v-spacer></v-spacer>
-            <v-btn
-              data-cy="show_userscript_panel_button"
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="userscript_minimized"
-              icon
-            >
-              <v-icon>mdi-chevron-down</v-icon>
-            </v-btn>
-            <v-btn
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="!userscript_minimized"
-              icon
-            >
-              <v-icon>mdi-chevron-up</v-icon>
-            </v-btn>
-          </v-card-title>
+          <v-divider></v-divider>
 
-          <userscript
-            v-show="!userscript_minimized"
-            :project_string_id_prop="project_string_id"
-            :create_instance="event_create_instance"
-            :current_userscript_prop="get_userscript()"
-            :userscript_select_disabled="userscript_select_disabled()"
-            :show_code_editor="!task || !task.id"
-            :show_external_scripts="!task || !task.id"
-            :show_save="!task || !task.id"
-            :show_other_controls="!task || !task.id"
-            ref="userscript"
-          >
-          </userscript>
+        <v-expansion-panels
+          v-model="userscript_minimized"
+          :accordion="true"
+          :inset="false"
+          :multiple="false"
+          :focusable="true"
+          :disabled="false"
+          :flat="true"
+          :hover="false"
+          :tile="true"
+        >
+          <v-expansion-panel>
+
+            <v-expansion-panel-header>
+
+              <v-icon left color="primary" size="18">
+                mdi-language-javascript
+              </v-icon>
+
+              Interactive Automations
+
+              <v-spacer></v-spacer>
+    
+            </v-expansion-panel-header>
+
+            <v-expansion-panel-content>
+
+              <userscript
+                v-show="!userscript_minimized"
+                :project_string_id_prop="project_string_id"
+                :create_instance="event_create_instance"
+                :current_userscript_prop="get_userscript()"
+                :userscript_select_disabled="userscript_select_disabled()"
+                :show_code_editor="!task || !task.id"
+                :show_external_scripts="!task || !task.id"
+                :show_save="!task || !task.id"
+                :show_other_controls="!task || !task.id"
+                ref="userscript"
+              >
+              </userscript>
+
+            </v-expansion-panel-content>
+
+          </v-expansion-panel>
+        </v-expansion-panels>
+
 
           <issues_sidepanel
             :minimized="minimize_issues_sidepanel"
