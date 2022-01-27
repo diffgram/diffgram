@@ -568,13 +568,13 @@ const routerOptions = [
   },
   {
     path: '/:project_string_id/exam/:exam_id',
-    component: 'exam/exam_detail',
+    component: 'exam/exam_template_detail',
     props: true,
     meta: (route) => ({
       requiresAuth: true,
-      title: "Exam #" + route.params.exam_id
+      title: "Exam#" + route.params.exam_id
     }),
-    name: "exam_detail"
+    name: "exam_template_detail"
   },
   {
     path: '/credential/new',

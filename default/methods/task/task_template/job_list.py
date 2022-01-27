@@ -154,6 +154,9 @@ def job_view_core(session,
     if meta["job_ids"]:
         query = query.filter(Job.id.in_(meta["job_ids"]))
 
+    if meta["parent_id"]:
+        query = query.filter(Job.parent_id == meta["parent_id"])
+
     if builder_or_trainer_mode == "builder":
 
         # Permissions in wrapper on this function
