@@ -24,6 +24,7 @@
         <text_sidebar 
             :instance_list="instance_list.filter(instance => !instance.soft_delete)"
             :label_list="label_list"
+            @delete_instance="delete_instance"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
             @change_instance_label="change_instance_label"
@@ -387,6 +388,26 @@ export default Vue.extend({
             this.command_manager.executeCommand(command)
             await this.save()
         },
+        delete_instance: async function(instance) {
+            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
+            let initial_instance;
+
+            if (instance.type === "text_token") {
+                initial_instance = new TextAnnotationInstance()
+                initial_instance.create_instance(id, start_token, end_token, label_file)
+            } else {
+                initial_instance = new TextRelationInstance()
+                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
+            }
+            initial_instance.initialized = false
+            initial_instance.creation_ref_id = creation_ref_id
+            instance.soft_delete = true
+
+            const instance_index = this.instance_list.indexOf(instance)
+            const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
+            this.command_manager.executeCommand(command)
+            await this.save()
+        },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
                 this.invisible_labels = this.invisible_labels.filter(label_id => label_id !== label.id)
@@ -400,12 +421,14 @@ export default Vue.extend({
                 if (instance.type === "text_token") {
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
                     const new_instance = new TextAnnotationInstance()
-                    new_instance.create_instance(id, start_token, end_token, label_file, creation_ref_id)
+                    new_instance.create_instance(id, start_token, end_token, label_file)
+                    new_instance.creation_ref_id
                     this.instance_list.push(new_instance)
                 } else {
                     const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance
                     const new_instance = new TextRelationInstance()
-                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, creation_ref_id)
+                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
+                    new_instance.creation_ref_id = creation_ref_id
                     this.instance_list.push(new_instance)
                 }
             })

@@ -63,10 +63,10 @@
                                 color="primary"
                                 icon="mdi-delete"
                                 tooltip_message="Delete instance"
+                                @click="$emit('delete_instance', item)"
                                 :icon_style="true"
                                 :bottom="true"
-                                >
-                            </tooltip_button>
+                            />
                         </v-layout>
                     </td>
                   </tr>

@@ -10,7 +10,7 @@ export class TextAnnotationInstance extends Instance {
         super();
     }
 
-    public create_instance(id, start_token, end_token, label_file): void {
+    public create_instance(id, start_token, end_token, label_file, soft_delete = false): void {
         this.id = id;
         this.type = "text_token";
         this.creation_ref_id = uuidv4();
@@ -18,6 +18,7 @@ export class TextAnnotationInstance extends Instance {
         this.end_token = end_token;
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.soft_delete = soft_delete;
     }
 
     public update_instance_start_token(start_token): void {
