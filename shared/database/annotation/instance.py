@@ -69,8 +69,6 @@ class Instance(Base):
     end_char = Column(Integer())
     sentence = Column(Integer())
 
-    text_tokenizer = Column(String(), default = 'wink')
-
     # Keyframe list?
 
     # ie for video
