@@ -7,11 +7,10 @@ from sqlalchemy.schema import Index
 from shared.database.model.model import Model
 from shared.database.model.model_run import ModelRun
 from shared.shared_logger import get_shared_logger
-from shared.database.annotation.instance_relation import InstanceRelation
 logger = get_shared_logger()
 
 
-class Instance(Base, Caching):
+class Instance(Base):
     """
     An individual annotation instance
 
@@ -68,8 +67,6 @@ class Instance(Base, Caching):
     start_char = Column(Integer())
     end_char = Column(Integer())
     sentence = Column(Integer())
-
-    text_tokenizer = Column(String(), default = 'wink')
 
     # Keyframe list?
 
@@ -175,9 +172,6 @@ class Instance(Base, Caching):
     rating_comment = Column(String())
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
-
-    # Used to store data from InstanceRelation table
-    cache_dict = Column(MutableDict.as_mutable(JSONB), default = {})
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -286,13 +280,6 @@ class Instance(Base, Caching):
         if return_kind == "objects":
             return query.all()
 
-    def get_serialized_instance_relations(self, session):
-        relations = session.query(InstanceRelation).filter(
-            InstanceRelation.from_instance_id == self.id
-        )
-        result = [x.serialize() for x in relations]
-        return result
-
     def do_soft_delete(self) -> None:
         """
         Context of wanting to hash afterwards
@@ -370,8 +357,7 @@ class Instance(Base, Caching):
             self.sequence_id,
             self.nodes,
             self.edges,
-            self.pause_object,
-            self.cache_dict
+            self.pause_object
         ]
 
 
@@ -409,7 +395,6 @@ class Instance(Base, Caching):
             'id': self.id,
             'type': self.type,
             'file_id': self.file_id,
-            'relations_list': self.cache_dict.get('relations_list') if self.cache_dict else [],
             'label_file_id': self.label_file_id,
             'soft_delete': self.soft_delete,
             'x_min': self.x_min,
