@@ -31,7 +31,7 @@
             :complete="step > 3"
             step="3"
           >
-            Local or Global
+            Scope
           </v-stepper-step>
 
 
@@ -42,7 +42,7 @@
             editable
             :complete="step > 4"
             step="4">
-           Attach Labels
+           Visible When
           </v-stepper-step>
 
           <v-divider></v-divider>
@@ -51,7 +51,7 @@
             editable
             :complete="step > 5"
             step="5">
-            User Choices
+            Options
           </v-stepper-step>
 
           <v-divider></v-divider>
@@ -157,13 +157,34 @@
 
           <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
-            <h2> 3. Instance Level Attribute Or File Level Attribute? </h2>
+            <h2> 3. Per Annotation Or File? (Optional) </h2>
 
-            <p>File Level Attributes are global attributes for a file. Instance Level are extra information that can be attached to the instance.</p>
+            <br>
+            <p>
+            The Default is per Annotation: each annotation instance - e.g. a box or entity - has different values.
+            </p>
+            <p>
+            The Alternative is per File: each file - e.g. an image, video, text - has only one set of these values.
+            </p>
+            <br>
+
             <v-layout class="justify-center align-center">
               <v-btn-toggle color="secondary" v-model="toggle_global_attribute" @change="set_is_global($event, group)">
-                <v-btn> Instance Level</v-btn>
-                <v-btn> File Level</v-btn>
+                <v-btn>
+                  <v-icon left color="primary" size="18">
+                    mdi-brush
+                  </v-icon>
+                  Per Annotation (Default)
+                </v-btn>
+
+                <v-btn>
+                  <v-icon left color="primary" size="18">
+                    mdi-file
+                  </v-icon>
+
+                   Per File  
+
+                </v-btn>
               </v-btn-toggle>
             </v-layout>
 
@@ -180,7 +201,7 @@
 
           <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
 
-            <h2 class="pb-2" > 4. What Labels Are Attached? </h2>
+            <h2 class="pb-2" > 4. When Do You Want to Show This? </h2>
 
             <p v-if="group.is_global" class="d-flex flex-column">
               <v-icon color="secondary" size="85">mdi-pencil</v-icon>
