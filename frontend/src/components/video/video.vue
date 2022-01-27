@@ -556,7 +556,7 @@ export default Vue.extend( {
   computed: {
     MAX_NUM_IMAGE_BUFFER: function(){
       // This is to ensure we always have the urls available for fetching.
-      return this.MAX_NUM_URL_BUFFER - 5;
+      return this.MAX_NUM_URL_BUFFER - 12;
     },
     video_settings: function () {
       if (this.current_video) {
