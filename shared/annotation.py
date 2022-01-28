@@ -40,7 +40,7 @@ class Annotation_Update():
     session: Any
     file: Any  # Video or Image file.
     instance_list_new: list = None  # New from external
-    instance: Instance = None  # New from external
+    instance: object = None  # New from external
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
@@ -334,10 +334,6 @@ class Annotation_Update():
         }
         },
         {'change_source': {
-            'kind': str,
-            'required': False
-        }},
-        {'text_tokenizer': {
             'kind': str,
             'required': False
         }},
@@ -1211,20 +1207,6 @@ class Annotation_Update():
             logger.error('Invalid instance type for image crop: {}'.format(instance.type))
             return None
 
-    def set_instance_relations_cache(self, relations_list):
-        """
-            Sets the cache dict of the self.instance to be the given relations_list.
-        :return:
-        """
-
-        if not self.instance:
-            return
-
-        if not self.instance.cache_dict:
-            self.instance.cache_dict = {}
-
-        self.instance.cache_dict['relations_list'] = relations_list
-
     def update_instance(self,
                         type: str,
                         x_min: int,
@@ -1364,7 +1346,6 @@ class Annotation_Update():
             'angle': float(angle) if angle is not None else 0.0,
             'width': width,
             'height': height,
-            'text_tokenizer': text_tokenizer,
             'cp': cp,
             'p1': p1,
             'p2': p2,
@@ -1469,7 +1450,6 @@ class Annotation_Update():
         self.instance_count_updates()
 
         sequence = self.sequence_update(instance = self.instance)
-
 
         if sequence:
             if not self.instance.soft_delete:
