@@ -5,6 +5,7 @@ export class TextAnnotationInstance extends Instance {
     public start_token: string = null;
     public end_token: string = null;
     public initialized: boolean = true;
+    public text_tokenizer: string = "nltk";
 
     constructor() {
         super();
@@ -39,7 +40,8 @@ export class TextAnnotationInstance extends Instance {
             label_file: this.label_file,
             label_file_id: this.label_file_id,
             soft_delete: this.soft_delete,
-            creation_ref_id: this.creation_ref_id
+            creation_ref_id: this.creation_ref_id,
+            text_tokenizer: this.text_tokenizer
         }
     }
 }
@@ -48,6 +50,7 @@ export class TextRelationInstance extends Instance {
     public from_instance_id: number = null;
     public to_instance_id: number = null;
     public initialized: boolean = true;
+    public text_tokenizer: string = "nltk";
 
     constructor() {
         super();
@@ -73,7 +76,8 @@ export class TextRelationInstance extends Instance {
             label_file: this.label_file,
             label_file_id: this.label_file_id,
             soft_delete: this.soft_delete,
-            creation_ref_id: this.creation_ref_id
+            creation_ref_id: this.creation_ref_id,
+            text_tokenizer: this.text_tokenizer
         }
     }
 }
