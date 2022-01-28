@@ -9,7 +9,7 @@
         `">
         <v-data-table
             hide-default-footer
-            :style="`width: 350px; max-height: 52%; overflow-y: scroll`"
+            :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
             :headers="headers"
             :items="instance_list"
             fixed-header
