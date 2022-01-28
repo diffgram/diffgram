@@ -36,7 +36,7 @@ Box, Polygons, Lines, [Keypoints](https://diffgram.readme.io/docs/keypoints-anno
 
 ## Video
 Long, High Frame Rate, High Resolution Videos.
-![](./github_assets/video_general.png)
+![](./github_assets/video_general.PNG)
 
 ## 3D
 [3D Labeling Docs](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
