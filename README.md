@@ -27,6 +27,41 @@ Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so mu
 
 Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDbcU).
 
+# Annotate Anything - Images, Video, 3D, Text, And more
+
+## Images
+Box, Polygons, Lines, [Keypoints](https://diffgram.readme.io/docs/keypoints-annotation-type), Classification Tags, Quadratic Curves, Cuboids, Segmentation,  and More
+
+![](./github_assets/autoborder.gif)
+
+## Video
+Long, High Frame Rate, High Resolution Videos.
+![](./github_assets/video_general.png)
+
+## 3D
+[3D Labeling Docs](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
+
+![](./github_assets/3d_example.png)
+
+## Text
+Coming Early Feb
+1. Name Entity Recognition
+2. Part of Speech Tagging
+3. Coreference Resolution
+4. Dependency Parsing
+
+### More
+Build your own UI or contact us. Our intent is to build and cover all major media types in 2022.
+
+## Customize Everything
+With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
+Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Piplines, Queries, and More.
+Diffgram is the most customizable training data platform.
+[Training Data Customization](https://diffgram.readme.io/docs/customization)
+
+# What is Training Data?
+Training Data is the art of supervising machines through data. The day to day work involves people transferring their knowledge to the computer - often through the form of annotation. For example declaring a region of media, such as an image or audio file, to be valid or invalid. These annotations produce structured data - ready to be consumed by Data Science. This is required because raw media is considered to be unstructured - meaning not readable by data science.
+
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
@@ -42,7 +77,6 @@ Diffgram is multiple training data tools in one single application.
 Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickstart)**
 
 * [Who is Diffgram for?](#Who-is-Diffgram-for)
-* [What problem does Diffgram solve?](#What-problem-does-Diffgram-solve)
 * [Why Diffgram?](#Why-Diffgram)
 * [What are Diffgram's competitive advantages?](#What-are-Diffgrams-competitive-advantages)
 * [Roadmap](#Roadmap)
@@ -57,34 +91,14 @@ Data Annotators and Subject Matter Experts.
 ### New to Training Data?
 Learn more about the general concepts with the [Training Data Book](https://www.oreilly.com/library/view/training-data-for/9781492094517/).
 
-### What can I Customize?
-With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
-Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Piplines, Queries, and More.
-Diffgram is the most customizable training data platform.
-[Training Data Customization](https://diffgram.readme.io/docs/customization)
-
-### What problem does Diffgram solve?
-The current state of multiple tools is a huge pain. 
-Integrating these complex toolchains, context switching, human training, 
-costs for multiple applications all add up. 
-
-![](./github_assets/what_problem_diffgram_2021_sept.PNG)
-
 ### Why Diffgram?
-Diffgram solves this by bringing all the functions of a complex 
+Diffgram brings the functions of a complex 
 toolchain directly into one application. Providing multiple tools 
 with one single integrated application.
 
 ![](./github_assets/diffgram_solution.PNG)
 
-### What are Diffgram’s competitive advantages?
-One single Application with all the features you require.
-
-![](./github_assets/diffgram-comparison-chart.PNG)
-[Disclaimer](#Comparison-Disclaimer)
-
 Enterprise Questions? Please [contact us](https://diffgram.com/contact).
-
 
 # Support & Community
 1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
@@ -141,6 +155,8 @@ Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex),
 V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, Cord, HastyAI, Dataloop, Keymakr, Scale Nucleus.
 
 Please see the roadmap and talk with us if you see a missing feature.
+
+[Labelbox vs Diffgram](https://anthony-sarkis.medium.com/considering-labelbox-consider-diffgram-too-fe7a7b8ee8d7)
 
 ### How much does this cost? What's your business model?
 If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
