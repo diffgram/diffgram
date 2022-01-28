@@ -422,7 +422,7 @@ export default Vue.extend({
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
                     const new_instance = new TextAnnotationInstance()
                     new_instance.create_instance(id, start_token, end_token, label_file)
-                    new_instance.creation_ref_id
+                    new_instance.creation_ref_id = creation_ref_id
                     this.instance_list.push(new_instance)
                 } else {
                     const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance
@@ -438,9 +438,23 @@ export default Vue.extend({
             const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
             added_instances.map(add_insatnce => {
                 if (!index) {
+                    const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
                     this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                    this.instance_list
+                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                        .map(instance => {
+                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 } else {
+                    const old_id = this.instance_list[index].id
                     this.instance_list[index].id = add_insatnce.id
+                    this.instance_list
+                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                        .map(instance => {
+                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 }
             })
             this.save_loading = false

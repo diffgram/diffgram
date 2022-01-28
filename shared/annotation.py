@@ -358,6 +358,12 @@ class Annotation_Update():
             'required': False
         }},
         {
+            'text_tokenizer': {
+                'kind': str,
+                'required': False
+            }
+        },
+        {
             'relations_list': {
                 'kind': list,
                 'default': [],
