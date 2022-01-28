@@ -8,6 +8,8 @@
     <exam_detail_header
       :loading="loading"
       :exam="exam"
+      :object_name="'Examinations'"
+      :show_apply_button="false"
       @apply_clicked="exam_apply"
       @name_updated="api_update_job"
     >
@@ -20,48 +22,14 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
-          <exam_child_list :exam_id="exam_id"></exam_child_list>
+          <exam_child_list :exam_id="examination_id"></exam_child_list>
         </v-tab-item>
 
         <v-tab-item>
           <task_template_discussions
             :project_string_id="$store.state.project.current.project_string_id"
-            :task_template_id="exam_id"
+            :task_template_id="examination_id"
           ></task_template_discussions>
-        </v-tab-item>
-
-        <v-tab-item>
-          <job_details_label_schema_section
-            :label_select_view_only_mode="label_select_view_only_mode"
-            :request_refresh_labels="request_refresh_labels"
-            :loading="loading"
-            :error="error"
-            :info="info"
-            @update_label_file_list="update_label_file_list = $event"
-
-          ></job_details_label_schema_section>
-        </v-tab-item>
-
-        <v-tab-item>
-          <!-- Settings -->
-          <v_info_multiple :info="info"> </v_info_multiple>
-
-          <v-layout>
-            <v-spacer> </v-spacer>
-          </v-layout>
-
-          <v_credential_list
-            :job_id="exam_id"
-            :mode_options="'job_detail'"
-            :mode_view="'list'"
-          >
-          </v_credential_list>
-
-          <v_job_cancel_actions_button_container
-            v-if="$store.state.job.current"
-            :job="$store.state.job.current"
-          >
-          </v_job_cancel_actions_button_container>
         </v-tab-item>
       </v-tabs-items>
     </v-tabs>
@@ -83,8 +51,8 @@ import Vue from "vue";
 import Exam_results from "../task/job/exam_results.vue";
 import Exam_child_list from "./exam_child_list.vue";
 export default Vue.extend({
-  name: "exam_template_detail",
-  props: ["exam_id"],
+  name: "examination_detail",
+  props: ["examination_id"],
   components: {
     Exam_child_list,
     Exam_results,
@@ -99,14 +67,10 @@ export default Vue.extend({
     return {
       tab: null,
       items: [
-        { text: "Exam Results", icon: "mdi-view-dashboard" },
+        { text: "Exam Tasks", icon: "mdi-view-dashboard" },
         { text: "Discussions", icon: "mdi-comment-multiple" },
-        { text: "Schema", icon: "mdi-format-paint" },
-        { text: "Settings", icon: "mdi-cog" },
       ],
-      update_label_file_list: null,
       has_changes: false,
-
       edit_name: false,
       show_snackbar: false,
       snackbar_message: '',
@@ -116,9 +80,6 @@ export default Vue.extend({
 
       info: {},
       error: {},
-      label_select_view_only_mode: true,
-      request_refresh_labels: null,
-
       loading: false,
     };
   },
@@ -146,7 +107,7 @@ export default Vue.extend({
   methods: {
     get_exam_details: async function () {
       this.loading = true;
-      this.exam = await get_task_template_details(this.exam_id);
+      this.exam = await get_task_template_details(this.examination_id);
       this.$emit("job_info", this.exam);
       this.$store.commit("set_job", this.exam);
       this.loading = false;
@@ -168,7 +129,7 @@ export default Vue.extend({
     exam_apply: async function () {
 
       this.loading = true
-      const [apply_result, error] = await exam_start_apply(this.exam_id);
+      const [apply_result, error] = await exam_start_apply(this.examination_id);
       if(apply_result && apply_result.log && apply_result.log.success){
         this.loading = false;
         this.show_success_snackbar("You've sucessfully applied to this exam! Going to exam now...");
@@ -201,7 +162,7 @@ export default Vue.extend({
             this.$store.state.project.current.project_string_id +
             "/job/update",
           {
-            job_id: parseInt(this.exam_id),
+            job_id: parseInt(this.examination_id),
             label_file_list: this.update_label_file_list, // see assumptions on null in note above
             name: this.exam.name,
           }

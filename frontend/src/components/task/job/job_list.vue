@@ -654,7 +654,7 @@
           category: 'Computer vision',
 
           type_list: ['All', 'Normal', 'Exam'],  // 'Learning'
-          type: 'All',
+          type: 'Normal',
 
           instance_type_list: ['All', 'polygon', 'box', 'tag'],
           instance_type: 'All',

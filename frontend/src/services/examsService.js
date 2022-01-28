@@ -1,13 +1,18 @@
 import axios from "axios";
 
 
-export const get_child_exams = async (project_string_id, exam_id) => {
+export const get_examinations = async (project_string_id, exam_id, mode) => {
   try {
     let url = `/api/v1/job/list`;
+    console.log('get_examinations')
     const {data} = await axios.post(url, {
       metadata: {
         project_string_id: project_string_id,
         parent_id: exam_id,
+        type: 'examination',
+        builder_or_trainer: {
+          mode: mode
+        }
       }
     })
     return data
@@ -20,17 +25,18 @@ export const get_child_exams = async (project_string_id, exam_id) => {
 
 export const exam_start_apply = async (exam_id) => {
   try {
-    const response = await axios.post('/api/v1/job/apply',
+    const response = await axios.post('/api/v1/task-template/apply',
       {
-        'job_id': exam_id
+        'task_template_id': parseInt(exam_id, 10)
       })
     if (response.data.log.success == true) {
-      return response.data
+      return [response.data, undefined]
     }
     else{
-      return undefined;
+      return [null, null];
     }
   } catch (e) {
     console.error(e)
+    return [undefined, e]
   }
 }

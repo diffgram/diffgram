@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import axios from "axios";
-import {get_child_exams} from "../../services/examsService"
+import {get_examinations} from "../../services/examsService"
 import Vue from "vue";
 
 export default Vue.extend({
@@ -49,8 +49,8 @@ export default Vue.extend({
 
     }
   },
-  created() {
-
+  async created() {
+    await this.get_child_exams_list();
   },
   computed: {},
   beforeDestroy() {
@@ -58,9 +58,12 @@ export default Vue.extend({
   },
   methods: {
     get_child_exams_list: async function(){
-      let project_string = this.$store.project.current.project_string_id;
+      let project_string = this.$store.state.project.current.project_string_id;
       this.loading_children = true;
-      const child_exams_list = await get_child_exams(project_string, this.exam_id);
+      const child_exams_list = await get_examinations(project_string,
+        this.exam_id,
+        this.$store.getters.get_current_mode
+      );
       this.child_exams_list = child_exams_list;
       this.loading_children = false;
     },

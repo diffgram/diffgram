@@ -567,6 +567,16 @@ const routerOptions = [
     name: "job_detail"
   },
   {
+    path: '/:project_string_id/examination/:examination_id',
+    component: 'exam/examination_detail',
+    props: true,
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Examination#" + route.params.exam_id
+    }),
+    name: "examination_detail"
+  },
+  {
     path: '/:project_string_id/exam/:exam_id',
     component: 'exam/exam_template_detail',
     props: true,

@@ -11,7 +11,7 @@
               <strong>
               <v-icon color="secondary">mdi-test-tube</v-icon>
               <span v-if="$store.state.job.parent_id">Exams</span>
-              <span v-else>Exams Templates</span>
+              <span v-else>{{object_name}}</span>
               </strong>
             </span>
           /
@@ -76,8 +76,10 @@
       </v-layout>
     </h1>
     <v-btn
+      v-if="show_apply_button"
       @click="$emit('apply_clicked')"
       color="success"
+      :loading="loading"
       large
     >
       <v-icon>mdi-shield-star</v-icon>
@@ -95,6 +97,12 @@ export default {
     },
     'exam':{
       default: null
+    },
+    'show_apply_button':{
+      default: true
+    },
+    'object_name':{
+      default: 'Exams Templates'
     }
   },
   data: function(){

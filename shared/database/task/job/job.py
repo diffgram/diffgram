@@ -41,7 +41,7 @@ class Job(Base, Caching):
     security_require_email_verified = Column(Boolean, default=True)
 
     status = Column(String(), default="draft")
-    # created (or draft?), active, in_review, reported,
+    # created (or draft?), active, in_review, reported, removed
     # save_for_later, complete, failed
     # in_progress vs "available" depends on point of reference
 
@@ -97,6 +97,9 @@ class Job(Base, Caching):
                                         foreign_keys=[interface_connection_id])
 
     completion_action = Column(String())
+
+    exam_id = Column(Integer, ForeignKey('exam.id'))  # New Feb 8, 2019
+    exam = relationship("Exam")
 
     # Review settings
     # can't seem to make up mind on "file" vs "pass"
@@ -213,6 +216,25 @@ class Job(Base, Caching):
     cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default={})
 
     #####
+
+    def examination_exists(self, session, user):
+        child_examinations = session.query(Job).filter(
+            Job.parent_id == self.id,
+            Job.type == 'examination',
+            Job.status != 'archived'
+        )
+        child_id_list = [x.id for x in child_examinations]
+        relations = session.query(User_To_Job).filter(
+            User_To_Job.job_id.in_(child_id_list),
+            User_To_Job.user_id == user.id
+        ).all()
+        print('childs', child_id_list)
+        print('relations', relations)
+        if len(relations) > 0:
+            return True
+        return False
+
+
     def update_attached_directories(self, session, attached_directories_list, delete_existing=False):
         if attached_directories_list:
             # Delete existing directories
