@@ -20,10 +20,18 @@ class TextTokenizer:
         }
 
     def __tokenize_word_nltk(self, text) -> list:
-        return word_tokenize(text)
+        tokens = word_tokenize(text)
+        result = []
+        for token in tokens:
+            result.append({'value': token, 'tag': ''})
+        return result
 
     def __tokenize_sentence_nltk(self, text) -> list:
-        return sent_tokenize(text)
+        tokens = sent_tokenize(text)
+        result = []
+        for token in tokens:
+            result.append({'value': token, 'tag': ''})
+        return result
 
     def get_word_tokenizer_function(self) -> Callable:
         return self.WORD_TOKENIZER_FUNCTIONS.get(self.type)
