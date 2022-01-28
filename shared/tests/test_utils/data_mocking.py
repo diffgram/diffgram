@@ -488,7 +488,6 @@ def create_instance(instance_data, session):
         hash = instance_data.get('hash'),
         status = instance_data.get('status'),
         start_sentence = instance_data.get('start_sentence'),
-        creation_ref_id = instance_data.get('creation_ref_id'),
         end_sentence = instance_data.get('end_sentence'),
         start_token = instance_data.get('start_token'),
         end_token = instance_data.get('end_token'),
