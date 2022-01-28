@@ -15,7 +15,7 @@ export const get_examinations = async (project_string_id, exam_id, mode) => {
         }
       }
     })
-    return data
+    return data.Job_list
   } catch (e) {
     console.error(e)
     return undefined

@@ -637,6 +637,7 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
+            'type': self.type,
             'time_created': self.time_created,
             'allow_reviews': self.allow_reviews
         }

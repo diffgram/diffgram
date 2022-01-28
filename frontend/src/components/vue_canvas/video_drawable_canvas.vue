@@ -408,9 +408,12 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         var self = this
         self.addImageProcess(url).then(image => {
           self.html_image = image
-          self.$refs.drawable_canvas.canvas_wrapper.style.display = ""
-          self.loading = false
-          this.refresh = Date.now();
+          if(self.$refs.drawable_canvas){
+            self.$refs.drawable_canvas.canvas_wrapper.style.display = ""
+            self.loading = false
+            this.refresh = Date.now();
+          }
+
         })
       },
       change_frame_from_video: function (url) {

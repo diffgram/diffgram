@@ -232,7 +232,7 @@ class Share_Project():
         # exists
 
         self.user_to_modify = User.get_by_email(self.session, input['email'])
-
+        print(input['email'], 'aaaa', self.user_to_modify)
         if self.user_who_made_request.is_super_admin is not True:
             if self.user_to_modify == self.user_who_made_request:
                 self.log['error']['user_who_made_request'] = "You are already on the project."

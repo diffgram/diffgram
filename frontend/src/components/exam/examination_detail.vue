@@ -7,7 +7,7 @@
     </v_error_multiple>
     <exam_detail_header
       :loading="loading"
-      :exam="exam"
+      :exam="examination"
       :object_name="'Examinations'"
       :show_apply_button="false"
       @apply_clicked="exam_apply"
@@ -22,7 +22,18 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
-          <exam_child_list :exam_id="examination_id"></exam_child_list>
+          <v_task_list
+            :job_id="examination_id"
+            :job="examination"
+            :project_string_id="project_string_id"
+            :external_interface="null"
+            :show_detail_button="true"
+            :open_read_only_mode="false"
+            :mode_options="'job_detail'"
+            :mode_view="'list'"
+            @task_count_changed="() => {}"
+          >
+          </v_task_list>
         </v-tab-item>
 
         <v-tab-item>
@@ -41,6 +52,7 @@ import job_details_label_schema_section from "../task/job/job_detail_labels_sche
 import task_template_discussions from "../discussions/task_template_discussions";
 import exam_child_list from "../exam/exam_child_list";
 import exam_detail_header from "../exam/exam_detail_header";
+import v_task_list from "../task/task/task_list";
 import axios from "axios";
 import stats_panel from "../stats/stats_panel.vue";
 import {exam_start_apply} from '../../services/examsService'
@@ -54,7 +66,7 @@ export default Vue.extend({
   name: "examination_detail",
   props: ["examination_id"],
   components: {
-    Exam_child_list,
+    v_task_list,
     Exam_results,
     job_details_label_schema_section,
     task_template_discussions,
@@ -76,7 +88,7 @@ export default Vue.extend({
       snackbar_message: '',
 
       exam_name: undefined,
-      exam: {},
+      examination: {},
 
       info: {},
       error: {},
@@ -100,16 +112,20 @@ export default Vue.extend({
     );
 
   },
-  computed: {},
+  computed: {
+    project_string_id: function(){
+      this.$store.state.project.current.project_string_id;
+    }
+  },
   beforeDestroy() {
     this.job_current_watcher();
   },
   methods: {
     get_exam_details: async function () {
       this.loading = true;
-      this.exam = await get_task_template_details(this.examination_id);
-      this.$emit("job_info", this.exam);
-      this.$store.commit("set_job", this.exam);
+      this.examination = await get_task_template_details(this.examination_id);
+      this.$emit("job_info", this.examination);
+      this.$store.commit("set_job", this.examination);
       this.loading = false;
     },
     reset_local_info() {
@@ -164,7 +180,7 @@ export default Vue.extend({
           {
             job_id: parseInt(this.examination_id),
             label_file_list: this.update_label_file_list, // see assumptions on null in note above
-            name: this.exam.name,
+            name: this.examination.name,
           }
         )
         .then((response) => {
