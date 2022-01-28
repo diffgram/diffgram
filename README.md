@@ -45,7 +45,7 @@ Long, High Frame Rate, High Resolution Videos.
 
 ## Text
 Coming Early Feb
-1. Name Entity Recognition
+1. Named Entity Recognition
 2. Part of Speech Tagging
 3. Coreference Resolution
 4. Dependency Parsing
