@@ -36,7 +36,8 @@
             direction="ltr" 
             id="svg0:60" 
             width="100%" 
-            style="height: 1000.5px;">
+            :style="`height: 5000px`"
+            >
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
                     v-for="(word, index) in initial_words_measures"
@@ -49,7 +50,7 @@
                         {{ word.value }}
                 </text>
             </g>
-            <g v-else>
+            <g ref="main-text-container" v-else>
                 <g
                     v-if="relation_drawing"
                 >
@@ -757,7 +758,7 @@ export default Vue.extend({
             const end_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.to_instance_id)
             const end_token = this.tokens.find(token => token.id === end_instance.end_token)
             return starting_token.id < end_token.id
-        }
+        },
     }
 })
 </script>
