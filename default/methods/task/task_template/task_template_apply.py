@@ -135,9 +135,13 @@ def task_template_apply_exam(session,
         add_to_session = True
     )
 
+    # Attach assignees as reviewers for tasks
+    parent_assignees = og_task_template.get_assignees(session)
+
     result = task_new.provision_root_tasks(session = session,
                                            job = task_template,
-                                           default_assignee = user)
+                                           default_assignee = user,
+                                           default_reviewers = parent_assignees)
 
     exam = Exam(user_taking_exam = user)
     session.add(exam)

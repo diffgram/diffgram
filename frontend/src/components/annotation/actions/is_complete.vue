@@ -30,7 +30,7 @@
       datacy="submit-to-review"
       @click="complete_dialog()"
       :loading="is_complete_toggle_loading"
-      :disabled="is_complete_toggle_loading || disabled"
+      :disabled="is_complete_toggle_loading || disabled || (!allow_submit_review && task.status === 'review_requested')"
       color="primary"
       :icon="task_attributes.icon"
       :icon_style="true"
@@ -131,6 +131,22 @@ export default Vue.extend({
     };
   },
   computed: {
+    allow_submit_review: function(){
+      if(this.$store.state.user.current.is_super_admin){
+        return true;
+      }
+      console.log('aaaaaa', this.task)
+      if(this.task.job.type === 'examination'){
+        let reviewers_list = this.task.task_reviewers;
+        console.log('22222', reviewers_list)
+        let id_list = reviewers_list.map(elm => elm.user_id)
+        console.log('id_list', id_list, this.$store.state.user.current.id)
+        if(!id_list.includes(this.$store.state.user.current.id)){
+          return false
+        }
+      }
+      return true;
+    },
     complete_message: function () {
       if (this.current_file.video_id) {
         return "Complete Video";

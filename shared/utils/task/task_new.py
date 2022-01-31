@@ -8,7 +8,8 @@ except:
 def provision_root_tasks(session,
                          job,
                          mode = 'default',
-                         default_assignee = None):
+                         default_assignee = None,
+                         default_reviewers = []):
     if not job:
         return False
 
@@ -41,6 +42,11 @@ def provision_root_tasks(session,
                                   guide_id = job.guide_default_id)
         if default_assignee:
             root_task.add_assignee(session = session, user = default_assignee)
+
+        print('QQQQ', default_reviewers)
+        if default_reviewers:
+            for reviewer in default_reviewers:
+                root_task.add_reviewer(session, reviewer)
 
         if review_frequncy:
             if (index + 1) % review_frequncy == 0:

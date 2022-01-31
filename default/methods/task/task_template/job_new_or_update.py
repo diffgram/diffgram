@@ -528,7 +528,7 @@ def new_web(project_string_id):
         # TODO standard lower() method ie for Exam?
         input['share'] = input['share'].lower()
 
-        if input['share'] == "market" and input['type'] == "Exam":
+        if input['share'] == "market" and input['type'] == "exam_template":
 
             # We only want Diffgram admins to be able to create this type
             if not user or user.is_super_admin is not True:

@@ -70,6 +70,7 @@ export default Vue.extend({
       has_changes: false,
 
       edit_name: false,
+      loading: false,
 
       exam_name: undefined,
       job_current_watcher: undefined,

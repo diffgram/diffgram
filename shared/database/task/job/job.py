@@ -229,8 +229,6 @@ class Job(Base, Caching):
             User_To_Job.job_id.in_(child_id_list),
             User_To_Job.user_id == user.id
         ).all()
-        print('childs', child_id_list)
-        print('relations', relations)
         if len(relations) > 0:
             return True
         return False
@@ -317,6 +315,13 @@ class Job(Base, Caching):
         rels = User_To_Job.list(session = session, job = self, relation = 'reviewer')
         users = [rel.user for rel in rels]
         return users
+
+    def get_assignees(self, session):
+        rels = User_To_Job.list(session = session, job = self, relation = 'annotator')
+        users = [rel.user for rel in rels]
+        print('GET ASSIGNEES', users)
+        return users
+
 
     def check_existing_user_relationship(
             self,
@@ -435,7 +440,6 @@ class Job(Base, Caching):
 
         # Now create user_to_job relations.
         user_added_id_list = []
-        print('user_list', user_list)
         for user in user_list:
 
             user_added_id_list.append(user.id)

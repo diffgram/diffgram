@@ -23,7 +23,7 @@
           step="3"
           :editable="job.id != undefined"
         >
-          Annotators
+          Members
         </v-stepper-step>
         <v-divider></v-divider>
         <v-stepper-step
