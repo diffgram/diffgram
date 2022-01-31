@@ -162,7 +162,6 @@
 
 <script>
 import Vue from "vue";
-import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
@@ -275,9 +274,9 @@ export default Vue.extend({
     },
     methods: {
         on_mount: async function() {
-            this.text = await getTextService(this.file.text.url_signed)
+            const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
             this.command_manager = new CommandManagerAnnotationCore()
-            this.initial_words_measures = Tokenizer().tokenize(this.text)
+            this.initial_words_measures = words
             setTimeout(() => this.initialize_token_render(), 1000)
             this.initialize_instance_list()
         },
@@ -302,11 +301,11 @@ export default Vue.extend({
                     word: word.value,
                     tag: word.tag,
                     width: current_token_width,
-                    start_x: word.tag === 'word' ? token_x_position : token_x_position - 5,
+                    start_x: word.tag !== 'word' ? token_x_position : token_x_position - 5,
                     line: this.lines.length - 1
                 }
                 tokens.push(token)
-                token_x_position = word.tag === 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
+                token_x_position = word.tag !== 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
             })
 
             this.tokens = tokens
