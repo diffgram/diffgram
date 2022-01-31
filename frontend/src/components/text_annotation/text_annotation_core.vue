@@ -233,6 +233,7 @@ export default Vue.extend({
             return rects_to_draw
         },
         render_drawing_arrow: function() {
+            const scroll_y = window.pageYOffset || document.documentElement.scrollTop
             const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
             return { 
                 marker: {
@@ -241,9 +242,9 @@ export default Vue.extend({
                 },
                 arrow: {
                     x: this.path.x - 350,
-                    y: this.path.y - 100
+                    y: this.path.y - 100 + scroll_y
                 },
-                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100} ${this.path.x - 350} ${this.path.y - 100}`
+                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y} ${this.path.x - 350} ${this.path.y - 100 + scroll_y}`
              }
         },
         undo_disabled: function() {
@@ -749,7 +750,7 @@ export default Vue.extend({
             }
             return [trial_rect]
         },
-        // this is function to 
+        // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
             const start_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.from_instance_id)
             const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
