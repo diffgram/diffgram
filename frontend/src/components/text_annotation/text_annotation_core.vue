@@ -83,6 +83,46 @@
                     {{ instance.label_file.label.name }}
                 </text>
                 <rect 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_start_${instance.id}`"
+                    :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
+                    :y="render_rects.find(rect => rect.instance_id === instance.id).y"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :width="1"
+                    :height="10"
+                    @mouseenter="() => on_instance_hover(instance.id)"
+                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseleave="on_instance_stop_hover"
+                    style="font-size: 10px; cursor: pointer"
+                />
+                <circle 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_start_marker_${instance.id}`"
+                    :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
+                    :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10" 
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    r="2" 
+                />
+                <rect 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_end_${instance.id}`"
+                    :x="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
+                    :y="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :width="1"
+                    :height="10"
+                    @mouseenter="() => on_instance_hover(instance.id)"
+                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseleave="on_instance_stop_hover"
+                    style="font-size: 10px; cursor: pointer"
+                />
+                <path 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_end_marker_${instance.id}`"
+                    :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`" 
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                />
+                <rect 
                     v-for="rect in render_rects"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
                     :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
@@ -166,7 +206,7 @@ export default Vue.extend({
             instance_in_progress: null,
             path: {},
             //Render constants
-            additional_line_space: 20,
+            additional_line_space: 30,
             show_default_navigation: true,
             // Command
             command_manager: undefined,
@@ -302,7 +342,6 @@ export default Vue.extend({
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
             this.command_manager.executeCommand(command)
-            console.log("HERE relation")
             await this.save()
             this.instance_in_progress = null;
             this.path = {};
@@ -711,6 +750,10 @@ export default Vue.extend({
                 instance_type: instance.type
             }
             return [trial_rect]
+        },
+        // this is function to 
+        insatance_orientation_direct: function(relational_instance) {
+            return true
         }
     }
 })
