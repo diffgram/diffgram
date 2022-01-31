@@ -302,6 +302,7 @@ export default Vue.extend({
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
             this.command_manager.executeCommand(command)
+            console.log("HERE relation")
             await this.save()
             this.instance_in_progress = null;
             this.path = {};
@@ -333,6 +334,7 @@ export default Vue.extend({
         },
         // function to finish drawing instance and remove selection
         on_finish_draw_instance: async function(end_token) {
+            if (!this.instance_in_progress.start_token) return
             this.instance_in_progress.end_token = end_token.id
             const instance_exists = this.instances.find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
@@ -627,6 +629,7 @@ export default Vue.extend({
                             rects.push(rect)
                         }
                         else {
+                            console.log(tokens)
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
