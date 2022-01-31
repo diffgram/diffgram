@@ -376,6 +376,12 @@ export default Vue.extend({
             if (instance.type === "text_token") {
                 initial_instance = new TextAnnotationInstance()
                 initial_instance.create_instance(id, start_token, end_token, label_file)
+                this.instance_list.map(instance_rel => {
+                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
+                        instance_rel.soft_delete = true
+                        this.command_manager = new CommandManagerAnnotationCore()
+                    }
+                })
             } else {
                 initial_instance = new TextRelationInstance()
                 initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
