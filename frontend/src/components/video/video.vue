@@ -626,7 +626,13 @@ export default Vue.extend( {
 
     next_instance: async function(label_file_id){
       try{
-        const project_string_id = this.$store.state.project.current.project_string_id;
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        if(!project_string_id){
+          let project_string_id = this.$props.project_string_id;
+          if(!project_string_id){
+            return
+          }
+        }
         const response = await axios.post(
           `/api/v1/project/${project_string_id}/video/${this.current_video_file_id}/next-instance/start/${this.video_current_frame_guess}`,
         {
@@ -1359,7 +1365,7 @@ export default Vue.extend( {
         ) {
         return
       }
-      console.log('get_video_single_image')
+
       this.get_video_single_image_last_fired = new Date().getTime()
 
       this.video_current_frame_guess_update()
@@ -1367,7 +1373,6 @@ export default Vue.extend( {
       const prev_frames = this.get_previous_n_frames(frame_number, this.MAX_NUM_URL_BUFFER)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
       if (frame_number != this.prior_frame_number) {
-        console.log('frame_number != this.prior_frame_number')
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
           try{

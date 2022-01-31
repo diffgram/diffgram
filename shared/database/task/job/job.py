@@ -9,6 +9,7 @@ from shared.database.user import User
 from shared.database.event.event import Event
 from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
+from shared.database.task.exam.exam import Exam
 
 logger = get_shared_logger()
 

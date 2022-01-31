@@ -279,7 +279,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         this.instance_buffer_error = {}
 
         this.instance_frame_start = this.current_frame
-
+        if(!this.$props.project_string_id){
+          return
+        }
         let url = `/api/project/${this.$props.project_string_id}/video/${String(this.$props.file.id)}`
 
         url += `/instance/buffer/start/${this.current_frame}/end/${(this.current_frame + this.instance_buffer_size)}/list`

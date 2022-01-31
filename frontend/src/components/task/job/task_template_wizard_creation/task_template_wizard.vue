@@ -71,7 +71,15 @@
           :editable="job.id != undefined"
           step="9"
         >
-          Other
+          Advanced Settings
+        </v-stepper-step>
+        <v-divider></v-divider>
+        <v-stepper-step
+          :complete="step > 10"
+          :editable="job.id != undefined"
+          step="10"
+        >
+          Credentials
         </v-stepper-step>
         <v-divider></v-divider>
       </v-stepper-header>
@@ -170,9 +178,21 @@
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(8)"
-            @next_step="launch_task_template"
+            @previous_step="go_to_step(9)"
+            @next_step="go_to_step(10)"
           ></step_advanced_options_task_template>
+
+        </v-stepper-content>
+
+        <v-stepper-content step="10">
+          <step_credentials_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            :loading_steps="loading"
+            @previous_step="go_to_step(9)"
+            @next_step="launch_task_template">
+
+          </step_credentials_task_template>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -187,6 +207,7 @@ import step_guides_task_template from "./step_guides_task_template";
 import step_upload_files_task_template from "./step_upload_files_task_template";
 import step_label_selection_task_template from "./step_label_selection_task_template";
 import step_ui_schema_task_template from "./step_ui_schema_task_template";
+import step_credentials_task_template from "./step_credentials_task_template";
 import step_users_selection from "./step_users_selection";
 import step_attach_directories_task_template from "./step_attach_directories_task_template";
 import step_reviewers_selection from "./step_reviewers_selection.vue";
@@ -213,6 +234,7 @@ export default Vue.extend({
   components: {
     step_name_task_template,
     step_upload_files_task_template,
+    step_credentials_task_template,
     step_guides_task_template,
     step_users_selection,
     step_ui_schema_task_template,

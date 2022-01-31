@@ -182,6 +182,7 @@ class User(Base):
             'username': self.username,
             'follow_ing_count': self.follow_ing_count,
             'follow_ers_count': self.follow_ers_count,
+            'permissions_projects': self.permissions_projects,
             'otp_enabled': self.otp_enabled,
             'email': self.email,
             'last_builder_or_trainer_mode': self.last_builder_or_trainer_mode,

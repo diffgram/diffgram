@@ -154,7 +154,14 @@ export default Vue.extend({
       this.enabled_edit_schema = true;
     }
     if (this.$route.query.view_only) {
-      this.view_only = true;
+      if(this.$route.query.view_only === 'false'){
+        this.view_only = false;
+      }
+      else{
+        this.view_only = true;
+      }
+
+      console.log('this.$route.query',this.$route.query)
     }
 
     if (
@@ -183,6 +190,12 @@ export default Vue.extend({
     this.get_model_runs_from_query(this.$route.query);
     if (this.$route.query.view_only) {
       this.view_only = true;
+      if(this.$route.query.view_only === 'false'){
+        this.view_only = false;
+      }
+      else{
+        this.view_only = true;
+      }
     }
     if (this.enabled_edit_schema) {
       this.task = {
@@ -457,6 +470,7 @@ export default Vue.extend({
 
             if (response.data.user_permission_level[0] == "Viewer") {
               this.view_only = true;
+
             }
           }
 

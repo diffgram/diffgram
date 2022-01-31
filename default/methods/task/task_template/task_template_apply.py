@@ -136,7 +136,8 @@ def task_template_apply_exam(session,
     )
 
     result = task_new.provision_root_tasks(session = session,
-                                           job = task_template)
+                                           job = task_template,
+                                           default_assignee = user)
 
     exam = Exam(user_taking_exam = user)
     session.add(exam)
@@ -189,6 +190,7 @@ def copy_task_template_for_exam(session,
                              category = og_task_template.category,
                              guide_default = og_task_template.guide_default,
                              review_by_human_freqeuncy = review_by_human_freqeuncy,
+                             allow_reviews = True,
                              directory = og_task_template.directory,
                              label_mode = og_task_template.label_mode,
                              label_dict = og_task_template.label_dict,
@@ -199,8 +201,6 @@ def copy_task_template_for_exam(session,
     session.flush()
 
     task_template_copy.parent_id = og_task_template.id
-
-    # TODO assign the "system" as member created?
 
     # We don't stricly need a directory? since stuff is stored
     # In relationship to task graph?

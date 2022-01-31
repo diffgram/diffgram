@@ -18,13 +18,13 @@
         </div>
 
         <div
-          v-if="edit_name != true"
+          v-if="edit_name != true && allow_edit"
           class="font-weight-normal pl-2 d-flex align-center"
           @dblclick="edit_name = true"
         >
           {{ exam.name }}
           <tooltip_button
-            v-if="edit_name == false"
+            v-if="edit_name == false && allow_edit"
             tooltip_message="Edit Name"
             tooltip_direction="bottom"
             @click="edit_name = true"
@@ -103,6 +103,9 @@ export default {
     },
     'object_name':{
       default: 'Exams Templates'
+    },
+    'allow_edit':{
+      default: false
     }
   },
   data: function(){
