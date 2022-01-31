@@ -679,7 +679,6 @@ export default Vue.extend({
                             rects.push(rect)
                         }
                         else {
-                            console.log(tokens)
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
@@ -752,7 +751,11 @@ export default Vue.extend({
         },
         // this is function to 
         insatance_orientation_direct: function(relational_instance) {
-            return true
+            const start_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.from_instance_id)
+            const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
+            const end_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.to_instance_id)
+            const end_token = this.tokens.find(token => token.id === end_instance.end_token)
+            return starting_token.id < end_token.id
         }
     }
 })
