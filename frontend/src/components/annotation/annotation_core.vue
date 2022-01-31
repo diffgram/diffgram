@@ -673,6 +673,7 @@
             class="pb-0"
             :current_video="current_video"
             :video_mode="video_mode"
+            :max_num_image_buffer="label_settings.max_image_buffer"
             :player_height="'80px'"
             :parent_save="this.detect_is_ok_to_save"
             :video_primary_id="'video_primary'"
@@ -1254,6 +1255,7 @@ export default Vue.extend({
         filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
         filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
         instance_buffer_size: 60,
+        max_image_buffer: 3,
         canvas_scale_global_is_automatic: true,
         canvas_scale_global_setting: 0.5,
         left_nav_width: 450,

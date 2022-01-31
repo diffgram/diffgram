@@ -865,7 +865,7 @@
                 limit on this (ie max 1000) , so need to update
                 there too if required-->
                   <v-slider
-                    label="Video Instance Buffer"
+                    label="Video Annotations Buffer"
                     min="15"
                     max="300"
                     thumb-label
@@ -873,6 +873,17 @@
                     v-model="label_settings_local.instance_buffer_size"
                   >
                   </v-slider>
+
+                  <v-slider
+                    label="Video Frames Buffer"
+                    min="3"
+                    max="50"
+                    thumb-label
+                    ticks
+                    v-model="label_settings_local.max_image_buffer"
+                  >
+                  </v-slider>
+
 
                   <tooltip_button
                     tooltip_message="Restore All User Settings & Prompts"

@@ -31,7 +31,6 @@ from shared.database.image import Image
 from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
-from shared.database.annotation.instance_relation import InstanceRelation
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -113,17 +112,6 @@ def register_user(user_data: dict, session):
                                                                           new_user,
                                                                           user_data['project_string_id'])
     return new_user
-
-
-def create_instance_relation(instance_relation_data, session):
-    rel = InstanceRelation(
-        from_instance_id = instance_relation_data.get('from_instance_id'),
-        to_instance_id = instance_relation_data.get('to_instance_id'),
-        type = instance_relation_data.get('type'),
-    )
-    session.add(rel)
-    regular_methods.commit_with_rollback(session)
-    return rel
 
 
 def create_event(event_data, session):
@@ -500,7 +488,6 @@ def create_instance(instance_data, session):
         hash = instance_data.get('hash'),
         status = instance_data.get('status'),
         start_sentence = instance_data.get('start_sentence'),
-        creation_ref_id = instance_data.get('creation_ref_id'),
         end_sentence = instance_data.get('end_sentence'),
         start_token = instance_data.get('start_token'),
         end_token = instance_data.get('end_token'),
