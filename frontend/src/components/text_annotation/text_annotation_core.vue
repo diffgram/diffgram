@@ -37,6 +37,8 @@
             id="svg0:60" 
             width="100%" 
             :style="`height: 5000px`"
+            @mouseup="on_draw_text_token"
+            :class="unselectable && 'unselectable'"
             >
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
@@ -142,8 +144,8 @@
                 >
                     <text 
                         v-for="(token, token_index) in tokens.filter(token => token.line === index)"
-                        @mousedown="() => on_start_draw_instance(token)"
-                        @mouseup="() => on_finish_draw_instance(token)"
+                        unselectable="on"
+                        :id="token.id"
                         :key="`line_${index}token_${token_index}`"
                         :x="token.start_x"
                         :fill="hover_instance && 
@@ -208,6 +210,7 @@ export default Vue.extend({
             //Render constants
             additional_line_space: 30,
             show_default_navigation: true,
+            unselectable: false,
             // Command
             command_manager: undefined,
             has_changed: false,
@@ -275,6 +278,13 @@ export default Vue.extend({
         }
     },
     methods: {
+        on_draw_text_token: function() {
+            const selection = window.getSelection()
+            const start_token_id = parseInt(selection.anchorNode.parentNode.id)
+            const end_token_id = parseInt(selection.focusNode.parentNode.id)
+            this.on_start_draw_instance(start_token_id)
+            this.on_finish_draw_instance(end_token_id)
+        },
         on_mount: async function() {
             const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
             this.command_manager = new CommandManagerAnnotationCore()
@@ -321,6 +331,7 @@ export default Vue.extend({
             const is_text_token = this.instance_list.find(instance => instance_id === instance.id).type === "text_token"
 
             if (!is_text_token) return
+            this.unselectable = true
 
             if (!this.relation_drawing) {
                 this.relation_drawing = true
@@ -334,6 +345,8 @@ export default Vue.extend({
                 window.addEventListener('mousemove', this.draw_relation_listener)
                 return
             }
+
+            this.unselectable = false
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
@@ -371,7 +384,7 @@ export default Vue.extend({
             this.instance_in_progress = {
                 id: this.instances.length,
                 type: "text_token",
-                start_token: start_token.id,
+                start_token,
                 label_id: this.current_label.id,
                 level: 0
             }
@@ -379,7 +392,7 @@ export default Vue.extend({
         // function to finish drawing instance and remove selection
         on_finish_draw_instance: async function(end_token) {
             if (!this.instance_in_progress.start_token) return
-            this.instance_in_progress.end_token = end_token.id
+            this.instance_in_progress.end_token = end_token
             const instance_exists = this.instances.find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
                 ||
@@ -766,3 +779,19 @@ export default Vue.extend({
     }
 })
 </script>
+
+
+<style scoped>
+.unselectable {
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+
+   /*
+     Introduced in IE 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+   -ms-user-select: none;
+   user-select: none;
+}
+</style>
