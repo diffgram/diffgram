@@ -589,7 +589,7 @@ export default Vue.extend({
       return {
 
         openedGlobalPanel: 0,
-        instance_detail_open: true,
+        instance_detail_open: 0,
         current_global_instance_index: 0, // hard coded until support multiple
 
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
