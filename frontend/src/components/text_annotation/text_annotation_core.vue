@@ -24,6 +24,7 @@
         <text_sidebar 
             :instance_list="instance_list.filter(instance => !instance.soft_delete)"
             :label_list="label_list"
+            :loading="rendering"
             @delete_instance="delete_instance"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
@@ -39,7 +40,7 @@
             :style="`height: 5000px`"
             @mouseup="on_draw_text_token"
             :class="unselectable && 'unselectable'"
-            >
+        >
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
                     v-for="(word, index) in initial_words_measures"
@@ -51,6 +52,7 @@
                     text-anchor="middle">
                         {{ word.value }}
                 </text>
+                <text x="40">Loading...</text>
             </g>
             <g ref="main-text-container" v-else>
                 <g

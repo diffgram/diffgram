@@ -16,7 +16,7 @@
             disable-pagination
         >
             <template v-slot:body="{ items }">
-                <tbody v-if="items.length > 0">
+                <tbody v-if="items.length > 0 && !loading">
                   <tr
                     v-for="item in items"
                     :key="item.id"
@@ -73,7 +73,9 @@
                 </tbody>
                 <tbody v-else>
                     <tr>
-                        <td :colspan="headers.length" style="text-align: center">No instances have been created yet</td>
+                        <td :colspan="headers.length" style="text-align: center">
+                            {{ loading ? "Loading..." : "No instances have been created yet" }}
+                        </td>
                     </tr>
                 </tbody>
             </template>
@@ -106,6 +108,10 @@ export default Vue.extend({
         toolbar_height: {
             type: String,
             default: '100px'
+        },
+        loading: {
+            type: Boolean,
+            required: true
         }
     },
     data() {
