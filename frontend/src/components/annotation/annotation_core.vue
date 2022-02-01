@@ -326,7 +326,12 @@
         >
           <v-expansion-panel>
 
-            <v-expansion-panel-header class="d-flex justify-start pa-0 pr-1 align-center" style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
+            <v-expansion-panel-header
+              data-cy="show_userscript_panel_button"
+              class="d-flex justify-start pa-0 pr-1 align-center"
+              @click="userscript_minimized = !userscript_minimized"
+              v-if="userscript_minimized"
+              style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
               <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
                 mdi-language-javascript
