@@ -318,6 +318,10 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
+            const is_text_token = this.instance_list.find(instance => instance_id === instance.id).type === "text_token"
+
+            if (!is_text_token) return
+
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
