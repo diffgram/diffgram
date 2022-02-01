@@ -1,5 +1,8 @@
 <template>
   <div class="exam-detail-container">
+    <v-snackbar top height="200px" dismissible v-model="show_snackbar" color="success">
+      <h3>{{snackbar_message}}</h3>
+    </v-snackbar>
     <exam_detail_header
       :loading="loading"
       :exam="exam"
@@ -67,6 +70,8 @@ export default Vue.extend({
         { text: "Guide", icon: "mdi-book" },
       ],
       update_label_file_list: null,
+      snackbar_message: '',
+      show_snackbar: false,
       has_changes: false,
 
       edit_name: false,
@@ -104,11 +109,25 @@ export default Vue.extend({
     set_document_title() {
       document.title = this.exam_name;
     },
+    show_success_snackbar(text){
+      this.show_snackbar = true
+      this.snackbar_message = text
+    },
     exam_apply: async function () {
 
       this.loading = true
-      const apply_result = await exam_start_apply(this.exam_id);
-      this.loading = false;
+      const [apply_result, error] = await exam_start_apply(this.exam_id);
+      if(apply_result && apply_result.log && apply_result.log.success){
+        this.loading = false;
+        this.show_success_snackbar("You've sucessfully applied to this exam! Going to exam now...");
+        await this.sleep(4000);
+        this.$router.push(`/${this.$store.state.project.current.project_string_id}/examination/${apply_result.log.job_id}`);
+      }
+      if(error){
+        this.error = this.$route_api_errors(error)
+        this.loading = false;
+      }
+
 
     },
     api_update_job: function () {
