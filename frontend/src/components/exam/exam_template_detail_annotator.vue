@@ -20,11 +20,13 @@
         <v-tab-item class="pt-2">
           <v-card style="min-height: 500px" class="d-flex flex-column justify-center align-center">
             <h1>You Will Get The Following Awards: </h1>
-            <div class="d-flex flex-wrap mt-4 mb-4 pa-4" style="border: 1px solid #e0e0e0">
-              <v-icon size="96">mdi-shield-star</v-icon>
-              <v-icon size="96">mdi-shield-star</v-icon>
-              <v-icon size="96">mdi-shield-star</v-icon>
-              <v-icon size="96">mdi-shield-star</v-icon>
+            <div class="d-flex flex-wrap justify-center mt-4 mb-4 pa-4" style="border: 1px solid #e0e0e0">
+              <credential_badge
+                v-for="credential in awarded_credentials_list"
+                :credential="credential">
+              </credential_badge>
+
+
             </div>
             <h2>When you approve this exam.</h2>
             <v-card-actions>
@@ -48,18 +50,19 @@
 </template>
 
 <script lang="ts">
-
+import credential_badge from '../task/credential/credential_badge'
 import exam_detail_header from './exam_detail_header'
 import axios from "axios";
 import {exam_start_apply} from '../../services/examsService'
-import {get_task_template_details} from '../../services/taskTemplateService'
+import {get_task_template_details, get_task_template_credentials} from '../../services/taskTemplateService'
 import Vue from "vue";
 
 export default Vue.extend({
   name: "exam_template_detail",
   props: ["exam_id"],
   components: {
-    exam_detail_header
+    exam_detail_header,
+    credential_badge
   },
   data() {
     return {
@@ -70,6 +73,7 @@ export default Vue.extend({
         { text: "Guide", icon: "mdi-book" },
       ],
       update_label_file_list: null,
+      credentials_list: [],
       snackbar_message: '',
       show_snackbar: false,
       has_changes: false,
@@ -91,10 +95,26 @@ export default Vue.extend({
       this.tab = 1;
     }
     await this.get_exam_details();
+    await this.get_exam_credentials();
     this.reset_local_info();
   },
-  computed: {},
+  computed: {
+    awarded_credentials_list: function(){
+      return this.credentials_list
+    }
+  },
   methods: {
+    get_exam_credentials: async function(){
+      this.loading = true;
+      this.credentials_list = await get_task_template_credentials({
+        job_id: this.exam_id,
+        project_string_id: this.$store.state.project.current.project_string_id,
+        builder_or_trainer: {
+          mode: this.$store.state.builder_or_trainer.mode
+        }
+      });
+      this.loading = false;
+    },
     reset_local_info() {
       this.exam_name = this.$store.state.job.current.name;
       this.set_document_title();
@@ -112,6 +132,9 @@ export default Vue.extend({
     show_success_snackbar(text){
       this.show_snackbar = true
       this.snackbar_message = text
+    },
+    sleep: function (ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
     },
     exam_apply: async function () {
 

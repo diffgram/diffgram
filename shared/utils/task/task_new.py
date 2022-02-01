@@ -42,8 +42,6 @@ def provision_root_tasks(session,
                                   guide_id = job.guide_default_id)
         if default_assignee:
             root_task.add_assignee(session = session, user = default_assignee)
-
-        print('QQQQ', default_reviewers)
         if default_reviewers:
             for reviewer in default_reviewers:
                 root_task.add_reviewer(session, reviewer)

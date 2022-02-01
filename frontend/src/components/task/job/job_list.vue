@@ -973,12 +973,18 @@
 
         job_detail(job) {
 
-          this.$router.push("/job/" + job.id)
-
           if (job.status == "draft") {
             this.$router.push("/job/new/" + job.id)
           }
-
+          if(job.type === 'exam_template'){
+            this.$router.push(`/${this.$props.project_string_id}/exam/${job.id}`)
+          }
+          else if(job.type === 'examination'){
+            this.$router.push(`/${this.$props.project_string_id}/examination/${job.id}`)
+          }
+          else{
+            this.$router.push("/job/" + job.id)
+          }
         },
 
         remove_function: function (file) {

@@ -34,6 +34,20 @@
             @task_count_changed="() => {}"
           >
           </v_task_list>
+
+          <v-container class="mt-4 pa-4" style="border: solid 1px #e0e0e0" v-if="user_can_grade">
+            <h2>Actions: </h2>
+            <p><strong>Note:</strong> Can only approve once all tasks have been reviewed and completed.</p>
+            <div class="d-flex justify-center">
+              <v-btn @click="exam_pass_api()"
+                     x-large
+                     :loading="loading"
+                     color="success">
+                <v-icon>mdi-test-tube</v-icon>
+                Pass
+              </v-btn>
+            </div>
+          </v-container>
         </v-tab-item>
 
         <v-tab-item>
@@ -44,6 +58,8 @@
         </v-tab-item>
       </v-tabs-items>
     </v-tabs>
+
+
   </div>
 </template>
 
@@ -56,7 +72,7 @@ import v_task_list from "../task/task/task_list";
 import axios from "axios";
 import stats_panel from "../stats/stats_panel.vue";
 import {exam_start_apply} from '../../services/examsService'
-import {get_task_template_details} from '../../services/taskTemplateService'
+import {get_task_template_details, get_task_template_credentials} from '../../services/taskTemplateService'
 import { nextTask } from "../../services/tasksServices";
 
 import Vue from "vue";
@@ -83,6 +99,7 @@ export default Vue.extend({
         { text: "Discussions", icon: "mdi-comment-multiple" },
       ],
       has_changes: false,
+      credentials_list: false,
       edit_name: false,
       show_snackbar: false,
       snackbar_message: '',
@@ -100,6 +117,7 @@ export default Vue.extend({
       this.tab = 1;
     }
     await this.get_exam_details();
+    await this.get_exam_credentials();
     this.reset_local_info();
 
     this.job_current_watcher = this.$store.watch(
@@ -115,12 +133,20 @@ export default Vue.extend({
   computed: {
     project_string_id: function(){
       return this.$store.state.project.current.project_string_id;
+    },
+    user_can_grade: function(){
+      if(this.$store.state.user.current.is_super_admin){
+        return true
+      }
+
     }
+
   },
   beforeDestroy() {
     this.job_current_watcher();
   },
   methods: {
+
     get_exam_details: async function () {
       this.loading = true;
       this.examination = await get_task_template_details(this.examination_id);

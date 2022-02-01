@@ -307,6 +307,8 @@ def job_update_api(project_string_id):
         log['success'] = True
         out = jsonify(job=job.serialize_new(),
                       log=log)
+
+        print('out 200')
         return out, 200
 
 
@@ -679,6 +681,8 @@ def new_or_update_core(session,
     job.allow_reviews = allow_reviews
     job.review_chance = (0 if review_chance == None else review_chance) / 100
 
+    print('MEMBER LIST IDS', member_list_ids)
+
     log = job.update_member_list(
         member_list_ids = member_list_ids,
         session = session,
@@ -700,7 +704,7 @@ def new_or_update_core(session,
             return None, log
 
         job.default_userscript_id = default_userscript.id
-
+    print('MEMBER LIST', job.get_assignees(session))
     if label_file_list:
         # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
         job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)

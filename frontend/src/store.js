@@ -801,6 +801,8 @@ const my_store = new Vuex.Store({
   plugins: [createPersistedState({
 
     reducer: (state) => {
+      console.log('STRINGFYIONG STATE........')
+      console.log(JSON.stringify(state))
       let reducer = Object.assign({}, state)
       for(const key of Object.keys(reducer)){
         if(modulesToOmit.includes(key)){

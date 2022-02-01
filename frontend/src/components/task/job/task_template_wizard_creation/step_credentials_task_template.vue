@@ -6,7 +6,7 @@
           Credentials:
         </h2>
         <p>Select the credentials and click Require/Award in order to require or award them.</p>
-        <p><stong class="font-weight-bold">Note:</stong> Awards only available for exams.</p>
+        <p><strong class="font-weight-bold">Note:</strong> Awards only available for exams.</p>
         <v_credential_type_attach_to_job :job_id="job.id" :allow_awards="job.type === 'exam_template'">
         </v_credential_type_attach_to_job>
       </div>

@@ -281,7 +281,9 @@ class Task(Base):
                 return last_task
 
     def add_reviewer(self, session, user):
-
+        existing_rel = TaskUser.get(session, user.id, self.id, 'reviewer')
+        if existing_rel:
+            return existing_rel
         self.assignee_user = user
         rel = TaskUser.new(
             session = session,
@@ -312,7 +314,9 @@ class Task(Base):
         return users
 
     def add_assignee(self, session, user):
-
+        existing_rel = TaskUser.get(session, user.id, self.id, 'assignee')
+        if existing_rel:
+            return existing_rel
         self.assignee_user = user
         rel = TaskUser.new(
             session = session,

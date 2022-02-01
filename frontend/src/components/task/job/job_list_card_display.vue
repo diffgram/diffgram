@@ -396,6 +396,9 @@
           if(job.type === 'exam_template'){
             this.$router.push(`/${this.$props.project_string_id}/exam/${job.id}`)
           }
+          else if(job.type === 'examination'){
+            this.$router.push(`/${this.$props.project_string_id}/examination/${job.id}`)
+          }
           else{
             this.$router.push("/job/" + job.id)
           }

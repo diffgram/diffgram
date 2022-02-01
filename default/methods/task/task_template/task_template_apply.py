@@ -137,6 +137,11 @@ def task_template_apply_exam(session,
 
     # Attach assignees as reviewers for tasks
     parent_assignees = og_task_template.get_assignees(session)
+    parent_members_list_ids = [user.member_id for user in parent_assignees]
+    og_task_template.update_reviewer_list(
+        session = session,
+        reviewer_list_ids = parent_members_list_ids,
+        log = regular_log.default())
 
     result = task_new.provision_root_tasks(session = session,
                                            job = task_template,
