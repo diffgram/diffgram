@@ -41,7 +41,7 @@
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
                     v-for="(word, index) in initial_words_measures"
-                    :key="word.value"
+                    :key="word.value + index"
                     :ref="`word_${index}`"
                     x="40" 
                     y="5" 
@@ -141,10 +141,10 @@
                     :key="`line_${index}`"
                 >
                     <text 
-                        v-for="(token, index) in tokens.filter(token => token.line === index)"
+                        v-for="(token, token_index) in tokens.filter(token => token.line === index)"
                         @mousedown="() => on_start_draw_instance(token)"
                         @mouseup="() => on_finish_draw_instance(token)"
-                        :key="`token_${index}`"
+                        :key="`line_${index}token_${token_index}`"
                         :x="token.start_x"
                         :fill="hover_instance && 
                             (
