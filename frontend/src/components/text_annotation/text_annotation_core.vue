@@ -473,6 +473,7 @@ export default Vue.extend({
             initial_instance.initialized = false
             initial_instance.creation_ref_id = creation_ref_id
             instance.soft_delete = true
+            this.hover_instance = null
 
             const instance_index = this.instance_list.indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
