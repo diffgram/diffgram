@@ -23,7 +23,7 @@
                     @mouseover="on_hover_item(item)"
                     @mouseleave="on_stop_hover_item"
                   >
-                    <td class="centered-table-items">
+                    <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
                         {{ item.id }}
                     </td>
                     <td class="centered-table-items">
@@ -114,9 +114,10 @@ export default Vue.extend({
             required: true
         }
     },
-    data() {
-        return {
-            headers: [
+    computed: {
+        headers: function() {
+            if (this.$store.state.user.current.is_super_admin) {
+                return [
                 {
                     text: 'Id',
                     align: 'center',
@@ -141,7 +142,29 @@ export default Vue.extend({
                     sortable: false,
                     align: 'center'
                 }
-            ],
+            ]
+            }
+        
+            return [
+                {
+                    text: 'Type',
+                    align: 'center',
+                    sortable: false,
+                    value: 'type'
+                },
+                { 
+                    text: 'Name', 
+                    value: 'label_file.label.name',
+                    sortable: false,
+                    align: 'center'
+                },
+                { 
+                    text: 'Action', 
+                    value: 'action',
+                    sortable: false,
+                    align: 'center'
+                }
+            ]
         }
     },
     methods: {
