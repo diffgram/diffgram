@@ -9,21 +9,21 @@
         `">
         <v-data-table
             hide-default-footer
-            :style="`width: 350px; max-height: 52%; overflow-y: scroll`"
+            :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
             :headers="headers"
             :items="instance_list"
             fixed-header
             disable-pagination
         >
             <template v-slot:body="{ items }">
-                <tbody v-if="items.length > 0">
+                <tbody v-if="items.length > 0 && !loading">
                   <tr
                     v-for="item in items"
                     :key="item.id"
                     @mouseover="on_hover_item(item)"
                     @mouseleave="on_stop_hover_item"
                   >
-                    <td class="centered-table-items">
+                    <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
                         {{ item.id }}
                     </td>
                     <td class="centered-table-items">
@@ -73,7 +73,9 @@
                 </tbody>
                 <tbody v-else>
                     <tr>
-                        <td :colspan="headers.length" style="text-align: center">No instances have been created yet</td>
+                        <td :colspan="headers.length" style="text-align: center">
+                            {{ loading ? "Loading..." : "No instances have been created yet" }}
+                        </td>
                     </tr>
                 </tbody>
             </template>
@@ -106,11 +108,16 @@ export default Vue.extend({
         toolbar_height: {
             type: String,
             default: '100px'
+        },
+        loading: {
+            type: Boolean,
+            required: true
         }
     },
-    data() {
-        return {
-            headers: [
+    computed: {
+        headers: function() {
+            if (this.$store.state.user.current.is_super_admin) {
+                return [
                 {
                     text: 'Id',
                     align: 'center',
@@ -135,7 +142,29 @@ export default Vue.extend({
                     sortable: false,
                     align: 'center'
                 }
-            ],
+            ]
+            }
+        
+            return [
+                {
+                    text: 'Type',
+                    align: 'center',
+                    sortable: false,
+                    value: 'type'
+                },
+                { 
+                    text: 'Name', 
+                    value: 'label_file.label.name',
+                    sortable: false,
+                    align: 'center'
+                },
+                { 
+                    text: 'Action', 
+                    value: 'action',
+                    sortable: false,
+                    align: 'center'
+                }
+            ]
         }
     },
     methods: {

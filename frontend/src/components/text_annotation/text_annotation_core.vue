@@ -24,6 +24,7 @@
         <text_sidebar 
             :instance_list="instance_list.filter(instance => !instance.soft_delete)"
             :label_list="label_list"
+            :loading="rendering"
             @delete_instance="delete_instance"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
@@ -36,11 +37,14 @@
             direction="ltr" 
             id="svg0:60" 
             width="100%" 
-            style="height: 1000.5px;">
+            :style="`height: 5000px`"
+            @mouseup="on_draw_text_token"
+            :class="unselectable && 'unselectable'"
+        >
             <g v-if="rendering" transform="translate(0, 23.5)">
                 <text 
                     v-for="(word, index) in initial_words_measures"
-                    :key="word.value"
+                    :key="word.value + index"
                     :ref="`word_${index}`"
                     x="40" 
                     y="5" 
@@ -48,8 +52,9 @@
                     text-anchor="middle">
                         {{ word.value }}
                 </text>
+                <text x="40">Loading...</text>
             </g>
-            <g v-else>
+            <g ref="main-text-container" v-else>
                 <g
                     v-if="relation_drawing"
                 >
@@ -83,6 +88,46 @@
                     {{ instance.label_file.label.name }}
                 </text>
                 <rect 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_start_${instance.id}`"
+                    :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
+                    :y="render_rects.find(rect => rect.instance_id === instance.id).y"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :width="1"
+                    :height="10"
+                    @mouseenter="() => on_instance_hover(instance.id)"
+                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseleave="on_instance_stop_hover"
+                    style="font-size: 10px; cursor: pointer"
+                />
+                <circle 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_start_marker_${instance.id}`"
+                    :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
+                    :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10" 
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    r="2" 
+                />
+                <rect 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_end_${instance.id}`"
+                    :x="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
+                    :y="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y"
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :width="1"
+                    :height="10"
+                    @mouseenter="() => on_instance_hover(instance.id)"
+                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseleave="on_instance_stop_hover"
+                    style="font-size: 10px; cursor: pointer"
+                />
+                <path 
+                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_end_marker_${instance.id}`"
+                    :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`" 
+                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                />
+                <rect 
                     v-for="rect in render_rects"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
                     :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
@@ -100,10 +145,10 @@
                     :key="`line_${index}`"
                 >
                     <text 
-                        v-for="(token, index) in tokens.filter(token => token.line === index)"
-                        @mousedown="() => on_start_draw_instance(token)"
-                        @mouseup="() => on_finish_draw_instance(token)"
-                        :key="`token_${index}`"
+                        v-for="(token, token_index) in tokens.filter(token => token.line === index)"
+                        unselectable="on"
+                        :id="token.id"
+                        :key="`line_${index}token_${token_index}`"
                         :x="token.start_x"
                         :fill="hover_instance && 
                             (
@@ -122,7 +167,6 @@
 
 <script>
 import Vue from "vue";
-import Tokenizer from "wink-tokenizer"
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
@@ -166,16 +210,19 @@ export default Vue.extend({
             instance_in_progress: null,
             path: {},
             //Render constants
-            additional_line_space: 20,
+            additional_line_space: 30,
             show_default_navigation: true,
+            unselectable: false,
             // Command
             command_manager: undefined,
             has_changed: false,
             save_loading: false,
         }
     },
-    async mounted() {
+    mounted() {
+        this.hot_key_listeners()
         this.on_mount()
+        this.start_autosave()
     },
     computed: {
         render_rects: function() {
@@ -194,6 +241,8 @@ export default Vue.extend({
             return rects_to_draw
         },
         render_drawing_arrow: function() {
+            if (!this.instance_in_progress) return {}
+            const scroll_y = window.pageYOffset || document.documentElement.scrollTop
             const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
             return { 
                 marker: {
@@ -202,9 +251,9 @@ export default Vue.extend({
                 },
                 arrow: {
                     x: this.path.x - 350,
-                    y: this.path.y - 100
+                    y: this.path.y - 100 + scroll_y
                 },
-                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100} ${this.path.x - 350} ${this.path.y - 100}`
+                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y} ${this.path.x - 350} ${this.path.y - 100 + scroll_y}`
              }
         },
         undo_disabled: function() {
@@ -217,12 +266,6 @@ export default Vue.extend({
         }
     },
     watch: {
-        has_changed: async function(newValue) {
-            if (newValue) {
-                this.has_changed = false;
-                this.save()
-            }
-        },
         file: function(newValue) {
             this.rendering = true
             this.instance_list = [];
@@ -234,10 +277,47 @@ export default Vue.extend({
         }
     },
     methods: {
+        hot_key_listeners: function() {
+            window.removeEventListener("keydown", this.esk_event_listener)
+            window.addEventListener("keydown", this.esk_event_listener)
+
+        },
+        esk_event_listener: async function(e) {
+            if (e.keyCode === 27) {
+                this.instance_in_progress = null
+                this.path = {};
+                this.unselectable = false
+                this.relation_drawing = false;
+                window.removeEventListener('mousemove', this.draw_relation_listener)
+            }
+            else if (e.keyCode === 83) {
+                await this.save();
+            }
+        },
+        start_autosave: function () {
+            this.interval_autosave = setInterval(
+                this.detect_is_ok_to_save,
+                15 * 1000
+            );
+        },
+        detect_is_ok_to_save: async function () {
+            if (this.has_changed) {
+                await this.save();
+            }
+        },
+        on_draw_text_token: function() {
+            if (this.instance_in_progress && this.instance_in_progress.type === "relation") return 
+            const selection = window.getSelection()
+            const start_token_id = parseInt(selection.anchorNode.parentNode.id)
+            const end_token_id = parseInt(selection.focusNode.parentNode.id)
+            this.on_start_draw_instance(start_token_id)
+            this.on_finish_draw_instance(end_token_id)
+            this.instance_in_progress = null
+        },
         on_mount: async function() {
-            this.text = await getTextService(this.file.text.url_signed)
+            const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
             this.command_manager = new CommandManagerAnnotationCore()
-            this.initial_words_measures = Tokenizer().tokenize(this.text)
+            this.initial_words_measures = words
             setTimeout(() => this.initialize_token_render(), 1000)
             this.initialize_instance_list()
         },
@@ -262,11 +342,11 @@ export default Vue.extend({
                     word: word.value,
                     tag: word.tag,
                     width: current_token_width,
-                    start_x: word.tag === 'word' ? token_x_position : token_x_position - 5,
+                    start_x: word.tag !== 'word' ? token_x_position : token_x_position - 5,
                     line: this.lines.length - 1
                 }
                 tokens.push(token)
-                token_x_position = word.tag === 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
+                token_x_position = word.tag !== 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
             })
 
             this.tokens = tokens
@@ -277,6 +357,11 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
+            const is_text_token = this.instance_list.find(instance => instance_id === instance.id).type === "text_token"
+
+            if (!is_text_token) return
+            this.unselectable = true
+
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
@@ -290,6 +375,8 @@ export default Vue.extend({
                 return
             }
 
+            this.unselectable = false
+
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
             const created_instance = new TextRelationInstance();
@@ -302,7 +389,7 @@ export default Vue.extend({
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
@@ -326,14 +413,15 @@ export default Vue.extend({
             this.instance_in_progress = {
                 id: this.instances.length,
                 type: "text_token",
-                start_token: start_token.id,
+                start_token,
                 label_id: this.current_label.id,
                 level: 0
             }
         },
         // function to finish drawing instance and remove selection
         on_finish_draw_instance: async function(end_token) {
-            this.instance_in_progress.end_token = end_token.id
+            if (!this.instance_in_progress.start_token) return
+            this.instance_in_progress.end_token = end_token
             const instance_exists = this.instances.find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
                 ||
@@ -351,7 +439,7 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
-                await this.save()
+                this.has_changed = true
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -374,6 +462,12 @@ export default Vue.extend({
             if (instance.type === "text_token") {
                 initial_instance = new TextAnnotationInstance()
                 initial_instance.create_instance(id, start_token, end_token, label_file)
+                this.instance_list.map(instance_rel => {
+                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
+                        instance_rel.soft_delete = true
+                        this.command_manager = new CommandManagerAnnotationCore()
+                    }
+                })
             } else {
                 initial_instance = new TextRelationInstance()
                 initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
@@ -386,7 +480,7 @@ export default Vue.extend({
             const instance_index = this.instance_list.indexOf(event.instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
         },
         delete_instance: async function(instance) {
             const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
@@ -395,6 +489,12 @@ export default Vue.extend({
             if (instance.type === "text_token") {
                 initial_instance = new TextAnnotationInstance()
                 initial_instance.create_instance(id, start_token, end_token, label_file)
+                this.instance_list.map(instance_rel => {
+                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
+                        instance_rel.soft_delete = true
+                        this.command_manager = new CommandManagerAnnotationCore()
+                    }
+                })
             } else {
                 initial_instance = new TextRelationInstance()
                 initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
@@ -402,11 +502,12 @@ export default Vue.extend({
             initial_instance.initialized = false
             initial_instance.creation_ref_id = creation_ref_id
             instance.soft_delete = true
+            this.hover_instance = null
 
             const instance_index = this.instance_list.indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
@@ -422,7 +523,7 @@ export default Vue.extend({
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
                     const new_instance = new TextAnnotationInstance()
                     new_instance.create_instance(id, start_token, end_token, label_file)
-                    new_instance.creation_ref_id
+                    new_instance.creation_ref_id = creation_ref_id
                     this.instance_list.push(new_instance)
                 } else {
                     const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance
@@ -434,13 +535,31 @@ export default Vue.extend({
             })
         },
         save: async function (index = null) {
+            this.has_changed = false
             this.save_loading = true
             const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
             added_instances.map(add_insatnce => {
                 if (!index) {
+                    const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
                     this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                    if (this.instance_in_progress) {
+                        this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
+                    }
+                    this.instance_list
+                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                        .map(instance => {
+                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 } else {
+                    const old_id = this.instance_list[index].id
                     this.instance_list[index].id = add_insatnce.id
+                    this.instance_list
+                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                        .map(instance => {
+                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 }
             })
             this.save_loading = false
@@ -682,7 +801,31 @@ export default Vue.extend({
                 instance_type: instance.type
             }
             return [trial_rect]
-        }
+        },
+        // this is function to check what direction relation arrow should piint to
+        insatance_orientation_direct: function(relational_instance) {
+            const start_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.from_instance_id)
+            const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
+            const end_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.to_instance_id)
+            const end_token = this.tokens.find(token => token.id === end_instance.end_token)
+            return starting_token.id < end_token.id
+        },
     }
 })
 </script>
+
+
+<style scoped>
+.unselectable {
+   -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+
+   /*
+     Introduced in IE 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+   -ms-user-select: none;
+   user-select: none;
+}
+</style>
