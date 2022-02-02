@@ -37,9 +37,10 @@
 
 
           <v-toolbar-items class="pt-2">
+
             <tooltip_button
               datacy='new_tasks'
-              tooltip_message="New Tasks"
+              tooltip_message="New Task Template"
               icon="add"
               :bottom="true"
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
@@ -47,6 +48,20 @@
               color="primary"
               :icon_style="true"
               :large="true"
+              :href="'/project/' + project_string + '/job/new'"
+              @click="$router.push('/project/' + project_string + '/job/new')">
+            </tooltip_button>
+
+            <tooltip_button
+              datacy='new_exams'
+              tooltip_message="New Exam"
+              icon="mdi-shield-plus"
+              :bottom="true"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              :disabled="!project_string"
+              color="primary"
+              :iconSize="28"
+              :icon_style="true"
               :href="'/project/' + project_string + '/job/new'"
               @click="$router.push('/project/' + project_string + '/job/new')">
             </tooltip_button>

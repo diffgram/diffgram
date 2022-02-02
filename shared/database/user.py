@@ -320,7 +320,7 @@ class Signup_code(Base):
     id = Column(Integer, primary_key = True)
 
     type = Column(String())
-    # ['verify_signup', 'invite_by_trainer_org']
+    # ['verify_signup', 'invite_by_trainer_org', 'add_to_project', 'add_to_exam']
 
     created_time_int = Column(Integer)  # integer time vs datetime...
 
