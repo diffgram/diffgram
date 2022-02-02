@@ -240,6 +240,7 @@ export default Vue.extend({
             return rects_to_draw
         },
         render_drawing_arrow: function() {
+            if (!this.instance_in_progress) return {}
             const scroll_y = window.pageYOffset || document.documentElement.scrollTop
             const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
             return { 
@@ -287,7 +288,7 @@ export default Vue.extend({
             }
         },
         on_draw_text_token: function() {
-            if (this.instance_in_progress && this.instance_in_progress.type === "type") return 
+            if (this.instance_in_progress && this.instance_in_progress.type === "relation") return 
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
             const end_token_id = parseInt(selection.focusNode.parentNode.id)
