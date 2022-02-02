@@ -2,11 +2,7 @@
   <v-dialog v-model="is_open" id="no_credentials_dialog" persistent width="800px">
     <v-card elevation="1" class="pa-4" >
       <v-card-title class="d-flex justify-center flex-column">
-        <img class="text-center mt-4 mb-4"
-             height="150"
-             width="400"
-             src="https://github.com/diffgram/diffgram/raw/master/github_assets/DiffgramLogoVECTOR.svg" alt="">
-        <h1 class="font-weight-medium">
+        <h1 class="font-weight-medium text-center">
           You don't have the credentials for this Task
         </h1>
       </v-card-title>
@@ -14,7 +10,12 @@
         <h3 class="font-weight-light warning--text">
           You need the following credentials to be able to work:
         </h3>
+        <div class="d-flex flex-wrap justify-center align-center">
+          <credential_badge v-for="credential in missing_credentials" :credential="credential">
 
+          </credential_badge>
+
+        </div>
 
 
         <v-btn
@@ -35,10 +36,14 @@
 </template>
 
 <script>
+import credential_badge from '../credential/credential_badge'
 export default {
   name: "no_credentials_dialog",
+  components:{
+    credential_badge
+  },
   props: {
-    task_template:{
+    missing_credentials:{
       default: null
     }
   },
@@ -48,6 +53,9 @@ export default {
     }
   },
   methods:{
+    go_to_exams: function(){
+      this.$router.push(`/job/list/?type=exam_template`)
+    },
     close(){
       this.input = undefined;
       this.is_open = false;
