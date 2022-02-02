@@ -40,3 +40,22 @@ export const exam_start_apply = async (exam_id) => {
     return [undefined, e]
   }
 }
+
+
+export const exam_pass = async (exam_id) => {
+  try {
+    const response = await axios.post('/api/v1/exam/pass',
+      {
+        job_id: parseInt(exam_id, 10)
+      })
+    if (response.data.log.success == true) {
+
+      return [true, null]
+
+    }
+  } catch (e) {
+    console.error(e)
+    return [undefined, e]
+  }
+}
+

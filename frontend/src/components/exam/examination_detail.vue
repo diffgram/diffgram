@@ -35,7 +35,7 @@
           >
           </v_task_list>
 
-          <v-container class="mt-4 pa-4" style="border: solid 1px #e0e0e0" v-if="user_can_grade">
+          <v-container class="mt-4 pa-4" style="border: solid 1px #e0e0e0" v-if="user_can_grade && !(exam_approved)">
             <h2>Actions: </h2>
             <p><strong>Note:</strong> Can only approve once all tasks have been reviewed and completed.</p>
             <div class="d-flex justify-center">
@@ -48,6 +48,14 @@
               </v-btn>
             </div>
           </v-container>
+
+          <v-container class="mt-4 pa-4 d-flex flex-column justify-center align-center"
+                       style="border: solid 1px #e0e0e0"
+                       v-if="exam_approved">
+            <v-icon color="success" size="120">mdi-check</v-icon>
+            <h3>Exam Approved</h3>
+          </v-container>
+
         </v-tab-item>
 
         <v-tab-item>
@@ -73,6 +81,7 @@ import axios from "axios";
 import stats_panel from "../stats/stats_panel.vue";
 import {exam_start_apply} from '../../services/examsService'
 import {get_task_template_details, get_task_template_credentials} from '../../services/taskTemplateService'
+import {exam_pass} from '../../services/examsService'
 import { nextTask } from "../../services/tasksServices";
 
 import Vue from "vue";
@@ -117,7 +126,6 @@ export default Vue.extend({
       this.tab = 1;
     }
     await this.get_exam_details();
-    await this.get_exam_credentials();
     this.reset_local_info();
 
     this.job_current_watcher = this.$store.watch(
@@ -131,12 +139,21 @@ export default Vue.extend({
 
   },
   computed: {
+    exam_approved: function(){
+      return this.examination.exam && this.examination.exam.credentials_awarded;
+    },
     project_string_id: function(){
       return this.$store.state.project.current.project_string_id;
     },
     user_can_grade: function(){
+      let user_id = this.$store.state.user.current.id
       if(this.$store.state.user.current.is_super_admin){
         return true
+      }
+      if(this.examination.reviewer_list_ids){
+        if(this.examination.reviewer_list_ids.includes(user_id)){
+          return true
+        }
       }
 
     }
@@ -146,7 +163,20 @@ export default Vue.extend({
     this.job_current_watcher();
   },
   methods: {
-
+    exam_pass_api: async function(){
+      this.loading = true;
+      let [result, error] = await exam_pass(this.examination_id);
+      if(result){
+        this.examination.exam = {
+          credentials_awarded: true
+        }
+        this.show_success_snackbar('Exam Approved! User has been awarded new credentials.')
+      }
+      if(error){
+        this.error = this.$route_api_errors(error)
+      }
+      this.loading = false;
+    },
     get_exam_details: async function () {
       this.loading = true;
       this.examination = await get_task_template_details(this.examination_id);

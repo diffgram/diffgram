@@ -740,10 +740,14 @@ class Job(Base, Caching):
         default_userscript = None
         if self.default_userscript:
             default_userscript = self.default_userscript.serialize()
+        exam = None
+        if self.exam:
+            exam = self.exam.serialize()
 
         return {
             'id': self.id,
             'name': self.name,
+            'exam': exam,
             'type': self.type,
             'ui_schema_id': self.ui_schema_id,
             'share_type': self.share_type,

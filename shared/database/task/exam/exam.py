@@ -24,3 +24,10 @@ class Exam(Base):
 
     user_taking_exam_id = Column(Integer, ForeignKey('userbase.id'))
     user_taking_exam = relationship("User")
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'credentials_awarded': self.credentials_awarded,
+            'user_taking_exam_id': self.user_taking_exam_id,
+        }
