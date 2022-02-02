@@ -278,6 +278,7 @@ export default Vue.extend({
     },
     methods: {
         hot_key_listeners: function() {
+            window.removeEventListener("keydown", this.esk_event_listener)
             window.addEventListener("keydown", this.esk_event_listener)
 
         },
