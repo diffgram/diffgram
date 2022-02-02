@@ -255,9 +255,7 @@
 
              Do NOT 2 way bind this component, we expect the events to update frame number
              We do want to send the current video frame number to this though so that
-             It can update as it plays.
-
-          --->
+             It can update as it plays. --->
           <v-slider
             ref="slider"
             data-cy="video_player_slider"
@@ -607,7 +605,10 @@ export default Vue.extend( {
 
     this.keyframe_watcher()
     this.video_pause()    // in case video was still playing
-
+    if(this.$refs.video_source_ref){
+      this.$refs.video_source_ref.src = "";
+      this.$refs.video_source_ref.load();
+    }
   },
   methods: {
     reset_cache(){
@@ -1360,7 +1361,6 @@ export default Vue.extend( {
         ) {
         return
       }
-      console.log('get_video_single_image')
       this.get_video_single_image_last_fired = new Date().getTime()
 
       this.video_current_frame_guess_update()
@@ -1368,7 +1368,6 @@ export default Vue.extend( {
       const prev_frames = this.get_previous_n_frames(frame_number, this.MAX_NUM_URL_BUFFER)
       const all_new_frames = [...new Set(next_frames.concat(prev_frames))];
       if (frame_number != this.prior_frame_number) {
-        console.log('frame_number != this.prior_frame_number')
         if(!this.frame_url_buffer[frame_number]){
           this.error = {}
           try{
