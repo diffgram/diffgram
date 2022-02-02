@@ -220,6 +220,7 @@ export default Vue.extend({
         }
     },
     mounted() {
+        this.hot_key_listeners()
         this.on_mount()
         this.start_autosave()
     },
@@ -276,6 +277,22 @@ export default Vue.extend({
         }
     },
     methods: {
+        hot_key_listeners: function() {
+            window.addEventListener("keydown", this.esk_event_listener)
+
+        },
+        esk_event_listener: async function(e) {
+            if (e.keyCode === 27) {
+                this.instance_in_progress = null
+                this.path = {};
+                this.unselectable = false
+                this.relation_drawing = false;
+                window.removeEventListener('mousemove', this.draw_relation_listener)
+            }
+            else if (e.keyCode === 83) {
+                await this.save();
+            }
+        },
         start_autosave: function () {
             this.interval_autosave = setInterval(
                 this.detect_is_ok_to_save,
