@@ -18,7 +18,7 @@ depends_on = None
 def upgrade():
     op.add_column('text_file', sa.Column('tokens_url_signed', sa.String, default = 'wink'))
     op.add_column('text_file', sa.Column('tokens_url_signed_blob_path', sa.String, default = 'wink'))
-    op.add_column('text_file', sa.Column('tokens_url_signed_expiry', sa.String, default = 'wink'))
+    op.add_column('text_file', sa.Column('tokens_url_signed_expiry', sa.Integer, default = 'wink'))
 
 
 def downgrade():
