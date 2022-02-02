@@ -4,11 +4,10 @@
     <v-snackbar
       v-model="$store.state.error.permission"
       top
-      :timeout="5000"
       color="error"
     >
       Invalid permission.
-      <v-btn color="white" text @click="snackbar_warning = false">
+      <v-btn color="white" text @click="$store.commit('clear_permission_error')">
         Close
       </v-btn>
     </v-snackbar>

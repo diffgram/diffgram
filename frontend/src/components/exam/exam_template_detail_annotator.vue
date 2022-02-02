@@ -59,7 +59,7 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "exam_template_detail",
-  props: ["exam_id"],
+  props: ["exam_id", "exam"],
   components: {
     exam_detail_header,
     credential_badge
@@ -85,7 +85,6 @@ export default Vue.extend({
       job_current_watcher: undefined,
 
       info: {},
-      exam: {},
       error: {},
 
     };
@@ -121,9 +120,8 @@ export default Vue.extend({
     },
     get_exam_details: async function () {
       this.loading = true;
-      this.exam = await get_task_template_details(this.exam_id);
-      this.$emit("job_info", this.exam);
-      this.$store.commit("set_job", this.exam);
+      this.$emit("job_info", this.$props.exam);
+      this.$store.commit("set_job", this.$props.exam);
       this.loading = false;
     },
     set_document_title() {

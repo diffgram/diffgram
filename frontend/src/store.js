@@ -421,6 +421,7 @@ const error = {
   },
   mutations: {
     error_permission: state => state.permission = Date.now(),
+    clear_permission_error: state => state.permission = null,
   }
 }
 

@@ -2,11 +2,13 @@
   <exam_template_detail_admin
     v-if="show_admin_view"
     :exam_id="exam_id"
+    :exam="exam"
   >
 
   </exam_template_detail_admin>
   <exam_template_detail_annotator
     :exam_id="exam_id"
+    :exam="exam"
     v-else
   >
 
@@ -17,6 +19,7 @@
 
 import exam_template_detail_admin from "../exam/exam_template_detail_admin";
 import exam_template_detail_annotator from "../exam/exam_template_detail_annotator";
+import {get_task_template_details} from '../../services/taskTemplateService'
 import Vue from "vue";
 
 export default Vue.extend({
@@ -30,12 +33,13 @@ export default Vue.extend({
   data() {
     return {
       roles: null,
+      exam: {},
       show_admin_view: false,
     };
   },
-  mounted() {
+  async mounted() {
     this.roles = this.$store.getters.get_project_roles(this.$store.state.project.current.project_string_id);
-    console.log('AAAA', this.roles)
+    this.exam = await get_task_template_details(this.exam_id);
     if(this.roles && this.roles.length > 0){
       if(this.roles.includes("admin")){
           this.show_admin_view = true
@@ -43,6 +47,10 @@ export default Vue.extend({
       else{
         this.show_admin_view = false
       }
+    }
+    let user_id = this.$store.state.user.current.id;
+    if(this.exam.member_list_ids.includes("all") || this.exam.member_list_ids.includes(user_id)){
+      this.show_admin_view = true
     }
   },
   computed: {

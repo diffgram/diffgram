@@ -34,6 +34,13 @@
           >
           </tooltip_button>
         </div>
+        <div
+          v-if="edit_name != true && !allow_edit"
+          class="font-weight-light pl-2 d-flex align-center"
+          @dblclick="edit_name = true"
+        >
+          {{ exam.name }}
+        </div>
 
         <v-text-field
           v-if="edit_name == true"

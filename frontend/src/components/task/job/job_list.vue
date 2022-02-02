@@ -63,7 +63,7 @@
               :iconSize="28"
               :icon_style="true"
               :href="'/project/' + project_string + '/job/new'"
-              @click="$router.push('/project/' + project_string + '/job/new')">
+              @click="$router.push('/project/' + project_string + '/exam/new')">
             </tooltip_button>
 
             <tooltip_button

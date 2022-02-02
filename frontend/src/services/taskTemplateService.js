@@ -32,3 +32,22 @@ export const get_task_template_credentials = async (metadata) => {
     console.error(e);
   }
 }
+
+
+export const archive_task_template = async (job_id, job_list, mode) => {
+  try{
+    let response = await axios.post("/api/v1/job/cancel", {
+        job_id: job_id,
+        job_list: job_list,
+        mode: mode,
+      })
+    if (response.data.log.success == true) {
+      return [true, null]
+    }
+
+    return [false, null]
+  }
+  catch (e){
+    return[null, e]
+  }
+}

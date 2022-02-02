@@ -474,6 +474,15 @@ const routerOptions = [
     }
   },
   {
+    path: '/project/:project_string_id/exam/new/',
+    component: 'exam/exam_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
     path: '/project/:project_string_id_route/job/new-legacy',
     component: 'task/job/job_new',
     props: true,

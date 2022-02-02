@@ -22,15 +22,6 @@
       >
       </userscript_select>
 
-      <v-select :items="type_list"
-                v-model="job.type"
-                data-cy="jobtype-select"
-                label="Type"
-                item-text="display_name"
-                item-value="value"
-                :disabled="loading">
-      </v-select>
-
       <diffgram_select
         :item_list="file_handling_list"
         data-cy="file-handling-select"

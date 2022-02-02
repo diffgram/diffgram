@@ -85,7 +85,7 @@ import Exam_results from "../task/job/exam_results.vue";
 import Exam_child_list from "./exam_child_list.vue";
 export default Vue.extend({
   name: "exam_template_detail",
-  props: ["exam_id"],
+  props: ["exam_id", "exam"],
   components: {
     Exam_child_list,
     Exam_results,
@@ -114,8 +114,6 @@ export default Vue.extend({
       snackbar_message: '',
 
       exam_name: undefined,
-      exam: {},
-
       info: {},
       error: {},
       label_select_view_only_mode: true,
@@ -148,9 +146,8 @@ export default Vue.extend({
   methods: {
     get_exam_details: async function () {
       this.loading = true;
-      this.exam = await get_task_template_details(this.exam_id);
-      this.$emit("job_info", this.exam);
-      this.$store.commit("set_job", this.exam);
+      this.$emit("job_info", this.$props.exam);
+      this.$store.commit("set_job", this.$props.exam);
       this.loading = false;
     },
     reset_local_info() {
