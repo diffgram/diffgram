@@ -13,11 +13,13 @@
               background="secondary"
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
               color="white"
+              @menu_open="$refs.create_credential.reset()"
             >
 
               <template slot="content">
 
                 <v_credential_type_new_or_edit
+                  ref="create_credential"
                   :project_string_id="project_string_id"
                   @refresh_list="credential_list_api"
                   :mode="'new'">
