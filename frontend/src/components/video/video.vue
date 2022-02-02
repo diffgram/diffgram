@@ -255,9 +255,7 @@
 
              Do NOT 2 way bind this component, we expect the events to update frame number
              We do want to send the current video frame number to this though so that
-             It can update as it plays.
-
-          --->
+             It can update as it plays. --->
           <v-slider
             ref="slider"
             data-cy="video_player_slider"
