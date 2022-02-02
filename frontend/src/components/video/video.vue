@@ -1031,19 +1031,6 @@ export default Vue.extend( {
 
     },
 
-    // udacity intro on it https://www.youtube.com/watch?v=YGR8rVT6xJ8
-    // https://stackoverflow.com/questions/10735922/how-to-stop-a-requestanimationframe-recursion-loop
-    // https://stackoverflow.com/questions/38709923/why-is-requestanimationframe-better-than-setinterval-or-settimeout
-
-    video_animation_start: function () {
-      https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-      this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
-      // returns a type long, a request id value
-      // we can pass that to cancel to cancel animation
-      // TODO clarify it's ok we reuse this.animation_request in this way
-
-    },
-
     video_animation_stop: function () {
 
       window.cancelAnimationFrame(this.animation_request)
