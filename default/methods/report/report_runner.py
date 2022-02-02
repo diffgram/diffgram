@@ -484,7 +484,8 @@ class Report_Runner():
             self.query = self.query.order_by(self.date_func)
 
         elif self.report_template.group_by == 'label':
-            self.query = self.query.group_by(self.label_file_id)
+            if hasattr(self, 'label_file_id'):
+                self.query = self.query.group_by(self.label_file_id)
 
         elif self.report_template.group_by == 'user':
             self.query = self.query.group_by(self.member_id_normalized)
@@ -670,9 +671,13 @@ class Report_Runner():
         """
         label_file_id_list: List of ints ids
         """
+        if self.base_class_string == 'task':
+            self.query = self.query.filter(
+                self.base_class.file_id.in_(label_file_id_list))
 
-        self.query = self.query.filter(
-            self.base_class.label_file_id.in_(label_file_id_list))
+        else:
+            self.query = self.query.filter(
+                self.base_class.label_file_id.in_(label_file_id_list))
 
     def update_report_template(self, metadata: dict):
         """
@@ -955,7 +960,10 @@ class Report_Runner():
         WIP only really for Instance
         Yes this must use an id it look like for group by
         """
-        query = self.session.query(self.label_file_id, func.count(self.base_class.id))
+        if hasattr(self, 'label_file_id'):
+            query = self.session.query(self.label_file_id, func.count(self.base_class.id))
+        else:
+            query = self.session.query(self.base_class)
         return query
 
     def group_by_file(self):

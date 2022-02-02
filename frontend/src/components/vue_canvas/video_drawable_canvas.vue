@@ -130,6 +130,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       show_video_nav_bar:{
         default: true
       },
+
       reticle_colour: {
         default: () => ({
           hex: '#ff0000',
@@ -147,6 +148,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         loading: false,
         hovered: false,
         is_mounted: false,
+        loading_images: [],
         annotations_loading: false,
         get_instances_loading: false,
         refresh: new Date(),
@@ -172,6 +174,12 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       //console.debug("Destroyed")
       document.removeEventListener('focusin', this.focus_in)
       document.removeEventListener('focusout', this.focus_out)
+      if(window.stop !== undefined) {
+        window.stop();
+      }
+      else if(document.execCommand !== undefined){
+        document.execCommand("Stop", false);
+      }
     },
     watch: {
       instance_list: function(){
@@ -396,11 +404,18 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       addImageProcess: function (src) {
         return new Promise((resolve, reject) => {
           let image = new Image()
+          this.loading_images.push(image)
+
           image.src = src
           if(process.env.NODE_ENV === 'testing'){
             image.crossOrigin = "anonymous";
           }
-          image.onload = () => resolve(image)
+          image.onload = () => {
+            this.loading_images = this.loading_images.filter(function(elm){
+              return elm !== image;
+            });
+            resolve(image)
+          }
           image.onerror = reject
         })
       },
@@ -408,7 +423,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         var self = this
         self.addImageProcess(url).then(image => {
           self.html_image = image
-          self.$refs.drawable_canvas.canvas_wrapper.style.display = ""
+          if(self.$refs.drawable_canvas){
+            self.$refs.drawable_canvas.canvas_wrapper.style.display = ""
+          }
           self.loading = false
           this.refresh = Date.now();
         })
