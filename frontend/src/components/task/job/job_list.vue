@@ -159,19 +159,6 @@
               :disabled="loading">
             </job_type_select>
 
-            <!-- WIP Feature-->
-            <!--
-              <v-select
-                class="ml-4"
-                        :items="instance_type_list"
-                        v-model="instance_type"
-                        label="Instance type"
-                        item-value="text"
-                        :disabled="loading"
-                        @change="">
-              </v-select>
-            -->
-
             <member_select
               style="max-width: 18%;"
               class="ml-4"
@@ -668,7 +655,6 @@
           category_list: ['Computer vision'],
           category: 'Computer vision',
 
-          type_list: ['All', 'Normal', 'Exam'],  // 'Learning'
           type: 'Normal',
 
           instance_type_list: ['All', 'polygon', 'box', 'tag'],
@@ -878,9 +864,8 @@
 
       },
 
-      mounted() {
+      async mounted() {
         this.add_visit_history_event();
-        this.mount()
 
         /*
         var self = this
@@ -900,6 +885,11 @@
         if (this.$store.state.builder_or_trainer.mode == 'trainer') {
           this.share_type = "Market"
         }
+        if(this.$route.query.type){
+          this.type = this.$route.query.type;
+        }
+        await this.mount()
+
 
       },
       methods: {
@@ -940,8 +930,8 @@
         open_confirm_dialog_sample_data: function () {
           this.dialog_confirm_sample_data = true;
         },
-        mount() {
-          this.job_list_api()
+        async mount() {
+          await this.job_list_api()
         },
 
         item_changed() {

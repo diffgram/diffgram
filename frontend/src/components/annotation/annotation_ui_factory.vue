@@ -1,7 +1,23 @@
 <template>
   <div>
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="annotation_interface === 'image_or_video'">
+      <div v-if="!annotation_interface">
+        <empty_file_editor_placeholder
+          :loading="any_loading"
+          :project_string_id="project_string_id"
+        ></empty_file_editor_placeholder>
+      </div>
+      <div v-else-if="!credentials_granted">
+        <empty_file_editor_placeholder
+          :loading="false"
+          :project_string_id="project_string_id"
+          :title="`Invalid credentials`"
+          :message="`You need more credentials to work on this task.`"
+          :icon="`mdi-account-cancel`"
+          :show_upload="false"
+        ></empty_file_editor_placeholder>
+      </div>
+      <div v-else-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
           class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
@@ -41,13 +57,6 @@
         >
         </sensor_fusion_editor>
       </div>
-      <div v-else-if="!annotation_interface">
-        <empty_file_editor_placeholder
-          :loading="any_loading"
-          :project_string_id="project_string_id"
-        ></empty_file_editor_placeholder>
-      </div>
-
       <file_manager_sheet
         v-show="!loading_project"
         :show_sheet="!loading_project"
@@ -76,6 +85,7 @@
         </v-btn>
       </template>
     </v-snackbar>
+    <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
   </div>
 </template>
 
@@ -85,8 +95,10 @@ import axios from "axios";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
+import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
+import {user_has_credentials} from '../../services/userServices'
 import Vue from "vue";
 
 
@@ -94,6 +106,7 @@ export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    no_credentials_dialog,
     empty_file_editor_placeholder,
     sensor_fusion_editor
   },
@@ -118,6 +131,8 @@ export default Vue.extend({
     return {
       show_snackbar: false,
       enabled_edit_schema: false,
+      user_has_credentials: false,
+      credentials_granted: true,
       initializing: false,
       snackbar_message: "",
       loading: false,
@@ -126,6 +141,7 @@ export default Vue.extend({
       current_file: null,
       request_save: false,
       model_run_id_list: [],
+      missing_credentials: [],
 
       view_only: false,
 
@@ -206,6 +222,11 @@ export default Vue.extend({
     } else {
       if (this.$props.task_id_prop) {
         await this.fetch_single_task(this.$props.task_id_prop);
+        await this.check_credentials();
+        this.credentials_granted = this.has_credentials_or_admin();
+        if(!this.credentials_granted){
+          this.show_missing_credentials_dialog();
+        }
       } else if (this.$props.file_id_prop) {
         await this.fetch_single_file();
       } else {
@@ -285,6 +306,43 @@ export default Vue.extend({
     },
   },
   methods: {
+    show_missing_credentials_dialog: function(){
+      if(this.$refs.no_credentials_dialog){
+        this.$refs.no_credentials_dialog.open()
+      }
+    },
+    has_credentials_or_admin: function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      if( this.$store.state.user.current.is_super_admin){
+        return true
+      }
+      if(this.user_has_credentials){
+        return true
+      }
+      let roles = this.$store.getters.get_project_roles(project_string_id);
+      if(roles.includes('admin')){
+        return true
+      }
+      return false
+    },
+    check_credentials: async function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      let user_id = this.$store.state.user.current.id;
+      let [result, error] = await user_has_credentials(
+        project_string_id,
+        user_id,
+        this.task.job.id,
+
+      )
+      if(error){
+        this.error = this.$route_api_errors(error)
+        return
+      }
+      if(result){
+        this.user_has_credentials = result.has_credentials;
+        this.missing_credentials = result.missing_credentials;
+      }
+    },
     get_model_runs_from_query: function (query) {
       this.model_run_id_list = [];
       this.model_run_color_list = [];

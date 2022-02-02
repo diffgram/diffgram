@@ -374,16 +374,16 @@ export default Vue.extend({
   methods: {
     has_credentials_or_admin: function(){
       let project_string_id = this.$store.state.project.current.project_string_id;
-      // if( this.$store.state.user.current.is_super_admin){
-      //   return true
-      // }
+      if( this.$store.state.user.current.is_super_admin){
+        return true
+      }
       if(this.user_has_credentials){
         return true
       }
       let roles = this.$store.getters.get_project_roles(project_string_id);
-      // if(roles.includes('admin')){
-      //   return true
-      // }
+      if(roles.includes('admin')){
+        return true
+      }
       return false
     },
     show_missing_credentials_dialog: function(){
