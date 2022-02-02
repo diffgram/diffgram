@@ -77,6 +77,7 @@ class Credential(Base):
         )
         return credential
 
+    @staticmethod
     def get_by_user_id(session,
                        user_id,
                        status_is_valid = True):

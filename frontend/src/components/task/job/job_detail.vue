@@ -82,7 +82,7 @@
       </v-btn>
     </div>
 
-    <v-tabs v-model="tab" color="primary" style="height: 100%">
+    <v-tabs v-model="tab" color="primary" style="height: 100%" v-if="has_credentials_or_admin">
       <v-tab v-for="item in items" :key="item.text">
         <v-icon left>{{ item.icon }}</v-icon>
         {{ item.text }}
@@ -254,6 +254,7 @@ import v_job_detail_trainer from "./job_detail_trainer";
 import task_template_discussions from "../../discussions/task_template_discussions";
 import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
+import {user_has_credentials} from '../../../services/userServices'
 import axios from "axios";
 import job_type from "./job_type";
 import stats_panel from "../../stats/stats_panel.vue";
@@ -287,6 +288,8 @@ export default Vue.extend({
       ],
       update_label_file_list: null,
       has_changes: false,
+      user_has_credentials: false,
+      missing_credentials: [],
 
       edit_name: false,
 
@@ -341,6 +344,7 @@ export default Vue.extend({
     if (this.$route.path.endsWith("discussions")) {
       this.tab = 1;
     }
+    this.check_credentials();
     this.reset_local_info();
     this.job_current_watcher = this.$store.watch(
       (state) => {
@@ -351,14 +355,44 @@ export default Vue.extend({
       }
     );
   },
-  computed: {},
+  computed: {
+    has_credentials_or_admin: function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      if( this.$store.state.user.current.is_super_admin){
+        return true
+      }
+      if(this.user_has_credentials){
+        return true
+      }
+      let roles = this.$store.getters.get_project_roles(project_string_id);
+      if(roles.includes('admin')){
+        return true
+      }
+      return false
+    }
+  },
   beforeDestroy() {
     this.job_current_watcher();
   },
-  beforeDestroy() {
-    this.job_current_watcher()
-  },
   methods: {
+    check_credentials: async function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      let user_id = this.$store.state.user.current.id;
+      let [result, error] = await user_has_credentials(
+        project_string_id,
+        user_id,
+        this.job_id,
+
+      )
+      if(error){
+        this.error = this.$route_api_errors(error)
+        return
+      }
+      if(result){
+        this.user_has_credentials = result.has_credentials;
+        this.missing_credentials = result.missing_credentials;
+      }
+    },
     reset_local_info() {
       this.job_name = this.$store.state.job.current.name;
       this.set_document_title();

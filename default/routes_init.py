@@ -157,3 +157,5 @@ def do_routes_importing():
 
 
     from methods.task.exam.exam_pass import exam_pass_api
+
+    from methods.user.user_has_credentials import api_user_has_credentials

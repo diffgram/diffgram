@@ -39,6 +39,7 @@ class Credential_Type_To_Job(Base):
             Credential_Type_To_Job.job_id == job_id,
             Credential_Type_To_Job.credential_type_id == credential_type_id).first()
 
+    @staticmethod
     def get_by_job_id(session,
                       job_id,
                       requires_only = False,
