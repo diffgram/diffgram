@@ -115,6 +115,9 @@
                 icon="mdi-keyboard-settings"
                 :close_by_button="true"
             >
+                <template slot="content">
+                    <text_hotkeys />
+                </template>
             </button_with_menu>
 
             <v-divider vertical></v-divider>
@@ -125,12 +128,14 @@
 
 <script>
 import Vue from 'vue'
+import text_hotkeys from "./text_hotkeys.vue"
 import label_select_annotation from "../label/label_select_annotation.vue"
 
 export default Vue.extend({
     name: "text_toolbar",
     components: {
-        label_select_annotation
+        label_select_annotation,
+        text_hotkeys
     },
     props: {
         undo_disabled: {
