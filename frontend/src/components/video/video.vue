@@ -1051,7 +1051,6 @@ export default Vue.extend( {
     },
 
     video_animation_unit_of_work: function (time_from_animation) {
-
       this.$emit('video_animation_unit_of_work', this.primary_video)
 
       this.update_current_frame_guess()
@@ -1064,7 +1063,10 @@ export default Vue.extend( {
       // integer codes for state...
 
       // must be at end?
-      this.video_animation_start()
+      if(this.playing){
+        this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
+      }
+
     },
 
 	/**
@@ -1093,9 +1095,10 @@ export default Vue.extend( {
 
       if (typeof this.video_current_frame_guess != "undefined") {
         this.get_video_single_image(this.video_current_frame_guess)
+        this.updateFrameUrl(this.video_current_frame_guess);
       }
 
-      this.updateFrameUrl(this.video_current_frame_guess);
+
     },
 
     detect_early_end: function (early_end_time) {
