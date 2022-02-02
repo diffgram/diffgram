@@ -5,6 +5,7 @@ from walrus.methods.text_data.text_tokenizer import TextTokenizer
 from unittest.mock import patch
 from nltk.tokenize import word_tokenize, sent_tokenize
 
+
 class TestTextTokenizer(testing_setup.DiffgramBaseTestCase):
     """
 
@@ -56,10 +57,19 @@ class TestTextTokenizer(testing_setup.DiffgramBaseTestCase):
         # Test NLTK type
         tokenizer = TextTokenizer(type = 'nltk')
         result = tokenizer.tokenize_words(self.text)
-        self.assertEqual(result, ['this', 'is', 'a', 'sentence', '.', 'Hello', 'world', '.'])
+        self.assertEqual(result,
+                         [{'value': 'this', 'tag': ''},
+                          {'value': 'is', 'tag': ''},
+                          {'value': 'a', 'tag': ''},
+                          {'value': 'sentence', 'tag': ''},
+                          {'value': '.', 'tag': ''},
+                          {'value': 'Hello', 'tag': ''},
+                          {'value': 'world', 'tag': ''},
+                          {'value': '.', 'tag': ''}]
+                         )
 
     def test_tokenize_sentences(self):
         # Test NLTK type
         tokenizer = TextTokenizer(type = 'nltk')
         result = tokenizer.tokenize_sentences(self.text)
-        self.assertEqual(result, ['this is a sentence.', 'Hello world.'])
+        self.assertEqual(result, [{'value': 'this is a sentence.', 'tag': ''}, {'value': 'Hello world.', 'tag': ''}])
