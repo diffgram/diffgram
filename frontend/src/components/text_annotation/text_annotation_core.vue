@@ -219,8 +219,9 @@ export default Vue.extend({
             save_loading: false,
         }
     },
-    async mounted() {
+    mounted() {
         this.on_mount()
+        this.start_autosave()
     },
     computed: {
         render_rects: function() {
@@ -263,12 +264,6 @@ export default Vue.extend({
         }
     },
     watch: {
-        has_changed: async function(newValue) {
-            if (newValue) {
-                this.has_changed = false;
-                this.save()
-            }
-        },
         file: function(newValue) {
             this.rendering = true
             this.instance_list = [];
@@ -280,6 +275,17 @@ export default Vue.extend({
         }
     },
     methods: {
+        start_autosave: function () {
+            this.interval_autosave = setInterval(
+                this.detect_is_ok_to_save,
+                15 * 1000
+            );
+        },
+        detect_is_ok_to_save: async function () {
+            if (this.has_changed) {
+                await this.save();
+            }
+        },
         on_draw_text_token: function() {
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
@@ -362,7 +368,7 @@ export default Vue.extend({
             this.instance_list.push(created_instance)
             const command = new CreateInstanceCommand(created_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
@@ -412,7 +418,7 @@ export default Vue.extend({
                 this.instance_list.push(created_instance)
                 const command = new CreateInstanceCommand(created_instance, this)
                 this.command_manager.executeCommand(command)
-                await this.save()
+                this.has_changed = true
             }
             this.instance_in_progress = null
             if (window.getSelection) {
@@ -453,7 +459,7 @@ export default Vue.extend({
             const instance_index = this.instance_list.indexOf(event.instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
         },
         delete_instance: async function(instance) {
             const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
@@ -480,7 +486,7 @@ export default Vue.extend({
             const instance_index = this.instance_list.indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
-            await this.save()
+            this.has_changed = true
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
@@ -508,6 +514,7 @@ export default Vue.extend({
             })
         },
         save: async function (index = null) {
+            this.has_changed = false
             this.save_loading = true
             const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
             added_instances.map(add_insatnce => {
