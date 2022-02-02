@@ -287,11 +287,13 @@ export default Vue.extend({
             }
         },
         on_draw_text_token: function() {
+            if (this.instance_in_progress && this.instance_in_progress.type === "type") return 
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
             const end_token_id = parseInt(selection.focusNode.parentNode.id)
             this.on_start_draw_instance(start_token_id)
             this.on_finish_draw_instance(end_token_id)
+            this.instance_in_progress = null
         },
         on_mount: async function() {
             const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
@@ -521,6 +523,9 @@ export default Vue.extend({
                 if (!index) {
                     const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
                     this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                    if (this.instance_in_progress) {
+                        this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
+                    }
                     this.instance_list
                         .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
                         .map(instance => {
