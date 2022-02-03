@@ -1036,7 +1036,9 @@ export default Vue.extend( {
       window.cancelAnimationFrame(this.animation_request)
 
     },
-
+    video_animation_start: function(){
+      this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
+    },
     video_animation_unit_of_work: function (time_from_animation) {
       this.$emit('video_animation_unit_of_work', this.primary_video)
 
