@@ -44,10 +44,10 @@ report_spec_list = [
         'required': False
     }
     },
-    {'base_class_string': {
+    {'item_of_interest': {
         'kind': str,
         'required': True,
-        'valid_values_list': ['instance', 'file', 'event', 'task']
+        'valid_values_list': ['instance', 'file', 'event', 'task', 'time_spent_task']
     }
     },
 
@@ -182,7 +182,7 @@ class Report_Runner():
         since query will be called so often
 
 
-    base_class_string may come from report id
+    item_of_interest may come from report id
 
     report_template_id instead of id because they may be other
     id's or say an instance of a report that we interact with
@@ -238,9 +238,9 @@ class Report_Runner():
             self.metadata['member_list'] = member_ids
 
     @staticmethod
-    def string_to_class(base_class_string: str):
+    def string_to_class(item_of_interest: str):
         """
-        We assume that base_class_string has been
+        We assume that item_of_interest has been
         converted to lower case already here
 
         more general approach - more scale
@@ -253,10 +253,11 @@ class Report_Runner():
             'user': User,
             'file': File,
             'task': Task,
-            'event': Event
+            'event': Event,
+            'time_spent_task': 'custom_report'
         }
 
-        return class_dict.get(base_class_string)
+        return class_dict.get(item_of_interest)
 
     def get_existing_report_template(self, report_template_id):
         """
@@ -386,34 +387,33 @@ class Report_Runner():
         labelled differently but have different meanings?
 
         This uses self because it's only relevant if
-        both base_class_string and base_class are created?
+        both item_of_interest and base_class are created?
 
         """
         # Time Created
-        if self.base_class_string in ['user', 'instance', 'file']:
+        if self.item_of_interest in ['user', 'instance', 'file']:
             self.time_created = self.base_class.created_time
 
-        if self.base_class_string in ['task', 'event']:
+        if self.item_of_interest in ['task', 'event']:
             self.time_created = self.base_class.time_created
 
-        if self.base_class_string in ['file']:
+        if self.item_of_interest in ['file']:
             self.label_file_id = self.base_class.id
 
-        if self.base_class_string in ['instance']:
+        if self.item_of_interest in ['instance']:
             self.label_file_id = self.base_class.label_file_id
 
         # Task ID
-        if self.base_class_string in ['task']:
+        if self.item_of_interest in ['task']:
             self.base_class.task_id = self.base_class.id
         # Member Created
-        if self.base_class_string in ['instance', 'file']:
+        if self.item_of_interest in ['instance', 'file']:
             self.member_created = self.base_class.member_created
 
     # self.log['internal'] = 'Ran normalize_class_defintions'
 
     def execute_query(self,
                       view_type: str = None):
-
 
         q = self.query
         # Uncomment for performance debugging
@@ -424,7 +424,7 @@ class Report_Runner():
         #     print(x)
         result = q.all()
         return result
-    
+
     def apply_permission_scope_to_query(self):
         """
         Other stuff is in context of "does user have permission to run report"
@@ -439,17 +439,13 @@ class Report_Runner():
             self.query = self.query.filter(
                 self.base_class.project_id == self.project.id)
 
-    def run(self):
+    def generate_standard_report(self):
         """
-        Sets base class.
-            I don't think we should have to call "update" in order to run it
-
-        Assumes other values needed are set or loaded from existing???
+            Logic for standard reports. This is for reports can be directly generated from single table queries.
+            No need to combine, join or aggregate data. This applies for item of interest like:
+            -
+        :return:
         """
-        self.init_base_class_object(self.report_template.base_class_string)
-
-        assert self.base_class is not None
-
         init_query = self.get_init_operation(group_by = self.report_template.group_by)
 
         self.query = init_query()
@@ -503,7 +499,6 @@ class Report_Runner():
         elif self.report_template.group_by == 'task_status':
             self.query = self.query.group_by(self.base_class.status)
 
-
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
         stats = self.format_for_external(self.results)
@@ -517,6 +512,26 @@ class Report_Runner():
             report_template_data = self.report_template.serialize(),
             success = True
         )
+        return self.results
+
+    def generate_custom_report(self):
+        raise NotImplementedError
+
+    def run(self):
+        """
+        Sets base class.
+            I don't think we should have to call "update" in order to run it
+
+        Assumes other values needed are set or loaded from existing???
+        """
+        self.init_base_class_object(self.report_template.item_of_interest)
+
+        assert self.base_class is not None
+
+        if self.base_class == 'custom_report':
+            self.results = self.generate_custom_report()
+        else:
+            self.results = self.generate_standard_report()
 
         return self.results
 
@@ -600,13 +615,13 @@ class Report_Runner():
 
         return metadata
 
-    def init_base_class_object(self, base_class_string: str):
-        if base_class_string:
-            self.base_class_string = base_class_string
-            self.base_class = self.string_to_class(base_class_string)
+    def init_base_class_object(self, item_of_interest: str):
+        if item_of_interest:
+            self.item_of_interest = item_of_interest
+            self.base_class = self.string_to_class(item_of_interest)
             self.normalize_class_defintions()
         else:
-            self.log['error']['base_class_string'] = "base_class_string is None"
+            self.log['error']['item_of_interest'] = "item_of_interest is None"
 
     def __filter_soft_delete_instances(self):
 
@@ -616,7 +631,7 @@ class Report_Runner():
 
         if self.base_class == Instance:
             self.__filter_soft_delete_instances()
-            
+
         if self.report_template.task_id:
             self.query = self.__filter_by_task(
                 query = self.query,
@@ -639,15 +654,15 @@ class Report_Runner():
                          task_id: int):
 
         # TODO: Add suport or remove from UI the task filter when base class is Task
-        if self.base_class_string in ['task']:
-            logger.warning('No filter supported for task_id. base_class_string is {}'.format(self.base_class_string))
+        if self.item_of_interest in ['task']:
+            logger.warning('No filter supported for task_id. item_of_interest is {}'.format(self.item_of_interest))
             return query
         return query.filter(self.base_class.task_id == task_id)
 
     def filter_by_member_list(self, member_list: list):
         # For now we can't add filters to task object as base class string. Might need to add member_created to task.
         # We added a join here, can discuss other ways of doing it if this is not convincing.
-        if self.base_class_string in ['task']:
+        if self.item_of_interest in ['task']:
             self.query = self.query.join(Member, self.base_class.assignee_user_id == Member.user_id).filter(
                 Member.id.in_(member_list)
             )
@@ -660,7 +675,7 @@ class Report_Runner():
         """
 
         # TODO: Add suport or remove from UI the task filter when base class is Instance
-        if self.base_class_string in ['instance']:
+        if self.item_of_interest in ['instance']:
             tasks_in_job = self.session.query(Task).filter(Task.job_id == job_id).all()
             task_id_list = [x.id for x in tasks_in_job]
             self.query = self.query.filter(self.base_class.task_id.in_(task_id_list))
@@ -671,7 +686,7 @@ class Report_Runner():
         """
         label_file_id_list: List of ints ids
         """
-        if self.base_class_string == 'task':
+        if self.item_of_interest == 'task':
             self.query = self.query.filter(
                 self.base_class.file_id.in_(label_file_id_list))
 
@@ -733,9 +748,9 @@ class Report_Runner():
 
         # We assume to store this in lower case because then
         # front end can easily show an upper case value
-        self.report_template.base_class_string = metadata.get('base_class_string').lower()
+        self.report_template.item_of_interest = metadata.get('item_of_interest').lower()
 
-        self.init_base_class_object(self.report_template.base_class_string)
+        self.init_base_class_object(self.report_template.item_of_interest)
 
         self.report_template.archived = metadata.get('archived')
         self.report_template.is_visible_on_report_dashboard = metadata.get('is_visible_on_report_dashboard')
@@ -762,14 +777,6 @@ class Report_Runner():
 
         self.report_template.filter_by_items['label_file_id_list'] = metadata.get(
             'label_file_id_list')
-
-    # directory_id_list not implemented yet
-    # self.report_template.filter_by_items['directory_id_list'] =  metadata.get(
-    #	'directory_id_list')
-
-    # This should probably be somewhere else
-    # self.report_template.lists['emails_to_send_to'] =  metadata.get(
-    #	'emails_to_send_to')
 
     def update_dashboard(
         self,
@@ -943,7 +950,6 @@ class Report_Runner():
         query = self.session.query(self.base_class.status, func.count(self.base_class.id))
         return query
 
-
     def group_by_date(self):
         """
         Assumes everything is set,
@@ -968,7 +974,8 @@ class Report_Runner():
 
     def group_by_file(self):
         if self.report_template.group_by_labels:
-            query = self.session.query(self.base_class.file_id, self.base_class.label_file_id, func.count(self.base_class.id))
+            query = self.session.query(self.base_class.file_id, self.base_class.label_file_id,
+                                       func.count(self.base_class.id))
             query = query.filter()
         else:
             query = self.session.query(self.base_class.file_id, func.count(self.base_class.id))
@@ -978,8 +985,7 @@ class Report_Runner():
     def group_by_task(self):
         """
         """
-        query = self.session.query(self.base_class.task_id,
-                                   func.count(self.base_class.id))
+        query = self.session.query(self.base_class.task_id, func.count(self.base_class.id))
         return query
 
     def group_by_user(self):
@@ -991,9 +997,9 @@ class Report_Runner():
         # normalize member_id
         self.member_id_normalized = None
 
-        if self.base_class_string in ["instance", "file"]:
+        if self.item_of_interest in ["instance", "file"]:
             self.member_id_normalized = self.base_class.member_created_id
-        elif self.base_class_string == "event":
+        elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
 
         # Task has assignee_user_id instead of member id...
@@ -1041,7 +1047,6 @@ class Report_Runner():
         if self.report_template.group_by_labels:
             # Get colour map for bars colors
             label_colour_map = self.project.directory_default.label_file_colour_map
-
 
         if self.report_template.view_type == "count":
 
@@ -1099,7 +1104,6 @@ class Report_Runner():
             # This assumes values is a list of ints
             # like [2000, 456, 123]
             count = sum(values)
-
 
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
 
