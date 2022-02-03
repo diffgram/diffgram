@@ -52,7 +52,7 @@
     "quaternion": "^1.1.0",
     "sillyname": "^0.1.0",
     "sortablejs": "^1.12.0",
-    "three": "0.132.2",
+    "three": "0.137.0",
     "three-full": "^28.0.2",
     "tiptap": "^1.30.0",
     "tiptap-extensions": "^1.33.2",
