@@ -22,9 +22,11 @@
             <h1>You Will Get The Following Awards: </h1>
             <div class="d-flex flex-wrap justify-center mt-4 mb-4 pa-4" style="border: 1px solid #e0e0e0">
               <credential_badge
+                v-if="awarded_credentials_list.length > 0"
                 v-for="credential in awarded_credentials_list"
                 :credential="credential">
               </credential_badge>
+              <h2 v-else>No credentials awarded by this exam.</h2>
 
 
             </div>
@@ -36,12 +38,14 @@
           </v-card>
         </v-tab-item>
         <v-tab-item>
-          <v-tab-item>
             <task_template_discussions
               :project_string_id="$store.state.project.current.project_string_id"
               :task_template_id="exam_id"
             ></task_template_discussions>
-          </v-tab-item>
+
+        </v-tab-item>
+        <v-tab-item>
+          <guide_display :guide="exam.guide"></guide_display>
 
         </v-tab-item>
       </v-tabs-items>
@@ -51,6 +55,8 @@
 
 <script lang="ts">
 import credential_badge from '../task/credential/credential_badge'
+import guide_display from '../task/guide/guide_display'
+import task_template_discussions from '../discussions/task_template_discussions'
 import exam_detail_header from './exam_detail_header'
 import axios from "axios";
 import {exam_start_apply} from '../../services/examsService'
@@ -58,10 +64,12 @@ import {get_task_template_details, get_task_template_credentials} from '../../se
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "exam_template_detail",
+  name: "exam_template_detail_annotator",
   props: ["exam_id", "exam"],
   components: {
     exam_detail_header,
+    guide_display,
+    task_template_discussions,
     credential_badge
   },
   data() {
@@ -70,7 +78,7 @@ export default Vue.extend({
       items: [
         { text: "Apply", icon: "mdi-view-dashboard" },
         { text: "Discussions", icon: "mdi-comment-multiple" },
-        { text: "Guide", icon: "mdi-book" },
+        { text: "Instructions / Guide", icon: "mdi-book" },
       ],
       update_label_file_list: null,
       credentials_list: [],
@@ -99,7 +107,7 @@ export default Vue.extend({
   },
   computed: {
     awarded_credentials_list: function(){
-      return this.credentials_list
+      return this.credentials_list.filter(elm => elm.kind === 'awards')
     }
   },
   methods: {

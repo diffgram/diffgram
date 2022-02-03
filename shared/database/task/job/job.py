@@ -744,10 +744,15 @@ class Job(Base, Caching):
         if self.exam:
             exam = self.exam.serialize()
 
+        guide = None
+        if self.guide_default_id:
+            guide = self.guide_default.serialize_for_trainer()
+
         return {
             'id': self.id,
             'name': self.name,
             'exam': exam,
+            'guide': guide,
             'type': self.type,
             'ui_schema_id': self.ui_schema_id,
             'share_type': self.share_type,

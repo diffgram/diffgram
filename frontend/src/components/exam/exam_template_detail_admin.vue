@@ -44,6 +44,10 @@
         </v-tab-item>
 
         <v-tab-item>
+          <guide_display :guide="exam.guide"></guide_display>
+
+        </v-tab-item>
+        <v-tab-item>
           <!-- Settings -->
           <v_info_multiple :info="info"> </v_info_multiple>
 
@@ -71,6 +75,7 @@
 <script lang="ts">
 import job_details_label_schema_section from "../task/job/job_detail_labels_schema_section";
 import job_cancel_actions_button_container from "../task/job/job_cancel_actions_button_container";
+import guide_display from "../task/guide/guide_display";
 import task_template_discussions from "../discussions/task_template_discussions";
 import exam_child_list from "../exam/exam_child_list";
 import exam_detail_header from "../exam/exam_detail_header";
@@ -90,6 +95,7 @@ export default Vue.extend({
     Exam_child_list,
     Exam_results,
     job_details_label_schema_section,
+    guide_display,
     job_cancel_actions_button_container,
     task_template_discussions,
     exam_detail_header,
@@ -104,6 +110,7 @@ export default Vue.extend({
         { text: "Exam Results", icon: "mdi-view-dashboard" },
         { text: "Discussions", icon: "mdi-comment-multiple" },
         { text: "Schema", icon: "mdi-format-paint" },
+        { text: "Instructions / Guide", icon: "mdi-book" },
         { text: "Settings", icon: "mdi-cog" },
       ],
       update_label_file_list: null,

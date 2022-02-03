@@ -93,6 +93,7 @@ def user_has_credentials_core(session: object,
         requires_only = True
     )
 
+    print('REQURIEDD', required_credentials_rels)
     required_credentials = [x.credential_type for x in required_credentials_rels]
 
     missing_credentials = []

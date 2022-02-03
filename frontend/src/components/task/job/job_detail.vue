@@ -381,7 +381,7 @@ export default Vue.extend({
         return true
       }
       let roles = this.$store.getters.get_project_roles(project_string_id);
-      if(roles.includes('admin')){
+      if(roles && roles.includes('admin')){
         return true
       }
       return false
