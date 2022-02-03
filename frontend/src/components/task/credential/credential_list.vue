@@ -5,6 +5,7 @@
       <div v-if="['job_edit', 'direct_route'].includes(mode_options)">
         <v-layout class="d-flex justify-lg-space-between">
             <button_with_menu
+              datacy="open-create-credential"
               tooltip_message="Add"
               button_text="Create Credential"
               icon_color="white"
@@ -32,6 +33,7 @@
           <div>
             <v-btn @click="credential_list_api"
                    :loading="loading"
+                   data-cy="refresh-credentials"
                    class="pr-6"
                    color="primary"
                    outlined
@@ -58,6 +60,8 @@
 
               <v-btn @click="attach_selected('awards', 'add')"
                      dark
+
+                     data-cy="grants-button"
                      v-if="allow_awards"
                      class="mr-4"
                      :disabled="loading || this.selected.length === 0"
@@ -68,6 +72,7 @@
 
               <v-btn @click="attach_selected('requires', 'add')"
                      dark
+                     data-cy="requires-button"
                      class="mr-4"
                      :disabled="loading || this.selected.length === 0"
                      color="warning">
@@ -77,6 +82,8 @@
 
               <v-btn @click="attach_selected('remove', 'remove')"
                      dark
+
+                     data-cy="clear-button"
                      :disabled="loading || this.selected.length === 0"
                      color="error">
                 Clear
@@ -125,7 +132,7 @@
             <v-flex xs4 md1 v-for="(item, index) in credential_list" :key="index">
 
 
-              <div v-if="item.status == 'active'">
+              <div v-if="item.status == 'active'" >
 
                 <v-badge color="primary">
                   <v-icon dark slot="badge">check</v-icon>
@@ -247,6 +254,7 @@
 
               <td v-if="['job_edit'].includes(mode_options)">
                 <v-checkbox v-model="props.isSelected"
+                            :data-cy="`credential-checkbox-${props.index}`"
                             @change="props.select($event)"
                             primary>
                 </v-checkbox>

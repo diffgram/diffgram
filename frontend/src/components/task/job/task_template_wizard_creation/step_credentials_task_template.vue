@@ -2,7 +2,7 @@
   <v-container fluid data-cy="task-template-credentials-step" v-if="job">
     <div class="d-flex flex-column mb-8 justify-space-between">
       <div class="d-flex flex-column">
-        <h2 class="font-weight-medium text--primary mr-4" data-cy="task-template-advanced-options-step-title">
+        <h2 class="font-weight-medium text--primary mr-4" data-cy="credentials-step-title">
           Credentials:
         </h2>
         <p>Select the credentials and click Require/Award in order to require or award them.</p>

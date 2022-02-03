@@ -31,6 +31,7 @@
             </v-text-field>
 
              <v-btn v-if="mode=='new'"
+                    data-cy="create-credential-button"
                    @click="new_credential_type_api"
                    :loading="loading"
                    :disabled="loading"
