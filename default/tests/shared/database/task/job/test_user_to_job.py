@@ -86,12 +86,21 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(result, [job.id])
 
     def test_get_all_by_user_id(self):
+        self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
+        self.member = self.auth_api.member
+        self.member.user = data_mocking.register_user({
+            'username': 'test_user2',
+            'email': 'test2@test.com',
+            'password': 'diffgram1223',
+            'project_string_id': 'myproject',
+            'member_id': self.member.id
+        }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': 'my-test22-job-{}'.format(1),
             'project': self.project
         }, self.session)
         job2 = data_mocking.create_job({
-            'name': 'my2-test-job-{}'.format(1),
+            'name': 'my2-tes22t-job-{}'.format(1),
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -109,9 +118,12 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
         res_list = [user_to_job, user_to_job2]
         result = User_To_Job.get_all_by_user_id(self.session, self.member.user_id, True)
+        for x in result:
+            print(x.job.name, x.user_id)
 
-        for elm in result:
-            self.assertTrue(elm in res_list)
+        for elm in res_list:
+
+            self.assertTrue(elm in result)
 
     def test_get_single_by_ids(self):
         job = data_mocking.create_job({
