@@ -89,7 +89,7 @@ class TestTaskTimeTracking(testing_setup.DiffgramBaseTestCase):
             status_record = record
         )
         self.assertNotEqual(record.time_spent, global_record.time_spent)
-        self.assertNotEqual(record.time_spent + record2.time_spent, global_record.time_spent)
+        self.assertEqual(record.time_spent + record2.time_spent, global_record.time_spent)
     #
     # def test_new(self):
     #     job = data_mocking.create_job({

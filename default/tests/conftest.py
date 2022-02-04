@@ -39,5 +39,5 @@ def pytest_configure(config):
 def pytest_unconfigure(config):
     if not config.getoption('--keep-db'):
         print('Destroying database: {}'.format(settings.DATABASE_URL))
-        drop_database(settings.DATABASE_URL)
+        # drop_database(settings.DATABASE_URL)
 

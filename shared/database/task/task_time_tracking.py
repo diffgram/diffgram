@@ -35,7 +35,7 @@ class TaskTimeTracking(Base, SerializerMixin):
     parent_file = relationship("File", foreign_keys = [parent_file_id])
 
     # This includes all the task statuses + "before_complete", "after_complete", "
-    status = Column(String, nullable = True)
+    status = Column(String, nullable = True, default = None)
 
     user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User", foreign_keys = [user_id])
@@ -112,12 +112,13 @@ class TaskTimeTracking(Base, SerializerMixin):
             TaskTimeTracking.user_id == user_id,
             TaskTimeTracking.file_id == file_id,
             TaskTimeTracking.parent_file_id == parent_file_id,
-            TaskTimeTracking.status is None,
+            TaskTimeTracking.status.is_(None)
         ).first()
 
+        existing_global_record = True
         if time_track_record_global is None:
             # Create new Record
-            logger.info('New Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
+            logger.info('New Global Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
             time_track_record_global = TaskTimeTracking(
                 job_id = job_id,
                 task_id = task_id,
@@ -125,12 +126,16 @@ class TaskTimeTracking(Base, SerializerMixin):
                 project_id = project_id,
                 time_spent = time_spent,
                 parent_file_id = parent_file_id,
-                file_id = file_id
+                file_id = file_id,
             )
+            existing_global_record = False
             if add_to_session:
                 session.add(time_track_record_global)
 
+
+        existing_status_record = True
         if time_track_record is None:
+            logger.info('New Status Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
             # Create a status specific record
             time_track_record = TaskTimeTracking(
                 job_id = job_id,
@@ -142,22 +147,25 @@ class TaskTimeTracking(Base, SerializerMixin):
                 file_id = file_id,
                 status = status
             )
+            existing_status_record = False
             if add_to_session:
                 session.add(time_track_record)
-            return time_track_record
-        else:
+
+        if existing_global_record or existing_status_record:
             # Update Record
             logger.info('Update Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
             old_global_time = time_track_record_global.time_spent
-            old_status_time = time_track_record.time_spent
             if old_global_time < time_spent:
                 new_time_spent_delta = time_spent - old_global_time
                 # We replace the global time with the new time
                 time_track_record_global.time_spent = time_spent
-                # We add the delta time to the give status record.
-                time_track_record.time_spent += new_time_spent_delta
-
+                if existing_status_record:
+                    # We add the delta time to the give status record.
+                    time_track_record.time_spent += new_time_spent_delta
+                else:
+                    time_track_record.time_spent = new_time_spent_delta
         if add_to_session:
+            session.add(time_track_record_global)
             session.add(time_track_record)
         if flush_session:
             session.flush()
