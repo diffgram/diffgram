@@ -529,8 +529,6 @@ class Annotation_Update():
             logger.error('Instance list is: {}'.format(self.instance_list_new))
             return self.return_orginal_file_type()
 
-
-
         self.update_file_hash()
 
         self.left_over_instance_deletion()
@@ -697,11 +695,12 @@ class Annotation_Update():
             instance.hash_instance()
             new_hash = instance.hash
             if prev_hash != new_hash:
-                logger.info('Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
-                    instance.id,
-                    prev_hash,
-                    new_hash
-                ))
+                logger.info(
+                    'Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+                        instance.id,
+                        prev_hash,
+                        new_hash
+                    ))
                 self.system_upgrade_hash_changes.append([prev_hash, new_hash])
                 self.session.add(instance)
             result.append(instance)
@@ -758,7 +757,6 @@ class Annotation_Update():
 
         assert self.allowed_label_file_id_list is not None
 
-
     def validate_label_file_id(self):
         """
 
@@ -771,7 +769,6 @@ class Annotation_Update():
         self.log['error']['valid_label_file'] = "Permission issue with " + \
                                                 str(self.instance.label_file_id) + " label_file_id."
         return False
-
 
     def init_video_input(self):
 
@@ -1014,7 +1011,7 @@ class Annotation_Update():
                         elm['label_file_id']['required'] = False
 
             if self.instance_proposed.get('type') == 'global':
-                self.instance_proposed['label_file_id'] = -1    # to bypass check
+                self.instance_proposed['label_file_id'] = -1  # to bypass check
 
             self.log, input = regular_input.input_check_many(
                 spec_list = self.per_instance_spec_list,
@@ -1386,7 +1383,6 @@ class Annotation_Update():
 
         self.deduct_spatial_coordinates()
 
-
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
             return False
@@ -1473,6 +1469,7 @@ class Annotation_Update():
             self.instance.y_min = int(min_coords[1])
             self.instance.x_max = int(max_coords[0])
             self.instance.y_max = int(max_coords[1])
+
     def find_serialized_instance_index(self, id):
         for i in range(0, len(self.instance_list_kept_serialized)):
             instance = self.instance_list_kept_serialized[i]
@@ -1617,6 +1614,7 @@ class Annotation_Update():
         if self.instance.type != 'relation':
             return
 
+        print('AAAAAA', self.instance.id, from_id, to_id, from_ref, to_ref)
         if from_id is None and not from_ref:
             self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
             return
@@ -1626,10 +1624,8 @@ class Annotation_Update():
             return
         if from_id is None or to_id is None:
             self.new_instance_relations_list_no_ids.append({'instance': self.instance,
-                                                          'from_ref': from_ref,
-                                                          'to_ref': to_ref})
-
-
+                                                            'from_ref': from_ref,
+                                                            'to_ref': to_ref})
 
     def instance_limits(self, validate_label_file = True):
         """
@@ -2013,6 +2009,7 @@ class Annotation_Update():
         for index, item in enumerate(self.instance_list_existing):
             self.hash_list.append(item.hash)
             self.hash_old_cross_reference[item.hash] = index
+
     # Would be curious to have this as like a "log level" or something
 
     def left_over_instance_deletion(self):
