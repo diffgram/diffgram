@@ -409,7 +409,9 @@ class DiffgramDataMocker:
         return files
 
     def __create_sample_task_template(self, name, project, reviews, member = None):
-        user = User.get_by_member_id(self.session, member_id = member.id)
+        user = None
+        if member:
+            user = User.get_by_member_id(self.session, member_id = member.id)
         task_template = Job()
         task_template.name = name
         task_template.permission = 'all_secure_users'
@@ -426,8 +428,9 @@ class DiffgramDataMocker:
         task_template.label_dict = {
             'label_file_list': [x.serialize_with_label_and_colour(self.session)['id'] for x in label_files]
         }
-        task_template.update_reviewer_list(session = self.session, reviewer_list_ids = [user.id], log = regular_log.default())
-        task_template.update_member_list(session = self.session, member_list_ids = [user.id], log = regular_log.default())
+        if user:
+            task_template.update_reviewer_list(session = self.session, reviewer_list_ids = [user.id], log = regular_log.default())
+            task_template.update_member_list(session = self.session, member_list_ids = [user.id], log = regular_log.default())
 
         task_template.status = 'active'
         self.session.add(task_template)
