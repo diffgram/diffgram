@@ -1613,7 +1613,7 @@ class Annotation_Update():
             return
 
         if to_id is None and not to_ref:
-            self.log['error']['to_id'] = 'Provide from_instance_id or from_creation_ref'
+            self.log['error']['to_id'] = 'Provide to_instance_id or to_creation_ref'
             return
         if from_id is None or to_id is None:
             self.new_instance_relations_list_no_ids.append({'instance': self.instance,
