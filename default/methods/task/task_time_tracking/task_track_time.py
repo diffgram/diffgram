@@ -5,9 +5,10 @@ except:
     from default.methods.regular.regular_api import *
 from shared.database.discussion.discussion import Discussion
 from shared.database.discussion.discussion_comment import DiscussionComment
+from shared.database.task.task_time_tracking import TaskTimeTracking
 
 
-@routes.route('/api/v1/task/<int:task_id>', methods = ['POST'])
+@routes.route('/api/v1/task/<int:task_id>/track-time', methods = ['POST'])
 @Permission_Task.by_task_id(apis_user_list = ["builder_or_trainer"])
 def api_task_track_time(task_id):
     """
@@ -21,22 +22,22 @@ def api_task_track_time(task_id):
             'kind': float,
             "required": True
         }},
-        {"task_status": {
+        {"status": {
             'kind': str,
+            "required": True
+        }},
+        {"job_id": {
+            'kind': int,
             "required": True
         }},
         {"file_id": {
-            'kind': str,
+            'kind': int,
             "required": True
         }},
         {"parent_file_id": {
-            'kind': str,
+            'kind': int,
             "required": True
-        }},
-        {"file_type": {
-            'kind': str,
-            "required": True
-        }},
+        }}
     ]
 
     log, input, untrusted_input = regular_input.master(
@@ -51,14 +52,14 @@ def api_task_track_time(task_id):
         project = Project.get_by_string_id(session, task_id)
         user = User.get(session)
 
-        comments_data, log = track_time_core(
+        time_track_record, log = track_time_core(
             session = session,
             project = project,
             task_id = task_id,
-            task_status = input['task_status'],
+            status = input['status'],
             file_id = input['file_id'],
             parent_file_id = input['parent_file_id'],
-            file_type = input['file_type'],
+            job_id = input['job_id'],
             user = user,
             log = log,
 
@@ -66,16 +67,16 @@ def api_task_track_time(task_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
-        return jsonify(comments = comments_data), 200
+        return jsonify(time_track_record), 200
 
 
 def track_time_core(session,
                     project,
                     task_id,
-                    task_status,
+                    status,
+                    job_id,
                     file_id,
                     parent_file_id,
-                    file_type,
                     user,
                     log = regular_log.default()):
     """
@@ -94,6 +95,15 @@ def track_time_core(session,
     :param log:
     :return:
     """
+    record = TaskTimeTracking.new_or_update(
+        session = session,
+        project_id = project.id,
+        task_id = task_id,
+        status = status,
+        file_id = file_id,
+        parent_file_id = parent_file_id,
+        job_id = job_id,
+        user_id = user.id
+    )
 
-
-    return None, log
+    return record.serialize(), log

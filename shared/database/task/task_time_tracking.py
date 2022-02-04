@@ -132,7 +132,6 @@ class TaskTimeTracking(Base, SerializerMixin):
             if add_to_session:
                 session.add(time_track_record_global)
 
-
         existing_status_record = True
         if time_track_record is None:
             logger.info('New Status Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
@@ -171,3 +170,14 @@ class TaskTimeTracking(Base, SerializerMixin):
             session.flush()
 
         return time_track_record
+
+    def serialize(self):
+        data = self.to_dict(rules = (
+            '-project',
+            '-user',
+            '-job',
+            '-task',
+            '-file',
+            '-parent_file'))
+
+        return data
