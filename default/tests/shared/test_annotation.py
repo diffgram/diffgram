@@ -1704,3 +1704,72 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(relation.from_instance_id, instance1.id)
         self.assertEqual(relation.to_instance_id, instance2.id)
         self.assertNotEqual(old_hash, relation.hash)
+
+    def test_create_relation_no_ids(self):
+        """
+            Tests creating a relations with no IDS and only ref ids on the payload.
+        :return:
+        """
+        file1 = data_mocking.create_file({'project_id': self.project.id, 'type': 'image'}, self.session)
+        frame = data_mocking.create_file(
+            {'project_id': self.project.id, 'type': 'frame', 'video_parent_file_id': file1.id, 'frame_number': 5},
+            self.session)
+        label_file = data_mocking.create_file({'project_id': self.project.id, 'type': 'label'}, self.session)
+        self.project.label_dict['label_file_id_list'] = [label_file.id]
+
+        instance_list = [
+            {
+                "id": None,
+                "creation_ref_id": "b246ba1b-07fa-4680-9398-de7d323ee650",
+                "label_file_id": label_file.id,
+                "selected": False,
+                "type": "text_token",
+                "points": [],
+                "soft_delete": False,
+                "start_token": 72,
+                "end_token": 72,
+                "initialized": True,
+                "text_tokenizer": "nltk"
+            },
+            {
+                "id": None,
+                "creation_ref_id": "221eea70-e0ba-433a-a5c5-851213b6ae66",
+                "label_file_id": label_file.id,
+                "type": "text_token",
+                "points": [],
+                "soft_delete": False,
+                "start_token": 76,
+                "end_token": 76,
+                "initialized": True,
+                "text_tokenizer": "nltk"
+            },
+            {
+                "id": None,
+                "creation_ref_id": "bb32076e-91bd-4d70-ac57-c1c115e6e43b",
+                "label_file_id": label_file.id,
+                "selected": False,
+                "number": None,
+                "type": "relation",
+                "points": [],
+                "sequence_id": None,
+                "soft_delete": False,
+                "from_instance_id": None,
+                "to_instance_id": None,
+                "initialized": True,
+                "text_tokenizer": "nltk",
+                "from_creation_ref": "b246ba1b-07fa-4680-9398-de7d323ee650",
+                "to_creation_ref": "221eea70-e0ba-433a-a5c5-851213b6ae66"
+            }
+        ]
+
+        ann_update = Annotation_Update(
+            session = self.session,
+            project = self.project,
+            instance_list_new = instance_list,
+            file = file1,
+            do_init_existing_instances = True
+        )
+
+        ann_update.main()
+
+        self.assertEqual(len(ann_update.log['error'].keys()), 0)

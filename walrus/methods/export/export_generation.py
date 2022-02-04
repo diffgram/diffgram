@@ -336,7 +336,6 @@ def build_attribute_groups_reference(session: 'Session', project: Project):
     group_list = Attribute_Template_Group.list(
         session = session,
         group_id = None,
-        mode = "from_project",
         project_id = project.id,
         return_kind = "objects"
     )
@@ -387,6 +386,16 @@ def build_video_packet(file, session):
         project = file.project,
         session = session)
 
+    # For global Attributes
+    parent_instance_list = Instance.list(
+        session = session,
+        file_id = file.id,
+        limit = None
+    )
+    parent_instance_list_serialized = []
+    for inst in parent_instance_list:
+        parent_instance_list_serialized.append(build_instance(inst))
+
     # Context of making it easier to inspect and download media
     mp4_video_signed_url = file.video.file_signed_url
 
@@ -432,18 +441,19 @@ def build_video_packet(file, session):
 
     # Could also include the "keyframes" thing.
 
-    return {'file': {
-        'id': file.id,
-        'original_filename': file.original_filename,
-        'blob_url': mp4_video_signed_url,
-        'created_time': str(file.created_time),
-        'ann_is_complete': file.ann_is_complete,
-        'type': file.type
-        # note str() otherwise get "non serializeable"
-
-    },
+    return {
+        'file': {
+            'id': file.id,
+            'original_filename': file.original_filename,
+            'blob_url': mp4_video_signed_url,
+            'created_time': str(file.created_time),
+            'ann_is_complete': file.ann_is_complete,
+            'type': file.type
+        },
         'video': video_dict,
-        'sequence_list': sequence_list_serialized}
+        'parent_instance_list': parent_instance_list_serialized,
+        'sequence_list': sequence_list_serialized
+    }
 
 
 def build_image_packet(

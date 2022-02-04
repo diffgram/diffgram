@@ -177,6 +177,8 @@ class Instance(Base):
     from_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
     to_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
 
+    text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -413,6 +415,7 @@ class Instance(Base):
             'change_source': self.change_source,
             'from_instance_id': self.from_instance_id,
             'to_instance_id': self.to_instance_id,
+            'text_tokenizer': self.text_tokenizer,
             'p1': self.p1,
             'p2': self.p2,
             'cp': self.cp,

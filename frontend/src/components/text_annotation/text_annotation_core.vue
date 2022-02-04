@@ -76,12 +76,12 @@
                 </g>
                 <text 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`instance_${instance.id}`"
-                    :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
-                    :y="render_rects.find(rect => rect.instance_id === instance.id).y - 3"
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
-                    @mouseenter="() => on_instance_hover(instance.id)"
-                    @mousedown="() => on_draw_relation(instance.id)"
+                    :key="`instance_${instance.get_instance_data().id}`"
+                    :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x" 
+                    :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                 >
@@ -89,48 +89,48 @@
                 </text>
                 <rect 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`rel_start_${instance.id}`"
-                    :x="render_rects.find(rect => rect.instance_id === instance.id).x" 
-                    :y="render_rects.find(rect => rect.instance_id === instance.id).y"
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :key="`rel_start_${instance.get_instance_data().id}`"
+                    :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x" 
+                    :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     :width="1"
                     :height="10"
-                    @mouseenter="() => on_instance_hover(instance.id)"
-                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                 />
                 <circle 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_start_marker_${instance.id}`"
-                    :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
-                    :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10" 
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width" 
+                    :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10" 
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     r="2" 
                 />
                 <rect 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`rel_end_${instance.id}`"
-                    :x="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width" 
-                    :y="render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y"
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :key="`rel_end_${instance.get_instance_data().id}`"
+                    :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width" 
+                    :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     :width="1"
                     :height="10"
-                    @mouseenter="() => on_instance_hover(instance.id)"
-                    @mousedown="() => on_draw_relation(instance.id)"
+                    @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                 />
                 <path 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`rel_end_marker_${instance.id}`"
-                    :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).x : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`" 
-                    :fill="hover_instance && (hover_instance.id === instance.id || hover_instance.from_instance_id === instance.id || hover_instance.to_instance_id === instance.id) ? 'red' : instance.label_file.colour.hex"
+                    :key="`rel_end_marker_${instance.get_instance_data().id}`"
+                    :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`" 
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                 />
                 <rect 
                     v-for="rect in render_rects"
                     :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                    :fill="hover_instance && (hover_instance.id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
+                    :fill="hover_instance && (hover_instance.get_instance_data().id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
                     :x="rect.x"
                     :y="rect.y"
                     :width="rect.width"
@@ -357,7 +357,7 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
-            const is_text_token = this.instance_list.find(instance => instance_id === instance.id).type === "text_token"
+            const is_text_token = this.instance_list.find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
             if (!is_text_token) return
             this.unselectable = true
@@ -380,8 +380,7 @@ export default Vue.extend({
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
             const created_instance = new TextRelationInstance();
-            created_instance.create_instance(
-                this.instance_list.length,
+            created_instance.create_frontend_instance(
                 this.instance_in_progress.start_instance, 
                 this.instance_in_progress.end_instance,
                 {...this.current_label}
@@ -402,7 +401,7 @@ export default Vue.extend({
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
-            const instance = {...this.instance_list.find(instance => instance.id === instance_id)}
+            const instance = this.instance_list.find(instance => instance.get_instance_data().id === instance_id)
             this.hover_instance = instance
         },
         on_instance_stop_hover: function() {
@@ -430,8 +429,7 @@ export default Vue.extend({
             if (!instance_exists) {
                 this.instances.push(this.instance_in_progress)
                 const created_instance = new TextAnnotationInstance();
-                created_instance.create_instance(
-                    this.instance_list.length,
+                created_instance.create_frontend_instance(
                     this.instance_in_progress.start_token, 
                     this.instance_in_progress.end_token,
                     {...this.current_label}
@@ -537,7 +535,8 @@ export default Vue.extend({
         save: async function (index = null) {
             this.has_changed = false
             this.save_loading = true
-            const { added_instances } = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+            const res = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+            const {added_instances} = res
             added_instances.map(add_insatnce => {
                 if (!index) {
                     const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
@@ -655,14 +654,14 @@ export default Vue.extend({
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {
-                const start_instance = this.instance_list.find(find_instance => find_instance.id === instance.from_instance_id)
+                const start_instance = this.instance_list.find(find_instance =>  find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
                 starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-                const end_instance = this.instance_list.find(find_instance => find_instance.id === instance.to_instance_id)
+                const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
                 end_token = this.tokens.find(token => token.id === end_instance.end_token)
             }
             if (starting_token.id === end_token.id) {
                 const rect = {
-                    instance_id: instance.id,
+                    instance_id: instance.get_instance_data().id,
                     x: starting_token.start_x,
                     y: this.lines[starting_token.line].y + 3,
                     line: starting_token.line,
@@ -676,7 +675,7 @@ export default Vue.extend({
             if (starting_token.line === end_token.line) {
                 if (starting_token.id < end_token.id) {
                     const rect = {
-                        instance_id: instance.id,
+                        instance_id: instance.get_instance_data().id,
                         x: starting_token.start_x,
                         y: this.lines[starting_token.line].y + 3,
                         line: starting_token.line,
@@ -688,7 +687,7 @@ export default Vue.extend({
                     return [rect]
                 } else {
                     const rect = {
-                        instance_id: instance.id,
+                        instance_id: instance.get_instance_data().id,
                         x: end_token.start_x,
                         y: this.lines[end_token.line].y + 3,
                         line: starting_token.line,
@@ -708,7 +707,7 @@ export default Vue.extend({
                         if (i === starting_token.line) {
                             const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -721,7 +720,7 @@ export default Vue.extend({
                         else if (i === end_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: end_token.start_x,
                                 y: this.lines[end_token.line].y + 3,
                                 line: i,
@@ -735,7 +734,7 @@ export default Vue.extend({
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -753,7 +752,7 @@ export default Vue.extend({
                         if (i === starting_token.line) {
                             const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: starting_token.start_x,
                                 y: this.lines[starting_token.line].y + 3,
                                 line: i,
@@ -766,7 +765,7 @@ export default Vue.extend({
                         else if (i === end_token.line) {
                             const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -780,7 +779,7 @@ export default Vue.extend({
                             const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
                             const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
                             const rect = {
-                                instance_id: instance.id,
+                                instance_id: instance.get_instance_data().id,
                                 x: first_token_in_the_line.start_x,
                                 y: this.lines[first_token_in_the_line.line].y + 3,
                                 line: i,
@@ -804,9 +803,9 @@ export default Vue.extend({
         },
         // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
-            const start_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.from_instance_id)
+            const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().from_instance_id)
             const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-            const end_instance = this.instance_list.find(find_instance => find_instance.id === relational_instance.to_instance_id)
+            const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().to_instance_id)
             const end_token = this.tokens.find(token => token.id === end_instance.end_token)
             return starting_token.id < end_token.id
         },
