@@ -11,6 +11,7 @@ describe("tasks_detail_pagination", () => {
       });
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);
+      cy.create_task_template();
     });
 
     it("Submit task to review", () => {
@@ -19,6 +20,7 @@ describe("tasks_detail_pagination", () => {
       cy.get('[data-cy="job-card"]')
         .find('.job-title')
         .contains('+test-e2e')
+        .first()
         .parent()
         .click({ force: true });
       cy.wait(2000);
