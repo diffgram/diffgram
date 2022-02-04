@@ -16,12 +16,32 @@ def api_task_track_time(task_id):
     :param task_id:
     :return:
     """
-    # For now, no filters needed. But might add in the future.
-    issue_new_spec_list = []
+    track_time_spec_list = [
+        {"time_spent": {
+            'kind': float,
+            "required": True
+        }},
+        {"task_status": {
+            'kind': str,
+            "required": True
+        }},
+        {"file_id": {
+            'kind': str,
+            "required": True
+        }},
+        {"parent_file_id": {
+            'kind': str,
+            "required": True
+        }},
+        {"file_type": {
+            'kind': str,
+            "required": True
+        }},
+    ]
 
     log, input, untrusted_input = regular_input.master(
         request = request,
-        spec_list = issue_new_spec_list)
+        spec_list = track_time_spec_list)
 
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
@@ -30,23 +50,18 @@ def api_task_track_time(task_id):
 
         project = Project.get_by_string_id(session, task_id)
         user = User.get(session)
-        discussion = Discussion.get_by_id(session, id = discussion_id)
-        if discussion is None:
-            log['error']['discussion'] = 'Discussion ID not found'
-            return jsonify(log = log), 400
 
-        if user:
-            member = user.member
-        else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
-
-        comments_data, log = list_discussion_comments_core(
+        comments_data, log = track_time_core(
             session = session,
-            log = log,
             project = project,
-            discussion = discussion,
+            task_id = task_id,
+            task_status = input['task_status'],
+            file_id = input['file_id'],
+            parent_file_id = input['parent_file_id'],
+            file_type = input['file_type'],
+            user = user,
+            log = log,
+
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -54,26 +69,31 @@ def api_task_track_time(task_id):
         return jsonify(comments = comments_data), 200
 
 
-def list_discussion_comments_core(session,
-                                  project,
-                                  discussion,
-                                  log = regular_log.default()):
+def track_time_core(session,
+                    project,
+                    task_id,
+                    task_status,
+                    file_id,
+                    parent_file_id,
+                    file_type,
+                    user,
+                    log = regular_log.default()):
     """
-        List comments of the discussion. At this point we assume data has been validated so no extra checks are
-        done to the input data.
+            Record a new Task Time Track record. This will save the record for the specific file
+            and any aggregated records.
+            If record already exists it will update to the new time_spent if the time is less than the
+            current saved time.
     :param session:
-    :param log:
-    :param member:
     :param project:
-    :param discussion:
-    :param content:
+    :param task_id:
+    :param task_status:
+    :param file_id:
+    :param parent_file:
+    :param file_type:
+    :param user:
+    :param log:
     :return:
     """
-    comments = DiscussionComment.list(
-        session = session,
-        project_id = project.id,
-        discussion_id = discussion.id
-    )
 
-    comment_data = [comment.serialize() for comment in comments]
-    return comment_data, log
+
+    return None, log
