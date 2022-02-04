@@ -1758,7 +1758,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
                 "initialized": True,
                 "text_tokenizer": "nltk",
                 "from_creation_ref": "b246ba1b-07fa-4680-9398-de7d323ee650",
-                "to_creation_ref": "221eea70-e0ba-433a-a5c5-851213b6ae66"
+                "to_eation_ref": "221eea70-e0ba-433a-a5c5-851213b6ae66"
             }
         ]
 
@@ -1771,5 +1771,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         )
 
         ann_update.main()
+
+        print('AAAA', ann_update.log['error'])
 
         self.assertEqual(len(ann_update.log['error'].keys()), 0)
