@@ -42,9 +42,7 @@ def api_user_has_credentials(project_string_id, user_to_check_id) -> [Response, 
     with sessionMaker.session_scope() as session:
 
         project = Project.get_by_string_id(session, project_string_id)
-        print('user_to_check_id', user_to_check_id)
         user = User.get_by_id(session, user_to_check_id)
-        print('user', user)
         credentials_data, log = user_has_credentials_core(
             session = session,
             log = log,
@@ -93,7 +91,6 @@ def user_has_credentials_core(session: object,
         requires_only = True
     )
 
-    print('REQURIEDD', required_credentials_rels)
     required_credentials = [x.credential_type for x in required_credentials_rels]
 
     missing_credentials = []

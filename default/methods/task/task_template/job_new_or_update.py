@@ -456,8 +456,6 @@ def job_update_core(session, job, project, input: dict, log: dict):
 
             session.add(job)
 
-            # print(len(job.label_dict['label_file_list']))
-
             log = update_tasks(job, session, log)
 
         if input['name']:
@@ -769,7 +767,6 @@ def new_or_update_core(session,
         'interface_connection_id': interface_connection_id,
         'pro_network': pro_network,
     }
-    print('fields_to_process', fields_to_process)
     for field_key, field_val in fields_to_process.items():
         if is_updating and getattr(job, field_key) != field_val:
             setattr(job, field_key, field_val)

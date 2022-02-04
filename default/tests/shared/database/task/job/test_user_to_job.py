@@ -118,8 +118,6 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
         res_list = [user_to_job, user_to_job2]
         result = User_To_Job.get_all_by_user_id(self.session, self.member.user_id, True)
-        for x in result:
-            print(x.job.name, x.user_id)
 
         for elm in res_list:
 

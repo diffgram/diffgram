@@ -319,8 +319,6 @@ class Job(Base, Caching):
     def get_assignees(self, session):
         rels = User_To_Job.list(session = session, job = self, relation = 'annotator')
         users = [rel.user for rel in rels]
-        print([x.job_id for x in rels])
-        print('GET ASSIGNEES', users)
         return users
 
 
@@ -518,7 +516,7 @@ class Job(Base, Caching):
 
         user_list = []
         user_added_id_list = []
-        print('member_list_ids', member_list_ids)
+
         if 'all' in member_list_ids:
             user_list = self.project.users
             self.permission = "all_secure_users"
@@ -540,7 +538,7 @@ class Job(Base, Caching):
                 else:
                     user_list.append(user)
 
-        print('USER LIST TOP UPDATE', user_list)
+
         for user in user_list:
 
             user_added_id_list.append(user.id)
@@ -549,7 +547,7 @@ class Job(Base, Caching):
                 session=session,
                 user_id=user.id,
                 job_id=self.id)
-            print('USER LIST TOP UPDATE', user_list)
+
             if existing_user_to_job:
                 # Add user back into job
                 if existing_user_to_job.status == 'removed':
@@ -569,18 +567,15 @@ class Job(Base, Caching):
 
             log['info']['update_member_list'][user.member_id] = "Added"
 
-        print(' user_added_id_list', user_added_id_list)
         # careful, user_id not member_id
         remaining_user_to_job_list = User_To_Job.list(
             session=session,
             user_id_ignore_list=user_added_id_list
         )
-        print(' remaining_user_to_job_list', remaining_user_to_job_list)
+
         for rel in remaining_user_to_job_list:
-            print('user to job', rel.user_id, rel.job_id, rel.user.first_name, rel.status, add_to_session)
             if rel.status != 'removed':
                 rel.status = 'removed'
-                print('set to removend', rel.user_id, rel.status)
                 session.add(rel)
                 # TODO this should be uniform, it's not right now
                 # this is update_user_list but we need to add member_id to user_to_job
