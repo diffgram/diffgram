@@ -62,7 +62,7 @@ export class TextRelationInstance extends Instance {
     public initialized: boolean = true;
     public text_tokenizer: string = "nltk";
     public from_creation_ref: string;
-    public to_reation_ref: string;
+    public to_creation_ref: string;
 
     constructor() {
         super();
@@ -79,7 +79,7 @@ export class TextRelationInstance extends Instance {
         else this.from_creation_ref = start_instance;
 
         if (typeof end_instance === 'number') this.to_instance_id = end_instance;
-        else this.to_reation_ref = end_instance;
+        else this.to_creation_ref = end_instance;
     }
 
     public create_frontend_instance(start_instance, end_instance, label_file): void {
@@ -92,7 +92,7 @@ export class TextRelationInstance extends Instance {
         else this.from_creation_ref = start_instance;
 
         if (typeof end_instance === 'number') this.to_instance_id = end_instance;
-        else this.to_reation_ref = end_instance;
+        else this.to_creation_ref = end_instance;
     }
 
     public get_instance_data(): object {
@@ -101,7 +101,7 @@ export class TextRelationInstance extends Instance {
             type: this.type,
             selected: this.selected,
             from_instance_id: this.from_instance_id || this.from_creation_ref,
-            to_instance_id: this.to_instance_id || this.to_reation_ref,
+            to_instance_id: this.to_instance_id || this.to_creation_ref,
             label_file: this.label_file,
             label_file_id: this.label_file_id,
             soft_delete: this.soft_delete,
