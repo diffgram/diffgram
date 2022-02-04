@@ -6,10 +6,11 @@
 
       <v-card v-for="job in ordered_job_list"
               v-bind:key="job.id"
+              data-cy="job-card"
               id="card-list"
               width="350px"
               style="position: relative"
-              class="ma-4 d-flex flex-column "
+              class="ma-4 d-flex flex-column job-card"
               elevation="1"
       >
 
@@ -56,7 +57,7 @@
           @click="job_detail_page_route_by_status(job)"
           :class="{'mt-4': ['exam_template', 'examination'].includes(job.type)}"
           style="cursor: pointer; overflow-wrap: anywhere; padding-right: 3rem">
-          <span>
+          <span class="job-title">
           {{job.name | truncate(40)}}
           </span>
         </v-card-title>
