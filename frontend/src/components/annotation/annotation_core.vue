@@ -210,10 +210,11 @@
         <v-navigation-drawer
           permanent
           left
+          class="mr-2 pt-2"
+          style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
           v-if="!error_no_permissions.data"
           :width="label_settings.left_nav_width"
         >
-        <br />
           <v-alert
             v-if="
               $store.state.user.settings.studio_box_info == true &&
@@ -238,31 +239,32 @@
             </v-alert>
           </div>
 
-          <instance_detail_list_view
-            class="pl-4 pr-4"
-            ref="instance_detail_list"
-            v-if="!task_error.task_request"
-            :instance_list="instance_list"
-            :model_run_list="model_run_list"
-            :label_file_colour_map="label_file_colour_map"
-            :refresh="refresh"
-            @toggle_instance_focus="focus_instance($event)"
-            @show_all="focus_instance_show_all()"
-            @update_canvas="update_canvas"
-            @instance_update="instance_update($event)"
-            :video_mode="video_mode"
-            :task="task"
-            :view_only_mode="view_only_mode"
-            :label_settings="label_settings"
-            :label_list="label_list"
-            :draw_mode="draw_mode"
-            :current_frame="current_frame"
-            :current_video_file_id="current_video_file_id"
-            :current_label_file_id="current_label_file_id"
-            :video_playing="video_playing"
-            :external_requested_index="request_change_current_instance"
-            :trigger_refresh_current_instance="trigger_refresh_current_instance"
-            :current_file="file ? file : task"
+          <instance_detail_list_view  class="pl-2 pr-4"
+                                      ref="instance_detail_list"
+                                      v-if="!task_error.task_request"
+                                      :instance_list="instance_list"
+                                      :model_run_list="model_run_list"
+                                      :label_file_colour_map="label_file_colour_map"
+                                      :refresh="refresh"
+                                      @toggle_instance_focus="focus_instance($event)"
+                                      @show_all="focus_instance_show_all()"
+                                      @update_canvas="update_canvas"
+                                      @instance_update="instance_update($event)"
+                                      :video_mode="video_mode"
+                                      :task="task"
+                                      :view_only_mode="view_only_mode"
+                                      :label_settings = "label_settings"
+                                      :label_list = "label_list"
+                                      :global_attribute_groups_list="global_attribute_groups_list"
+                                      :current_global_instance="current_global_instance"
+                                      :draw_mode = "draw_mode"
+                                      :current_frame = "current_frame"
+                                      :current_video_file_id = "current_video_file_id"
+                                      :current_label_file_id = "current_label_file_id"
+                                      :video_playing="video_playing"
+                                      :external_requested_index="request_change_current_instance"
+                                      :trigger_refresh_current_instance="trigger_refresh_current_instance"
+                                      :current_file="file ? file : task"
           >
           </instance_detail_list_view>
 
@@ -309,42 +311,59 @@
             ref="view_edit_issue_panel"
           ></view_edit_issue_panel>
 
-          <v-card-title>
-            <v-icon left color="primary" size="28"
-              >mdi-language-javascript</v-icon
-            >
-            UserScripts
-            <v-spacer></v-spacer>
-            <v-btn
+          <v-divider></v-divider>
+
+        <v-expansion-panels
+          v-model="userscript_minimized"
+          :accordion="true"
+          :inset="false"
+          :multiple="false"
+          :focusable="true"
+          :disabled="false"
+          :flat="true"
+          :hover="false"
+          :tile="true"
+        >
+          <v-expansion-panel>
+
+            <v-expansion-panel-header
               data-cy="show_userscript_panel_button"
+              class="d-flex justify-start pa-0 pr-1 align-center"
               @click="userscript_minimized = !userscript_minimized"
               v-if="userscript_minimized"
-              icon
-            >
-              <v-icon>mdi-chevron-down</v-icon>
-            </v-btn>
-            <v-btn
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="!userscript_minimized"
-              icon
-            >
-              <v-icon>mdi-chevron-up</v-icon>
-            </v-btn>
-          </v-card-title>
+              style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
-          <userscript
-            v-show="!userscript_minimized"
-            :project_string_id_prop="project_string_id"
-            :create_instance="event_create_instance"
-            :current_userscript_prop="get_userscript()"
-            :userscript_select_disabled="userscript_select_disabled()"
-            :show_code_editor="!task || !task.id"
-            :show_external_scripts="!task || !task.id"
-            :show_save="!task || !task.id"
-            :show_other_controls="!task || !task.id"
-            ref="userscript"
-          >
-          </userscript>
+              <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
+                mdi-language-javascript
+              </v-icon>
+
+              <h4>Interactive Automations</h4>
+
+              <v-spacer></v-spacer>
+
+            </v-expansion-panel-header>
+
+            <v-expansion-panel-content>
+
+              <userscript
+                v-show="!userscript_minimized"
+                :project_string_id_prop="project_string_id"
+                :create_instance="event_create_instance"
+                :current_userscript_prop="get_userscript()"
+                :userscript_select_disabled="userscript_select_disabled()"
+                :show_code_editor="!task || !task.id"
+                :show_external_scripts="!task || !task.id"
+                :show_save="!task || !task.id"
+                :show_other_controls="!task || !task.id"
+                ref="userscript"
+              >
+              </userscript>
+
+            </v-expansion-panel-content>
+
+          </v-expansion-panel>
+        </v-expansion-panels>
+
 
           <issues_sidepanel
             :minimized="minimize_issues_sidepanel"
@@ -886,6 +905,7 @@ import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 import { KeypointInstance } from "../vue_canvas/instances/KeypointInstance";
+import { Instance } from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import { sha256 } from "js-sha256";
@@ -983,6 +1003,7 @@ export default Vue.extend({
     finish_annotation_show: {
       default: false,
     },
+    'global_attribute_groups_list': {},
   },
   watch: {
     finish_annotation_show: function (val) {
@@ -1085,11 +1106,15 @@ export default Vue.extend({
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       instance_rotate_control_mouse_hover: null,
-
+      video_parent_file_instance_list: [],
+      video_global_attribute_changed: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
-      snackbar_paste_message: "",
+      current_global_instance: null,
+      instance_list_global: [],
+
+      snackbar_paste_message: '',
       ghost_instance_hover_index: null,
       default_instance_opacity: 0.25,
       model_run_list: null,
@@ -2293,13 +2318,6 @@ export default Vue.extend({
         e.returnValue = "";
       }
     },
-mplate_has_keypoints_type: function (instance_template) {
-      return (
-        instance_template.instance_list.filter(
-          (instance) => instance.type === "keypoints"
-        ).length > 0
-      );
-    },
     get_create_instance_template_url: function () {
       if (this.$props.project_string_id) {
         return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`;
@@ -2318,15 +2336,42 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
 
-    get_userscript_id_string: function (userscript_id) {
-      if (!userscript_id) {
-        this.userscript = this.get_userscript();
-        if (this.userscript.id) {
-          userscript_id = this.userscript.id.toString();
-        }
-      }
-      return userscript_id;
-    },
+        get_userscript_id_string: function (userscript_id) {
+
+          if (!userscript_id) {
+            this.userscript = this.get_userscript()
+            if (this.userscript.id) {
+              userscript_id = this.userscript.id.toString()
+            }
+          }
+          return userscript_id
+
+        },
+
+        get_and_set_global_instance: function (instance_list) {
+          if(!this.global_attribute_groups_list){
+            return
+          }
+          if(this.global_attribute_groups_list.length === 0){
+            return
+          }
+          let existing_global_instance = instance_list.find(inst => inst.type === 'global');
+          if(existing_global_instance){
+            this.current_global_instance = existing_global_instance;
+          }
+          else{
+            this.current_global_instance = this.new_global_instance();
+            instance_list.push(this.current_global_instance)
+          }
+
+        },
+        new_global_instance: function () {
+
+          let new_instance = new Instance();
+          new_instance.type = 'global'
+          return new_instance
+
+        },
 
     create_box: function (
       x_min,
@@ -2632,15 +2677,16 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       for (let i = 0; i < instance_list.length; i++) {
         let current_instance = instance_list[i];
-
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-        let initialized_instance = this.initialize_instance(current_instance);
-        result.push(initialized_instance);
+        let initialized_instance = this.initialize_instance(current_instance)
+        if (initialized_instance) {
+          result.push(initialized_instance);
+        }
       }
       return result;
     },
-    initialize_instance_buffer_dict_frame: function (frame_number) {
+    initialize_instance_buffer_dict_frame: function(frame_number){
       /**
        * This function initializes the instances of a frame's instance list.
        * We just do this once per frame, so this function should only be executed
@@ -2979,22 +3025,27 @@ mplate_has_keypoints_type: function (instance_template) {
         return;
       }
 
-      let index = update.index;
-      if (index == undefined) {
-        return;
-      } // careful 0 is ok.
-      let initial_instance = {
-        ...this.instance_list[index],
-        initialized: false,
-      };
+      let index = update.index
+      if (index == undefined) { return }  // careful 0 is ok.
+      let initial_instance = {...this.instance_list[index], initialized: false}
       initial_instance = this.initialize_instance(initial_instance);
       // since sharing list type component need to determine which list to update
       // could also use render mode but may be different contexts
+      let instance;
       if (!update.list_type || update.list_type == "default") {
-        var instance = this.instance_list[index];
+        instance = this.instance_list[index]
       }
-      if (update.list_type == "gold_standard") {
-        var instance = this.gold_standard_file.instance_list[index];
+      else if (update.list_type == "gold_standard") {
+        instance = this.gold_standard_file.instance_list[index]
+      }
+      else if (update.list_type == "global") {
+        if(this.video_mode){
+          instance = this.video_parent_file_instance_list[index]
+        }
+        else{
+          instance = this.instance_list[index]
+        }
+
       }
 
       if (!instance) {
@@ -3091,14 +3142,25 @@ mplate_has_keypoints_type: function (instance_template) {
       }
 
       // end instance update
-
-      let insert_instance_result = this.insert_instance(
-        index,
-        instance,
-        initial_instance,
-        update
-      );
-
+      if(instance.type === 'global' && this.video_mode){
+        this.video_global_attribute_changed = true;
+      }
+      if(!this.video_mode){
+        let insert_instance_result = this.insert_instance(
+          index,
+          instance,
+          initial_instance,
+          update
+        );
+      }
+      if(this.video_mode && instance.type !== 'global'){
+        let insert_instance_result = this.insert_instance(
+          index,
+          instance,
+          initial_instance,
+          update
+        );
+      }
       this.has_changed = true;
       this.trigger_refresh_with_delay();
     },
@@ -4046,9 +4108,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
     },
     detect_hover_on_ellipse_corners: function () {
-      // not happy with this name, maybe something more along the lines of
-      // determine which point in the cuboid we are near?
-      // or something...
+
       if (this.is_actively_resizing) {
         return;
       }
@@ -4149,9 +4209,6 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.selected_instance.type != "cuboid") {
         return;
       }
-      // not happy with this name, maybe something more along the lines of
-      // determine which point in the cuboid we are near?
-      // or something...
 
       // avoid having a check for every point?
       let instance = this.selected_instance;
@@ -4178,8 +4235,7 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.is_moving_cuboid_corner) {
         return;
       }
-      // again not happy with name
-      // trying to get accross it takes a face with multiple points
+      // takes a face with multiple points
       // and then sees if any are intersecting
       // then does current expected stuff
       // returns true if found to allow early exit
@@ -4353,7 +4409,6 @@ mplate_has_keypoints_type: function (instance_template) {
         if (this.lock_point_hover_change == false) {
           this.canvas_element.style.cursor = "default";
         }
-        // TODO handle if visible
 
         this.detect_hover_on_cuboid_corners();
 
@@ -5148,8 +5203,10 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       return key_points_did_move;
     },
+
     move_something: function (event) {
-      /*
+
+          /*
        * Limits (ie in edit mode) are assumed to be here.
        * ie move_box() doesn't check in edit mode.
        */
@@ -6779,52 +6836,87 @@ mplate_has_keypoints_type: function (instance_template) {
         var canvas_rectangle = this.canvas_element.getBoundingClientRect();
       }
 
-      this.polygon_auto_border_mouse_down();
-      this.mouse_down_position = this.mouse_transform(
-        event,
-        this.mouse_down_position
-      );
-      this.mouse_down_position.request_time = Date.now();
+      this.polygon_auto_border_mouse_down()
+      this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
+      this.mouse_down_position.request_time = Date.now()
       this.lock_polygon_corner();
-      this.polygon_mid_point_mouse_down();
+      this.polygon_mid_point_mouse_down()
+
+
     },
-    lock_polygon_corner: function () {
-      this.polygon_point_click_index = this.polygon_point_hover_index;
-      this.polygon_click_index = this.instance_hover_index;
+    lock_polygon_corner: function(){
+      this.polygon_point_click_index = this.polygon_point_hover_index
+      this.polygon_click_index = this.instance_hover_index
+
     },
     get_instances_core: function (response) {
       // TODO improve to take dict instead of response
       // since may use in other contexts
-      this.show_annotations = true;
+      this.show_annotations = true
+      this.current_global_instance = null // reset
 
       // Not sure if a "silent" null check is right here
-      if (response.data["file_serialized"]) {
-        this.instance_list = this.create_instance_list_with_class_types(
-          response.data["file_serialized"]["instance_list"]
+      if (response.data['file_serialized']) {
+        let new_instance_list = this.create_instance_list_with_class_types(
+          response.data['file_serialized']['instance_list']
         );
+        this.instance_list = new_instance_list
       }
-      this.loading = false;
+
+      this.loading = false
 
       this.trigger_refresh_with_delay();
     },
 
     trigger_refresh_with_delay: function () {
-      /* Jan 2, 2020, there is some kind of timing issue
-       * with the way that the vue_canvas components detect
-         a refresh.
-
-         If we trigger $vm0.refresh = Date.now()
-         after it's loaded it works.
-
-         It also clears this is the user mouses over it
-         but this way
-         it covers that timing issue.
-       *
-       */
-
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
+    get_parent_instance_list_for_video: async function(){
+      let url = undefined;
+      let file = this.$props.file;
+      let payload = {}
+      if (this.$store.getters.is_on_public_project) {
+        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+        payload = {
+          directory_id:
+          this.$store.state.project.current_directory.directory_id,
+          job_id: this.job_id,
+          attached_to_job: file.attached_to_job,
+        };
+      } else if (this.$store.state.builder_or_trainer.mode == "builder") {
+        if (this.task && this.task.id) {
+          // If a task is present, prefer this route to handle permissions
+          url = "/api/v1/task/" + this.task.id + "/annotation/list";
+          file = this.$props.task.file;
+        } else {
+          url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+        }
+        payload = {
+          directory_id:
+          this.$store.state.project.current_directory.directory_id,
+          job_id: this.job_id,
+          attached_to_job: file.attached_to_job,
+        };
+      }
+      else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        url = "/api/v1/task/" + this.task.id + "/annotation/list";
+      }
+      try {
+        const response = await axios.post(url, payload);
+        if (response.data['file_serialized']) {
+          let new_instance_list = this.create_instance_list_with_class_types(
+            response.data['file_serialized']['instance_list']
+          );
+          this.video_parent_file_instance_list = new_instance_list
+        }
+        this.annotations_loading = false;
+        this.trigger_refresh_with_delay();
+      } catch (error) {
+        console.error(error);
+        this.loading = false;
+      }
 
+    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -6893,6 +6985,9 @@ mplate_has_keypoints_type: function (instance_template) {
         }
       }
     },
+    set_global_instance_on_parent_instance_list: function(){
+      this.get_and_set_global_instance(this.video_parent_file_instance_list)
+    },
     get_instances: async function (play_after_success = false) {
       if (this.annotations_loading) {
         return;
@@ -6912,12 +7007,16 @@ mplate_has_keypoints_type: function (instance_template) {
          * seperetly for special event handling
          *
          */
+        await this.get_parent_instance_list_for_video();
         await this.update_instance_list_from_buffer_or_get_new_buffer(
           play_after_success
         );
+        this.set_global_instance_on_parent_instance_list();
       } else {
         // Context of Images Only
         await this.get_instance_list_for_image();
+
+        this.get_and_set_global_instance(this.instance_list)
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;
@@ -7125,25 +7224,26 @@ mplate_has_keypoints_type: function (instance_template) {
       this.$emit("request_new_task", direction, task, assign_to_user);
     },
 
-    reset_for_file_change_context: function () {
-      this.current_sequence_annotation_core_prop = {
-        id: null,
-        number: null,
-      };
-      this.video_mode = false; // if we don't have this can be issues switching to say an image
-      this.instance_buffer_dict = {};
-      this.instance_buffer_metadata = {};
-      this.instance_list = [];
-      if (this.video_mode) {
-        this.$refs.video_controllers.reset_cache();
-      }
-    },
-    annotation_show_activate(show_type) {
-      this.annotation_show_on = !this.annotation_show_on;
-      this.annotation_show_type = show_type;
-    },
-    annotation_show_change_item() {
-      let do_change_item;
+        reset_for_file_change_context: function (){
+          this.current_sequence_annotation_core_prop = {
+            id: null,
+            number: null
+          }
+          this.video_mode = false   // if we don't have this can be issues switching to say an image
+          this.instance_buffer_dict = {}
+          this.instance_buffer_metadata = {}
+          this.instance_list = []
+          if(this.video_mode){
+            this.$refs.video_controllers.reset_cache();
+          }
+
+        },
+        annotation_show_activate(show_type){
+          this.annotation_show_on = !this.annotation_show_on
+          this.annotation_show_type = show_type
+        },
+        annotation_show_change_item() {
+          let do_change_item
 
       let file = this.file || this.task.file;
       if (file.type == "video") {
@@ -7244,7 +7344,7 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       this.reset_for_file_change_context();
 
-      // this.$addQueriesToLocation({ file: this.$props.file.id });
+      this.$addQueriesToLocation({ file: this.$props.file.id });
 
       await this.refresh_attributes_from_current_file(this.$props.file);
 
@@ -7603,8 +7703,8 @@ mplate_has_keypoints_type: function (instance_template) {
       }
       this.hide_context_menu();
 
-      this.$store.commit("finish_draw");
-      this.current_polygon_point_list = [];
+      this.$store.commit('finish_draw')
+      this.current_polygon_point_list = []
       this.auto_border_polygon_p1 = undefined;
       this.auto_border_polygon_p1_index = undefined;
       this.auto_border_polygon_p1_figure = undefined;
@@ -7617,16 +7717,16 @@ mplate_has_keypoints_type: function (instance_template) {
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
     },
-    show_loading_paste: function () {
+    show_loading_paste: function(){
       this.show_snackbar_paste = true;
-      this.snackbar_paste_message = "Pasting Instances Please Wait....";
+      this.snackbar_paste_message = 'Pasting Instances Please Wait....';
     },
-    show_success_paste: function () {
+    show_success_paste: function(){
       this.show_snackbar_paste = true;
-      this.snackbar_paste_message = "Instance Pasted on Frames ahead.";
+      this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
     },
-    initialize_instance: function (instance) {
-      if (instance.type === "keypoints" && !instance.initialized) {
+    initialize_instance: function(instance){
+      if(instance.type === 'keypoints' && !instance.initialized){
         let initialized_instance = new KeypointInstance(
           this.mouse_position,
           this.canvas_element_ctx,
@@ -7639,12 +7739,18 @@ mplate_has_keypoints_type: function (instance_template) {
           this.label_settings
         );
         initialized_instance.populate_from_instance_obj(instance);
-        return initialized_instance;
-      } else {
-        return instance;
+        return initialized_instance
+      }
+      else if (instance.type === 'global') {
+        let new_global_instance = this.new_global_instance();
+        new_global_instance.populate_from_instance_obj(instance)
+        return new_global_instance
+      }
+      else {
+        return instance
       }
     },
-    save_multiple_frames: async function (frames_list) {
+    save_multiple_frames: async function(frames_list){
       const limit = pLimit(25); // 25 Max concurrent request.
       try {
         this.save_multiple_frames_error = {};
@@ -7658,7 +7764,8 @@ mplate_has_keypoints_type: function (instance_template) {
           );
         });
         const result = await Promise.all(promises);
-        return result;
+        return result
+
       } catch (error) {
         this.save_multiple_frames_error = this.$route_api_errors(error);
         console.error(error);
@@ -8004,7 +8111,6 @@ mplate_has_keypoints_type: function (instance_template) {
         } else {
           frame_number = parseInt(frame_number_param, 10);
         }
-
         if (instance_list_param != undefined) {
           instance_list = instance_list_param;
         }
@@ -8015,7 +8121,6 @@ mplate_has_keypoints_type: function (instance_template) {
       if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
-
         return;
       }
       if (this.any_loading == true) {
@@ -8044,7 +8149,6 @@ mplate_has_keypoints_type: function (instance_template) {
         this.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
         };
-
         // We want to focus the most recent instance, if we focus the older one we can produce an error.
         this.$refs.instance_detail_list.toggle_instance_focus(
           dup_instance_list[0].original_index,
@@ -8055,10 +8159,8 @@ mplate_has_keypoints_type: function (instance_template) {
 
         return;
       }
-
       let current_video_file_id_cache = this.current_video_file_id;
       let video_mode_cache = this.video_mode;
-
       // a video file can now be
       // saved from file id + frame, so the current file
       let current_file_id = null;
@@ -8071,9 +8173,7 @@ mplate_has_keypoints_type: function (instance_template) {
           "You must provide either a file or a task in props in order to save."
         );
       }
-
       var url = null;
-
       if (this.task && this.task.id) {
         url = "/api/v1/task/" + this.task.id + "/annotation/update";
       } else {
@@ -8086,16 +8186,15 @@ mplate_has_keypoints_type: function (instance_template) {
             "/annotation/update";
         }
       }
-
       video_data = null;
       if (video_mode_cache == true) {
         var video_data = {
           video_mode: video_mode_cache,
           video_file_id: current_video_file_id_cache,
           current_frame: frame_number,
+          set_parent_instance_list: false
         };
       }
-
       try {
         const response = await axios.post(url, {
           instance_list: instance_list,
@@ -8105,6 +8204,20 @@ mplate_has_keypoints_type: function (instance_template) {
           gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
           video_data: video_data,
         });
+        if(this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed){
+          video_data.set_parent_instance_list = true
+          const response_parent = await axios.post(url, {
+            instance_list: this.video_parent_file_instance_list,
+            and_complete: and_complete,
+            directory_id:
+            this.$store.state.project.current_directory.directory_id,
+            gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
+            video_data: video_data,
+          });
+          if(response_parent.status === 200){
+            this.video_global_attribute_changed = false;
+          }
+        }
         this.save_loading_image = false
         this.has_changed = false
         this.save_count += 1;
@@ -8130,7 +8243,6 @@ mplate_has_keypoints_type: function (instance_template) {
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true;
           this.snackbar_success_text = "Saved and completed. Moved to next.";
-
           if (this.$props.task && this.$props.task.id) {
             this.trigger_task_change("next", this.$props.task, true);
           } else {
@@ -8148,7 +8260,7 @@ mplate_has_keypoints_type: function (instance_template) {
         return true;
       } catch (error) {
         console.error(error);
-        this.set_save_loading(false, current_frame);
+        this.set_save_loading(false, frame_number);
         if (
           error.response &&
           error.response.data &&
@@ -8159,7 +8271,6 @@ mplate_has_keypoints_type: function (instance_template) {
           this.display_refresh_cache_button = true;
           clearInterval(this.interval_autosave);
         }
-
         this.save_error = this.$route_api_errors(error);
         console.debug(error);
         //this.logout()

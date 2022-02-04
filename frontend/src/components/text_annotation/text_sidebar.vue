@@ -169,7 +169,7 @@ export default Vue.extend({
     },
     methods: {
         on_hover_item: function(item) {
-            this.$emit("on_instance_hover", item.id)
+            this.$emit("on_instance_hover", item.get_instance_data().id)
         },
         on_stop_hover_item: function() {
             this.$emit("on_instance_stop_hover")

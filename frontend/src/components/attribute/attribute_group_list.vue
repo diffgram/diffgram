@@ -1,21 +1,6 @@
 <template>
 <div id="">
 
-<!--
-  Feb 21, 2020
-    It may be useful to set a 'max-height:900px' for
-    when it's in annotation context
-    but for editing in Admin "edit" mode, its annoying.
-
-    Could have a simple switch, but would like
-    to think more about user controable stuff here, ie so someone can choose how large the annotation
-    window height is to their preference
-
-  if we add in in future recall we need
-  ';' in between and also may need computer property to create
-  the style string, I think see annotation core for an example of that.
-  -->
-
 <div style="overflow-y:auto">
   <v-layout v-if="mode == 'edit' " class="pa-8">
 
@@ -41,25 +26,6 @@
 
 
   </v-layout>
-
- <!--
-    Context that it's confusing to show this if instance is deleted
-    BUT we don't have a great way to detect a deletion on "current instance"
-    and also not 100% sure what is a good way to handle "de selecting" a current instance
-    that's deleted (ie recall that can delete multiple ones.)
-
-   CAUTION CAUTION CAUTION
-   we do want to show this in edit mode
-
-   One of the directionaly things to think about here is
-    * Reuse for annotate vs edit is good, BUT
-    for TESTING it need to think about it becuase very different
-
-   For example here we want to show it if edit more,
-   or if current_instance (exists and is not deleleted)
-
-   This works but it feels awkward.
-  -->
 
   <!--  Caution     This is for  annotate mode too -->
   <v-layout column v-if="mode == 'edit'
@@ -89,10 +55,11 @@
         :key="group.id"
       >
         <v-expansion-panel-header
+                        style="border: 1px solid #e0e0e0"
                         :data-cy="`attribute_group_header_${group.prompt}`"
                         @click="update_url_with_current_group(group)"
                         class="d-flex justify-start text-left">
-          <h3 class="text-left d-flex align-center flex-grow-1">
+          <h4 class="text-left d-flex align-center flex-grow-1">
             <attribute_kind_icons
               class="pr-2"
               :kind=" group.kind "
@@ -101,32 +68,34 @@
 
             {{group.prompt}}
 
-            <div v-if="!group.prompt" :data-cy="`attribute_group_header_Untitled Attribute Group`">
+            <div v-if="!group.prompt"
+                 :data-cy="`attribute_group_header_Untitled Attribute Group`">
               Untitled Attribute Group
             </div>
 
-          </h3>
-          <!-- Archive button -->
-          <button_with_confirm
-            v-if="mode === 'edit'"
-            @confirm_click="api_group_archive(group)"
-            icon="archive"
-            color="red"
-            :loading="loading"
-            :disabled="loading"
-            :icon_style="true"
-            tooltip_message="Archive Entire Attribute and All Options"
-          >
-            <template slot="content">
-              <v-layout column>
+            <v-spacer></v-spacer>
+            <!-- Archive button -->
+            <button_with_confirm
+              v-if="mode === 'edit'"
+              @confirm_click="api_group_archive(group)"
+              icon="archive"
+              color="red"
+              :loading="loading"
+              :disabled="loading"
+              :icon_style="true"
+              tooltip_message="Archive Entire Attribute and All Options"
+            >
+              <template slot="content">
+                <v-layout column>
 
-                <v-alert type="error">
-                  Are you sure? This will remove all options too.
-                </v-alert>
+                  <v-alert type="error">
+                    Are you sure? This will remove all options too.
+                  </v-alert>
 
-              </v-layout>
-            </template>
-          </button_with_confirm>
+                </v-layout>
+              </template>
+            </button_with_confirm>
+          </h4>
           <!-- Archive button -->
           <!-- TODO maybe, play with this more
             eg maybe in edit mode show internal tag-->
@@ -233,8 +202,6 @@ import attribute_group_new from './attribute_group_new'
 
     watch: {
 
-      // WIP WIP WIP NOT test
-      // for "updates in place" to page.
       attribute_template_group_id() {
         this.api_attribute_group_list()
       },

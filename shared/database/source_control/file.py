@@ -293,6 +293,8 @@ class File(Base, Caching):
             return session.query(File).filter(
                 File.video_parent_file_id == video_parent_file_id,
                 File.frame_number.in_(frame_number_list)).all()
+
+
     def serialize(self):
         # Careful this is just basic stuff
         # Use serialize_with_type() for example
@@ -511,8 +513,9 @@ class File(Base, Caching):
                 'instance_list': [instance.serialize_with_label() for instance in instance_list]
             }
         if self.type == "video":
-            return self.serialize_with_video(session)
-
+            result = self.serialize_with_video(session)
+            result['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
+            return result
         if self.type == 'sensor_fusion':
             return {
                 'id': self.id,

@@ -29,9 +29,12 @@
           <v-stepper-step
             editable
             :complete="step > 3"
-            step="3">
-            Visible When
+            step="3"
+          >
+            Scope
           </v-stepper-step>
+
+
 
           <v-divider></v-divider>
 
@@ -39,14 +42,23 @@
             editable
             :complete="step > 4"
             step="4">
-            User Choices
+           Visible When
+          </v-stepper-step>
+
+          <v-divider></v-divider>
+
+          <v-stepper-step
+            editable
+            :complete="step > 5"
+            step="5">
+            Options
           </v-stepper-step>
 
           <v-divider></v-divider>
           <v-stepper-step
             editable
-            :complete="step > 5"
-            step="5">
+            :complete="step > 6"
+            step="6">
             Defaults
           </v-stepper-step>
 
@@ -57,7 +69,7 @@
           color="secondary"
           striped
           :value="global_progress"
-          height="6"
+          height="7"
         >
         </v-progress-linear>
 
@@ -66,7 +78,7 @@
 
           <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
-            <h2 class="pb-2"> What Kind of Question? </h2>
+            <h2 class="pb-2"> 1. What Kind of Question? </h2>
 
             <diffgram_select
               v-if="group"
@@ -93,7 +105,7 @@
 
           <v-stepper-content step="2" style="height: 100%" data-cy="attribute_wizard_step_2">
 
-            <h2> Name Your Question </h2>
+            <h2> 2. Name Your Question </h2>
 
             <v-layout>
               <v-text-field
@@ -145,9 +157,62 @@
 
           <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
-            <h2 class="pb-2"> When Do You Want to Show This? </h2>
+            <h2> 3. Per Annotation Or File? (Optional) </h2>
 
+            <br>
+            <p>
+            The Default is per Annotation: each annotation instance - e.g. a box or entity - has different values.
+            </p>
+            <p>
+            The Alternative is per File: each file - e.g. an image, video, text - has only one set of these values.
+            </p>
+            <br>
+
+            <v-layout class="justify-center align-center">
+              <v-btn-toggle color="secondary" v-model="toggle_global_attribute" @change="set_is_global($event, group)">
+                <v-btn>
+                  <v-icon left color="primary" size="18">
+                    mdi-brush
+                  </v-icon>
+                  Per Annotation (Default)
+                </v-btn>
+
+                <v-btn>
+                  <v-icon left color="primary" size="18">
+                    mdi-file
+                  </v-icon>
+
+                   Per File  
+
+                </v-btn>
+              </v-btn-toggle>
+            </v-layout>
+
+            <wizard_navigation
+              @next="go_to_step(4)"
+              @back="go_back_a_step()"
+              :disabled_next="!group.prompt"
+              :skip_visible="false"
+            >
+            </wizard_navigation>
+
+          </v-stepper-content>
+
+
+          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
+
+            <h2 class="pb-2" > 4. When Do You Want to Show This? </h2>
+
+            <p v-if="group.is_global" class="d-flex flex-column">
+              <v-icon color="secondary" size="85">mdi-pencil</v-icon>
+              <strong class="secondary--text">
+              Cannot select labels because attribute is a File Level
+              Attribute. Change it to instance attribute to allow labels selection.
+            </strong>
+            </p>
             <label_select_only
+              v-if="!group.is_global"
+              :disabled="group.is_global"
               ref="label_selector"
               label_prompt="Visible on Annotation with these Labels:"
               datacy="label_select_attribute"
@@ -160,7 +225,7 @@
             </label_select_only>
 
             <wizard_navigation
-              @next="go_to_step(4)"
+              @next="go_to_step(5)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -169,8 +234,7 @@
 
           </v-stepper-content>
 
-
-          <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
           <v-layout column>
 
@@ -178,9 +242,8 @@
             </v_error_multiple>
 
             <h2 class="pb-2">
-            Options
+            5. Options:
             </h2>
-
             <div class="pa-2">
               <button_with_menu
                 tooltip_message="New Option"
@@ -190,6 +253,7 @@
                 v-if="group && group.kind != 'text' && group.kind != 'slider' "
                 icon="add"
                 :large="true"
+                x-small=""
                 color="primary"
                 icon_color="white"
                 :icon_style="false"
@@ -217,11 +281,11 @@
                          container--fluid grid-list-md>
 
               <draggable
-                v-if="group"
+                v-if="group && group.attribute_template_list.length > 0"
                 v-model="group.attribute_template_list"
                 draggable=false
               >
-
+              <h4>Options List:</h4>
                 <template
                   v-for="item in group.attribute_template_list">
 
@@ -237,13 +301,19 @@
               </draggable>
 
 
-            </v-container>
 
+            </v-container>
+            <div v-else class="d-flex flex-column justify-center align-center">
+              <v-icon size="96" color="primary">mdi-archive</v-icon>
+              <h4>No Options Yet.</h4>
+              <p>Click "New Option" to add an option</p>
+
+            </div>
 
           </v-layout>
 
             <wizard_navigation
-              @next="go_to_step(5)"
+              @next="go_to_step(6)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -252,7 +322,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
+          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -360,7 +430,7 @@
 
 
             <wizard_navigation
-              @next="go_to_step(6)"
+              @next="go_to_step(7)"
               @skip="go_to_step(6)"
               @back="go_back_a_step()"
                                >
@@ -368,7 +438,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="6">
+          <v-stepper-content step="7" data-cy="attribute_wizard_step_7">
 
             <h2> Complete! Great work. </h2>
 
@@ -433,7 +503,7 @@ export default Vue.extend( {
     return {
       step: 1,
       member_invited: false,
-
+      toggle_global_attribute: 0,
       group: {}
     }
   },
@@ -444,6 +514,12 @@ export default Vue.extend( {
   },
   created() {
     this.group = this.value
+    if(this.group.is_global){
+      this.toggle_global_attribute = 1
+    }
+    else{
+      this.toggle_global_attribute = 0
+    }
   },
   watch: {
     value: function (item) {
@@ -451,11 +527,25 @@ export default Vue.extend( {
     }
   },
   methods: {
+    set_is_global: function(value, group){
+      if(value === 1){
+        group.is_global = true
+      }
+      else{
+        group.is_global = false
+      }
+      this.$emit('change')
+    },
     update_label_files: function(new_label_file_list){
       this.$refs.label_selector.set_label_list(new_label_file_list)
 
     },
     go_to_step: function(step){
+      if(step === 4 && this.group.is_global){
+        step = step + 1
+        console.log('www', step)
+      }
+      console.log('aaa', step)
       this.step = step
     },
     on_change_step: function(){

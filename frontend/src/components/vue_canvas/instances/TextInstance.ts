@@ -22,6 +22,16 @@ export class TextAnnotationInstance extends Instance {
         this.soft_delete = soft_delete;
     }
 
+    public create_frontend_instance(start_token, end_token, label_file, soft_delete = false): void {
+        this.type = "text_token";
+        this.creation_ref_id = uuidv4();
+        this.start_token = start_token;
+        this.end_token = end_token;
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+        this.soft_delete = soft_delete;
+    }
+
     public update_instance_start_token(start_token): void {
         this.start_token = start_token;
     }
@@ -32,7 +42,7 @@ export class TextAnnotationInstance extends Instance {
 
     public get_instance_data(): object {
         return {
-            id: this.id,
+            id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
             start_token: this.start_token,
@@ -51,6 +61,8 @@ export class TextRelationInstance extends Instance {
     public to_instance_id: number = null;
     public initialized: boolean = true;
     public text_tokenizer: string = "nltk";
+    public from_creation_ref: string;
+    public to_reation_ref: string;
 
     constructor() {
         super();
@@ -60,19 +72,36 @@ export class TextRelationInstance extends Instance {
         this.id = id;
         this.type = "relation";
         this.creation_ref_id = uuidv4();
-        this.from_instance_id = start_instance;
-        this.to_instance_id = end_instance;
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+
+        if (typeof start_instance === 'number') this.from_instance_id = start_instance;
+        else this.from_creation_ref = start_instance;
+
+        if (typeof end_instance === 'number') this.to_instance_id = end_instance;
+        else this.to_reation_ref = end_instance;
+    }
+
+    public create_frontend_instance(start_instance, end_instance, label_file): void {
+        this.type = "relation";
+        this.creation_ref_id = uuidv4();
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+
+        if (typeof start_instance === 'number') this.from_instance_id = start_instance;
+        else this.from_creation_ref = start_instance;
+
+        if (typeof end_instance === 'number') this.to_instance_id = end_instance;
+        else this.to_reation_ref = end_instance;
     }
 
     public get_instance_data(): object {
         return {
-            id: this.id,
+            id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
-            from_instance_id: this.from_instance_id,
-            to_instance_id: this.to_instance_id,
+            from_instance_id: this.from_instance_id || this.from_creation_ref,
+            to_instance_id: this.to_instance_id || this.to_reation_ref,
             label_file: this.label_file,
             label_file_id: this.label_file_id,
             soft_delete: this.soft_delete,
