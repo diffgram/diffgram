@@ -135,6 +135,7 @@
                     :y="rect.y"
                     :width="rect.width"
                     @mouseenter="() => on_instance_hover(rect.instance_id)"
+                    @mousedown="() => on_draw_relation(rect.instance_id)"
                     @mouseleave="on_instance_stop_hover"
                     :height="rect.instance_type === 'text_token' ? 3 : 1"
                     style="cursor: pointer"
@@ -357,6 +358,7 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
+            console.log(instance_id)
             const is_text_token = this.instance_list.find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
             if (!is_text_token) return
