@@ -24,7 +24,7 @@
                     @mouseleave="on_stop_hover_item"
                   >
                     <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
-                        {{ item.id }}
+                        {{ item.id || 'new' }}
                     </td>
                     <td class="centered-table-items">
                         <v-icon 
