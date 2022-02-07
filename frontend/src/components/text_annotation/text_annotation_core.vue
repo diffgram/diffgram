@@ -221,6 +221,7 @@ export default Vue.extend({
         }
     },
     mounted() {
+        this.on_unload_listener()
         this.hot_key_listeners()
         this.on_mount()
         this.start_autosave()
@@ -282,6 +283,17 @@ export default Vue.extend({
             window.removeEventListener("keydown", this.esk_event_listener)
             window.addEventListener("keydown", this.esk_event_listener)
 
+        },
+        on_unload_listener: function() {
+            window.addEventListener("beforeunload", this.leave_listener);
+        },
+        leave_listener: function(e) {
+            if (this.has_changed || this.save_loading) {
+                const confirmationMessage = "\o/";
+    
+                (e || window.event).returnValue = confirmationMessage;
+                return confirmationMessage;                            
+            }
         },
         esk_event_listener: async function(e) {
             if (e.keyCode === 27) {
