@@ -78,12 +78,12 @@ export class UpdateInstanceCommand {
       return newInstance
     }
     else if (instance.type === 'relation') {
-      const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance.get_instance_data()
+      const { id, from_instance_id, to_instance_id, label_file, creation_ref_id, soft_delete } = instance.get_instance_data()
       const newInstance = new TextRelationInstance()
       if (typeof id === "number") {
-        newInstance.create_instance(id, from_instance_id, to_instance_id, label_file)
+        newInstance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
       } else {
-        newInstance.create_frontend_instance(from_instance_id, to_instance_id, label_file)
+        newInstance.create_frontend_instance(from_instance_id, to_instance_id, label_file, soft_delete)
       }
       newInstance.initialized = true
       newInstance.creation_ref_id = creation_ref_id

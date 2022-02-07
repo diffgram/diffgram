@@ -516,6 +516,7 @@ export default Vue.extend({
             this.hover_instance = null
 
             const instance_index = this.instance_list.indexOf(instance)
+            console.log(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
             this.has_changed = true
