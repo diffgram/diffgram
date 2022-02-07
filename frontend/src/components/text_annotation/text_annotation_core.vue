@@ -301,7 +301,7 @@ export default Vue.extend({
             );
         },
         detect_is_ok_to_save: async function () {
-            if (this.has_changed) {
+            if (this.has_changed && !this.instance_in_progress) {
                 await this.save();
             }
         },
@@ -535,32 +535,34 @@ export default Vue.extend({
         save: async function (index = null) {
             this.has_changed = false
             this.save_loading = true
-            const res = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
-            const {added_instances} = res
-            added_instances.map(add_insatnce => {
-                if (!index) {
-                    const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
-                    this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
-                    if (this.instance_in_progress) {
-                        this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
+            if (!this.instance_in_progress) {
+                const res = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+                const {added_instances} = res
+                added_instances.map(add_insatnce => {
+                    if (!index) {
+                        const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
+                        this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                        if (this.instance_in_progress) {
+                            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
+                        }
+                        this.instance_list
+                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                            .map(instance => {
+                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                                else instance.to_instance_id = add_insatnce.id
+                            })
+                    } else {
+                        const old_id = this.instance_list[index].id
+                        this.instance_list[index].id = add_insatnce.id
+                        this.instance_list
+                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                            .map(instance => {
+                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                                else instance.to_instance_id = add_insatnce.id
+                            })
                     }
-                    this.instance_list
-                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                        .map(instance => {
-                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                            else instance.to_instance_id = add_insatnce.id
-                        })
-                } else {
-                    const old_id = this.instance_list[index].id
-                    this.instance_list[index].id = add_insatnce.id
-                    this.instance_list
-                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                        .map(instance => {
-                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                            else instance.to_instance_id = add_insatnce.id
-                        })
-                }
-            })
+                })
+            }
             this.save_loading = false
         },
         undo: function () {
