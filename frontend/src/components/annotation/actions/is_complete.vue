@@ -137,7 +137,7 @@ export default Vue.extend({
       if(this.$store.state.user.current.is_super_admin){
         return true;
       }
-      if(this.task.job.type === 'examination'){
+      if(this.task.job && this.task.job.type === 'examination'){
         let reviewers_list = this.task.task_reviewers;
         let id_list = reviewers_list.map(elm => elm.user_id)
         if(!id_list.includes(this.$store.state.user.current.id)){
