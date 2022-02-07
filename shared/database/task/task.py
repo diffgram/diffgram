@@ -278,6 +278,19 @@ class Task(Base):
             if last_task.status in status_allow_list:
                 return last_task
 
+    def get_all_users_in_task(self, session):
+        """
+            Returns the list of both assignees and reviewers
+            assgined to this task.
+        :param session:
+        :return:
+        """
+        rels = session.query(TaskUser).filter(
+            TaskUser.task_id == self.id
+        )
+        user_list = [rel.user for rel in rels]
+        return user_list
+
     def add_reviewer(self, session, user):
 
         self.assignee_user = user

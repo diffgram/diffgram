@@ -6,6 +6,7 @@ except:
 from shared.database.discussion.discussion import Discussion
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.task.task_time_tracking import TaskTimeTracking
+from sqlalchemy.orm.session import Session
 
 
 @routes.route('/api/v1/task/<int:task_id>/track-time', methods = ['POST'])
@@ -36,7 +37,7 @@ def api_task_track_time(task_id):
         }},
         {"parent_file_id": {
             'kind': int,
-            "required": True
+            "required": False
         }}
     ]
 
@@ -48,8 +49,8 @@ def api_task_track_time(task_id):
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-
-        project = Project.get_by_string_id(session, task_id)
+        task = Task.get_by_id(session, task_id)
+        project = Project.get_by_id(session, task.project_id)
         user = User.get(session)
 
         time_track_record, log = track_time_core(
@@ -59,6 +60,7 @@ def api_task_track_time(task_id):
             status = input['status'],
             file_id = input['file_id'],
             parent_file_id = input['parent_file_id'],
+            time_spent = input['time_spent'],
             job_id = input['job_id'],
             user = user,
             log = log,
@@ -70,28 +72,30 @@ def api_task_track_time(task_id):
         return jsonify(time_track_record), 200
 
 
-def track_time_core(session,
-                    project,
-                    task_id,
-                    status,
-                    job_id,
-                    file_id,
-                    parent_file_id,
-                    user,
-                    log = regular_log.default()):
+def track_time_core(session: Session,
+                    project: Project,
+                    task_id: int,
+                    status: str,
+                    job_id: int,
+                    file_id: int,
+                    user: User,
+                    time_spent: float,
+                    parent_file_id: int = None,
+                    log = regular_log.default()) -> [dict, dict]:
     """
-            Record a new Task Time Track record. This will save the record for the specific file
+                Record a new Task Time Track record. This will save the record for the specific file
             and any aggregated records.
             If record already exists it will update to the new time_spent if the time is less than the
             current saved time.
     :param session:
     :param project:
     :param task_id:
-    :param task_status:
+    :param status:
+    :param job_id:
     :param file_id:
-    :param parent_file:
-    :param file_type:
     :param user:
+    :param time_spent:
+    :param parent_file_id:
     :param log:
     :return:
     """
@@ -103,7 +107,8 @@ def track_time_core(session,
         file_id = file_id,
         parent_file_id = parent_file_id,
         job_id = job_id,
-        user_id = user.id
+        user_id = user.id,
+        time_spent = time_spent
     )
 
     return record.serialize(), log
