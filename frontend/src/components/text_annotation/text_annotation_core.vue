@@ -70,11 +70,13 @@
                         r="3" 
                     />
                     <path
+                        v-if="render_drawing_arrow.path"
                         :stroke="current_label.colour.hex" 
                         :d="render_drawing_arrow.path" 
                         fill="transparent"
                     />
                     <path 
+                        v-if="render_drawing_arrow.arrow"
                         :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
                         :fill="current_label.colour.hex"
                     />
@@ -256,17 +258,27 @@ export default Vue.extend({
             if (!this.instance_in_progress) return {}
             const scroll_y = window.pageYOffset || document.documentElement.scrollTop
             const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
-            return { 
-                marker: {
+
+            if (this.path.x && this.path.y) {
+                return { 
+                    marker: {
+                        x,
+                        y
+                    },
+                    arrow: {
+                        x: this.path.x - 350,
+                        y: this.path.y - 100 + scroll_y
+                    },
+                    path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y} ${this.path.x - 350} ${this.path.y - 100 + scroll_y}`
+                 }
+            }
+
+            return {
+               marker: {
                     x,
                     y
-                },
-                arrow: {
-                    x: this.path.x - 350,
-                    y: this.path.y - 100 + scroll_y
-                },
-                path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y} ${this.path.x - 350} ${this.path.y - 100 + scroll_y}`
-             }
+                }
+            }
         },
         undo_disabled: function() {
             const { command_manager } = this;
@@ -526,7 +538,6 @@ export default Vue.extend({
             this.hover_instance = null
 
             const instance_index = this.instance_list.indexOf(instance)
-            console.log(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
             this.has_changed = true
