@@ -46,6 +46,7 @@
         <text_annotation_core 
           :file="current_file" 
           :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
           @request_file_change="request_file_change"
         />
       </div>
