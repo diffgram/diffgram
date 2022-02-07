@@ -68,12 +68,13 @@ export class TextRelationInstance extends Instance {
         super();
     }
 
-    public create_instance(id, start_instance, end_instance, label_file): void {
+    public create_instance(id, start_instance, end_instance, label_file, soft_delete = false): void {
         this.id = id;
         this.type = "relation";
         this.creation_ref_id = uuidv4();
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.soft_delete = soft_delete;
 
         if (typeof start_instance === 'number') this.from_instance_id = start_instance;
         else this.from_creation_ref = start_instance;
@@ -82,11 +83,12 @@ export class TextRelationInstance extends Instance {
         else this.to_creation_ref = end_instance;
     }
 
-    public create_frontend_instance(start_instance, end_instance, label_file): void {
+    public create_frontend_instance(start_instance, end_instance, label_file, soft_delete = false): void {
         this.type = "relation";
         this.creation_ref_id = uuidv4();
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.soft_delete = soft_delete;
 
         if (typeof start_instance === 'number') this.from_instance_id = start_instance;
         else this.from_creation_ref = start_instance;
