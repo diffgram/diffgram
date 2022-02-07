@@ -10,6 +10,7 @@ from shared.database.discussion.discussion import Discussion
 from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
 from shared.database.task.task_event import TaskEvent
+from shared.database.task.task_time_tracking import TaskTimeTracking
 from shared.database.user import User
 
 TASK_STATUSES = {
@@ -196,6 +197,13 @@ class Task(Base):
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
+
+    def get_time_tracking_data(self, session):
+        records = session.query(TaskTimeTracking).filter(
+            TaskTimeTracking.task_id == self.id,
+            TaskTimeTracking.status.is_(None)
+        )
+        return records
 
     @staticmethod
     def get_task_from_job_id(
@@ -503,7 +511,7 @@ class Task(Base):
         if self.status == "complete" or self.status == "requires_changes":
             task_comment = TaskEvent.get_last_task_comment(session, self.id, self.job_id, self.project_id)
 
-        return {
+        task_serialized = {
             'id': self.id,
             'job_id': self.job_id,
             'job': self.job.serialize_for_task(),
@@ -521,6 +529,10 @@ class Task(Base):
             'assignee_user_id': self.assignee_user_id,
             'task_comment': task_comment
         }
+        time_tracking_records = self.get_time_tracking_data(session = session)
+        time_tracking_records_data = [x.serialize() for x in time_tracking_records]
+        task_serialized['time_tracking'] = time_tracking_records_data
+        return task_serialized
 
     def get_by_job_and_file(
         session,

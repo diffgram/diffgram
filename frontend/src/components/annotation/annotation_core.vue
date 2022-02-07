@@ -897,7 +897,7 @@ import { InstanceContext } from "../vue_canvas/instances/InstanceContext";
 import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
-import { finishTaskAnnotation } from "../../services/tasksServices";
+import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 
@@ -7984,6 +7984,29 @@ mplate_has_keypoints_type: function (instance_template) {
         }
       }
     },
+    save_time_tracking: async function(){
+      if(!this.task){
+        return
+      }
+      let current_user_id = this.$store.state.user.current.id;
+      let record = this.$props.task.time_tracking.find(elm => elm.user_id === current_user_id)
+      let [result, error] = await trackTimeTask(
+        record.time_spent,
+        this.task.id,
+        this.task.status,
+        this.task.job.id,
+        this.task.file.id,
+        null
+      )
+      if(error){
+        this.error = this.$route_api_errors(error);
+      }
+      if(result){
+        record.id = result.id;
+        record.task_id = result.task_id;
+        record.job_id = result.job_id;
+      }
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -8147,6 +8170,10 @@ mplate_has_keypoints_type: function (instance_template) {
           }
         }
         this.ghost_refresh_instances();
+        if(this.$props.task){
+          // Track time (nonblocking)
+          this.save_time_tracking();
+        }
         return true;
       } catch (error) {
         console.error(error);

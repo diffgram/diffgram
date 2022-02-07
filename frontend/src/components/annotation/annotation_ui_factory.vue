@@ -1,6 +1,7 @@
 <template>
   <div>
     <div id="annotation_ui_factory" tabindex="0">
+      <v_error_multiple :error="error"></v_error_multiple>
       <div v-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
           class="pt-1 pl-1"
@@ -124,6 +125,7 @@ export default Vue.extend({
       loading_project: true,
       task: null,
       current_file: null,
+      error: null,
       request_save: false,
       model_run_id_list: [],
 
@@ -370,6 +372,7 @@ export default Vue.extend({
         this.task_error = response.data.log.error;
       } catch (error) {
         console.error(error);
+        this.error = this.$route_api_errors(error);
         this.loading = false;
         // this.logout()
       }
