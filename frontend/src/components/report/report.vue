@@ -164,7 +164,7 @@
                   v-model="report_template.item_of_interest"
                   label="Item of Interest"
                   :disabled="loading"
-                  @change="has_changes = true"
+                  @change="on_change_item_of_interest"
                 >
                 </diffgram_select>
               </v-col>
@@ -187,7 +187,7 @@
                 <!-- Period -->
                 <diffgram_select
                   class="pa-4"
-                  :item_list="group_by_list"
+                  :item_list="current_group_by_list"
                   v-model="report_template.group_by"
                   label="Group by"
                   :disabled="loading"
@@ -317,10 +317,6 @@
 
     </main_menu>
 
-    <v_error_multiple :error="error">
-    </v_error_multiple>
-    <v_error_multiple :error="report_warning" type="warning">
-    </v_error_multiple>
 
 
     <v-alert type="info"
@@ -444,6 +440,10 @@
 
     </v-card>
 
+    <v_error_multiple :error="error">
+    </v_error_multiple>
+    <v_error_multiple :error="report_warning" type="warning">
+    </v_error_multiple>
 
   </div>
 </template>
@@ -519,55 +519,154 @@ export default Vue.extend({
           'view_sub_type': 'line'
         },
 
-        // TODO add more
-        /*
-         *  What about "jobs" and...
-         *
-         *  TODO would like to have this
-         *  in one place (a similar thing is in report_list)
-         *  ie can we have it in a shared js file and import it?
-         *
-         */
-
-        // not sure if user makes sense as an item of interest
-
         item_of_interest_list: [
           {
             'display_name': 'Time Spent On Task',
             'name': 'time_spent_task',
             'icon': 'mdi-clock',
             'color': 'blue',
-            'allowed_groupings': []
+            'allowed_groupings': [
+              {
+                'display_name': 'Task',
+                'name': 'task',
+                'icon': 'mdi-flash-circle',
+                'color': 'purple'
+              },
+            ]
           },
           {
             'display_name': 'Instance',
             'name': 'instance',
             'icon': 'mdi-format-paint',
-            'color': 'green'
+            'color': 'green',
+            'allowed_groupings': [
+              {
+                'display_name': 'Date',
+                'name': 'date',
+                'icon': 'mdi-calendar',
+                'color': 'primary'
+              },
+              {
+                'display_name': 'User',
+                'name': 'user',
+                'icon': 'mdi-account-circle',
+                'color': 'blue'
+              },
+              {
+                'display_name': 'Label',
+                'name': 'label',
+                'icon': 'mdi-format-paint',
+                'color': 'pink'
+              },
+              {
+                'display_name': 'Task',
+                'name': 'task',
+                'icon': 'mdi-flash-circle',
+                'color': 'purple'
+              },
+              {
+                'display_name': 'File (Frame)',
+                'name': 'file',
+                'icon': 'mdi-file',
+                'color': 'orange'
+              },
+              {
+                'display_name': 'Task Status',
+                'name': 'task_status',
+                'icon': 'mdi-list-status',
+                'color': 'green'
+              },
+            ]
           },
           {
             'display_name': 'File (Frame)',
             'name': 'file',
             'icon': 'mdi-file',
-            'color': 'orange'
+            'color': 'orange',
+            'allowed_groupings': [
+              {
+                'display_name': 'Date',
+                'name': 'date',
+                'icon': 'mdi-calendar',
+                'color': 'primary'
+              },
+              {
+                'display_name': 'User',
+                'name': 'user',
+                'icon': 'mdi-account-circle',
+                'color': 'blue'
+              },
+              {
+                'display_name': 'Label',
+                'name': 'label',
+                'icon': 'mdi-format-paint',
+                'color': 'pink'
+              },
+              {
+                'display_name': 'Task',
+                'name': 'task',
+                'icon': 'mdi-flash-circle',
+                'color': 'purple'
+              },
+              {
+                'display_name': 'File (Frame)',
+                'name': 'file',
+                'icon': 'mdi-file',
+                'color': 'orange'
+              },
+              {
+                'display_name': 'Task Status',
+                'name': 'task_status',
+                'icon': 'mdi-list-status',
+                'color': 'green'
+              },
+            ]
           },
-          // events don't quite make sense in end user context
-          /*
-          {'display_name': 'Event',
-           'name': 'event',
-           'icon': 'mdi-calendar-star',
-           'color': 'pink'
-          },
-          */
           {
             'display_name': 'Task',
             'name': 'task',
             'icon': 'mdi-flash-circle',
-            'color': 'purple'
+            'color': 'purple',
+            'allowed_groupings': [
+              {
+                'display_name': 'Date',
+                'name': 'date',
+                'icon': 'mdi-calendar',
+                'color': 'primary'
+              },
+              {
+                'display_name': 'User',
+                'name': 'user',
+                'icon': 'mdi-account-circle',
+                'color': 'blue'
+              },
+              {
+                'display_name': 'Label',
+                'name': 'label',
+                'icon': 'mdi-format-paint',
+                'color': 'pink'
+              },
+              {
+                'display_name': 'Task',
+                'name': 'task',
+                'icon': 'mdi-flash-circle',
+                'color': 'purple'
+              },
+              {
+                'display_name': 'File (Frame)',
+                'name': 'file',
+                'icon': 'mdi-file',
+                'color': 'orange'
+              },
+              {
+                'display_name': 'Task Status',
+                'name': 'task_status',
+                'icon': 'mdi-list-status',
+                'color': 'green'
+              },
+            ]
           }
         ],
-
-        //period_list: ['last_30_days', 'all', 'year_to_date'],
 
         period_list: [
           {
@@ -587,52 +686,8 @@ export default Vue.extend({
         date_period_unit_list: ['day', 'month', 'year'],
         //group_by_list: ['user', 'project', 'job', 'label', 'date'],
 
-        group_by_list: [
-          {
-            'display_name': 'Date',
-            'name': 'date',
-            'icon': 'mdi-calendar',
-            'color': 'primary'
-          },
-          {
-            'display_name': 'User',
-            'name': 'user',
-            'icon': 'mdi-account-circle',
-            'color': 'blue'
-          },
-          // Sept 1, 2020 Hide not fully supported option
-          // NOT that this comes accorss in error message as job until we change other field stuff in back end
-          /*
-          {'display_name': 'Task Template (Job)',
-           'name': 'job',
-           'icon': 'mdi-lightbulb-group',
-           'color': 'green'
-          },
-          */
-          {
-            'display_name': 'Label',
-            'name': 'label',
-            'icon': 'mdi-format-paint',
-            'color': 'pink'
-          },
-          {
-            'display_name': 'Task',
-            'name': 'task',
-            'icon': 'mdi-flash-circle',
-            'color': 'purple'
-          },
-          {
-            'display_name': 'File (Frame)',
-            'name': 'file',
-            'icon': 'mdi-file',
-            'color': 'orange'
-          },
-          {
-            'display_name': 'Task Status',
-            'name': 'task_status',
-            'icon': 'mdi-list-status',
-            'color': 'green'
-          },
+        group_by_list_default: [
+
         ],
 
         scope_icon_list: [
@@ -815,6 +870,17 @@ export default Vue.extend({
           return 'User';
         }
       },
+      current_group_by_list: function(){
+        let item_of_interest = this.report_template.item_of_interest;
+        let ioi_obj = this.item_of_interest_list.find(elm => elm.name === item_of_interest)
+        if(ioi_obj){
+          return ioi_obj.allowed_groupings;
+        }
+        else{
+          return []
+        }
+
+      },
       metadata: function () {
 
         // handle duplicate keys (things that already exist
@@ -881,6 +947,13 @@ export default Vue.extend({
 
     },
     methods: {
+      on_change_item_of_interest: function(new_item){
+        console.log('ITEM', new_item, this.item_of_interest_list)
+        let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
+        console.log('item_of_interest', item_of_interest)
+        this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
+        this.has_changes = true;
+      },
       set_job: function (job) {
         this.job = job;
         this.has_changes = true
@@ -894,13 +967,19 @@ export default Vue.extend({
         this.second_grouping = [];
         this.label_colour_map = null;
         this.label_names_map = null;
-        this.fillData()
+        this.fillData({
+          labels: [],
+          values: [],
+          second_grouping: [],
+          label_colour_map: null,
+          label_names_map: null,
+        })
 
       },
-      fill_grouped_by_label_chart_data() {
+      fill_grouped_by_label_chart_data(stats) {
         const created_datasets = [];
         this.report_warning = {};
-        let unique_labels = [...new Set(this.labels)];
+        let unique_labels = [...new Set(stats.labels)];
         if (unique_labels.length > 20) {
           this.datacollection = {}
           this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
@@ -908,35 +987,35 @@ export default Vue.extend({
           unique_labels = unique_labels.splice(0, 20);
         }
         this.datacollection = {datasets: [], labels: unique_labels}
-        for (let i = 0; i < this.second_grouping.length; i++) {
-          const current = this.second_grouping[i];
-          const label_name = this.label_names_map[current];
+        for (let i = 0; i < stats.second_grouping.length; i++) {
+          const current = stats.second_grouping[i];
+          const label_name = stats.label_names_map[current];
           if (!created_datasets.map(ds => ds.label).includes(label_name)) {
             created_datasets.push({
-              label: this.label_names_map[current],
-              backgroundColor: this.label_colour_map[current].hex,
+              label: stats.label_names_map[current],
+              backgroundColor: stats.label_colour_map[current].hex,
               data: []
             })
           }
           // Add Value
-          const dataset = created_datasets.find(dset => dset.label === this.label_names_map[current]);
-          dataset.data[unique_labels.indexOf(this.labels[i])] = this.values[i]
+          const dataset = created_datasets.find(dset => dset.label === stats.label_names_map[current]);
+          dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
 
         }
         this.datacollection.datasets = created_datasets
         return created_datasets
       },
-      fillData() {
+      fillData(stats) {
         if (this.report_template.group_by_labels) {
-          this.fill_grouped_by_label_chart_data();
+          this.fill_grouped_by_label_chart_data(stats);
         } else {
           this.datacollection = {
-            labels: this.labels,
+            labels: stats.labels,
             datasets: [
               {
                 // Label that shows on header
-                label: this.report_template.item_of_interest,
-                data: this.values,
+                label: stats.header_name ? stats.header_name : this.report_template.item_of_interest,
+                data: stats.values,
                 backgroundColor: this.color
               },
 
@@ -997,7 +1076,7 @@ export default Vue.extend({
           this.label_colour_map = stats.label_colour_map
           this.count = stats.count
 
-          this.fillData()
+          this.fillData(stats)
         } else if (this.report_template.view_type == "count") {
           this.count = stats
         }
@@ -1234,7 +1313,7 @@ export default Vue.extend({
 
             this.labels = response.data.stats.labels
             this.values = response.data.stats.values
-            this.fillData()
+            this.fillData(response.data.stats)
 
             this.count = response.data.stats.count
 

@@ -8,6 +8,7 @@ from sqlalchemy import func
 import datetime
 import threading
 
+from methods.report.custom_reports.TimeSpentReport import TimeSpentReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 
@@ -512,10 +513,16 @@ class Report_Runner():
             report_template_data = self.report_template.serialize(),
             success = True
         )
-        return self.results
+
+        return stats
 
     def generate_custom_report(self):
-        raise NotImplementedError
+        if self.item_of_interest == 'time_spent_task':
+            report = TimeSpentReport(session = self.session, report_template = self.report_template)
+        else:
+            raise NotImplementedError
+
+        return report.run()
 
     def run(self):
         """
@@ -1373,12 +1380,10 @@ def run_report_api():
 
         results = report_runner.run()
 
-        stats = report_runner.format_for_external(results)
-
         if len(report_runner.log["error"].keys()) >= 1:
             return jsonify(log = report_runner.log), 400
 
         log['success'] = True
         return jsonify(log = report_runner.log,
                        report_template = report_runner.report_template.serialize(),
-                       stats = stats), 200
+                       stats = results), 200
