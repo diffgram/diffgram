@@ -3432,7 +3432,6 @@ mplate_has_keypoints_type: function (instance_template) {
 
       this.html_image = image;
       //this.trigger_refresh_with_delay()
-      // todo getting buffer should be in Video component
       // also this could be a lot smarter ie getting instances
       // while still some buffer left etc.
       if (this.current_frame in this.instance_buffer_dict) {
