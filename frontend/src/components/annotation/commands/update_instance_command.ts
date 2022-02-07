@@ -6,7 +6,8 @@ import { TextAnnotationInstance, TextRelationInstance } from '../../vue_canvas/i
 const CLASS_INSTANCE_TYPES = [
   'keypoints',
   'cuboid_3d',
-  'text_token'
+  'text_token',
+  'relation'
 ]
 
 interface ComponentWithInstanceList extends Vue {
@@ -67,7 +68,11 @@ export class UpdateInstanceCommand {
     else if (instance.type === 'text_token') {
       const { id, start_token, end_token, label_file, creation_ref_id, soft_delete } = instance.get_instance_data()
       const newInstance = new TextAnnotationInstance()
-      newInstance.create_instance(id, start_token, end_token, label_file, soft_delete)
+      if (typeof id === "number") {
+        newInstance.create_instance(id, start_token, end_token, label_file, soft_delete)
+      } else {
+        newInstance.create_frontend_instance(start_token, end_token, label_file, soft_delete)
+      }
       newInstance.initialized = true
       newInstance.creation_ref_id = creation_ref_id
       return newInstance
@@ -75,7 +80,11 @@ export class UpdateInstanceCommand {
     else if (instance.type === 'relation') {
       const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance.get_instance_data()
       const newInstance = new TextRelationInstance()
-      newInstance.create_instance(id, from_instance_id, to_instance_id, label_file)
+      if (typeof id === "number") {
+        newInstance.create_instance(id, from_instance_id, to_instance_id, label_file)
+      } else {
+        newInstance.create_frontend_instance(from_instance_id, to_instance_id, label_file)
+      }
       newInstance.initialized = true
       newInstance.creation_ref_id = creation_ref_id
       return newInstance

@@ -370,7 +370,6 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
-            console.log(instance_id)
             const is_text_token = this.instance_list.find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
             if (!is_text_token) return
@@ -489,7 +488,7 @@ export default Vue.extend({
             instance.label_file = {...label}
             instance.label_file_id = label.id
 
-            const instance_index = this.instance_list.indexOf(event.instance)
+            const instance_index = this.instance_list.indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
             this.has_changed = true
