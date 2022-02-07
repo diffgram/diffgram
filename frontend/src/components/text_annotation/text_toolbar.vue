@@ -58,9 +58,7 @@
                     :loading="save_loading"
                     :disabled="
                         !has_changed ||
-                        save_loading ||
-                        view_only_mode ||
-                        (file == undefined && task == undefined)
+                        save_loading
                     "
                     color="primary"
                     icon="save"
@@ -153,7 +151,27 @@ export default Vue.extend({
         save_loading: {
             type: Boolean,
             default: false
-        }
+        },
+        height: {
+            type: String,
+            default: '50px'
+        },
+        project_string_id: {
+            type: String,
+            required: true
+        },
+        label_list: {
+            type: Array,
+            required: true
+        },
+        loading: {
+            type: Boolean,
+            default: false
+        },
+        label_file_colour_map: {
+            type: Object,
+            requered: true
+        },
     }
 })
 </script>

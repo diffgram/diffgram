@@ -11,6 +11,10 @@
                 :redo_disabled="redo_disabled"
                 :has_changed="has_changed"
                 :save_loading="save_loading"
+                :loading="rendering"
+                :project_string_id="project_string_id"
+                :label_list="label_list"
+                :label_file_colour_map="label_file_colour_map"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
                 @change_file="change_file"
@@ -25,6 +29,7 @@
             :instance_list="instance_list.filter(instance => !instance.soft_delete)"
             :label_list="label_list"
             :loading="rendering"
+            :label_file_colour_map="label_file_colour_map"
             @delete_instance="delete_instance"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
@@ -188,6 +193,10 @@ export default Vue.extend({
             type: Object,
             requered: true
         },
+        label_file_colour_map: {
+            type: Object,
+            requered: true
+        },
         label_list: {
             type: Array,
             requered: true
@@ -218,6 +227,7 @@ export default Vue.extend({
             command_manager: undefined,
             has_changed: false,
             save_loading: false,
+            project_string_id: ''
         }
     },
     mounted() {
@@ -529,7 +539,8 @@ export default Vue.extend({
             }
         },
         initialize_instance_list: async function () {
-            const { file_serialized: { instance_list } } = await getInstanceList(this.$route.params.project_string_id, this.file.id)
+            this.project_string_id = this.$route.params.project_string_id
+            const { file_serialized: { instance_list } } = await getInstanceList(this.project_string_id, this.file.id)
             instance_list.map(instance => {
                 if (instance.type === "text_token") {
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
@@ -550,7 +561,7 @@ export default Vue.extend({
             this.has_changed = false
             this.save_loading = true
             if (!this.instance_in_progress) {
-                const res = await postInstanceList(this.$route.params.project_string_id, this.file.id, this.instance_list)
+                const res = await postInstanceList(this.project_string_id, this.file.id, this.instance_list)
                 const {added_instances} = res
                 added_instances.map(add_insatnce => {
                     if (!index) {
