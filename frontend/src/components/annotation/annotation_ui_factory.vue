@@ -47,6 +47,7 @@
           :file="current_file" 
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
           @request_file_change="request_file_change"
         />
       </div>
