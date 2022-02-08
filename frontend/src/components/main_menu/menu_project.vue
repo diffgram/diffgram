@@ -16,6 +16,7 @@
                 :disabled="false">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
+          <v-icon right> mdi-chevron-down</v-icon>
         </v-btn>
       </template>
 
@@ -24,20 +25,6 @@
         <v-layout column>
 
           <!-- Buttons wrapped in v-flex to help with alignment -->
-
-          <v-flex>
-            <v-btn  color="primary"
-                    text
-                    style="text-transform: none !important;"
-                    :disabled="!$store.state.project.current.project_string_id"
-                    @click="$router.push('/project/' +
-                        $store.state.project.current.project_string_id +
-                        '/job/new')">
-              <v-icon left>add</v-icon>
-              New Tasks
-            </v-btn>
-          </v-flex>
-
           <v-flex>
             <v-btn
                 color="primary"
