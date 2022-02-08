@@ -42,8 +42,8 @@
             direction="ltr" 
             id="svg0:60" 
             width="100%" 
-            :style="`height: 5000px`"
             @mouseup="on_draw_text_token"
+            style="height: 5000px"
             :class="unselectable && 'unselectable'"
         >
             <g v-if="rendering" transform="translate(0, 23.5)">
@@ -59,7 +59,7 @@
                 </text>
                 <text x="40">Loading...</text>
             </g>
-            <g ref="main-text-container" v-else>
+            <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
                 <g
                     v-if="relation_drawing"
                 >
@@ -90,7 +90,7 @@
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
                     @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
-                    style="font-size: 10px; cursor: pointer"
+                    style="font-size: 10px; cursor: pointer;"
                     class="unselectable"
                 >
                     {{ instance.label_file.label.name }}
