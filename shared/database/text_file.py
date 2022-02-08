@@ -70,7 +70,6 @@ class TextFile(Base):
     def serialize(self):
 
         keyframe = False
-
         text = {
             'original_filename': self.original_filename,
             'soft_delete': self.soft_delete,
