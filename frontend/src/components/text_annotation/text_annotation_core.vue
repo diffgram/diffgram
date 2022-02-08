@@ -68,17 +68,20 @@
                         :cy="render_drawing_arrow.marker.y" 
                         :fill="current_label.colour.hex"
                         r="3" 
+                        class="unselectable"
                     />
                     <path
                         v-if="render_drawing_arrow.path"
                         :stroke="current_label.colour.hex" 
                         :d="render_drawing_arrow.path" 
                         fill="transparent"
+                        class="unselectable"
                     />
                     <path 
                         v-if="render_drawing_arrow.arrow"
                         :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`" 
                         :fill="current_label.colour.hex"
+                        class="unselectable"
                     />
                 </g>
                 <text 
@@ -107,6 +110,7 @@
                     @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
+                    class="unselectable"
                 />
                 <circle 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
@@ -115,6 +119,7 @@
                     :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10" 
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     r="2" 
+                    class="unselectable"
                 />
                 <rect 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
@@ -128,12 +133,14 @@
                     @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
+                    class="unselectable"
                 />
                 <path 
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_end_marker_${instance.get_instance_data().id}`"
                     :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`" 
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    class="unselectable"
                 />
                 <rect 
                     v-for="rect in render_rects"
@@ -147,6 +154,7 @@
                     @mouseleave="on_instance_stop_hover"
                     :height="rect.instance_type === 'text_token' ? 3 : 1"
                     style="cursor: pointer"
+                    class="unselectable"
                 />
                 <g 
                     v-for="(line, index) in lines"
@@ -155,7 +163,6 @@
                 >
                     <text 
                         v-for="(token, token_index) in tokens.filter(token => token.line === index)"
-                        unselectable="on"
                         :id="token.id"
                         :key="`line_${index}token_${token_index}`"
                         :x="token.start_x"
@@ -345,7 +352,7 @@ export default Vue.extend({
             }
         },
         on_draw_text_token: function() {
-            if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return 
+            if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
             let end_token_id;
@@ -423,16 +430,18 @@ export default Vue.extend({
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
-            const created_instance = new TextRelationInstance();
-            created_instance.create_frontend_instance(
-                this.instance_in_progress.start_instance, 
-                this.instance_in_progress.end_instance,
-                {...this.current_label}
-            )
-            this.instance_list.push(created_instance)
-            const command = new CreateInstanceCommand(created_instance, this)
-            this.command_manager.executeCommand(command)
-            this.has_changed = true
+            if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance) {
+                const created_instance = new TextRelationInstance();
+                created_instance.create_frontend_instance(
+                    this.instance_in_progress.start_instance, 
+                    this.instance_in_progress.end_instance,
+                    {...this.current_label}
+                )
+                this.instance_list.push(created_instance)
+                const command = new CreateInstanceCommand(created_instance, this)
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
             this.instance_in_progress = null;
             this.path = {};
             window.removeEventListener('mousemove', this.draw_relation_listener)
@@ -466,9 +475,9 @@ export default Vue.extend({
             if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
             this.instance_in_progress.end_token = end_token
             const instance_exists = this.instances.find(instance => 
-                instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
+                instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token && !instance.soft_delete
                 ||
-                instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token
+                instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token && !instance.soft_delete
                 )
             if (!instance_exists) {
                 this.instances.push(this.instance_in_progress)
