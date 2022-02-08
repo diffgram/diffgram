@@ -345,7 +345,7 @@ export default Vue.extend({
             }
         },
         on_draw_text_token: function() {
-            if (this.instance_in_progress && this.instance_in_progress.type === "relation") return 
+            if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return 
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
             let end_token_id;
@@ -483,7 +483,6 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
-            this.instance_in_progress = null
             if (window.getSelection) {
                 if (window.getSelection().empty) {  // Chrome
                     window.getSelection().empty();
@@ -493,6 +492,7 @@ export default Vue.extend({
                 } else if (document.selection) {  // IE?
                 document.selection.empty();
             }
+            this.instance_in_progress = null
         },
         change_instance_label: async function(event) {
             const { instance, label } = event
