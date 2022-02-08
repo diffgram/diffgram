@@ -268,9 +268,9 @@ export default Vue.extend({
                     },
                     arrow: {
                         x: this.path.x - 350,
-                        y: this.path.y - 100 + scroll_y
+                        y: this.path.y - 100 + scroll_y - 23.5
                     },
-                    path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y} ${this.path.x - 350} ${this.path.y - 100 + scroll_y}`
+                    path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y - 23.5} ${this.path.x - 350} ${this.path.y - 100 + scroll_y - 23.5}`
                  }
             }
 
