@@ -203,6 +203,10 @@ export default Vue.extend({
         label_list: {
             type: Array,
             requered: true
+        },
+        project_string_id: {
+            type: String,
+            requered: true
         }
     },
     data() {
@@ -229,8 +233,7 @@ export default Vue.extend({
             // Command
             command_manager: undefined,
             has_changed: false,
-            save_loading: false,
-            project_string_id: ''
+            save_loading: false
         }
     },
     mounted() {
@@ -551,7 +554,6 @@ export default Vue.extend({
             }
         },
         initialize_instance_list: async function () {
-            this.project_string_id = this.$route.params.project_string_id
             const instance_list = await getInstanceList(this.project_string_id, this.file.id)
             instance_list.map(instance => {
                 if (instance.type === "text_token") {
