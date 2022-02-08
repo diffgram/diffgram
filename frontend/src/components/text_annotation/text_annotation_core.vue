@@ -463,7 +463,7 @@ export default Vue.extend({
         },
         // function to finish drawing instance and remove selection
         on_finish_draw_instance: async function(end_token) {
-            if (!this.instance_in_progress.start_token) return
+            if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
             this.instance_in_progress.end_token = end_token
             const instance_exists = this.instances.find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token
