@@ -82,12 +82,13 @@
 
             <div>
                 <tooltip_button
-                tooltip_message="Previous File"
-                @click="$emit('change_file', 'previous')"
-                color="primary"
-                icon="mdi-chevron-left-circle"
-                :icon_style="true"
-                :bottom="true"
+                    tooltip_message="Previous File"
+                    @click="$emit('change_file', 'previous')"
+                    color="primary"
+                    icon="mdi-chevron-left-circle"
+                    :icon_style="true"
+                    :bottom="true"
+                    :disabled="loading || save_loading"
                 >
                 </tooltip_button>
                 <!-- TODO Move some of disabled logic into functions don't like having
@@ -95,12 +96,13 @@
             </div>
             <div>
                 <tooltip_button
-                tooltip_message="Next File"
-                @click="$emit('change_file', 'next')"
-                color="primary"
-                icon="mdi-chevron-right-circle"
-                :icon_style="true"
-                :bottom="true"
+                    tooltip_message="Next File"
+                    @click="$emit('change_file', 'next')"
+                    color="primary"
+                    icon="mdi-chevron-right-circle"
+                    :icon_style="true"
+                    :bottom="true"
+                    :disabled="loading || save_loading"
                 >
                 </tooltip_button>
             </div>
