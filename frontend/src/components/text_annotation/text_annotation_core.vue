@@ -690,7 +690,15 @@ export default Vue.extend({
             let end_token;
             if (instance.type === 'text_token') {
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
+                if (!starting_token) {
+                    instance.soft_delete = true
+                    return []
+                }
                 end_token = this.tokens.find(token => token.id === instance.end_token)
+                if (!end_token) {
+                    instance.soft_delete = true
+                    return []
+                }
             } else {
                 const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
                 if (!start_instance) {
