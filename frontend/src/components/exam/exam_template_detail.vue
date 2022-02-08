@@ -12,9 +12,12 @@
     v-else-if="!show_admin_view && show_exam"
   >
   </exam_template_detail_annotator>
-  <v-container v-else-if="!show_admin_view && !show_exam" class="d-flex justify-center align-center">
+  <v-container v-else-if="!loading && !show_admin_view && !show_exam" class="d-flex justify-center align-center">
     <h2>You don't have credentials for this exam.</h2>
     <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
+  </v-container>
+  <v-container v-else-if="loading" class="d-flex justify-center align-center">
+    <v-progress-linear indeterminate></v-progress-linear>
   </v-container>
 </template>
 
@@ -40,11 +43,13 @@ export default Vue.extend({
       roles: null,
       exam: {},
       show_admin_view: false,
+      loading: false,
       missing_credentials: [],
       show_exam: false,
     };
   },
   async mounted() {
+    this.loading = true
     this.roles = this.$store.getters.get_project_roles(this.$store.state.project.current.project_string_id);
     this.exam = await get_task_template_details(this.exam_id);
     if(this.roles && this.roles.length > 0){
@@ -64,6 +69,7 @@ export default Vue.extend({
     if(!this.show_exam){
       this.show_missing_credentials_dialog()
     }
+    this.loading = false
   },
   computed: {
 

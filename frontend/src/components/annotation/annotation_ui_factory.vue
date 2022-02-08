@@ -1,13 +1,13 @@
 <template>
   <div>
     <div id="annotation_ui_factory" tabindex="0">
-      <div v-if="!annotation_interface">
+      <div v-if="!annotation_interface&& !initializing">
         <empty_file_editor_placeholder
           :loading="any_loading"
           :project_string_id="project_string_id"
         ></empty_file_editor_placeholder>
       </div>
-      <div v-else-if="!credentials_granted">
+      <div v-else-if="!credentials_granted && !initializing">
         <empty_file_editor_placeholder
           :loading="false"
           :project_string_id="project_string_id"
@@ -19,6 +19,7 @@
       </div>
       <div v-else-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
+          v-if="!changing_file"
           class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
           :model_run_id_list="model_run_id_list"
@@ -58,7 +59,8 @@
         </sensor_fusion_editor>
       </div>
       <file_manager_sheet
-        v-show="!loading_project"
+        v-if="!initializing && !task"
+        v-show="!loading_project && !initializing"
         :show_sheet="!loading_project"
         ref="file_manager_sheet"
         :project_string_id="computed_project_string_id"
@@ -67,6 +69,7 @@
         :enabled_edit_schema="enabled_edit_schema"
         :show_explorer_full_screen="show_explorer_full_screen"
         :file_id_prop="file_id_prop"
+        :initializing="initializing"
         :job_id="job_id"
         @change_file="change_file"
       >
@@ -130,10 +133,11 @@ export default Vue.extend({
   data() {
     return {
       show_snackbar: false,
+      changing_file: false,
       enabled_edit_schema: false,
       user_has_credentials: false,
       credentials_granted: true,
-      initializing: false,
+      initializing: true,
       snackbar_message: "",
       loading: false,
       loading_project: true,
@@ -155,7 +159,9 @@ export default Vue.extend({
       if (from.name === "task_annotation" && to.name === "studio") {
         this.fetch_project_file_list();
         this.task = null;
-        this.$refs.file_manager_sheet.display_file_manager_sheet();
+        if(this.$refs.file_manager_sheet){
+          this.$refs.file_manager_sheet.display_file_manager_sheet();
+        }
       }
       if (from.name === "studio" && to.name === "task_annotation") {
         this.current_file = null;
@@ -217,8 +223,11 @@ export default Vue.extend({
       this.task = {
         ...UI_SCHEMA_TASK_MOCK,
       };
-      this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-      this.$refs.file_manager_sheet.hide_file_manager_sheet();
+      if(this.$refs.file_manager_sheet){
+        this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+        this.$refs.file_manager_sheet.hide_file_manager_sheet();
+      }
+
     } else {
       if (this.$props.task_id_prop) {
         await this.fetch_single_task(this.$props.task_id_prop);
@@ -361,13 +370,16 @@ export default Vue.extend({
       this.$refs.file_manager_sheet.request_change_file(direction, file);
     },
 
-    change_file: function (file, model_runs, color_list) {
+    change_file: async function (file, model_runs, color_list) {
+      this.changing_file = true
       this.current_file = file;
+      await this.$nextTick();
       let model_runs_data = "";
       if (model_runs) {
         model_runs_data = encodeURIComponent(model_runs);
       }
       this.get_model_runs_from_query(model_runs_data);
+      this.changing_file = false;
     },
 
     get_labels_from_project: async function () {
@@ -396,15 +408,22 @@ export default Vue.extend({
     fetch_project_file_list: async function () {
       this.loading = true;
       if (this.$route.query.file) {
-        this.current_file = await this.$refs.file_manager_sheet.get_media(
-          true,
-          this.$route.query.file
-        );
+        if(this.$refs.file_manager_sheet){
+          this.current_file = await this.$refs.file_manager_sheet.get_media(
+            true,
+            this.$route.query.file
+          );
+        }
       } else {
-        this.current_file = await this.$refs.file_manager_sheet.get_media();
+        if(this.$refs.file_manager_sheet){
+          this.current_file = await this.$refs.file_manager_sheet.get_media();
+        }
       }
       this.loading = false;
-      this.$refs.file_manager_sheet.display_file_manager_sheet();
+      if(this.$refs.file_manager_sheet){
+        this.$refs.file_manager_sheet.display_file_manager_sheet();
+      }
+
     },
 
     fetch_single_file: async function () {
@@ -431,10 +450,12 @@ export default Vue.extend({
           builder_or_trainer_mode: this.$store.state.builder_or_trainer.mode,
         });
         if (response.data.log.success == true) {
-          this.$refs.file_manager_sheet.set_file_list([
-            response.data.task.file,
-          ]);
-          this.$refs.file_manager_sheet.hide_file_manager_sheet();
+          if(this.$refs.file_manager_sheet){
+            this.$refs.file_manager_sheet.set_file_list([
+              response.data.task.file,
+            ]);
+            this.$refs.file_manager_sheet.hide_file_manager_sheet();
+          }
           this.task = response.data.task;
           await this.get_project(this.task.project_string_id);
         }
@@ -468,7 +489,10 @@ export default Vue.extend({
             history.pushState({}, "", `/task/${response.data.task.id}`);
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
-            this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+            if(this.$refs.file_manager_sheet){
+              this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+            }
+
             this.task = response.data.task;
           } else {
             if (direction === "next") {

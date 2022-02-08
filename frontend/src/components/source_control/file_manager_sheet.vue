@@ -111,7 +111,7 @@
       </v-card>
     </v-bottom-sheet>
     <!-- Open Bottom Sheet -->
-    <v-tooltip v-if="media_sheet == false && !task"
+    <v-tooltip v-if="media_sheet == false && !task" v-show="!initializing"
                bottom>
       Open File Explorer
       <template v-slot:activator="{ on }">
@@ -146,6 +146,7 @@
       'show_sheet',
       'show_explorer_full_screen',
       'enabled_edit_schema',
+      'initializing',
 
     ],
     components:{

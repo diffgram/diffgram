@@ -391,7 +391,13 @@
         },
         job_detail_page_route_by_status(job) {
           if (job.status == "draft") {
-            this.$router.push("/job/new/" + job.id)
+            if(job.type === 'exam_template'){
+              this.$router.push(`/project/${this.$props.project_string_id}/exam/new/${job.id}`)
+            }
+            else{
+              this.$router.push("/job/new/" + job.id)
+            }
+
             return
           }
           if(job.type === 'exam_template'){

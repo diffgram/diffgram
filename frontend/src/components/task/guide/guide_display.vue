@@ -35,9 +35,6 @@
 
     },
     mounted() {
-      this.add_visit_history_event();
-      // why at mounted and not created?
-      this.guide_list_api()
 
     },
     methods: {
