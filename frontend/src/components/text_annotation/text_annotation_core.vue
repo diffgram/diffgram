@@ -348,7 +348,12 @@ export default Vue.extend({
             if (this.instance_in_progress && this.instance_in_progress.type === "relation") return 
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
-            const end_token_id = parseInt(selection.focusNode.parentNode.id)
+            let end_token_id;
+            if (selection.focusNode.nodeName === "#text") {
+                end_token_id = parseInt(selection.focusNode.parentNode.id)
+            } else {
+                end_token_id = parseInt(selection.focusNode.previousSibling.id)
+            }
             this.on_start_draw_instance(start_token_id)
             this.on_finish_draw_instance(end_token_id)
             this.instance_in_progress = null
