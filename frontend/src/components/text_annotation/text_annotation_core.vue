@@ -91,6 +91,7 @@
                     @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
+                    class="unselectable"
                 >
                     {{ instance.label_file.label.name }}
                 </text>
