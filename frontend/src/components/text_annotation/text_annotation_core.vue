@@ -551,7 +551,7 @@ export default Vue.extend({
         },
         initialize_instance_list: async function () {
             this.project_string_id = this.$route.params.project_string_id
-            const { file_serialized: { instance_list } } = await getInstanceList(this.project_string_id, this.file.id)
+            const instance_list = await getInstanceList(this.project_string_id, this.file.id)
             instance_list.map(instance => {
                 if (instance.type === "text_token") {
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
@@ -560,9 +560,9 @@ export default Vue.extend({
                     new_instance.creation_ref_id = creation_ref_id
                     this.instance_list.push(new_instance)
                 } else {
-                    const { id, from_instance_id, to_instance_id, label_file, creation_ref_id } = instance
+                    const { id, from_instance_id, to_instance_id, label_file, creation_ref_id, soft_delete } = instance
                     const new_instance = new TextRelationInstance()
-                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
+                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
                     new_instance.creation_ref_id = creation_ref_id
                     this.instance_list.push(new_instance)
                 }
@@ -692,9 +692,17 @@ export default Vue.extend({
                 starting_token = this.tokens.find(token => token.id === instance.start_token)
                 end_token = this.tokens.find(token => token.id === instance.end_token)
             } else {
-                const start_instance = this.instance_list.find(find_instance =>  find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
+                const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
+                if (!start_instance) {
+                    instance.soft_delete = true
+                    return []
+                }
                 starting_token = this.tokens.find(token => token.id === start_instance.start_token)
                 const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
+                if (!end_instance) {
+                    instance.soft_delete = true
+                    return []
+                }
                 end_token = this.tokens.find(token => token.id === end_instance.end_token)
             }
             if (starting_token.id === end_token.id) {
