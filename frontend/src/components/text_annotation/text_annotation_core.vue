@@ -430,7 +430,13 @@ export default Vue.extend({
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
-            if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance) {
+            const relation_already_exists = this.instance_list.find(inst => 
+                inst.type === "relation" && 
+                inst.from_instance_id === this.instance_in_progress.start_instance && 
+                inst.to_instance_id === this.instance_in_progress.end_instance && 
+                !inst.soft_delete
+            )
+            if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
                 const created_instance = new TextRelationInstance();
                 created_instance.create_frontend_instance(
                     this.instance_in_progress.start_instance, 
