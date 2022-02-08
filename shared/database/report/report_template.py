@@ -128,7 +128,7 @@ class ReportTemplate(Base):
             'project_string_id': project_string_id,  # note no self
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
-            'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S'),
+            'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S') if self.time_created else None,
             'time_updated': time_updated,
             'item_of_interest': self.item_of_interest,
             'group_by_labels': self.group_by_labels,

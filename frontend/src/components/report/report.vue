@@ -521,6 +521,26 @@ export default Vue.extend({
 
         item_of_interest_list: [
           {
+            'display_name': 'Annotators Performance',
+            'name': 'annotator_performance',
+            'icon': 'mdi-camera-timer',
+            'color': 'cyan',
+            'allowed_groupings': [
+              {
+                'display_name': 'Task',
+                'name': 'task',
+                'icon': 'mdi-flash-circle',
+                'color': 'purple'
+              },
+              {
+                'display_name': 'Instance',
+                'name': 'instance',
+                'icon': 'mdi-brush',
+                'color': 'green'
+              },
+            ]
+          },
+          {
             'display_name': 'Time Spent On Task',
             'name': 'time_spent_task',
             'icon': 'mdi-clock',

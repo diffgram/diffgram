@@ -297,20 +297,22 @@ import {create_event} from "../event/create_event";
          icon: "mdi-grid"
           }
       ],
-
-      /* Slightly different format, accessing via key
-       * Alterantive is to do a find operation on array I guess...
-       * we are using the key as the lower case name
-       * slight duplicate ie writing user twice
-       * but that seems cleaner then a bunch of functions to
-       * convert lower/upper maybe?
-       */
       item_of_interest_dict: {
         'user': {
             'name': 'User',
             'icon': 'mdi-account-circle',
             'color': 'blue'
           },
+        'time_spent_task': {
+          'name': 'Time Spent On Task',
+          'icon': 'mdi-clock',
+          'color': 'blue'
+        },
+        'annotator_performance': {
+          'name': 'Annotators Time Performance',
+          'icon': 'mdi-camera-timer',
+          'color': 'cyan'
+        },
         'instance' : {
            'name': 'Instance',
            'icon': 'mdi-format-paint',

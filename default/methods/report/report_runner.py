@@ -9,6 +9,7 @@ import datetime
 import threading
 
 from methods.report.custom_reports.TimeSpentReport import TimeSpentReport
+from methods.report.custom_reports.AnnotatorPerformanceReport import AnnotatorPerformanceReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 
@@ -48,7 +49,7 @@ report_spec_list = [
     {'item_of_interest': {
         'kind': str,
         'required': True,
-        'valid_values_list': ['instance', 'file', 'event', 'task', 'time_spent_task']
+        'valid_values_list': ['instance', 'file', 'event', 'task', 'time_spent_task', 'annotator_performance']
     }
     },
 
@@ -202,6 +203,7 @@ class Report_Runner():
         self,
         session,
         report_template_id: int = None,
+        report_template_data: dict = None,
         metadata: dict = None,
         member = None,
         project_string_id = None
@@ -209,6 +211,7 @@ class Report_Runner():
 
         self.session = session
         self.report_template_id = report_template_id
+        self.report_template_data = report_template_data
 
         # This will get converted into
         # metadata after validating spec.
@@ -232,6 +235,7 @@ class Report_Runner():
             return
 
         self.project_string_id = project_string_id
+        self.project = Project.get_by_string_id(self.session, self.project_string_id)
         if 'all' in self.metadata.get('member_list', []):
             project = Project.get_by_string_id(session, self.metadata['project_string_id'])
             users = project.users
@@ -255,7 +259,8 @@ class Report_Runner():
             'file': File,
             'task': Task,
             'event': Event,
-            'time_spent_task': 'custom_report'
+            'time_spent_task': 'custom_report',
+            'annotator_performance': 'custom_report'
         }
 
         return class_dict.get(item_of_interest)
@@ -519,10 +524,23 @@ class Report_Runner():
     def generate_custom_report(self):
         if self.item_of_interest == 'time_spent_task':
             report = TimeSpentReport(session = self.session, report_template = self.report_template)
+        if self.item_of_interest == 'annotator_performance':
+            report = AnnotatorPerformanceReport(session = self.session, report_template = self.report_template)
         else:
             raise NotImplementedError
 
         return report.run()
+
+    def build_dummy_report_template_from_data(self):
+        self.report_template = ReportTemplate(
+            item_of_interest = self.report_template_data['item_of_interest'],
+            group_by = self.report_template_data['group_by'],
+            job_id = self.report_template_data['job_id'],
+            project_id = self.project.id,
+            period = self.report_template_data['period'],
+            view_type = self.report_template_data['view_type'],
+            view_sub_type = self.report_template_data['view_sub_type'],
+        )
 
     def run(self):
         """
@@ -531,6 +549,9 @@ class Report_Runner():
 
         Assumes other values needed are set or loaded from existing???
         """
+        if self.report_template is None and self.report_template_data:
+            self.build_dummy_report_template_from_data()
+
         self.init_base_class_object(self.report_template.item_of_interest)
 
         assert self.base_class is not None
@@ -1328,7 +1349,12 @@ def run_report_api():
     spec_list = [
         {"report_template_id": {
             'kind': int,
-            'required': True
+            'required': False
+        }
+        },
+        {"report_template_data": {
+            'kind': dict,
+            'required': False
         }
         },
         {"project_string_id": {
@@ -1345,6 +1371,9 @@ def run_report_api():
 
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
+    if input.get('report_template_id') is None and input.get('report_template_data') is None:
+        log['error']['report_template'] = 'Provide report_template_id or report_template_data'
+        return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
 
@@ -1352,6 +1381,7 @@ def run_report_api():
             session = session,
             member = None,
             report_template_id = input['report_template_id'],
+            report_template_data = input['report_template_data'],
             project_string_id = input['project_string_id']
         )
 
@@ -1364,20 +1394,23 @@ def run_report_api():
         For Diffgram wide reports, they only need to validate the project string id
         BUT if it's not, then the project_string_id should match too.
         """
-        if report_runner.report_template.diffgram_wide_default is True:
-            report_runner.validate_existing_report_id_permissions(
-                project_string_id = input['project_string_id'])
+        if report_runner.report_template is not None:
+            if report_runner.report_template.diffgram_wide_default is True:
+                report_runner.validate_existing_report_id_permissions(
+                    project_string_id = input['project_string_id'])
+            else:
+                # This assume project based...
+                # this should be part of that other permission scope validation.
+                # testing but going to say http://127.0.0.1:8085/report/4
+                # with a non super user, will need to revist this for super admins too
+                if report_runner.report_template.project.project_string_id != input['project_string_id']:
+                    raise Forbidden("No access to this project.")
+
+                report_runner.validate_existing_report_id_permissions(
+                    project_string_id = input['project_string_id'])
         else:
-            # This assume project based...
-            # this should be part of that other permission scope validation.
-            # testing but going to say http://127.0.0.1:8085/report/4
-            # with a non super user, will need to revist this for super admins too
-            if report_runner.report_template.project.project_string_id != input['project_string_id']:
-                raise Forbidden("No access to this project.")
-
-            report_runner.validate_existing_report_id_permissions(
-                project_string_id = input['project_string_id'])
-
+            # Case where not report_template_id is provided (only report_template_data)
+            Project_permissions.user_has_project(Roles = ["admin", "Editor", "Viewer"])
         results = report_runner.run()
 
         if len(report_runner.log["error"].keys()) >= 1:
