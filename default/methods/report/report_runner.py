@@ -261,7 +261,6 @@ class Report_Runner():
             'time_spent_task': 'custom_report',
             'annotator_performance': 'custom_report'
         }
-
         return class_dict.get(item_of_interest)
 
     def get_existing_report_template(self, report_template_id):
@@ -523,7 +522,7 @@ class Report_Runner():
     def generate_custom_report(self):
         if self.item_of_interest == 'time_spent_task':
             report = TimeSpentReport(session = self.session, report_template = self.report_template)
-        if self.item_of_interest == 'annotator_performance':
+        elif self.item_of_interest == 'annotator_performance':
             report = AnnotatorPerformanceReport(session = self.session, report_template = self.report_template)
         else:
             raise NotImplementedError

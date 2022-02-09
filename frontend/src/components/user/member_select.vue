@@ -2,7 +2,7 @@
   <div v-cloak>
     <v-layout>
 
-      <v-select :items="member_list_internal"
+      <v-autocomplete :items="member_list_internal"
                 v-model="item_internal"
                 :label="label"
                 :data-cy="datacy"
@@ -73,7 +73,7 @@
 
         </template>
 
-      </v-select>
+      </v-autocomplete>
     </v-layout>
 
   </div>

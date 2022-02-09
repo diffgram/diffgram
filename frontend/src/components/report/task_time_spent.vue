@@ -1,7 +1,7 @@
 <template>
   <v-card>
-    <v-card-title>Annotator Performance</v-card-title>
-    <v-card-subtitle>Average Time on Task</v-card-subtitle>
+    <v-card-title>Time Spent On Task</v-card-title>
+    <v-card-subtitle>Average Time Spent per task</v-card-subtitle>
     <v-card-text>
       <div>
         Filters here
@@ -39,7 +39,7 @@ export default {
       },
       bar_chart_options_time_series: {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
         elements: {
           bar: {
             borderWidth: 2,
@@ -63,7 +63,7 @@ export default {
         }
       },
       report_template: {
-        item_of_interest: 'annotator_performance',
+        item_of_interest: 'time_spent_task',
         group_by: 'task',
         job_id: null, // Populated on mounted(),
         period: 'all',
@@ -82,13 +82,9 @@ export default {
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
       if(result){
-        console.log('aaa', result)
-        let labels = [];
-        for(let i = 0; i< result.stats.labels.length; i++){
-          labels.push(`${result.stats.values_metadata[i].first_name} ${result.stats.values_metadata[i].last_name}`);
-        }
+
         this.chart_data ={
-          labels: labels,
+          labels: result.stats.labels,
           datasets: [
             {
               backgroundColor: 'blue',

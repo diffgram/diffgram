@@ -1,14 +1,22 @@
 <template>
   <v-container fluid>
-    <v-layout>
+    <v-layout class="d-flex flex-column">
       <v-row>
-        <v-col cols="4">
+        <v-col cols="6">
           <annotator_performance :job_id="job_id"
                                  :project_string_id="project_string_id">
 
           </annotator_performance>
         </v-col>
-        <v-col cols="8">
+        <v-col cols="6">
+          <task_time_spent :job_id="job_id"
+                                 :project_string_id="project_string_id">
+
+          </task_time_spent>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
           <v-card class="pa-6">
             <v-card-title>Tasks Count</v-card-title>
             <v-alert type="error" :value="errors">
@@ -50,12 +58,14 @@
 
 import axios from 'axios';
 import Vue from "vue";
+import task_time_spent from "./task_time_spent.vue";
 import annotator_performance from "./annotator_performance.vue";
 
 export default Vue.extend({
     name: 'stats_task',
     components: {
-      annotator_performance
+      annotator_performance,
+      task_time_spent,
     },
     props: {
       'job_id':
@@ -156,7 +166,7 @@ export default Vue.extend({
           }).then(response => {
           let log = response.data.log
           if (log.success == true) {
-            this.labels = response.data.stats.labels
+            this.labels = response.data.stats.labels;
             this.values = response.data.stats.values
             this.fillData()
 
