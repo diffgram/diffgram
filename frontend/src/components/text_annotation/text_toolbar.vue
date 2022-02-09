@@ -176,7 +176,7 @@
                 <div>
                     <tooltip_button
                         tooltip_message="Previous File"
-                        @click="$emit('change_file', 'previous')"
+                        @click="$emit('change_task', 'previous')"
                         color="primary"
                         icon="mdi-chevron-left-circle"
                         :icon_style="true"
@@ -190,7 +190,7 @@
                 <div>
                     <tooltip_button
                         tooltip_message="Next File"
-                        @click="$emit('change_file', 'next')"
+                        @click="$emit('change_task', 'next')"
                         color="primary"
                         icon="mdi-chevron-right-circle"
                         :icon_style="true"

@@ -20,6 +20,7 @@
                 @change_label_visibility="change_label_visibility"
                 @change_file="change_file"
                 @save="save"
+                @change_task="trigger_task_change"
                 @undo="undo()"
                 @redo="redo()"
             />
@@ -194,6 +195,7 @@ import { UpdateInstanceCommand } from "../annotation/commands/update_instance_co
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
+import { deferTask } from "../../services/tasksServices"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -320,9 +322,24 @@ export default Vue.extend({
             this.initial_words_measures = [];
             this.lines = []
             this.on_mount()
+        },
+        task: function(newValue) {
+            this.rendering = true
+            this.instance_list = [];
+            this.text = null;
+            this.command_manager = null;
+            this.initial_words_measures = [];
+            this.lines = []
+            this.on_mount()
         }
     },
     methods: {
+        trigger_task_change: async function (direction, assign_to_user = false) {
+            if (this.has_changed) {
+                await this.save();
+            }
+            this.$emit("request_new_task", direction, this.task, assign_to_user);
+        },
         hot_key_listeners: function() {
             window.removeEventListener("keydown", this.esk_event_listener)
             window.addEventListener("keydown", this.esk_event_listener)
