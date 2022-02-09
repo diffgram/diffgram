@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>Time Spent On Task</v-card-title>
-    <v-card-subtitle>Average Time Spent per task</v-card-subtitle>
+    <v-card-subtitle>Click on bar to go to task</v-card-subtitle>
     <v-card-text>
       <div>
         Filters here
@@ -20,6 +20,7 @@
 <script>
 import {runReport} from '../../services/reportServices'
 import Bar_horizontal_chart from "@/components/report/charts/bar_horizontal_chart";
+
 export default {
   name: "annotator_performance",
   components: {Bar_horizontal_chart},
@@ -31,13 +32,21 @@ export default {
       default: null
     }
   },
-  data: function(){
+  data: function () {
     return {
       chart_data: {
         datasets: [],
         labels: []
       },
       bar_chart_options_time_series: {
+        onClick: this.handleClick,
+        onHover: (event, activeElements) => {
+          if (activeElements?.length > 0) {
+            event.target.style.cursor = 'pointer';
+          } else {
+            event.target.style.cursor = 'auto';
+          }
+        },
         responsive: true,
         maintainAspectRatio: false,
         elements: {
@@ -45,7 +54,7 @@ export default {
             borderWidth: 2,
           }
         },
-        plugins:{
+        plugins: {
           legend: {
             position: 'right',
           },
@@ -54,7 +63,7 @@ export default {
             text: 'Chart.js Horizontal Bar Chart'
           },
         },
-        scales:{
+        scales: {
           xAxes: [{
             ticks: {
               beginAtZero: true
@@ -78,12 +87,20 @@ export default {
     this.gen_report();
   },
   methods: {
-    gen_report: async function(){
+    handleClick: function (point, chart_items) {
+      console.log('CLICKKKK', point, chart_items)
+      if (chart_items.length) {
+        let task_id = chart_items[0]._view.label;
+        this.$router.push(`/task/${task_id}`);
+      }
+
+    },
+    gen_report: async function () {
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if(result){
+      if (result) {
 
-        this.chart_data ={
+        this.chart_data = {
           labels: result.stats.labels,
           datasets: [
             {

@@ -1,10 +1,18 @@
 <template>
   <v-card>
     <v-card-title>Annotator Performance</v-card-title>
-    <v-card-subtitle>Average Time on Task</v-card-subtitle>
+    <v-card-subtitle>Average time an annotator spends per task.</v-card-subtitle>
     <v-card-text>
       <div>
-        Filters here
+        <member_select
+          v-model="member_list"
+          label="Select Users"
+          multiple
+          :show_names_on_selected="true"
+          @change="on_member_list_changed"
+          :allow_all_option="true"
+          :member_list="$store.state.project.current.member_list"
+        ></member_select>
       </div>
       <div>
         <bar_horizontal_chart
@@ -33,6 +41,7 @@ export default {
   },
   data: function(){
     return {
+      member_list: [],
       chart_data: {
         datasets: [],
         labels: []
@@ -78,6 +87,9 @@ export default {
     this.gen_report();
   },
   methods: {
+    on_member_list_changed: function(){
+
+    },
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
