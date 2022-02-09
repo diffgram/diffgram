@@ -307,6 +307,8 @@ def job_update_api(project_string_id):
         log['success'] = True
         out = jsonify(job=job.serialize_new(),
                       log=log)
+
+        print('out 200')
         return out, 200
 
 
@@ -454,8 +456,6 @@ def job_update_core(session, job, project, input: dict, log: dict):
 
             session.add(job)
 
-            # print(len(job.label_dict['label_file_list']))
-
             log = update_tasks(job, session, log)
 
         if input['name']:
@@ -528,7 +528,7 @@ def new_web(project_string_id):
         # TODO standard lower() method ie for Exam?
         input['share'] = input['share'].lower()
 
-        if input['share'] == "market" and input['type'] == "Exam":
+        if input['share'] == "market" and input['type'] == "exam_template":
 
             # We only want Diffgram admins to be able to create this type
             if not user or user.is_super_admin is not True:
@@ -679,6 +679,8 @@ def new_or_update_core(session,
     job.allow_reviews = allow_reviews
     job.review_chance = (0 if review_chance == None else review_chance) / 100
 
+    print('MEMBER LIST IDS', member_list_ids)
+
     log = job.update_member_list(
         member_list_ids = member_list_ids,
         session = session,
@@ -700,7 +702,7 @@ def new_or_update_core(session,
             return None, log
 
         job.default_userscript_id = default_userscript.id
-
+    print('MEMBER LIST', job.get_assignees(session))
     if label_file_list:
         # First update fields with special concerns (i.e label_dict, share_type, launch_datetime,dir.)
         job.label_dict['label_file_list'] = build_label_file_list(label_file_list, session, project)
@@ -765,7 +767,6 @@ def new_or_update_core(session,
         'interface_connection_id': interface_connection_id,
         'pro_network': pro_network,
     }
-    print('fields_to_process', fields_to_process)
     for field_key, field_val in fields_to_process.items():
         if is_updating and getattr(job, field_key) != field_val:
             setattr(job, field_key, field_val)

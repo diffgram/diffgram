@@ -628,7 +628,13 @@ export default Vue.extend( {
 
     next_instance: async function(label_file_id){
       try{
-        const project_string_id = this.$store.state.project.current.project_string_id;
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        if(!project_string_id){
+          let project_string_id = this.$props.project_string_id;
+          if(!project_string_id){
+            return
+          }
+        }
         const response = await axios.post(
           `/api/v1/project/${project_string_id}/video/${this.current_video_file_id}/next-instance/start/${this.video_current_frame_guess}`,
         {

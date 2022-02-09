@@ -123,7 +123,9 @@
           } catch (e) {
             this.error = e.response.data.log.error
             console.error(e)
-            this.loading = false
+          }
+          finally {
+            this.loading = false;
           }
 
         },

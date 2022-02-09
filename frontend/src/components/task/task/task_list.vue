@@ -384,9 +384,10 @@
               </tooltip_button>
               <v_user_icon
                 style="z-index: 1"
-                v-if="props.item.task_assignees.length > 0" :user_id="props.item.task_assignees[0].user_id"
+                v-if="props.item.task_assignees && props.item.task_assignees.length > 0"
+                :user_id="props.item.task_assignees[0].user_id"
               />
-              <v-tooltip v-if="props.item.task_assignees.length > 1" bottom>
+              <v-tooltip v-if="props.item.task_assignees && props.item.task_assignees.length > 1" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
                     + {{ props.item.task_assignees.length - 1}}
@@ -632,6 +633,7 @@
       </v-card>
     </v-dialog>
     <add_assignee
+      :job="job"
       :dialog_type="task_assign_dialog_type"
       :dialog="task_assign_dialog_open"
       :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
@@ -697,7 +699,7 @@ export default Vue.extend({
       default: null,
     },
     job: {
-      default: undefined,
+      default: () => ({}),
     },
     mode_data: {
       default: "direct_route", // job_edit, job_detail, user_profile, general/account?
