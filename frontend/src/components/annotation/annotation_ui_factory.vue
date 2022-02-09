@@ -46,6 +46,7 @@
         <text_annotation_core 
           :file="current_file" 
           :task="task"
+          :job_id="job_id"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
           :project_string_id="computed_project_string_id"

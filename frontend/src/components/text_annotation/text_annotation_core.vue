@@ -210,6 +210,10 @@ export default Vue.extend({
             type: Object,
             default: undefined
         },
+        job_id: {
+            type: Number,
+            default: undefined
+        },
         label_file_colour_map: {
             type: Object,
             requered: true
@@ -588,7 +592,20 @@ export default Vue.extend({
             }
         },
         initialize_instance_list: async function () {
-            const instance_list = await getInstanceList(this.project_string_id, this.file.id)
+            let url;
+            let payload;
+            if (this.task && this.task.id) {
+                url = `/api/v1/task/${this.task.id}/annotation/list`;
+                payload = {
+                    directory_id: this.$store.state.project.current_directory.directory_id,
+                    job_id: this.job_id,
+                    attached_to_job: this.task.file.attached_to_job,
+                }
+            } else {
+                url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+                payload = {}
+            }
+            const instance_list = await getInstanceList(url, payload)
             instance_list.map(instance => {
                 if (instance.type === "text_token") {
                     const { id, start_token, end_token, label_file, creation_ref_id } = instance
@@ -608,8 +625,14 @@ export default Vue.extend({
         save: async function (index = null) {
             this.has_changed = false
             this.save_loading = true
+            let url;
+            if (this.task && this.task.id) {
+                url = `/api/v1/task/${this.task.id}/annotation/update`;
+            } else {
+                url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
+            }
             if (!this.instance_in_progress) {
-                const res = await postInstanceList(this.project_string_id, this.file.id, this.instance_list)
+                const res = await postInstanceList(url, this.instance_list)
                 const {added_instances} = res
                 added_instances.map(add_insatnce => {
                     if (!index) {
