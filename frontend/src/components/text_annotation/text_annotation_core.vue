@@ -2,8 +2,8 @@
 <div style="display: flex; flex-direction: column">
     <div style="position: relative">
       <main_menu
-        :height="`${show_default_navigation ? '100px' : '50px'}`"
-        :show_default_navigation="show_default_navigation"
+        :height="`${!task ? '100px' : '50px'}`"
+        :show_default_navigation="!task"
       >
         <template slot="second_row">
             <text_toolbar
@@ -15,6 +15,7 @@
                 :project_string_id="project_string_id"
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
+                :task="task"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
                 @change_file="change_file"
@@ -31,6 +32,7 @@
             :label_list="label_list"
             :loading="rendering"
             :label_file_colour_map="label_file_colour_map"
+            :toolbar_height="`${!task ? '100px' : '50px'}`"
             @delete_instance="delete_instance"
             @on_instance_hover="on_instance_hover"
             @on_instance_stop_hover="on_instance_stop_hover"
