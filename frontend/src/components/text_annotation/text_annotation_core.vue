@@ -16,6 +16,7 @@
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
                 :task="task"
+                @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
                 @task_update_toggle_deferred="defer_task"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
@@ -196,7 +197,7 @@ import { UpdateInstanceCommand } from "../annotation/commands/update_instance_co
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
-import { deferTask } from "../../services/tasksServices"
+import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -335,6 +336,19 @@ export default Vue.extend({
         }
     },
     methods: {
+        on_task_annotation_complete_and_save: async function () {
+            await this.save();
+            const response = await finishTaskAnnotation(this.task.id);
+            const new_status = response.data.task.status;
+            this.task.status = new_status;
+            if (new_status !== "complete") {
+                this.submitted_to_review = true;
+            }
+            if (this.$props.task && this.$props.task.id) {
+                this.save_loading_image = false;
+                this.trigger_task_change("next", this.$props.task, true);
+            }
+        },
         defer_task: async function() {
             const defered = await deferTask({
                 task_id: this.task.id,

@@ -73,7 +73,7 @@
                     @click="$emit('redo')"
                 />
 
-                <v-divider vertical></v-divider>
+                <v-divider vertical v-if="task && task.status !== 'complete'" ></v-divider>
 
                 <v_is_complete
                     v-if="task && task.status !== 'complete'"
