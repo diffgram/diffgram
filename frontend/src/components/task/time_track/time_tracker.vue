@@ -1,7 +1,9 @@
 <template>
-  <v-container fluid class="d-flex justify-start align-center">
-    <h2 class="font-weight-light">{{formatted_time}}</h2>
-  </v-container>
+  <ui_schema name="time_tracking" class="d-flex align-center">
+    <v-container fluid class="d-flex justify-start align-center">
+      <h2 class="font-weight-light">{{formatted_time}}</h2>
+    </v-container>
+  </ui_schema>
 </template>
 
 <script>

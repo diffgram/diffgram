@@ -340,12 +340,12 @@
             />
       </div>
       <v-divider vertical v-if="task && task.id && task.job"></v-divider>
-      <ui_schema name="time_tracking" class="d-flex align-center">
+
           <time_tracker
             v-if="task && task.id && task.job"
             :task="task"
           />
-      </ui_schema>
+
 
       <v-divider vertical></v-divider>
 
