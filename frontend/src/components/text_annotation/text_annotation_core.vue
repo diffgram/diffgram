@@ -202,7 +202,11 @@ export default Vue.extend({
     props: {
         file: {
             type: Object,
-            requered: true
+            default: undefined
+        },
+        task: {
+            type: Object,
+            default: undefined
         },
         label_file_colour_map: {
             type: Object,
@@ -367,9 +371,16 @@ export default Vue.extend({
             this.instance_in_progress = null
         },
         on_mount: async function() {
-            const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
+            let set_words;
+            if (this.task) {
+                const { nltk: { words } } = await getTextService(this.task.file.text.tokens_url_signed)
+                set_words = words
+            } else {
+                const { nltk: { words } } = await getTextService(this.file.text.tokens_url_signed)
+                set_words = words
+            }
             this.command_manager = new CommandManagerAnnotationCore()
-            this.initial_words_measures = words
+            this.initial_words_measures = set_words
             setTimeout(() => this.initialize_token_render(), 1000)
             this.initialize_instance_list()
         },
