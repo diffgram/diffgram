@@ -59,7 +59,7 @@
         </sensor_fusion_editor>
       </div>
       <file_manager_sheet
-        v-if="!initializing && !task"
+        v-if="!task"
         v-show="!loading_project && !initializing"
         :show_sheet="!loading_project"
         ref="file_manager_sheet"
@@ -428,9 +428,14 @@ export default Vue.extend({
 
     fetch_single_file: async function () {
       this.loading = true;
-      this.current_file = await this.$refs.file_manager_sheet.get_media();
+      if(this.$refs.file_manager_sheet){
+        this.current_file = await this.$refs.file_manager_sheet.get_media();
+      }
+
       this.loading = false;
-      this.$refs.file_manager_sheet.display_file_manager_sheet();
+      if(this.$refs.file_manager_sheet){
+        this.$refs.file_manager_sheet.display_file_manager_sheet();
+      }
     },
 
     fetch_single_task: async function (task_id) {
