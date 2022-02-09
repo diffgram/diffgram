@@ -51,6 +51,7 @@
           :label_file_colour_map="label_file_colour_map"
           :project_string_id="computed_project_string_id"
           @request_file_change="request_file_change"
+          @request_new_task="change_task"
         />
       </div>
       <div v-else-if="!annotation_interface">
@@ -422,6 +423,7 @@ export default Vue.extend({
             assign_to_user: assign_to_user,
           }
         );
+        console.log(response)
         if (response.data) {
           if (response.data.task && response.data.task.id !== task.id) {
             this.$router.push(`/task/${response.data.task.id}`);
