@@ -16,6 +16,7 @@
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
                 :task="task"
+                @task_update_toggle_deferred="defer_task"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
                 @change_file="change_file"
@@ -334,6 +335,13 @@ export default Vue.extend({
         }
     },
     methods: {
+        defer_task: async function() {
+            const defered = await deferTask({
+                task_id: this.task.id,
+                mode: "toggle_deferred"
+            })
+            this.trigger_task_change('next')
+        },
         trigger_task_change: async function (direction, assign_to_user = false) {
             if (this.has_changed) {
                 await this.save();
