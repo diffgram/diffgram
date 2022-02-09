@@ -22,6 +22,8 @@ TASK_STATUSES = {
     'requires_changes': 'requires_changes',
     'deferred': 'deferred',
 }
+
+
 class Task(Base):
     """
     A single unit of work.
@@ -151,7 +153,7 @@ class Task(Base):
     # QUESTION should we be using "member" here?
     # Current assumption is that tasks are only done by users which is maybe
     # wrong
-    assignee_user_id = Column(Integer, ForeignKey('userbase.id')) #DEPRECATED
+    assignee_user_id = Column(Integer, ForeignKey('userbase.id'))  # DEPRECATED
     # assignee_user = relationship("User", back_populates = "task_list" )
     assignee_user = relationship("User",
                                  foreign_keys = [assignee_user_id],
@@ -271,10 +273,10 @@ class Task(Base):
         return discovered_task
 
     def get_last_task(
-            session,
-            user,
-            status_allow_list = ["available", "in_progress"],
-            job=None):
+        session,
+        user,
+        status_allow_list = ["available", "in_progress"],
+        job = None):
 
         last_task = user.last_task
         if last_task:
@@ -300,7 +302,9 @@ class Task(Base):
         return user_list
 
     def add_reviewer(self, session, user):
-
+        existing_rel = TaskUser.get(session, user.id, self.id, 'reviewer')
+        if existing_rel:
+            return existing_rel
         self.assignee_user = user
         rel = TaskUser.new(
             session = session,
@@ -318,8 +322,22 @@ class Task(Base):
         user_id_list = [elm.user_id for elm in result]
         return user.id in user_id_list
 
-    def add_assignee(self, session, user):
+    def get_assignees(self, session):
+        task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
+        task_assignees = task_assignees_query.all()
+        users = [rel.user for rel in task_assignees]
+        return users
 
+    def get_reviewers(self, session):
+        task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+        task_reviewers = task_reviewers_query.all()
+        users = [rel.user for rel in task_reviewers]
+        return users
+
+    def add_assignee(self, session, user):
+        existing_rel = TaskUser.get(session, user.id, self.id, 'assignee')
+        if existing_rel:
+            return existing_rel
         self.assignee_user = user
         rel = TaskUser.new(
             session = session,
@@ -507,15 +525,30 @@ class Task(Base):
                 default_userscript = self.job.default_userscript.serialize()
 
         task_comment = ""
-        
+
         if self.status == "complete" or self.status == "requires_changes":
             task_comment = TaskEvent.get_last_task_comment(session, self.id, self.job_id, self.project_id)
+
+        task_assignees = []
+        task_reviewers = []
+        if session:
+            file = self.file.serialize_with_type(session = session)
+
+            task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
+
+            for assignee in task_assignees_query:
+                task_assignees.append(assignee.serialize())
+
+            task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+
+            for assignee in task_reviewers_query:
+                task_reviewers.append(assignee.serialize())
 
         task_serialized = {
             'id': self.id,
             'job_id': self.job_id,
             'job': self.job.serialize_for_task(),
-            'project_string_id' : self.project.project_string_id,
+            'project_string_id': self.project.project_string_id,
             'task_type': self.task_type,
             'job_type': self.job_type,
             'file': self.file.serialize_with_type(session = session),
@@ -527,7 +560,9 @@ class Task(Base):
             'time_completed': str(self.time_completed),
             'default_userscript': default_userscript,
             'assignee_user_id': self.assignee_user_id,
-            'task_comment': task_comment
+            'task_comment': task_comment,
+            'task_reviewers': task_reviewers,
+            'task_assignees': task_assignees
         }
         time_tracking_records = self.get_time_tracking_data(session = session)
         time_tracking_records_data = [x.serialize() for x in time_tracking_records]
@@ -653,9 +688,9 @@ class Task(Base):
         return task_list
 
     @staticmethod
-    def stats(session, job_id, user_id=None):
+    def stats(session, job_id, user_id = None):
         from shared.database.user import User
-        
+
         query = session.query(Task)
         all_the_tasks_in_job = query.filter(Task.job_id == job_id).all()
 
@@ -668,9 +703,9 @@ class Task(Base):
         in_review = query.filter(Task.job_id == job_id,
                                  Task.status == 'review_requested').count()
         requires_changes = query.filter(Task.job_id == job_id,
-                                 Task.status == 'requires_changes').count()
+                                        Task.status == 'requires_changes').count()
         in_progress = query.filter(Task.job_id == job_id,
-                                 Task.status == 'in_progress').count()
+                                   Task.status == 'in_progress').count()
 
         task_id_list = [task.id for task in all_the_tasks_in_job]
         if user_id is None:
@@ -697,7 +732,6 @@ class Task(Base):
             "instances_created": instances_created
         }
         return tasks_stats
-    
 
     def get_by_id(session,
                   task_id):
@@ -717,12 +751,10 @@ class Task(Base):
 
             task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
 
-
             for assignee in task_assignees_query:
                 task_assignees.append(assignee.serialize())
 
             task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
-
 
             for assignee in task_reviewers_query:
                 task_reviewers.append(assignee.serialize())
@@ -742,7 +774,8 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'time_created': self.time_created.isoformat(),
-            'assignee_user_id': self.assignee_user_id, #Legacy way to return assignees, now task_assignees should be used
+            'assignee_user_id': self.assignee_user_id,
+            # Legacy way to return assignees, now task_assignees should be used
             'file': file,
             'task_assignees': task_assignees,
             'task_reviewers': task_reviewers

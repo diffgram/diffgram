@@ -46,7 +46,9 @@ def do_routes_importing():
     from methods.task.stats.stats_task import stats_task_api
     
     from methods.task.task_template.job_cancel import job_cancel_api
+    from methods.task.task_template.task_template_apply import task_template_apply_api
     from methods.task.task_template.job_info_builder import job_info_builder_api
+
     from methods.task.task_template.job_trainer_info import job_trainer_info_api
     from methods.task.task_template.job_launch import task_template_launch_api
     from methods.task.task_template.job_new_or_update import new_web as task_job_new_web
@@ -155,3 +157,6 @@ def do_routes_importing():
     from methods.task.task_time_tracking.task_track_time import api_task_track_time
 
 
+    from methods.task.exam.exam_pass import exam_pass_api
+
+    from methods.user.user_has_credentials import api_user_has_credentials

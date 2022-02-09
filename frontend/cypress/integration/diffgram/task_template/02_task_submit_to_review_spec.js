@@ -11,13 +11,17 @@ describe("tasks_detail_pagination", () => {
       });
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);
+      cy.create_task_template();
     });
 
     it("Submit task to review", () => {
       const url = "/api/v1/task/*/complete";
       cy.visit(`http://localhost:8085/job/list`);
-      cy.get('[data-cy="view_button"]')
+      cy.get('[data-cy="job-card"]')
+        .find('.job-title')
+        .contains('+test-e2e')
         .first()
+        .parent()
         .click({ force: true });
       cy.wait(2000);
       cy.get("tbody > tr")

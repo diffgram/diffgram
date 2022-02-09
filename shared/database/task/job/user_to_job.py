@@ -73,14 +73,16 @@ class User_To_Job(Base):
     @staticmethod
     def get_single_by_ids(session,
                           user_id,
-                          job_id):
+                          job_id,
+                          relation = 'annotator'):
 
         if user_id is None or job_id is None:
             return False
 
         query = session.query(User_To_Job).filter(
             User_To_Job.user_id == user_id,
-            User_To_Job.job_id == job_id)
+            User_To_Job.job_id == job_id,
+            User_To_Job.relation == relation)
 
         return query.first()
 
@@ -103,6 +105,7 @@ class User_To_Job(Base):
             job=None,
             relation: str = None,
             serialize=False,
+            status='active',
             user = None):
 
         query = session.query(User_To_Job)
@@ -119,6 +122,9 @@ class User_To_Job(Base):
 
         if relation:
             query = query.filter(User_To_Job.relation == relation)
+
+        if status:
+            query = query.filter(User_To_Job.status == status)
 
         if serialize == True:
             # TODO this could be part of generic

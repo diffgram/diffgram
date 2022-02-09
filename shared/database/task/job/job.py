@@ -9,6 +9,7 @@ from shared.database.user import User
 from shared.database.event.event import Event
 from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
+from shared.database.task.exam.exam import Exam
 
 logger = get_shared_logger()
 
@@ -41,7 +42,7 @@ class Job(Base, Caching):
     security_require_email_verified = Column(Boolean, default=True)
 
     status = Column(String(), default="draft")
-    # created (or draft?), active, in_review, reported,
+    # created (or draft?), active, in_review, reported, removed
     # save_for_later, complete, failed
     # in_progress vs "available" depends on point of reference
 
@@ -97,6 +98,9 @@ class Job(Base, Caching):
                                         foreign_keys=[interface_connection_id])
 
     completion_action = Column(String())
+
+    exam_id = Column(Integer, ForeignKey('exam.id'))  # New Feb 8, 2019
+    exam = relationship("Exam")
 
     # Review settings
     # can't seem to make up mind on "file" vs "pass"
@@ -213,6 +217,23 @@ class Job(Base, Caching):
     cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default={})
 
     #####
+
+    def examination_exists(self, session, user):
+        child_examinations = session.query(Job).filter(
+            Job.parent_id == self.id,
+            Job.type == 'examination',
+            Job.status != 'archived'
+        )
+        child_id_list = [x.id for x in child_examinations]
+        relations = session.query(User_To_Job).filter(
+            User_To_Job.job_id.in_(child_id_list),
+            User_To_Job.user_id == user.id
+        ).all()
+        if len(relations) > 0:
+            return True
+        return False
+
+
     def update_attached_directories(self, session, attached_directories_list, delete_existing=False):
         if attached_directories_list:
             # Delete existing directories
@@ -294,6 +315,12 @@ class Job(Base, Caching):
         rels = User_To_Job.list(session = session, job = self, relation = 'reviewer')
         users = [rel.user for rel in rels]
         return users
+
+    def get_assignees(self, session):
+        rels = User_To_Job.list(session = session, job = self, relation = 'annotator')
+        users = [rel.user for rel in rels]
+        return users
+
 
     def check_existing_user_relationship(
             self,
@@ -404,15 +431,15 @@ class Job(Base, Caching):
                 user = User.get_by_member_id(
                     session=session,
                     member_id=member_id)
-                user_list.append(user)
                 if not user:
                     log['error']['reviewer_list'] = {}
                     log['error']['reviewer_list'][member_id] = "Invalid member_id " + str(member_id)
                     return log
+                else:
+                    user_list.append(user)
 
         # Now create user_to_job relations.
         user_added_id_list = []
-        print('user_list', user_list)
         for user in user_list:
 
             user_added_id_list.append(user.id)
@@ -420,7 +447,8 @@ class Job(Base, Caching):
             existing_user_to_job = User_To_Job.get_single_by_ids(
                 session=session,
                 user_id=user.id,
-                job_id=self.id
+                job_id=self.id,
+                relation = 'reviewer'
             )
 
             if existing_user_to_job:
@@ -507,6 +535,9 @@ class Job(Base, Caching):
                     log['error']['update_member_list'] = {}
                     log['error']['update_member_list'][member_id] = "Invalid member_id " + str(member_id)
                     return log
+                else:
+                    user_list.append(user)
+
 
         for user in user_list:
 
@@ -536,24 +567,26 @@ class Job(Base, Caching):
 
             log['info']['update_member_list'][user.member_id] = "Added"
 
-
+        # careful, user_id not member_id
         remaining_user_to_job_list = User_To_Job.list(
             session=session,
-            user_id_ignore_list=user_added_id_list) # careful, user_id not member_id
+            user_id_ignore_list=user_added_id_list
+        )
 
-        for user_to_job in remaining_user_to_job_list:
-            if user_to_job.status != 'removed':
-                user_to_job.status = 'removed'
-                if add_to_session is True: session.add(user_to_job)
+        for rel in remaining_user_to_job_list:
+            if rel.status != 'removed':
+                rel.status = 'removed'
+                session.add(rel)
                 # TODO this should be uniform, it's not right now
                 # this is update_user_list but we need to add member_id to user_to_job
                 # it sounds like this needed to be member_list for current tests so just leaving it for now.
-                log['info']['update_member_list'][user_to_job.user_id] = "Removed"
+                log['info']['update_member_list'][rel.user_id] = "Removed"
 
         self.set_cache_by_key(
             cache_key='member_list_ids',
             value=member_list_ids)
-        if add_to_session is True: session.add(self)
+        if add_to_session is True:
+            session.add(self)
 
         return log
 
@@ -615,6 +648,7 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
+            'type': self.type,
             'time_created': self.time_created,
             'allow_reviews': self.allow_reviews
         }
@@ -701,10 +735,19 @@ class Job(Base, Caching):
         default_userscript = None
         if self.default_userscript:
             default_userscript = self.default_userscript.serialize()
+        exam = None
+        if self.exam:
+            exam = self.exam.serialize()
+
+        guide = None
+        if self.guide_default_id:
+            guide = self.guide_default.serialize_for_trainer()
 
         return {
             'id': self.id,
             'name': self.name,
+            'exam': exam,
+            'guide': guide,
             'type': self.type,
             'ui_schema_id': self.ui_schema_id,
             'share_type': self.share_type,

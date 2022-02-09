@@ -4,11 +4,10 @@
     <v-snackbar
       v-model="$store.state.error.permission"
       top
-      :timeout="5000"
       color="error"
     >
       Invalid permission.
-      <v-btn color="white" text @click="snackbar_warning = false">
+      <v-btn color="white" text @click="$store.commit('clear_permission_error')">
         Close
       </v-btn>
     </v-snackbar>
@@ -76,21 +75,8 @@
                 <main_menu_project v-if=" $store.state.builder_or_trainer.mode == 'builder'">
                 </main_menu_project>
 
-                <v-btn v-if="$store.state.builder_or_trainer.mode == 'builder'"
-                       :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
-                       text
-                       @click="$router.push('/job/list')">
-                  <v-icon left>mdi-brush</v-icon>
-                  Tasks
-                </v-btn>
-
-                <v-btn v-if="$store.state.builder_or_trainer.mode == 'trainer'"
-                       :disabled="$store.state.user.pro_account_approved != true"
-                       text
-                       @click="$router.push('/job/list')">
-                  <v-icon left>mdi-brush</v-icon>
-                  Tasks
-                </v-btn>
+                <menu_tasks v-if="$store.state.builder_or_trainer.mode === 'builder'"></menu_tasks>
+                <menu_tasks v-else-if="$store.state.builder_or_trainer.mode === 'trainer'"></menu_tasks>
 
               </v-layout>
 
@@ -317,6 +303,7 @@
 </template>
 
 <script lang="ts">
+  import menu_tasks from "./menu_tasks";
   import main_menu_project from "./menu_project";
   import pending_files_dialog from "../input/pending_files_dialog";
   import {getProjectList} from "../../services/projectServices";
@@ -328,6 +315,7 @@
     name: 'main_menu',
     components: {
       main_menu_project,
+      menu_tasks,
       pending_files_dialog,
       menu_marketing
     },

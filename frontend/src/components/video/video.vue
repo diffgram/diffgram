@@ -628,7 +628,13 @@ export default Vue.extend( {
 
     next_instance: async function(label_file_id){
       try{
-        const project_string_id = this.$store.state.project.current.project_string_id;
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        if(!project_string_id){
+          let project_string_id = this.$props.project_string_id;
+          if(!project_string_id){
+            return
+          }
+        }
         const response = await axios.post(
           `/api/v1/project/${project_string_id}/video/${this.current_video_file_id}/next-instance/start/${this.video_current_frame_guess}`,
         {
@@ -1031,27 +1037,15 @@ export default Vue.extend( {
 
     },
 
-    // udacity intro on it https://www.youtube.com/watch?v=YGR8rVT6xJ8
-    // https://stackoverflow.com/questions/10735922/how-to-stop-a-requestanimationframe-recursion-loop
-    // https://stackoverflow.com/questions/38709923/why-is-requestanimationframe-better-than-setinterval-or-settimeout
-
-    video_animation_start: function () {
-      https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame
-      this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
-      // returns a type long, a request id value
-      // we can pass that to cancel to cancel animation
-      // TODO clarify it's ok we reuse this.animation_request in this way
-
-    },
-
     video_animation_stop: function () {
 
       window.cancelAnimationFrame(this.animation_request)
 
     },
-
+    video_animation_start: function(){
+      this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
+    },
     video_animation_unit_of_work: function (time_from_animation) {
-
       this.$emit('video_animation_unit_of_work', this.primary_video)
 
       this.update_current_frame_guess()
@@ -1064,7 +1058,10 @@ export default Vue.extend( {
       // integer codes for state...
 
       // must be at end?
-      this.video_animation_start()
+      if(this.playing){
+        this.animation_request = window.requestAnimationFrame(this.video_animation_unit_of_work)
+      }
+
     },
 
 	/**
@@ -1093,9 +1090,10 @@ export default Vue.extend( {
 
       if (typeof this.video_current_frame_guess != "undefined") {
         this.get_video_single_image(this.video_current_frame_guess)
+        this.updateFrameUrl(this.video_current_frame_guess);
       }
 
-      this.updateFrameUrl(this.video_current_frame_guess);
+
     },
 
     detect_early_end: function (early_end_time) {

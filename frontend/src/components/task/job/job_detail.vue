@@ -82,7 +82,7 @@
       </v-btn>
     </div>
 
-    <v-tabs v-model="tab" color="primary" style="height: 100%">
+    <v-tabs v-model="tab" color="primary" style="height: 100%" v-if="show_job">
       <v-tab v-for="item in items" :key="item.text">
         <v-icon left>{{ item.icon }}</v-icon>
         {{ item.text }}
@@ -246,28 +246,34 @@
         </v-tab-item>
       </v-tabs-items>
     </v-tabs>
+    <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
   </div>
 </template>
 
 <script lang="ts">
 import v_job_detail_builder from "./job_detail_builder";
+import no_credentials_dialog from "./no_credentials_dialog";
 import v_job_cancel_actions_button_container from "./job_cancel_actions_button_container";
 import v_job_detail_trainer from "./job_detail_trainer";
 import task_template_discussions from "../../discussions/task_template_discussions";
 import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
+import {user_has_credentials} from '../../../services/userServices'
 import axios from "axios";
 import job_type from "./job_type";
 import stats_panel from "../../stats/stats_panel.vue";
 import { nextTask } from "../../../services/tasksServices";
 
 import Vue from "vue";
+import No_credentials_dialog from "./no_credentials_dialog.vue";
 export default Vue.extend({
   name: "job_detail",
   props: ["job_id"],
   components: {
+    No_credentials_dialog,
     v_job_detail_builder,
     v_job_cancel_actions_button_container,
+    no_credentials_dialog,
     task_template_discussions,
     v_job_detail_trainer,
     job_pipeline_mxgraph,
@@ -289,6 +295,9 @@ export default Vue.extend({
       ],
       update_label_file_list: null,
       has_changes: false,
+      show_job: false,
+      user_has_credentials: false,
+      missing_credentials: [],
 
       edit_name: false,
 
@@ -339,9 +348,14 @@ export default Vue.extend({
       ],
     };
   },
-  created() {
+  async created() {
     if (this.$route.path.endsWith("discussions")) {
       this.tab = 1;
+    }
+    await this.check_credentials();
+    this.show_job = this.has_credentials_or_admin();
+    if(!this.show_job){
+      this.show_missing_credentials_dialog()
     }
     this.reset_local_info();
     this.job_current_watcher = this.$store.watch(
@@ -353,14 +367,50 @@ export default Vue.extend({
       }
     );
   },
-  computed: {},
+  computed: {
+
+  },
   beforeDestroy() {
     this.job_current_watcher();
   },
-  beforeDestroy() {
-    this.job_current_watcher()
-  },
   methods: {
+    has_credentials_or_admin: function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      if( this.$store.state.user.current.is_super_admin){
+        return true
+      }
+      if(this.user_has_credentials){
+        return true
+      }
+      let roles = this.$store.getters.get_project_roles(project_string_id);
+      if(roles && roles.includes('admin')){
+        return true
+      }
+      return false
+    },
+    show_missing_credentials_dialog: function(){
+      if(this.$refs.no_credentials_dialog){
+        this.$refs.no_credentials_dialog.open()
+      }
+    },
+    check_credentials: async function(){
+      let project_string_id = this.$store.state.project.current.project_string_id;
+      let user_id = this.$store.state.user.current.id;
+      let [result, error] = await user_has_credentials(
+        project_string_id,
+        user_id,
+        this.job_id,
+
+      )
+      if(error){
+        this.error = this.$route_api_errors(error)
+        return
+      }
+      if(result){
+        this.user_has_credentials = result.has_credentials;
+        this.missing_credentials = result.missing_credentials;
+      }
+    },
     reset_local_info() {
       this.job_name = this.$store.state.job.current.name;
       this.set_document_title();

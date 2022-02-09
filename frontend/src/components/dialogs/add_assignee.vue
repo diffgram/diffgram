@@ -36,7 +36,7 @@ import Vue from "vue";
 import user_icon from "../user/user_icon.vue";
 
 export default Vue.extend({
-  name: "review_dialog",
+  name: "add_assignee",
   components: {
       user_icon
   },
@@ -64,6 +64,10 @@ export default Vue.extend({
     plural: {
       type: Boolean,
       default: false
+    },
+    job:{
+      type: Object,
+      default: {}
     }
   },
   data() {
@@ -77,12 +81,32 @@ export default Vue.extend({
       handler: function (newValue) {
          this.member_list_ids = newValue.map(assignee => assignee.user_id)
       }
+    },
+    job: {
+      handler: function(){
+        this.populate_members();
+      }
     }
   },
   mounted () {
-    this.member_list = [...this.$store.state.project.current.member_list];
+
+    this.populate_members();
   },
   methods: {
+      populate_members: function(){
+        let member_id_list = this.$props.job.member_list_ids;
+        this.member_list = [];
+        if(member_id_list){
+          for(let id of member_id_list){
+            let member = this.$store.state.project.current.member_list.find(
+              member => member.id === id
+            )
+            if(member){
+              this.member_list.push(member)
+            }
+          }
+        }
+      },
       on_assign: function() {
           this.$emit("assign", this.member_list_ids)
       },

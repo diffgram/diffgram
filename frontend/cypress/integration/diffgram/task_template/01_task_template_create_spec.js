@@ -148,15 +148,29 @@ describe('Task Template Creation', () => {
       cy.get('[data-cy="task-template-advanced-options-step"]').should('be.visible')
       cy.get('[data-cy="task-template-advanced-options-step-title"]').should('be.visible')
       cy.get('[data-cy="userscrips-select"]').should('be.visible')
-      cy.get('[data-cy="jobtype-select"]').should('be.visible')
       cy.get('[data-cy="file-handling-select"]').should('be.visible')
     })
 
-    it('Correctly goes from Advanced Options step to next step', () => {
-      cy.intercept(url_launch).as('launch_job')
-      cy.get('[data-cy="task-template-advanced-options-step"] [data-cy="wizard_navigation_next"]').click({force: true});
-      cy.wait('@launch_job').its('response').should('have.property', 'statusCode', 200)
+    it('Correctly Goes from Advanced Options to Credentials Step', () => {
+      cy.get('[data-cy="task-template-advanced-options-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+      .get('[data-cy="task-template-credentials-step"]').should('be.visible')
+      .get('[data-cy="credentials-step-title"]').should('be.visible')
+      .get('[data-cy="open-create-credential"]').should('be.visible')
+      .get('[data-cy="open-create-credential"]').click()
+      .get('[data-cy="create-credential-button"]').click()
+      .get('[data-cy="refresh-credentials"]').click()
+      .get('[data-cy="credential-checkbox-0"]').click({force: true})
+      .get('[data-cy="requires-button"]').should('be.visible')
+      .get('[data-cy="clear-button"]').should('be.visible')
+      .get('[data-cy="requires-button"]').click()
+
+      .intercept(url_launch).as('launch_job')
+      .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+      .wait('@launch_job').its('response').should('have.property', 'statusCode', 200)
+
     })
+
+
 
   })
 

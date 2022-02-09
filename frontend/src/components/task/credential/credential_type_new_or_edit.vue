@@ -31,6 +31,7 @@
             </v-text-field>
 
              <v-btn v-if="mode=='new'"
+                    data-cy="create-credential-button"
                    @click="new_credential_type_api"
                    :loading="loading"
                    :disabled="loading"
@@ -173,6 +174,9 @@
         this.credential_type = this.credential_type_prop
       }
     },
+    beforeDestroy() {
+      this.credential_type = {}
+    },
     computed: {
       dropzoneOptions: function () {
 
@@ -190,7 +194,10 @@
       }
     },
     methods: {
-
+      reset: function(){
+        this.credential_type = {};
+        this.name = sillyname().split(" ")[0]
+      },
       new_credential_type_api: function () {
 
         this.loading = true

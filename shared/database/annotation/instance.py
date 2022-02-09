@@ -318,7 +318,6 @@ class Instance(Base):
         since every instance will be "new".
 
         """
-        assert self.label_file_id is not None
 
         hash_data = [
             self.type,
