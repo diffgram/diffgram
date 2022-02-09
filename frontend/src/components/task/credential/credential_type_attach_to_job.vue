@@ -8,6 +8,7 @@
       <!-- LIST -->
       <v_credential_list :job_id="job_id"
                          :mode_options="'job_edit'"
+                         :allow_awards="allow_awards"
                          :mode_view="'list'">
       </v_credential_list>
       <!-- LIST -->
@@ -27,6 +28,9 @@
       },
       'job_id': {
         default: null
+      },
+      'allow_awards':{
+        default: false
       }
     },
     data() {

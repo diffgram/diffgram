@@ -28,6 +28,7 @@ export const user_module = {
       api: {},
       email: null,
       security_email_verified: false,
+      permissions_projects: {},
       is_super_admin: false
     },
     current_project_permission_level: null,
@@ -35,7 +36,16 @@ export const user_module = {
     settings: default_user_settings,
     history: undefined
 	},
-
+  getters: {
+    get_project_roles: function(state){
+      return function(project_string_id){
+        if(state.current.permissions_projects[project_string_id]
+          && state.current.permissions_projects[project_string_id].length > 0){
+          return state.current.permissions_projects[project_string_id];
+        }
+      }
+    },
+  },
 	mutations: {
     // TODO get user settings from storage (also TODO create user storage for settings)
 		log_in: state => state.logged_in = true,
@@ -411,6 +421,7 @@ const error = {
   },
   mutations: {
     error_permission: state => state.permission = Date.now(),
+    clear_permission_error: state => state.permission = null,
   }
 }
 

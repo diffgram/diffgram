@@ -51,7 +51,7 @@
             icon="mdi-playlist-play"
             datacy="go-to-task-list"
             tooltip_message="Task List"
-            @click="$router.push('/job/' + task.job_id)"
+            @click="go_to_job"
             :bottom="true"
           >
           </tooltip_button>
@@ -1079,6 +1079,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    go_to_job: function(){
+      if(this.task.job.type === 'examination'){
+        this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)
+      }
+      else{
+        this.$router.push(`/job/${this.task.job_id}`)
+      }
+
+    },
     on_change_canvas_scale_global: function () {
       this.label_settings_local.canvas_scale_global_is_automatic = false;
       this.$emit(

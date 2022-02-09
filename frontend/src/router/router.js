@@ -474,6 +474,24 @@ const routerOptions = [
     }
   },
   {
+    path: '/project/:project_string_id/exam/new/',
+    component: 'exam/exam_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
+    path: '/project/:project_string_id/exam/new/:exam_id_route',
+    component: 'exam/exam_new',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      hide_default_menu: true
+    }
+  },
+  {
     path: '/project/:project_string_id_route/job/new-legacy',
     component: 'task/job/job_new',
     props: true,
@@ -555,6 +573,7 @@ const routerOptions = [
     meta: {requiresAuth: true},
     name: "job_detail_discussions"
   },
+
   {
     path: '/job/:job_id',
     component: 'task/job/job_detail',
@@ -564,6 +583,26 @@ const routerOptions = [
       title: "Job #" + route.params.job_id
     }),
     name: "job_detail"
+  },
+  {
+    path: '/:project_string_id/examination/:examination_id',
+    component: 'exam/examination_detail',
+    props: true,
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Examination#" + route.params.exam_id
+    }),
+    name: "examination_detail"
+  },
+  {
+    path: '/:project_string_id/exam/:exam_id',
+    component: 'exam/exam_template_detail',
+    props: true,
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Exam#" + route.params.exam_id
+    }),
+    name: "exam_template_detail"
   },
   {
     path: '/credential/new',

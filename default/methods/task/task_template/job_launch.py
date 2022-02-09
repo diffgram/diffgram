@@ -81,6 +81,20 @@ def check_integrations_support(session, task_template, log):
     return log
 
 
+def check_exam_has_assignees(session, task_template):
+    """
+
+    :return:
+    """
+    if task_template.type != 'exam_template':
+        return True
+
+    assignee_list = task_template.get_assignees(session)
+    if len(assignee_list) > 0:
+        return True
+    return False
+
+
 @routes.route('/api/v1/job/launch',
               methods=['POST'])
 def task_template_launch_api():
@@ -111,6 +125,12 @@ def task_template_launch_api():
         log = check_integrations_support(session, task_template, log)
         if log_has_error(log):
             return jsonify(log=log), 400
+
+        check_exam_assignees_ok = check_exam_has_assignees(session, task_template)
+
+        if not check_exam_assignees_ok:
+            log['error']['check_assignees'] = 'Exam must have at least 1 assignee.'
+            return jsonify(log = log), 400
 
         """
         Why condition on file_count_statistic

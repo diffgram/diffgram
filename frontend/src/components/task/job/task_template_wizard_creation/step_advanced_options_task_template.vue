@@ -22,14 +22,6 @@
       >
       </userscript_select>
 
-      <v-select :items="type_list"
-                v-model="job.type"
-                data-cy="jobtype-select"
-                label="Type"
-                item-value="text"
-                :disabled="loading">
-      </v-select>
-
       <diffgram_select
         :item_list="file_handling_list"
         data-cy="file-handling-select"
@@ -43,25 +35,11 @@
 
     <wizard_navigation
       @next="on_next_button_click"
-      :next_visible="false"
+      :next_visible="true"
       :loading_next="loading_steps"
       :disabled_next="loading_steps"
       @back="$emit('previous_step')"
-      :skip_visible="false">
-
-    <template slot="next">
-      <v-btn
-        x-large
-        @click="on_next_button_click"
-        color="success"
-        data-cy="wizard_navigation_next"
-        :disabled="loading_steps"
-        :loading="loading_steps"
-      >
-        <v-icon left>mdi-rocket-launch</v-icon>
-        Launch Task Template
-      </v-btn>
-    </template>
+      :skip_visible="true">
 
     </wizard_navigation>
   </v-container>
@@ -94,7 +72,16 @@
           error: {},
           show_credentials: false,
           loading: false,
-          type_list: ['Normal', 'Exam'],
+          type_list: [
+            {
+            display_name: 'Normal',
+            value: 'Normal'
+            },
+            {
+              display_name: 'Exam',
+              value: 'exam_template'
+            }
+          ],
           share_list: [],
           file_handling_list: [
             {
