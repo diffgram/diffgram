@@ -173,27 +173,32 @@
 
                 <v-divider vertical></v-divider>
 
-                <tooltip_button
-                    color="primary"
-                    icon="mdi-undo"
-                    tooltip_message="Undo (ctrl+z)"
-                    ui_schema_name="undo"
-                    :disabled="undo_disabled"
-                    :icon_style="true"
-                    :bottom="true"
-                    @click="$emit('undo')"
-                />
-
-                <tooltip_button
-                    color="primary"
-                    icon="mdi-redo"
-                    tooltip_message="Redo (ctrl+y)"
-                    ui_schema_name="redo"
-                    :disabled="redo_disabled"
-                    :icon_style="true"
-                    :bottom="true"
-                    @click="$emit('redo')"
-                />
+                <div>
+                    <tooltip_button
+                        tooltip_message="Previous File"
+                        @click="$emit('change_file', 'previous')"
+                        color="primary"
+                        icon="mdi-chevron-left-circle"
+                        :icon_style="true"
+                        :bottom="true"
+                        :disabled="loading || save_loading"
+                    >
+                    </tooltip_button>
+                    <!-- TODO Move some of disabled logic into functions don't like having
+                        so much of it here as it gets more complext -->
+                </div>
+                <div>
+                    <tooltip_button
+                        tooltip_message="Next File"
+                        @click="$emit('change_file', 'next')"
+                        color="primary"
+                        icon="mdi-chevron-right-circle"
+                        :icon_style="true"
+                        :bottom="true"
+                        :disabled="loading || save_loading"
+                    >
+                    </tooltip_button>
+                </div>
 
                 <v-divider vertical></v-divider>
 
