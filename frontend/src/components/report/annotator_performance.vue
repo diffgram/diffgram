@@ -69,6 +69,18 @@ export default {
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
+      if(result){
+        console.log('aaa', result)
+        this.chart_data ={
+          labels: result.stats.labels,
+          datasets: [
+            {
+              label: 'Average Time Per Task (Mins)',
+              data: result.stats.values
+            }
+          ]
+        }
+      }
     }
   }
 }

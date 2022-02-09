@@ -221,7 +221,8 @@ class Report_Runner():
 
         # These are assumed to be set from other functions
         # ie through a validation process...???
-        self.project = None
+        self.project_string_id = project_string_id
+        self.project = Project.get_by_string_id(self.session, self.project_string_id)
 
         self.log = regular_log.default()
 
@@ -234,8 +235,6 @@ class Report_Runner():
         if len(self.log["error"].keys()) >= 1:
             return
 
-        self.project_string_id = project_string_id
-        self.project = Project.get_by_string_id(self.session, self.project_string_id)
         if 'all' in self.metadata.get('member_list', []):
             project = Project.get_by_string_id(session, self.metadata['project_string_id'])
             users = project.users
