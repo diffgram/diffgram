@@ -146,6 +146,8 @@ class Task(Base):
     # Deprecated, moved to status...
     # available_for_assignment = Column(Boolean, default=True)
 
+    text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
+
     # Cache
     gold_standard_file = Column(MutableDict.as_mutable(JSONEncodedDict))
 

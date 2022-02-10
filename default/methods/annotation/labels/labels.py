@@ -129,11 +129,16 @@ def labelRefresh(project_string_id):
         directory = project.directory_default
 
         labels_out = project.get_label_list(session, directory = directory)
+        
+        global_attribute_groups_serialized_list = project.get_global_attributes(
+            session = session)
+        
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])
 
         return jsonify(labels_out = labels_out,
-                       label_file_colour_map = directory.label_file_colour_map), 200
+                       label_file_colour_map = directory.label_file_colour_map,
+                       global_attribute_groups_list = global_attribute_groups_serialized_list), 200
 
 
 @routes.route('/api/project/<string:project_string_id>' +

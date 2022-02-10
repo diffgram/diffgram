@@ -42,7 +42,7 @@
           </v-checkbox>
 
           <v-checkbox v-model="show_ROI_calculator"
-                      label="Show ROI Calculator">
+                      label="Show Return on Investment Calculator">
           </v-checkbox>
 
           <v-text-field class="pl-4 pr-4"
@@ -502,7 +502,7 @@
       data() {
         return {
 
-          show_ROI_calculator: true,
+          show_ROI_calculator: false,
           premium_plan_user_count: 5,
           annual_pricing: false,
           max_users: 20,
