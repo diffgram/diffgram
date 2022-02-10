@@ -285,6 +285,8 @@ export default Vue.extend({
             const scroll_y = window.pageYOffset || document.documentElement.scrollTop
             const { x, y } = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
 
+            const top_offset = this.task && this.task.id ? 50 : 100
+
             if (this.path.x && this.path.y) {
                 return {
                     marker: {
@@ -293,9 +295,9 @@ export default Vue.extend({
                     },
                     arrow: {
                         x: this.path.x - 350,
-                        y: this.path.y - 100 + scroll_y - 23.5
+                        y: this.path.y - top_offset + scroll_y - 23.5
                     },
-                    path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - 100 + scroll_y - 23.5} ${this.path.x - 350} ${this.path.y - 100 + scroll_y - 23.5}`
+                    path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5} ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5}`
                  }
             }
 
