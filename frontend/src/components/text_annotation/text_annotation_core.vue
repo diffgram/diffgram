@@ -403,7 +403,7 @@ export default Vue.extend({
                 await this.save();
             }
         },
-        on_draw_text_token: function() {
+        on_draw_text_token: function(e) {
             if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
             const selection = window.getSelection()
             const start_token_id = parseInt(selection.anchorNode.parentNode.id)
@@ -412,6 +412,10 @@ export default Vue.extend({
                 end_token_id = parseInt(selection.focusNode.parentNode.id)
             } else {
                 end_token_id = parseInt(selection.focusNode.previousSibling.id)
+            }
+            if (!e.target.nodeName.includes('text') && start_token_id == end_token_id) {
+                this.instance_in_progress = null
+                return
             }
             this.on_start_draw_instance(start_token_id)
             this.on_finish_draw_instance(end_token_id)
