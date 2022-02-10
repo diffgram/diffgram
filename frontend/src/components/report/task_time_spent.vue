@@ -4,7 +4,7 @@
     <v-card-subtitle>Click on bar to go to task</v-card-subtitle>
     <v-card-text>
       <div>
-        Filters here
+
       </div>
       <div>
         <bar_horizontal_chart
@@ -91,7 +91,9 @@ export default {
       console.log('CLICKKKK', point, chart_items)
       if (chart_items.length) {
         let task_id = chart_items[0]._view.label;
-        this.$router.push(`/task/${task_id}`);
+        let routeData = this.$router.resolve({name: 'routeName', query: {data: "someData"}});
+        window.open(`/task/${task_id}`, '_blank');
+        // this.$router.push(`/task/${task_id}`);
       }
 
     },
