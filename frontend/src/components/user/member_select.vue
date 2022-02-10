@@ -11,6 +11,7 @@
                 :disabled="loading || view_only"
                 @input="$emit('input', $event)"
                 @change="$emit('change', $event)"
+                :filter="on_filter"
                 clearable
       >
         <!-- Why >>>>  :item-value="null"  Because for multiple select otherwise
@@ -191,13 +192,23 @@ Where is a dict in data() eg  member: {}
       },
 
       methods: {
+        on_filter: function(item, query_text, item_text){
+          return item.first_name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
+            ||  item.last_name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
+
+        },
         toggle () {
           this.$nextTick(() => {
             if (this.all_selected) {
               this.item_internal = []
+
             } else {
-              this.item_internal = this.member_list_internal.slice()
+              this.item_internal = this.member_list_internal.map(elm => elm.id)
+
             }
+            console.log('item_internal', this.item_internal)
+            this.$emit('input', this.item_internal);
+            this.$emit('change',  this.item_internal);
           })
         }
 
