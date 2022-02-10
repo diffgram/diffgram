@@ -196,21 +196,17 @@ class Sequence(Base):
 
             if session:
 
-                # This needs to be in advance in case no instance
-                # Otherwise it will keep rerunning this which is slow
-
-                # caution this needs to match what serialize_for_sequence_preview()
-                # creates. a TODO is to pass this to it so it can control it
                 instance = self.get_preview_instance(session = session)
 
                 if instance:
-                    logger.info("Rebuilding Instance {} Preview".format(instance.id))
+                    logger.debug("Rebuilding Instance {} Preview".format(instance.id))
 
                     self.instance_preview_cache = instance.serialize_for_sequence_preview(
                         session = session)
                 self.cache_expiry = time.time() + 2591000
                 session.add(self)
         return self.instance_preview_cache
+
 
     def get_preview_instance(self, session):
         """
@@ -229,13 +225,11 @@ class Sequence(Base):
         instance = instance.first()
 
         """
-        April 8, 2020
-            1) We do regenerate here since otherwise always could be risk of instance not matching up.
-            2) Issue is that this doesn't directly refresh cache, it just ensures 
+        Issue is that this doesn't directly refresh cache, it just ensures 
             the instance we are getting has a thumbnail.
         """
         if instance:
-            logger.info('Regenertaing instance thumb for {}'.format(instance.id))
+            logger.debug('Regenerating instance thumb for {}'.format(instance.id))
             self.regenerate_instance_thumb(
                 session = session,
                 instance = instance)
@@ -272,10 +266,10 @@ class Sequence(Base):
 
     @staticmethod
     def update_single_existing_sequence(
-        session,
-        instance,
-        video_file,
-        add_to_session = True):
+            session,
+            instance,
+            video_file,
+            add_to_session = True):
 
         sequence = session.query(Sequence).filter(
             Sequence.id == instance.sequence_id,
@@ -283,42 +277,22 @@ class Sequence(Base):
             Sequence.label_file_id == instance.label_file_id).first()
 
         if sequence:
-            logger.debug("Update sequence ID {}, number {}".format(sequence.id, sequence.number))
+            #logger.debug("Update sequence ID {}, number {}".format(sequence.id, sequence.number))
+            
             if add_to_session is True:
                 session.add(sequence)
-
-            # Otherwise it doubles up the keyframe list
-            sequence.update_frame_number_list(session, instance)
             sequence.has_changes = True
 
         return sequence
 
     @staticmethod
     def update(
-        session,
-        project,
-        video_mode,
-        instance,
-        video_file):
-        """
-        Conditions on if an instance exists
-        Either creates a new instance or updates existing.
+            session,
+            project,
+            video_mode,
+            instance,
+            video_file):
 
-        Arguments:
-            shared.database: session object
-            keyframe: db object
-            video_mode: bool
-            new_box: db object
-            new_polygon: db object
-            new_instance: dictionary object, front end version of instance
-            single_frame: bool, if the sequence is restricted to being a single
-                frame
-
-        Returns:
-            instance: db object
-        """
-
-        # TODO [ ] Handling deleting keyframes?
         if video_mode is not True:
             return None
 
@@ -327,11 +301,10 @@ class Sequence(Base):
 
         sequence = None  # edge case, we usually expect to return sequence object
         is_new_sequence = False
+
         # Default case, instance already had a sequence id
         logger.debug('Updating sequence for sequence id {}'.format(instance.sequence_id))
         if instance.sequence_id:
-            # Do we even need other checks here?
-            # print("instance.sequence_id", instance.sequence_id)
             sequence = Sequence.update_single_existing_sequence(
                 session = session,
                 instance = instance,
@@ -341,13 +314,9 @@ class Sequence(Base):
         if not instance.sequence_id:
             logger.debug('No ID checking for number {}'.format(instance.number))
             # Most common case for new instances
-            # We have a number from UI but we don't have it mapped
-            # To a sequence
-            # print("instance number", instance.number)
+            # We have a number from UI but we don't have it mapped To a sequence
 
             if instance.number is not None:
-                # in the new context the video file has already been
-                # checked too be valid
 
                 sequence = Sequence.get_from_video_label_number(
                     session = session,
@@ -357,9 +326,7 @@ class Sequence(Base):
                 )
 
                 if sequence:
-                    # TODO handle removal
                     session.add(sequence)
-                    sequence.update_frame_number_list(session, instance)
 
                 if not sequence:
                     sequence = Sequence.new(
@@ -368,16 +335,12 @@ class Sequence(Base):
                         label_file = instance.label_file
                     )
 
-                    sequence.keyframe_list['frame_number_list'].append(
-                        instance.frame_number)
-
                     # it needs instance to do things like crop the image
                     is_new_sequence = True
                     session.add(sequence)
                     session.flush()
 
                 sequence.has_changes = True
-
                 instance.sequence_id = sequence.id
 
                 session.add(instance)
@@ -405,9 +368,8 @@ class Sequence(Base):
 
         if label_file:
             sequence.label_file_id = label_file.id
-            sequence.single_frame = label_file.label.default_sequences_to_single_frame
         else:
-            logger.info(
+            logger.debug(
                 "label_file is None, this is unusual. video_file_id was: " + str(video_file_id) + " number was " + str(
                     number))
 
@@ -422,6 +384,7 @@ class Sequence(Base):
         return session.query(Sequence).filter(
             Sequence.video_file_id == video_file_id,
             Sequence.archived == archived).all()
+
 
     @staticmethod
     def update_all_sequences_in_file(
@@ -449,13 +412,13 @@ class Sequence(Base):
             session.add(sequence)
             print(sequence.keyframe_list)
 
+
     def regenerate_instance_thumb(
         self,
         session,
         instance,
         video = None
     ):
-
         if video is None:
             video = self.video_file.video
 
@@ -464,88 +427,75 @@ class Sequence(Base):
             video = video,
             instance = instance)
 
+
     def regenerate_keyframe_list(
         self,
         session):
-        """
-
-        """
-
-        # Not yet tested.
-        # does not add to session
 
         instance_list = Instance.list(  # Using this checks for soft deleted by default
             session = session,
             sequence_id = self.id,
             limit = None)
 
-        # print("len instance_list", len(instance_list))
+        frame_number_list = self.regenerate_keyframes_for_whole_series(instance_list)
+        self.keyframe_list['frame_number_list'] = frame_number_list
 
+
+    def regenerate_keyframes_for_whole_series(self, instance_list):
+        # Assumes entire list is provided and just want to recreate the list.
+        logger.debug("regenerate_keyframes_for_whole_series")
+        frame_number_list = []
         for instance in instance_list:
-            self.update_frame_number_list(session, instance)
-
-    # print(self.keyframe_list['frame_number_list'])
-
-    def update_frame_number_list(self, session, instance):
-        # Use instance for frame number and flag...
-
-        frame_number_list = self.keyframe_list['frame_number_list']
-        default_sequences_to_single_frame = instance.label_file.label.default_sequences_to_single_frame
-        if instance.soft_delete is False or instance.soft_delete is None:
-
-            # there wasn't a super obvious way to use built in
-            # bisect for this test and since we expect this list to
-            # generally be < 100 elements just leaving it.
-
-            # this (not in) test is here because it was doubling up
-            # keyframes, somethign to do with the way attributes were
-            # saving maybe? but it was suprisingly glaring bug
-            # on front end
-
-            if instance.frame_number not in frame_number_list and instance.frame_number is not None:
-                # binary search based insertion
-                bisect.insort(frame_number_list, instance.frame_number)
-        elif instance.soft_delete and not default_sequences_to_single_frame:
-            try:
-                del frame_number_list[bisect.bisect_left(
-                    frame_number_list, instance.frame_number)]
-            except:
-                pass
-
-        # NOTE we previously had concept of if len(frame_number_list) == 0:
-        # Which could then call delete_sequence_shared()
-        # This was not fully implmented so leaving for now, but this is the "hook"
-        # where we would put it (at least in prior knowledge conextex.)
-        elif instance.soft_delete and default_sequences_to_single_frame:
-            # Opportunity to have some sort of cache to avoid querying here since this can sometimes be called
-            # Inside a for loop.
-            """
-            1) Future idea. All of this info should be available on 
-            `instance_list_kept_serialized`... because, generally speaking
-            we have all the instances already so shouldn't have to do a second
-            query.
-            2) There could be a timing issue here, we seem to do this update
-            "opportunistically", eg as each instance completes ... 
-            but what if more then one change in the one save event
-            """
-            count_instances_on_same_frame_and_sequence = Instance.list(
-                session = session,
-                sequence_id = instance.sequence_id,
-                file_id = instance.file_id,
-                frame_number = instance.frame_number,
-                label_file_id = instance.label_file_id,
-                limit = None,
-                return_kind = "count"
-            )
-
-            # logger.info(count_instances_on_same_frame_and_sequence)
-
-            if count_instances_on_same_frame_and_sequence == 1:
-                # Delete frame number list if its the last instance on this keyframe from same seq #.
+            if self.is_keyframe_alive(instance) is True:
                 try:
-                    del frame_number_list[bisect.bisect_left(
-                        frame_number_list, instance.frame_number)]
+                    bisect.insort(frame_number_list, instance.frame_number)
                 except:
                     pass
+        return frame_number_list
 
+
+    def is_keyframe_alive(self, instance):
+        if instance.soft_delete is False or instance.soft_delete is None:
+            if instance.frame_number is not None:
+                return True
+
+
+    def remove_keyframe_to_cache(self, session, instance):
+
+        frame_number_list = self.keyframe_list['frame_number_list']
+        logger.debug(frame_number_list)
+        index = bisect.bisect_left(frame_number_list, instance.frame_number)
+        if frame_number_list:
+            try:
+                if instance.frame_number == 0 and index == 0:
+                    del frame_number_list[index]
+
+                if index != 0 and index < len(frame_number_list):
+                    del frame_number_list[index]
+            except Exception as e:
+                logger.error(e)
+        logger.debug(frame_number_list)
+        self.keyframe_list['frame_number_list'] = frame_number_list
+
+
+    def add_keyframe_to_cache(self, session, instance):
+        # Assumes from a single instance to avoid computation
+        # Assumes will ignore duplicates
+
+        frame_number_list = self.keyframe_list['frame_number_list']
+        logger.debug(frame_number_list)
+        logger.debug(instance.number)
+        if self.is_keyframe_alive(instance) is True:
+
+            # prevent duplicates by checking if it exists
+            index = bisect.bisect_left(frame_number_list, instance.frame_number)
+            if index < len(frame_number_list):
+                return
+            if len(frame_number_list) != 0 and index == 0 and instance.frame_number != 0:
+                return
+            try:
+                bisect.insort(frame_number_list, instance.frame_number)
+            except Exception as e:
+                logger.error(e)
+        logger.debug(frame_number_list)
         self.keyframe_list['frame_number_list'] = frame_number_list

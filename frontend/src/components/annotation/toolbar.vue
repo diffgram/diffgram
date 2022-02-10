@@ -335,6 +335,7 @@
             <task_status 
               v-if="task && task.id && task.job"
               :task_status="task.status"
+              :task_comment="task.task_comment"
               :allow_reviews="task.job.allow_reviews"
             />
       </div>
@@ -468,7 +469,8 @@
         <template slot="content">
           <v-layout class="pb-4">
             <!-- View Task Information -->
-             <div>
+            <!-- THIS IS QA CAROUSEL, ITS HIDDEN CUZ WE DON'T SUPPORT IN FOR 3D AND TEXT YET -->
+             <!-- <div>
                 <button_with_menu
                   datacy="open-annotation-show-menu"
                   v-if="annotation_show_on !== true"
@@ -516,7 +518,7 @@
                   :icon_style="true"
                   :bottom="true"
                 />
-              </div>
+              </div> -->
             <tooltip_button
                 tooltip_message="Refresh Instances"
                 v-if="$store.state.user.current.is_super_admin == true"

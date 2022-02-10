@@ -37,7 +37,7 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-
+          .get('[data-cy="save_button"]').click({force: true})
           .wait(7000)
           .wait('@save_instances', {timeout: 60000}).should(({request, response}) => {
             expect(request.method).to.equal('POST')
@@ -140,7 +140,7 @@ describe('Annotate Files Tests', () => {
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-
+          .get('[data-cy="save_button"]').click({force: true})
           .wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
           .wait(2000)

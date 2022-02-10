@@ -407,8 +407,11 @@ export default Vue.extend({
       if (response.data.user.last_builder_or_trainer_mode == "builder") {
         this.$store.commit("set_mode_builder");
       }
-
-      this.$store.commit("set_current_user", response.data.user);
+      let user = {
+        ...response.data.user,
+        install_fingerprint: response.data.install_fingerprint
+      }
+      this.$store.commit("set_current_user", user);
 
       // Not sure if need an if check here, but may rely on org being a dict,
       // and could be None?

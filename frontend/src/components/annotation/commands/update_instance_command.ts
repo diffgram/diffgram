@@ -1,10 +1,13 @@
 import * as instance_utils from '../../../utils/instance_utils';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../vue_canvas/instances/Instance";
+import { TextAnnotationInstance, TextRelationInstance } from '../../vue_canvas/instances/TextInstance';
 
 const CLASS_INSTANCE_TYPES = [
   'keypoints',
-  'cuboid_3d'
+  'cuboid_3d',
+  'text_token',
+  'relation'
 ]
 
 interface ComponentWithInstanceList extends Vue {
@@ -62,9 +65,32 @@ export class UpdateInstanceCommand {
       );
       return initializedInstance;
     }
+    else if (instance.type === 'text_token') {
+      const { id, start_token, end_token, label_file, creation_ref_id, soft_delete } = instance.get_instance_data()
+      const newInstance = new TextAnnotationInstance()
+      if (typeof id === "number") {
+        newInstance.create_instance(id, start_token, end_token, label_file, soft_delete)
+      } else {
+        newInstance.create_frontend_instance(start_token, end_token, label_file, soft_delete)
+      }
+      newInstance.initialized = true
+      newInstance.creation_ref_id = creation_ref_id
+      return newInstance
+    }
+    else if (instance.type === 'relation') {
+      const { id, from_instance_id, to_instance_id, label_file, creation_ref_id, soft_delete } = instance.get_instance_data()
+      const newInstance = new TextRelationInstance()
+      if (typeof id === "number") {
+        newInstance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
+      } else {
+        newInstance.create_frontend_instance(from_instance_id, to_instance_id, label_file, soft_delete)
+      }
+      newInstance.initialized = true
+      newInstance.creation_ref_id = creation_ref_id
+      return newInstance
+    }
     else if(instance.type === 'cuboid_3d'){
       let newInstance = instance.get_instance_data();
-      console.log('instance to copy mesh', instance, this.ann_core_ctx, this.scene_controller_3d)
       newInstance.mesh = instance.mesh;
 
       let initializedInstance = instance_utils.initialize_instance_object(

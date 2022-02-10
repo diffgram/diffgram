@@ -13,6 +13,7 @@
                 item-value="id"
                 data-cy="label_select"
                 ref="label_select"
+                class="ma-0"
                 >
 
         <template v-slot:item="data">
@@ -83,7 +84,7 @@
 
         <template v-slot:selection="data">
 
-          <div class="mb-4">
+          <div>
             <v-icon
               left
               :style="style_color(data.item.colour.hex)">

@@ -58,7 +58,7 @@ class Export(Base):
     tf_records_blob_name = Column(String())
     ann_is_complete = Column(Boolean)
 
-    def serialize(self):
+    def serialize(self, session = None):
 
         directory = None
         if self.working_dir:
@@ -70,7 +70,7 @@ class Export(Base):
 
         task = None
         if self.task:
-            task = self.task.serialize_for_list_view_builder()
+            task = self.task.serialize_for_list_view_builder(session=session)
 
         return {
             'id': self.id,

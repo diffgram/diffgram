@@ -7,6 +7,7 @@
       icon="mdi-selection"
       color="primary"
       :large="large"
+      :icon_size="icon_size"
                 >
   </tooltip_icon>
 
@@ -16,6 +17,7 @@
       icon="mdi-card-text"
       color="green"
       :large="large"
+      :icon_size="icon_size"
                 >
   </tooltip_icon>
 
@@ -25,6 +27,7 @@
       icon="mdi-select-multiple"
       color="purple"
       :large="large"
+      :icon_size="icon_size"
                 >
   </tooltip_icon>
 
@@ -34,6 +37,7 @@
       icon="mdi-radiobox-marked"
       color="pink"
       :large="large"
+      :icon_size="icon_size"
                 >
   </tooltip_icon>
 
@@ -43,6 +47,7 @@
     icon="mdi-video-input-component"
     color="pink"
     :large="large"
+    :icon_size="icon_size"
   >
   </tooltip_icon>
 
@@ -52,6 +57,7 @@
     icon="mdi-clock"
     color="primary"
     :large="large"
+    :icon_size="icon_size"
   >
   </tooltip_icon>
   <tooltip_icon
@@ -60,6 +66,7 @@
     icon="mdi-calendar"
     color="primary"
     :large="large"
+    :icon_size="icon_size"
   >
   </tooltip_icon>
 
@@ -103,6 +110,9 @@ export default Vue.extend( {
     'large' : {
       default: false,
       type: Boolean
+    },
+    'icon_size':{
+      default: 16
     }
   },
   data() {

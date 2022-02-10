@@ -102,7 +102,7 @@ EVENTHUB_URL = os.getenv('EVENTHUB_URL', 'https://diffgram.com/api/walrus/eventh
 ALLOW_EVENTHUB = env_adapter.bool(os.environ.get('ALLOW_EVENTHUB', False))
 
 # Stripe
-ALLOW_STRIPE_BILLING = os.getenv('ALLOW_STRIPE_BILLING', False)
+ALLOW_STRIPE_BILLING = env_adapter.bool(os.environ.get('ALLOW_STRIPE_BILLING', False))
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY', '')
 
 
@@ -162,6 +162,9 @@ DIFFGRAM_HOST_OS = os.getenv('DIFFGRAM_HOST_OS')
 DIFFGRAM_SERVICE_NAME = os.getenv('DIFFGRAM_SERVICE_NAME')
 
 EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', 'support@diffgram.com')
+
+# Plans Features
+IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
 
 print('DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE',DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE)
 

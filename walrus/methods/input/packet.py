@@ -44,7 +44,8 @@ def enqueue_packet(project_string_id,
                    enqueue_immediately = False,
                    mode = None,
                    allow_duplicates = False,
-                   extract_labels_from_batch = False):
+                   extract_labels_from_batch = False,
+                   member = None):
     """
         Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
@@ -71,6 +72,7 @@ def enqueue_packet(project_string_id,
     diffgram_input.url = media_url
     diffgram_input.video_split_duration = video_split_duration
     diffgram_input.allow_duplicates = allow_duplicates
+    diffgram_input.member_created = member
     if instance_list:
         diffgram_input.instance_list = {}
         diffgram_input.instance_list['list'] = instance_list
@@ -83,7 +85,7 @@ def enqueue_packet(project_string_id,
     session.flush()
 
     if batch_id and extract_labels_from_batch:
-        upload_tools = Upload(session = session, project = project, request = None)
+        upload_tools = Upload(session = session, project = project, request = None, member = member)
         upload_tools.extract_instance_list_from_batch(input = diffgram_input,
                                                       input_batch_id = batch_id,
                                                       file_name = file_name)
@@ -283,8 +285,11 @@ def input_packet(project_string_id):
     if request.authorization:
         client_id = request.authorization.get('username', None)
 
+
+
     with sessionMaker.session_scope() as session:
         # Creates and input and puts it in the media processing queue.
+        member = get_member(session)
         valid_file_data, log, file_id = validate_file_data_for_input_packet(
             session = session,
             input = input,
@@ -306,7 +311,8 @@ def input_packet(project_string_id):
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
                                         enqueue_immediately = False,
-                                        mode = mode)
+                                        mode = mode,
+                                        member = member)
         auth_api = None
         if client_id:
             auth_api = Auth_api.get(

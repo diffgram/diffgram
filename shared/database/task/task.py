@@ -9,6 +9,7 @@ from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
 from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
+from shared.database.task.task_event import TaskEvent
 from shared.database.user import User
 
 TASK_STATUSES = {
@@ -142,6 +143,8 @@ class Task(Base):
 
     # Deprecated, moved to status...
     # available_for_assignment = Column(Boolean, default=True)
+
+    text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
 
     # Cache
     gold_standard_file = Column(MutableDict.as_mutable(JSONEncodedDict))
@@ -465,7 +468,7 @@ class Task(Base):
             'file': self.file.serialize_with_annotations(session = session),
             'guide': guide,
             'label_dict': self.label_dict,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
         }
 
     def serialize_builder_view_by_id(self, session):
@@ -484,6 +487,11 @@ class Task(Base):
             if self.job.default_userscript:
                 default_userscript = self.job.default_userscript.serialize()
 
+        task_comment = ""
+        
+        if self.status == "complete" or self.status == "requires_changes":
+            task_comment = TaskEvent.get_last_task_comment(session, self.id, self.job_id, self.project_id)
+
         return {
             'id': self.id,
             'job_id': self.job_id,
@@ -499,7 +507,8 @@ class Task(Base):
             'time_updated': str(self.time_updated),
             'time_completed': str(self.time_completed),
             'default_userscript': default_userscript,
-            'assignee_user_id': self.assignee_user_id
+            'assignee_user_id': self.assignee_user_id,
+            'task_comment': task_comment
         }
 
     def get_by_job_and_file(
@@ -678,20 +687,22 @@ class Task(Base):
     def serialize_for_list_view_builder(self, session = None):
 
         file = None
+        task_assignees = []
+        task_reviewers = []
         if session:
             file = self.file.serialize_with_type(session = session)
 
-        task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
-        task_assignees = []
+            task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
 
-        for assignee in task_assignees_query:
-            task_assignees.append(assignee.serialize())
 
-        task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
-        task_reviewers = []
+            for assignee in task_assignees_query:
+                task_assignees.append(assignee.serialize())
 
-        for assignee in task_reviewers_query:
-            task_reviewers.append(assignee.serialize())
+            task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
+
+
+            for assignee in task_reviewers_query:
+                task_reviewers.append(assignee.serialize())
 
         return {
             'id': self.id,

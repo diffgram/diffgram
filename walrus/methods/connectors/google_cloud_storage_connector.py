@@ -174,14 +174,15 @@ class GoogleCloudStorageConnector(Connector):
                 'File must type of: {} {}'.format(str(images_allowed_file_names), str(videos_allowed_file_names)))
         # metadata = self.connection_client.head_object(Bucket=opts['bucket_name, Key=path)
         with sessionMaker.session_scope() as session:
-
+            member = session.query(Member).filter(Member.user_id == opts['event_data']['request_user']).first()
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                   session=session,
                                                   media_url=signed_url,
                                                   media_type=media_type,
                                                   job_id=opts.get('job_id'),
                                                   video_split_duration=opts.get('video_split_duration'),
-                                                  directory_id=opts.get('directory_id'))
+                                                  directory_id=opts.get('directory_id'),
+                                                  member = member)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
@@ -279,6 +280,7 @@ class GoogleCloudStorageConnector(Connector):
                         continue
                     result = []
                     # TODO: check Input() table for duplicate file?
+                    member = session.query(Member).filter(Member.user_id == opts['event_data']['request_user']).first()
                     created_input = packet.enqueue_packet(self.config_data['project_string_id'],
                                                           session=session,
                                                           media_url=signed_url,
@@ -288,7 +290,8 @@ class GoogleCloudStorageConnector(Connector):
                                                           file_name=path,
                                                           video_split_duration=opts.get('video_split_duration'),
                                                           directory_id=opts.get('directory_id'),
-                                                          extract_labels_from_batch = True)
+                                                          extract_labels_from_batch = True,
+                                                          member = member)
                     log = regular_log.default()
                     log['opts'] = opts
                     Event.new(

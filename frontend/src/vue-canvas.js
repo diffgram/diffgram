@@ -1,5 +1,4 @@
 import Vue from 'vue'
-
 (function () {
 
 
@@ -67,14 +66,20 @@ import Vue from 'vue'
       var canvas = el;
       var ctx = canvas.getContext('2d');
       if (!ctx.material_icons_loaded) {
-        const material_font = new FontFace('material-icons',
-          // pass the url to the file in CSS url() notation
-          'url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2)');
-        document.fonts.add(material_font); // add it to the document's FontFaceSet
-        // wait the font loads
-        material_font.load().then(() => {
-          ctx.material_icons_loaded = true;
-        }).catch(console.error);
+        try{
+          const material_font = new FontFace('material-icons',
+            // pass the url to the file in CSS url() notation
+            'url(https://fonts.gstatic.com/s/materialicons/v48/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2)');
+          document.fonts.add(material_font); // add it to the document's FontFaceSet
+          // wait the font loads
+          material_font.load().then(() => {
+            ctx.material_icons_loaded = true;
+          }).catch(console.error);
+        }
+        catch (e) {
+          console.warn('Unable to load FontFace on vue-canvas.js')
+        }
+
       }
 
       vnode.children.forEach(function (c) {

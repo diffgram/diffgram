@@ -14,7 +14,7 @@
       icon="archive"
       :icon_style="true"
       tooltip_message="Archive"
-      confirm_message="Archive"
+      confirm_message="Careful! This will archive the Task Template and all the related tasks in the task list."
       :disabled="loading || total_job_length_available == 0 "
       :loading="loading">
     </button_with_confirm>
@@ -49,25 +49,26 @@
 
     </button_with_confirm>
 
-    <!-- Super Admin options -->
-    <button_with_confirm
-      @confirm_click="cancel_job_api('delete')"
-      v-if="$store.state.user.current.is_super_admin == true && job"
-      color="red"
-      icon="delete"
-      :text_style="true"
-      tooltip_message="Delete"
-      confirm_message="Careful! Hard Delete"
-      :disabled="loading"
-      :loading="loading">
+<!--    &lt;!&ndash; Super Admin options &ndash;&gt;-->
+<!--    <button_with_confirm-->
+<!--      @confirm_click="cancel_job_api('delete')"-->
+<!--      v-if="$store.state.user.current.is_super_admin == true && job"-->
+<!--      color="red"-->
+<!--      icon="delete"-->
+<!--      :text_style="true"-->
+<!--      tooltip_message="Delete"-->
+<!--      confirm_message="Careful! This will archive the Task Template and all the related tasks in the task list."-->
+<!--      :disabled="loading"-->
+<!--      :loading="loading">-->
 
-    </button_with_confirm>
+<!--    </button_with_confirm>-->
 
 
     <v_error_multiple :error="error">
     </v_error_multiple>
 
     <v-alert type="success"
+             :text="success_text"
              :value="success">
 
     </v-alert>
@@ -113,6 +114,7 @@ export default Vue.extend( {
         loading: false,
         error: {},
         success: false,
+        success_text: '',
 
         mode: "cancel"
 
@@ -144,7 +146,7 @@ export default Vue.extend( {
       },
 
       cancel_job_api: function (mode) {
-
+        this.success_text = ''
         this.loading = true
         this.error = {}
         this.success = false
@@ -167,7 +169,7 @@ export default Vue.extend( {
             if (response.data.log.success == true) {
 
               this.success = true
-
+              this.success_text = 'Job Archived Successfully'
               this.$emit('cancel_job_success')
 
             }

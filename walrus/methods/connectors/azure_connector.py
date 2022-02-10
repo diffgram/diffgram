@@ -150,7 +150,8 @@ class AzureConnector(Connector):
                                                   file_name = opts.get('path'),
                                                   video_split_duration = opts.get('video_split_duration'),
                                                   directory_id = opts.get('directory_id'),
-                                                  extract_labels_from_batch = True)
+                                                  extract_labels_from_batch = True,
+                                                  member = member)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
