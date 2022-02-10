@@ -16,6 +16,7 @@
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
                 :task="task"
+                :file="file"
                 @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
                 @task_update_toggle_deferred="defer_task"
                 @change_label_file="change_label_file"
