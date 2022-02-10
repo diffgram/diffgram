@@ -10,7 +10,7 @@
           <h3 v-else>Who should {{ remove_mode ? 'be removed from the' : 'review the'}} {{ !plural ? "this" : "these" }} task{{ !plural ? "" : "s" }}?</h3>
 
           <member_select
-            datacy="member-select"
+            datacy="member-select-assign-task"
             v-model="member_list_ids"
             label="Select Specific Users"
             :member_list="member_list"

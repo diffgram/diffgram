@@ -63,7 +63,7 @@
           </v-chip>
           <span v-if="index === 1 && !all_selected" style="font-size: 10px"> (+{{ item_internal.length - 1 }} others)</span>
 
-          <div v-if="all_selected && index === 0" >
+          <div v-if="all_selected && index === 0" data-cy="member-select__select-all">
             <v-icon color="primary"
                     left >
                 mdi-select-all
