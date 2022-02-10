@@ -7,7 +7,7 @@
         :height="height"
         style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0; border-top: 1px solid #e0e0e0"
     >
-        <v-v-toolbar-items v-if="task">
+        <v-toolbar-items v-if="task">
             <div v-show="task && task.id">
                 <v-layout>
                 <div style="width: 10px" />
@@ -88,8 +88,7 @@
                     "
                     :save_and_complete="true"
                     :loading="save_loading"
-                    :disabled="save_loading || view_only_mode || (!file && !task)"
-                    :view_only_mode="view_only_mode"
+                    :disabled="save_loading || (!file && !task)"
                     :task_id="task ? task.id : undefined"
                 >
                 </v_is_complete>
@@ -102,7 +101,6 @@
                         :loading="save_loading"
                         :disabled="
                             save_loading ||
-                            view_only_mode ||
                             (file == undefined && task == undefined)
                         "
                         color="primary"
@@ -223,7 +221,7 @@
                 <v-divider vertical></v-divider>
                 </v-layout>
             </div>
-        </v-v-toolbar-items>
+        </v-toolbar-items>
         <v-toolbar-items v-else>
             <div style="width: 10px" />
             <tooltip_button
@@ -394,6 +392,10 @@ export default Vue.extend({
             requered: true
         },
         task: {
+            type: Object,
+            default: undefined
+        },
+        file: {
             type: Object,
             default: undefined
         }
