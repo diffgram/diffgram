@@ -10,6 +10,7 @@ export const UI_SCHEMA_TASK_MOCK = {
   job:{
     id: -1
   },
+  time_tracking: [],
   file: {
     id: -1,
     ann_is_complete: true,
