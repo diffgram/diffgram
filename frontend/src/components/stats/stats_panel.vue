@@ -44,6 +44,7 @@
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
           <member_select
+            id="member_select"
             v-model="member_list_selected"
             :initial_value="this.$store.state.user.current.id"
             :init_all_selected="false"
