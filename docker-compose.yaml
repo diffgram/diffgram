@@ -104,7 +104,8 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_DB=diffgram
     volumes:
-      - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data:Z
+      # Default INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data:Z
+      - ${POSTGRES_DATA_DIR:-./postgres-data}:${INTERNAL_POSTGRES_DIR:-/var/lib/postgresql/data}
     ports:
       - 5432:5432
 
