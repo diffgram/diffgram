@@ -49,9 +49,14 @@ describe('Annotate Files Tests', () => {
          cy.selectLabel(labelsForAttributes[0].name)
       })
 
+      it('Choses Global VS Local Attribute', () => {
+        cy.get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
+
+      })
+
       it('Creates new options for Attributes', () => {
 
-         cy.get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
+         cy.get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
          cy.createAttributeOptions(selectAttribute.options)
 
        })

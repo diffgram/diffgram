@@ -290,28 +290,44 @@
 
           <h4 class="pa-2"> Default Option </h4>
 
+          <v-row v-if="group.kind === 'slider'">
+            <v-col cols="3">
+              <v-text-field v-model="group.min_value"
+                            @change="api_group_update('UPDATE')"
+                            type="number"
+                            data-cy="min_value"
+                            label="Min Value">
+
+              </v-text-field>
+            </v-col>
+
+            <v-col cols="3">
+              <v-text-field v-model="group.max_value"
+                            @change="api_group_update('UPDATE')"
+                            type="number"
+                            data-cy="max_value"
+                            label="Max Value">
+
+              </v-text-field>
+              </v-col>
+          </v-row>
+
+        <v-row>
+            <!-- Globals -->
+          <div class="pt-0 ">
+            <v-checkbox
+              v-model="group.is_global"
+              label="Show as Global Assessment of the File."
+              :disabled="loading || view_only_mode"
+              @change="api_group_update('UPDATE')"
+            >
+            </v-checkbox>
+          </div>
+
+        </v-row>
+
+        <!-- Edit Default  default_id default_value -->
           <v-col cols="12">
-
-            <v-row v-if="group.kind === 'slider'">
-              <v-col cols="3">
-                <v-text-field v-model="group.min_value"
-                              @change="api_group_update('UPDATE')"
-                              type="number"
-                              data-cy="min_value"
-                              label="Min Value">
-
-                </v-text-field>
-              </v-col>
-              <v-col cols="3">
-                <v-text-field v-model="group.max_value"
-                              @change="api_group_update('UPDATE')"
-                              type="number"
-                              data-cy="max_value"
-                              label="Max Value">
-
-                </v-text-field>
-              </v-col>
-            </v-row>
 
             <v-text-field
               v-if="group.kind == 'text'"
@@ -631,6 +647,10 @@
            * here we can do that
            */
 
+          if (!this.group.attribute_template_list){
+            throw("Missing group.attribute_template_list. Check API.")
+          }
+
           for (let x of this.group.attribute_template_list) {
 
             let attribute = {}
@@ -837,6 +857,9 @@
             this.internal_selected = []
             // value is an array now
             for (let single_selected of value) {
+              if(!single_selected){
+                return
+              }
               this.internal_selected.push(this.select_format.find(
                 attribute => {
                   return attribute.id == single_selected.id
@@ -986,6 +1009,7 @@
               group.min_value = min_value;
             }
           }
+
           axios.post(
             '/api/v1/project/' + this.project_string_id +
             '/attribute/group/update',
@@ -999,7 +1023,8 @@
               default_value: group.default_value,
               min_value: min_value,
               max_value: max_value,
-              mode: mode
+              mode: mode,
+              is_global: this.group.is_global
 
             }).then(response => {
 

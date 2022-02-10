@@ -46,7 +46,9 @@
             <div class="d-flex flex-column justify-start">
 
               <h1 class="secondary--text">
-                <strong><v-icon color="secondary" large>mdi-test-tube</v-icon>Validating You Diffgram Export...</strong>
+                <strong><v-icon color="secondary" large>mdi-test-tube</v-icon>
+                  Validating...
+                </strong>
               </h1>
             </div>
           </div>

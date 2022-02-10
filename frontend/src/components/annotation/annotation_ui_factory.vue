@@ -35,6 +35,7 @@
           :label_file_colour_map="label_file_colour_map"
           :enabled_edit_schema="enabled_edit_schema"
           :finish_annotation_show="show_snackbar"
+          :global_attribute_groups_list="global_attribute_groups_list"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @set_file_list="set_file_list"
@@ -58,6 +59,25 @@
         >
         </sensor_fusion_editor>
       </div>
+      <div v-else-if="annotation_interface === 'text'">
+        <text_annotation_core 
+          :file="current_file" 
+          :task="task"
+          :job_id="job_id"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
+        />
+      </div>
+      <div v-else-if="!annotation_interface">
+        <empty_file_editor_placeholder
+          :loading="any_loading"
+          :project_string_id="project_string_id"
+        ></empty_file_editor_placeholder>
+      </div>
+
       <file_manager_sheet
         v-if="!task"
         v-show="!loading_project && !initializing"
@@ -102,6 +122,7 @@ import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
+import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import Vue from "vue";
 
 
@@ -111,7 +132,8 @@ export default Vue.extend({
     file_manager_sheet,
     no_credentials_dialog,
     empty_file_editor_placeholder,
-    sensor_fusion_editor
+    sensor_fusion_editor,
+    text_annotation_core
   },
   props: {
     project_string_id: {
@@ -149,29 +171,41 @@ export default Vue.extend({
 
       view_only: false,
 
-      labels_list_from_project: null,
-      model_run_color_list: null,
-      label_file_colour_map_from_project: null,
-    };
+          labels_list_from_project: null,
+          model_run_color_list: null,
+          label_file_colour_map_from_project: null,
+
+          global_attribute_groups_list: null
+
+        }
   },
   watch: {
-    $route(to, from) {
-      if (from.name === "task_annotation" && to.name === "studio") {
+    '$route'(to, from) {
+      if(from.name === 'task_annotation' && to.name === 'studio'){
         this.fetch_project_file_list();
         this.task = null;
         if(this.$refs.file_manager_sheet){
           this.$refs.file_manager_sheet.display_file_manager_sheet();
         }
       }
-      if (from.name === "studio" && to.name === "task_annotation") {
+      if(from.name === 'studio' && to.name === 'task_annotation'){
         this.current_file = null;
         this.fetch_single_task(this.$props.task_id_prop);
-        this.$refs.file_manager_sheet.hide_file_manager_sheet();
+        this.$refs.file_manager_sheet.hide_file_manager_sheet()
       }
       this.get_model_runs_from_query(to.query);
     },
+    current_file: {
+      handler(newVal, oldVal) {
+        if (newVal && newVal != oldVal) {
+          this.$addQueriesToLocation({ file: newVal.id });
+        }
+      },
+    },
   },
   created() {
+
+
     if (this.$route.query.edit_schema) {
       this.enabled_edit_schema = true;
     }
@@ -266,6 +300,9 @@ export default Vue.extend({
         else if(this.current_file.type === 'sensor_fusion'){
           return 'sensor_fusion';
         }
+        else if(this.current_file.type === 'text'){
+          return 'text'
+        }
       }
       if(this.task){
         if(this.task.file.type === 'image' || this.task.file.type === 'video'){
@@ -273,6 +310,9 @@ export default Vue.extend({
         }
         else if(this.task.file.type === 'sensor_fusion'){
           return 'sensor_fusion';
+        }
+        else if(this.task.file.type === 'text'){
+          return 'text';
         }
       }
 
@@ -382,28 +422,26 @@ export default Vue.extend({
       this.changing_file = false;
     },
 
-    get_labels_from_project: async function () {
-      try {
-        if (
-          this.labels_list_from_project &&
-          this.computed_project_string_id ==
-            this.$store.state.project.current.project_string_id
-        ) {
-          return;
-        }
-        if (!this.computed_project_string_id) {
-          return;
-        }
-        var url =
-          "/api/project/" + this.computed_project_string_id + "/labels/refresh";
-        const response = await axios.get(url, {});
-        this.labels_list_from_project = response.data.labels_out;
-        this.label_file_colour_map_from_project =
-          response.data.label_file_colour_map;
-      } catch (e) {
-        console.error(e);
-      }
-    },
+        get_labels_from_project: async function () {
+          try{
+            if (this.labels_list_from_project &&
+              this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+              return
+            }
+            if (!this.computed_project_string_id) {
+              return
+            }
+            var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
+            const response = await axios.get(url, {});
+            this.labels_list_from_project = response.data.labels_out
+            this.label_file_colour_map_from_project = response.data.label_file_colour_map
+            this.global_attribute_groups_list = response.data.global_attribute_groups_list
+          }
+          catch(e){
+            console.error(e)
+          }
+
+        },
 
     fetch_project_file_list: async function () {
       this.loading = true;
@@ -488,6 +526,7 @@ export default Vue.extend({
             assign_to_user: assign_to_user,
           }
         );
+        console.log(response)
         if (response.data) {
           if (response.data.task && response.data.task.id !== task.id) {
             this.$router.push(`/task/${response.data.task.id}`);
