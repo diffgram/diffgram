@@ -104,7 +104,8 @@ class Permission_Task():
                         raise Forbidden("Project access invalid")
 
                 # Default case, normal task
-                if task.assignee_user == user:
+                user_list = task.get_all_users_in_task(session = session)
+                if task.assignee_user == user or user in user_list:
 
                     # TODO clarify why this status check is here
                     if task.status in ["available", "in_progress"]:

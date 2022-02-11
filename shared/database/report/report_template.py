@@ -40,9 +40,8 @@ class ReportTemplate(Base):
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
-    # Meta data
-    # User, Instance etc.
-    base_class_string = Column(String())
+    # Top Level Report Object (Not necessarily a class, its the item of interest)
+    item_of_interest = Column(String())
 
     group_by = Column(String())
 
@@ -129,9 +128,9 @@ class ReportTemplate(Base):
             'project_string_id': project_string_id,  # note no self
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
-            'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S'),
+            'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S') if self.time_created else None,
             'time_updated': time_updated,
-            'base_class_string': self.base_class_string,
+            'item_of_interest': self.item_of_interest,
             'group_by_labels': self.group_by_labels,
             'group_by': self.group_by,
             'period': self.period,
