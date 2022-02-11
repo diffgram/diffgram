@@ -96,15 +96,6 @@ import Vue from "vue"; export default Vue.extend( {
       }
     }
   },
-
-  computed: {
-
-  },
-
-  created() {
-
-  },
-
   methods: {
     password_set: function () {
 

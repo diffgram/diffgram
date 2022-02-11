@@ -22,29 +22,27 @@
                       :rules="[rules.email]">
         </v-text-field>
 
-        <v-text-field
-          required
-          data-cy="password"
-          :append-icon="e1 ? 'visibility' : 'visibility_off'"
-          @click:append="() => (e1 = !e1)"
-          :type="e1 ? 'password' : 'text'"
+        <v-text-field 
+          :append-icon="password_hide ? 'visibility' : 'visibility_off'"
+          @click:append="() => (password_hide = !password_hide)"
+          :type="password_hide ? 'password' : 'text'"
           label="Password"
-          id="password"
+          data-cy="password1"
+          validate-on-blur
+          :rules="[rules.password]"
           v-model="password"
-              >
-        </v-text-field>
+        />
 
-        <v-text-field
-          required
-          data-cy="password"
-          :append-icon="e1 ? 'visibility' : 'visibility_off'"
-          @click:append="() => (e1 = !e1)"
-          :type="e1 ? 'password' : 'text'"
-          label="Repeat password"
-          id="password"
-          v-model="password"
-              >
-        </v-text-field>
+        <v-text-field 
+            :append-icon="password_hide_check ? 'visibility' : 'visibility_off'"
+            @click:append="() => (password_hide_check = !password_hide_check)"
+            :type="password_hide_check ? 'password' : 'text'"
+            label="Retype Password"
+            validate-on-blur
+            data-cy="password2"
+            :rules="[rules.password_check]"
+            v-model="password_check"
+        />
 
         <v-btn color="primary"
                data-cy="create-user-button"
@@ -109,13 +107,37 @@
 
         signup_code: null, // Optional
         error_signup_code: null,
+        password: null as String,
+        password_hide: true,
+
+        password_check: null as String,
+        password_hide_check: true,
 
         rules: {
           required: (value) => !!value || 'Required.',
           email: (value) => {
             const pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
             return pattern.test(value) || 'Invalid e-mail.'
-          }
+          },
+          password: (value) => {
+            const pattern = /^.{8,200}$/
+            if (!pattern.test(value)) {
+              return '8 to 200 characters'
+            }
+            return true
+          },
+          password_check: function (value) {
+
+            // Run equals check first
+            if (this.password != this.password_check) {
+              return "Passwords must match"
+            }
+
+            // Don't need to rerun password check
+            // since if they equal, and the first password as checked
+            // then all clear
+            return true
+        }
         }
 
       }
@@ -169,7 +191,9 @@
 
         axios.post('/api/v1/user/new', {
          'email': this.email,
-         'signup_code': this.signup_code
+         'signup_code': this.signup_code,
+         'password': this.password,
+         'password_check': this.password_check
         }).then(response => {
 
 
