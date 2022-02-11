@@ -43,44 +43,18 @@
       </v-col>
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
-          <v-menu offset-y id="menu_user_list">
-            <template v-slot:activator="{ on }">
-              <div v-if="!update_user_cart && job_data_fetched">
-                <div class="user-item" v-on="on">
-                  <user_icon
-                    :user="current_user"
-                    show_full_name
-                    :size="20"
-                    :fontSize="'10px'"
-                  />
-                  <v-icon> arrow_drop_down </v-icon>
-                </div>
-              </div>
-              <div v-else>
-                <span v-if="current_user" v-on="on" style="cursor: pointer">
-                  Getting data for
-                  {{ current_user.first_name }} {{ current_user.last_name }}
-                  ...
-                </span>
-              </div>
-            </template>
-            <v-list>
-              <v-list-item v-for="(member, index) in member_list" :key="index">
-                <v-list-item-title
-                  style="cursor: pointer"
-                  @click="() => switch_user(member.id)"
-                >
-                  <user_icon
-                    :user="member"
-                    show_full_name
-                    :size="20"
-                    :fontSize="'10px'"
-                  />
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-          <div v-if="!update_user_cart && job_data_fetched" style="width: 50%">
+          <member_select
+            id="member_select"
+            v-model="member_list_selected"
+            :initial_value="this.$store.state.user.current.id"
+            :init_all_selected="false"
+            label="Select User"
+            :show_names_on_selected="true"
+            @change="switch_user"
+            :allow_all_option="false"
+            :member_list="member_list"
+          ></member_select>
+          <div v-if="!update_user_cart && job_data_fetched"  style="width: 50%;">
             <pie-chart
               :data="user_stats.chartData"
               :options="user_stats.chartOptions"
@@ -166,10 +140,11 @@ export default Vue.extend({
       this.stats_visibility = JSON.parse(stats_visibility_status);
 
     const user_id = this.$store.state.user.current.id;
+
     const { job_id } = this.$route.params;
     this.member_list = [...this.$store.state.project.current.member_list];
     this.show_member_stat = user_id;
-
+    this.member_list_selected = user_id;
     const { completed, total, in_progress, in_review, requires_changes } = await getJobStats(job_id);
     const pending = total - completed - in_progress - in_review - requires_changes
     this.job_chart.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];
@@ -191,6 +166,8 @@ export default Vue.extend({
       current_user_stat: "two",
       update_user_cart: false,
       job_data_fetched: false,
+      member_list: [],
+      member_list_selected: null,
       show_member_stat: null,
       current_user_performance: {
         instances: 0,

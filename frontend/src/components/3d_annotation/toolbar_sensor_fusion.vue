@@ -37,20 +37,7 @@
 
         </v-layout>
       </div>
-      <v_is_complete
-        v-if="task"
-        :project_string_id="project_string_id"
-        :current_file="file ? file : task.file"
-        :task="task"
-        @complete_task="$emit('complete_task')"
-        @replace_file="$emit('replace_file', $event)"
-        :save_and_complete="true"
-        :loading="save_loading"
-        :disabled="save_loading || view_only_mode || (!file && !task)"
-        :view_only_mode="view_only_mode"
-        :task_id="task ? task.id : undefined"
-      >
-      </v_is_complete>
+
 
 
 
@@ -213,6 +200,36 @@
       <v-divider
         vertical
       ></v-divider>
+
+      <v_is_complete
+        v-if="task"
+        :project_string_id="project_string_id"
+        :current_file="file ? file : task.file"
+        :task="task"
+        @complete_task="$emit('complete_task')"
+        @replace_file="$emit('replace_file', $event)"
+        :save_and_complete="true"
+        :loading="save_loading"
+        :disabled="save_loading || view_only_mode || (!file && !task)"
+        :view_only_mode="view_only_mode"
+        :task_id="task ? task.id : undefined"
+      >
+      </v_is_complete>
+      <div>
+        <task_status
+          v-if="task && task.id && task.job"
+          :task_status="task.status"
+          :task_comment="task.task_comment"
+          :allow_reviews="task.job.allow_reviews"
+        />
+      </div>
+      <v-divider vertical v-if="task && task.id && task.job"></v-divider>
+      <ui_schema name="time_tracking" class="d-flex align-center">
+        <time_tracker
+          v-if="task && task.id && task.job"
+          :task="task"
+        />
+      </ui_schema>
 
 
       <tooltip_button
@@ -549,6 +566,8 @@
   import Vue from "vue";
   import label_select_annotation from '../label/label_select_annotation.vue';
   import file_meta_data_card from '../annotation/file_meta_data_card'
+  import task_status from '../annotation/task_status'
+  import time_tracker from '../task/time_track/time_tracker'
   import task_relations_card from '../annotation/task_relations_card'
   import file_relations_card from '../annotation/file_relations_card'
   import task_meta_data_card from '../annotation/task_meta_data_card'
@@ -559,6 +578,8 @@
       components: {
         label_select_annotation,
         file_meta_data_card,
+        time_tracker,
+        task_status,
         file_relations_card,
         task_meta_data_card,
         task_relations_card,

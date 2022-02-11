@@ -1,120 +1,101 @@
 <template>
-  <v-layout>
-    <v-row>
-      <v-col cols="12" class="pa-0 d-flex align-center">
+  <div>
+    <v-autocomplete
+      :items="job_list"
+      v-model="job_internal"
+      :label="label"
 
-        <!--
-            @input is built right into vue js
-           https://vuejs.org/v2/guide/components.html#Using-v-model-on-Components
-          -->
+      return-object
+      item-text="name"
+      @input="$emit('input', $event)"
+      @change="$emit('change', $event)"
+      :loading="loading || loading_internal"
+      :disabled="disabled || loading_internal"
+      @focus="job_list_api()"
+      clearable
+    >
 
-        <!--
-
-          Concrete implementation of getting job list for selection
-
-          TODO would like to use diffgram selector (ie so we could include
-          counts or something) but it would require changing
-          job list around a bit
-        -->
-
-        <v-autocomplete
-          :items="job_list"
-          v-model="job_internal"
-          :label="label"
-
-          return-object
-          item-text="name"
-          @input="$emit('input', $event)"
-          @change="$emit('change', $event)"
-          :loading="loading || loading_internal"
-          :disabled="disabled || loading_internal"
-          @focus="job_list_api()"
-          clearable
-        >
-
-          <template v-slot:item="data">
+      <template v-slot:item="data">
 
             <span>
               {{data.item.name}}
              </span>
 
-          </template>
+      </template>
 
-          <template v-slot:selection="data">
+      <template v-slot:selection="data">
 
             <span>
               {{data.item.name}}
              </span>
 
-          </template>
+      </template>
 
 
-        </v-autocomplete>
-        <button_with_menu
-          tooltip_message="New Job"
-          icon="add"
-          :close_by_button="false"
-          v-if="!view_only_mode"
-          offset="x"
-          menu_direction="left"
-          color="primary"
-          :commit_menu_status="true"
-          font_size="small"
-          ref="add_job_menu"
-        >
-          <template slot="content">
-            <v-layout style="max-width: 250px">
-              <job_new_form
-                :quick_create="true"
-                :job="job_empty_template"
-                :project_string_id="project_string_id"
-                ref="job_create_form"
-                @job-created="on_job_created"
-              >
-              </job_new_form>
-            </v-layout>
-          </template>
+    </v-autocomplete>
+    <button_with_menu
+      tooltip_message="New Job"
+      icon="add"
+      :close_by_button="false"
+      v-if="!view_only_mode"
+      offset="x"
+      menu_direction="left"
+      color="primary"
+      :commit_menu_status="true"
+      font_size="small"
+      ref="add_job_menu"
+    >
+      <template slot="content">
+        <v-layout style="max-width: 250px">
+          <job_new_form
+            :quick_create="true"
+            :job="job_empty_template"
+            :project_string_id="project_string_id"
+            ref="job_create_form"
+            @job-created="on_job_created"
+          >
+          </job_new_form>
+        </v-layout>
+      </template>
 
-        </button_with_menu>
-        <button_with_menu
-          tooltip_message="Edit Job"
-          icon="edit"
+    </button_with_menu>
+    <button_with_menu
+      tooltip_message="Edit Job"
+      icon="edit"
 
-          :close_by_button="true"
-          v-if="!view_only_mode && job_internal && Object.keys(job_internal).length !== 0 && job_internal.constructor === Object"
-          menu_direction="left"
-          offset="x"
-          color="black"
-          :loading="loading_job_fetch"
-          :commit_menu_status="true"
-          font_size="small"
-          ref="edit_job_menu"
-          @click="fetch_job"
-        >
+      :close_by_button="true"
+      v-if="!view_only_mode && job_internal && Object.keys(job_internal).length !== 0 && job_internal.constructor === Object"
+      menu_direction="left"
+      offset="x"
+      color="black"
+      :loading="loading_job_fetch"
+      :commit_menu_status="true"
+      font_size="small"
+      ref="edit_job_menu"
+      @click="fetch_job"
+    >
 
-          <template slot="content">
-            <v-layout style="max-width: 250px">
-              <job_new_form
-                :quick_create="true"
-                v-if="!loading_job_fetch && job_edit"
-                :job="job_edit"
-                :job_id="job_edit.id"
-                :project_string_id="project_string_id"
-                @job-updated="on_job_updated"
-              >
-              </job_new_form>
-              <v-skeleton-loader :loading="true" height="200px" width="200px" type="article, actions"
-                                 v-else
-                                 class="full-width skeleton-loader-autocomplete">
-              </v-skeleton-loader>
-            </v-layout>
+      <template slot="content">
+        <v-layout style="max-width: 250px">
+          <job_new_form
+            :quick_create="true"
+            v-if="!loading_job_fetch && job_edit"
+            :job="job_edit"
+            :job_id="job_edit.id"
+            :project_string_id="project_string_id"
+            @job-updated="on_job_updated"
+          >
+          </job_new_form>
+          <v-skeleton-loader :loading="true" height="200px" width="200px" type="article, actions"
+                             v-else
+                             class="full-width skeleton-loader-autocomplete">
+          </v-skeleton-loader>
+        </v-layout>
 
-          </template>
+      </template>
 
-        </button_with_menu>
-      </v-col>
-    </v-row>
-  </v-layout>
+    </button_with_menu>
+  </div>
 
 
 </template>
