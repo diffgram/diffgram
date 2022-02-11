@@ -10,6 +10,7 @@ from shared.database.discussion.discussion import Discussion
 from shared.database.annotation.instance import Instance
 from shared.database.task.task_user import TaskUser
 from shared.database.task.task_event import TaskEvent
+from shared.database.task.task_time_tracking import TaskTimeTracking
 from shared.database.user import User
 
 TASK_STATUSES = {
@@ -201,6 +202,13 @@ class Task(Base):
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
 
+    def get_time_tracking_data(self, session):
+        records = session.query(TaskTimeTracking).filter(
+            TaskTimeTracking.task_id == self.id,
+            TaskTimeTracking.status.is_(None)
+        )
+        return records
+
     @staticmethod
     def get_task_from_job_id(
         session,
@@ -281,6 +289,19 @@ class Task(Base):
 
             if last_task.status in status_allow_list:
                 return last_task
+
+    def get_all_users_in_task(self, session):
+        """
+            Returns the list of both assignees and reviewers
+            assgined to this task.
+        :param session:
+        :return:
+        """
+        rels = session.query(TaskUser).filter(
+            TaskUser.task_id == self.id
+        )
+        user_list = [rel.user for rel in rels]
+        return user_list
 
     def add_reviewer(self, session, user):
         existing_rel = TaskUser.get(session, user.id, self.id, 'reviewer')
@@ -525,7 +546,7 @@ class Task(Base):
             for assignee in task_reviewers_query:
                 task_reviewers.append(assignee.serialize())
 
-        return {
+        task_serialized = {
             'id': self.id,
             'job_id': self.job_id,
             'job': self.job.serialize_for_task(),
@@ -545,6 +566,10 @@ class Task(Base):
             'task_reviewers': task_reviewers,
             'task_assignees': task_assignees
         }
+        time_tracking_records = self.get_time_tracking_data(session = session)
+        time_tracking_records_data = [x.serialize() for x in time_tracking_records]
+        task_serialized['time_tracking'] = time_tracking_records_data
+        return task_serialized
 
     def get_by_job_and_file(
         session,

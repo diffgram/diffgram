@@ -1,6 +1,7 @@
 <template>
   <div>
     <div id="annotation_ui_factory" tabindex="0">
+      <v_error_multiple :error="error"></v_error_multiple>
       <div v-if="!annotation_interface&& !initializing">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -60,8 +61,8 @@
         </sensor_fusion_editor>
       </div>
       <div v-else-if="annotation_interface === 'text'">
-        <text_annotation_core 
-          :file="current_file" 
+        <text_annotation_core
+          :file="current_file"
           :task="task"
           :job_id="job_id"
           :label_list="label_list"
@@ -95,6 +96,45 @@
       >
       </file_manager_sheet>
     </div>
+    <v-dialog
+      v-model="dialog"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="text-h5">
+          This is the last task!
+        </v-card-title>
+
+        <v-card-text>
+          <p>
+            You've finished your work! Please go to the previous task or go back to the task list.
+          </p>
+          <p class="text-center">
+            <v-icon size="96" color="success">mdi-check</v-icon>
+          </p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="error darken-1"
+            text
+            @click="dialog = false"
+          >
+            Close
+          </v-btn>
+
+          <v-btn
+            color="secondary darken-1"
+            text
+            @click="$router.push(`/job/${task.job.id}/`)"
+          >
+            Task List
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-snackbar
       v-if="show_snackbar"
       color="secondary"
@@ -155,6 +195,7 @@ export default Vue.extend({
   data() {
     return {
       show_snackbar: false,
+      dialog: false,
       changing_file: false,
       enabled_edit_schema: false,
       user_has_credentials: false,
@@ -165,6 +206,7 @@ export default Vue.extend({
       loading_project: true,
       task: null,
       current_file: null,
+      error: null,
       request_save: false,
       model_run_id_list: [],
       missing_credentials: [],
@@ -505,6 +547,7 @@ export default Vue.extend({
         this.task_error = response.data.log.error;
       } catch (error) {
         console.error(error);
+        this.error = this.$route_api_errors(error);
         this.loading = false;
         // this.logout()
       }
@@ -540,7 +583,7 @@ export default Vue.extend({
             this.task = response.data.task;
           } else {
             if (direction === "next") {
-              this.show_snackbar = true;
+              this.dialog = true;
               this.snackbar_message =
                 "This is the last task of the list. Please go to previous tasks.";
             } else {

@@ -154,6 +154,7 @@ def do_routes_importing():
     from methods.task.credential.credential_type_update import update_credential_type_image_api
 
     from methods.task.stats.fast_stats import job_stat, job_user_stats
+    from methods.task.task_time_tracking.task_track_time import api_task_track_time
 
 
     from methods.task.exam.exam_pass import exam_pass_api

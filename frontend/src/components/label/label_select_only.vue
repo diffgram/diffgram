@@ -1,9 +1,10 @@
 <template>
-  <div v-cloak class="d-flex align-center justify-start">
+  <div v-cloak class="d-flex align-center justify-start" >
     <v-progress-circular indeterminate class="mr-4" color="primary" v-if="label_refresh_loading"></v-progress-circular>
     <v-layout >
 
       <v-select :items="label_list_with_limit"
+                style="min-height: 55px"
                 v-model="selected"
                 :label="label_prompt"
                 return-object
@@ -47,11 +48,13 @@
 
               -->
           <v-chip v-if="is_selected(data.item)"
+                  class="pa-0"
                   color="white"
                   text-color="secondary">
             {{data.item.label.name}}
           </v-chip>
           <v-chip v-else
+                  class="pa-0"
                   color="white"
                   text-color="primary">
             {{data.item.label.name}}
@@ -65,7 +68,7 @@
               but  either way want to not have the "left" thing for
               icon I think here-->
 
-          <v-chip color="white">
+          <span color="white" >
             <v-icon
               :style="style_color(data.item.colour.hex)">
               flag
@@ -77,7 +80,7 @@
             </v-icon>
 
             {{ data.item.label.name}}
-          </v-chip>
+          </span>
 
         </template>
 
@@ -115,31 +118,6 @@
 
   </div>
 </template>
-
-<!--
-
-  Example usage
-
-              <label_select_only
-             :project_string_id="project_string_id"
-              @label_file="recieve_label_file($event)"
-                               >
-            </label_select_only>
-
-  NOT GLOBALLY available as of Jan 29 2020
-  so import ie:
-  import label_select_only from '../label/label_select_only.vue'
-    components: {
-    label_select_only
-  },
-
-  TODO look at using v-model so don't have to use @label_file
-
-
-  CAUTION be aware when editing
-    this can be used in a "view_only_mode" so check not equal for that context
-
--->
 
 <script lang="ts">
 
