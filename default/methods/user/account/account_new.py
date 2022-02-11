@@ -9,7 +9,7 @@ from shared.database.auth.member import Member
 from shared.database import hashing_functions
 from methods.user.account import account_verify
 from methods.user.account import auth_code		# TODO rename this / put in Auth() class
-
+from shared.database import hashing_functions
 
 
 @routes.route('/api/v1/user/pro/new', 
@@ -27,7 +27,17 @@ def user_pro_new_api():
 			'kind': str,
 			'required': False
 			}
-		}	# Not yet supported for Pros
+		},	# Not yet supported for Pros
+		{"password" : {
+			'kind': str,
+			'required': True 
+			}
+		},
+		{"password_check": {
+			'kind': str,
+			'required': True
+			}
+		}
 	]
 
 	log, input, untrusted_input = regular_input.master(
@@ -35,6 +45,14 @@ def user_pro_new_api():
 		spec_list=spec_list)
 
 	if len(log["error"].keys()) >= 1: return jsonify(log=log), 400
+
+	if not valid_password(input['password']):
+		log['error']['password'] = "Password must be between 8 and 200 characters."
+		return jsonify(log=log), 400
+
+	if input['password'] != input['password_check']:
+		log['error']['password'] = "Passwords must match"
+		return jsonify(log=log), 400
 
 	with sessionMaker.session_scope() as session:
 		
@@ -57,6 +75,11 @@ def user_pro_new_api():
 								otp_success = None,
 								remote_address = request.remote_addr,
 								user_id = new_user.id)
+
+		new_user.password_hash = hashing_functions.make_password_hash(
+				new_user.email, 
+				input['password']
+		)
 
 		log['success'] = True
 
@@ -126,6 +149,16 @@ def user_new_api():
 			'kind': str,
 			'required': False
 			}
+		},
+		{"password" : {
+			'kind': str,
+			'required': True 
+			}
+		},
+		{"password_check": {
+			'kind': str,
+			'required': True
+			}
 		}	
 	]
 
@@ -134,6 +167,14 @@ def user_new_api():
 		spec_list=spec_list)
 
 	if len(log["error"].keys()) >= 1:
+		return jsonify(log=log), 400
+
+	if not valid_password(input['password']):
+		log['error']['password'] = "Password must be between 8 and 200 characters."
+		return jsonify(log=log), 400
+
+	if input['password'] != input['password_check']:
+		log['error']['password'] = "Passwords must match"
 		return jsonify(log=log), 400
 
 	with sessionMaker.session_scope() as session:
@@ -192,6 +233,11 @@ def user_new_api():
 								otp_success = None,
 								remote_address = request.remote_addr,
 								user_id = new_user.id)
+
+		new_user.password_hash = hashing_functions.make_password_hash(
+				new_user.email, 
+				input['password']
+		)
 
 		log['success'] = True
 
@@ -288,3 +334,9 @@ def validate_email(email):
 		return True
 	else:
 		return False
+
+
+PASS_RE = re.compile(r"^.{8,200}$")
+
+def valid_password(password):
+	return password and PASS_RE.match(password)
