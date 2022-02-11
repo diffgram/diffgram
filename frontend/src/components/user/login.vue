@@ -1,6 +1,6 @@
 
 <template>
-  <div style="height: 100vh; display:flex; align-items: center; justify-content: center" v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak>
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
       <v-card>
         <v-card-title primary-title>
