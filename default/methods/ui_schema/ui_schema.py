@@ -71,6 +71,7 @@ all_ui_schema_specs = {
 
     'allow_actions': ui_schema_button_spec_list,
     'block_actions': ui_schema_button_spec_list,
+    'time_tracking': ui_schema_button_spec_list,
 
 }
 
@@ -214,7 +215,6 @@ def __ui_schema_update(
     }
 
     for key, value in all_ui_schema_specs.items():
-
         if untrusted_input.get(key):
 
             log, result = regular_input.input_check_many(
@@ -226,7 +226,6 @@ def __ui_schema_update(
                 return log, False
 
             fields_to_process[key] = result
-            print(result)
 
     user = User.get(session)
     if user and user.is_super_admin is True:

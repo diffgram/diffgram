@@ -140,11 +140,11 @@
 
       </template>
 
-      <template slot="base_class_string" slot-scope="props">
+      <template slot="item_of_interest" slot-scope="props">
         <tooltip_icon
-          :tooltip_message="base_class_string_dict[props.item.base_class_string].name"
-          :icon="base_class_string_dict[props.item.base_class_string].icon"
-          :color="base_class_string_dict[props.item.base_class_string].color">
+          :tooltip_message="item_of_interest_dict[props.item.item_of_interest].name"
+          :icon="item_of_interest_dict[props.item.item_of_interest].icon"
+          :color="item_of_interest_dict[props.item.item_of_interest].color">
         </tooltip_icon>
       </template>
 
@@ -297,20 +297,22 @@ import {create_event} from "../event/create_event";
          icon: "mdi-grid"
           }
       ],
-
-      /* Slightly different format, accessing via key
-       * Alterantive is to do a find operation on array I guess...
-       * we are using the key as the lower case name
-       * slight duplicate ie writing user twice
-       * but that seems cleaner then a bunch of functions to
-       * convert lower/upper maybe?
-       */
-      base_class_string_dict: {
+      item_of_interest_dict: {
         'user': {
             'name': 'User',
             'icon': 'mdi-account-circle',
             'color': 'blue'
           },
+        'time_spent_task': {
+          'name': 'Time Spent On Task',
+          'icon': 'mdi-clock',
+          'color': 'blue'
+        },
+        'annotator_performance': {
+          'name': 'Annotators Time Performance',
+          'icon': 'mdi-camera-timer',
+          'color': 'cyan'
+        },
         'instance' : {
            'name': 'Instance',
            'icon': 'mdi-format-paint',
@@ -402,7 +404,7 @@ import {create_event} from "../event/create_event";
 
       headers_selected: [
         "name",
-        "base_class_string",
+        "item_of_interest",
         "group_by",
         "period",
         "scope",
@@ -426,7 +428,7 @@ import {create_event} from "../event/create_event";
           text: "Report On",
           align: 'left',
           sortable: false,
-          value: 'base_class_string'
+          value: 'item_of_interest'
         },
         {
           text: "Group By",
@@ -749,7 +751,7 @@ import {create_event} from "../event/create_event";
 
   },
     add_to_inference(file) {
- 
+
       // TODO I think this method is deprecated??
 
       axios.post('/api/project/' + this.project_string_id
