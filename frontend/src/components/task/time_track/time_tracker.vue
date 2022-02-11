@@ -22,11 +22,14 @@ export default {
   mounted() {
     let has_time = false;
     this.set_task_tracking(this.$props.task)
-    this.start();
+
+    if (this.$props.task && this.$props.task.status != 'complete') {
+      this.start();
+    }
   },
   watch: {
     task: function(new_value, old_value){
-      console.log('watchhh', new_value)
+      
       this.time = 0;
       clearTimeout(this.timer);
       this.set_task_tracking(new_value);
