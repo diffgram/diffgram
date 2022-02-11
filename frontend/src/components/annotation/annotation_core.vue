@@ -36,7 +36,6 @@
             :label_file_colour_map="label_file_colour_map"
             :full_file_loading="full_file_loading"
             :instance_template_selected="instance_template_selected"
-            :instance_type="instance_type"
             :loading_instance_templates="loading_instance_templates"
             :instance_type_list="filtered_instance_type_list"
             :view_issue_mode="view_issue_mode"

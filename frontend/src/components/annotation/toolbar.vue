@@ -1025,7 +1025,7 @@ export default Vue.extend({
     full_file_loading: {},
     annotations_loading: {},
     instance_template_selected: {},
-    instance_type: {},
+
     loading_instance_templates: {},
     instance_type_list: {},
     view_issue_mode: {},
@@ -1044,6 +1044,7 @@ export default Vue.extend({
         canvas_scale_global_is_automatic: true,
       },
       draw_mode_local: true,
+      instance_type: "box",
       numberValue: 1,
       duration_labels: ["1", "2", "3", "4", "5"],
     };
