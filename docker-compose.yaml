@@ -69,6 +69,10 @@ services:
       - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
       DATABASE_URL: ${DATABASE_URL}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASS: ${DATABASE_PASS}
       DIFFGRAM_SYSTEM_MODE: "sandbox"
       DIFFGRAM_STATIC_STORAGE_PROVIDER: ${DIFFGRAM_STATIC_STORAGE_PROVIDER}
       USER_PASSWORDS_SECRET: ${USER_PASSWORDS_SECRET}
@@ -95,7 +99,7 @@ services:
       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
-    command: ["/app/db-init.sh", "db", "python3", "-u", "/app/main.py"]
+    command: ["/app/db-init.sh", ${DATABASE_HOST} "python3", "-u", "/app/main.py"]
   db:
     image: ${POSTGRES_IMAGE}
     hostname: db

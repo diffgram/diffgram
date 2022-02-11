@@ -412,9 +412,14 @@ class DiffgramInstallTool:
         if self.local_database:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
             env_file += 'DATABASE_URL={}\n'.format("postgresql+psycopg2://postgres:postgres@db/diffgram")
+            env_file += 'DATABASE_NAME={}\n'.format('diffgram')
         else:
             env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
             env_file += 'DATABASE_URL={}\n'.format(self.database_url)
+            env_file += 'DATABASE_HOST={}\n'.format(self.db_host)
+            env_file += 'DATABASE_NAME={}\n'.format(self.db_name)
+            env_file += 'DATABASE_USER={}\n'.format(self.db_username)
+            env_file += 'DATABASE_PASS={}\n'.format(self.db_pass)
 
         if self.mailgun:
             env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
@@ -454,9 +459,14 @@ class DiffgramInstallTool:
             self.local_database = False
             valid = False
             while not valid:
-                database_url = bcolors.inputcolor(
-                    '\n\n >> Please enter the Remote Postgres Database URL\n    NOTE: The syntax for URL is: "postgresql+psycopg2://<db_username>:<db_pass>@/<db_name>?host=<db_host>": ',
-                    bcolors.OKBLUE)
+
+                self.db_host = bcolors.inputcolor('Please provide the database host: ')
+                self.db_name = bcolors.inputcolor('Please provide the database name: ')
+                self.db_username = bcolors.inputcolor('Please provide the database username: ')
+                self.db_pass = bcolors.inputcolor('Please provide the database password: ')
+
+                #database_url = f"postgresql+psycopg2://{db_username}:{db_pass}@/{db_name}?host={db_host}"
+                database_url = f"postgresql+psycopg2://{self.db_username}:{self.db_pass}@{self.db_host}/{self.db_name}"
 
                 bcolors.printcolor('Testing DB Connection...', bcolors.WARNING)
                 try:
