@@ -333,7 +333,11 @@
         project_menu: false,
         project_manager_dialog: false,
         pending_files_dialog_is_open: false,
-        do_not_show_menu: false
+        do_not_show_menu: false,
+        routes_without_menu: [
+          '/user/login/',
+          '/user/new/'
+        ]
       };
     },
     computed: {
@@ -373,7 +377,8 @@
         if (value) this.get_avalible_projects()
       },  
       '$route.path': function(value) {
-        if (value.includes('/user/login')) {
+        const do_not_display = this.routes_without_menu.some(route => route.includes(value))
+        if (do_not_display) {
           this.do_not_show_menu = true
         } else {
           this.do_not_show_menu = false
