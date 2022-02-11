@@ -48,7 +48,7 @@ from shared.regular.regular_log import log_has_error
 import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
-from walrus.methods.text_data.text_tokenizer import TextTokenizer
+from methods.text_data.text_tokenizer import TextTokenizer
 
 data_tools = Data_tools().data_tools
 
