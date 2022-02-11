@@ -1,12 +1,11 @@
 
 <template>
-  <div v-cloak>
+  <div style="height: 100vh; display:flex; align-items: center; justify-content: center" v-cloak>
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
       <v-card>
         <v-card-title primary-title>
           <div>
-            <h3 class="headline mb-0">Login</h3>
-            <div></div>
+            <h3 class="headline mb-0">Login to Diffgram</h3>
           </div>
         </v-card-title>
 
@@ -64,7 +63,7 @@
                   @click.native="loader = 'loading'"
                   :disabled="loading"
                 >
-                  Login
+                  Login to Diffgram
                 </v-btn>
 
                 <v-btn
