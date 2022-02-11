@@ -336,7 +336,8 @@
         do_not_show_menu: false,
         routes_without_menu: [
           '/user/login/',
-          '/user/new/'
+          '/user/new/',
+          '/user/builder/signup'
         ]
       };
     },

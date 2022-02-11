@@ -1,20 +1,16 @@
 <template>
-  <div v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak>
+  <v-flex xs6 center>
+    <v-card>
 
-    <v-card elevation="0">
-      <v-container>
-
-        <v-card-title>
-          <tooltip_icon
-              color="primary"
-              icon="mdi-database"
-              tooltip_message="Data Platform"
-              tooltip_direction="bottom"
-              >
-          </tooltip_icon>
-          <h3 class="headline pl-2">Create your free Data Platform account now</h3>
+        <v-card-title primary-title>
+          <div>
+            <h3 class="headline mb-0">Create your free Diffgram account</h3>
+          </div>
         </v-card-title>
 
+        <v-container>
+          
         <v_error_multiple :error="error"
                           data-cy="error-email">
         </v_error_multiple>
@@ -26,6 +22,30 @@
                       :rules="[rules.email]">
         </v-text-field>
 
+        <v-text-field
+          required
+          data-cy="password"
+          :append-icon="e1 ? 'visibility' : 'visibility_off'"
+          @click:append="() => (e1 = !e1)"
+          :type="e1 ? 'password' : 'text'"
+          label="Password"
+          id="password"
+          v-model="password"
+              >
+        </v-text-field>
+
+        <v-text-field
+          required
+          data-cy="password"
+          :append-icon="e1 ? 'visibility' : 'visibility_off'"
+          @click:append="() => (e1 = !e1)"
+          :type="e1 ? 'password' : 'text'"
+          label="Repeat password"
+          id="password"
+          v-model="password"
+              >
+        </v-text-field>
+
         <v-btn color="primary"
                data-cy="create-user-button"
                 :loading="loading"
@@ -34,43 +54,38 @@
           Create
         </v-btn>
 
+      <br />
+      <br />
 
-      <v-row>
+      <v-layout>
+          <v-flex>
+            <v-btn
+              @click="route_account_login"
+              color="primary"
+              text
+              :loading="loading"
+              @click.native="loader = 'loading'"
+              :disabled="loading"
+            >
+              Login to existing account
+            </v-btn>
 
-        <v-col cols="3">
-
-          <v-card elevation="0">
-
-            <v-card-title>You're in great company</v-card-title>
-
-            <v-card-text>
-              Join over 6,000 users who have created over 3,000 projects
-              and 50 million annotations with Diffgram.
-            </v-card-text>
-
-          </v-card>
-
-
-        </v-col>
-
-
-        <v-col cols="7">
-
-          <div class="pa-4">
-            <v-img
-              class="pa-4"
-              src="https://storage.googleapis.com/diffgram_public/marketing/Join_users_from_new.svg"
-              contain
-                    >
-            </v-img>
-          </div>
-
-        </v-col>
-
-        </v-row>
+            <v-btn
+              color="primary"
+              text
+              href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
+              target="_blank"
+              :disabled="loading"
+            >
+              <v-icon left>mdi-lifebuoy</v-icon>
+              Help
+            </v-btn>
+          </v-flex>
+        </v-layout>
 
     </v-container>
   </v-card>
+  </v-flex>
 
   </div>
 </template>
@@ -128,6 +143,9 @@
     },
 
     methods: {
+      route_account_login: function () {
+        this.$router.push("/user/login");
+      },
       logout: function () {
         axios.get('/user/logout')
           .then(response => {
