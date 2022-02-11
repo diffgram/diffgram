@@ -61,6 +61,8 @@ class Annotation_Update():
 
     # Keeps a Record of the deleted instances after the update process finish
     new_deleted_instances: list = field(default_factory = lambda: [])
+    # This array will keep track of any new instance relations that did not have instance IDs
+    new_instance_relations_list_no_ids: dict = field(default_factory = lambda: [])
 
     duplicate_hash_new_instance_list: list = field(default_factory = lambda: [])
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
@@ -70,6 +72,7 @@ class Annotation_Update():
     external_map_action: str = None
     new_instance_dict_hash: dict = field(default_factory = lambda: {})  # Keep a hash of all
     do_create_new_file = False
+    set_parent_instance_list = False
     new_file = None
     frame_number = None
     video_mode = False
@@ -164,8 +167,19 @@ class Annotation_Update():
             'default': None,
             'kind': str,
             'required': True,
-            'valid_values_list': ['box', 'polygon', 'point', 'cuboid', 'tag', 'line', 'text_token', 'ellipse', 'curve',
-                                  'keypoints', 'cuboid_3d']
+            'valid_values_list': ['box',
+                                  'polygon',
+                                  'point',
+                                  'cuboid',
+                                  'tag',
+                                  'line',
+                                  'text_token',
+                                  'ellipse',
+                                  'curve',
+                                  'keypoints',
+                                  'cuboid_3d',
+                                  'global',
+                                  'relation']
         }
         },
         {'rating': {
@@ -328,6 +342,26 @@ class Annotation_Update():
         {'pause_object': {
             'kind': bool,
             'required': False
+        }},
+        {'from_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'to_instance_id': {
+            'kind': int,
+            'required': False
+        }},
+        {'from_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
+        {'to_creation_ref': {
+            'kind': str,
+            'required': False
+        }},
+        {'text_tokenizer': {
+            'kind': str,
+            'required': False
         }}
     ])
 
@@ -484,7 +518,7 @@ class Annotation_Update():
         ### Main work
 
         self.update_instance_list()
-
+        self.add_missing_ids_to_new_relations()
         ###
 
         # Early exit if errors, eg from instance limits
@@ -601,29 +635,33 @@ class Annotation_Update():
             # Create frame file when first instance is created
             # Can be done prior to an instance - just current way
 
-            # Default case, file already exists.
-            self.file = File.get_frame_from_video(
-                session = self.session,
-                video_parent_file_id = self.video_parent_file.id,
-                frame_number = self.frame_number,
-                with_for_update = True,
-                nowait = True
-            )
+            # If this is set to true, we'll attach the instance list to the video parent file
+            if self.set_parent_instance_list:
+                self.file = self.video_parent_file
+            else:
+                # Default case, file already exists.
+                self.file = File.get_frame_from_video(
+                    session = self.session,
+                    video_parent_file_id = self.video_parent_file.id,
+                    frame_number = self.frame_number,
+                    with_for_update = True,
+                    nowait = True
+                )
 
-            if self.file:
-                return
+                if self.file:
+                    return
 
-            # File does not exist, so create it.
+                # File does not exist, so create it.
 
-            self.file = File.new(
-                session = self.session,
-                file_type = "frame",
-                video_parent_file = self.video_parent_file,
-                frame_number = self.frame_number,
-                project_id = self.project.id,
-                task = self.task
-            )
-            self.is_new_file = True
+                self.file = File.new(
+                    session = self.session,
+                    file_type = "frame",
+                    video_parent_file = self.video_parent_file,
+                    frame_number = self.frame_number,
+                    project_id = self.project.id,
+                    task = self.task
+                )
+                self.is_new_file = True
 
     def detect_and_remove_collisions(self, instance_list):
         result = []
@@ -657,11 +695,12 @@ class Annotation_Update():
             instance.hash_instance()
             new_hash = instance.hash
             if prev_hash != new_hash:
-                logger.info('Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
-                    instance.id,
-                    prev_hash,
-                    new_hash
-                ))
+                logger.info(
+                    'Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+                        instance.id,
+                        prev_hash,
+                        new_hash
+                    ))
                 self.system_upgrade_hash_changes.append([prev_hash, new_hash])
                 self.session.add(instance)
             result.append(instance)
@@ -722,6 +761,9 @@ class Annotation_Update():
         """
 
         """
+        if self.instance.label_file_id is None:
+            return True
+
         if self.instance.label_file_id in self.allowed_label_file_id_list:
             return True
         self.log['error']['valid_label_file'] = "Permission issue with " + \
@@ -731,10 +773,6 @@ class Annotation_Update():
     def init_video_input(self):
 
         # TODO, we aren't actually 'raising" this error very well here.
-        # Also this will fire an error "wrongly"
-        # which makes a check success at the end not quite work right.
-
-        # Currently rely on front end to send a Null dict here then?
 
         if not self.video_data:
             return
@@ -759,6 +797,11 @@ class Annotation_Update():
                 'kind': int,
                 'required': True
             }
+            },
+            {'set_parent_instance_list': {
+                'kind': bool,
+                'required': False
+            }
             }
         ]
 
@@ -770,6 +813,7 @@ class Annotation_Update():
         if len(self.log["error"].keys()) >= 1:
             return False
 
+        self.set_parent_instance_list = input['set_parent_instance_list']
         self.video_mode = input['video_mode']
         self.video_parent_file_id = input['video_file_id']
         self.frame_number = input['current_frame']
@@ -961,6 +1005,13 @@ class Annotation_Update():
             # For other checks that are specific to
             # to certain instance types
             self.instance_proposed = instance_proposed
+            if self.instance_proposed['type'] == 'relation':
+                for elm in self.per_instance_spec_list:
+                    if 'label_file_id' in elm:
+                        elm['label_file_id']['required'] = False
+
+            if self.instance_proposed.get('type') == 'global':
+                self.instance_proposed['label_file_id'] = -1  # to bypass check
 
             self.log, input = regular_input.input_check_many(
                 spec_list = self.per_instance_spec_list,
@@ -1047,13 +1098,23 @@ class Annotation_Update():
                 hash_instances = hash_instances,
                 validate_label_file = validate_label_file,
                 overwrite_existing_instances = overwrite_existing_instances,
-                pause_object = input['pause_object']
+                pause_object = input['pause_object'],
+                text_tokenizer = input['text_tokenizer'],
+                from_instance_id = input['from_instance_id'],
+                to_instance_id = input['to_instance_id'],
+                from_creation_ref = input['from_creation_ref'],
+                to_creation_ref = input['to_creation_ref'],
             )
 
     def get_min_coordinates_instance(self, instance):
         logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token', 'relation', 'global']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_min, instance.y_min
+
         elif instance.type == 'line':
             return min([p['x'] for p in instance.points['points']]), min([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
@@ -1101,8 +1162,13 @@ class Annotation_Update():
 
     def get_max_coordinates_instance(self, instance):
         logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
+
+        if instance.type in ['text_token', 'relation', 'global']:
+            return 0, 0
+
         if instance.type in ['box', 'polygon', 'point']:
             return instance.x_max, instance.y_max
+
         elif instance.type == 'line':
             return max([p['x'] for p in instance.points['points']]), max([p['y'] for p in instance.points['points']])
         elif instance.type == 'cuboid':
@@ -1197,7 +1263,12 @@ class Annotation_Update():
                         hash_instances = True,
                         overwrite_existing_instances = True,
                         validate_label_file = True,
-                        pause_object = None):
+                        pause_object = None,
+                        text_tokenizer = 'wink',
+                        from_instance_id = None,
+                        to_instance_id = None,
+                        from_creation_ref = None,
+                        to_creation_ref = None):
         """
         Assumes a "system" level context
 
@@ -1286,7 +1357,10 @@ class Annotation_Update():
             'p2': p2,
             'nodes': {'nodes': nodes},
             'edges': {'edges': edges},
-            'pause_object': pause_object
+            'pause_object': pause_object,
+            'from_instance_id': from_instance_id,
+            'to_instance_id': to_instance_id,
+            'text_tokenizer': text_tokenizer,
         }
 
         if overwrite_existing_instances and id is not None:
@@ -1298,35 +1372,16 @@ class Annotation_Update():
 
         self.instance_limits(validate_label_file = validate_label_file)
 
+        self.check_relations_id_existence(from_id = from_instance_id,
+                                          to_id = to_instance_id,
+                                          from_ref = from_creation_ref,
+                                          to_ref = to_creation_ref)
+
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
             return False
 
-        # After instance limits to make sure points are available.
-        min_coords = self.get_min_coordinates_instance(self.instance)
-        max_coords = self.get_max_coordinates_instance(self.instance)
-
-        if self.instance.type in ['cuboid_3d']:
-            self.instance.min_point_3d = {
-                'min': {
-                    'x': min_coords[0],
-                    'y': min_coords[1],
-                    'z': min_coords[2]
-                }
-            }
-            self.instance.max_point_3d = {
-                'max': {
-                    'x': max_coords[0],
-                    'y': max_coords[1],
-                    'z': max_coords[2]
-                }
-            }
-        else:
-            self.instance.x_min = int(min_coords[0])
-            self.instance.y_min = int(min_coords[1])
-
-            self.instance.x_max = int(max_coords[0])
-            self.instance.y_max = int(max_coords[1])
+        self.deduct_spatial_coordinates()
 
         if len(self.log["error"].keys()) >= 1:
             logger.error('Error on instance creation {}'.format(self.log))
@@ -1385,6 +1440,41 @@ class Annotation_Update():
                 self.session.add(sequence)
 
                 self.added_sequence_ids.append(sequence.id)  # prevent future deletion from history annotations
+
+    def deduct_spatial_coordinates(self):
+
+        if self.instance.type in ["global", "relation", "token"]:
+            return
+
+        min_coords = self.get_min_coordinates_instance(self.instance)
+        max_coords = self.get_max_coordinates_instance(self.instance)
+
+        if self.instance.type in ['cuboid_3d']:
+            self.instance.min_point_3d = {
+                'min': {
+                    'x': min_coords[0],
+                    'y': min_coords[1],
+                    'z': min_coords[2]
+                }
+            }
+            self.instance.max_point_3d = {
+                'max': {
+                    'x': max_coords[0],
+                    'y': max_coords[1],
+                    'z': max_coords[2]
+                }
+            }
+        else:
+            self.instance.x_min = int(min_coords[0])
+            self.instance.y_min = int(min_coords[1])
+            self.instance.x_max = int(max_coords[0])
+            self.instance.y_max = int(max_coords[1])
+
+    def find_serialized_instance_index(self, id):
+        for i in range(0, len(self.instance_list_kept_serialized)):
+            instance = self.instance_list_kept_serialized[i]
+            if instance.get('id') == id:
+                return i
 
     def update_sequence_id_in_cache_list(self, instance):
         """
@@ -1491,6 +1581,51 @@ class Annotation_Update():
             # and then handle other related concerns seperetly
             self.file = File.copy_file_from_existing(
                 self.session, directory, self.file)
+
+    def add_missing_ids_to_new_relations(self):
+
+        for relation_elm in self.new_instance_relations_list_no_ids:
+            instance = relation_elm['instance']
+            from_ref = relation_elm['from_ref']
+            to_ref = relation_elm['to_ref']
+            if instance.from_instance_id is None:
+                new_instance = next((item for item in self.new_added_instances if item.creation_ref_id == from_ref),
+                                    None)
+                if new_instance:
+                    instance.from_instance_id = new_instance.id
+
+            if instance.to_instance_id is None:
+                new_instance = next((item for item in self.new_added_instances if item.creation_ref_id == to_ref),
+                                    None)
+                if new_instance:
+                    instance.to_instance_id = new_instance.id
+
+            instance.hash_instance()
+            self.session.add(instance)
+
+    def check_relations_id_existence(self, from_id, to_id, from_ref, to_ref):
+        """
+            Checks if current instance is a relations and if ID's are available for saving.
+            If not avaialable, fallback to creation_refs and add IDs after creation_refs are saved.
+            If non are available we throw error.
+
+        :return:
+        """
+        if self.instance.type != 'relation':
+            return
+
+        print('AAAAAA', self.instance.id, from_id, to_id, from_ref, to_ref)
+        if from_id is None and not from_ref:
+            self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
+            return
+
+        if to_id is None and not to_ref:
+            self.log['error']['to_id'] = 'Provide to_instance_id or to_creation_ref'
+            return
+        if from_id is None or to_id is None:
+            self.new_instance_relations_list_no_ids.append({'instance': self.instance,
+                                                            'from_ref': from_ref,
+                                                            'to_ref': to_ref})
 
     def instance_limits(self, validate_label_file = True):
         """
@@ -1649,7 +1784,6 @@ class Annotation_Update():
 
         special_case_result = self.detect_special_duplicate_data_cases_from_existing_ids(old_id)
         if special_case_result is False: return False
-
         self.existing_instance_index = self.hash_old_cross_reference.get(self.instance.hash)
 
         if self.existing_instance_index is not None:
@@ -1875,6 +2009,7 @@ class Annotation_Update():
         for index, item in enumerate(self.instance_list_existing):
             self.hash_list.append(item.hash)
             self.hash_old_cross_reference[item.hash] = index
+
     # Would be curious to have this as like a "log level" or something
 
     def left_over_instance_deletion(self):
@@ -1907,7 +2042,7 @@ class Annotation_Update():
         self,
         instance):
 
-        logger.info("Newly Deleted")
+        logger.info("Newly Deleted {}".format(instance.id))
 
         self.new_deleted_instances.append(instance.id)
 

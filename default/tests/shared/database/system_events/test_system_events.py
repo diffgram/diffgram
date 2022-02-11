@@ -37,11 +37,9 @@ class TestSystemEvents(testing_setup.DiffgramBaseTestCase):
 
         with patch.object(SystemEvents, 'new') as mock_1:
             with patch.object(SystemEvents, 'check_version_upgrade') as mock_2:
-                with patch.object(SystemEvents, 'check_version_upgrade') as mock_3:
                     result = SystemEvents.system_startup_events_check('test_service')
-                    mock_1.asser_called_once()
-                    mock_2.asser_called_once()
-                    mock_3.asser_called_once()
+                    mock_1.assert_called()
+                    mock_2.assert_called()
                     self.assertTrue(result)
 
     def test_check_version_upgrade(self):

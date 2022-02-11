@@ -27,7 +27,8 @@ def api_attribute_template_group_update(project_string_id):
 		{'default_id' : None},
 		{'min_value' : None},
 		{'max_value' : None},
-		{'mode' : str}
+		{'mode' : str},
+        {'is_global' : None}
 		]
 
 	log, input, untrusted_input = regular_input.master(request=request,
@@ -63,7 +64,8 @@ def api_attribute_template_group_update(project_string_id):
 				default_value = input['default_value'],
 				min_value = input['min_value'],
 				max_value = input['max_value'],
-				default_id = input['default_id'])
+				default_id = input['default_id'],
+                is_global = input['is_global'])
 
 		if len(log["error"].keys()) >= 1:
 			return jsonify(log=log), 400
@@ -88,7 +90,8 @@ def group_update_core(
 		default_value = None,
 		min_value = None,
 		max_value = None,
-		default_id: int = None):
+		default_id: int = None,
+        is_global: bool = False):
 
 
 	if mode == "ARCHIVE":
@@ -182,6 +185,7 @@ def group_update_core(
 		group.kind = kind
 		group.default_value = default_value
 		group.default_id = default_id
+		group.is_global = is_global
 		
 		log['info']['update'] = "Success"
 

@@ -5,13 +5,13 @@
              >
 
     {{ tooltip_message }}
-    
+
 
     <template v-slot:activator="{ on }">
 
       <v-icon v-on="on"
               :color=color
-              size="icon_size"
+              :size="icon_size"
               :style="icon_style"
               :large="large"
               >
@@ -27,7 +27,7 @@
 <script lang="ts">
 
 /*
-  
+
 <tooltip_icon
     tooltip_message="Help"
     icon="help"
@@ -36,7 +36,7 @@
 
  */
 
-import Vue from "vue"; 
+import Vue from "vue";
 export default Vue.extend( {
   name: 'tooltip_icon',
   props: {

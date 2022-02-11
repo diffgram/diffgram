@@ -12,6 +12,15 @@ export const nextTask = async job_id => {
   }
 };
 
+export const deferTask = async payload => {
+  try {
+    const { data } = await axios.post('/api/v1/task/update', payload)
+    return data
+  } catch(e) {
+    return {}
+  }
+}
+
 export const submitTaskReview = async (task_id, payload) => {
   try {
     const response = await axios.post(
