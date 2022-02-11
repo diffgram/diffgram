@@ -444,6 +444,8 @@
             <!-- Diffgram loading loading your data -->
             <v-fade-transition :hide-on-leave="true">
               <v-container v-show="show_place_holder" style="width: 100%">
+                <h2 class="font-weight-light">Loading File...</h2>
+                <v-progress-linear indeterminate></v-progress-linear>
                 <v-img
                   src="https://storage.googleapis.com/diffgram_public/app/Empty_state_card.svg"
                   alt=""
@@ -7217,9 +7219,8 @@ export default Vue.extend({
         await this.save();
       }
 
-      // Set the UI to loading state until a new task is provided in the props.
-      // The watcher of 'task' will make sure to set loading = false and full_file_loading = false
-      this.reset_for_file_change_context();
+
+
 
       // Ask parent for a new task
       this.$emit("request_new_task", direction, task, assign_to_user);
