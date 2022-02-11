@@ -36,7 +36,7 @@ jobs:
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile.newrelic
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:newrelic-${{ env.RELEASE_VERSION }}
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default --all-tags
 
   Publish-Walrus-Docker-Image:
     runs-on: ubuntu-latest
@@ -68,10 +68,11 @@ jobs:
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus:${{ env.RELEASE_VERSION }}
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile.newrelic
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:newrelic-${{ env.RELEASE_VERSION }}
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus --all-tags
   Publish-Frontend-Docker-Image:
     runs-on: ubuntu-latest
     container:
@@ -105,7 +106,7 @@ jobs:
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:newrelic-${{ env.RELEASE_VERSION }}
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend --all-tags
   Publish-Dispatcher-Docker-Image:
     runs-on: ubuntu-latest
     container:
@@ -139,4 +140,4 @@ jobs:
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:newrelic-${{ env.RELEASE_VERSION }}
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher --all-tags
