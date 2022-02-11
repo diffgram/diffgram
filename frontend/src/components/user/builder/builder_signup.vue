@@ -17,23 +17,30 @@
               <h3 class="headline">Almost there!</h3>
             </v-card-title>
 
-            <v-layout >
-
+            <v-layout>
+              
               <v-flex xs12 sm6>
-                <v-text-field label="First name"
-                              data-cy="first_name"
-                              v-model="first_name">
-                </v-text-field>
-                <v-alert type="info"
-                         v-if="error.first_name">
+                <v-text-field 
+                  label="*First name"
+                  data-cy="first_name"
+                  v-model="first_name"
+                />
+                <v-alert 
+                  type="info"
+                  v-if="error.first_name"
+                >
                   {{error.first_name}}
                 </v-alert>
               </v-flex>
+
+              <div style="width: 10px" />
+
               <v-flex xs12 sm6>
-                <v-text-field label="Last name"
-                              data-cy="last_name"
-                              v-model="last_name">
-                </v-text-field>
+                <v-text-field 
+                  label="*Last name"
+                  data-cy="last_name"
+                  v-model="last_name"
+                />
                 <v-alert type="info"
                          v-if="error.last_name">
                   {{error.last_name}}
@@ -57,22 +64,33 @@
                 -->
 
               <v-flex>
-                <v-text-field label="How did you hear about us?"
-                              data-cy="how_hear_about_us"
-                              v-model="how_hear_about_us">
-                </v-text-field>
-              </v-flex>
-
-              <v-flex>
-                <v-text-field label="City"
-                              data-cy="city"
-                              v-model="city">
-                </v-text-field>
+                <v-text-field 
+                  label="*City"
+                  data-cy="city"
+                  v-model="city"
+                />
                 <v-alert type="info"
                          v-if="error.city">
                   {{error.city}}
                 </v-alert>
               </v-flex>
+
+              <div style="width: 10px" />
+
+              <v-flex>
+                <v-text-field 
+                  label="*Company or Institution"
+                  data-cy="company"
+                  v-model="company"
+                />
+                <v-alert type="info"
+                         v-if="error.company">
+                  {{error.company}}
+                </v-alert>
+              </v-flex>
+
+
+              <div style="width: 10px" />
 
               <diffgram_select
                   data-cy="role"
@@ -86,17 +104,15 @@
             </v-layout>
 
             <v-layout >
-
-              <v-flex md6>
-                <v-text-field label="Company or Institution"
-                              data-cy="company"
-                          v-model="company">
+              <v-flex>
+                <v-text-field label="How did you hear about us?"
+                              data-cy="how_hear_about_us"
+                              v-model="how_hear_about_us">
                 </v-text-field>
-                <v-alert type="info"
-                         v-if="error.company">
-                  {{error.company}}
-                </v-alert>
               </v-flex>
+
+
+              <div style="width: 10px" />
 
               <diffgram_select
                   v-if="role != 'student'"
@@ -133,7 +149,7 @@
                       :loading="loading"
                       large
                       @click.native="loader = 'loading'"
-                      @click="route_new_project"
+                      @click="builder_enable_api"
                       data-cy="finish_singup_button"
                       :disabled="loading"
                 >
@@ -318,7 +334,7 @@
             // done any other actions to refresh user information
             this.$store.commit('set_current_user', response.data.user)
 
-            this.route_set_password()
+            this.route_new_project()
 
           } else {
             this.error = response.data.log.error
@@ -337,10 +353,6 @@
       route_new_project: function () {
         this.$router.push('/a/project/new?builder_api_enabled_success=true')
       },
-
-      route_set_password: function () {
-        this.$router.push('/a/project/new?builder_api_enabled_success=true')
-      }
 
     }
   }
