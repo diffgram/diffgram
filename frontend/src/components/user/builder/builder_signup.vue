@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak>
 
     <v-col cols="9">
 
@@ -133,10 +133,11 @@
                       :loading="loading"
                       large
                       @click.native="loader = 'loading'"
-                      @click="builder_enable_api"
+                      @click="route_new_project"
                       data-cy="finish_singup_button"
-                      :disabled="loading">
-                Finish Signup
+                      :disabled="loading"
+                >
+                  Finish Signup
                 <v-icon right> mdi-flag-checkered </v-icon>
               </v-btn>
             </v-card-actions>
@@ -338,7 +339,7 @@
       },
 
       route_set_password: function () {
-        this.$router.push('/user/account/password/set?initial_setup=true')
+        this.$router.push('/a/project/new?builder_api_enabled_success=true')
       }
 
     }

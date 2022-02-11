@@ -749,11 +749,6 @@ const routerOptions = [
     })
   },
   {
-    path: '/user/account/password/set',
-    component: 'user/account/user_password',
-    meta: {requiresAuth: true}
-  },
-  {
     path: '/user/account/verify_email/:email?/:auth_code?',
     component: 'user/account/verify_email',
     alias: ['/user/verify'],
