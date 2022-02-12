@@ -99,7 +99,7 @@ services:
       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
-    command: ["/app/db-init.sh", ${DATABASE_HOST} "python3", "-u", "/app/main.py"]
+    command: ["/app/db-init.sh", "${DATABASE_HOST}", "python3", "-u", "/app/main.py"]
   db:
     image: ${POSTGRES_IMAGE}
     hostname: db
