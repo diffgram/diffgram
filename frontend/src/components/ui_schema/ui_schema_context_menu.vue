@@ -395,6 +395,11 @@
              'icon': 'exposure',
              'color': 'primary'
             },
+          {'name': 'time_tracking',
+            'display_name': 'Time Tracking Widget',
+            'icon': 'mdi-timer',
+            'color': 'primary'
+          },
 
           ],
         buttons_list_available: []

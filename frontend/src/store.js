@@ -28,6 +28,7 @@ export const user_module = {
       api: {},
       email: null,
       security_email_verified: false,
+      permissions_projects: {},
       is_super_admin: false
     },
     current_project_permission_level: null,
@@ -35,7 +36,16 @@ export const user_module = {
     settings: default_user_settings,
     history: undefined
 	},
-
+  getters: {
+    get_project_roles: function(state){
+      return function(project_string_id){
+        if(state.current.permissions_projects[project_string_id]
+          && state.current.permissions_projects[project_string_id].length > 0){
+          return state.current.permissions_projects[project_string_id];
+        }
+      }
+    },
+  },
 	mutations: {
     // TODO get user settings from storage (also TODO create user storage for settings)
 		log_in: state => state.logged_in = true,
@@ -411,6 +421,7 @@ const error = {
   },
   mutations: {
     error_permission: state => state.permission = Date.now(),
+    clear_permission_error: state => state.permission = null,
   }
 }
 
@@ -672,7 +683,7 @@ const ui_schema = {
     reset_ui_schema(state, current){  // restore
       const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
         "defer", "zoom", "label_selector", "instance_selector", "edit_instance_template",
-        "draw_edit", "save", "next_task", "previous_task", "guide", "brightness_contrast_filters"
+        "draw_edit", "save", "next_task", "previous_task", "guide", "brightness_contrast_filters", "time_tracking"
         ]
       for (const [key, value] of Object.entries(state.current)) {
         if (allow_list.includes(key)) {
@@ -711,7 +722,7 @@ const ui_schema = {
       // use example
       // this.$emit('set_ui_schema_element_value',
       //  [this.target_element, 'allowed_instance_types', new_type_list])
-
+      console.log('aaa', payload)
       const element = payload[0]
       if (element === undefined) {
         throw new Error("set_ui_schema_element_value element is undefined")

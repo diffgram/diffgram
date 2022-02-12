@@ -29,6 +29,7 @@ import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
 import {get_transformed_coordinates} from './utils'
+import testLabels from "../fixtures/labels.json";
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -63,7 +64,6 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
     })
   })
 })
-
 
 
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
@@ -726,7 +726,7 @@ Cypress.Commands.add('select_label', function (label_name) {
 });
 
 Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
-  cy.window().then(async window =>  {
+  cy.window().then(async window => {
     let store = window.app.$store;
     let file_path = 'pcd_json_files/data.json';
     let payload = {
@@ -762,17 +762,17 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
       .then(() => {
         cy.fixture(file_path, 'utf8')
           .then(async (obj) => {
-            function encode (s) {
+            function encode(s) {
               const out = [];
-              for ( let i = 0; i < s.length; i++ ) {
+              for (let i = 0; i < s.length; i++) {
                 out[i] = s.charCodeAt(i);
               }
               return new Uint8Array(out);
             }
 
             const str = JSON.stringify(obj);
-            const data_encoded = encode( str );
-            const blob = new Blob( [ data_encoded ], {
+            const data_encoded = encode(str);
+            const blob = new Blob([data_encoded], {
               type: "application/json;charset=utf-8"
             });
             // const blob = new Blob([JSON.stringify(str)], {type: "application/json"});
@@ -829,4 +829,50 @@ Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wra
 
 });
 
+Cypress.Commands.add('create_task_template', function () {
+  cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/job/new`)
+    // Step 1 Name
+    .get('[data-cy="task-template-name-input"]').type(' +test-e2e')
+    .get('[data-cy="task-template-step-name"] [data-cy="wizard_navigation_next"]').click()
 
+    // Step 2 labels
+    .get('[data-cy="select-all-labels"]')
+    .click({force: true})
+    .selectLabel(testLabels[0].name, 'label-select')
+    .get('[data-cy="task-template-labels-step"] [data-cy="wizard_navigation_next"]').click()
+    // Step 3 users
+    .get('[data-cy="member-select"]').click({force: true})
+    .get('[data-cy="member-select__select-all"]').first().click({force: true})
+    .get('[data-cy="member-select__select-all"]').first().click({force: true})
+    .get('[data-cy="task-template-users-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 4 reviewers
+    .get('[data-cy="task-template-reviewer-radio-yes"]').click({force: true})
+    .get('[data-cy="task-template-reviewer-review-all"]').click({force: true})
+    .get('[data-cy="task-template-reviewer-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 5 Upload
+    .wait(500)
+    .get('[data-cy="task-template-upload-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 6 Datasets
+    .wait(500)
+    .get('[data-cy="directory_select"]').first().click({force: true})
+    .get('.v-menu__content .v-list .v-list-item').contains(' Default').click({force: true})
+    .get('[data-cy="task-template-dataset-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 7 UI SCHEMA
+    .wait(500)
+    .get('[data-cy="task-template-ui-schema-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 8 Guides
+    .wait(500)
+    .get('[data-cy="task-template-guide-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 9 Advanced Options
+    .wait(500)
+    .get('[data-cy="task-template-advanced-options-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+    // Step 10 Credentials
+    .wait(500)
+    .get('[data-cy="open-create-credential"]').click()
+    .get('[data-cy="create-credential-button"]').click()
+    .get('[data-cy="refresh-credentials"]').click()
+    .get('[data-cy="credential-checkbox-0"]').click({force: true})
+    .get('[data-cy="requires-button"]').click()
+    .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
+
+})

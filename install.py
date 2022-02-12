@@ -69,6 +69,7 @@ class DiffgramInstallTool:
     mailgun = None
     mailgun_key = None
     email_domain = None
+    z_flag = None
 
     def set_static_storage_option(self, option_number):
         if option_number == 1:
@@ -425,6 +426,10 @@ class DiffgramInstallTool:
             env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
             env_file += 'EMAIL_DOMAIN_NAME={}\n'.format(self.email_domain)
 
+        if self.z_flag:
+            env_file += 'INTERNAL_POSTGRES_DIR={}\n'.format('/var/lib/postgresql/data:Z')
+        else:
+            env_file += 'INTERNAL_POSTGRES_DIR={}\n'.format('/var/lib/postgresql/data')
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
@@ -484,6 +489,13 @@ class DiffgramInstallTool:
                         bcolors.FAIL)
                     bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
                     valid = False
+
+        z_flag = bcolors.inputcolor('Do Add Z Flag to Postgres Mount? (Use only when using SELinux distros or similar) Y/N [Press Enter to Skip]: ')
+        z_flag = z_flag.lower()
+        if z_flag == 'y':
+            self.z_flag = True
+        else:
+            self.z_flag = False
 
     def mailgun_config(self):
         need_mailgun = bcolors.inputcolor(

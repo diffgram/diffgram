@@ -16,6 +16,7 @@
                 :disabled="false">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
+          <v-icon right> mdi-chevron-down</v-icon>
         </v-btn>
       </template>
 
@@ -24,20 +25,6 @@
         <v-layout column>
 
           <!-- Buttons wrapped in v-flex to help with alignment -->
-
-          <v-flex>
-            <v-btn  color="primary"
-                    text
-                    style="text-transform: none !important;"
-                    :disabled="!$store.state.project.current.project_string_id"
-                    @click="$router.push('/project/' +
-                        $store.state.project.current.project_string_id +
-                        '/job/new')">
-              <v-icon left>add</v-icon>
-              New Tasks
-            </v-btn>
-          </v-flex>
-
           <v-flex>
             <v-btn
                 color="primary"
@@ -185,36 +172,7 @@
           </v-flex>
           -->
 
-          <!-- Credential row-->
-          <v-flex>
-
-            <v-btn color="primary"
-                   text
-                   style="text-transform: none !important;"
-                   :disabled="!$store.state.project.current.project_string_id"
-                   @click="$router.push('/credential/list')">
-              <v-icon left>mdi-shield-half-full</v-icon>
-              Task Awards
-            </v-btn>
-
-          </v-flex>
-          <!-- Credential row-->
-
-          <v-flex v-if=" $store.state.builder_or_trainer.mode == 'builder'">
-            <v-btn :disabled="!$store.state.project.current.project_string_id"
-                   color="primary"
-                   text
-                   style="text-transform: none !important;"
-                   @click=" $router.push('/project/' +
-                            $store.state.project.current.project_string_id
-                            + '/guide/list')">
-              <v-icon left>mdi-book-open</v-icon>
-              Task Guides
-            </v-btn>
-          </v-flex>
-
-          <v-divider> </v-divider>
-
+          
           <v-flex>
             <v-btn color="primary"
                     text

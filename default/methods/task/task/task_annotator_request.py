@@ -167,6 +167,7 @@ def recursively_get_next_available(session,
 
             result = valid_review_task_for_user(session = session,
                                                 task = task,
+
                                                 user = user)
 
             if result is True:

@@ -20,153 +20,148 @@ from shared.permissions.user_permissions import User_Permissions
 
 
 class Job_permissions():
-	def by_job_id(project_role_list = ["Editor", "admin"],
-				  apis_project_list=[],
-			      apis_user_list=[],
-				  mode="builder"):
-		"""
-		mode == "builder":
-			project_role_list required
-			
-		"""
-		if not isinstance(project_role_list, list): project_role_list = [project_role_list]
+    def by_job_id(project_role_list = ["Editor", "admin"],
+                  apis_project_list = [],
+                  apis_user_list = [],
+                  mode = "builder"):
+        """
+        mode == "builder":
+            project_role_list required
 
-		def wrapper(func):
-			@wraps(func)
-			def inner(*args, **kwds):
+        """
+        if not isinstance(project_role_list, list): project_role_list = [project_role_list]
 
-				job_id = kwds.get('job_id', None)
-				if job_id is None or job_id == "null" or job_id == "undefined":
-					raise Forbidden("job_id is invalid")
+        def wrapper(func):
+            @wraps(func)
+            def inner(*args, **kwds):
 
-				with sessionMaker.session_scope() as session:
+                job_id = kwds.get('job_id', None)
+                if job_id is None or job_id == "null" or job_id == "undefined":
+                    raise Forbidden("job_id is invalid")
 
-					# Permissions cascading from project
-					project_string_id = get_project_string_from_job_id(session, job_id)
+                with sessionMaker.session_scope() as session:
 
+                    # Permissions cascading from project
+                    project_string_id = get_project_string_from_job_id(session, job_id)
 
-					# API
-					if request.authorization is not None:
+                    # API
+                    if request.authorization is not None:
 
-						result = API_Permissions.by_project(session = session,
-															project_string_id = project_string_id,
-															Roles = project_role_list)
-						if result is True:
-							return func(*args, **kwds)
-						else:
-							raise Forbidden("API access invalid")
-						
-					# TODO do we need to validate user has applicable mode?
-					# ie they pass mode builder but are trainer?
-					# Basics should fail on project level check anyway here...
+                        result = API_Permissions.by_project(session = session,
+                                                            project_string_id = project_string_id,
+                                                            Roles = project_role_list)
+                        if result is True:
+                            return func(*args, **kwds)
+                        else:
+                            raise Forbidden("API access invalid")
 
-					# User
-					# TODO move login stuff into the general User_Permissions
-					if LoggedIn() != True:
-						raise Forbidden("Login again.")
+                    # TODO do we need to validate user has applicable mode?
+                    # ie they pass mode builder but are trainer?
+                    # Basics should fail on project level check anyway here...
 
-					user = session.query(User).filter(User.id == getUserID()).first()
+                    # User
+                    # TODO move login stuff into the general User_Permissions
+                    if LoggedIn() != True:
+                        raise Forbidden("Login again.")
 
-					if user is None:
-						raise Forbidden("Login again.")
+                    user = session.query(User).filter(User.id == getUserID()).first()
 
-					# Want to use the builder API permissions instead of 
-					# flags since a user may be testing this as a builder
-					# TODO deprecate 'mode' flag or have it as something else
-					# like "builder_only" or something 
+                    if user is None:
+                        raise Forbidden("Login again.")
 
+                    # Want to use the builder API permissions instead of
+                    # flags since a user may be testing this as a builder
+                    # TODO deprecate 'mode' flag or have it as something else
+                    # like "builder_only" or something
 
-					# Jan 3, 2020
-					# One downside of doing it this way is it means
-					# that we need to be careful with 
-					# project_role_list list...
+                    # Jan 3, 2020
+                    # One downside of doing it this way is it means
+                    # that we need to be careful with
+                    # project_role_list list...
 
-					if user.api_enabled_builder is True:
-						result = Project_permissions.check_permissions(
-							session = session,
-							project_string_id = project_string_id,
-							Roles = project_role_list,
-							apis_project_list = apis_project_list,
-							apis_user_list = apis_user_list)
+                    if user.api_enabled_builder is True:
+                        result = Project_permissions.check_permissions(
+                            session = session,
+                            project_string_id = project_string_id,
+                            Roles = project_role_list,
+                            apis_project_list = apis_project_list,
+                            apis_user_list = apis_user_list)
 
-						if result is True:
-							return func(*args, **kwds)
-						else:
-							raise Forbidden("Project access invalid")
+                        if result is True:
+                            return func(*args, **kwds)
+                        else:
+                            raise Forbidden("Project access invalid")
 
-					if user.api_enabled_trainer is True:
+                    if user.api_enabled_trainer is True:
 
-						# TODO refactor into function				
+                        # TODO refactor into function
 
-						# TODO handle "info" case of a trainer not yet 
-						# on a job seeing basic stuff on active jobs...
+                        # TODO handle "info" case of a trainer not yet
+                        # on a job seeing basic stuff on active jobs...
 
-						# We allow trainers to see
-						# Basic info before they apply
-						# as long as job is active...
-						
-						#if job.status != "active":
-						#	raise Forbidden("No access.")
+                        # We allow trainers to see
+                        # Basic info before they apply
+                        # as long as job is active...
 
-						User_Permissions.general(user = user,
-												 apis_user_list = apis_user_list)
+                        # if job.status != "active":
+                        #	raise Forbidden("No access.")
 
-						user_to_job = User_To_Job.get_single_by_ids(session = session,
-																	user_id = user.id,
-																	job_id = job_id)
-						
-						# TODO other status checking on this...
+                        User_Permissions.general(user = user,
+                                                 apis_user_list = apis_user_list)
 
-						if user_to_job is None:
-							raise Forbidden("No access to this job. Please apply first.")
+                        user_to_job = User_To_Job.get_single_by_ids(session = session,
+                                                                    user_id = user.id,
+                                                                    job_id = job_id)
 
-						
-						# Success case for trainer
-						return func(*args, **kwds)
-					
-				raise Forbidden("No access.")     
-			return inner
-		return wrapper
+                        # TODO other status checking on this...
 
+                        if user_to_job is None:
+                            raise Forbidden("No access to this job. Please apply first.")
 
-	@staticmethod
-	def check_job_after_project_already_valid(
-		job,
-		project):
+                        # Success case for trainer
+                        return func(*args, **kwds)
 
-		if job is None:
-			raise Forbidden("No job")
+                raise Forbidden("No access.")
 
-		if job.project_id != project.id:
-			raise Forbidden("Permission")
+            return inner
+
+        return wrapper
+
+    @staticmethod
+    def check_job_after_project_already_valid(
+        job,
+        project):
+
+        if job is None:
+            raise Forbidden("No job")
+
+        if job.project_id != project.id:
+            raise Forbidden("Permission")
 
 
 def get_project_string_from_job_id(session,
-									job_id):
+                                   job_id):
+    job = Job.get_by_id(session, job_id)
 
-	job = Job.get_by_id(session, job_id)
+    if job is None:
+        raise Forbidden
 
-	if job is None:
-		raise Forbidden
+    if job.project is None:
+        raise Forbidden
 
-	if job.project is None:
-		raise Forbidden
+    project_string_id = job.project.project_string_id
 
-	project_string_id = job.project.project_string_id
-
-	return project_string_id
-
+    return project_string_id
 
 
 def trainer_default_permissions():
-	pass
-	# TODO move if statement stuff to here
+    pass
+
+
+# TODO move if statement stuff to here
 
 
 def check_roles(Roles, Permissions):
-	for role in Roles:                               
-		if role in Permissions:
-			return True
-
-
-
+    for role in Roles:
+        if role in Permissions:
+            return True

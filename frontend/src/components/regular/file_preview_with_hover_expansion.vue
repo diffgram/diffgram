@@ -20,6 +20,7 @@
           :enable_go_to_file_on_click="false"
         ></file_preview>
         <v-icon v-if="file.type === 'sensor_fusion'" size="64" color="primary">mdi-printer-3d</v-icon>
+        <v-icon v-if="file.type === 'text'" size="64" color="primary">mdi-text-long</v-icon>
        </div>
 
     </template>

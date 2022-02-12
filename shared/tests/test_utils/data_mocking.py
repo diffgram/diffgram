@@ -31,7 +31,6 @@ from shared.database.image import Image
 from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
-
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
@@ -112,6 +111,7 @@ def register_user(user_data: dict, session):
                                                                           new_user,
                                                                           user_data['project_string_id'])
     return new_user
+
 
 
 def create_event(event_data, session):

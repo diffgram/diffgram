@@ -1,7 +1,7 @@
 <template>
-  <v-dialog v-model="is_open" width="700px" height="700px" :persistent="true" :no-click-animation="true"
+  <v-dialog v-model="is_open" width="700px" attach height="500px" :persistent="true" :no-click-animation="true"
             content-class="dialog-instance-template">
-    <v-card elevation="0" class="pa-4">
+    <v-card elevation="0" class="pa-4 ma-0" >
       <v-card-title>
         Create KeyPoints Template:
       </v-card-title>
@@ -21,7 +21,7 @@
           >
 
           </instance_template_creation_toolbar>
-          <v-alert dismissible color="secondary" text icon="mdi-information">
+          <v-alert dismissible color="secondary" text icon="mdi-information" class="ma-0 pa-0 pr-2 pl-2">
             Right Click on a Point to Name it, or Set Default Occlusion Value.
             Press Esc to stop drawing and go to edit mode.
             Double click a point to delete it.

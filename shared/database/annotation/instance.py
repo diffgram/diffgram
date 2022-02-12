@@ -1,4 +1,5 @@
 # OPENCORE - ADD
+from asyncio.proactor_events import constants
 from shared.database.common import *
 import shared.data_tools_core as data_tools_core
 import hashlib
@@ -173,6 +174,11 @@ class Instance(Base):
 
     attribute_groups = Column(MutableDict.as_mutable(JSONEncodedDict))
 
+    from_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
+    to_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
+
+    text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -318,7 +324,6 @@ class Instance(Base):
         since every instance will be "new".
 
         """
-        assert self.label_file_id is not None
 
         hash_data = [
             self.type,
@@ -357,7 +362,9 @@ class Instance(Base):
             self.sequence_id,
             self.nodes,
             self.edges,
-            self.pause_object
+            self.pause_object,
+            self.to_instance_id,
+            self.from_instance_id
         ]
 
 
@@ -406,6 +413,9 @@ class Instance(Base):
             'action_type': self.action_type,
             'deleted_time': self.deleted_time.isoformat() if self.deleted_time else None,
             'change_source': self.change_source,
+            'from_instance_id': self.from_instance_id,
+            'to_instance_id': self.to_instance_id,
+            'text_tokenizer': self.text_tokenizer,
             'p1': self.p1,
             'p2': self.p2,
             'cp': self.cp,
@@ -438,7 +448,9 @@ class Instance(Base):
             'version': self.version,
             'nodes': nodes,
             'edges': edges,
-            'pause_object': self.pause_object
+            'pause_object': self.pause_object,
+            'start_token': self.start_token,
+            'end_token': self.end_token,
 
         }
 

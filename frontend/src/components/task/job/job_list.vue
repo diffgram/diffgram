@@ -37,9 +37,10 @@
 
 
           <v-toolbar-items class="pt-2">
+
             <tooltip_button
               datacy='new_tasks'
-              tooltip_message="New Tasks"
+              tooltip_message="New Task Template"
               icon="add"
               :bottom="true"
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
@@ -49,6 +50,20 @@
               :large="true"
               :href="'/project/' + project_string + '/job/new'"
               @click="$router.push('/project/' + project_string + '/job/new')">
+            </tooltip_button>
+
+            <tooltip_button
+              datacy='new_exams'
+              tooltip_message="New Exam"
+              icon="mdi-shield-plus"
+              :bottom="true"
+              v-if="$store.state.builder_or_trainer.mode == 'builder'"
+              :disabled="!project_string"
+              color="primary"
+              :iconSize="28"
+              :icon_style="true"
+              :href="'/project/' + project_string + '/job/new'"
+              @click="$router.push('/project/' + project_string + '/exam/new')">
             </tooltip_button>
 
             <tooltip_button
@@ -143,19 +158,6 @@
               @change="search_jobs"
               :disabled="loading">
             </job_type_select>
-
-            <!-- WIP Feature-->
-            <!--
-              <v-select
-                class="ml-4"
-                        :items="instance_type_list"
-                        v-model="instance_type"
-                        label="Instance type"
-                        item-value="text"
-                        :disabled="loading"
-                        @change="">
-              </v-select>
-            -->
 
             <member_select
               style="max-width: 18%;"
@@ -653,8 +655,7 @@
           category_list: ['Computer vision'],
           category: 'Computer vision',
 
-          type_list: ['All', 'Normal', 'Exam'],  // 'Learning'
-          type: 'All',
+          type: 'Normal',
 
           instance_type_list: ['All', 'polygon', 'box', 'tag'],
           instance_type: 'All',
@@ -863,9 +864,8 @@
 
       },
 
-      mounted() {
+      async mounted() {
         this.add_visit_history_event();
-        this.mount()
 
         /*
         var self = this
@@ -885,6 +885,11 @@
         if (this.$store.state.builder_or_trainer.mode == 'trainer') {
           this.share_type = "Market"
         }
+        if(this.$route.query.type){
+          this.type = this.$route.query.type;
+        }
+        await this.mount()
+
 
       },
       methods: {
@@ -925,8 +930,8 @@
         open_confirm_dialog_sample_data: function () {
           this.dialog_confirm_sample_data = true;
         },
-        mount() {
-          this.job_list_api()
+        async mount() {
+          await this.job_list_api()
         },
 
         item_changed() {
@@ -973,12 +978,18 @@
 
         job_detail(job) {
 
-          this.$router.push("/job/" + job.id)
-
           if (job.status == "draft") {
             this.$router.push("/job/new/" + job.id)
           }
-
+          if(job.type === 'exam_template'){
+            this.$router.push(`/${this.$props.project_string_id}/exam/${job.id}`)
+          }
+          else if(job.type === 'examination'){
+            this.$router.push(`/${this.$props.project_string_id}/examination/${job.id}`)
+          }
+          else{
+            this.$router.push("/job/" + job.id)
+          }
         },
 
         remove_function: function (file) {

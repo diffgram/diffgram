@@ -10,6 +10,8 @@ describe("manual_user_assignment", () => {
         preserve: ["session"]
       });
       cy.loginByForm(testUser.email, testUser.password);
+      cy.gotToProject(testUser.project_string_id);
+      cy.create_task_template();
     });
 
     it("Assign user to one task", () => {
@@ -21,7 +23,7 @@ describe("manual_user_assignment", () => {
       cy.get('[data-cy="open-add-assignee-dialog"]')
         .first()
         .click({ force: true });
-      cy.get('[data-cy="member-select"]').click({ force: true });
+      cy.get('[data-cy="member-select"]').first().click({ force: true });
       cy.get('[data-cy="member-select__select-user"]')
         .first()
         .click({ force: true });
@@ -55,9 +57,9 @@ describe("manual_user_assignment", () => {
         .contains("Assign annotators")
         .click({ force: true });
       cy.wait(500);
-      cy.get('[data-cy="add-batch-annotators-open"]').click({ force: true });
-      cy.get('[data-cy="member-select"]').click({ force: true });
-      cy.get('[data-cy="member-select__select-user"]')
+      cy.get('[data-cy="add-batch-annotators-open"]').first().click({ force: true });
+      cy.get('[data-cy="member-select-assign-task"]').first().click({ force: true });
+      cy.get('[data-cy="member-select-assign-task__select-user"]')
         .first()
         .click({ force: true });
       cy.intercept(url).as("assign_user");
@@ -85,7 +87,7 @@ describe("manual_user_assignment", () => {
         .click({ force: true })
         .wait(1500)
         .get('[data-cy="remove-batch-annotators-open"]').click({ force: true })
-        .get('[data-cy="member-select"]').click({ force: true })
+        .get('[data-cy="member-select"]').first().click({ force: true })
         .get('[data-cy="member-select__select-user"]')
         .first()
         .click({ force: true })

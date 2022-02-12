@@ -7,18 +7,14 @@ except:
 
 def provision_root_tasks(session,
                          job,
-                         mode = 'default'):
+                         mode = 'default',
+                         default_assignee = None,
+                         default_reviewers = []):
     if not job:
         return False
 
     if mode == 'default':
         directory_id = job.directory_id
-
-    """
-    # WIP
-    if mode == 'from_parent':
-        directory = job.parent.directory_id
-    """
 
     # TODO clarify image / video file types
     file_list = WorkingDirFileLink.file_list(
@@ -28,15 +24,6 @@ def provision_root_tasks(session,
         order_by_class_and_attribute = File.input_id
     )
 
-    # TODO move to route where we collect this info and store integer
-    # in case we want to use it somewhere else
-    review_freqeuncy_map = {
-        'every_pass': 1,
-        'every_3rd_pass': 3,
-        'every_10th_pass': 10,
-    }
-    review_frequncy = review_freqeuncy_map.get(
-        job.review_by_human_freqeuncy, None)
 
     #
     #  option Hard code review frequency to None while working out bugs
@@ -53,6 +40,11 @@ def provision_root_tasks(session,
                                   job = job,
                                   file = file,
                                   guide_id = job.guide_default_id)
+        if default_assignee:
+            root_task.add_assignee(session = session, user = default_assignee)
+        if default_reviewers:
+            for reviewer in default_reviewers:
+                root_task.add_reviewer(session, reviewer)
 
         if review_frequncy:
             if (index + 1) % review_frequncy == 0:
