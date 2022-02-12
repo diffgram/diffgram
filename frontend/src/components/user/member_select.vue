@@ -2,7 +2,7 @@
   <div v-cloak>
     <v-layout>
 
-      <v-select :items="member_list_internal"
+      <v-autocomplete :items="member_list_internal"
                 v-model="item_internal"
                 :label="label"
                 :data-cy="datacy"
@@ -11,6 +11,7 @@
                 :disabled="loading || view_only"
                 @input="$emit('input', $event)"
                 @change="$emit('change', $event)"
+                :filter="on_filter"
                 clearable
       >
         <!-- Why >>>>  :item-value="null"  Because for multiple select otherwise
@@ -62,7 +63,7 @@
           </v-chip>
           <span v-if="index === 1 && !all_selected" style="font-size: 10px"> (+{{ item_internal.length - 1 }} others)</span>
 
-          <div v-if="all_selected && index === 0" >
+          <div v-if="all_selected && index === 0" data-cy="member-select__select-all">
             <v-icon color="primary"
                     left >
                 mdi-select-all
@@ -73,7 +74,7 @@
 
         </template>
 
-      </v-select>
+      </v-autocomplete>
     </v-layout>
 
   </div>
@@ -191,13 +192,23 @@ Where is a dict in data() eg  member: {}
       },
 
       methods: {
+        on_filter: function(item, query_text, item_text){
+          return item.first_name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
+            ||  item.last_name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
+
+        },
         toggle () {
           this.$nextTick(() => {
             if (this.all_selected) {
               this.item_internal = []
+
             } else {
-              this.item_internal = this.member_list_internal.slice()
+              this.item_internal = this.member_list_internal.map(elm => elm.id)
+
             }
+            console.log('item_internal', this.item_internal)
+            this.$emit('input', this.item_internal);
+            this.$emit('change',  this.item_internal);
           })
         }
 

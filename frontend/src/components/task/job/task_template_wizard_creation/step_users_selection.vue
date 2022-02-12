@@ -5,13 +5,13 @@
         data-cy="task-template-users-step-title"
         class="font-weight-medium text--primary mr-4"
       >
-        Who is assigned to work on these tasks?
+       {{title}}
       </h1>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>
     <p data-cy="task-template-users-step-subtitle" class="text--primary">
-      Select the Users assigned to the tasks.
+      {{message}}
     </p>
 
     <member_select
@@ -45,7 +45,7 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "step_label_task_template",
-  props: ["project_string_id", "job", "loading_steps", "mode"],
+  props: ["project_string_id", "job", "loading_steps", "mode", "title", "message"],
 
   components: {
     label_select_only,

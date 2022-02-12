@@ -101,6 +101,6 @@ describe("Test stats panel component", () => {
         ...props
       }, localVue);
 
-      expect(wrapper.findAll('#menu_user_list').length).toBe(1)
+      expect(wrapper.findAll('#member_select').length).toBe(1)
     })
 })

@@ -3,7 +3,7 @@
 
 
     <!-- task list -->
-    <v_task_list :job_id="job_id"
+    <v_task_list :job_id="exam_id"
                  :mode_data="'exam_results'"
                  :mode_view="'list'"
                  >
@@ -12,7 +12,7 @@
 
     <!-- TODO add summary -->
 
-    <!-- 
+    <!--
     <h2> Summary? </h2>
 
     overall average star rating
@@ -59,7 +59,7 @@ import axios from 'axios';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'exam_results',
-  props: ['job_id'],
+  props: ['exam_id'],
 
   data() {
     return {
@@ -90,13 +90,13 @@ import Vue from "vue"; export default Vue.extend( {
 
       axios.post('/api/v1/exam/pass',
         {
-          'job_id': parseInt(this.job_id),
+          'job_id': parseInt(this.exam_id),
         })
         .then(response => {
           if (response.data.log.success == true) {
 
             this.success = true
-            
+
           }
           this.loading = false
 
@@ -111,7 +111,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.loading = false
         });
     }
-    
+
   }
 }
 ) </script>

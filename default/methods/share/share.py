@@ -144,7 +144,6 @@ class Share_Project():
         if self.mode == "NEW":
             self.new()
 
-        print('NEWW', self.log)
         if log_has_error(self.log):
             return
 
@@ -219,7 +218,6 @@ class Share_Project():
         self.check_free_tier_member_limits()
 
         if log_has_error(self.log):
-            print('LOG HAS ERROR')
             return
 
         # TODO review if we should use the validate() function for email
@@ -232,12 +230,11 @@ class Share_Project():
         # exists
 
         self.user_to_modify = User.get_by_email(self.session, input['email'])
-
+        print(input['email'], 'aaaa', self.user_to_modify)
         if self.user_who_made_request.is_super_admin is not True:
             if self.user_to_modify == self.user_who_made_request:
                 self.log['error']['user_who_made_request'] = "You are already on the project."
                 return
-        print('user_to_modify', self.user_to_modify)
         # Assumes if user exists to add permissions directly
         if self.user_to_modify:
 

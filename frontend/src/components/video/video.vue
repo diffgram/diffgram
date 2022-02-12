@@ -613,6 +613,7 @@ export default Vue.extend( {
   methods: {
     reset_cache(){
       this.preview_frame_url_dict = {};
+      this.frame_image_buffer = {};
       this.preview_frame_url = null;
       this.frame_url_buffer = {};
     },
@@ -628,7 +629,13 @@ export default Vue.extend( {
 
     next_instance: async function(label_file_id){
       try{
-        const project_string_id = this.$store.state.project.current.project_string_id;
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        if(!project_string_id){
+          let project_string_id = this.$props.project_string_id;
+          if(!project_string_id){
+            return
+          }
+        }
         const response = await axios.post(
           `/api/v1/project/${project_string_id}/video/${this.current_video_file_id}/next-instance/start/${this.video_current_frame_guess}`,
         {

@@ -7,6 +7,10 @@ export const UI_SCHEMA_TASK_MOCK = {
   task_type: "draw",
   time_completed: "2021-08-16 16:05:33.767199",
   time_updated: "2021-08-16 16:05:33.777827",
+  job:{
+    id: -1
+  },
+  time_tracking: [],
   file: {
     id: -1,
     ann_is_complete: true,

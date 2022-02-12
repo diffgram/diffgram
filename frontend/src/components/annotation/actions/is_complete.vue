@@ -30,7 +30,7 @@
       datacy="submit-to-review"
       @click="complete_dialog()"
       :loading="is_complete_toggle_loading"
-      :disabled="is_complete_toggle_loading || disabled"
+      :disabled="is_complete_toggle_loading || disabled || (!allow_submit_review && review_statuses.includes(task.status))"
       color="primary"
       :icon="task_attributes.icon"
       :icon_style="true"
@@ -111,6 +111,7 @@ export default Vue.extend({
     complete_on_change_trigger: {},
     view_only_mode: {},
     save_and_complete: {},
+
     loading: {
       default: false,
       type: Boolean,
@@ -128,9 +129,23 @@ export default Vue.extend({
     return {
       is_complete_toggle_loading: false,
       review_dialog: false,
+      review_statuses: ["review_requested", "in_review"],
     };
   },
   computed: {
+    allow_submit_review: function(){
+      if(this.$store.state.user.current.is_super_admin){
+        return true;
+      }
+      if(this.task.job && this.task.job.type === 'examination'){
+        let reviewers_list = this.task.task_reviewers;
+        let id_list = reviewers_list.map(elm => elm.user_id)
+        if(!id_list.includes(this.$store.state.user.current.id)){
+          return false
+        }
+      }
+      return true;
+    },
     complete_message: function () {
       if (this.current_file.video_id) {
         return "Complete Video";
@@ -139,7 +154,7 @@ export default Vue.extend({
       }
     },
     task_attributes: function () {
-      if (this.task.status === "review_requested")
+      if (this.review_statuses.includes(this.task.status))
         return {
           icon: "mdi-archive-eye-outline",
           message: "Complete task review",
@@ -156,7 +171,7 @@ export default Vue.extend({
   },
   methods: {
     complete_dialog: function () {
-      if (this.task.status === "review_requested") {
+      if (this.review_statuses.includes(this.task.status)) {
         this.$store.commit("set_user_is_typing_or_menu_open", true);
         return (this.review_dialog = true);
       }

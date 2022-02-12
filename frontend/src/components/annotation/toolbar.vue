@@ -51,7 +51,7 @@
             icon="mdi-playlist-play"
             datacy="go-to-task-list"
             tooltip_message="Task List"
-            @click="$router.push('/job/' + task.job_id)"
+            @click="go_to_job"
             :bottom="true"
           >
           </tooltip_button>
@@ -339,6 +339,13 @@
               :allow_reviews="task.job.allow_reviews"
             />
       </div>
+      <v-divider vertical v-if="task && task.id && task.job"></v-divider>
+
+          <time_tracker
+            v-if="task && task.id && task.job"
+            :task="task"
+          />
+
 
       <v-divider vertical></v-divider>
 
@@ -419,34 +426,6 @@
         </template>
       </button_with_menu>
 
-      <!-- WIP -->
-      <!--
-  <button_with_menu
-    tooltip_message="Go To File"
-    icon="mdi-arrow-up"
-    color="primary"
-    :commit_menu_status="true"
-    :disabled="any_loading"
-    :close_by_button="true"
-        >
-
-    <template slot="content">
-
-        <v-text-field label="Go to File"
-                      type="number"
-                      v-model.number="user_requested_file_id">
-        </v-text-field>
-
-        <v-btn :disabled="loading"
-                color="primary"
-                @click="go_to_file">
-          Go
-        </v-btn>
-
-      </template>
-    </button_with_menu>
-  -->
-
       <v_annotation_trainer_menu
         v-if="task && task.id"
         :job_id="task.job_id"
@@ -469,7 +448,8 @@
         <template slot="content">
           <v-layout class="pb-4">
             <!-- View Task Information -->
-             <div>
+            <!-- THIS IS QA CAROUSEL, ITS HIDDEN CUZ WE DON'T SUPPORT IN FOR 3D AND TEXT YET -->
+             <!-- <div>
                 <button_with_menu
                   datacy="open-annotation-show-menu"
                   v-if="annotation_show_on !== true"
@@ -517,7 +497,7 @@
                   :icon_style="true"
                   :bottom="true"
                 />
-              </div>
+              </div> -->
             <tooltip_button
                 tooltip_message="Refresh Instances"
                 v-if="$store.state.user.current.is_super_admin == true"
@@ -965,6 +945,7 @@
 import Vue from "vue";
 import label_select_annotation from "../label/label_select_annotation.vue";
 import file_meta_data_card from "./file_meta_data_card.vue";
+import time_tracker from "../task/time_track/time_tracker";
 import task_relations_card from "./task_relations_card.vue";
 import file_relations_card from "./file_relations_card.vue";
 import task_meta_data_card from "./task_meta_data_card.vue";
@@ -976,6 +957,7 @@ export default Vue.extend({
   components: {
     label_select_annotation,
     file_meta_data_card,
+    time_tracker,
     file_relations_card,
     task_meta_data_card,
     task_relations_card,
@@ -1079,6 +1061,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    go_to_job: function(){
+      if(this.task.job.type === 'examination'){
+        this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)
+      }
+      else{
+        this.$router.push(`/job/${this.task.job_id}`)
+      }
+
+    },
     on_change_canvas_scale_global: function () {
       this.label_settings_local.canvas_scale_global_is_automatic = false;
       this.$emit(

@@ -2,78 +2,18 @@
   <v-container fluid style="width: 100%">
     <v-stepper v-model="step" style="height: 100%" @change="on_change_step">
       <v-stepper-header class="ma-0 pl-8 pr-8">
-        <v-stepper-step
-          :complete="step > 1"
-          step="1"
-          :editable="job.id != undefined"
-        >
-          Start
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 2"
-          step="2"
-          :editable="job.id != undefined"
-        >
-          Labels
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 3"
-          step="3"
-          :editable="job.id != undefined"
-        >
-          Annotators
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 4"
-          step="4"
-          :editable="job.id != undefined"
-        >
-          Reviewers
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 5"
-          step="5"
-          :editable="job.id != undefined"
-        >
-          Upload
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 6"
-          step="6"
-          :editable="job.id != undefined"
-        >
-          Datasets
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 7"
-          :editable="job.id != undefined"
-          step="7"
-        >
-          UI Schema
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 8"
-          :editable="job.id != undefined"
-          step="8"
-        >
-          Guides
-        </v-stepper-step>
-        <v-divider></v-divider>
-        <v-stepper-step
-          :complete="step > 9"
-          :editable="job.id != undefined"
-          step="9"
-        >
-          Other
-        </v-stepper-step>
-        <v-divider></v-divider>
+        <template v-for="(key, index) in Object.keys(steps_configuration)">
+          <v-stepper-step
+
+            v-if="!steps_configuration[key].hide"
+            :complete="step > steps_configuration[key].number"
+            :step="steps_configuration[key].number"
+            :editable="job.id != undefined"
+          >
+            {{steps_configuration[key].header_title}}
+          </v-stepper-step>
+          <v-divider v-if="index < Object.keys(steps_configuration).length - 1"></v-divider>
+        </template>
       </v-stepper-header>
 
       <v-progress-linear
@@ -86,93 +26,132 @@
 
       <v-stepper-items style="height: 100%">
         <v_error_multiple :error="error"></v_error_multiple>
-        <v-stepper-content step="1" style="height: 100%">
+        <v-stepper-content
+          v-if="!steps_configuration['name'].hide"
+          :step="steps_configuration['name'].number"
+          style="height: 100%">
           <step_name_task_template
+             ref="step_name"
+             :title="steps_configuration['name'].title"
+             :message="steps_configuration['name'].message"
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @next_step="go_to_step(2)"
+            @next_step="go_to_step(steps_configuration['name'].number + 1)"
           ></step_name_task_template>
         </v-stepper-content>
-        <v-stepper-content step="2" style="height: 100%">
+        <v-stepper-content
+          v-if="!steps_configuration['labels'].hide"
+          :step="steps_configuration['labels'].number"
+          style="height: 100%">
           <step_label_selection_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(1)"
-            @next_step="go_to_step(3)"
+            @previous_step="go_to_step(steps_configuration['labels'].number - 1)"
+            @next_step="go_to_step(steps_configuration['labels'].number + 1)"
           ></step_label_selection_task_template>
         </v-stepper-content>
-        <v-stepper-content step="3" style="height: 100%">
+        <v-stepper-content
+          v-if="!steps_configuration['members'].hide"
+          :step="steps_configuration['members'].number"
+          style="height: 100%">
           <step_users_selection
             :project_string_id="project_string_id"
             :job="job"
             :mode="mode"
+            :title="steps_configuration['members'].title"
+            :message="steps_configuration['members'].message"
             :loading_steps="loading"
-            @previous_step="go_to_step(2)"
-            @next_step="go_to_step(4)"
+            @previous_step="go_to_step(steps_configuration['members'].number - 1)"
+            @next_step="go_to_step(steps_configuration['members'].number + 1)"
           ></step_users_selection>
         </v-stepper-content>
-
-        <v-stepper-content step="4" style="height: 100%">
+        <v-stepper-content
+          v-if="!steps_configuration['reviewers'].hide"
+          :step="steps_configuration['reviewers'].number"
+          style="height: 100%">
           <step_reviewers_selection
             :project_string_id="project_string_id"
             :job="job"
             :mode="mode"
             :loading_steps="loading"
-            @previous_step="go_to_step(3)"
-            @next_step="go_to_step(5)"
+            @previous_step="go_to_step(steps_configuration['reviewers'].number - 1)"
+            @next_step="go_to_step(steps_configuration['reviewers'].number + 1)"
           ></step_reviewers_selection>
         </v-stepper-content>
-
-        <v-stepper-content step="5">
+        <v-stepper-content
+          v-if="!steps_configuration['upload'].hide"
+          :step="steps_configuration['upload'].number">
           <step_upload_files_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(4)"
-            @next_step="go_to_step(6)"
+            @previous_step="go_to_step(steps_configuration['upload'].number - 1)"
+            @next_step="go_to_step(steps_configuration['upload'].number + 1)"
           ></step_upload_files_task_template>
         </v-stepper-content>
 
-        <v-stepper-content step="6">
+        <v-stepper-content
+          v-if="!steps_configuration['datasets'].hide"
+          :step="steps_configuration['datasets'].number">
           <step_attach_directories_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(5)"
-            @next_step="go_to_step(7)"
+            @previous_step="go_to_step(steps_configuration['datasets'].number - 1)"
+            @next_step="go_to_step(steps_configuration['datasets'].number + 1)"
           ></step_attach_directories_task_template>
         </v-stepper-content>
 
-        <v-stepper-content step="7">
+        <v-stepper-content
+          v-if="!steps_configuration['ui_schema'].hide"
+          :step="steps_configuration['ui_schema'].number">
           <step_ui_schema_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(6)"
-            @next_step="go_to_step(8)"
+            @previous_step="go_to_step(steps_configuration['ui_schema'].number - 1)"
+            @next_step="go_to_step(steps_configuration['ui_schema'].number + 1)"
           ></step_ui_schema_task_template>
         </v-stepper-content>
 
-        <v-stepper-content step="8">
+        <v-stepper-content
+          v-if="!steps_configuration['guides'].hide"
+          :step="steps_configuration['guides'].number">
           <step_guides_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(7)"
-            @next_step="go_to_step(9)"
+            @previous_step="go_to_step(steps_configuration['guides'].number - 1)"
+            @next_step="go_to_step(steps_configuration['guides'].number + 1)"
           ></step_guides_task_template>
         </v-stepper-content>
 
-        <v-stepper-content step="9">
+        <v-stepper-content
+          v-if="!steps_configuration['advanced'].hide"
+          :step="steps_configuration['advanced'].number">
           <step_advanced_options_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
-            @previous_step="go_to_step(8)"
-            @next_step="launch_task_template"
+            @previous_step="go_to_step(steps_configuration['advanced'].number - 1)"
+            @next_step="go_to_step(steps_configuration['advanced'].number + 1)"
           ></step_advanced_options_task_template>
+
+        </v-stepper-content>
+
+        <v-stepper-content
+          v-if="!steps_configuration['credentials'].hide"
+          :step="steps_configuration['credentials'].number">
+          <step_credentials_task_template
+            :project_string_id="project_string_id"
+            :job="job"
+            :loading_steps="loading"
+            @previous_step="go_to_step(steps_configuration['credentials'].number - 1)"
+            @next_step="launch_task_template">
+
+          </step_credentials_task_template>
         </v-stepper-content>
       </v-stepper-items>
     </v-stepper>
@@ -187,6 +166,7 @@ import step_guides_task_template from "./step_guides_task_template";
 import step_upload_files_task_template from "./step_upload_files_task_template";
 import step_label_selection_task_template from "./step_label_selection_task_template";
 import step_ui_schema_task_template from "./step_ui_schema_task_template";
+import step_credentials_task_template from "./step_credentials_task_template";
 import step_users_selection from "./step_users_selection";
 import step_attach_directories_task_template from "./step_attach_directories_task_template";
 import step_reviewers_selection from "./step_reviewers_selection.vue";
@@ -208,11 +188,15 @@ export default Vue.extend({
     mode: {
       default: null,
     },
+    steps_config_overwrite:{
+      default: null
+    }
   },
 
   components: {
     step_name_task_template,
     step_upload_files_task_template,
+    step_credentials_task_template,
     step_guides_task_template,
     step_users_selection,
     step_ui_schema_task_template,
@@ -222,8 +206,9 @@ export default Vue.extend({
     step_reviewers_selection,
   },
   created: async function () {
-    if (this.$props.job_id_route) {
-      await this.fetch_job_api();
+    this.steps_configuration = {
+      ...this.steps_configuration,
+      ...this.$props.steps_config_overwrite
     }
   },
   data() {
@@ -231,6 +216,62 @@ export default Vue.extend({
       step: 1,
       total_steps: 9,
       loading: false,
+      steps_configuration: {
+        name: {
+          header_title: 'Start',
+          number: 1,
+          title: 'New Task Template',
+          message: 'The following steps will guide you on the creation of a new task group.\n' + 'Give a name to your Tasks:',
+          hide: false
+        },
+        labels: {
+          header_title: 'Labels',
+          number: 2,
+          hide: false
+        },
+        members: {
+          header_title: 'Members',
+          number: 3,
+          hide: false,
+          message: 'Select the Users assigned to the tasks.',
+          title: 'Who is assigned to work on these tasks?'
+        },
+        reviewers: {
+          header_title: 'Reviewers',
+          number: 4,
+          hide: false
+        },
+        upload: {
+          header_title: 'Upload',
+          number: 5,
+          hide: false
+        },
+        datasets: {
+          header_title: 'Datasets',
+          number: 6,
+          hide: false
+        },
+        ui_schema: {
+          header_title: 'UI Schema',
+          number: 7,
+          hide: false
+        },
+        guides: {
+          header_title: 'Guides',
+          number: 8,
+          hide: false
+        },
+        advanced: {
+          header_title: 'Advanced Settings',
+          number: 9,
+          hide: false
+        },
+        credentials: {
+          header_title: 'Credentials',
+          number: 10,
+          hide: false
+        },
+      },
       error: {},
     };
   },
@@ -278,6 +319,8 @@ export default Vue.extend({
       }
     },
     launch_task_template: async function () {
+
+      await this.job_update();
       this.error = {};
 
       this.loading = true;
@@ -297,12 +340,12 @@ export default Vue.extend({
         // Push to success / stats page?
         // Show success?
 
-        let launch_flow = response.data.log.info.launch_flow;
-
-        if (launch_flow == "now") {
-          this.$router.push("/job/" + this.job_id + "?success_launch=true");
-        } else if (launch_flow == "soon") {
+        if(this.job.type != 'exam_template'){
           this.$router.push("/job/list?success_launch=true");
+        }
+        else{
+          this.$router.push(`/${this.$props.project_string_id}/exam/${this.job.id}`);
+
         }
       } catch (error) {
         console.error(error);
@@ -314,10 +357,25 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-
+    step_is_hidden: function(step){
+      for(let key of Object.keys(this.steps_configuration)){
+        let config = this.steps_configuration[key];
+        if(config.number === step && config.hide){
+          return true
+        }
+      }
+      return false
+    },
     go_to_step: async function (step) {
       await this.job_update();
-      this.step = step;
+      let new_step = step;
+      if(this.step_is_hidden(step)){
+        let new_step = step + 1;
+        while(this.step_is_hidden(step)){
+          new_step += 1
+        }
+      }
+      this.step = new_step;
     },
     on_change_step: function () {},
   },

@@ -12,6 +12,15 @@ export const nextTask = async job_id => {
   }
 };
 
+export const deferTask = async payload => {
+  try {
+    const { data } = await axios.post('/api/v1/task/update', payload)
+    return data
+  } catch(e) {
+    return {}
+  }
+}
+
 export const submitTaskReview = async (task_id, payload) => {
   try {
     const response = await axios.post(
@@ -100,3 +109,31 @@ export const batchRemoveUserFromTask = async (
     return [];
   }
 };
+
+export const trackTimeTask = async (time_spent,
+                                    task_id,
+                                    status,
+                                    job_id,
+                                    file_id,
+                                    parent_file_id) =>{
+
+  try{
+    const response = await axios.post(`/api/v1/task/${task_id}/track-time`, {
+      status: status,
+      time_spent: time_spent,
+      job_id: job_id,
+      file_id: file_id,
+      parent_file_id: parent_file_id
+    })
+    if(response.status === 200){
+      return [response.data, null]
+    }
+    else{
+      return [null, response]
+    }
+
+  }
+  catch (e){
+    return [null, e]
+  }
+}
