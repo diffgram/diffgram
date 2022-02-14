@@ -1835,7 +1835,7 @@ class Process_Media():
         self.new_image.url_signed_thumb = url_signed_thumb
 
         data_tools.upload_to_cloud_storage(
-            temp_local_path = self.input.temp_dir_path_and_filename,
+            temp_local_path = new_temp_filename,
             blob_path = self.new_image.url_signed_thumb_blob_path,
             content_type = "image/jpg",
         )
