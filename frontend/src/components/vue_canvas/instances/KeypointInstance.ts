@@ -506,8 +506,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
 
-    for(let inst of this.instance_context.instance_list){
-      if(inst.is_hovered && inst.creation_ref_id !== this.creation_ref_id){
+    for(let inst  of this.instance_context.instance_list){
+      let instance = (inst as KeypointInstance);
+      if(instance.is_hovered && instance.creation_ref_id !== this.creation_ref_id){
         return true
       }
     }
