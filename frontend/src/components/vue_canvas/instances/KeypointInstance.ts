@@ -112,7 +112,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.nodes[node_index].occluded = true
     }
   }
-  public set_new_xy_to_scaled_values(): void{
+  public  set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
       if (node.x < 300) {
         node.left_or_right = 'left'
@@ -122,6 +122,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       node.x = this.get_scaled_x(node);
       node.y = this.get_scaled_y(node);
     }
+    this.calculate_min_max_points();
     this.scale_height = undefined;
     this.scale_width = undefined;
     this.translate_y = undefined;
@@ -172,6 +173,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.add_node_to_instance();
     }
     else {
+
       if(this.is_moving){
         this.stop_moving();
       }
@@ -469,7 +471,48 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
+  private draw_node(node, ctx, i){
+    if (this.label_settings &&
+      this.label_settings.show_occluded_keypoints == false &&
+      node.occluded == true) {
+      return
+    }
 
+    if (node.occluded == true) {
+      ctx.fillStyle = 'gray'
+    } else {
+      ctx.strokeStyle = this.strokeColor;
+      ctx.fillStyle = this.fillColor;
+    }
+
+    let x = node.x
+    let y = node.y
+
+    x = this.get_scaled_x(node)
+    y = this.get_scaled_y(node)
+
+    this.draw_point_and_set_node_hover_index(x, y, i, ctx)
+
+    this.draw_node_label(ctx, node);
+
+    this.draw_left_right_arrows(ctx, node, x, y)
+
+  }
+  private other_instance_hovered(){
+    if(!this.instance_context){
+      return
+    }
+    if(!this.instance_context.instance_list){
+      return
+    }
+
+    for(let inst  of this.instance_context.instance_list){
+      let instance = (inst as KeypointInstance);
+      if(instance.is_hovered && instance.creation_ref_id !== this.creation_ref_id){
+        return true
+      }
+    }
+  }
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -493,34 +536,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     for (let node of this.nodes) {
       // order of operations
-
-      if (this.label_settings &&
-          this.label_settings.show_occluded_keypoints == false &&
-          node.occluded == true) {
-        continue
-      }
-
-      if (node.occluded == true) {
-        ctx.fillStyle = 'gray'
-      } else {
-        ctx.strokeStyle = this.strokeColor;
-        ctx.fillStyle = this.fillColor;
-      }
-
-      let x = node.x
-      let y = node.y
-
-      x = this.get_scaled_x(node)
-      y = this.get_scaled_y(node)
-
-      this.draw_point_and_set_node_hover_index(x, y, i, ctx)
-
-      this.draw_node_label(ctx, node);
-
-      this.draw_left_right_arrows(ctx, node, x, y)
-
-      i += 1
+      this.draw_node(node, ctx, i);
+      i+=1
     }
+
     this.draw_rotate_point(ctx)
     this.determine_and_set_nearest_node_hovered(ctx)
 
@@ -532,7 +551,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
-      this.is_hovered = true;
+      if(!this.other_instance_hovered()){
+        this.is_hovered = true;
+      }
+
     }
     if(this.num_hovered_paths === 0 && !this.is_bounding_box_hovered){
       if(this.is_hovered){
@@ -691,7 +713,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let min_max_obj = this.get_rotated_min_max();
     let width = Math.abs(min_max_obj.max_x - min_max_obj.min_x);
     let height = Math.abs(min_max_obj.max_y - min_max_obj.min_y);
-
     ctx.globalAlpha = 0.4;
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value
     ctx.beginPath();
@@ -701,9 +722,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.stroke()
       ctx.fill()
     }
+    let hover = this.other_instance_hovered();
+    console.log('other_instance_hovered',hover )
 
-
-    if(this.is_mouse_in_path(ctx)){
+    if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode && !this.other_instance_hovered()){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
       // Draw helper bounding box
