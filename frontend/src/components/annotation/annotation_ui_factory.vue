@@ -72,6 +72,9 @@
           @request_new_task="change_task"
         />
       </div>
+      <div v-else-if="annotation_interface === 'geo'">
+        <geo_annotation_core />
+      </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -163,6 +166,7 @@ import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
+import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
 
@@ -173,7 +177,8 @@ export default Vue.extend({
     no_credentials_dialog,
     empty_file_editor_placeholder,
     sensor_fusion_editor,
-    text_annotation_core
+    text_annotation_core,
+    geo_annotation_core
   },
   props: {
     project_string_id: {
@@ -332,6 +337,7 @@ export default Vue.extend({
       return file_id;
     },
     annotation_interface: function(){
+      return "geo"
       if(!this.current_file && !this.task){
         return
       }
@@ -344,6 +350,9 @@ export default Vue.extend({
         }
         else if(this.current_file.type === 'text'){
           return 'text'
+        }
+        else if(this.current_file.type === 'geo'){
+          return 'geo'
         }
       }
       if(this.task){
