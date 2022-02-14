@@ -480,9 +480,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     if (node.occluded == true) {
       ctx.fillStyle = 'gray'
+      ctx.strokeStyle = '#5a5959';
     } else {
       ctx.strokeStyle = this.strokeColor;
       ctx.fillStyle = this.fillColor;
+      ctx.globalAlpha = 1;
     }
 
     let x = node.x
@@ -798,7 +800,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         continue
       }
 
-      if (node2.occluded == true) {
+      if (node2.occluded == true || node1.occluded == true) {
         ctx.strokeStyle = 'gray'
       }
       if(node1 && node2){
