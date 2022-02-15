@@ -471,6 +471,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
+  
   private draw_node(node, ctx, i){
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
@@ -498,6 +499,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_left_right_arrows(ctx, node, x, y)
 
   }
+  
   private other_instance_hovered(){
     if(!this.instance_context){
       return
@@ -513,6 +515,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
     }
   }
+  
   public draw(ctx): void {
     this.ctx = ctx;
 
