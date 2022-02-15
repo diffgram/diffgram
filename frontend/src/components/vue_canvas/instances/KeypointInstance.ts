@@ -12,7 +12,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public hovered_scale_control_points: boolean = false;
+  public hovered_control_point_key: string = undefined;
   public occluded: boolean = false;
+  public is_rescaling: boolean = false;
   public is_bounding_box_hovered: boolean = false;
   public is_dragging_instance: boolean = false;
   public template_creation_mode: boolean = false; // Set this to allow the creation of new nodes and edges.
@@ -153,11 +156,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.edges = new_edges;
     this.current_node_connection = []
   }
+  public start_rescale(){
+    this.is_rescaling = true;
+  }
   public start_movement(): void{
     if (this.node_hover_index != undefined) {
       this.is_moving = true;
     }
-    if(this.selected || (this.is_bounding_box_hovered && this.node_hover_index == undefined)){
+    if(this.hovered_scale_control_points){
+      this.start_rescale()
+    }
+    if(this.selected || (this.is_bounding_box_hovered && this.node_hover_index == undefined && !this.hovered_scale_control_points)){
       this.start_dragging();
     }
     if(this.instance_rotate_control_mouse_hover == true){
@@ -219,12 +228,36 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_moving(){
     this.is_moving = false;
   }
+  public rescale(){
+    if(!this.hovered_control_point_key){
+      return
+    }
+    let mouse = this.mouse_position;
+    let control_points = this.get_scale_control_points();
+    let points = this.get_rotated_min_max();
+    let width = this.width;
+    let x_move = this.mouse_down_delta_event.x;
+    let y_move = this.mouse_down_delta_event.y;
+
+    switch (this.hovered_control_point_key){
+      case "right":
+        console.log('xmove', x_move)
+        let new_width = width + x_move;
+        console.log('NEW WIDTH', new_width)
+
+      case "left":
+    }
+  }
+
   public move(){
 
     if(this.is_rotating == true){
       this.do_rotation_movement()
       this.calculate_min_max_points();
       return true
+    }
+    else if(this.is_rescaling){
+      this.rescale();
     }
     else if (this.is_moving) {
       this.move_node(event)
@@ -471,7 +504,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
-  
+
   private draw_node(node, ctx, i){
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
@@ -499,7 +532,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_left_right_arrows(ctx, node, x, y)
 
   }
-  
+
   private other_instance_hovered(){
     if(!this.instance_context){
       return
@@ -515,7 +548,51 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
     }
   }
-  
+  private get_scale_control_points(){
+    let result = [];
+    let points = this.get_rotated_min_max()
+
+    return {
+      bottom_left: {x: points.min_x - 3, y: points.max_y + 3},
+      bottom_right: {x: points.max_x + 3, y: points.max_y + 3},
+      top_right: {x: points.max_x + 3, y: points.min_y},
+      top_left: {x: points.min_x + 3, y: points.min_y},
+      top: {x: (points.min_x + points.max_x) / 2, y: points.min_y},
+      bottom: {x: (points.min_x + points.max_x) / 2, y: points.max_y + 3},
+      left: {x: points.min_x -2 , y: (points.max_y + points.min_y) / 2},
+      right: {x: points.max_x + 3 , y: (points.max_y + points.min_y) / 2},
+    }
+  }
+  private draw_scale_control_points(ctx){
+    if(!this.selected){
+      return
+    }
+    let control_points = this.get_scale_control_points();
+    let hovered_scale_point = false;
+    let hover_key = undefined;
+    for(let key of Object.keys(control_points)){
+      let point = control_points[key];
+      ctx.beginPath();
+      ctx.fillStyle = 'white'
+      ctx.lineWidth = 2 / this.zoom_value
+      ctx.arc(point.x, point.y, this.vertex_size + 2 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fill();
+      if(this.is_mouse_in_path(ctx) && !hovered_scale_point){
+        hovered_scale_point = true;
+        hover_key = key;
+      }
+    }
+    if(hovered_scale_point){
+      this.hovered_scale_control_points = true
+      this.is_hovered = true
+      this.hovered_control_point_key = hover_key
+    }
+    else{
+      this.hovered_scale_control_points = false;
+      this.hovered_control_point_key = undefined;
+    }
+  }
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -534,6 +611,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_currently_drawing_edge(ctx)
 
     this.draw_edges(ctx)
+
+    this.draw_scale_control_points(ctx);
 
     this.nearest_points_dict = {}
 
@@ -725,9 +804,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.stroke()
       ctx.fill()
     }
-    let hover = this.other_instance_hovered();
-    console.log('other_instance_hovered',hover )
-
     if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode && !this.other_instance_hovered()){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;

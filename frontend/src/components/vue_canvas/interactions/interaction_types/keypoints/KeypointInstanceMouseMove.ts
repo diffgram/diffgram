@@ -13,11 +13,44 @@ export class KeypointInstanceMouseMove extends Interaction {
     this.key_point_instance = key_point_instance
   }
 
-  process(): boolean {
+  set_hover_scale_points(): void {
+    // if(!this.key_point_instance.hovered_control_point_key){
+    //   return
+    // }
+    let key = this.key_point_instance.hovered_control_point_key;
+    if(['top'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'n-resize'
+    }
+    else if(['bottom'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 's-resize'
+    }
+    else if(['left'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'w-resize'
+    }
+    else if(['right'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'e-resize'
+    }
+    else if(['top_right'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'ne-resize'
+    }
+    else if(['top_left'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'nw-resize'
+    }
+    else if(['bottom_right'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'se-resize'
+    }
+    else if(['bottom_left'].includes(key)){
+      this.key_point_instance.ctx.canvas.style.cursor = 'sw-resize'
+    }
+  }
 
+  process(): boolean {
     this.key_point_instance.ctx.canvas.style.cursor = 'default'
     if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'copy'
+    }
+    else if(this.key_point_instance.hovered_scale_control_points){
+      this.set_hover_scale_points();
     }
     else if (this.key_point_instance.is_node_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'pointer'
@@ -39,6 +72,8 @@ export class KeypointInstanceMouseMove extends Interaction {
     else if (this.key_point_instance.is_bounding_box_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'
     }
+
+
 
     if (!this.key_point_instance.instance_context.draw_mode) {
       return this.key_point_instance.move();
