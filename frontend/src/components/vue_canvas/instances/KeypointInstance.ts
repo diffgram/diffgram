@@ -485,8 +485,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.strokeStyle = this.strokeColor;
       ctx.fillStyle = this.fillColor;
       ctx.globalAlpha = 1;
-    }
-
+    } 
+    
     let x = node.x
     let y = node.y
 
@@ -500,6 +500,22 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_left_right_arrows(ctx, node, x, y)
 
   }
+  private other_instance_hovered(){
+    if(!this.instance_context){
+      return
+    }
+    if(!this.instance_context.instance_list){
+      return
+    }
+
+    for(let inst  of this.instance_context.instance_list){
+      let instance = (inst as KeypointInstance);
+      if(instance.is_hovered && instance.creation_ref_id !== this.creation_ref_id){
+        return true
+      }
+    }
+  }
+  
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -538,7 +554,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
-      this.is_hovered = true;
+      if(!this.other_instance_hovered()){
+        this.is_hovered = true;
+      }
+
     }
     if(this.num_hovered_paths === 0 && !this.is_bounding_box_hovered){
       if(this.is_hovered){
@@ -706,9 +725,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.stroke()
       ctx.fill()
     }
-
-
-    if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode){
+    let hover = this.other_instance_hovered();
+    if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode && !this.other_instance_hovered()){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
       // Draw helper bounding box
