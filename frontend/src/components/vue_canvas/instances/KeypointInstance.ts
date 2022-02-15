@@ -192,11 +192,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  public stop() {
+  public stop(): boolean {
 
     if (this.instance_context.draw_mode
     && this.template_creation_mode) {
       this.add_node_to_instance();
+      return true
     }
     else {
 
@@ -204,9 +205,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.stop_moving();
       }
       if(this.node_hover_index != undefined){
-        console.log('click nodeee', this.start_index_occlusion)
         if(this.start_index_occlusion != undefined){
           this.occlude_direction(this.node_hover_index)
+          return true
         }
         else{
           this.select();
@@ -223,6 +224,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
 
     }
+    return false
 
   }
 
@@ -512,8 +514,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
 
     if (node.occluded == true) {
-      ctx.fillStyle = 'gray'
-      ctx.strokeStyle = '#5a5959';
+      ctx.globalAlpha = 0.3;
     } else {
       ctx.strokeStyle = this.strokeColor;
       ctx.fillStyle = this.fillColor;
@@ -531,7 +532,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_node_label(ctx, node);
 
     this.draw_left_right_arrows(ctx, node, x, y)
-
+    ctx.globalAlpha = 1;
   }
   public draw(ctx): void {
     this.ctx = ctx;
@@ -880,7 +881,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
 
       if (node2.occluded == true || node1.occluded == true) {
-        ctx.strokeStyle = 'gray'
+
+        ctx.globalAlpha = 0.3;
       }
       if (edge.is_hovered) {
         ctx.strokeStyle = 'green'
@@ -896,7 +898,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.fill();
 
       }
-
+      ctx.globalAlpha = 1;
 
     }
   }

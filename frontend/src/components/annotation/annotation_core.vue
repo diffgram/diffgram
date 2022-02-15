@@ -4628,6 +4628,9 @@ export default Vue.extend({
       if (this.ellipse_hovered_corner_key) {
         return;
       }
+      if(this.show_snackbar_occlude_direction){
+        return
+      }
       if (
         this.selected_instance &&
         this.selected_instance.midpoint_hover != undefined
@@ -6308,7 +6311,14 @@ export default Vue.extend({
       // For new Refactored instance types
       const mouse_up_interaction = this.generate_event_interactions(event);
       if (mouse_up_interaction) {
-        mouse_up_interaction.process();
+        let changed_file = mouse_up_interaction.process();
+        if(changed_file === true){
+          this.has_changed = true;
+        }
+        if(changed_file && this.show_snackbar_occlude_direction){
+          this.show_snackbar_occlude_direction = false;
+        }
+
       }
     },
     stop_ellipse_resize: function () {
