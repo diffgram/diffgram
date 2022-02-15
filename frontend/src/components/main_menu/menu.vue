@@ -378,7 +378,9 @@
         if (value) this.get_avalible_projects()
       },  
       '$route.path': function(value) {
-        const do_not_display = this.routes_without_menu.some(route => route.includes(value))
+        const do_not_display = value !== "/" && this.routes_without_menu.some(route => {
+          return route.includes(value)
+        })
         if (do_not_display) {
           this.do_not_show_menu = true
         } else {
