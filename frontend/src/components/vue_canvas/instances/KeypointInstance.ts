@@ -572,7 +572,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
     if(this.num_hovered_paths > 0 || this.is_bounding_box_hovered){
-      this.is_hovered = true;
+      if(!this.other_instance_hovered()){
+        this.is_hovered = true;
+      }
+
     }
     if(this.num_hovered_paths === 0 && !this.is_bounding_box_hovered){
       if(this.is_hovered){
@@ -740,9 +743,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.stroke()
       ctx.fill()
     }
+    let hover = this.other_instance_hovered();
+    console.log('other_instance_hovered',hover )
 
-
-    if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode){
+    if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode && !this.other_instance_hovered()){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
       // Draw helper bounding box

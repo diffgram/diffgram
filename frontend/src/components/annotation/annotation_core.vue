@@ -7062,6 +7062,7 @@ export default Vue.extend({
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;
+      this.instance_context.instance_list = this.instance_list;
       this.update_canvas();
     },
 
