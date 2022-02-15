@@ -77,6 +77,8 @@ export default Vue.extend({
                 return
             }
             this.drawing_instance = false
+            this.drawing_center = null
+            this.drawing_latlng = null
             this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
         },
         move_mouse_listener: function(e) {
