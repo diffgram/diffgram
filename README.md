@@ -44,11 +44,14 @@ Long, High Frame Rate, High Resolution Videos.
 ![](./github_assets/3d_example.png)
 
 ## Text
-Coming Early Feb
+[Text Labeling docs](https://diffgram.readme.io/docs/text-annotation-guide)
+
 1. Named Entity Recognition
 2. Part of Speech Tagging
 3. Coreference Resolution
 4. Dependency Parsing
+
+![](./github_assets/diffgram_text_interface.png)
 
 ### More
 Build your own UI or contact us. Our intent is to build and cover all major media types in 2022.
