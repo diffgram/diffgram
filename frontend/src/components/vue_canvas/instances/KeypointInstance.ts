@@ -177,7 +177,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if(this.is_moving){
         this.stop_moving();
       }
-      if(this.node_hover_index != undefined){
+      if(this.node_hover_index != undefined && !this.instance_context.draw_mode){
         this.select();
       }
 
