@@ -19,7 +19,8 @@ default_denied_message = "(Project Scope) No access."
 
 class Project_permissions():
 
-    def user_has_project(Roles,
+    @staticmethod
+    def user_has_project(Roles: list,
                          apis_project_list = [],
                          apis_user_list = ["security_email_verified"]):
         """

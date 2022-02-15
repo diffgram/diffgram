@@ -112,7 +112,9 @@
 
         <v-tab-item>
           <!-- TODO update to use new reporting pattern-->
-          <v_stats_task :job_id="job_id"> </v_stats_task>
+          <v_stats_task :job_id="job_id"
+                        :project_string_id="$store.state.project.current.project_string_id">
+          </v_stats_task>
         </v-tab-item>
 
         <v-tab-item>

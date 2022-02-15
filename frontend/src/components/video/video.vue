@@ -613,6 +613,7 @@ export default Vue.extend( {
   methods: {
     reset_cache(){
       this.preview_frame_url_dict = {};
+      this.frame_image_buffer = {};
       this.preview_frame_url = null;
       this.frame_url_buffer = {};
     },

@@ -48,7 +48,7 @@ from shared.regular.regular_log import log_has_error
 import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
-from walrus.methods.text_data.text_tokenizer import TextTokenizer
+from methods.text_data.text_tokenizer import TextTokenizer
 
 data_tools = Data_tools().data_tools
 
@@ -1835,7 +1835,7 @@ class Process_Media():
         self.new_image.url_signed_thumb = url_signed_thumb
 
         data_tools.upload_to_cloud_storage(
-            temp_local_path = self.input.temp_dir_path_and_filename,
+            temp_local_path = new_temp_filename,
             blob_path = self.new_image.url_signed_thumb_blob_path,
             content_type = "image/jpg",
         )

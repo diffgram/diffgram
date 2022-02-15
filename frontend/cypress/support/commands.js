@@ -842,11 +842,8 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="task-template-labels-step"] [data-cy="wizard_navigation_next"]').click()
     // Step 3 users
     .get('[data-cy="member-select"]').click({force: true})
-    .get('[data-cy="member-select__select-all"]').click({force: true})
-    .get('.v-list-item.v-list-item--link').contains(testUser.first_name + ' ' + testUser.last_name).click({force: true})
-    .get('[data-cy="member-select"]').click({force: true})
-    .get('[data-cy="member-select__select-all"]').click({force: true})
-    .get('.v-list-item.v-list-item--link').contains(testUser.first_name + ' ' + testUser.last_name).click({force: true})
+    .get('[data-cy="member-select__select-all"]').first().click({force: true})
+    .get('[data-cy="member-select__select-all"]').first().click({force: true})
     .get('[data-cy="task-template-users-step"] [data-cy="wizard_navigation_next"]').click({force: true})
     // Step 4 reviewers
     .get('[data-cy="task-template-reviewer-radio-yes"]').click({force: true})
