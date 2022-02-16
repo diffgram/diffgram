@@ -1,72 +1,72 @@
 version: "3.3"
 services:
-   dispatcher:
-     image: gcr.io/diffgram-open-core/local_dispatcher:latest
-     ports:
-       - "0.0.0.0:8085:8085"
-     expose: [8085]
-     depends_on:
-       - frontend
-       - default
-       - walrus
-     environment:
-       SAME_HOST: ${SAME_HOST}
-   frontend:
-     image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
-     ports:
-       - "0.0.0.0:8081:80"
-     expose: [80]
-     depends_on:
-       - default
-   walrus:
-     image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
-     ports:
-       - "0.0.0.0:8082:8082"
-     expose: [8080]
-     depends_on:
-       - db
-       - default
-     volumes:
-       - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
-     environment:
-       DATABASE_URL: ${DATABASE_URL}
-       DIFFGRAM_SYSTEM_MODE: "sandbox"
-       DIFFGRAM_STATIC_STORAGE_PROVIDER: ${DIFFGRAM_STATIC_STORAGE_PROVIDER}
-       USER_PASSWORDS_SECRET: ${USER_PASSWORDS_SECRET}
-       SECRET_KEY: ${SECRET_KEY}
-       SERVICE_ACCOUNT_FULL_PATH: "/gcp/gcp-service-account.json"
-       GOOGLE_APPLICATION_CREDENTIALS: "/gcp/gcp-service-account.json"
-       CLOUD_STORAGE_BUCKET: ${CLOUD_STORAGE_BUCKET}
-       ML__CLOUD_STORAGE_BUCKET: ${ML__CLOUD_STORAGE_BUCKET}
-       DIFFGRAM_AWS_ACCESS_KEY_ID: ${DIFFGRAM_AWS_ACCESS_KEY_ID}
-       DIFFGRAM_AWS_ACCESS_KEY_SECRET: ${DIFFGRAM_AWS_ACCESS_KEY_SECRET}
-       DIFFGRAM_S3_BUCKET_NAME: ${DIFFGRAM_S3_BUCKET_NAME}
-       DIFFGRAM_S3_BUCKET_REGION: ${DIFFGRAM_S3_BUCKET_REGION}
-       ML__DIFFGRAM_S3_BUCKET_NAME: ${ML__DIFFGRAM_S3_BUCKET_NAME}
-       DIFFGRAM_AZURE_CONNECTION_STRING: ${DIFFGRAM_AZURE_CONNECTION_STRING}
-       DIFFGRAM_AZURE_CONTAINER_NAME: ${DIFFGRAM_AZURE_CONTAINER_NAME}
-       ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${ML__DIFFGRAM_AZURE_CONTAINER_NAME}
-       MAILGUN_KEY: ${MAILGUN_KEY}
-       EMAIL_DOMAIN_NAME: ${EMAIL_DOMAIN_NAME}
-       WALRUS_SERVICE_URL_BASE: ${WALRUS_SERVICE_URL_BASE}
-       INTER_SERVICE_SECRET: ${INTER_SERVICE_SECRET}
-       PYTHONPATH: "/app/"
-       DIFFGRAM_INSTALL_FINGERPRINT: ${DIFFGRAM_INSTALL_FINGERPRINT}
-       DIFFGRAM_VERSION_TAG: ${DIFFGRAM_VERSION_TAG}
-       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
-       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
-       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
-     entrypoint: ["python3", "-u", "/app/main.py"]
+  dispatcher:
+    image: gcr.io/diffgram-open-core/local_dispatcher:latest
+    ports:
+    - "0.0.0.0:8085:8085"
+    expose: [8085]
+    depends_on:
+    - frontend
+    - default
+    - walrus
+    environment:
+      SAME_HOST: ${SAME_HOST}
+  frontend:
+    image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
+    ports:
+    - "0.0.0.0:8081:80"
+    expose: [80]
+    depends_on:
+    - default
+  walrus:
+    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
+    ports:
+    - "0.0.0.0:8082:8082"
+    expose: [8080]
+    depends_on:
+    - db
+    - default
+    volumes:
+    - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DIFFGRAM_SYSTEM_MODE: "sandbox"
+      DIFFGRAM_STATIC_STORAGE_PROVIDER: ${DIFFGRAM_STATIC_STORAGE_PROVIDER}
+      USER_PASSWORDS_SECRET: ${USER_PASSWORDS_SECRET}
+      SECRET_KEY: ${SECRET_KEY}
+      SERVICE_ACCOUNT_FULL_PATH: "/gcp/gcp-service-account.json"
+      GOOGLE_APPLICATION_CREDENTIALS: "/gcp/gcp-service-account.json"
+      CLOUD_STORAGE_BUCKET: ${CLOUD_STORAGE_BUCKET}
+      ML__CLOUD_STORAGE_BUCKET: ${ML__CLOUD_STORAGE_BUCKET}
+      DIFFGRAM_AWS_ACCESS_KEY_ID: ${DIFFGRAM_AWS_ACCESS_KEY_ID}
+      DIFFGRAM_AWS_ACCESS_KEY_SECRET: ${DIFFGRAM_AWS_ACCESS_KEY_SECRET}
+      DIFFGRAM_S3_BUCKET_NAME: ${DIFFGRAM_S3_BUCKET_NAME}
+      DIFFGRAM_S3_BUCKET_REGION: ${DIFFGRAM_S3_BUCKET_REGION}
+      ML__DIFFGRAM_S3_BUCKET_NAME: ${ML__DIFFGRAM_S3_BUCKET_NAME}
+      DIFFGRAM_AZURE_CONNECTION_STRING: ${DIFFGRAM_AZURE_CONNECTION_STRING}
+      DIFFGRAM_AZURE_CONTAINER_NAME: ${DIFFGRAM_AZURE_CONTAINER_NAME}
+      ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${ML__DIFFGRAM_AZURE_CONTAINER_NAME}
+      MAILGUN_KEY: ${MAILGUN_KEY}
+      EMAIL_DOMAIN_NAME: ${EMAIL_DOMAIN_NAME}
+      WALRUS_SERVICE_URL_BASE: ${WALRUS_SERVICE_URL_BASE}
+      INTER_SERVICE_SECRET: ${INTER_SERVICE_SECRET}
+      PYTHONPATH: "/app/"
+      DIFFGRAM_INSTALL_FINGERPRINT: ${DIFFGRAM_INSTALL_FINGERPRINT}
+      DIFFGRAM_VERSION_TAG: ${DIFFGRAM_VERSION_TAG}
+      DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
+      DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
+      DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
+    entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
     image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
     ports:
-      - "0.0.0.0:8080:8080"
+    - "0.0.0.0:8080:8080"
     expose: [8080]
     depends_on:
-      - db
+    - db
     volumes:
-      - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
+    - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_HOST: ${DATABASE_HOST}
@@ -105,13 +105,13 @@ services:
     hostname: db
     restart: always
     environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
-      - POSTGRES_DB=diffgram
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - POSTGRES_DB=diffgram
     volumes:
-      # Default INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data:Z
-      - ${POSTGRES_DATA_DIR:-./postgres-data}:${INTERNAL_POSTGRES_DIR:-/var/lib/postgresql/data}
+    # Default INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data:Z
+    - ${POSTGRES_DATA_DIR:-./postgres-data}:${INTERNAL_POSTGRES_DIR:-/var/lib/postgresql/data}
     ports:
-      - 5432:5432
+    - 5432:5432
 
 volumes:
   static: {}

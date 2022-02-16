@@ -401,7 +401,7 @@ class DiffgramInstallTool:
         env_file += 'USER_PASSWORDS_SECRET={}\n'.format(create_random_string(10))
         env_file += 'INTER_SERVICE_SECRET={}\n'.format(create_random_string(10))
         env_file += 'SECRET_KEY={}\n'.format(create_random_string(18))
-        env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8080/')
+        env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8082/')
 
         env_file += 'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={}\n'.format(True)
 
@@ -414,6 +414,11 @@ class DiffgramInstallTool:
             env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
             env_file += 'DATABASE_URL={}\n'.format("postgresql+psycopg2://postgres:postgres@db/diffgram")
             env_file += 'DATABASE_NAME={}\n'.format('diffgram')
+            env_file += 'DATABASE_HOST={}\n'.format("db")
+            env_file += 'DATABASE_NAME={}\n'.format("diffgram")
+            env_file += 'DATABASE_USER={}\n'.format("postgres")
+            env_file += 'DATABASE_PASS={}\n'.format("postgres")
+
         else:
             env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
             env_file += 'DATABASE_URL={}\n'.format(self.database_url)
