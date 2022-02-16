@@ -14,6 +14,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public is_node_hovered: boolean = false;
   public hovered_scale_control_points: boolean = false;
   public hovered_control_point_key: string = undefined;
+  public start_index_occlusion: number = undefined;
   public occluded: boolean = false;
   public is_rescaling: boolean = false;
   public is_bounding_box_hovered: boolean = false;
@@ -115,6 +116,31 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.nodes[node_index].occluded = true
     }
   }
+
+  public occlude_all_children(node_index){
+    let node = this.nodes[node_index];
+    let edges_from = this.edges.filter(edge => edge.from === node.id);
+    let edges_to = this.edges.filter(edge => edge.to === node.id);
+    let children_ids_from = edges_from.map(edge => edge.to);
+    let children_ids_to = edges_to.map(edge => edge.from);
+    let children_ids = [...children_ids_from, ...children_ids_to]
+    for(let id of children_ids){
+      let current_node = this.nodes.find(n => n.id === id);
+      if(current_node){
+        if (current_node.occluded == true) {
+          current_node.occluded = false
+        } else {
+          current_node.occluded = true
+        }
+      }
+
+    }
+    if (node.occluded == true) {
+      node.occluded = false
+    } else {
+      node.occluded = true
+    }
+  }
   public  set_new_xy_to_scaled_values(): void{
     for(let node of this.nodes){
       if (node.x < 300) {
@@ -175,11 +201,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  public stop() {
+  public stop(): boolean {
 
     if (this.instance_context.draw_mode
     && this.template_creation_mode) {
       this.add_node_to_instance();
+      return true
     }
     else {
 
@@ -187,7 +214,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         this.stop_moving();
       }
       if(this.node_hover_index != undefined){
-        this.select();
+        if(this.start_index_occlusion != undefined){
+          this.occlude_direction(this.node_hover_index)
+          return true
+        }
+        else{
+          this.select();
+        }
+
       }
 
       if(this.is_dragging_instance){
@@ -199,6 +233,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
 
     }
+    return false
 
   }
 
@@ -513,10 +548,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
 
     if (node.occluded == true) {
-      ctx.fillStyle = 'gray'
+      ctx.globalAlpha = 0.3;
     } else {
       ctx.strokeStyle = this.strokeColor;
       ctx.fillStyle = this.fillColor;
+      ctx.globalAlpha = 1;
     }
 
     let x = node.x
@@ -530,7 +566,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_node_label(ctx, node);
 
     this.draw_left_right_arrows(ctx, node, x, y)
-
+    ctx.globalAlpha = 1;
   }
 
   private other_instance_hovered(){
@@ -877,7 +913,53 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     ctx.fill();
 
   }
+  public occlude_direction(end_index){
+    console.log('occlude_direction', end_index)
+    let start_node = this.nodes[this.start_index_occlusion]
+    let end_node = this.nodes[end_index]
+    let edge_from = this.edges.find(e => e.from === start_node.id && e.to === end_node.id);
+    let edge_to = this.edges.find(e => e.to === start_node.id && e.from === end_node.id);
 
+    let edge = edge_from;
+    if(!edge){
+      edge = edge_to;
+      if(!edge){
+        return
+      }
+    }
+    console.log('initial edige', start_node.id, end_node.id, edge)
+    start_node.occluded = true;
+    let pending_nodes = [end_node]
+    while(pending_nodes.length > 0){
+      let next_node = pending_nodes.shift();
+      let adjacent = this.edges.filter(edge => edge.from === next_node.id || edge.to === next_node.id);
+      for (let adj_edge of adjacent){
+        let node_from = this.nodes.find(n => n.id === adj_edge.from);
+        let node_to = this.nodes.find(n => n.id === adj_edge.to);
+        console.log('from', node_from, 'to', node_to)
+        if(node_from && !node_from.occluded){
+          console.log('occluding node_from', node_from)
+          node_from.occluded = true;
+          pending_nodes.push(node_from)
+        }
+        if(node_to && !node_to.occluded){
+          console.log('occluding node_to', node_to)
+          node_to.occluded = true;
+          pending_nodes.push(node_to)
+        }
+      }
+    }
+
+  }
+
+  public stop_occlude_direction(){
+    this.start_index_occlusion = undefined;
+    console.log('stop_occlude_direction')
+  }
+  public activate_select_edge_occlusion(node_index: number){
+    this.start_index_occlusion = node_index;
+    console.log('start', node_index, this.start_index_occlusion)
+  }
   private draw_edges(ctx) {
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     ctx.setLineDash([])
@@ -896,8 +978,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         continue
       }
 
-      if (node2.occluded == true) {
-        ctx.strokeStyle = 'gray'
+      if (node2.occluded == true || node1.occluded == true) {
+
+        ctx.globalAlpha = 0.3;
+      }
+      if (edge.is_hovered) {
+        ctx.strokeStyle = 'green'
       }
       if(node1 && node2){
         let x1 = this.get_scaled_x(node1);
@@ -908,8 +994,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.lineTo(x2, y2)
         ctx.stroke()
         ctx.fill();
-      }
 
+      }
+      ctx.globalAlpha = 1;
 
     }
   }
