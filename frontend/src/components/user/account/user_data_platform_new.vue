@@ -119,7 +119,7 @@
       this.email = this.$route.query["email"]
       this.signup_code = this.$route.query["code"]
 
-      // log out by default (if logged in) since we will be putting a new cookie here
+      // log out by default (if logged in) since we will be putting a new  cookie here
       // and edge case but would be strange if made new account and then didn't change
       // account stuff properly
       if (this.$store.state.user.logged_in == true) {

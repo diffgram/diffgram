@@ -8168,7 +8168,14 @@ export default Vue.extend({
         return;
       }
       let frame_number = undefined;
-      let instance_list = this.instance_list;
+      let instance_list = this.instance_list.map(elm => {
+        if(elm.type === 'keypoints'){
+          return elm.get_instance_data()
+        }
+        else{
+          return elm
+        }
+      });
 
       if (this.video_mode) {
         if (frame_number_param == undefined) {
