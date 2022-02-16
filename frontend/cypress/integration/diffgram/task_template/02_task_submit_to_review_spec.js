@@ -16,25 +16,25 @@ describe("tasks_detail_pagination", () => {
 
     it("Submit task to review", () => {
       const url = "/api/v1/task/*/complete";
-      cy.visit(`http://localhost:8085/job/list`);
-      cy.get('[data-cy="job-card"]')
+      cy.visit(`http://localhost:8085/job/list`)
+        .get('[data-cy="job-card"]')
         .find('.job-title')
         .contains('+test-e2e')
         .first()
         .parent()
-        .click({ force: true });
-      cy.wait(2000);
-      cy.get("tbody > tr")
+        .click({ force: true })
+        .wait(2000)
+        .get("tbody > tr")
         .first()
-        .click({ force: true });
-      cy.wait(3000);
-      cy.intercept(url).as("submit_to_review");
-      cy.get('[data-cy="submit-to-review"]').click({ force: true });
-      cy.wait("@submit_to_review")
+        .click({ force: true })
+        .wait(3000)
+        .intercept(url).as("submit_to_review")
+        .get('[data-cy="submit-to-review"]').click({ force: true })
+        .wait("@submit_to_review")
         .its("response")
-        .should("have.property", "statusCode", 200);
-      cy.wait(3000);
-      cy.get('[data-cy="go-to-task-list"]').click({ force: true });
+        .should("have.property", "statusCode", 200)
+        .wait(3000)
+        .get('[data-cy="go-to-task-list"]').click({ force: true });
     });
 
     it("Reviews task", () => {

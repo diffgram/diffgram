@@ -522,7 +522,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
     }
   }
-  
+
   private draw_node(node, ctx, i){
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
@@ -761,8 +761,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.fill()
     }
     let hover = this.other_instance_hovered();
-    console.log('other_instance_hovered',hover )
-
     if(this.is_mouse_in_path(ctx) && !this.instance_context.draw_mode && !this.other_instance_hovered()){
       this.is_bounding_box_hovered = true;
       this.is_hovered = true;
