@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios from './customInstance/customInstance'
 
 export default async (url_signed) => {
     try {
