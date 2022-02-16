@@ -213,6 +213,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if(this.is_moving){
         this.stop_moving();
       }
+      if(this.is_rescaling){
+        this.stop_rescaling()
+      }
       if(this.node_hover_index != undefined){
         if(this.start_index_occlusion != undefined){
           this.occlude_direction(this.node_hover_index)
@@ -260,6 +263,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       node = this.move_single_node(node)
     }
   }
+  public stop_rescaling(){
+    this.is_rescaling = false;
+  }
   public stop_moving(){
     this.is_moving = false;
   }
@@ -271,21 +277,92 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let control_points = this.get_scale_control_points();
     let points = this.get_rotated_min_max();
     let width = this.width;
+    let height = this.height;
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
+    let center = this.get_center_point_rotated()
+    let rescaled = true;
+    var new_width, rx, new_height, ry;
 
     switch (this.hovered_control_point_key){
       case "right":
-        console.log('xmove', x_move)
-        let new_width = width + x_move;
-        console.log('NEW WIDTH', new_width)
-
+        new_width = width + x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
       case "left":
+        new_width = width - x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
+      case "top":
+        new_height = height - y_move;
+        ry = new_height / height
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+        }
+        break;
+      case "bottom":
+        new_height = height + y_move;
+        ry = new_height / height
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+        }
+        break;
+      case "top_right":
+        new_height = height - y_move;
+        ry = new_height / height
+        new_width = width + x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
+      case "top_left":
+        new_height = height - y_move;
+        ry = new_height / height
+        new_width = width - x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
+      case "bottom_right":
+        new_height = height + y_move;
+        ry = new_height / height
+        new_width = width + x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
+      case "bottom_left":
+        new_height = height + y_move;
+        ry = new_height / height
+        new_width = width - x_move;
+        rx = new_width / width
+        for (let node of this.nodes){
+          node.y = center.y  + ry * ( node.y - center.y)
+          node.x = center.x  + rx * ( node.x - center.x)
+        }
+        break;
+      default:
+        rescaled = false
     }
+    if(rescaled){
+      this.get_rotate_point_control_location();
+    }
+    return rescaled
   }
 
   public move(){
-
     if(this.is_rotating == true){
       this.do_rotation_movement()
       this.calculate_min_max_points();
@@ -405,10 +482,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     let center_x = (x_max + x_min) / 2;
     let center_y = (y_max +  y_min) / 2;
-
+    let max_y = this.get_scale_control_points().bottom.y
     let center_point =  {
       x: center_x,
-      y: center_y + (this.height)
+      y: max_y + (this.height / 4)
     }
     let rotated_center_point = this.get_scaled_and_rotated_point(center_point);
     return rotated_center_point
@@ -625,8 +702,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.hovered_control_point_key = hover_key
     }
     else{
-      this.hovered_scale_control_points = false;
-      this.hovered_control_point_key = undefined;
+      if(!this.is_rescaling){
+        this.hovered_scale_control_points = false;
+        this.hovered_control_point_key = undefined;
+      }
+
     }
   }
   public draw(ctx): void {
@@ -914,7 +994,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   }
   public occlude_direction(end_index){
-    console.log('occlude_direction', end_index)
     let start_node = this.nodes[this.start_index_occlusion]
     let end_node = this.nodes[end_index]
     let edge_from = this.edges.find(e => e.from === start_node.id && e.to === end_node.id);
@@ -927,7 +1006,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         return
       }
     }
-    console.log('initial edige', start_node.id, end_node.id, edge)
     start_node.occluded = true;
     let pending_nodes = [end_node]
     while(pending_nodes.length > 0){
@@ -936,14 +1014,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       for (let adj_edge of adjacent){
         let node_from = this.nodes.find(n => n.id === adj_edge.from);
         let node_to = this.nodes.find(n => n.id === adj_edge.to);
-        console.log('from', node_from, 'to', node_to)
         if(node_from && !node_from.occluded){
-          console.log('occluding node_from', node_from)
           node_from.occluded = true;
           pending_nodes.push(node_from)
         }
         if(node_to && !node_to.occluded){
-          console.log('occluding node_to', node_to)
           node_to.occluded = true;
           pending_nodes.push(node_to)
         }
@@ -954,11 +1029,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   public stop_occlude_direction(){
     this.start_index_occlusion = undefined;
-    console.log('stop_occlude_direction')
   }
   public activate_select_edge_occlusion(node_index: number){
     this.start_index_occlusion = node_index;
-    console.log('start', node_index, this.start_index_occlusion)
   }
   private draw_edges(ctx) {
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
