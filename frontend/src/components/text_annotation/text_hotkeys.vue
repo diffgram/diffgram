@@ -3,7 +3,7 @@
 <v-layout column>
   <h2> General </h2>
 
-  <p> <kbd>Esc</kbd> Cancel drawing rwelation </p>
+  <p> <kbd>Esc</kbd> Cancel drawing relation </p>
   <p> <kbd>S</kbd> Save </p>
 
 </v-layout>
