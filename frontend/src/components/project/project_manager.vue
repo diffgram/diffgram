@@ -185,7 +185,7 @@
 </template>
 <script lang="ts">
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import user_icon from '../user/user_icon.vue';
 
 import Vue from "vue";

@@ -171,9 +171,7 @@
 </template>
 
 <script>
-  import {debounce} from "debounce";
-  import axios from 'axios';
-  import {mapState} from 'vuex'
+  import axios from '../../services/customInstance';
   import diffgram_select from '../regular/diffgram_select'
   import connection_docs_suggest from '../connection/connection_docs_suggest'
 

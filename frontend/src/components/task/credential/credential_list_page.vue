@@ -7,7 +7,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import credential_list from './credential_list';
 
 import Vue from "vue";

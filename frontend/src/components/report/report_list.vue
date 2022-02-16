@@ -236,7 +236,7 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import icon_from_regular_list from '../../components/regular/icon_from_regular_list.vue'
 
 import Vue from "vue";

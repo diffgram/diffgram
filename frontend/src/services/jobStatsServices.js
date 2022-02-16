@@ -1,4 +1,4 @@
-import axios from './customInstance/customInstance'
+import axios from './customInstance'
 
 export const getJobStats = async (job_id) => {
     try {

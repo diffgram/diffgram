@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
+import axios from "../../../services/customInstance";
 import vue_scroll_to from "vue-scrollto";
 
 import Vue from "vue";

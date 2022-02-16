@@ -1,4 +1,4 @@
-import axios from './customInstance/customInstance'
+import axios from './customInstance'
 
 export const mockAnnotations = async (project_string_id) => {
     

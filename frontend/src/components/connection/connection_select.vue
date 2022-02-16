@@ -292,7 +292,7 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import connection_form from './connection_form';
 
   export default Vue.extend({

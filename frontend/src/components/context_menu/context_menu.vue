@@ -1,6 +1,5 @@
 <script lang="ts">
   import Vue from 'vue';
-  import axios from 'axios';
 
   /**
    * @vue-prop {object} mouse_position - Current position of mouse

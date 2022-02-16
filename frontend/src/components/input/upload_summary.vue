@@ -87,10 +87,9 @@
 </template>
 
 <script lang="ts">
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import {v4 as uuidv4} from 'uuid'
-  import sizeof from "object-sizeof";
 
   export default Vue.extend({
       name: 'upload_summary',

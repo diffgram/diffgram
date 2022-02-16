@@ -50,7 +50,6 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
   import upload_wizard_sheet from '../../../input/upload_wizard_sheet'
   import job_file_routing from '../job_file_routing'
   import job_pipeline_mxgraph from '../job_pipeline_mxgraph'

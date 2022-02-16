@@ -79,11 +79,9 @@ import guide_display from "../task/guide/guide_display";
 import task_template_discussions from "../discussions/task_template_discussions";
 import exam_child_list from "../exam/exam_child_list";
 import exam_detail_header from "../exam/exam_detail_header";
-import axios from "axios";
+import axios from "../../services/customInstance";
 import stats_panel from "../stats/stats_panel.vue";
 import {exam_start_apply} from '../../services/examsService'
-import {get_task_template_details} from '../../services/taskTemplateService'
-import { nextTask } from "../../services/tasksServices";
 
 import Vue from "vue";
 import Exam_results from "../task/job/exam_results.vue";

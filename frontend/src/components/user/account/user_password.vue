@@ -55,7 +55,7 @@
 // @ts-nocheck
 // get typescript to work with the "rules" dict
 // for veutify
-import axios from 'axios';
+import axios from '../../../services/customInstance';
 import Vue from "vue"; export default Vue.extend( {
   name: 'user_password',
   data() {

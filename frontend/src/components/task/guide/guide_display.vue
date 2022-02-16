@@ -15,10 +15,9 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
-
   import Vue from "vue";
-  import {create_event} from "../../event/create_event"; export default Vue.extend( {
+  
+  export default Vue.extend( {
     name: 'guide_list',
     props: {
       'guide': {
