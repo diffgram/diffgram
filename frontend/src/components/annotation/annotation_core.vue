@@ -829,6 +829,7 @@
       :instance_template="current_instance_template"
       ref="instance_template_creation_dialog"
     ></instance_template_creation_dialog>
+
     <v-snackbar
       v-model="snackbar_warning"
       v-if="snackbar_warning"
@@ -851,11 +852,18 @@
     >
       {{ snackbar_success_text }}
     </v-snackbar>
-
-    <v-alert type="info" v-if="file && file.type == 'text'">
-      Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
-    </v-alert>
-
+    <v-snackbar
+      v-model="show_snackbar_occlude_direction"
+      v-if="show_snackbar_occlude_direction"
+      top
+      :timeout="5000"
+      color="primary"
+    >
+      {{ snackbar_message }}
+      <v-btn color="error" text @click="cancel_occlude_direction">
+        Cancel
+      </v-btn>
+    </v-snackbar>
     <qa_carousel
       :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
@@ -1107,6 +1115,7 @@ export default Vue.extend({
     return {
       submitted_to_review: false,
       go_to_keyframe_loading: false,
+      show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
@@ -2613,7 +2622,17 @@ export default Vue.extend({
       this.snackbar_message = message;
       this.show_custom_snackbar = true;
     },
+    show_snackbar_occlusion: function (message) {
+      this.snackbar_message = message;
+      this.show_snackbar_occlude_direction = true;
+    },
+    cancel_occlude_direction: function(){
+      this.show_snackbar_occlude_direction = false;
+      if(this.selected_instance && this.selected_instance.type === 'keypoints'){
+        this.selected_instance.stop_occlude_direction()
+      }
 
+    },
     open_instance_template_dialog: function () {
       this.$refs.instance_template_creation_dialog.open();
     },
@@ -3062,6 +3081,17 @@ export default Vue.extend({
 
       if (update.mode == "on_click_update_point_attribute") {
         instance.toggle_occluded(update.node_hover_index);
+      }
+
+      if (update.mode == "on_click_occlude_all_direction") {
+        instance.activate_select_edge_occlusion(update.node_hover_index);
+        this.show_snackbar_occlusion('Select another Node to occlude all nodes in that direction')
+        // We are not yet updating at this point, so we return
+        return
+      }
+
+      if (update.mode == "occlude_all_children") {
+        instance.occlude_all_children(update.node_hover_index);
       }
 
       // instance update
@@ -4597,6 +4627,9 @@ export default Vue.extend({
       }
       if (this.ellipse_hovered_corner_key) {
         return;
+      }
+      if(this.show_snackbar_occlude_direction){
+        return
       }
       if (
         this.selected_instance &&
@@ -6278,7 +6311,14 @@ export default Vue.extend({
       // For new Refactored instance types
       const mouse_up_interaction = this.generate_event_interactions(event);
       if (mouse_up_interaction) {
-        mouse_up_interaction.process();
+        let changed_file = mouse_up_interaction.process();
+        if(changed_file === true){
+          this.has_changed = true;
+        }
+        if(changed_file && this.show_snackbar_occlude_direction){
+          this.show_snackbar_occlude_direction = false;
+        }
+
       }
     },
     stop_ellipse_resize: function () {

@@ -12,8 +12,9 @@ export class KeypointInstanceMouseDown extends Interaction{
     super();
     this.key_point_instance = key_point_instance
   }
-  process(): void {
+  process(): boolean {
     this.key_point_instance.start_movement()
+    return false;
   }
 
 }
