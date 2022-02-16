@@ -369,7 +369,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true
     }
     else if(this.is_rescaling){
-      this.rescale();
+      return this.rescale();
     }
     else if (this.is_moving) {
       this.move_node(event)
