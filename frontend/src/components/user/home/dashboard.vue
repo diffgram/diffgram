@@ -163,12 +163,10 @@
 
 <script lang="ts">
 
-import axios from 'axios';
-import report_dashboard from '../../report/report_dashboard'
-import user_visit_history_list from '../../event/user_visit_history_list.vue'
-import project_pipeline from '../../project/project_pipeline'
-
 import Vue from "vue";
+import report_dashboard from '../../report/report_dashboard.vue'
+import user_visit_history_list from '../../event/user_visit_history_list.vue'
+import project_pipeline from '../../project/project_pipeline.vue'
 
 export default Vue.extend( {
   name: 'user_dashboard',
