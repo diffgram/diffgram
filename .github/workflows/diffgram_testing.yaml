@@ -1,5 +1,5 @@
 name: Diffgram Testing Workflow
-on: [push]
+on: [push, pull_request_target]
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
