@@ -522,7 +522,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
     }
   }
-  
+
   private draw_node(node, ctx, i){
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
@@ -551,22 +551,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_left_right_arrows(ctx, node, x, y)
     ctx.globalAlpha = 1;
   }
-  private other_instance_hovered(){
-    if(!this.instance_context){
-      return
-    }
-    if(!this.instance_context.instance_list){
-      return
-    }
-
-    for(let inst  of this.instance_context.instance_list){
-      let instance = (inst as KeypointInstance);
-      if(instance.is_hovered && instance.creation_ref_id !== this.creation_ref_id){
-        return true
-      }
-    }
-  }
-  
   public draw(ctx): void {
     this.ctx = ctx;
 
