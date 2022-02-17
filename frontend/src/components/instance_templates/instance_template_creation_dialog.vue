@@ -284,7 +284,14 @@
       },
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
-        this.instance.selected = false
+        if(draw_mode){
+          this.$refs.instance_template_canvas.canvas_element.style.cursor = 'none';
+        }
+        else{
+          this.$refs.instance_template_canvas.canvas_element.style.cursor = 'auto';
+          this.instance.selected = false
+        }
+
         if (this.instance_context.draw_mode) {
           this.open_snackbar('Press Esc to stop drawing Lines/Points and go to edit mode.');
         } else {
