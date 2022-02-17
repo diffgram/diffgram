@@ -1,5 +1,11 @@
 name: Diffgram Testing Workflow
-on: [push, pull_request_target]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+  pull_request_target:
+    types: [assigned, opened, synchronize, reopened]
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
