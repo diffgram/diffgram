@@ -70,6 +70,29 @@
             && !$store.state.project.current.project_string_id">
         <v-card-title>Actions</v-card-title>
 
+        <v-card-text>
+          <p>Diffgram quick start:</p>
+          <ul>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/diffgram-101-key-concepts#project">Diffgram 101 - Key Concepts</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/data-scope-introduction">Datasets</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/tasks">Tasks</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/project">Share a prject</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/the-diffgram-python-sdk">Python SDK</a>
+            </li>
+          </ul>
+          <br />
+          <p>More doc you can find <a target= "_blank" href="https://diffgram.readme.io">here</a></p>
+        </v-card-text>
+
         <v-card-actions>
           <v-btn large
                 color="primary"
