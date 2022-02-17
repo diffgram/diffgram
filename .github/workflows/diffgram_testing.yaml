@@ -4,6 +4,7 @@ on:
     branches:
       - 'main'
       - 'releases/**'
+      - '**'
   pull_request_target:
     types: [assigned, opened, synchronize, reopened]
 jobs:
