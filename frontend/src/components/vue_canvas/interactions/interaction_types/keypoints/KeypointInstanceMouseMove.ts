@@ -83,6 +83,7 @@ export class KeypointInstanceMouseMove extends Interaction {
 
 
 
+
     if (!this.key_point_instance.instance_context.draw_mode) {
       return this.key_point_instance.move();
     }
