@@ -6,7 +6,10 @@ on:
       - 'releases/**'
       - '**'
   pull_request_target:
-    types: [assigned, opened, synchronize, reopened]
+    types: [review_requested]
+    branches:
+      - 'releases/**'
+      - '!DAD**'
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
