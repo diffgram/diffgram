@@ -1,28 +1,31 @@
 <template>
   <div>
-    <v-card>
+    <v-container>
+      <br />
+      <v-card>
 
-      <v-card-title>
-        <h3 class="headline">Email verification</h3>
-      </v-card-title>
+        <v-card-title>
+          <h3 class="headline">Email verification</h3>
+        </v-card-title>
 
-        <v-alert type="success"
-                 :value="verify_success">
-          Thank you for verifying your email!
-        </v-alert>
+        <v-card-text>
 
-        <v-alert type="info"
-                 :value="verify_error">
-          {{verify_error}}
-        </v-alert>
+          <v-alert type="success" :value="verify_success">
+            Thank you for verifying your email!
+          </v-alert>
 
-      <v_resend_verify_email v-if="!auth_code">
+          <v-alert type="info" :value="verify_error">
+            {{verify_error}}
+          </v-alert>
 
-      </v_resend_verify_email>
+        </v-card-text>
 
+        <v-card-actions>
+          <v_resend_verify_email v-if="!auth_code" />
+        </v-card-actions>
 
-    </v-card>
-
+      </v-card>
+    </v-container>
   </div>
 </template>
 
