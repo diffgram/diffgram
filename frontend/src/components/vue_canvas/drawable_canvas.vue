@@ -50,6 +50,7 @@
 
     </canvas>
     <slot name="context_menu" :mouse_position="mouse_position"></slot>
+    <slot name="hover_menu" :mouse_position="mouse_position"></slot>
   </div>
 </template>
 
@@ -88,6 +89,9 @@
       },
       annotations_loading:{
         default: false
+      },
+      show_target_reticle: {
+        default: true
       },
       auto_scale_bg:{
         default: false
@@ -187,7 +191,6 @@
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
-        show_target_reticle: true,
 
         canvas_mouse_tools: undefined,
         refresh: undefined,

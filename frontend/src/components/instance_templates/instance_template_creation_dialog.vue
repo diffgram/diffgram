@@ -35,6 +35,7 @@
             @mouseup="mouse_up"
             @contextmenu="contextmenu"
             :canvas_width="canvas_width"
+            :show_target_reticle="instance_context.draw_mode"
             :show_context_menu="show_context_menu"
             :canvas_height="canvas_height"
             :image_bg="image_bg"
@@ -57,6 +58,7 @@
               :instance="instance"
               @hide_context_menu="hide_context_menu"
             />
+
           </drawable_canvas>
 
         </v-container>
@@ -124,6 +126,7 @@
         snackbar_text: null,
         instance_context: new InstanceContext(),
         draw_mode: true,
+        show_hover_menu: false,
         show_snackbar: false,
         lock_point_hover_change: false,
         show_context_menu: false,
@@ -281,6 +284,7 @@
       },
       update_draw_mode_on_instances: function (draw_mode) {
         this.instance_context.draw_mode = draw_mode;
+        this.instance.selected = false
         if (this.instance_context.draw_mode) {
           this.open_snackbar('Press Esc to stop drawing Lines/Points and go to edit mode.');
         } else {
@@ -334,8 +338,12 @@
 
       },
       double_click: function (event) {
-        this.hide_context_menu()
-        this.instance.double_click(event);
+
+        if(!this.show_context_menu){
+          this.instance.double_click(event);
+          this.hide_context_menu()
+        }
+
       },
       mouse_up: function (event) {
         if(!this.mouse_up_limits(event)){
@@ -344,6 +352,7 @@
         const interaction = this.generate_interaction_from_event(event);
         if (interaction) {
           interaction.process();
+          this.$forceUpdate();
         }
       },
       contextmenu: function (event) {
