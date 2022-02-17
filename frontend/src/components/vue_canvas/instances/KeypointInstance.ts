@@ -861,7 +861,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       y: this.mouse_position.y,
       id: uuidv4(),
       occluded: undefined,
-      left_or_right: undefined
+      left_or_right: undefined,
+      name: undefined
     };
     this.nodes.push(node)
     node.name = this.nodes.length.toString();
