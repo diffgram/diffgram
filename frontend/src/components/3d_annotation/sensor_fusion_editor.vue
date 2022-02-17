@@ -34,6 +34,7 @@
             @next_issue_task="next_issue_task(task)"
             @complete_task="complete_task()"
             @new_tag_instance="insert_tag_type()"
+            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save()"
             @replace_file="$emit('replace_file', $event)"
             :full_file_loading="full_file_loading"
             :instance_type="instance_type"
@@ -247,7 +248,7 @@
   import * as THREE from "three";
   import {UpdateInstanceCommand} from "../annotation/commands/update_instance_command.ts";
   import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager";
-  import {trackTimeTask} from "../../services/tasksServices";
+  import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
 
   export default Vue.extend({
     name: "sensor_fusion_editor_3d",
@@ -424,6 +425,19 @@
       }
     },
     methods: {
+      on_task_annotation_complete_and_save: async function () {
+        await this.save(false);
+        const response = await finishTaskAnnotation(this.task.id);
+        const new_status = response.data.task.status;
+        this.task.status = new_status;
+        if (new_status !== "complete") {
+          this.submitted_to_review = true;
+        }
+        if (this.$props.task && this.$props.task.id) {
+          this.save_loading_image = false;
+          this.trigger_task_change("next", this.$props.task, true);
+        }
+      },
       delete_instance: function () {
         if (this.$props.view_only_mode == true) {
           return
