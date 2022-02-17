@@ -351,7 +351,7 @@
       },
 
       route_new_project: function () {
-        this.$router.push('/a/project/new?builder_api_enabled_success=true')
+        this.$router.push('/home/dashboard')
       },
 
     }
