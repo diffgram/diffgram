@@ -1,17 +1,34 @@
 <template>
-  <v-dialog v-model="is_open" width="700px" attach height="500px" :persistent="true" :no-click-animation="true"
+  <v-dialog v-model="is_open" width="700px" :persistent="true" :no-click-animation="true"
             content-class="dialog-instance-template">
+
     <v-card elevation="0" class="pa-4 ma-0">
       <v-card-title>
         Create KeyPoints Template:
-      </v-card-title>
-      <v-card-text>
-        <v-container class="flex flex-column">
-          <v-text-field data-cy="instance_template_name_text_field"
-                        label="Name"
-                        v-model="name"></v-text-field>
 
+      </v-card-title>
+      <v-card-subtitle class="mt-1">
+
+      </v-card-subtitle>
+      <v-card-text>
+        <v-container class="flex flex-column pa-0 ma-0" >
+          <v-text-field class="ma-0 pa-0"
+                        data-cy="instance_template_name_text_field"
+                        label="Name"
+                        v-model="name">
+
+          </v-text-field>
+          <v-alert
+            dismissible
+            color="secondary"
+            text icon="mdi-information"
+            class="ma-0 pa-0 pr-2 pl-2">
+            Right Click on a Point to Name it, or Set Default Occlusion Value.
+            Press Esc to stop drawing and go to edit mode.
+            Double click a point to delete it.
+          </v-alert>
           <instance_template_creation_toolbar
+            class="ma-0 pa-0"
             ref="instance_template_creation_toolbar"
             @draw_mode_update="update_draw_mode_on_instances"
             @set_background="set_background"
@@ -21,11 +38,7 @@
           >
 
           </instance_template_creation_toolbar>
-          <v-alert dismissible color="secondary" text icon="mdi-information" class="ma-0 pa-0 pr-2 pl-2">
-            Right Click on a Point to Name it, or Set Default Occlusion Value.
-            Press Esc to stop drawing and go to edit mode.
-            Double click a point to delete it.
-          </v-alert>
+
           <v_error_multiple :error="error">
           </v_error_multiple>
           <drawable_canvas

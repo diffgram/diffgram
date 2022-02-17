@@ -206,6 +206,7 @@
     async mounted() {
       this.loading = true;
       this.canvas_element =  document.getElementById(this.$props.canvas_id);
+      this.canvas_element.onselectstart = function () { return false; }
       await this.$nextTick();
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
