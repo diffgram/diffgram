@@ -48,6 +48,8 @@
         </v-card>
       </div>
 
+      <br />
+
       <v-card
         v-if="!$store.state.project.current.project_string_id
               && $store.state.user.current.security_email_verified != true">
@@ -55,27 +57,34 @@
           Please verify your email. Some actions may be restricted until verification.
         </v-card-title>
 
-        <v_resend_verify_email class="pa-4">
-        </v_resend_verify_email>
-
-        <div class="pa-4"> </div>
+        <v-card-actions>
+          <v_resend_verify_email />
+        </v-card-actions>
 
       </v-card>
+
+      <br />
 
 
       <v-card v-if="$store.state.builder_or_trainer.mode == 'builder'
             && !$store.state.project.current.project_string_id">
-        <v-btn large
-               color="primary"
-               @click="$router.push('/a/project/new')">
-          New Project
-        </v-btn>
+        <v-card-title>Actions</v-card-title>
 
-        <v-btn large
-               color="primary"
-               @click="$router.push('/projects')">
-          Change Project
-        </v-btn>
+        <v-card-actions>
+          <v-btn large
+                color="primary"
+                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
+                @click="$router.push('/a/project/new')">
+            New Project
+          </v-btn>
+
+          <v-btn large
+                color="primary"
+                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
+                @click="$router.push('/projects')">
+            Change Project
+          </v-btn>
+        </v-card-actions>
       </v-card>
 
       <div v-if="$store.state.builder_or_trainer.mode == 'builder' &&

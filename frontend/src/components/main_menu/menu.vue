@@ -67,6 +67,7 @@
 
                 <v-btn text
                        data-cy="go-to-home-page"
+                       :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
                        @click="$router.push('/me')">
                   <v-icon left>mdi-home</v-icon>
                   Home
