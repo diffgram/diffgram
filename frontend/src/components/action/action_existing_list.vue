@@ -65,7 +65,7 @@
 <script lang="ts">
 
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import draggable from 'vuedraggable'
 
 import action_new_or_update from './action_new_or_update.vue';

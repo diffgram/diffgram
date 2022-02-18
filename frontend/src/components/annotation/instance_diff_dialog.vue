@@ -35,7 +35,6 @@
 
 <script>
   import Vue from 'vue';
-  import axios from 'axios';
   import CodeDiff from 'vue-code-diff/dist/vue-code-diff'
 
   export default Vue.extend({

@@ -144,7 +144,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import project_new from './project_new';
 import project_members_step from './project_members_step';
 import labels_attributes_manager from '../label/labels_attributes_manager';

@@ -15,7 +15,6 @@
 
 <script>
   import Vue from "vue";
-  import axios from 'axios';
   import view_edit_issue_panel from './view_edit_issue_panel'
 
   export default Vue.extend({

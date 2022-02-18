@@ -112,7 +112,7 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'user_edit',

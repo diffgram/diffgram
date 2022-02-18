@@ -6,7 +6,7 @@ except:
 
 @routes.route('/api/configs/is-mailer-set')
 def mailgun_is_set():
-    is_set = settings.MAILGUN_KEY and settings.EMAIL_DOMAIN_NAME and settings != 'localhost'
+    is_set = settings.MAILGUN_KEY and settings.EMAIL_DOMAIN_NAME and settings.EMAIL_VALIDATION
     
     if is_set:
         return jsonify({"mailgun": True})

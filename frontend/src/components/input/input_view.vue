@@ -616,11 +616,10 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import input_payload_dialog from './input_payload_dialog'
   import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
   import Vue from "vue";
-  import sizeof from 'object-sizeof'
 
   export default Vue.extend({
       name: 'input_view',

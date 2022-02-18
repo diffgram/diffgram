@@ -1,4 +1,6 @@
-import axios from "axios";
+import axios from './customInstance'
+import store from "../store"
+import router from "../router/router"
 
 
 export const user_has_credentials = async (project_string_id, user_id, task_template_id) => {
@@ -19,5 +21,16 @@ export const user_has_credentials = async (project_string_id, user_id, task_temp
   catch (e){
     console.error(e);
     return [null, e]
+  }
+}
+
+export const logout = async () => {
+  try {
+    const response = await axios.get('/user/logout')
+    store.dispatch('log_out')
+    router.push('/user/login');
+    return response
+  } catch(e) {
+    console.log(e)
   }
 }

@@ -88,7 +88,7 @@
 
 <script>
   import Vue from 'vue';
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import instance_diff_dialog from '../annotation/instance_diff_dialog'
 
   export default Vue.extend({

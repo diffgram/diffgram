@@ -92,8 +92,6 @@
 </template>
 
 <script lang="ts">
-
-  import axios from 'axios';
   import task_status_icons from '../regular_concrete/task_status_icons';
 
   import Vue from "vue";

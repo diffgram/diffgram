@@ -400,7 +400,7 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import frame_previewVue from './frame_preview.vue'
 import pLimit from "p-limit";
 import Vue from "vue";

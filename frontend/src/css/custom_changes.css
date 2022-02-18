@@ -45,6 +45,10 @@ html{
   justify-content: flex-start;
 }
 
+.screen-height {
+  height: 100vh;
+}
+
 .v-card__text, .v-card__title {
   word-break: normal; /* maybe !important  */
   /*https://github.com/vuetifyjs/vuetify/issues/9130 */

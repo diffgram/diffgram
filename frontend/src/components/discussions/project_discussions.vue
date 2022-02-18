@@ -19,7 +19,6 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
   import issues_table from '../discussions/issues_table';
 
 

@@ -55,24 +55,18 @@
 // @ts-nocheck
 // get typescript to work with the "rules" dict
 // for veutify
-
-import axios from 'axios';
-
+import axios from '../../../services/customInstance';
 import Vue from "vue"; export default Vue.extend( {
   name: 'user_password',
   data() {
     return {
       loading: false,
-
       error: {},
-
       success: false,
       password: null as String,
       password_hide: true,
-
       password_check: null as String,
       password_hide_check: true,
-
       rules: {
         password: (value) => {
           const pattern = /^.{8,200}$/
@@ -82,12 +76,10 @@ import Vue from "vue"; export default Vue.extend( {
           return true
         },
         password_check: (value) => {
-
           // Run equals check first
           if (this.password != this.password_check) {
             return "Passwords must match"
           }
-
           // Don't need to rerun password check
           // since if they equal, and the first password as checked
           // then all clear
@@ -96,29 +88,19 @@ import Vue from "vue"; export default Vue.extend( {
       }
     }
   },
-
   computed: {
-
   },
-
   created() {
-
   },
-
   methods: {
     password_set: function () {
-
       this.loading = true;
       this.error = {}
       this.success = false
-
       axios.post('/api/v1/user/password/set', {
-
         'password': this.password,
         'password_check': this.password_check
-
       }).then(response => {
-
         this.success = true
         this.password = null
         this.password_check = null
@@ -127,18 +109,14 @@ import Vue from "vue"; export default Vue.extend( {
         if(initial_setup === 'true'){
           this.$router.push('/a/project/new?builder_api_enabled_success=true')
         }
-
       })
       .catch(error => {
-
         if (error.response.status == 400) {
           this.error = error.response.data.log.error
         }
-
         this.loading = false
       });
     },
   }
 }
-
 ) </script>
