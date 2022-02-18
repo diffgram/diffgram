@@ -199,6 +199,10 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.wait(5000);
   cy.get('[data-cy=email-input]').click({force: true});
   cy.get('[data-cy=email-input]').type(testUser.email);
+  cy.get('[data-cy=password1]').click();
+  cy.get('[data-cy=password1]').type('diffgram123');
+  cy.get('[data-cy=password2]').click();
+  cy.get('[data-cy=password2]').type('diffgram123');
   cy.get('[data-cy="create-user-button"] > .v-btn__content').click();
   cy.wait(500);
   // cy.get('[data-cy="error-email"]').should('not.be.visible');
@@ -219,17 +223,6 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('.v-list.v-select-list div').contains('Not yet.').click({force: true})
   cy.get('.v-slider__tick:nth-child(2)').click();
   cy.get('[data-cy=finish_singup_button]').click();
-  cy.wait(1500);
-  // Get Confirmation Link
-  // Set Password
-  cy.visit('http://localhost:8085/user/edit/');
-  cy.get('.v-main__wrap').click();
-  cy.get('[data-cy="set_password_button"] > .v-btn__content').click();
-  cy.get('[data-cy=password1]').click();
-  cy.get('[data-cy=password1]').type('diffgram123');
-  cy.get('[data-cy=password2]').click();
-  cy.get('[data-cy=password2]').type('diffgram123');
-  cy.get('[data-cy="save_password_button"] > .v-btn__content').click();
   cy.wait(3000);
   // Create test Project
   cy.visit('http://localhost:8085/a/project/new');

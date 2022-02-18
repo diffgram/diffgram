@@ -95,7 +95,7 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import {create_event} from "./create_event";
 

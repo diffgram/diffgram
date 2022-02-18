@@ -36,8 +36,6 @@
  * to have it in seperate component.
  */
 
-import axios from 'axios';
-
 import Vue from "vue"; export default Vue.extend( {
   name: 'credential_list_view',
   props: {

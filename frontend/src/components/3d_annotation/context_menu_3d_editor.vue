@@ -171,7 +171,6 @@
 </template>
 <script lang="ts">
   import Vue from 'vue';
-  import axios from 'axios';
   import share_instance_dialog from '../share/share_instance_dialog';
   import user_icon from '../../components/user/user_icon'
 

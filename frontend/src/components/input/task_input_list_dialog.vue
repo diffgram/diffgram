@@ -11,9 +11,6 @@
 </template>
 
 <script lang="ts">
-
-import axios from 'axios';
-import EventBus from '../../EventBus.js';
 import Vue from "vue";
 
 export default Vue.extend( {

@@ -13,7 +13,7 @@
                 id="open_main_menu"
                 data-cy="project_menu_dropdown_toggle"
                 text
-                :disabled="false">
+                :disabled="!$store.state.project.current.project_string_id || $store.state.user.current.security_email_verified != true">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
           <v-icon right> mdi-chevron-down</v-icon>

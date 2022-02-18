@@ -29,7 +29,7 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import task_status_icons from '../regular_concrete/task_status_icons';
 
   import Vue from "vue";
