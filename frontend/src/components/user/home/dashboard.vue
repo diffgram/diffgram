@@ -100,13 +100,6 @@
                 @click="$router.push('/a/project/new')">
             New Project
           </v-btn>
-
-          <v-btn large
-                color="primary"
-                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
-                @click="$router.push('/projects')">
-            Change Project
-          </v-btn>
         </v-card-actions>
       </v-card>
 

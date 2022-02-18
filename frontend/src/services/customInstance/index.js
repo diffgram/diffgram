@@ -7,7 +7,7 @@ instance.interceptors.response.use(function (response) {
     return response;
   }, async function (error) {
       const { status } = error.response
-    if (status === 401) {
+    if (status === 403) {
         await logout()
     }
     return Promise.reject(error);
