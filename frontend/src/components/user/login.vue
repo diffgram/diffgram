@@ -2,6 +2,12 @@
 <template>
   <div class="d-flex align-center justify-center screen-height" v-cloak>
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
+      <div class="pa-4 ma-auto text-center" style="width: 100%">
+        <img
+          src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+          height="120px"
+        />
+      </div>
       <v-card>
         <v-card-title primary-title>
           <div>
