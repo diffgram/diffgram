@@ -1,6 +1,6 @@
 grpcio==1.37.0
 oauth2client==4.1.3
-Flask==1.1.0
+Flask==1.1.4
 six==1.15.0
 sqlalchemy==1.3.23
 gunicorn==19.9.0
@@ -32,3 +32,4 @@ lark
 SQLAlchemy-serializer==1.4.1
 stripe==2.33.2
 newrelic
+markupsafe==2.0.1
