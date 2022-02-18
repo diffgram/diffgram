@@ -62,11 +62,9 @@
   *
   * */
   import Vue from "vue";
-  import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
   import v_bg from '../vue_canvas/v_bg';
   import target_reticle from '../vue_canvas/target_reticle';
   import {CanvasMouseTools} from '../vue_canvas/CanvasMouseTools';
-  import axios from "axios";
 
   export default Vue.extend({
     name: "drawable_canvas",

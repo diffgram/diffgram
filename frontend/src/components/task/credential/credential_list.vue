@@ -335,11 +335,10 @@
 
 <script lang="ts">
 
-import axios from 'axios';
+import axios from '../../../services/customInstance';
 import credential_list_view_only from './credential_list_view_only';
 
 import Vue from "vue";
-import {create_event} from "../../event/create_event";
 
 export default Vue.extend({
     name: 'credential_list',

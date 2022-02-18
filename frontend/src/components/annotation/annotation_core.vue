@@ -883,7 +883,7 @@
 <script lang="ts">
 // @ts-nocheck
 import moment from "moment";
-import axios from "axios";
+import axios from "../../services/customInstance";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from './customInstance'
 
 export const is_mailgun_set = async () => {
     try {

@@ -9,8 +9,6 @@
 
 <script lang="ts">
 
-
-import axios from 'axios';
 import project_manager from '../project/project_manager'
 
 import Vue from "vue"; export default Vue.extend( {

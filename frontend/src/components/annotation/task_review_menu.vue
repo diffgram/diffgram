@@ -19,9 +19,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
-
-
 import Vue from "vue"; export default Vue.extend( {
   name: 'task_review_menu',
   props: ['job_id'],

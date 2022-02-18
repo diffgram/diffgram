@@ -21,8 +21,6 @@
 
 <script lang="ts">
 
-
-import axios from 'axios';
 import { get_install_info } from "../../services/configService";
 
 import Vue from "vue"; export default Vue.extend( {

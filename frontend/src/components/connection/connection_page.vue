@@ -29,7 +29,6 @@
    *
    */
 
-  import axios from 'axios';
   import connection_form from './connection_form';
 
   import Vue from "vue";

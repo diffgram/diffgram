@@ -16,9 +16,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
-
-
 import Vue from "vue"; export default Vue.extend( {
 
   // not really sure if this needs to be it's own component...

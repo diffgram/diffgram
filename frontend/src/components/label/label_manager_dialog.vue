@@ -15,8 +15,6 @@
 </template>
 
 <script lang="ts">
-
-  import axios from 'axios';
   import labels_view from '../../components/annotation/labels_view'
   import Vue from "vue";
 

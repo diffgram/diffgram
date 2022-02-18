@@ -47,7 +47,6 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
 import {get_examinations} from "../../services/examsService"
 import Vue from "vue";
 

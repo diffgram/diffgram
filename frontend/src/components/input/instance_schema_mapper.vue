@@ -455,10 +455,7 @@
 </template>
 
 <script lang="ts">
-  import axios from 'axios';
   import Vue from "vue";
-  import {v4 as uuidv4} from 'uuid';
-  import filesize from 'filesize';
   import _ from "lodash";
   export default Vue.extend({
       name: 'instance_schema_mapper',
