@@ -1,5 +1,15 @@
 name: Diffgram Testing Workflow
-on: [push, pull_request_target]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+      - '**'
+  pull_request_target:
+    types: [review_requested]
+    branches:
+      - 'releases/**'
+      - '!DAD**'
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
