@@ -4,7 +4,7 @@ from shared.database.user import User
 from shared.database.project import Project
 from shared.database.auth.api import Auth_api
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized
 from shared.helpers.permissions import getUserID
 from shared.helpers.permissions import LoggedIn
 from shared.helpers.permissions import defaultRedirect
@@ -185,7 +185,7 @@ class Project_permissions():
 
         # TODO merge LoggedIn() with getUserID() similar internal logic
         if LoggedIn() != True:
-            raise Forbidden(user_denied_message + " Failed LoggedIn ")
+            raise Unauthorized(user_denied_message + " Failed LoggedIn ")
 
         if 'allow_any_logged_in_user' in Roles:  # TODO not happy with this name, want more clarity on how this effects other permissions like apis / project etc.
             return True

@@ -1,6 +1,6 @@
 grpcio==1.32
 oauth2client==4.1.3
-Flask==1.1.0
+Flask==1.1.4
 sqlalchemy==1.3.23
 gunicorn==20.0.4
 psycopg2-binary==2.8.5
@@ -35,3 +35,4 @@ psutil==5.6.6
 SQLAlchemy-serializer==1.4.1
 newrelic
 nltk
+markupsafe==2.0.1

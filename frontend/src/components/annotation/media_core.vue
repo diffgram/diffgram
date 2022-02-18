@@ -853,7 +853,7 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
 import dir_attach from '../task/file/dir_attach'

@@ -1,5 +1,15 @@
 name: Diffgram Testing Workflow
-on: [push, pull_request_target]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+      - '**'
+  pull_request_target:
+    types: [review_requested]
+    branches:
+      - 'releases/**'
+      - '!DAD**'
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
@@ -118,7 +128,7 @@ jobs:
       fail-fast: false
       matrix:
         # run copies of the current job in parallel
-        containers: [1, 2]
+        containers: [1]
     container:
       image: gcr.io/diffgram-open-core/cypress-e2e
       options: --user root

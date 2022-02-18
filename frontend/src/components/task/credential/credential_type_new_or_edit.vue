@@ -111,7 +111,7 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../../services/customInstance';
   import sillyname from 'sillyname';
 
 

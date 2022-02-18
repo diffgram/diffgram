@@ -37,7 +37,7 @@
   import {
     mxConstants as MxConstants
   } from 'mxgraph/javascript/mxClient.js'
-  import axios from 'axios';
+  import axios from '../../../services/customInstance';
 
   const outputIcon = './icon/output.png'
   const inputIcon = './icon/input.png'

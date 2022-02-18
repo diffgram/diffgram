@@ -312,7 +312,7 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../../services/customInstance';
   import label_select_only from '../../label/label_select_only.vue'
   import label_manager_dialog from '../../label/label_manager_dialog.vue'
   import {route_errors} from '../../regular/regular_error_handling'

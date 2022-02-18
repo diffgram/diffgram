@@ -1,5 +1,4 @@
-import axios from "axios";
-
+import axios from './customInstance'
 
 export const get_instance_list_from_file = async (project_string_id, file_id) => {
   try {

@@ -48,7 +48,6 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
   import guide_selector from '../../guide/guide_selector'
   import userscript_select from '../../../annotation/userscript/userscript_select'
 

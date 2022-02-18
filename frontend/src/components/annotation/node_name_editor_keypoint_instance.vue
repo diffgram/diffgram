@@ -77,6 +77,7 @@ export default Vue.extend( {
       let instance = this.current_instance;
       let node = instance.nodes[this.node_index];
       node.name = this.node_name;
+      this.$emit('node_updated')
     }
 
   }

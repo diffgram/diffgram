@@ -15,7 +15,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import attribute_group_list from './attribute_group_list.vue';
 
 

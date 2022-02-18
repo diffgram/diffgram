@@ -50,6 +50,7 @@
 
     </canvas>
     <slot name="context_menu" :mouse_position="mouse_position"></slot>
+    <slot name="hover_menu" :mouse_position="mouse_position"></slot>
   </div>
 </template>
 
@@ -61,11 +62,9 @@
   *
   * */
   import Vue from "vue";
-  import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
   import v_bg from '../vue_canvas/v_bg';
   import target_reticle from '../vue_canvas/target_reticle';
   import {CanvasMouseTools} from '../vue_canvas/CanvasMouseTools';
-  import axios from "axios";
 
   export default Vue.extend({
     name: "drawable_canvas",
@@ -88,6 +87,9 @@
       },
       annotations_loading:{
         default: false
+      },
+      show_target_reticle: {
+        default: true
       },
       auto_scale_bg:{
         default: false
@@ -187,7 +189,6 @@
         canvas_scale_global: 1,
         canvas_scale_global_y: 1,
         canvas_scale_global_x: 1,
-        show_target_reticle: true,
 
         canvas_mouse_tools: undefined,
         refresh: undefined,
@@ -203,6 +204,7 @@
     async mounted() {
       this.loading = true;
       this.canvas_element =  document.getElementById(this.$props.canvas_id);
+      this.canvas_element.onselectstart = function () { return false; }
       await this.$nextTick();
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,

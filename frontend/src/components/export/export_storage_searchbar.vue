@@ -73,10 +73,8 @@
 </template>
 
 <script>
-  import {debounce} from "debounce";
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import diffgram_select from '../regular/diffgram_select'
-  import {mapState} from 'vuex'
 
   export default {
     props: ['connection', 'project_string_id', 'label', 'export_obj', 'format'],

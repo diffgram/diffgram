@@ -77,10 +77,9 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import v_labels_edit from '../annotation/labels_edit'
-  import attribute_group_new from '../attribute/attribute_group_new'
   import attribute_group_list_manager from '../attribute/attribute_group_list_manager'
   import labels_management_list from '../label/labels_management_list'
 
