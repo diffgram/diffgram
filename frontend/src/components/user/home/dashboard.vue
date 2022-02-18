@@ -83,7 +83,7 @@
               <a target= "_blank" href="https://diffgram.readme.io/docs/tasks">Tasks</a>
             </li>
             <li>
-              <a target= "_blank" href="https://diffgram.readme.io/docs/project">Share a prject</a>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/project">Share a project</a>
             </li>
             <li>
               <a target= "_blank" href="https://diffgram.readme.io/docs/the-diffgram-python-sdk">Python SDK</a>
