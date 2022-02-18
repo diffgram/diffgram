@@ -17,13 +17,14 @@ describe("tasks_detail_pagination", () => {
     it("Submit task to review", () => {
       const url = "/api/v1/task/*/complete";
       cy.visit(`http://localhost:8085/job/list`)
+        .wait(3000)
         .get('[data-cy="job-card"]')
         .find('.job-title')
         .contains('+test-e2e')
         .first()
         .parent()
         .click({ force: true })
-        .wait(2000)
+        .wait(4000)
         .get("tbody > tr")
         .first()
         .click({ force: true })
