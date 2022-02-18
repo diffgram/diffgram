@@ -929,6 +929,7 @@ import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
+import {initialize_instance_object} from '../../utils/instance_utils.js';
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -2585,7 +2586,10 @@ export default Vue.extend({
     create_instance_template: async function (instance_index, name) {
       try {
         this.error = {};
-        const instance = this.instance_list[instance_index];
+        let instance = this.instance_list[instance_index];
+        if(instance.type === 'keypoints'){
+          instance = instance.get_instance_data();
+        }
         if (!instance) {
           return;
         }
@@ -2702,7 +2706,7 @@ export default Vue.extend({
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-        let initialized_instance = this.initialize_instance(current_instance)
+        let initialized_instance = initialize_instance_object(current_instance, this);
         if (initialized_instance) {
           result.push(initialized_instance);
         }
@@ -2735,7 +2739,7 @@ export default Vue.extend({
       // Perform the instance_buffer_dict initialization.
       for (let i = 0; i < this.instance_buffer_dict[frame_number].length; i++) {
         let current_instance = this.instance_buffer_dict[frame_number][i];
-        current_instance = this.initialize_instance(current_instance);
+        current_instance = initialize_instance_object(current_instance, this);
         this.instance_buffer_dict[frame_number][i] = current_instance;
       }
 
@@ -2766,9 +2770,9 @@ export default Vue.extend({
               instance_template.instance_list =
                 instance_template.instance_list.map((instance) => {
                   instance.reference_width = instance_template.reference_width;
-                  instance.reference_height =
-                    instance_template.reference_height;
-                  return instance;
+                  instance.reference_height = instance_template.reference_height;
+                  let initialized_instance = initialize_instance_object(instance, this);
+                  return initialized_instance;
                 });
               // Note that here we are creating a new object for the instance list, all references are lost.
               instance_template.instance_list =
@@ -3051,7 +3055,7 @@ export default Vue.extend({
       let index = update.index
       if (index == undefined) { return }  // careful 0 is ok.
       let initial_instance = {...this.instance_list[index], initialized: false}
-      initial_instance = this.initialize_instance(initial_instance);
+      initial_instance = initialize_instance_object(initial_instance, this);
       // since sharing list type component need to determine which list to update
       // could also use render mode but may be different contexts
       let instance;
@@ -7903,7 +7907,7 @@ export default Vue.extend({
       for (const instance of this.instance_list) {
         instance.selected = false;
       }
-      let pasted_instance = this.initialize_instance(instance_clipboard);
+      let pasted_instance = initialize_instance_object(instance_clipboard, this);
       if (next_frames != undefined) {
         let next_frames_to_add = parseInt(next_frames, 10);
         const frames_to_save = [];
@@ -7930,7 +7934,7 @@ export default Vue.extend({
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = this.duplicate_instance(pasted_instance);
-          new_frame_instance = this.initialize_instance(new_frame_instance);
+          new_frame_instance = initialize_instance_object(new_frame_instance, this);
           // Set the last argument to true, to prevent to push to the instance_list here.
           this.add_instance_to_file(new_frame_instance, i);
           frames_to_save.push(i);
@@ -8063,7 +8067,7 @@ export default Vue.extend({
         };
       }
 
-      result = this.initialize_instance(result);
+      result = initialize_instance_object(result, this);
       return result;
     },
     copy_all_instances: function () {
