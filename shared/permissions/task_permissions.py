@@ -7,7 +7,7 @@ from shared.database.auth.api import Auth_api
 from shared.database.task.task import Task
 from shared.database.task.job.job import Job
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized
 from shared.helpers.permissions import getUserID
 from shared.helpers import sessionMaker
 
@@ -71,13 +71,13 @@ class Permission_Task():
                 if not user_id:
                     user_id = getUserID()
                     if user_id is None:
-                        raise Forbidden("Please login [No user_id].")
+                        raise Unauthorized("Please login [No user_id].")
 
                 user = User.get_by_id(session = session,
                                       user_id = user_id)
 
                 if user is None:
-                    raise Forbidden("Please login [No user Found].")
+                    raise Unauthorized("Please login [No user Found].")
 
                 if user.is_super_admin == True:
                     return True

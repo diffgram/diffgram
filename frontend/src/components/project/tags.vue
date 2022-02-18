@@ -1,6 +1,6 @@
 <template>
   <div v-cloak>
- 
+
 
     <v-combobox v-model="selected_tags"
                 :items="available_tags_list"
