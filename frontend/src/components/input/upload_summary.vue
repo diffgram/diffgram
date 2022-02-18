@@ -87,7 +87,7 @@
 </template>
 
 <script lang="ts">
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import {v4 as uuidv4} from 'uuid'
 

@@ -171,7 +171,7 @@
 </template>
 
 <script>
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import diffgram_select from '../regular/diffgram_select'
   import connection_docs_suggest from '../connection/connection_docs_suggest'
 

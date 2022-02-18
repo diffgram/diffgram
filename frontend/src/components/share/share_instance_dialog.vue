@@ -72,7 +72,7 @@
 
 <script>
   import Vue from "vue";
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
 
   export default Vue.extend({
       name: 'members_list',

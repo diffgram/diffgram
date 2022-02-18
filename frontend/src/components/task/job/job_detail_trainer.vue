@@ -72,7 +72,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customAxiosInstance';
+import axios from '../../../services/customInstance';
 import trainer_job_preview_info from './trainer_job_preview_info';
 
 

@@ -226,7 +226,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import diffgram_select from '../../components/regular/diffgram_select'
   import {create_event} from "../event/create_event";

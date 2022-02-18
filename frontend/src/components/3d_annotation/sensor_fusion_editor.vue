@@ -240,7 +240,7 @@
   import main_menu from '../main_menu/menu'
   import error_multiple from '../regular/error_multiple'
   import moment from "moment";
-  import axios from "../../services/customAxiosInstance";
+  import axios from "../../services/customInstance";
   import * as instanceServices from '../../services/instanceServices';
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
   import * as instance_utils from "../../utils/instance_utils"

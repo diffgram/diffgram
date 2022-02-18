@@ -179,7 +179,7 @@
 
 <script>
   import Vue from "vue";
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import { Editor, EditorContent, EditorMenuBar, EditorMenuBubble, Extension } from 'tiptap';
   import {
     Blockquote,

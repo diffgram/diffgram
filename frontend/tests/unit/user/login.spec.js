@@ -1,5 +1,5 @@
 import Vuex from "vuex";
-import axios from '../../../src/services/customAxiosInstance'
+import axios from '../../../src/services/customInstance'
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import login from "@/components/user/login.vue";
 

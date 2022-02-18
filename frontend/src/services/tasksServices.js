@@ -1,4 +1,4 @@
-import axios from './customAxiosInstance'
+import axios from './customInstance'
 
 export const nextTask = async job_id => {
   try {

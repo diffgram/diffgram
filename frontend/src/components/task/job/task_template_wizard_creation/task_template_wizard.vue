@@ -159,7 +159,7 @@
 </template>
 
 <script lang="ts">
-import axios from "../../../../services/customAxiosInstance";
+import axios from "../../../../services/customInstance";
 import step_name_task_template from "./step_name_task_template";
 import step_advanced_options_task_template from "./step_advanced_options_task_template";
 import step_guides_task_template from "./step_guides_task_template";

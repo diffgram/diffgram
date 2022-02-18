@@ -287,7 +287,7 @@
   import diffgram_export_validator from './diffgram_export_validator'
   import upload_summary from './upload_summary'
   import upload_progress from './upload_progress'
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
 
   function get_initial_state() {

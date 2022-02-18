@@ -89,7 +89,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import attribute_home from '../attribute/attribute_home'
 
 

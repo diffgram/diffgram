@@ -173,7 +173,7 @@
 
   // TODO pass loading or?
 
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
   import Vue from "vue";

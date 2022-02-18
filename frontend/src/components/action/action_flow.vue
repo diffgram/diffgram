@@ -166,7 +166,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customAxiosInstance';
+  import axios from '../../services/customInstance';
   import action_existing_list from './action_existing_list.vue';
   import upload from '../upload_large.vue';
   import flow_event_list from './action_flow_event_list.vue';

@@ -41,7 +41,7 @@
 
 <script lang="ts">
 
-import axios from '../../services/customAxiosInstance';
+import axios from '../../services/customInstance';
 import action_event_existing_single from './action_event_existing_single.vue'
 
 

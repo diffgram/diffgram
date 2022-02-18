@@ -169,7 +169,7 @@
 <script lang="ts">
 
 
-import axios from '../../services/customAxiosInstance';
+import axios from '../../services/customInstance';
 import action_new_or_update from './action_new_or_update.vue';
 
 

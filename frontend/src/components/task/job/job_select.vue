@@ -117,7 +117,7 @@
    */
 
   import Vue from "vue";
-  import axios from '../../../services/customAxiosInstance';
+  import axios from '../../../services/customInstance';
   import sillyname from 'sillyname';
   import job_new_form from './job_new_form';
 

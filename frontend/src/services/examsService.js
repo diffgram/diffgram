@@ -1,4 +1,4 @@
-import axios from './customAxiosInstance'
+import axios from './customInstance'
 
 export const get_examinations = async (project_string_id, exam_id, mode) => {
   try {

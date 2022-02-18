@@ -250,7 +250,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customAxiosInstance';
+  import axios from '../../../services/customInstance';
   import sillyname from 'sillyname';
   import label_select_only from '../../label/label_select_only.vue'
   import job_file_routing from './job_file_routing.vue'

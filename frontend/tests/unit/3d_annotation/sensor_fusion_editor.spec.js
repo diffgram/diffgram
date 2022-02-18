@@ -7,7 +7,7 @@ import * as instance_utils from "../../../src/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
 import * as AnnotationSavePrechecks from '../../../src/components/annotation/utils/AnnotationSavePrechecks';
 import * as THREE from 'three';
-import axios from "../../../src/services/customAxiosInstance";
+import axios from "../../../src/services/customInstance";
 
 jest.mock('axios')
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking

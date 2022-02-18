@@ -459,7 +459,7 @@
  *
  */
 
-import axios from '../../services/customAxiosInstance';
+import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import tooltip_button from '../regular/tooltip_button.vue'
 import {CSVReportFormatter} from './CSVReportFormatter';

@@ -214,7 +214,7 @@
 <script lang="ts">
 
 
-import axios from '../../services/customAxiosInstance';
+import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 
 

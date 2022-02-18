@@ -259,7 +259,7 @@ import task_template_discussions from "../../discussions/task_template_discussio
 import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
 import {user_has_credentials} from '../../../services/userServices'
-import axios from "../../../services/customAxiosInstance";
+import axios from "../../../services/customInstance";
 import job_type from "./job_type";
 import stats_panel from "../../stats/stats_panel.vue";
 import { nextTask } from "../../../services/tasksServices";

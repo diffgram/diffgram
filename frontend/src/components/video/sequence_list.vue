@@ -375,7 +375,7 @@
   // @ts-nocheck
   // it was having trouble with the computed properties thing.
 
-import axios from '../../services/customAxiosInstance';
+import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import Vue from "vue";
 import pLimit from 'p-limit';

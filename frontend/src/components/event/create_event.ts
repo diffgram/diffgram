@@ -1,4 +1,4 @@
-import axios from "../../services/customAxiosInstance";
+import axios from "../../services/customInstance";
 
 
 export const create_event = async function(project_string_id, event_data){

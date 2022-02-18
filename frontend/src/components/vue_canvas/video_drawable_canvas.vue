@@ -75,7 +75,7 @@
 import Vue from "vue";
 import drawable_canvas from "./drawable_canvas";
 import instance_list from "./instance_list";
-import axios from "../../services/customAxiosInstance";
+import axios from "../../services/customInstance";
 import {KeypointInstance} from "./instances/KeypointInstance";
 
   export default Vue.extend( {

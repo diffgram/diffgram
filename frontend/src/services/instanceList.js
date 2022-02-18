@@ -1,4 +1,4 @@
-import axios from './customAxiosInstance'
+import axios from './customInstance'
 
 export const postInstanceList = async (url, instance_list) => {
     try {
