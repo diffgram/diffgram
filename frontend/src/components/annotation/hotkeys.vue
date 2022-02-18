@@ -41,7 +41,7 @@
 
   <p> <kbd>Mouse wheel</kbd> Zoom / pan </p>
 
-  <p> <kbd>Ctrl</kbd> Pan Only </p>
+  <p> <kbd>Shift</kbd> Pan Only </p>
 
   <h2> Polygons </h2>
   <p> <kbd>Enter</kbd> Complete polygon (Or click first point again)  </p>

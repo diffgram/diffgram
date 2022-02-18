@@ -1165,6 +1165,7 @@ export default Vue.extend({
       original_edit_instance_index: undefined,
       loading_sequences: false,
       ctrl_key: false,
+      alt_key: false,
       command_manager: undefined,
       show_snackbar_auto_border: false,
       show_snackbar_paste: false,
@@ -5726,7 +5727,7 @@ export default Vue.extend({
       */
 
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
-      if (this.ctrl_key === true) {
+      if (this.shift_key === true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
         return;
@@ -7510,6 +7511,18 @@ export default Vue.extend({
       }
     },
 
+    set_alt_key: function (event) {
+      // Caution used name commands here to that when multiple keys are pressed it still works
+      if (event.keyCode === 18) {
+        // ctrlKey cmd key
+        this.alt_key = false;
+      }
+      if (event.keyCode === 18) {
+        // ctrlKey cmd key
+        this.alt_key = true;
+      }
+    },
+
     // hotkey hotkeys
     keyboard_events_global_up: function (event) {
       if (this.$store.state.user.is_typing_or_menu_open == true) {
@@ -7518,6 +7531,7 @@ export default Vue.extend({
       let locked_frame_number = this.current_frame;
 
       this.set_control_key(event);
+      this.set_alt_key(event);
 
       if (this.show_context_menu) {
         return;
@@ -7644,6 +7658,7 @@ export default Vue.extend({
         cKey = 67;
 
       this.set_control_key(event);
+      this.set_alt_key(event);
       let frame_number_locked = this.current_frame;
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
