@@ -135,7 +135,7 @@
 <script lang="ts">
 
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 import draggable from 'vuedraggable'
 
 import attribute_group from './attribute_group.vue';

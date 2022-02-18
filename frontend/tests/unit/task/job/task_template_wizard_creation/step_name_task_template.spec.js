@@ -1,6 +1,6 @@
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import Vuex from 'vuex'
-import axios from '../../../../../src/services/customInstance'
+import axios from '../../../../../src/services/customAxiosInstance'
 import step_name_task_template
   from "../../../../../src/components/task/job/task_template_wizard_creation/step_name_task_template";
 import VueRouter from 'vue-router'

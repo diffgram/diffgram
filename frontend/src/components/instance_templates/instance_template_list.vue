@@ -92,7 +92,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import instance_template_creation_dialog from './instance_template_creation_dialog';
 
   import Vue from "vue";

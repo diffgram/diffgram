@@ -125,7 +125,7 @@
   import context_menu_instance_template from '../context_menu/context_menu_instance_template';
   import {InstanceTemplateCreationInteractionGenerator} from '../vue_canvas/interactions/InstanceTemplateCreationInteractionGenerator';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";

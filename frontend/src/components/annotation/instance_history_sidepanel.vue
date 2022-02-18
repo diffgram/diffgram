@@ -7,7 +7,7 @@
     <v-card-text v-if="loading" class="d-flex justify-center">
       <v-progress-circular color="primary" indeterminate v-if="loading"></v-progress-circular>
     </v-card-text>
-   <v-card-text v-if="!loading" 
+   <v-card-text v-if="!loading"
              style="max-height: 400px;
                     overflow-y: auto">
      <v-list three-line
@@ -88,7 +88,7 @@
 
 <script>
   import Vue from 'vue';
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import instance_diff_dialog from '../annotation/instance_diff_dialog'
 
   export default Vue.extend({

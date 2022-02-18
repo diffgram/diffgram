@@ -18,14 +18,14 @@
             </v-card-title>
 
             <v-layout>
-              
+
               <v-flex xs12 sm6>
-                <v-text-field 
+                <v-text-field
                   label="*First name"
                   data-cy="first_name"
                   v-model="first_name"
                 />
-                <v-alert 
+                <v-alert
                   type="info"
                   v-if="error.first_name"
                 >
@@ -36,7 +36,7 @@
               <div style="width: 10px" />
 
               <v-flex xs12 sm6>
-                <v-text-field 
+                <v-text-field
                   label="*Last name"
                   data-cy="last_name"
                   v-model="last_name"
@@ -64,7 +64,7 @@
                 -->
 
               <v-flex>
-                <v-text-field 
+                <v-text-field
                   label="*City"
                   data-cy="city"
                   v-model="city"
@@ -78,7 +78,7 @@
               <div style="width: 10px" />
 
               <v-flex>
-                <v-text-field 
+                <v-text-field
                   label="*Company or Institution"
                   data-cy="company"
                   v-model="company"
@@ -194,7 +194,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
 
   import Vue from "vue"; export default Vue.extend( {
     name: 'builder_signup',

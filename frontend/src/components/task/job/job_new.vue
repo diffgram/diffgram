@@ -176,7 +176,7 @@
                       @directories_updated="on_attached_dirs_updated"
                       @output_dir_actions_update="on_output_dirs_updated"
                     ></job_file_routing>
- 
+
                   </v-col>
                   <v-col cols="6">
                     <job_pipeline_mxgraph :job_object="job"></job_pipeline_mxgraph>
@@ -250,7 +250,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
   import sillyname from 'sillyname';
   import label_select_only from '../../label/label_select_only.vue'
   import job_file_routing from './job_file_routing.vue'

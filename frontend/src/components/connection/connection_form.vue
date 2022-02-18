@@ -233,7 +233,7 @@
    *
    */
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
 
   import Vue from "vue";
   import connection_docs_suggest from './connection_docs_suggest'

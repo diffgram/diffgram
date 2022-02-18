@@ -1,6 +1,6 @@
 <template>
   <div v-cloak>
- 
+
 
     <v-combobox v-model="selected_tags"
                 :items="available_tags_list"
@@ -31,7 +31,7 @@
 
 <script lang="ts">
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'tags',

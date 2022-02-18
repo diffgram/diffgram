@@ -1,4 +1,4 @@
-import axios from './customInstance'
+import axios from './customAxiosInstance'
 
 export const runReport = async (project_string_id, report_template_id = undefined, report_template_data) =>{
 

@@ -132,7 +132,7 @@
 
 <script>
   import Vue from "vue";
-  import axios from "../../services/customInstance";
+  import axios from "../../services/customAxiosInstance";
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
   import query_suggestion_menu from "./query_suggestion_menu";

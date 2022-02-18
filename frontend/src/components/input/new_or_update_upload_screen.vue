@@ -244,7 +244,7 @@
 </template>
 
 <script lang="ts">
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import Vue from "vue";
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';

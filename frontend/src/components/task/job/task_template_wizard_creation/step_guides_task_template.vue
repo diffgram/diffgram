@@ -61,7 +61,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../../services/customInstance';
+  import axios from '../../../../services/customAxiosInstance';
   import guide_selector from '../../guide/guide_selector'
 
   import Vue from "vue";

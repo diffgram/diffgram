@@ -73,7 +73,7 @@
 
 <script lang="ts">
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'labels_management_list',

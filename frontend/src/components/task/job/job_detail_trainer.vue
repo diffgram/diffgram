@@ -17,7 +17,7 @@
 
       <br />
 
-      
+
       <!-- TODO review in conept of Internal, ie "Accept" vs Apply-->
 
         <!-- TODO condition on user_to_job.status properly -->
@@ -43,7 +43,7 @@
         <v_error_multiple :error="error">
         </v_error_multiple>
 
-     
+
     </v-card>
 
     <v_credential_list :job_id="job_id"
@@ -72,7 +72,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 import trainer_job_preview_info from './trainer_job_preview_info';
 
 

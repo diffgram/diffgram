@@ -322,7 +322,7 @@
 
 import {UserScript} from './userscript.ts'
 import Vue from "vue";
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 
 
 import codemirror from './codemirror.vue'

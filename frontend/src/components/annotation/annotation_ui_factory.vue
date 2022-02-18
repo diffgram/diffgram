@@ -154,7 +154,7 @@
 
 
 <script lang="ts">
-import axios from "../../services/customInstance";
+import axios from "../../services/customAxiosInstance";
 import { create_event } from "../event/create_event";
 import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";

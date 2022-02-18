@@ -175,7 +175,7 @@
   import Vue from "vue";
 
   import upload_wizard_sheet from "./input/upload_wizard_sheet.vue";
-  import axios from "../services/customInstance";
+  import axios from "../services/customAxiosInstance";
   import {create_event} from "./event/create_event";
 
   export default Vue.extend({

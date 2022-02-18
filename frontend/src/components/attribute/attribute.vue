@@ -71,7 +71,7 @@
 <script lang="ts">
 
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 import attribute_new_or_update from './attribute_new_or_update.vue';
 
 

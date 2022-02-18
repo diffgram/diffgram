@@ -805,7 +805,7 @@ const routerOptions = [
 ]
 
 import store from '../store'
-import axios from "../services/customInstance";
+import axios from "../services/customAxiosInstance";
 const fetch_public_project = async function(project_string_id){
   try{
     const response = await axios.get(`/api/project/${project_string_id}/view`);

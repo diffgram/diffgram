@@ -281,7 +281,7 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
 

@@ -616,7 +616,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import input_payload_dialog from './input_payload_dialog'
   import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
   import Vue from "vue";

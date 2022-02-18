@@ -196,7 +196,7 @@
 </template>
 
 <script lang="ts">
-import axios from "../../services/customInstance";
+import axios from "../../services/customAxiosInstance";
 import { is_mailgun_set } from "../../services/configService";
 
 import Vue from "vue";

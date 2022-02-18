@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import axios from "../../../../services/customInstance";
+import axios from "../../../../services/customAxiosInstance";
 import sillyname from "sillyname";
 import task_template_wizard from "./task_template_wizard";
 import {archive_task_template} from "./../../../../services/taskTemplateService";

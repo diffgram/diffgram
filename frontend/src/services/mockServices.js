@@ -1,7 +1,7 @@
-import axios from './customInstance'
+import axios from './customAxiosInstance'
 
 export const mockAnnotations = async (project_string_id) => {
-    
+
     try {
         const response = await axios.post(
             `/api/walrus/v1/project/${project_string_id}/gen-data`,

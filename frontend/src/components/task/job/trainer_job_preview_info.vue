@@ -24,7 +24,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 import job_type from './job_type';
 
 /*  Job info ie on job detail page BEFORE we sign up

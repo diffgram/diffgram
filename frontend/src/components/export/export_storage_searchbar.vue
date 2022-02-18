@@ -73,7 +73,7 @@
 </template>
 
 <script>
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import diffgram_select from '../regular/diffgram_select'
 
   export default {

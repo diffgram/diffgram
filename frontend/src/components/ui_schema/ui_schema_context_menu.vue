@@ -274,7 +274,7 @@
 <script lang="ts">
 
   import Vue from 'vue';
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
   import ui_schema_menu_content from './ui_schema_menu_content'

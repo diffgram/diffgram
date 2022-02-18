@@ -335,7 +335,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 import credential_list_view_only from './credential_list_view_only';
 
 import Vue from "vue";

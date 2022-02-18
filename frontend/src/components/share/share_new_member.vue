@@ -112,7 +112,7 @@
 
 <script lang="ts">
 
-import axios from '../../services/customInstance'
+import axios from '../../services/customAxiosInstance'
 import auth_api_new from '../auth/api/auth_api_new'
 import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
 

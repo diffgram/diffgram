@@ -86,7 +86,7 @@
 
   // TODO pass loading or?
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import Vue from "vue";
 
   export default Vue.extend({

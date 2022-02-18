@@ -147,7 +147,7 @@
 
 <script>
   import Vue from "vue";
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import discussion_comments_new from './discussion_comments_new'
   import discussion_comments_list from './discussion_comments_list'
   import { Editor, EditorContent, EditorMenuBar, EditorMenuBubble, Extension } from 'tiptap';

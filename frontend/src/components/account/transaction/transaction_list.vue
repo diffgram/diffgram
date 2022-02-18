@@ -41,7 +41,7 @@
         </v_error_multiple>
 
         <v-alert type="success"
-                 
+
                  v-if="show_success_attach">
 
         </v-alert>
@@ -94,7 +94,7 @@
                        color="primary">
                   View
                 </v-btn>
-      
+
               </td>
               <td v-if="props.item.task_id">
 
@@ -127,7 +127,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'transaction_list',

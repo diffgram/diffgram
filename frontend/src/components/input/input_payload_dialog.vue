@@ -22,7 +22,7 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import labels_view from '../../components/annotation/labels_view'
   import v_upload_large from '../upload_large'
   import Vue from "vue";

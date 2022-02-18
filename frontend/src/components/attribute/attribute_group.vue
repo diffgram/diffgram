@@ -458,7 +458,7 @@
 <script lang="ts">
   // @ts-nocheck
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import draggable from 'vuedraggable'
   import attribute from './attribute.vue';
   import attribute_new_or_update from './attribute_new_or_update.vue';

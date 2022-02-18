@@ -1,5 +1,5 @@
 import Vuex from "vuex";
-import axios from '../../../src/services/customInstance'
+import axios from '../../../src/services/customAxiosInstance'
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import login from "@/components/user/login.vue";
 
@@ -44,7 +44,7 @@ describe("login.vue", () => {
   });
 
   // FROM VITALII: I'm not sure why what is the purse of thie test, cu we didn;t call get method on the creation
-  // so I'm just commenting it out 
+  // so I'm just commenting it out
 
   // it("It has to invoke axios get function on the creation", () => {
   //   shallowMount(login, {
@@ -82,7 +82,7 @@ describe("login.vue", () => {
       },
       localVue
     });
-    
+
     expect(wrapper.text().toLowerCase()).not.toContain("magic link")
   })
 
@@ -105,7 +105,7 @@ describe("login.vue", () => {
       },
       localVue
     });
-    
+
     expect(wrapper.text().toLowerCase()).toContain("magic link")
   })
 

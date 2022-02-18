@@ -63,7 +63,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 
 
 import Vue from "vue";

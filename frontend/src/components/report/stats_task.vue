@@ -56,7 +56,7 @@
 <script lang="ts">
 
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 import Vue from "vue";
 import task_time_spent from "./task_time_spent.vue";
 import annotator_performance from "./annotator_performance.vue";

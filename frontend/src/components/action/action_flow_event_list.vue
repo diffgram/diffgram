@@ -46,7 +46,7 @@
       <!-- appears to have to be item for vuetify syntax-->
       <template slot="item" slot-scope="props">
         <tr>
-          <td>                 
+          <td>
 
             <div v-if="props.item.file">
             {{ props.item.file.image.original_filename }}
@@ -97,14 +97,14 @@
 
 <script lang="ts">
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customAxiosInstance';
 
   import Vue from "vue"; export default Vue.extend( {
     name: 'event_list_data_table',
 
     props: {
       'project_string_id': {},
-      'flow_id': {} 
+      'flow_id': {}
       },
   watch: {
 
@@ -119,13 +119,13 @@ import axios from '../../services/customInstance';
     this.refresh_event_list()
 
     // ie triggered by  this.$store.commit('action_event_list_refresh')
-    // defined in store.js action 
+    // defined in store.js action
     var self = this
     this.refresh_watcher = this.$store.watch((state) => {
       return this.$store.state.action.refresh_event_list
     },
-      (new_val, old_val) => {     
-        self.refresh_event_list()      
+      (new_val, old_val) => {
+        self.refresh_event_list()
       },
     )
   },
@@ -158,7 +158,7 @@ import axios from '../../services/customInstance';
         },
         {
           text: "Time",
-          align: 'left',      
+          align: 'left',
           sortable: true,
           value: 'id'
         },

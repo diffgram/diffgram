@@ -58,7 +58,7 @@ import credential_badge from '../task/credential/credential_badge'
 import guide_display from '../task/guide/guide_display'
 import task_template_discussions from '../discussions/task_template_discussions'
 import exam_detail_header from './exam_detail_header'
-import axios from "../../services/customInstance";
+import axios from "../../services/customAxiosInstance";
 import {exam_start_apply} from '../../services/examsService'
 import {get_task_template_credentials} from '../../services/taskTemplateService'
 import Vue from "vue";

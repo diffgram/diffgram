@@ -79,7 +79,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
   import job_type from './job_type';
   import job_launch_status_icons from '../../regular_concrete/job_launch_status_icons'
 

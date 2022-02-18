@@ -576,7 +576,7 @@
 
 <script lang="ts">
   import {debounce} from "debounce";
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
   import job_type from './job_type';
   import job_type_select from '../../regular_concrete/job_type_select'
   import project_pipelines_dialog from '../../project/project_pipelines_dialog'

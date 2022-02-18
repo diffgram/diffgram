@@ -1,4 +1,4 @@
-import axios from './customInstance'
+import axios from './customAxiosInstance'
 
 export const get_task_template_details = async (exam_id) => {
 

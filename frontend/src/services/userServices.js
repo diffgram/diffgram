@@ -1,4 +1,4 @@
-import axios from './customInstance'
+import axios from './customAxiosInstance'
 import store from "../store"
 import router from "../router/router"
 

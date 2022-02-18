@@ -31,7 +31,7 @@
 
 <script lang="ts">
 
-import axios from '../../../services/customInstance';
+import axios from '../../../services/customAxiosInstance';
 
 import Vue from "vue"; export default Vue.extend( {
   name: 'user_account_verify_email',

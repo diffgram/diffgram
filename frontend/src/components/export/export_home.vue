@@ -432,7 +432,7 @@
   import export_source_icons from '../regular_concrete/export_source_icons'
   import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
 
-  import axios from '../../services/customInstance';
+  import axios from '../../services/customAxiosInstance';
   import Vue from "vue";
   import Export_connection_dialog from "./export_connection_dialog.vue";
   import {create_event} from "../event/create_event";

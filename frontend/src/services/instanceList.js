@@ -1,12 +1,12 @@
-import axios from './customInstance'
+import axios from './customAxiosInstance'
 
 export const postInstanceList = async (url, instance_list) => {
     try {
         const { data } = await axios.post(
-            url, 
-            { 
+            url,
+            {
                 instance_list,
-                and_complete: false    
+                and_complete: false
             }
         )
         return data

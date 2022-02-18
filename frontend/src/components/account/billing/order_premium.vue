@@ -491,7 +491,7 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customInstance';
+  import axios from '../../../services/customAxiosInstance';
   import credit_card from './credit_card'
 
   import Vue from "vue";
