@@ -1,6 +1,7 @@
 import {InteractionGenerator} from "./InteractionGenerator";
 import {Interaction} from "./Interaction";
 import {Instance} from "../instances/Instance";
+import {KeypointInstance} from "../instances/KeypointInstance";
 import {KeypointInstanceMouseDown} from "./interaction_types/keypoints/KeypointInstanceMouseDown";
 import {KeypointInstanceMouseMove} from "./interaction_types/keypoints/KeypointInstanceMouseMove";
 import {KeypointInstanceMouseUp} from "./interaction_types/keypoints/KeypointInstanceMouseUp";
@@ -41,7 +42,7 @@ export class AnnotationCoreInteractionGenerator implements InteractionGenerator 
   }
 
   private generate_mousemove_interactions(): Interaction{
-    const instance = this.get_hovered_instance();
+    const instance = this.get_hovered_instance() as KeypointInstance;
     if(instance && instance.type === 'keypoints'){
       return new KeypointInstanceMouseMove(instance)
     }

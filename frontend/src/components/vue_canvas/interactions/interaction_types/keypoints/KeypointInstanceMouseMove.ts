@@ -7,10 +7,12 @@ export class KeypointInstanceMouseMove extends Interaction {
    * over a keypoint instance (either over a node or over the bounding box.
    * */
   key_point_instance: KeypointInstance
+  draw_mode: boolean
 
-  constructor(key_point_instance) {
+  constructor(key_point_instance: KeypointInstance, draw_mode: boolean = false) {
     super();
     this.key_point_instance = key_point_instance
+    this.draw_mode = draw_mode
   }
 
   set_hover_scale_points(): void {
@@ -45,7 +47,13 @@ export class KeypointInstanceMouseMove extends Interaction {
   }
 
   process(): boolean {
-    this.key_point_instance.ctx.canvas.style.cursor = 'default'
+    if(this.draw_mode){
+      this.key_point_instance.ctx.canvas.style.cursor = 'none'
+    }
+    else{
+      this.key_point_instance.ctx.canvas.style.cursor = 'default'
+    }
+
     if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'copy'
     }
@@ -72,6 +80,7 @@ export class KeypointInstanceMouseMove extends Interaction {
     else if (this.key_point_instance.is_bounding_box_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'
     }
+
 
 
 
