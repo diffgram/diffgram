@@ -199,6 +199,22 @@
         this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.show_set_node_name_menu = true;
       },
+      on_click_occlude_all_direction: function () {
+        let instance_update = {
+          index: this.instance_hover_index_locked,
+          node_hover_index: this.node_hover_index_locked,
+          mode: "on_click_occlude_all_direction"
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
+      on_click_occlude_all_children: function () {
+        let instance_update = {
+          index: this.instance_hover_index_locked,
+          node_hover_index: this.node_hover_index_locked,
+          mode: "occlude_all_children"
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
       on_click_update_point_attribute: function () {
          let instance_update = {
           index: this.instance_hover_index_locked,
@@ -721,7 +737,46 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-
+      <v-list-item
+        v-if="selected_instance.type === 'keypoints'"
+        link
+        dense
+        data-cy="mark_occluded_button"
+        @click="on_click_occlude_all_direction"
+      >
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Mark Occluded"
+            icon="mdi-eye-arrow-right"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Occlude All In Direction
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item
+        v-if="node_hover_index_locked != undefined"
+        link
+        dense
+        data-cy="mark_occluded_button"
+        @click="on_click_occlude_all_children"
+      >
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Mark Occluded"
+            icon="mdi-collapse-all"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Occlude all Children
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
 
       <v-list-item
         v-if="instance_hover_index_locked != undefined"
