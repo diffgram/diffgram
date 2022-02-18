@@ -39,7 +39,7 @@ import Vue from "vue";
 
       account: {
         id: null,
-        nickname: null,   
+        nickname: null,
         payment_method_on_file: false
       },
 

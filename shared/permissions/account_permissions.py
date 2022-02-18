@@ -6,7 +6,7 @@ from shared.database.auth.api import Auth_api
 
 from shared.database.account.account import Account
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized
 from shared.helpers.permissions import getUserID
 from shared.helpers import sessionMaker
 
@@ -55,7 +55,7 @@ class Permission_Account():
         # TODO review
         user_id = getUserID()
         if user_id is None:
-            raise Forbidden("Please login.")
+            raise Unauthorized("Please login.")
 
         user = User.get_by_id(session = session,
                               user_id = user_id)

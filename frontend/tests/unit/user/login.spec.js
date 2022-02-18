@@ -82,7 +82,7 @@ describe("login.vue", () => {
       },
       localVue
     });
-    
+
     expect(wrapper.text().toLowerCase()).not.toContain("magic link")
   })
 
@@ -105,7 +105,7 @@ describe("login.vue", () => {
       },
       localVue
     });
-    
+
     expect(wrapper.text().toLowerCase()).toContain("magic link")
   })
 
