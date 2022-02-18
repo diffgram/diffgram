@@ -17,7 +17,7 @@ export class KeypointInstanceMouseUp extends Interaction{
     * Handles the mouse up event for the keypoint instance by adding a node
     * selecting, or finishing a drag depending on the instances's state.
     * */
-    return this.key_point_instance.stop()
+    return this.key_point_instance.process_mouse_up()
   }
 
 }

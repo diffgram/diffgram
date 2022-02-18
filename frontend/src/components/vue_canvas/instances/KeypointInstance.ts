@@ -201,11 +201,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
   }
 
-  public stop(): boolean {
-
+  public process_mouse_up(): boolean {
+    console.log('on_mouse_up')
     if (this.instance_context.draw_mode
     && this.template_creation_mode) {
-      this.add_node_to_instance();
+      if(this.is_node_hovered){
+        this.add_edge_to_instance();
+      }
+      else{
+        this.add_node_to_instance();
+      }
+
       return true
     }
     else {
@@ -226,6 +232,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         }
 
       }
+      console.log('node_hover_index', this.node_hover_index)
+      console.log('selected', this.selected)
+      console.log('is_hovered', this.is_hovered)
+      if(this.node_hover_index == undefined && !this.selected && this.is_hovered){
+        this.select();
+      }
 
       if(this.is_dragging_instance){
         this.stop_dragging()
@@ -233,6 +245,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
       if(this.is_rotating == true) {
         this.stop_rotating()
+      }
+      if(this.selected && !this.is_hovered){
+        this.unselect();
       }
 
     }
@@ -265,6 +280,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public stop_rescaling(){
     this.is_rescaling = false;
+    this.hovered_control_point_key = undefined;
+
   }
   public stop_moving(){
     this.is_moving = false;
@@ -579,7 +596,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if(!node.name){
       return
     }
-    if(!this.is_hovered && !this.template_creation_mode) {
+    if(!(this.is_hovered || this.selected) && !this.template_creation_mode) {
       return
     }
 
@@ -816,38 +833,40 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public start_dragging(){
     this.is_dragging_instance = true;
   }
-  public add_node_to_instance() {
-    if (this.is_node_hovered) {
-      if (this.current_node_connection.length === 1) {
-        if(this.node_hover_index == undefined){return}
-        let node = this.nodes[this.node_hover_index];
-        this.current_node_connection.push(node);
-        this.is_drawing_edge = false
-        this.edges.push({
-          from: this.current_node_connection[0].id,
-          to: this.current_node_connection[1].id,
-        })
-        this.current_node_connection = [];
-        this.is_drawing_edge = false;
-      } else if (this.current_node_connection.length === 0) {
-        if(this.node_hover_index == undefined){return}
-        let node = this.nodes[this.node_hover_index];
-        this.current_node_connection.push(node);
-        this.is_drawing_edge = true;
-      }
-
-    } else {
-      if (this.is_drawing_edge) {
-        return
-      }
-      this.nodes.push({
-        x: this.mouse_position.x,
-        y: this.mouse_position.y,
-        id: uuidv4(),
-        occluded: undefined,
-        left_or_right: undefined
+  public add_edge_to_instance(){
+    if (this.current_node_connection.length === 1) {
+      if(this.node_hover_index == undefined){return}
+      let node = this.nodes[this.node_hover_index];
+      this.current_node_connection.push(node);
+      this.is_drawing_edge = false
+      this.edges.push({
+        from: this.current_node_connection[0].id,
+        to: this.current_node_connection[1].id,
       })
+      this.current_node_connection = [];
+      this.is_drawing_edge = false;
+    } else if (this.current_node_connection.length === 0) {
+      if(this.node_hover_index == undefined){return}
+      let node = this.nodes[this.node_hover_index];
+      this.current_node_connection.push(node);
+      this.is_drawing_edge = true;
     }
+  }
+  public add_node_to_instance() {
+    if (this.is_drawing_edge) {
+      return
+    }
+    let node = {
+      x: this.mouse_position.x,
+      y: this.mouse_position.y,
+      id: uuidv4(),
+      occluded: undefined,
+      left_or_right: undefined,
+      name: undefined
+    };
+    this.nodes.push(node)
+    node.name = this.nodes.length.toString();
+
   }
 
   private draw_icon(
@@ -1051,14 +1070,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         continue
       }
 
-      if (node2.occluded == true || node1.occluded == true) {
 
-        ctx.globalAlpha = 0.3;
-      }
       if (edge.is_hovered) {
         ctx.strokeStyle = 'green'
       }
       if(node1 && node2){
+        if (node2.occluded == true || node1.occluded == true) {
+          ctx.globalAlpha = 0.3;
+        }
         let x1 = this.get_scaled_x(node1);
         let x2 = this.get_scaled_x(node2);
         let y1 = this.get_scaled_y(node1);

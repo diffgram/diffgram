@@ -1752,10 +1752,20 @@ class Process_Media():
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
-        new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
-                            str(self.input.extension)
+        # Use original file by default
+        new_temp_filename = self.input.temp_dir_path_and_filename
 
-        imwrite(new_temp_filename, np.asarray(self.raw_numpy_image))
+        # If PNG is used check compression
+        if str(self.input.extension) == '.png':
+            with open(self.input.temp_dir_path_and_filename, 'rb') as f:
+                f.seek(63)
+                compress = (f.read(1) == b'\x01')
+
+            # If compress_level 0 or 1 write file with compress_level2
+            if (compress):
+                new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
+                                    str(self.input.extension)
+                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,

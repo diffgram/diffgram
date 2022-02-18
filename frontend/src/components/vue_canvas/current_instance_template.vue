@@ -77,7 +77,7 @@
         for (let instance of instance_template.instance_list) {
           // Just keypoints are supported for now
           if (instance.type == "keypoints") {
-            instance.scale_width = Math.abs(this.$props.mouse_position.x - this.$props.instance_template_start_point.x)
+            instance.scale_width = Math.abs(this.$props.instance_template_start_point.x - this.$props.mouse_position.x)
             instance.scale_height = Math.abs(this.$props.instance_template_start_point.y - this.$props.mouse_position.y)
             instance.translate_x = x_min;
             instance.translate_y = y_min;
