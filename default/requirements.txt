@@ -32,3 +32,4 @@ lark
 SQLAlchemy-serializer==1.4.1
 stripe==2.33.2
 newrelic
+markupsafe==2.0.1

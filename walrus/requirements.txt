@@ -35,3 +35,4 @@ psutil==5.6.6
 SQLAlchemy-serializer==1.4.1
 newrelic
 nltk
+markupsafe==2.0.1
