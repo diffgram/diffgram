@@ -313,7 +313,6 @@
           <v-divider></v-divider>
 
         <v-expansion-panels
-          v-model="userscript_minimized"
           :accordion="true"
           :inset="false"
           :multiple="false"
@@ -328,8 +327,6 @@
             <v-expansion-panel-header
               data-cy="show_userscript_panel_button"
               class="d-flex justify-start pa-0 pr-1 align-center"
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="userscript_minimized"
               style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
               <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
@@ -345,7 +342,6 @@
             <v-expansion-panel-content>
 
               <userscript
-                v-show="!userscript_minimized"
                 :project_string_id_prop="project_string_id"
                 :create_instance="event_create_instance"
                 :current_userscript_prop="get_userscript()"
@@ -1141,8 +1137,6 @@ export default Vue.extend({
       hovered_figure_id: null,
       parent_merge_instance_index: null,
       instances_to_merge: [],
-
-      userscript_minimized: true,
 
       event_create_instance: undefined,
 
