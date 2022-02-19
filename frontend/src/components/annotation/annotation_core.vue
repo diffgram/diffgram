@@ -358,6 +358,7 @@
             <v-expansion-panel-content>
 
               <tooltip_button
+                  v-if="show_modify_an_issue != true"
                   tooltip_message="New Issue"
                   datacy="new_issue_in_side_panel"
                   @click="show_modify_an_issue=true"
