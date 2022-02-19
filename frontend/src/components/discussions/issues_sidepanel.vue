@@ -1,73 +1,66 @@
 <template>
-  <div v-cloak v-if="issues_list.length > 0">
+  <div v-cloak>
 
+    <v-container fluid style="border: 1px solid #ababab"
+                 v-if="!loading && issues_list.length == 0"
+                 class="d-flex flex-column align-center justify-center ma-0">
+      <h1>No Issues.</h1>
+      <v-icon size="250" color="green">mdi-check</v-icon>
+    </v-container>
 
+    <v-expand-transition>
+      <v-card-text class="pa-0" >
 
-        <v-card-title class="d-flex justify-start align-center">
+        <v-container  v-if="!loading && issues_list.length > 0" class="d-flex flex-column pa-1">
 
-          <v-icon left color="primary" size="28">mdi-comment-multiple</v-icon>
-          Discussions
+          <v-select :items="status_list"
+                    v-model="status_filter"
+                    label="Status"
+                    height="20"
+                    class="align-self-end pa-0"
+                    style="width: 30%; font-size: 12px; min-height: 30px !important; justify-self: flex-end; margin-bottom: auto"
+                    item-text="text"
+                    item-value="value">
+          </v-select>
+          <!--
+            Please note that this code is almost same as issues_table.vue. Decided to leave it duplicate since I have
+            the feeling that both table might grow in different directions in the future since one is on the studio
+            and the other is in the context of the job_detail or project context.
+          -->
+            <regular_table
+              style="max-height: 350px; overflow-y: auto"
+              :item_list="filtered_issues_list"
+              :column_list="columns_issues"
+              :items_per_page="5"
+              v-model="selected_cols"
+              :header_list="headers_issues">
 
-          <v-spacer></v-spacer>
+              <template slot="title" slot-scope="props">
+                <div class="d-flex align-center">
+                  <v-icon color="success" class="mr-4" v-if="props.item.status === 'closed'">mdi-lock-check</v-icon>
+                  <v-icon color="warning" class="mr-4" v-else>mdi-alert</v-icon>
+                  <div class="d-flex flex-column justify-end pt-4" style="height: 100%">
+                    <a class="font-weight-bold" @click="view_issue_detail(props.item)"> {{props.item.title}} </a>
+                    <p style="font-size: 9px; font-weight: bold; color: #323232">
+                      Opened: {{props.item.created_time| moment("ddd, MMMM Do YYYY")}} {{props.item.user ? `By: ${props.item.user.first_name} ${props.item.user.last_name}` : ''}}
+                    </p>
+                  </div>
+                </div>
+              </template>
 
-          <v-btn @click="maximize_panel" v-if="minimized" icon>
-            <v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
-          <v-btn @click="minimize_panel" v-if="!minimized" icon>
-            <v-icon>mdi-chevron-up</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-expand-transition>
-          <v-card-text v-show="!minimized" class="pa-0" >
-            <v-container  v-if="!loading && issues_list" class="d-flex flex-column pa-1">
-              <v-select :items="status_list"
-                        v-model="status_filter"
-                        label="Status"
-                        height="20"
-                        class="align-self-end pa-0"
-                        style="width: 30%; font-size: 12px; min-height: 30px !important; justify-self: flex-end; margin-bottom: auto"
-                        item-text="text"
-                        item-value="value">
-              </v-select>
-              <!--
-                Please note that this code is almost same as issues_table.vue. Decided to leave it duplicate since I have
-                the feeling that both table might grow in different directions in the future since one is on the studio
-                and the other is in the context of the job_detail or project context.
-              -->
-                <regular_table
-                  style="max-height: 350px; overflow-y: auto"
-                  :item_list="filtered_issues_list"
-                  :column_list="columns_issues"
-                  :items_per_page="5"
-                  v-model="selected_cols"
-                  :header_list="headers_issues">
+            </regular_table>
 
-                  <template slot="title" slot-scope="props">
-                    <div class="d-flex align-center">
-                      <v-icon color="success" class="mr-4" v-if="props.item.status === 'closed'">mdi-lock-check</v-icon>
-                      <v-icon color="warning" class="mr-4" v-else>mdi-alert</v-icon>
-                      <div class="d-flex flex-column justify-end pt-4" style="height: 100%">
-                        <a class="font-weight-bold" @click="view_issue_detail(props.item)"> {{props.item.title}} </a>
-                        <p style="font-size: 9px; font-weight: bold; color: #323232">
-                          Opened: {{props.item.created_time| moment("ddd, MMMM Do YYYY")}} {{props.item.user ? `By: ${props.item.user.first_name} ${props.item.user.last_name}` : ''}}
-                        </p>
-                      </div>
-                    </div>
-                  </template>
+        </v-container>
+      </v-card-text>
+    </v-expand-transition>
 
-                </regular_table>
+    <!-- And minimized false because otherwise when saving it
+      "pushes" it down and is visually distracting. question if it's better
+      to have this in expand-transition then all game for that. -->
+    <v-skeleton-loader :loading="loading" type="table-row@3"
+          v-if="loading && minimized == false">
 
-            </v-container>
-          </v-card-text>
-        </v-expand-transition>
-
-        <!-- And minimized false because otherwise when saving it
-          "pushes" it down and is visually distracting. question if it's better
-          to have this in expand-transition then all game for that. -->
-        <v-skeleton-loader :loading="loading" type="table-row@3"
-              v-if="loading && minimized == false">
-
-        </v-skeleton-loader>
+    </v-skeleton-loader>
 
   </div>
 </template>
