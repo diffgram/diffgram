@@ -1,5 +1,6 @@
 <template>
-    <v-card class="d-flex flex-column">
+    <v-card v-if="current_issue"
+            class="d-flex flex-column">
       <v_error_multiple :error="update_attachments_error">
       </v_error_multiple>
       <v-progress-circular v-if="loading_get_issue" :indeterminate="true" class="ma-8 align-self-center justify-self-center align-center"></v-progress-circular>
@@ -139,6 +140,7 @@
       </div>
 
     </v-card>
+
 </template>
 
 <script>
