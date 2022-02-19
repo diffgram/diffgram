@@ -1842,9 +1842,9 @@ class Process_Media():
 
         thumbnail_image = imresize(self.raw_numpy_image, (160, 160))
 
-        new_temp_filename = self.input.temp_dir + "/resized" + ".png"
+        new_temp_filename = self.input.temp_dir + "/resized" + ".jpg"
 
-        imwrite(new_temp_filename, thumbnail_image, compress_level=6)
+        imwrite(new_temp_filename, thumbnail_image, quality=95)
 
         # Build URL
         url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
