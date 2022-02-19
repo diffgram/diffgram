@@ -1,5 +1,4 @@
 <template>
-  <v-container fluid>
     <v-card class="d-flex flex-column">
       <v_error_multiple :error="update_attachments_error">
       </v_error_multiple>
@@ -140,9 +139,6 @@
       </div>
 
     </v-card>
-
-
-  </v-container>
 </template>
 
 <script>
