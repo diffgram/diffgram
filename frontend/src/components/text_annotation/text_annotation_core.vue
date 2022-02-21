@@ -48,9 +48,8 @@
             xmlns="http://www.w3.org/2000/svg"
             direction="ltr"
             id="svg0:60"
-            width="100%"
             @mouseup="on_draw_text_token"
-            :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px`"
+            :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${text_field_width}`"
             :class="unselectable && 'unselectable'"
         >
             <g v-if="rendering" transform="translate(0, 23.5)">
@@ -65,6 +64,19 @@
                         {{ word.value }}
                 </text>
                 <text x="40">Loading...</text>
+            </g>
+            <g v-if="resizing" transform="translate(0, 23.5)">
+                <text
+                    v-for="(word, index) in initial_words_measures"
+                    :key="word.value + index"
+                    :ref="`word_${index}`"
+                    x="40"
+                    y="5"
+                    fill="white"
+                    text-anchor="middle">
+                        {{ word.value }}
+                </text>
+                <text x="40">Resizing...</text>
             </g>
             <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
                 <g
@@ -237,6 +249,7 @@ export default Vue.extend({
             text: null,
             current_label: null,
             rendering: true,
+            resizing: false,
             relation_drawing: false,
             initial_words_measures: [],
             lines: [],
@@ -254,6 +267,7 @@ export default Vue.extend({
             show_default_navigation: true,
             unselectable: false,
             text_field_heigth: 100,
+            text_field_width: '100%',
             // Command
             command_manager: undefined,
             has_changed: false,
@@ -320,7 +334,7 @@ export default Vue.extend({
         }
     },
     watch: {
-        file: function(newValue) {
+        file: function() {
             this.rendering = true
             this.instance_list = [];
             this.text = null;
@@ -329,7 +343,7 @@ export default Vue.extend({
             this.lines = []
             this.on_mount()
         },
-        task: function(newValue) {
+        task: function() {
             this.rendering = true
             this.instance_list = [];
             this.text = null;
@@ -369,10 +383,16 @@ export default Vue.extend({
         hot_key_listeners: function() {
             window.removeEventListener("keydown", this.esk_event_listener)
             window.addEventListener("keydown", this.esk_event_listener)
-
         },
         on_unload_listener: function() {
             window.addEventListener("beforeunload", this.leave_listener);
+            window.addEventListener("resize", this.resize_listener)
+        },
+        resize_listener: function() {
+            this.resizing = true
+            this.lines = []
+            this.tokens = []
+            setTimeout(() => this.initialize_token_render(), 1000)
         },
         leave_listener: function(e) {
             if (this.has_changed || this.save_loading) {
@@ -467,6 +487,7 @@ export default Vue.extend({
 
             this.tokens = tokens
             this.rendering = false
+            this.resizing = false
         },
         change_label_file: function(event) {
             this.current_label = event
@@ -954,13 +975,7 @@ export default Vue.extend({
                     return rects
                 }
             }
-            const trial_rect = {
-                x: starting_token.start_x,
-                y: this.lines[starting_token.line].y + 3,
-                width: starting_token.width,
-                instance_type: instance.type
-            }
-            return [trial_rect]
+            return []
         },
         // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
