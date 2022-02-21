@@ -274,46 +274,10 @@
             :instance="selected_instance_for_history"
           >
           </instance_history_sidepanel>
-          <create_issue_panel
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            v-show="show_issue_panel == true && !current_issue"
-            :instance_list="instance_list"
-            :task="task"
-            :file="file"
-            :frame_number="this.video_mode ? this.current_frame : undefined"
-            :mouse_position="issue_mouse_position"
-            @new_issue_created="refresh_issues_sidepanel"
-            @open_side_panel="open_issue_panel"
-            @close_issue_panel="close_issue_panel"
-          ></create_issue_panel>
-          <view_edit_issue_panel
-            v-if="!loading"
-            v-show="show_issue_panel == true && current_issue"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :instance_list="instance_list"
-            :current_issue_id="current_issue ? current_issue.id : undefined"
-            :file="file"
-            @close_view_edit_panel="close_view_edit_issue_panel"
-            @start_attach_instance_edition="start_attach_instance_edition"
-            @update_issues_list="update_issues_list"
-            @stop_attach_instance_edition="stop_attach_instance_edition"
-            @update_canvas="update_canvas"
-            ref="view_edit_issue_panel"
-          ></view_edit_issue_panel>
-
+          
           <v-divider></v-divider>
 
         <v-expansion-panels
-          v-model="userscript_minimized"
           :accordion="true"
           :inset="false"
           :multiple="false"
@@ -328,15 +292,13 @@
             <v-expansion-panel-header
               data-cy="show_userscript_panel_button"
               class="d-flex justify-start pa-0 pr-1 align-center"
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="userscript_minimized"
               style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
               <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
                 mdi-language-javascript
               </v-icon>
 
-              <h4>Interactive Automations</h4>
+              <h4>Scripts</h4>
 
               <v-spacer></v-spacer>
 
@@ -345,7 +307,6 @@
             <v-expansion-panel-content>
 
               <userscript
-                v-show="!userscript_minimized"
                 :project_string_id_prop="project_string_id"
                 :create_instance="event_create_instance"
                 :current_userscript_prop="get_userscript()"
@@ -363,22 +324,108 @@
           </v-expansion-panel>
         </v-expansion-panels>
 
+        <v-expansion-panels
+          v-model="issues_expansion_panel"
+          :accordion="true"
+          :inset="false"
+          :multiple="false"
+          :focusable="true"
+          :disabled="false"
+          :flat="true"
+          :hover="false"
+          :tile="true"
+        >
+          <v-expansion-panel>
 
-          <issues_sidepanel
-            :minimized="minimize_issues_sidepanel"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :file="file"
-            @view_issue_detail="open_view_edit_panel"
-            @issues_fetched="issues_fetched"
-            @minimize_issues_panel="minimize_issues_sidepanel = true"
-            @maximize_issues_panel="minimize_issues_sidepanel = false"
-            ref="issues_sidepanel"
-          ></issues_sidepanel>
+            <v-expansion-panel-header
+              data-cy="show_issues_panel_button"
+              class="d-flex justify-start pa-0 sidebar-accordeon-header align-center">
+
+              <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
+                mdi-comment-multiple
+              </v-icon>
+
+              <h4>Issues</h4>
+
+              <v-spacer></v-spacer>
+
+              <v-chip x-small class="d-flex justify-center flex-grow-0">
+                  {{ issues_list.length }}
+              </v-chip>
+
+            </v-expansion-panel-header>
+
+            <v-expansion-panel-content>
+
+              <tooltip_button
+                  v-if="show_modify_an_issue != true"
+                  tooltip_message="New Issue"
+                  datacy="new_issue_in_side_panel"
+                  @click="show_modify_an_issue=true"
+                  icon="add"
+                  :icon_style="true"
+                  color="primary"
+                              >
+              </tooltip_button>
+
+             <create_issue_panel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              v-show="show_modify_an_issue == true && !current_issue"
+              :instance_list="instance_list"
+              :task="task"
+              :file="file"
+              :frame_number="this.video_mode ? this.current_frame : undefined"
+              :mouse_position="issue_mouse_position"
+              @new_issue_created="refresh_issues_sidepanel"
+              @open_side_panel="open_issue_panel"
+              @close_issue_panel="close_issue_panel"
+            ></create_issue_panel>
+
+            <view_edit_issue_panel
+              v-if="!loading"
+              v-show="show_modify_an_issue == true && current_issue"
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :instance_list="instance_list"
+              :current_issue_id="current_issue ? current_issue.id : undefined"
+              :file="file"
+              @close_view_edit_panel="close_view_edit_issue_panel"
+              @start_attach_instance_edition="start_attach_instance_edition"
+              @update_issues_list="update_issues_list"
+              @stop_attach_instance_edition="stop_attach_instance_edition"
+              @update_canvas="update_canvas"
+              ref="view_edit_issue_panel"
+            ></view_edit_issue_panel>
+
+            <!-- List -->
+            <issues_sidepanel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :file="file"
+              @view_issue_detail="open_view_edit_panel"
+              @issues_fetched="issues_fetched"
+              ref="issues_sidepanel"
+            ></issues_sidepanel>
+
+
+
+            </v-expansion-panel-content>
+
+          </v-expansion-panel>
+        </v-expansion-panels>
+
         </v-navigation-drawer>
 
         <!-- TODO would want to think a bit about how to block scrolling
@@ -1093,8 +1140,8 @@ export default Vue.extend({
 
       this.clear_selected();
     },
-    show_issue_panel: function () {
-      if (this.show_issue_panel == true) {
+    show_modify_an_issue: function () {
+      if (this.show_modify_an_issue == true) {
         this.label_settings.show_ghost_instances = false;
         this.label_settings.ghost_instances_closed_by_open_view_edit_panel =
           true;
@@ -1142,8 +1189,6 @@ export default Vue.extend({
       parent_merge_instance_index: null,
       instances_to_merge: [],
 
-      userscript_minimized: true,
-
       event_create_instance: undefined,
 
       selected_instance_for_history: undefined,
@@ -1159,7 +1204,7 @@ export default Vue.extend({
       instance_context: new InstanceContext(),
       instance_template_draw_started: false,
       mouse_down_delta_event: { x: 0, y: 0 },
-      issues_list: undefined,
+      issues_list: [],
       canvas_alert_x: undefined,
       canvas_alert_y: undefined,
       original_edit_instance: undefined,
@@ -1176,7 +1221,7 @@ export default Vue.extend({
       request_change_current_instance: null,
       current_issue: undefined,
       share_dialog_open: false,
-      show_issue_panel: false,
+      show_modify_an_issue: false,
       snackbar_issues: false, // Controls the display of snackbar with info message when selecting instance on issues.
       trigger_refresh_current_instance: null,
       ellipse_hovered_corner: undefined,
@@ -1303,7 +1348,7 @@ export default Vue.extend({
       annotations_loading: false,
       save_loading_image: false,
 
-      minimize_issues_sidepanel: false,
+      issues_expansion_panel: false,
 
       source_control_menu: false,
 
@@ -2842,7 +2887,7 @@ export default Vue.extend({
     },
     open_view_edit_panel(issue) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true;
 
       // Case for edit/view mode.
       this.current_issue = issue;
@@ -2897,7 +2942,8 @@ export default Vue.extend({
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true
+      this.issues_expansion_panel = 0
       // Close context menu and set select instance mode
       this.show_context_menu = false;
       this.issue_mouse_position = mouse_position;
@@ -2921,13 +2967,13 @@ export default Vue.extend({
     },
     close_view_edit_issue_panel() {
       this.current_issue = undefined;
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);
     },
     close_issue_panel() {
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.$store.commit("set_instance_select_for_issue", false);
       this.snackbar_issues = false;
       this.issue_mouse_position = undefined;
