@@ -8,7 +8,7 @@ on:
   pull_request_target:
     types: [review_requested]
     branches:
-      - 'releases/**'
+      - '**'
       - '!DAD**'
 jobs:
   Default-Service-Unit-Tests:
