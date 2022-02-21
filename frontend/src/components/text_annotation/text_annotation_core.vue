@@ -121,7 +121,7 @@
                 />
                 <circle
                     v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`rel_start_marker_${instance.id}`"
+                    :key="`rel_start_marker_${instance.get_instance_data().id}`"
                     :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
