@@ -40,7 +40,7 @@ describe("tasks_detail_pagination", () => {
     it("Reviews task", () => {
       const url = "/api/v1/task/*/review";
       cy.wait(2000);
-      cy.get("tbody > tr")
+      cy.get(".image-preview")
         .first()
         .click({ force: true });
       cy.wait(3000);
