@@ -50,7 +50,7 @@
             id="svg0:60"
             width="100%"
             @mouseup="on_draw_text_token"
-            style="height: 5000px"
+            :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px`"
             :class="unselectable && 'unselectable'"
         >
             <g v-if="rendering" transform="translate(0, 23.5)">
@@ -253,6 +253,7 @@ export default Vue.extend({
             additional_line_space: 30,
             show_default_navigation: true,
             unselectable: false,
+            text_field_heigth: 100,
             // Command
             command_manager: undefined,
             has_changed: false,
