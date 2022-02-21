@@ -10,6 +10,7 @@ def provision_root_tasks(session,
                          mode = 'default',
                          default_assignee = None,
                          default_reviewers = []):
+
     if not job:
         return False
 
@@ -24,11 +25,6 @@ def provision_root_tasks(session,
         order_by_class_and_attribute = File.input_id
     )
 
-
-    #
-    #  option Hard code review frequency to None while working out bugs
-    # There was something strange with the way it "pushed" the reviewed
-    # file during testing. Not to mention review interface itself
     review_frequncy = None
 
     session.add(job)
@@ -85,8 +81,7 @@ def root_task_new(session,
     And also this may be something we want as "feature"
 
     """
-
-    if job.file_handling == "isolate":
+    if job.file_handling == "isolate" or job.type == 'exam_template' or job.type == 'examination':
         new_file = copy_file(session = session,
                              directory = job.directory,
                              completion_directory_id = job.completion_directory_id,
