@@ -156,7 +156,7 @@ export default Vue.extend({
         // default to no review while improving review system
         review_by_human_freqeuncy: "No review", //'every_3rd_pass'
         td_api_trainer_basic_training: false,
-        file_handling: "use_existing",
+        file_handling: "isolate",
         interface_connection: undefined,
         member_list_ids: ["all"],
         reviewer_list_ids: ["all"],

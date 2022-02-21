@@ -823,9 +823,15 @@ Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wra
 });
 
 Cypress.Commands.add('create_task_template', function () {
+  let task_template_name;
   cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/job/new`)
     // Step 1 Name
-    .get('[data-cy="task-template-name-input"]').type(' +test-e2e')
+    .get('[data-cy="task-template-name-input"]')
+    .get('[data-cy="task-template-name-input"]').invoke('val')
+    .then(sometext => {
+      cy.log(`task template name ${sometext}`)
+      cy.wrap(sometext).as('task_template_name')
+    })
     .get('[data-cy="task-template-step-name"] [data-cy="wizard_navigation_next"]').click()
 
     // Step 2 labels
@@ -867,5 +873,5 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="credential-checkbox-0"]').click({force: true})
     .get('[data-cy="requires-button"]').click()
     .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
-
+    return cy.wrap(task_template_name)
 })

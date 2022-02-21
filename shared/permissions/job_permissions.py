@@ -7,7 +7,7 @@ from shared.database.auth.api import Auth_api
 from shared.database.task.job.job import Job
 from shared.database.task.job.user_to_job import User_To_Job
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized
 from shared.helpers.permissions import getUserID
 from shared.helpers.permissions import LoggedIn
 from shared.helpers.permissions import defaultRedirect
@@ -62,12 +62,12 @@ class Job_permissions():
                     # User
                     # TODO move login stuff into the general User_Permissions
                     if LoggedIn() != True:
-                        raise Forbidden("Login again.")
+                        raise Unauthorized("Login again.")
 
                     user = session.query(User).filter(User.id == getUserID()).first()
 
                     if user is None:
-                        raise Forbidden("Login again.")
+                        raise Unauthorized("Login again.")
 
                     # Want to use the builder API permissions instead of
                     # flags since a user may be testing this as a builder

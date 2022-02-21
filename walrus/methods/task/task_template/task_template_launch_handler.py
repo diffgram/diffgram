@@ -46,12 +46,11 @@ def task_template_launch_core(session,
     # QUESTION Do we only need to create tasks for "normal work things"?
     # ie for exams it gets done as part of the process
     # QUESTION are these only relevant for normal work? not exam?
-
     if job.type == "Normal":
         task_template_new_normal(session=session,
                                  task_template=job)
 
-    if job.type == "Exam":
+    if job.type == "exam_template":
         task_template_new_exam(session=session,
                                task_template=job)
 
@@ -74,12 +73,6 @@ def task_template_new_normal(session, task_template):
 
     """
 
-    # job is in session so no need to return it
-
-    # TODO: analyze if this code is needed.
-    result = task_new.provision_root_tasks(
-        session=session,
-        job=task_template)
 
     session.add(task_template)
     task_template.status = "active"
@@ -90,7 +83,9 @@ def task_template_new_exam(session, task_template):
     We don't create tasks here, since a person starting a new Exam
     will create a new job and new tasks
     """
-
+    result = task_new.provision_root_tasks(
+        session=session,
+        job=task_template)
     session.add(task_template)
     task_template.status = "active"
 

@@ -7,7 +7,7 @@
     <v-card-text v-if="loading" class="d-flex justify-center">
       <v-progress-circular color="primary" indeterminate v-if="loading"></v-progress-circular>
     </v-card-text>
-   <v-card-text v-if="!loading" 
+   <v-card-text v-if="!loading"
              style="max-height: 400px;
                     overflow-y: auto">
      <v-list three-line

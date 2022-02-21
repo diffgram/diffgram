@@ -41,7 +41,7 @@
         </v_error_multiple>
 
         <v-alert type="success"
-                 
+
                  v-if="show_success_attach">
 
         </v-alert>
@@ -94,7 +94,7 @@
                        color="primary">
                   View
                 </v-btn>
-      
+
               </td>
               <td v-if="props.item.task_id">
 
