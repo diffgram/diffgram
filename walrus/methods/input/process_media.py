@@ -1760,7 +1760,8 @@ class Process_Media():
             new_temp_filename = self.input.temp_dir_path_and_filename
             with open(self.input.temp_dir_path_and_filename, 'rb') as f:
                 f.seek(63)
-                compress = (f.read(1) == b'\x01')
+                read_value = f.read(1)
+                compress = (read_value == b'\x01')
 
             # If compress_level 0 or 1 write file with compress_level=2 and point to new file instead
             if (compress):
@@ -1773,6 +1774,7 @@ class Process_Media():
                                     '.png'
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
         else:
+            raise NotImplementedError(f'Extension: {self.input.extension} not supported yet.')
             pass
 
         data_tools.upload_to_cloud_storage(
@@ -1783,6 +1785,7 @@ class Process_Media():
 
         self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
                                                                 self.new_image.url_signed_expiry)
+        return new_temp_filename
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:
         # By Default, file has NLTK tokenizer.
