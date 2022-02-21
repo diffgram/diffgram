@@ -6,7 +6,7 @@ on:
       - 'releases/**'
       - '**'
   pull_request_target:
-    types: [review_requested]
+    types: [review_requested, synchronize, ready_for_review, opened]
     branches:
       - '**'
       - '!DAD**'
