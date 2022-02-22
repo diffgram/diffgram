@@ -34,6 +34,12 @@ class TaskEvent(Base, SerializerMixin):
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
+    user_reviewer_id = Column(Integer, ForeignKey('userbase.id'))
+    user_reviewer = relationship("User", foreign_keys = [user_reviewer_id])
+
+    user_assignee_id = Column(Integer, ForeignKey('userbase.id'))
+    user_assignee = relationship("User", foreign_keys = [user_assignee_id])
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -80,25 +86,29 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_completion_event(session, task, member) -> 'TaskEvent':
+    def generate_task_completion_event(session, task, member, task_assignee) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_completed',
-            member_created_id = member.id if member else None
+            member_created_id = member.id if member else None,
+            user_assignee_id = task_assignee.id,
+            user_reviewer_id = member.user_id if task.job.allow_reviews else None
         )
 
     @staticmethod
-    def generate_task_review_start_event(session, task, member) -> 'TaskEvent':
+    def generate_task_review_start_event(session, task, member, task_assignee) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_review_start',
-            member_created_id = member.id if member else None
+            member_created_id = member.id if member else None,
+            user_assignee_id = task_assignee.id,
+            user_reviewer_id = member.user_id if task.job.allow_reviews else None
         )
 
     @staticmethod
@@ -154,6 +164,8 @@ class TaskEvent(Base, SerializerMixin):
             task_id: int,
             event_type: str,
             member_created_id: int = None,
+            user_reviewer_id: int = None,
+            user_assignee_id: int = None,
             comment_id: int = None,
             add_to_session: bool = True,
             flush_session: bool = True
@@ -165,6 +177,8 @@ class TaskEvent(Base, SerializerMixin):
             task_id = task_id,
             event_type = event_type,
             member_created_id = member_created_id,
+            user_reviewer_id = user_reviewer_id,
+            user_assignee_id = user_assignee_id,
             comment_id = comment_id
         )
 

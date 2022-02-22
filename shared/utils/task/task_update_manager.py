@@ -43,13 +43,18 @@ class Task_Update():
     def emit_task_event_based_on_status(self, old_status, task):
         if task.status == 'complete':
             if old_status != 'completed':
-                TaskEvent.generate_task_completion_event(self.session, task, self.member)
+                assignees = task.get_assignees(session = self.session)
+                for user in assignees:
+                    TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = user)
+
         if task.status == 'in_progress':
             if old_status != 'in_progress':
                 TaskEvent.generate_task_in_progress_event(self.session, task, self.member)
-        if task.status == 'in_review':
-            if old_status != 'in_review':
-                TaskEvent.generate_task_review_start_event(self.session, task, self.member)
+        if task.status == 'review_requested':
+            if old_status != 'review_requested':
+                assignees = task.get_assignees(session = self.session)
+                for user in assignees:
+                    TaskEvent.generate_task_review_start_event(self.session, task, self.member, task_assignee = user)
         if task.status == 'requires_changes':
             if old_status != 'requires_changes':
                 TaskEvent.generate_task_request_change_event(self.session, task, self.member)
