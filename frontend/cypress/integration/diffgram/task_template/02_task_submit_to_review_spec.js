@@ -1,17 +1,16 @@
 import testUser from "../../../fixtures/users.json";
 
-describe("tasks_detail_pagination", () => {
-  context("tasks_detail_pagination", () => {
+describe("Correctly Submits Task to Review", () => {
+  context("task review context", () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
-      cy.createSampleTasksUsingBackend(10)
-        .loginByForm(testUser.email, testUser.password)
+        cy.loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)
         .create_task_template()
     });
 
-    it("Submit task to review", () => {
+    it("Submits a task to review", () => {
       const url = "/api/v1/task/*/complete";
       cy.visit(`http://localhost:8085/job/list`)
         .get('@task_template_name')
@@ -36,7 +35,7 @@ describe("tasks_detail_pagination", () => {
         .get('[data-cy="go-to-task-list"]').click({force: true});
     });
 
-    it("Reviews task", () => {
+    it("Reviews a task", () => {
       const url = "/api/v1/task/*/review";
       cy.wait(6000);
       cy.get(".image-preview")
