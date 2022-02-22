@@ -26,23 +26,23 @@ describe("tasks_detail_pagination", () => {
         .get("tbody > tr")
         .first()
         .click({force: true})
-        .wait(3000)
+        .wait(6000)
         .intercept(url).as("submit_to_review")
         .get('[data-cy="submit-to-review"]').click({force: true})
         .wait("@submit_to_review")
         .its("response")
         .should("have.property", "statusCode", 200)
-        .wait(3000)
+        .wait(6000)
         .get('[data-cy="go-to-task-list"]').click({force: true});
     });
 
     it("Reviews task", () => {
       const url = "/api/v1/task/*/review";
-      cy.wait(2000);
+      cy.wait(6000);
       cy.get(".image-preview")
         .first()
         .click({force: true});
-      cy.wait(3000);
+      cy.wait(6000);
       cy.intercept(url).as("review_task");
       cy.get('[data-cy="submit-to-review"]').click({force: true});
       cy.wait(2000);
