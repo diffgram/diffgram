@@ -51,8 +51,7 @@
       <br />
 
       <v-card
-        v-if="!$store.state.project.current.project_string_id
-              && $store.state.user.current.security_email_verified != true">
+        v-if="$store.state.user.current.security_email_verified != true">
         <v-card-title>
           Please verify your email. Some actions may be restricted until verification.
         </v-card-title>
