@@ -10,7 +10,7 @@
         </v-card-title>
 
         <v-container>
-          
+
         <v_error_multiple :error="error"
                           data-cy="error-email">
         </v_error_multiple>
@@ -22,7 +22,7 @@
                       :rules="[rules.email]">
         </v-text-field>
 
-        <v-text-field 
+        <v-text-field
           :append-icon="password_hide ? 'visibility' : 'visibility_off'"
           @click:append="() => (password_hide = !password_hide)"
           :type="password_hide ? 'password' : 'text'"
@@ -33,14 +33,14 @@
           v-model="password"
         />
 
-        <v-text-field 
+        <v-text-field
             :append-icon="password_hide_check ? 'visibility' : 'visibility_off'"
             @click:append="() => (password_hide_check = !password_hide_check)"
             :type="password_hide_check ? 'password' : 'text'"
             label="Retype Password"
             validate-on-blur
             data-cy="password2"
-            :rules="[rules.password_check]"
+            :rules="[password_checker]"
             v-model="password_check"
         />
 
@@ -126,18 +126,7 @@
             }
             return true
           },
-          password_check: function (value) {
 
-            // Run equals check first
-            if (this.password != this.password_check) {
-              return "Passwords must match"
-            }
-
-            // Don't need to rerun password check
-            // since if they equal, and the first password as checked
-            // then all clear
-            return true
-        }
         }
 
       }
@@ -165,6 +154,18 @@
     },
 
     methods: {
+      password_checker: function (value) {
+
+        // Run equals check first
+        if (this.password != this.password_check) {
+          return "Passwords must match"
+        }
+
+        // Don't need to rerun password check
+        // since if they equal, and the first password as checked
+        // then all clear
+        return true
+      },
       route_account_login: function () {
         this.$router.push("/user/login");
       },
