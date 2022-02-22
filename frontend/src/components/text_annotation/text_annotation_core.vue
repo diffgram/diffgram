@@ -814,168 +814,174 @@ export default Vue.extend({
         },
         // draw_instance - is only returning rects that have to be drawn
         draw_instance: function(instance) {
-            let starting_token;
-            let end_token;
-            if (instance.type === 'text_token') {
-                starting_token = this.tokens.find(token => token.id === instance.start_token)
-                if (!starting_token) {
-                    instance.soft_delete = true
-                    return []
-                }
-                end_token = this.tokens.find(token => token.id === instance.end_token)
-                if (!end_token) {
-                    instance.soft_delete = true
-                    return []
-                }
-            } else {
-                const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
-                if (!start_instance) {
-                    instance.soft_delete = true
-                    return []
-                }
-                starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-                const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
-                if (!end_instance) {
-                    instance.soft_delete = true
-                    return []
-                }
-                end_token = this.tokens.find(token => token.id === end_instance.end_token)
-            }
-            if (starting_token.id === end_token.id) {
-                const rect = {
-                    instance_id: instance.get_instance_data().id,
-                    x: starting_token.start_x,
-                    y: this.lines[starting_token.line].y + 3,
-                    line: starting_token.line,
-                    width: starting_token.width,
-                    instance_type: instance.type,
-                    color: instance.label_file.colour.hex
-                }
-                return [rect]
-            }
+            try {
 
-            if (starting_token.line === end_token.line) {
-                if (starting_token.id < end_token.id) {
+                let starting_token;
+                let end_token;
+                if (instance.type === 'text_token') {
+                    starting_token = this.tokens.find(token => token.id === instance.start_token)
+                    if (!starting_token) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    end_token = this.tokens.find(token => token.id === instance.end_token)
+                    if (!end_token) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                } else {
+                    const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
+                    if (!start_instance) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    starting_token = this.tokens.find(token => token.id === start_instance.start_token)
+                    const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
+                    if (!end_instance) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    end_token = this.tokens.find(token => token.id === end_instance.end_token)
+                }
+                if (starting_token.id === end_token.id) {
                     const rect = {
                         instance_id: instance.get_instance_data().id,
                         x: starting_token.start_x,
                         y: this.lines[starting_token.line].y + 3,
                         line: starting_token.line,
-                        width: end_token.start_x + end_token.width - starting_token.start_x,
+                        width: starting_token.width,
                         instance_type: instance.type,
                         color: instance.label_file.colour.hex
                     }
-
-                    return [rect]
-                } else {
-                    const rect = {
-                        instance_id: instance.get_instance_data().id,
-                        x: end_token.start_x,
-                        y: this.lines[end_token.line].y + 3,
-                        line: starting_token.line,
-                        width: starting_token.start_x + starting_token.width - end_token.start_x,
-                        instance_type: instance.type,
-                        color: instance.label_file.colour.hex
-                    }
-
                     return [rect]
                 }
-            }
-
-            if (starting_token.line !== end_token.line) {
-                if (starting_token.id > end_token.id) {
-                    const rects = [];
-                    for (let i = end_token.line; i <= starting_token.line; ++i) {
-                        if (i === starting_token.line) {
-                            const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: starting_token.start_x + starting_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
+    
+                if (starting_token.line === end_token.line) {
+                    if (starting_token.id < end_token.id) {
+                        const rect = {
+                            instance_id: instance.get_instance_data().id,
+                            x: starting_token.start_x,
+                            y: this.lines[starting_token.line].y + 3,
+                            line: starting_token.line,
+                            width: end_token.start_x + end_token.width - starting_token.start_x,
+                            instance_type: instance.type,
+                            color: instance.label_file.colour.hex
                         }
-                        else if (i === end_token.line) {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: end_token.start_x,
-                                y: this.lines[end_token.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
+    
+                        return [rect]
+                    } else {
+                        const rect = {
+                            instance_id: instance.get_instance_data().id,
+                            x: end_token.start_x,
+                            y: this.lines[end_token.line].y + 3,
+                            line: starting_token.line,
+                            width: starting_token.start_x + starting_token.width - end_token.start_x,
+                            instance_type: instance.type,
+                            color: instance.label_file.colour.hex
                         }
-                        else {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
-                            const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
+    
+                        return [rect]
                     }
-                    return rects
-                } else {
-                    const rects = [];
-                    for (let i = starting_token.line; i <= end_token.line; ++i) {
-                        if (i === starting_token.line) {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: starting_token.start_x,
-                                y: this.lines[starting_token.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - starting_token.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                        else if (i === end_token.line) {
-                            const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: end_token.start_x + end_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                        else {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
-                            const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                    }
-                    return rects
                 }
+    
+                if (starting_token.line !== end_token.line) {
+                    if (starting_token.id > end_token.id) {
+                        const rects = [];
+                        for (let i = end_token.line; i <= starting_token.line; ++i) {
+                            if (i === starting_token.line) {
+                                const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: starting_token.start_x + starting_token.width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else if (i === end_token.line) {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: end_token.start_x,
+                                    y: this.lines[end_token.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
+                                const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                        }
+                        return rects
+                    } else {
+                        const rects = [];
+                        for (let i = starting_token.line; i <= end_token.line; ++i) {
+                            if (i === starting_token.line) {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: starting_token.start_x,
+                                    y: this.lines[starting_token.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - starting_token.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else if (i === end_token.line) {
+                                const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: end_token.start_x + end_token.width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
+                                const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                        }
+                        return rects
+                    }
+                }
+                return []
             }
-            return []
+            catch(e) {
+                return []
+            }
         },
         // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
