@@ -18,22 +18,12 @@
 
                 <v-card>
 
-                  <!-- TODO include more context, ie the project invited to etc. etc -->
-
-                  <h1 class="black--text text--lighten-2 text-center pt-4">
-                    Build on Diffgram
-                  </h1>
-
-                  <h2 class="blue--text text--lighten-1 text-center pa-2">
-                    Bring your ideas to life.
-                  </h2>
-
                   <div class="text-center pa-4">
                     <v-btn large
                            outlined
                            color="primary"
                            @click="route_builder_signup()">
-                      Enable Builder API
+                      Finish Onboarding
                     </v-btn>
                   </div>
 
@@ -100,6 +90,9 @@
                 @click="$router.push('/a/project/new')">
             New Project
           </v-btn>
+
+
+
         </v-card-actions>
       </v-card>
 
