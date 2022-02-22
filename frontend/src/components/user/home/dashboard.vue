@@ -91,7 +91,11 @@
             New Project
           </v-btn>
 
-
+          <v-btn large
+                 color="primary"
+                 @click="$router.push('/projects')">
+            Change Project
+          </v-btn>
 
         </v-card-actions>
       </v-card>
