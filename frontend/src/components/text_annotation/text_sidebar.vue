@@ -3,6 +3,7 @@
         width: 350px; 
         border-right: 1px solid #e0e0e0; 
         max-height: calc(100vh - ${toolbar_height});
+        min-height: calc(100vh - ${toolbar_height});
         position: sticky;
         left: 0;
         top: ${toolbar_height}
