@@ -248,17 +248,17 @@
             </tooltip_button>
 
 
-            <ahref_seo_optimal href="/contact"
-                               v-if="$store.state.org && !$store.state.org.current.id &&
-                       $store.state.builder_or_trainer.mode == 'builder'"
-            >
+
               <v-btn color="primary"
-                     text
+                     outlined
                      style="text-transform: none !important;"
+                     class="mr-2"
+                     @click="contact_us"
+                     v-if="$store.state.org && !$store.state.org.current.id && $store.state.builder_or_trainer.mode == 'builder'"
               >
-                Book A Demo
+                  Book A Demo
               </v-btn>
-            </ahref_seo_optimal>
+
 
             <ahref_seo_optimal href="/user/data_platform/new">
               <v-btn color="primary"
@@ -378,7 +378,7 @@
     watch: {
       '$store.state.user.logged_in': function (value) {
         if (value) this.get_avalible_projects()
-      },  
+      },
       '$route.path': function(value) {
         const do_not_display = value !== "/" && this.routes_without_menu.some(route => {
           return route.includes(value)
@@ -447,6 +447,9 @@
         const response = await getProjectList();
         const project_list = response.data.project_list;
         this.$store.commit("set_userProjects_list", project_list);
+      },
+      contact_us: function(){
+        window.open('https://diffgram.com/main/contact')
       }
     },
   });
