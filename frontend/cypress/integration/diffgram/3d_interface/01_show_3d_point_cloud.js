@@ -1,4 +1,5 @@
 import testUser from '../../../fixtures/users.json';
+import testLabels from "../../../fixtures/labels.json";
 
 describe('Annotation 3D Interface display', () => {
 
@@ -11,6 +12,7 @@ describe('Annotation 3D Interface display', () => {
       // login before all tests
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);
+      cy.createLabels(testLabels)
 
     })
 
