@@ -1,6 +1,13 @@
 <template>
 <div>
-    <geo_toolbar />
+    <main_menu
+        :height="`${!task ? '100px' : '50px'}`"
+        :show_default_navigation="!task"
+    >
+        <template slot="second_row">
+            <geo_toolbar />
+        </template>
+    </main_menu>
     <div style="display: flex; flex-direction: row">
         <geo_sidebar />
         <div id="map" ref="map" @click="draw_instance" style="height: calc(100vh - 100px); z-index: 0; width: 100%" />
