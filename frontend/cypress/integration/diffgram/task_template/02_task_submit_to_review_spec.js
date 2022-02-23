@@ -7,12 +7,13 @@ describe("Correctly Submits Task to Review", () => {
       Cypress.Cookies.defaults({preserve: ["session"]})
         cy.loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)
-        .create_task_template()
+
     });
 
     it("Submits a task to review", () => {
       const url = "/api/v1/task/*/complete";
-      cy.visit(`http://localhost:8085/job/list`)
+      cy.create_task_template()
+        .visit(`http://localhost:8085/job/list`)
         .get('@task_template_name')
         .then(task_template_name => {
           cy.get(`.${task_template_name.replace(/\s+/g, '')}`)
