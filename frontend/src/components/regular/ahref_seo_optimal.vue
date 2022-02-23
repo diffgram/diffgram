@@ -1,6 +1,6 @@
 
 <template>
- 
+
   <a  :href="href"
       :target="target"
       @click="go_to_url_from_href_seo_workaround($event, href)"
@@ -14,9 +14,9 @@
 <script lang="ts">
 
 /* Usage example
- * 
+ *
 * <ahref_seo_optimal href="/software">
- * 
+ *
     <v-btn>
       Diffgram Software
     </v-btn>

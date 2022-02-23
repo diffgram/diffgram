@@ -1,5 +1,6 @@
 <template>
   <v-container fluid elevation="2" style="min-height: 500px" class="exam-child-list pa-6">
+    <v-progress-linear indeterminate v-if="loading_children"></v-progress-linear>
     <v-list     v-if="child_exams_list.length > 0">
 
         <template
@@ -11,7 +12,7 @@
             <v-list-item-avatar>
               <v-list-item-avatar class="ma-4">
                 <v-img
-                  v-if="item.member.profile_image_thumb_url"
+                  v-if="item.member && item.member.profile_image_thumb_url"
                   :alt="`${item.name} avatar`"
                   :src="item.member.profile_image_thumb_url"
                 ></v-img>
@@ -21,11 +22,11 @@
               </v-list-item-avatar>
             </v-list-item-avatar>
 
-            <v-list-item-title v-text="`Results for ${item.member.first_name} ${item.member.last_name}`">
+            <v-list-item-title v-if="item.member" v-text="`Results for ${item.member.first_name} ${item.member.last_name}`">
 
 
             </v-list-item-title>
-            <v-list-item-subtitle v-text="`${item.member.email}`"></v-list-item-subtitle>
+            <v-list-item-subtitle  v-if="item.member" v-text="`${item.member.email}`"></v-list-item-subtitle>
 
             <v-list-item-action class="mr-10">
               <v-btn color="secondary" @click="go_to_examination(item.id)"><v-icon>mdi-badge</v-icon>Grade</v-btn>
@@ -39,7 +40,7 @@
 
 
     </v-list>
-    <v-card v-else fluid class="d-flex flex-column justify-center align-center ma-4" elevation="2" style="min-height: 500px">
+    <v-card v-else-if="!loading_children && child_exams_list.length === 0" fluid class="d-flex flex-column justify-center align-center ma-4" elevation="2" style="min-height: 500px">
       <h1>No Examinations Yet</h1>
       <v-icon size="128">mdi-archive</v-icon>
     </v-card>
@@ -88,6 +89,10 @@ export default Vue.extend({
         if(examination.member_list_ids && examination.member_list_ids.length > 0){
           let member_id = examination.member_list_ids[0];
           let member = this.$store.state.project.current.member_list.find(member => member.id === member_id)
+          if(!member){
+            // Fetch member data
+            
+          }
           examination.member = member
         }
 

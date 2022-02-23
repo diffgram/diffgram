@@ -147,6 +147,7 @@ def do_routes_importing():
 
     from methods.configs.mailgun_is_set import mailgun_is_set
     from methods.configs.admin_install_info import api_admin_install_info
+    from methods.configs.is_open_source import api_is_open_source
 
     from methods.task.credential.credential_type_new import new_credential_type_api
     from methods.task.credential.credential_list import credential_list_api
