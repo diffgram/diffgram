@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'master'
       - 'releases/**'
       - '**'
   pull_request_target:
