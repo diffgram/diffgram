@@ -5,7 +5,7 @@ describe("Correctly Submits Task to Review", () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
-        cy.loginByForm(testUser.email, testUser.password)
+      cy.loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)
 
     });
@@ -38,18 +38,24 @@ describe("Correctly Submits Task to Review", () => {
 
     it("Reviews a task", () => {
       const url = "/api/v1/task/*/review";
-      cy.wait(6000);
-      cy.get(".image-preview")
+      cy.visit(`http://localhost:8085/job/list`)
+        .get(`.job-card`)
         .first()
-        .click({force: true});
-      cy.wait(6000);
-      cy.intercept(url).as("review_task");
-      cy.get('[data-cy="submit-to-review"]').click({force: true});
-      cy.wait(2000);
-      cy.get('[data-cy="review-the-task"]').click({force: true});
-      cy.wait("@review_task")
+        .find('.job-title')
+        .parent()
+        .click({force: true})
+        .get(".image-preview")
+        .first()
+        .click({force: true})
+        .wait(6000)
+        .intercept(url).as("review_task")
+        .get('[data-cy="submit-to-review"]').click({force: true})
+        .wait(2000)
+        .get('[data-cy="review-the-task"]').click({force: true})
+        .wait("@review_task")
         .its("response")
         .should("have.property", "statusCode", 200);
     });
   });
-});
+})
+;
