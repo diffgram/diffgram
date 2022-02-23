@@ -5,7 +5,7 @@
         :show_default_navigation="!task"
     >
         <template slot="second_row">
-            <geo_toolbar />
+            <geo_toolbar :instance_type_list="instance_type_list" />
         </template>
     </main_menu>
     <div style="display: flex; flex-direction: row">
@@ -60,7 +60,23 @@ export default Vue.extend({
                 '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
             zoom: 15,
             center: [51.505, -0.159],
-            markerLatLng: [51.504, -0.159]
+            markerLatLng: [51.504, -0.159],
+            instance_type_list: [
+                {
+                    name: "polygon",
+                    display_name: "Polygon",
+                    icon: "mdi-vector-polygon",
+                },
+                { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
+                { name: "tag", display_name: "Tag", icon: "mdi-tag" },
+                { name: "point", display_name: "Point", icon: "mdi-circle-slice-8" },
+                { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
+                {
+                    name: "circle",
+                    display_name: "Circle",
+                    icon: "mdi-ellipse-outline",
+                },
+            ],
         };
     },
     mounted() {

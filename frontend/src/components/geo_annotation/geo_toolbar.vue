@@ -264,6 +264,21 @@
             </div>
 
             <v-divider vertical></v-divider>
+            
+            <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
+          <!-- instance_selector -->
+                <diffgram_select
+                    :item_list="instance_type_list"
+                    data_cy="instance-type-select"
+                    v-model="instance_type"
+                    label="New Instance Type"
+                    :disabled="loading || loading_instance_templates || view_only_mode"
+                    @change="$emit('change_instance_type', instance_type)"
+                >
+                </diffgram_select>
+            </div>
+
+            <v-divider vertical></v-divider>
 
             <div class="pl-3 pt-3 pr-2">
                 <v-switch
@@ -410,11 +425,16 @@ export default Vue.extend({
         file: {
             type: Object,
             default: undefined
-        }
+        },
+        instance_type_list: {
+            type: Object,
+            default: {}
+        },
     },
     data() {
         return {
-            draw_mode_local: true
+            draw_mode_local: true,
+            instance_type: "box",
         }
     },
     computed: {
