@@ -140,7 +140,7 @@ def task_complete(session,
             member = member
         )
         if job.allow_reviews:
-
+            print('COMPLETE POST REVIEW', post_review)
             if post_review:
                 task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
@@ -151,7 +151,7 @@ def task_complete(session,
                     task_update_manager = task_update_manager
                 )
         else:
-            task_update_manager.status = 'complete'
+            task_update_manager.status = TASK_STATUSES['complete']
             task_update_manager.main()
 
         # Careful, this is only relevant for normal

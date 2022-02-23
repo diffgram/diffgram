@@ -52,12 +52,12 @@ class Task_Update():
                 TaskEvent.generate_task_in_progress_event(self.session, task, self.member)
         if task.status == 'review_requested':
             if old_status != 'review_requested':
-                assignees = task.get_assignees(session = self.session)
-                for user in assignees:
-                    TaskEvent.generate_task_review_start_event(self.session, task, self.member, task_assignee = user)
+                TaskEvent.generate_task_review_start_event(self.session, task, self.member)
         if task.status == 'requires_changes':
             if old_status != 'requires_changes':
-                TaskEvent.generate_task_request_change_event(self.session, task, self.member)
+                assignees = task.get_assignees(session = self.session)
+                for user in assignees:
+                    TaskEvent.generate_task_request_change_event(self.session, task, self.member, task_assignee = user)
 
     def change_status(self):
         if self.task.status != 'archived' and self.status == 'archived':

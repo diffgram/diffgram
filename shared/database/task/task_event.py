@@ -99,7 +99,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_review_start_event(session, task, member, task_assignee) -> 'TaskEvent':
+    def generate_task_review_start_event(session, task, member) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -107,19 +107,19 @@ class TaskEvent(Base, SerializerMixin):
             task_id = task.id,
             event_type = 'task_review_start',
             member_created_id = member.id if member else None,
-            user_assignee_id = task_assignee.id,
-            user_reviewer_id = member.user_id if task.job.allow_reviews else None
         )
 
     @staticmethod
-    def generate_task_request_change_event(session, task, member) -> 'TaskEvent':
+    def generate_task_request_change_event(session, task, member, task_assignee) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
             event_type = 'task_request_changes',
-            member_created_id = member.id if member else None
+            member_created_id = member.id if member else None,
+            user_assignee_id = task_assignee.id,
+            user_reviewer_id = member.user_id if task.job.allow_reviews else None
         )
 
     @staticmethod
