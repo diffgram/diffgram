@@ -59,9 +59,6 @@ class TaskReportRejectRatioReport:
             'header_name': 'Tasks Completed / Changes Requested',
         }
         for i in range(0, len(data_completed)):
-            print(i)
-            print('aaa', data_completed[i], data_completed)
-            print('aaa', data_rejected[i], data_rejected)
             result['labels'].append(data_completed[i][0])
             result['values_completed'].append(data_completed[i][1])
             result['values_rejected'].append(data_rejected[i][1])
