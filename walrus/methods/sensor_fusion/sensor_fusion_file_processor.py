@@ -32,8 +32,8 @@ class SensorFusionFileProcessor:
         self.input.status = "processing"
         self.try_to_commit()
         logger.info('INPUT BLOB BUCKET {} |||'.format(settings.CLOUD_STORAGE_BUCKET, settings.DIFFGRAM_STATIC_STORAGE_PROVIDER))
-        logger.info('INPUT BLOB URL {} |||'.format(self.input.raw_data_blob_path))
-        logger.info('INPUT BLOB temp_dir_path_and_filename {}'.format(self.input.temp_dir_path_and_filename))
+        logger.info(f"INPUT BLOB URL {self.input.raw_data_blob_path} |||")
+        logger.info(f"INPUT BLOB temp_dir_path_and_filename {self.input.temp_dir_path_and_filename}")
 
         with open(self.input.temp_dir_path_and_filename, encoding = 'latin1') as json_data:
             sensor_fusion_spec = json.load(json_data)
@@ -47,7 +47,7 @@ class SensorFusionFileProcessor:
         pcd_file_builder = PCDFileBuilder(point_list = sensor_fusion_spec.get('point_list'))
 
         pcd_save_path = self.input.temp_dir_path_and_filename.split('.json')[0]
-        pcd_save_path = pcd_save_path + '.pcd'
+        pcd_save_path = f"{pcd_save_path}.pcd"
         pcd_file_builder.generate_pcd_file(save_path = pcd_save_path)
         return pcd_save_path
 
@@ -57,7 +57,7 @@ class SensorFusionFileProcessor:
             creates point cloud object
         :return:
         """
-        blob_path = '{}{}/{}'.format(settings.PROJECT_PCD_FILES_BASE_DIR, str(self.input.project_id), str(file_3d.id))
+        blob_path = f"{settings.PROJECT_PCD_FILES_BASE_DIR}{str(self.input.project_id)}/{str(file_3d.id)}"
         self.data_tools.upload_to_cloud_storage(temp_local_path = pcd_file_path, blob_path = blob_path)
 
         point_cloud = PointCloud.new(

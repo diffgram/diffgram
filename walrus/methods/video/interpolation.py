@@ -493,7 +493,7 @@ def interpolate_api(task_id):
             )
         except Exception as e:
             trace = traceback.format_exc()
-            logger.error('File {} is Locked'.format(task.file.id))
+            logger.error(f"File {task.file.id} is Locked")
             logger.error(trace)
             log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
             return jsonify(log), 400
@@ -543,7 +543,7 @@ def interpolate_all_frames_using_task(task_id):
             )
         except Exception as e:
             trace = traceback.format_exc()
-            logger.error('File {} is Locked'.format(task.file.id))
+            logger.error(f"File {task.file.id} is Locked")
             logger.error(trace)
             log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
             return jsonify(log), 400
@@ -604,7 +604,7 @@ def interpolate_all_frames(project_string_id, video_file_id):
                 nowait = True)
         except Exception as e:
             trace = traceback.format_exc()
-            logger.error('File {} is Locked'.format(video_file_id))
+            logger.error(f"File {video_file_id} is Locked")
             logger.error(trace)
             log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
             return jsonify(log), 400

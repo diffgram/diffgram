@@ -120,8 +120,7 @@ def attempt_redeem_code(session,
     # a user would create account with same email as we send a signup code to
     if auth.email_sent_to and email:
         if auth.email_sent_to != email:
-            return False, "Code only valid for: " + \
-                   str(auth.email_sent_to), None
+            return False, f"Code only valid for: {str(auth.email_sent_to)}", None
 
     if auth.type:
 

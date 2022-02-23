@@ -84,7 +84,7 @@ class Project_permissions():
 
         with sessionMaker.session_scope() as session:
             if not project_string_id or project_string_id == "null" or project_string_id == "undefined":
-                raise Forbidden(default_denied_message + " [ First Sanity Checks ] project_string_id None, null, etc.")
+                raise Forbidden(f"{default_denied_message} [ First Sanity Checks ] project_string_id None, null, etc.")
 
             project = Project.get(session, project_string_id)
             if project is None:
@@ -95,20 +95,20 @@ class Project_permissions():
 
             if request.authorization is not None:
 
-                basic_auth_denied_message = default_denied_message + " [Basic Auth Based] "
+                basic_auth_denied_message = f"{default_denied_message} [Basic Auth Based] "
 
                 client_id = request.authorization.get('username', None)
                 if not client_id:
-                    raise Forbidden(basic_auth_denied_message + " No username. (client_id)")
+                    raise Forbidden(f"{basic_auth_denied_message} No username. (client_id)")
                 client_secret = request.authorization.get('password', None)
                 if not client_secret:
-                    raise Forbidden(basic_auth_denied_message + " No password. (client_secret)")
+                    raise Forbidden(f"{basic_auth_denied_message} No password. (client_secret)")
 
                 result = API_Permissions.by_project(session = session,
                                                     project_string_id = project_string_id,
                                                     Roles = Roles)
                 if result is not True:
-                    raise Forbidden(basic_auth_denied_message + "Failed API Permissions")
+                    raise Forbidden(f"{basic_auth_denied_message}Failed API Permissions")
 
                 # Project APIs, maybe should role this into API_Permissions
                 check_all_apis(
@@ -117,7 +117,7 @@ class Project_permissions():
 
                 return True
 
-            user_denied_message = default_denied_message + " [Human User Based] "
+            user_denied_message = f"{default_denied_message} [Human User Based] "
 
             result = Project_permissions.check_permissions(
                 session = session,
@@ -163,7 +163,7 @@ class Project_permissions():
 
         if project_string_id is None:
             # TODO merge None checks from other thing up top here.
-            raise Forbidden(user_denied_message + "project_string_id is None")
+            raise Forbidden(f"{user_denied_message}project_string_id is None")
 
         if Project_permissions.check_if_project_is_public(project, Roles):
             return True
@@ -174,7 +174,7 @@ class Project_permissions():
         if project is None:
             project = Project.get(session, project_string_id)
             if project is None:
-                raise Forbidden(user_denied_message + " Failed to Get Project ")
+                raise Forbidden(f"{user_denied_message} Failed to Get Project ")
 
             if Project_permissions.check_if_project_is_public(project, Roles):
                 return True
@@ -185,7 +185,7 @@ class Project_permissions():
 
         # TODO merge LoggedIn() with getUserID() similar internal logic
         if LoggedIn() != True:
-            raise Unauthorized(user_denied_message + " Failed LoggedIn ")
+            raise Unauthorized(f"{user_denied_message} Failed LoggedIn ")
 
         if 'allow_any_logged_in_user' in Roles:  # TODO not happy with this name, want more clarity on how this effects other permissions like apis / project etc.
             return True
@@ -278,4 +278,4 @@ def check_api(apis_required_list,
     If an API is in the list, it must be enabled
     """
     if getattr(project, api_to_check) is not True:
-        raise Forbidden(api_to_check + " not enabled.")
+        raise Forbidden(f"{api_to_check} not enabled.")

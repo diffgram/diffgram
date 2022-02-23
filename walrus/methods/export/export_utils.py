@@ -16,7 +16,7 @@ def generate_file_name_from_export(export, session):
     # TODO (low priority) switch to starting to array with "".join() it
     # it's a bit faster and more importantly easier to read / check.
 
-    filename = '_diffgram_annotations__source_' + str(export.source) + '_'
+    filename = f"_diffgram_annotations__source_{str(export.source)}_"
     
     if export.source == "task":
         filename += str(export.task.id)
@@ -32,7 +32,7 @@ def generate_file_name_from_export(export, session):
         filename += str(export.working_dir.nickname)
 
     # Always add timestamps to avoid duplicate names.
-    filename += "_datetime_" + datetime.datetime.utcnow().isoformat()
+    filename += f"_datetime_{datetime.datetime.utcnow().isoformat()}"
 
     return filename
 

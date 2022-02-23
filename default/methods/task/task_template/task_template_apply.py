@@ -172,7 +172,7 @@ def copy_task_template_for_exam(session,
 
     """
     # TODO how do we want to name exam jobs to avoid confusion
-    name = og_task_template.name + " " + user.email
+    name = f"{og_task_template.name} {user.email}"
 
     # Override for now, so review freqeuncy is 1:1
     review_by_human_freqeuncy = "every_pass"

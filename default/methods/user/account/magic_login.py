@@ -73,13 +73,13 @@ def send_magic_login_email(auth):
     # optional, resend code if 15 minutes has passed?
 
     if settings.URL_BASE.endswith('/'):
-        link_verify = settings.URL_BASE + "user/login/" + auth.code
+        link_verify = f"{settings.URL_BASE}user/login/{auth.code}"
     else:
-        link_verify = settings.URL_BASE + "/user/login/" + auth.code
+        link_verify = f"{settings.URL_BASE}/user/login/{auth.code}"
 
     subject = "Magic link Diffgram"
 
-    message = " Login now " + link_verify
+    message = f" Login now {link_verify}"
 
     message += " Expires in 15 minutes."
 

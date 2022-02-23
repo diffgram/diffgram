@@ -218,12 +218,12 @@ class Action_Flow(Base):
 
         flow.string_id = safe_name(flow.name)
 
-        flow.string_id += "_" + create_random_string(length = 20)
+        flow.string_id += f"_{create_random_string(length=20)}"
 
 
 # 'abcdefghijklmnopqrstuvwxyz0123456789'
 # can add chars in front if needed ie "." etc.
-valid_chars = "%s%s" % (string.ascii_letters, string.digits)
+valid_chars = f"{string.ascii_letters}{string.digits}"
 
 
 def safe_name(name, character_limit = 10):

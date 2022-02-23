@@ -137,11 +137,11 @@ class LinkSharer:
         if not member.user or not member.user.email:
             return
         
-        subject = "[{}]{} Has Shared an Instance With You ".format(self.project_string_id, self.user_sending.first_name)
+        subject = f"[{self.project_string_id}]{self.user_sending.first_name} Has Shared an Instance With You "
 
-        message = "{} shared the following instance: \n\r {} \n\r".format(self.user_sending.first_name, self.link_to_send)
+        message = f"{self.user_sending.first_name} shared the following instance: \n\r {self.link_to_send} \n\r"
 
         message += "Notes: \n\r"
 
-        message += "{}".format(self.message)
+        message += f"{self.message}"
         communicate_via_email.send(member.user.email, subject, message)

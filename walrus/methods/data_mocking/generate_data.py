@@ -279,7 +279,7 @@ class DiffgramDataMocker:
             r = rand_int_0_255()    # red
             g = rand_int_0_255()    # green
             b = rand_int_0_255()    # blue
-            random_color = '#%02X%02X%02X' % (r, g, b)
+            random_color = f"#{r:02X}{g:02X}{b:02X}"
             colour = {
                 "a": 1,
                 "hex": random_color,
@@ -291,7 +291,7 @@ class DiffgramDataMocker:
                     }
             }
 
-            label_name = 'Diffgram Sample Label {}'.format(i + 1)
+            label_name = f"Diffgram Sample Label {i + 1}"
             label = self.session.query(Label).filter(
                 Label.name == label_name,
                 Label.default_sequences_to_single_frame == False
@@ -442,7 +442,7 @@ class DiffgramDataMocker:
         n = str(uuid.uuid4())
         project = Project.new(session=self.session,
                               name='Diffgram Sample Project',
-                              project_string_id='sample_project_{}'.format(n),
+                              project_string_id=f"sample_project_{n}",
                               goal='testing',
                               user=user,
                               member_created=user.member,
@@ -458,7 +458,7 @@ class DiffgramDataMocker:
         if structure == '1_pass':
             task_template = self.__create_sample_task_template('Sample Task Template [Diffgram]', project, reviews, member)
             # Try to get the default dataset.
-            input_dir, input_dir_exists = self.generate_sample_dataset('Pending [1st pass] ' + str(time.time())[-5:], project=project)
+            input_dir, input_dir_exists = self.generate_sample_dataset(f"Pending [1st pass] {str(time.time())[-5:]}", project=project)
 
             if not input_dir_exists:
                 self.generate_test_data_on_dataset_copy_file(input_dir, num_files)
@@ -476,19 +476,19 @@ class DiffgramDataMocker:
             self.create_tasks_for_sample_task_template(task_template, attached_dir=input_dir)
         elif structure == '2_pass':
             for i in range(0, 2):
-                task_template = self.__create_sample_task_template('Sample Task Template {} pass'.format(i + 1),
+                task_template = self.__create_sample_task_template(f"Sample Task Template {i + 1} pass",
                                                                    project, reviews, member)
                 # Try to get the default dataset.
                 if i == 0:
-                    input_dir, input_dir_exists = self.generate_sample_dataset('Pending [{} pass]'.format(i + 1),
+                    input_dir, input_dir_exists = self.generate_sample_dataset(f"Pending [{i + 1} pass]",
                                                                                project=project)
                     if not input_dir_exists:
                         self.generate_test_data_on_dataset_copy_file(input_dir)
                 else:
-                    input_dir, input_dir_exists = self.generate_sample_dataset('Completed [{} pass]'.format(i),
+                    input_dir, input_dir_exists = self.generate_sample_dataset(f"Completed [{i} pass]",
                                                                                project=project)
 
-                output_dir, output_dir_exists = self.generate_sample_dataset('Completed [{} pass]'.format(i + 1),
+                output_dir, output_dir_exists = self.generate_sample_dataset(f"Completed [{i + 1} pass]",
                                                                              project=project)
                 task_template.output_dir_action = 'copy'
                 task_template.completion_directory = output_dir

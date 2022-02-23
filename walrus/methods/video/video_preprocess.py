@@ -184,7 +184,7 @@ class Video_Preprocess():
         new_sub_clip_filename = str(self.offset_in_seconds) + "_" + \
                                 self.parent_input.original_filename
 
-        output_temp_local_path = self.parent_input.temp_dir + "/" + new_sub_clip_filename
+        output_temp_local_path = f"{self.parent_input.temp_dir}/{new_sub_clip_filename}"
 
         try:
             ffmpeg_extract_subclip(
@@ -192,10 +192,10 @@ class Video_Preprocess():
                 self.offset_in_seconds,
                 end_time,
                 targetname = output_temp_local_path)
-            logger.info(str(i) + " (Iteration) ffmpeg_extract_subclip Success")
+            logger.info(f"{str(i)} (Iteration) ffmpeg_extract_subclip Success")
         except Exception as e:
-            self.log['info'] = "Last iteration: " + str(i)
-            logger.error('Error splitting video {}'.format(str(e)))
+            self.log['info'] = f"Last iteration: {str(i)}"
+            logger.error(f"Error splitting video {str(e)}")
             return False
 
         """
@@ -248,7 +248,7 @@ class Video_Preprocess():
 
         # this must be before we upload so we get the id
         self.new_input()
-        logger.info(str(i) + " (Iteration) new_input finished")
+        logger.info(f"{str(i)} (Iteration) new_input finished")
 
         # Copy the frame packet map if exists.
         self.input.instance_list = self.parent_input.instance_list
@@ -259,9 +259,9 @@ class Video_Preprocess():
             data_tools.upload_to_cloud_storage(
                 temp_local_path = output_temp_local_path,
                 blob_path = self.input.raw_data_blob_path,
-                content_type = "video/" + self.parent_input.extension
+                content_type = f"video/{self.parent_input.extension}"
             )
-            logger.info(str(i) + " (Iteration) upload_to_cloud_storage finished")
+            logger.info(f"{str(i)} (Iteration) upload_to_cloud_storage finished")
 
         # Should be able to run right after upload
         # Double check this is just the path and not whole dir..
@@ -295,7 +295,7 @@ class Video_Preprocess():
         # Could do a - 1 or something for splitting it but
         self.offset_in_seconds = end_time
 
-        logger.info(str(i) + " split overall function Success")
+        logger.info(f"{str(i)} split overall function Success")
 
         return True
 

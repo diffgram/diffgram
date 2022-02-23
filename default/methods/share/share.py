@@ -380,16 +380,16 @@ class Share_Project():
         if self.notify is False:
             return
 
-        subject = "Added to project " + self.project_string_id
+        subject = f"Added to project {self.project_string_id}"
 
-        message = " You have been added to: " + self.project_string_id
-        message += " as a " + str(permission_type)
+        message = f" You have been added to: {self.project_string_id}"
+        message += f" as a {str(permission_type)}"
 
         message += ". Access the project here. " + settings.URL_BASE + \
                    "project/" + self.project_string_id
 
-        message += " Added by " + str(self.user_who_made_request.email)
-        message += " With personal note of:" + str(note)
+        message += f" Added by {str(self.user_who_made_request.email)}"
+        message += f" With personal note of:{str(note)}"
 
         communicate_via_email.send(self.user_to_modify.email, subject, message)
 
@@ -410,15 +410,15 @@ class Share_Project():
 
         # We still notify here since the user doesn't exist...
 
-        subject = "Added to project " + self.project_string_id
+        subject = f"Added to project {self.project_string_id}"
 
-        message = " You have been added to: " + self.project_string_id
-        message += " as an: " + str(permission_type)
+        message = f" You have been added to: {self.project_string_id}"
+        message += f" as an: {str(permission_type)}"
 
-        message += " Create an account to get started here: " + signup_link
+        message += f" Create an account to get started here: {signup_link}"
 
-        message += " Added by " + str(self.user_who_made_request.email)
-        message += " " + str(note)
+        message += f" Added by {str(self.user_who_made_request.email)}"
+        message += f" {str(note)}"
 
         # Careful, can't use self.user_to_modify here since user doesn't exist yet....
         communicate_via_email.send(email, subject, message)

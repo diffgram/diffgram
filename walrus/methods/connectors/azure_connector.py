@@ -100,7 +100,7 @@ class AzureConnector(Connector):
             start = datetime.datetime.utcnow(),
             expiry = expiry_time,
             permission = BlobSasPermissions(read = True),
-            content_disposition = 'attachment; filename=' + filename,
+            content_disposition = f"attachment; filename={filename}",
         )
         sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
             self.connection_client.account_name,
@@ -132,7 +132,7 @@ class AzureConnector(Connector):
                     session = session,
                     member_id = opts['event_data']['request_user'],
                     kind = 'microsoft_azure_new_import_warning',
-                    description = 'Skipped import for {}, invalid file type.'.format(opts['path']),
+                    description = f"Skipped import for {opts['path']}, invalid file type.",
                     error_log = log,
                     project_id = project.id,
                     member = member,
@@ -158,7 +158,7 @@ class AzureConnector(Connector):
                 session = session,
                 member_id = opts['event_data']['request_user'],
                 kind = 'microsoft_azure_new_import_success',
-                description = 'New cloud import for {}'.format(opts['path']),
+                description = f"New cloud import for {opts['path']}",
                 error_log = opts,
                 project_id = project.id,
                 member = member,
@@ -361,9 +361,9 @@ class AzureConnector(Connector):
             filename = generate_file_name_from_export(export, session)
 
             if opts['path'] != '':
-                key = '{}{}.{}'.format(opts['path'], filename, opts['format'].lower())
+                key = f"{opts['path']}{filename}.{opts['format'].lower()}"
             else:
-                key = '{}.{}'.format(filename, opts['format'].lower())
+                key = f"{filename}.{opts['format'].lower()}"
 
             file = io.BytesIO(result)
             blob_client = self.connection_client.get_blob_client(container = opts['bucket_name'], blob = key)
@@ -376,7 +376,7 @@ class AzureConnector(Connector):
                 session = session,
                 member_id = opts['event_data']['request_user'],
                 kind = 'microsoft_azure_new_export_success',
-                description = 'New cloud export for {}{}'.format(opts['path'], filename),
+                description = f"New cloud export for {opts['path']}{filename}",
                 error_log = opts,
                 member = member,
                 project_id = project.id,
@@ -410,7 +410,7 @@ class AzureConnector(Connector):
                 start = datetime.datetime.utcnow(),
                 expiry = expiry_time,
                 permission = BlobSasPermissions(read = True),
-                content_disposition = 'attachment; filename=' + filename,
+                content_disposition = f"attachment; filename={filename}",
             )
             sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
                 self.connection_client.account_name,
@@ -421,7 +421,7 @@ class AzureConnector(Connector):
             resp = requests.get(sas_url)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
         except:
             log['error']['azure_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
             log['error']['details'] = traceback.format_exc()
