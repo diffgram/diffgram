@@ -276,9 +276,8 @@ class Share_Project():
             signup_code.permission_level = input['permission_type']
             self.session.add(signup_code)
 
-            signup_link = settings.URL_BASE + "user/new?" + \
-                          "code=" + signup_code.code + \
-                          "&email=" + signup_code.email_sent_to
+            signup_link = f'{settings.URL_BASE}user/new?code={signup_code.code}&email={signup_code.email_sent_to}' \
+                          f'&project={self.project_string_id}'
 
             self.invite_user(
                 signup_link = signup_link,

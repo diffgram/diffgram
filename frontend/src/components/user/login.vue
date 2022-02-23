@@ -174,6 +174,8 @@
       "
     >
       <v-alert type="info"> Already Logged In. </v-alert>
+
+      <v-btn x-large color="success"><v-icon>mdi-home</v-icon>Go to Dashboard</v-btn>
     </div>
 
     <div
@@ -257,6 +259,9 @@ export default Vue.extend({
     if (this.$store.state.user.logged_in == true){
       if ("redirect" in this.$route.query) {
         this.$router.push(this.$route.query["redirect"]);
+      }
+      else{
+        this.$router.push('/home/dashboard');
       }
     }
 

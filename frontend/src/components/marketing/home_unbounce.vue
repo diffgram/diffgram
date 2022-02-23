@@ -1,22 +1,22 @@
 <template>
-<div >
+<div v-if="!loading">
 
-<iframe
-  src="https://get.diffgram.com"
-  style="
-    position: fixed;
-    top: 50px;
-    bottom: 100px;
-    right: 0px;
-    width: 100%;
-    border: none;
-    margin: 0;
-    padding: 0;
-    overflow: auto;
-    z-index: 0;
-    height: 100%;
-  ">
-</iframe>
+<!--<iframe-->
+<!--  src="https://get.diffgram.com"-->
+<!--  style="-->
+<!--    position: fixed;-->
+<!--    top: 50px;-->
+<!--    bottom: 100px;-->
+<!--    right: 0px;-->
+<!--    width: 100%;-->
+<!--    border: none;-->
+<!--    margin: 0;-->
+<!--    padding: 0;-->
+<!--    overflow: auto;-->
+<!--    z-index: 0;-->
+<!--    height: 100%;-->
+<!--  ">-->
+<!--</iframe>-->
 
 </div>
 </template>
@@ -24,7 +24,7 @@
 <script lang="ts">
 
 import Vue from "vue";
-
+import {is_open_source} from '../../services/configService'
 export default Vue.extend( {
   name: 'home',
 
@@ -33,11 +33,27 @@ export default Vue.extend( {
 
   data () {
     return {
-
+      loading: false
     }
   },
-  created() {
+  async created() {
+    this.loading = true
+    console.log(this.$route)
+    let result = await is_open_source();
+    console.log('is_open_source', result)
+    if(this.$route.path === '/' && !result.is_open_source){
+      window.location.href = 'https://diffgram.com/main/'
+    }
+    else{
+      if(this.$store.state.user.logged_in == true){
+        this.$router.push('/home/dashboard')
+      }
+      else{
+        this.$router.push('/user/login')
+      }
 
+    }
+    this.loading = false;
   },
   methods: {
 
