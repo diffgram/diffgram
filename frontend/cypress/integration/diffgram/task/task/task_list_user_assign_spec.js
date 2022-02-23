@@ -2,7 +2,7 @@ import testUser from "../../../../fixtures/users.json";
 
 describe("manual_user_assignment", () => {
   context("manual_user_assignment", () => {
-    before(function() {
+    beforeEach(function() {
       cy.createSampleTasksUsingBackend(10);
 
       Cypress.Cookies.debug(true, { verbose: true });

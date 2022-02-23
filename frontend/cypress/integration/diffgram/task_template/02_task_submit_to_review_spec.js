@@ -2,7 +2,7 @@ import testUser from "../../../fixtures/users.json";
 
 describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
-    before(function () {
+    beforeEach(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
       cy.loginByForm(testUser.email, testUser.password)
@@ -14,6 +14,7 @@ describe("Correctly Submits Task to Review", () => {
       const url = "/api/v1/task/*/complete";
       cy.create_task_template()
         .visit(`http://localhost:8085/job/list`)
+        .wait(2000)
         .get('@task_template_name')
         .then(task_template_name => {
           cy.get(`.${task_template_name.replace(/\s+/g, '')}`)
@@ -39,6 +40,7 @@ describe("Correctly Submits Task to Review", () => {
     it("Reviews a task", () => {
       const url = "/api/v1/task/*/review";
       cy.visit(`http://localhost:8085/job/list`)
+        .wait(2000)
         .get(`.job-card`)
         .first()
         .find('.job-title')
