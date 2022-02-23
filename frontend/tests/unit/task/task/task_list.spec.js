@@ -1,10 +1,11 @@
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import task_list from "@/components/task/task/task_list.vue";
 import Vuex from "vuex";
+import axios from "axios";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
-
+jest.mock('axios')
 describe("task_list.vue", () => {
   let props;
 
@@ -64,5 +65,40 @@ describe("task_list.vue", () => {
     expect(wrapper.vm.$data.task_assign_dialog_type).toBe(null);
     expect(wrapper.vm.$data.task_assign_dialog_loading).toBe(false);
     expect(wrapper.vm.$data.task_assign_batch).toBe(false);
+  });
+
+  it("Correctly calls task_list_api", async () => {
+    props = {
+      mocks: {
+        job:{
+          id: -1,
+          allow_reviews: true
+        },
+        $store: {
+          state: {
+            job: {
+              current: {
+                id: 1
+              }
+            }
+          }
+        }
+      }
+    };
+    const wrapper = shallowMount(task_list, props, localVue);
+    wrapper.vm.$data.task_assign_dialog_open = true;
+    wrapper.vm.$data.task_to_assign = 1;
+    wrapper.vm.$data.task_assign_dialog_type = "assignee";
+    wrapper.vm.$data.task_assign_dialog_loading = true;
+    wrapper.vm.$data.task_assign_batch = true;
+
+    axios.post.mockImplementation(() => Promise.resolve({ status: 200, data: {log:{success: true}, task_list: [], allow_reviews: true} }));
+    await wrapper.vm.task_list_api();
+    expect(wrapper.vm.$data.column_list_all.includes('AssignedReviewer')).toBe(true);
+    await wrapper.setProps({job:{id: -1 , allow_reviews: false}})
+
+    axios.post.mockImplementation(() => Promise.resolve({ status: 200, data: {log:{success: true}, task_list: [], allow_reviews: false} }));
+    await wrapper.vm.task_list_api();
+    expect(wrapper.vm.$data.column_list_all.includes('AssignedReviewer')).toBe(false);
   });
 });
