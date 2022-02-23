@@ -26,6 +26,7 @@ NAME_EQUALS_MAIN = os.getenv('NAME_EQUALS_MAIN', False)  # Assumed to be running
 
 # Database Settings - Default to testing database
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://postgres:postgres@127.0.0.1:5432/diffgram_testing')
+UNIT_TESTING_DATABASE_URL = os.environ.get('UNIT_TESTING_DATABASE_URL')
 DATABASE_CONNECTION_POOL_SIZE = int(os.getenv('DATABASE_CONNECTION_POOL_SIZE', 10))
 
 # System Internal Secrets

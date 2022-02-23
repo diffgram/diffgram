@@ -40,7 +40,7 @@ export const initialize_instance_object = function(instance, component_ctx, scen
     return initialized_instance
   }
   else if (instance.type === 'global') {
-    let new_global_instance = this.new_global_instance();
+    let new_global_instance = component_ctx.new_global_instance();
     new_global_instance.populate_from_instance_obj(instance)
     return new_global_instance
   }

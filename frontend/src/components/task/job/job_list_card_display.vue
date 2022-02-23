@@ -6,11 +6,11 @@
 
       <v-card v-for="job in ordered_job_list"
               v-bind:key="job.id"
-              data-cy="job-card"
+              :data-cy="`job-card`"
               id="card-list"
               width="350px"
               style="position: relative"
-              class="ma-4 d-flex flex-column job-card"
+              :class="`ma-4 d-flex flex-column job-card ${job.name.replace(/\s+/g, '')}`"
               elevation="1"
       >
 
