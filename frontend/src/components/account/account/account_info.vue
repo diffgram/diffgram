@@ -23,7 +23,7 @@
 <script lang="ts">
 
 
-import axios from 'axios';
+import axios from '../../../services/customInstance';
 
 
 import Vue from "vue";
@@ -39,7 +39,7 @@ import Vue from "vue";
 
       account: {
         id: null,
-        nickname: null,   
+        nickname: null,
         payment_method_on_file: false
       },
 

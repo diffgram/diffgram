@@ -1,5 +1,5 @@
 <template>
-  <div style="padding: 0">
+  <div v-if="!do_not_show_menu" style="padding: 0">
 
     <v-snackbar
       v-model="$store.state.error.permission"
@@ -66,7 +66,9 @@
               <v-layout>
 
                 <v-btn text
+                      v-if="$store.state.project.current.project_string_id"
                        data-cy="go-to-home-page"
+                       :disabled="!$store.state.project.current.project_string_id || $store.state.user.current.security_email_verified != true"
                        @click="$router.push('/me')">
                   <v-icon left>mdi-home</v-icon>
                   Home
@@ -246,17 +248,17 @@
             </tooltip_button>
 
 
-            <ahref_seo_optimal href="/contact"
-                               v-if="$store.state.org && !$store.state.org.current.id &&
-                       $store.state.builder_or_trainer.mode == 'builder'"
-            >
+
               <v-btn color="primary"
-                     text
+                     outlined
                      style="text-transform: none !important;"
+                     class="mr-2"
+                     @click="contact_us"
+                     v-if="$store.state.org && !$store.state.org.current.id && $store.state.builder_or_trainer.mode == 'builder'"
               >
-                Book A Demo
+                  Book A Demo
               </v-btn>
-            </ahref_seo_optimal>
+
 
             <ahref_seo_optimal href="/user/data_platform/new">
               <v-btn color="primary"
@@ -332,7 +334,13 @@
         title: "Diffgram",
         project_menu: false,
         project_manager_dialog: false,
-        pending_files_dialog_is_open: false
+        pending_files_dialog_is_open: false,
+        do_not_show_menu: false,
+        routes_without_menu: [
+          '/user/login/',
+          '/user/new/',
+          '/user/builder/signup'
+        ]
       };
     },
     computed: {
@@ -370,6 +378,16 @@
     watch: {
       '$store.state.user.logged_in': function (value) {
         if (value) this.get_avalible_projects()
+      },
+      '$route.path': function(value) {
+        const do_not_display = value !== "/" && this.routes_without_menu.some(route => {
+          return route.includes(value)
+        })
+        if (do_not_display) {
+          this.do_not_show_menu = true
+        } else {
+          this.do_not_show_menu = false
+        }
       }
     },
     mounted() {
@@ -429,6 +447,9 @@
         const response = await getProjectList();
         const project_list = response.data.project_list;
         this.$store.commit("set_userProjects_list", project_list);
+      },
+      contact_us: function(){
+        window.open('https://diffgram.com/main/contact')
       }
     },
   });

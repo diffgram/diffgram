@@ -18,22 +18,12 @@
 
                 <v-card>
 
-                  <!-- TODO include more context, ie the project invited to etc. etc -->
-
-                  <h1 class="black--text text--lighten-2 text-center pt-4">
-                    Build on Diffgram
-                  </h1>
-
-                  <h2 class="blue--text text--lighten-1 text-center pa-2">
-                    Bring your ideas to life.
-                  </h2>
-
                   <div class="text-center pa-4">
                     <v-btn large
                            outlined
                            color="primary"
                            @click="route_builder_signup()">
-                      Enable Builder API
+                      Finish Onboarding
                     </v-btn>
                   </div>
 
@@ -48,34 +38,65 @@
         </v-card>
       </div>
 
+      <br />
+
       <v-card
-        v-if="!$store.state.project.current.project_string_id
-              && $store.state.user.current.security_email_verified != true">
+        v-if="$store.state.user.current.security_email_verified != true">
         <v-card-title>
           Please verify your email. Some actions may be restricted until verification.
         </v-card-title>
 
-        <v_resend_verify_email class="pa-4">
-        </v_resend_verify_email>
-
-        <div class="pa-4"> </div>
+        <v-card-actions>
+          <v_resend_verify_email />
+        </v-card-actions>
 
       </v-card>
+
+      <br />
 
 
       <v-card v-if="$store.state.builder_or_trainer.mode == 'builder'
             && !$store.state.project.current.project_string_id">
-        <v-btn large
-               color="primary"
-               @click="$router.push('/a/project/new')">
-          New Project
-        </v-btn>
+        <v-card-title>Actions</v-card-title>
 
-        <v-btn large
-               color="primary"
-               @click="$router.push('/projects')">
-          Change Project
-        </v-btn>
+        <v-card-text>
+          <p>Diffgram quick start:</p>
+          <ul>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/diffgram-101-key-concepts#project">Diffgram 101 - Key Concepts</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/data-scope-introduction">Datasets</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/tasks">Tasks</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/project">Share a project</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/the-diffgram-python-sdk">Python SDK</a>
+            </li>
+          </ul>
+          <br />
+          <p>More doc you can find <a target= "_blank" href="https://diffgram.readme.io">here</a></p>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-btn large
+                color="primary"
+                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
+                @click="$router.push('/a/project/new')">
+            New Project
+          </v-btn>
+
+          <v-btn large
+                 color="primary"
+                 @click="$router.push('/projects')">
+            Change Project
+          </v-btn>
+
+        </v-card-actions>
       </v-card>
 
       <div v-if="$store.state.builder_or_trainer.mode == 'builder' &&
@@ -163,12 +184,10 @@
 
 <script lang="ts">
 
-import axios from 'axios';
-import report_dashboard from '../../report/report_dashboard'
-import user_visit_history_list from '../../event/user_visit_history_list.vue'
-import project_pipeline from '../../project/project_pipeline'
-
 import Vue from "vue";
+import report_dashboard from '../../report/report_dashboard.vue'
+import user_visit_history_list from '../../event/user_visit_history_list.vue'
+import project_pipeline from '../../project/project_pipeline.vue'
 
 export default Vue.extend( {
   name: 'user_dashboard',

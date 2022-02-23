@@ -39,7 +39,7 @@
 
 <script lang="ts">
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 
   import Vue from "vue"; export default Vue.extend( {
   name: 'follow',

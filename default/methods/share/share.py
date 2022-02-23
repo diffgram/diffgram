@@ -182,6 +182,10 @@ class Share_Project():
 
     def check_free_tier_member_limits(self):
 
+        if self.user_who_made_request.is_super_admin is True:
+            if settings.IS_OPEN_SOURCE  == False:
+                return True
+
         existing_members = self.project.regenerate_member_list()
 
         feature_checker = FeatureChecker(
@@ -230,11 +234,10 @@ class Share_Project():
         # exists
 
         self.user_to_modify = User.get_by_email(self.session, input['email'])
-        print(input['email'], 'aaaa', self.user_to_modify)
-        if self.user_who_made_request.is_super_admin is not True:
-            if self.user_to_modify == self.user_who_made_request:
-                self.log['error']['user_who_made_request'] = "You are already on the project."
-                return
+        
+        if self.user_to_modify == self.user_who_made_request:
+            self.log['error']['user_who_made_request'] = "You are already on the project."
+            return
         # Assumes if user exists to add permissions directly
         if self.user_to_modify:
 
@@ -273,9 +276,8 @@ class Share_Project():
             signup_code.permission_level = input['permission_type']
             self.session.add(signup_code)
 
-            signup_link = settings.URL_BASE + "user/new?" + \
-                          "code=" + signup_code.code + \
-                          "&email=" + signup_code.email_sent_to
+            signup_link = f'{settings.URL_BASE}user/new?code={signup_code.code}&email={signup_code.email_sent_to}' \
+                          f'&project={self.project_string_id}'
 
             self.invite_user(
                 signup_link = signup_link,

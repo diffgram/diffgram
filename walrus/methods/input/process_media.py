@@ -52,7 +52,7 @@ from methods.text_data.text_tokenizer import TextTokenizer
 
 data_tools = Data_tools().data_tools
 
-images_allowed_file_names = [".jpg", ".jpeg", ".png"]
+images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
 sensor_fusion_allowed_extensions = [".json"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
@@ -1752,10 +1752,30 @@ class Process_Media():
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
-        new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
-                            str(self.input.extension)
+        # Use original file for jpg and jpeg
+        if str(self.input.extension) in ['.jpg', '.jpeg']:
+            new_temp_filename = self.input.temp_dir_path_and_filename
+        # If PNG is used check compression
+        elif str(self.input.extension) == '.png':
+            new_temp_filename = self.input.temp_dir_path_and_filename
+            with open(self.input.temp_dir_path_and_filename, 'rb') as f:
+                f.seek(63)
+                read_value = f.read(1)
+                compress = (read_value == b'\x01')
 
-        imwrite(new_temp_filename, np.asarray(self.raw_numpy_image))
+            # If compress_level 0 or 1 write file with compress_level=2 and point to new file instead
+            if (compress):
+                new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
+                                    str(self.input.extension)
+                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
+        #For bmp, tif and tiff files save as PNG and compress
+        elif str(self.input.extension) in ['.bmp', '.tif', '.tiff']:
+            new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
+                                    '.png'
+            imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
+        else:
+            raise NotImplementedError(f'Extension: {self.input.extension} not supported yet.')
+            pass
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
@@ -1765,6 +1785,7 @@ class Process_Media():
 
         self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
                                                                 self.new_image.url_signed_expiry)
+        return new_temp_filename
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:
         # By Default, file has NLTK tokenizer.
@@ -1824,9 +1845,9 @@ class Process_Media():
 
         thumbnail_image = imresize(self.raw_numpy_image, (160, 160))
 
-        new_temp_filename = self.input.temp_dir + "/resized" + str(self.input.extension)
+        new_temp_filename = self.input.temp_dir + "/resized" + ".jpg"
 
-        imwrite(new_temp_filename, thumbnail_image)
+        imwrite(new_temp_filename, thumbnail_image, quality=95)
 
         # Build URL
         url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
@@ -1835,7 +1856,7 @@ class Process_Media():
         self.new_image.url_signed_thumb = url_signed_thumb
 
         data_tools.upload_to_cloud_storage(
-            temp_local_path = self.input.temp_dir_path_and_filename,
+            temp_local_path = new_temp_filename,
             blob_path = self.new_image.url_signed_thumb_blob_path,
             content_type = "image/jpg",
         )

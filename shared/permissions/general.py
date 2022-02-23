@@ -3,7 +3,7 @@ from functools import wraps
 
 from shared.database.user import User
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, Unauthorized
 from shared.helpers.permissions import getUserID
 from shared.helpers.permissions import LoggedIn
 from shared.helpers.permissions import defaultRedirect
@@ -23,80 +23,73 @@ sub_type = "general"
 
 class General_permissions():
 
-	def grant_permission_for(Roles, 
-						     apis_user_list = []):
-		"""
-		Defaults to forbidden if no match found
+    def grant_permission_for(Roles,
+                             apis_user_list = []):
+        """
+        Defaults to forbidden if no match found
 
-		Matching:
-		1. Attempts to find match string
-		2. If found, attempts to find match for permissions for that project
-		3. If found, returns function.
+        Matching:
+        1. Attempts to find match string
+        2. If found, attempts to find match for permissions for that project
+        3. If found, returns function.
 
-		Exceptions:
+        Exceptions:
 
-		'allow_anonymous'
-		user.is_super_admin
-	
-	   """
+        'allow_anonymous'
+        user.is_super_admin
 
-		if not isinstance(Roles, list): Roles = [Roles]
+       """
 
-		def wrapper(func):
-			@wraps(func)
-			def inner(*args, **kwds):
+        if not isinstance(Roles, list): Roles = [Roles]
 
-				if 'allow_anonymous' in Roles:
-					return func(*args, **kwds)
+        def wrapper(func):
+            @wraps(func)
+            def inner(*args, **kwds):
 
-				if LoggedIn() != True: 
-					raise Forbidden("No access.")
+                if 'allow_anonymous' in Roles:
+                    return func(*args, **kwds)
 
-				# careful as we now check additional things like 
-				# api_user_list so even for "normal_users" we want to check their permissions
+                if LoggedIn() != True:
+                    raise Unauthorized("No access, please login.")
 
-				with sessionMaker.session_scope() as s:
-					user = s.query(User).filter(User.id == getUserID()).one()
-				
-					if user.is_super_admin == True:
-						return func(*args, **kwds)
+                # careful as we now check additional things like
+                # api_user_list so even for "normal_users" we want to check their permissions
 
-					User_Permissions.general(user = user,
-											apis_user_list = apis_user_list)
+                with sessionMaker.session_scope() as s:
+                    user = s.query(User).filter(User.id == getUserID()).one()
 
-					# Maybe other sub types in the future?
-					if user.permissions_general is not None:
-						for _sub_type, Permissions in user.permissions_general.items():
-							#print(_sub_type, Permissions, file=sys.stderr)
-							if Permissions is not None:
-								if _sub_type == sub_type:
-									for role in Roles:    
-										#print(role, Permissions, file=sys.stderr)
-										if role in Permissions:
-											return func(*args, **kwds)
+                    if user.is_super_admin == True:
+                        return func(*args, **kwds)
 
-				raise Forbidden("No access.")     
-			return inner
-		return wrapper
+                    User_Permissions.general(user = user,
+                                             apis_user_list = apis_user_list)
 
+                    # Maybe other sub types in the future?
+                    if user.permissions_general is not None:
+                        for _sub_type, Permissions in user.permissions_general.items():
+                            # print(_sub_type, Permissions, file=sys.stderr)
+                            if Permissions is not None:
+                                if _sub_type == sub_type:
+                                    for role in Roles:
+                                        # print(role, Permissions, file=sys.stderr)
+                                        if role in Permissions:
+                                            return func(*args, **kwds)
 
-	def remove(permission, user):
-		current_permissions = user.permissions_general[sub_type]
-		current_permissions.remove(permission)
-		user.permissions_general[sub_type] = current_permissions
+                raise Forbidden("No access.")
 
+            return inner
 
-	def add(permission, user):
-		current_permissions = user.permissions_general[sub_type]
-		current_permissions.append(permission)
-		user.permissions_general[sub_type] = current_permissions
+        return wrapper
 
+    def remove(permission, user):
+        current_permissions = user.permissions_general[sub_type]
+        current_permissions.remove(permission)
+        user.permissions_general[sub_type] = current_permissions
 
-	def clear_all(user):
-		user.permissions_general[sub_type] = {}
+    def add(permission, user):
+        current_permissions = user.permissions_general[sub_type]
+        current_permissions.append(permission)
+        user.permissions_general[sub_type] = current_permissions
 
-
-
-
-
-
+    def clear_all(user):
+        user.permissions_general[sub_type] = {}

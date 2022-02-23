@@ -1,12 +1,17 @@
 
 <template>
-  <div v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak>
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
+      <div class="pa-4 ma-auto text-center" style="width: 100%">
+        <img
+          src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+          height="120px"
+        />
+      </div>
       <v-card>
         <v-card-title primary-title>
           <div>
-            <h3 class="headline mb-0">Login</h3>
-            <div></div>
+            <h3 class="headline mb-0">Login to Diffgram</h3>
           </div>
         </v-card-title>
 
@@ -64,7 +69,7 @@
                   @click.native="loader = 'loading'"
                   :disabled="loading"
                 >
-                  Login
+                  Login to Diffgram
                 </v-btn>
 
                 <v-btn
@@ -93,41 +98,43 @@
               </v-flex>
             </v-layout>
 
+            <br />
+
             <!-- TODO add to only show if not in component? -->
             <!--
       <v-btn color="blue darken-1" text
              @click.native="$emit('exit', true)">Cancel</v-btn>
       -->
+
+              <v-layout>
+                <v-flex>
+                  <v-btn
+                    @click="route_account_new"
+                    color="primary"
+                    text
+                    :loading="loading"
+                    @click.native="loader = 'loading'"
+                    :disabled="loading"
+                  >
+                    <v-icon left>mdi-plus</v-icon>
+                    Create new account
+                  </v-btn>
+
+                  <v-btn
+                    @click="route_account_new"
+                    color="primary"
+                    text
+                    href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
+                    target="_blank"
+                    :disabled="loading"
+                  >
+                    <v-icon left>mdi-lifebuoy</v-icon>
+                    Help
+                  </v-btn>
+                </v-flex>
+              </v-layout>
           </v-container>
         </div>
-
-        <v-layout>
-          <v-flex>
-            <v-btn
-              @click="route_account_new"
-              color="primary"
-              text
-              :loading="loading"
-              @click.native="loader = 'loading'"
-              :disabled="loading"
-            >
-              <v-icon left>mdi-plus</v-icon>
-              Create new account
-            </v-btn>
-
-            <v-btn
-              @click="route_account_new"
-              color="primary"
-              text
-              href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
-              target="_blank"
-              :disabled="loading"
-            >
-              <v-icon left>mdi-lifebuoy</v-icon>
-              Help
-            </v-btn>
-          </v-flex>
-        </v-layout>
 
         <div v-if="show_otp_prompt">
           <v-container>
@@ -167,6 +174,8 @@
       "
     >
       <v-alert type="info"> Already Logged In. </v-alert>
+
+      <v-btn x-large color="success"><v-icon>mdi-home</v-icon>Go to Dashboard</v-btn>
     </div>
 
     <div
@@ -189,7 +198,7 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
+import axios from "../../services/customInstance";
 import { is_mailgun_set } from "../../services/configService";
 
 import Vue from "vue";
@@ -250,6 +259,9 @@ export default Vue.extend({
     if (this.$store.state.user.logged_in == true){
       if ("redirect" in this.$route.query) {
         this.$router.push(this.$route.query["redirect"]);
+      }
+      else{
+        this.$router.push('/home/dashboard');
       }
     }
 

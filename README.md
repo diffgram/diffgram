@@ -44,18 +44,21 @@ Long, High Frame Rate, High Resolution Videos.
 ![](./github_assets/3d_example.png)
 
 ## Text
-Coming Early Feb
+[Text Labeling docs](https://diffgram.readme.io/docs/text-annotation-guide)
+
 1. Named Entity Recognition
 2. Part of Speech Tagging
 3. Coreference Resolution
 4. Dependency Parsing
+
+![](./github_assets/diffgram_text_interface.png)
 
 ### More
 Build your own UI or contact us. Our intent is to build and cover all major media types in 2022.
 
 ## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
-Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Piplines, Queries, and More.
+Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Pipelines, Queries, and More.
 Diffgram is the most customizable training data platform.
 [Training Data Customization](https://diffgram.readme.io/docs/customization)
 
@@ -162,7 +165,7 @@ Please see the roadmap and talk with us if you see a missing feature.
 If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
 You can install Diffgram and use it with hundreds of thousands of annotations for free.
 
-For more detail [Compare Diffgram Verisons](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
+For more detail [Compare Diffgram Versions](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
 
 ### Premium Support
 [Learn more.](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise#premium-licenses-with-open-source)

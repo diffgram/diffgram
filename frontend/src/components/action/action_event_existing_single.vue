@@ -131,10 +131,6 @@
 
 <script lang="ts">
 
-
-import axios from 'axios';
-
-
  import Vue from "vue"; export default Vue.extend( {
     name: 'action_event_existing_single',
     components: {

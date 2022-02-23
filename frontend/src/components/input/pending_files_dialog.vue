@@ -16,7 +16,6 @@
 
 <script lang="ts">
 import input_view from './input_view'
-import axios from 'axios';
 import Vue from "vue";
 
 export default Vue.extend( {

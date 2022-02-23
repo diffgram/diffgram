@@ -70,7 +70,7 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import new_flow from '../action/action_new_flow.vue'
   import Vue from "vue";
 

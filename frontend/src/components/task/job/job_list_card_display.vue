@@ -6,11 +6,11 @@
 
       <v-card v-for="job in ordered_job_list"
               v-bind:key="job.id"
-              data-cy="job-card"
+              :data-cy="`job-card`"
               id="card-list"
               width="350px"
               style="position: relative"
-              class="ma-4 d-flex flex-column job-card"
+              :class="`ma-4 d-flex flex-column job-card ${job.name.replace(/\s+/g, '')}`"
               elevation="1"
       >
 
@@ -281,7 +281,7 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import axios from 'axios';
+  import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
 

@@ -39,7 +39,6 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
   import labels_view from '../../components/annotation/labels_view'
   import v_upload_large from '../upload_large'
   import Vue from "vue";

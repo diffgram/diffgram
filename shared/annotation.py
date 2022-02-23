@@ -766,6 +766,11 @@ class Annotation_Update():
 
         if self.instance.label_file_id in self.allowed_label_file_id_list:
             return True
+
+        if self.instance.type == "global":
+            self.instance.label_file_id = None      # Ensure is None for Security
+            return True
+
         self.log['error']['valid_label_file'] = "Permission issue with " + \
                                                 str(self.instance.label_file_id) + " label_file_id."
         return False
@@ -1011,7 +1016,7 @@ class Annotation_Update():
                         elm['label_file_id']['required'] = False
 
             if self.instance_proposed.get('type') == 'global':
-                self.instance_proposed['label_file_id'] = -1  # to bypass check
+                self.instance_proposed['label_file_id'] = -1  # to bypass input type check
 
             self.log, input = regular_input.input_check_many(
                 spec_list = self.per_instance_spec_list,

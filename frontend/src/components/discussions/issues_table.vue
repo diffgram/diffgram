@@ -89,12 +89,11 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import attribute_home from '../attribute/attribute_home'
 
 
   import Vue from "vue";
-  import moment from "vue-moment";
 
   export default Vue.extend({
       name: 'issues_table',

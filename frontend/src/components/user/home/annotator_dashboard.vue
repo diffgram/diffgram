@@ -60,7 +60,7 @@
                     color="primary"
                     large
                     data-cy="resume_last_task"
-                    :disabled="last_task_event === false || resume_task_loading"
+                    :disabled="!last_task_event || resume_task_loading || (last_task_event && !last_task_event.task_id)"
                     @click="route_resume_task()"
                   >
                     Resume
@@ -176,7 +176,7 @@
 
 <script lang="ts">
 
-import axios from 'axios';
+import axios from '../../../services/customInstance';
 import report_dashboard from '../../report/report_dashboard'
 import user_visit_history_list from '../../event/user_visit_history_list.vue'
 import project_pipeline from '../../project/project_pipeline'

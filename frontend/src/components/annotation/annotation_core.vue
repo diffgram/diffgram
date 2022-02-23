@@ -36,7 +36,6 @@
             :label_file_colour_map="label_file_colour_map"
             :full_file_loading="full_file_loading"
             :instance_template_selected="instance_template_selected"
-            :instance_type="instance_type"
             :loading_instance_templates="loading_instance_templates"
             :instance_type_list="filtered_instance_type_list"
             :view_issue_mode="view_issue_mode"
@@ -275,46 +274,10 @@
             :instance="selected_instance_for_history"
           >
           </instance_history_sidepanel>
-          <create_issue_panel
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            v-show="show_issue_panel == true && !current_issue"
-            :instance_list="instance_list"
-            :task="task"
-            :file="file"
-            :frame_number="this.video_mode ? this.current_frame : undefined"
-            :mouse_position="issue_mouse_position"
-            @new_issue_created="refresh_issues_sidepanel"
-            @open_side_panel="open_issue_panel"
-            @close_issue_panel="close_issue_panel"
-          ></create_issue_panel>
-          <view_edit_issue_panel
-            v-if="!loading"
-            v-show="show_issue_panel == true && current_issue"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :instance_list="instance_list"
-            :current_issue_id="current_issue ? current_issue.id : undefined"
-            :file="file"
-            @close_view_edit_panel="close_view_edit_issue_panel"
-            @start_attach_instance_edition="start_attach_instance_edition"
-            @update_issues_list="update_issues_list"
-            @stop_attach_instance_edition="stop_attach_instance_edition"
-            @update_canvas="update_canvas"
-            ref="view_edit_issue_panel"
-          ></view_edit_issue_panel>
-
+          
           <v-divider></v-divider>
 
         <v-expansion-panels
-          v-model="userscript_minimized"
           :accordion="true"
           :inset="false"
           :multiple="false"
@@ -329,15 +292,13 @@
             <v-expansion-panel-header
               data-cy="show_userscript_panel_button"
               class="d-flex justify-start pa-0 pr-1 align-center"
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="userscript_minimized"
               style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
               <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
                 mdi-language-javascript
               </v-icon>
 
-              <h4>Interactive Automations</h4>
+              <h4>Scripts</h4>
 
               <v-spacer></v-spacer>
 
@@ -346,7 +307,6 @@
             <v-expansion-panel-content>
 
               <userscript
-                v-show="!userscript_minimized"
                 :project_string_id_prop="project_string_id"
                 :create_instance="event_create_instance"
                 :current_userscript_prop="get_userscript()"
@@ -364,22 +324,108 @@
           </v-expansion-panel>
         </v-expansion-panels>
 
+        <v-expansion-panels
+          v-model="issues_expansion_panel"
+          :accordion="true"
+          :inset="false"
+          :multiple="false"
+          :focusable="true"
+          :disabled="false"
+          :flat="true"
+          :hover="false"
+          :tile="true"
+        >
+          <v-expansion-panel>
 
-          <issues_sidepanel
-            :minimized="minimize_issues_sidepanel"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :file="file"
-            @view_issue_detail="open_view_edit_panel"
-            @issues_fetched="issues_fetched"
-            @minimize_issues_panel="minimize_issues_sidepanel = true"
-            @maximize_issues_panel="minimize_issues_sidepanel = false"
-            ref="issues_sidepanel"
-          ></issues_sidepanel>
+            <v-expansion-panel-header
+              data-cy="show_issues_panel_button"
+              class="d-flex justify-start pa-0 sidebar-accordeon-header align-center">
+
+              <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
+                mdi-comment-multiple
+              </v-icon>
+
+              <h4>Issues</h4>
+
+              <v-spacer></v-spacer>
+
+              <v-chip x-small class="d-flex justify-center flex-grow-0">
+                  {{ issues_list.length }}
+              </v-chip>
+
+            </v-expansion-panel-header>
+
+            <v-expansion-panel-content>
+
+              <tooltip_button
+                  v-if="show_modify_an_issue != true"
+                  tooltip_message="New Issue"
+                  datacy="new_issue_in_side_panel"
+                  @click="show_modify_an_issue=true"
+                  icon="add"
+                  :icon_style="true"
+                  color="primary"
+                              >
+              </tooltip_button>
+
+             <create_issue_panel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              v-show="show_modify_an_issue == true && !current_issue"
+              :instance_list="instance_list"
+              :task="task"
+              :file="file"
+              :frame_number="this.video_mode ? this.current_frame : undefined"
+              :mouse_position="issue_mouse_position"
+              @new_issue_created="refresh_issues_sidepanel"
+              @open_side_panel="open_issue_panel"
+              @close_issue_panel="close_issue_panel"
+            ></create_issue_panel>
+
+            <view_edit_issue_panel
+              v-if="!loading"
+              v-show="show_modify_an_issue == true && current_issue"
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :instance_list="instance_list"
+              :current_issue_id="current_issue ? current_issue.id : undefined"
+              :file="file"
+              @close_view_edit_panel="close_view_edit_issue_panel"
+              @start_attach_instance_edition="start_attach_instance_edition"
+              @update_issues_list="update_issues_list"
+              @stop_attach_instance_edition="stop_attach_instance_edition"
+              @update_canvas="update_canvas"
+              ref="view_edit_issue_panel"
+            ></view_edit_issue_panel>
+
+            <!-- List -->
+            <issues_sidepanel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :file="file"
+              @view_issue_detail="open_view_edit_panel"
+              @issues_fetched="issues_fetched"
+              ref="issues_sidepanel"
+            ></issues_sidepanel>
+
+
+
+            </v-expansion-panel-content>
+
+          </v-expansion-panel>
+        </v-expansion-panels>
+
         </v-navigation-drawer>
 
         <!-- TODO would want to think a bit about how to block scrolling
@@ -830,6 +876,7 @@
       :instance_template="current_instance_template"
       ref="instance_template_creation_dialog"
     ></instance_template_creation_dialog>
+
     <v-snackbar
       v-model="snackbar_warning"
       v-if="snackbar_warning"
@@ -852,11 +899,18 @@
     >
       {{ snackbar_success_text }}
     </v-snackbar>
-
-    <v-alert type="info" v-if="file && file.type == 'text'">
-      Text Preview Coming Soon - Export or See 3rd Party Link In Task Template
-    </v-alert>
-
+    <v-snackbar
+      v-model="show_snackbar_occlude_direction"
+      v-if="show_snackbar_occlude_direction"
+      top
+      :timeout="5000"
+      color="primary"
+    >
+      {{ snackbar_message }}
+      <v-btn color="error" text @click="cancel_occlude_direction">
+        Cancel
+      </v-btn>
+    </v-snackbar>
     <qa_carousel
       :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
@@ -876,7 +930,7 @@
 <script lang="ts">
 // @ts-nocheck
 import moment from "moment";
-import axios from "axios";
+import axios from "../../services/customInstance";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
@@ -922,6 +976,7 @@ import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
+import {initialize_instance_object} from '../../utils/instance_utils.js';
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1085,8 +1140,8 @@ export default Vue.extend({
 
       this.clear_selected();
     },
-    show_issue_panel: function () {
-      if (this.show_issue_panel == true) {
+    show_modify_an_issue: function () {
+      if (this.show_modify_an_issue == true) {
         this.label_settings.show_ghost_instances = false;
         this.label_settings.ghost_instances_closed_by_open_view_edit_panel =
           true;
@@ -1108,6 +1163,7 @@ export default Vue.extend({
     return {
       submitted_to_review: false,
       go_to_keyframe_loading: false,
+      show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
@@ -1133,8 +1189,6 @@ export default Vue.extend({
       parent_merge_instance_index: null,
       instances_to_merge: [],
 
-      userscript_minimized: true,
-
       event_create_instance: undefined,
 
       selected_instance_for_history: undefined,
@@ -1150,13 +1204,14 @@ export default Vue.extend({
       instance_context: new InstanceContext(),
       instance_template_draw_started: false,
       mouse_down_delta_event: { x: 0, y: 0 },
-      issues_list: undefined,
+      issues_list: [],
       canvas_alert_x: undefined,
       canvas_alert_y: undefined,
       original_edit_instance: undefined,
       original_edit_instance_index: undefined,
       loading_sequences: false,
       ctrl_key: false,
+      alt_key: false,
       command_manager: undefined,
       show_snackbar_auto_border: false,
       show_snackbar_paste: false,
@@ -1166,7 +1221,7 @@ export default Vue.extend({
       request_change_current_instance: null,
       current_issue: undefined,
       share_dialog_open: false,
-      show_issue_panel: false,
+      show_modify_an_issue: false,
       snackbar_issues: false, // Controls the display of snackbar with info message when selecting instance on issues.
       trigger_refresh_current_instance: null,
       ellipse_hovered_corner: undefined,
@@ -1293,7 +1348,7 @@ export default Vue.extend({
       annotations_loading: false,
       save_loading_image: false,
 
-      minimize_issues_sidepanel: false,
+      issues_expansion_panel: false,
 
       source_control_menu: false,
 
@@ -2576,7 +2631,10 @@ export default Vue.extend({
     create_instance_template: async function (instance_index, name) {
       try {
         this.error = {};
-        const instance = this.instance_list[instance_index];
+        let instance = this.instance_list[instance_index];
+        if(instance.type === 'keypoints'){
+          instance = instance.get_instance_data();
+        }
         if (!instance) {
           return;
         }
@@ -2614,7 +2672,17 @@ export default Vue.extend({
       this.snackbar_message = message;
       this.show_custom_snackbar = true;
     },
+    show_snackbar_occlusion: function (message) {
+      this.snackbar_message = message;
+      this.show_snackbar_occlude_direction = true;
+    },
+    cancel_occlude_direction: function(){
+      this.show_snackbar_occlude_direction = false;
+      if(this.selected_instance && this.selected_instance.type === 'keypoints'){
+        this.selected_instance.stop_occlude_direction()
+      }
 
+    },
     open_instance_template_dialog: function () {
       this.$refs.instance_template_creation_dialog.open();
     },
@@ -2683,7 +2751,7 @@ export default Vue.extend({
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-        let initialized_instance = this.initialize_instance(current_instance)
+        let initialized_instance = initialize_instance_object(current_instance, this);
         if (initialized_instance) {
           result.push(initialized_instance);
         }
@@ -2716,7 +2784,7 @@ export default Vue.extend({
       // Perform the instance_buffer_dict initialization.
       for (let i = 0; i < this.instance_buffer_dict[frame_number].length; i++) {
         let current_instance = this.instance_buffer_dict[frame_number][i];
-        current_instance = this.initialize_instance(current_instance);
+        current_instance = initialize_instance_object(current_instance, this);
         this.instance_buffer_dict[frame_number][i] = current_instance;
       }
 
@@ -2747,9 +2815,9 @@ export default Vue.extend({
               instance_template.instance_list =
                 instance_template.instance_list.map((instance) => {
                   instance.reference_width = instance_template.reference_width;
-                  instance.reference_height =
-                    instance_template.reference_height;
-                  return instance;
+                  instance.reference_height = instance_template.reference_height;
+                  let initialized_instance = initialize_instance_object(instance, this);
+                  return initialized_instance;
                 });
               // Note that here we are creating a new object for the instance list, all references are lost.
               instance_template.instance_list =
@@ -2819,7 +2887,7 @@ export default Vue.extend({
     },
     open_view_edit_panel(issue) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true;
 
       // Case for edit/view mode.
       this.current_issue = issue;
@@ -2874,7 +2942,8 @@ export default Vue.extend({
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true
+      this.issues_expansion_panel = 0
       // Close context menu and set select instance mode
       this.show_context_menu = false;
       this.issue_mouse_position = mouse_position;
@@ -2898,13 +2967,13 @@ export default Vue.extend({
     },
     close_view_edit_issue_panel() {
       this.current_issue = undefined;
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);
     },
     close_issue_panel() {
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.$store.commit("set_instance_select_for_issue", false);
       this.snackbar_issues = false;
       this.issue_mouse_position = undefined;
@@ -3032,7 +3101,7 @@ export default Vue.extend({
       let index = update.index
       if (index == undefined) { return }  // careful 0 is ok.
       let initial_instance = {...this.instance_list[index], initialized: false}
-      initial_instance = this.initialize_instance(initial_instance);
+      initial_instance = initialize_instance_object(initial_instance, this);
       // since sharing list type component need to determine which list to update
       // could also use render mode but may be different contexts
       let instance;
@@ -3063,6 +3132,17 @@ export default Vue.extend({
 
       if (update.mode == "on_click_update_point_attribute") {
         instance.toggle_occluded(update.node_hover_index);
+      }
+
+      if (update.mode == "on_click_occlude_all_direction") {
+        instance.activate_select_edge_occlusion(update.node_hover_index);
+        this.show_snackbar_occlusion('Select another Node to occlude all nodes in that direction')
+        // We are not yet updating at this point, so we return
+        return
+      }
+
+      if (update.mode == "occlude_all_children") {
+        instance.occlude_all_children(update.node_hover_index);
       }
 
       // instance update
@@ -4599,6 +4679,9 @@ export default Vue.extend({
       if (this.ellipse_hovered_corner_key) {
         return;
       }
+      if(this.show_snackbar_occlude_direction){
+        return
+      }
       if (
         this.selected_instance &&
         this.selected_instance.midpoint_hover != undefined
@@ -5694,7 +5777,7 @@ export default Vue.extend({
       */
 
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
-      if (this.ctrl_key === true) {
+      if (this.shift_key === true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
         return;
@@ -6279,7 +6362,14 @@ export default Vue.extend({
       // For new Refactored instance types
       const mouse_up_interaction = this.generate_event_interactions(event);
       if (mouse_up_interaction) {
-        mouse_up_interaction.process();
+        let changed_file = mouse_up_interaction.process();
+        if(changed_file === true){
+          this.has_changed = true;
+        }
+        if(changed_file && this.show_snackbar_occlude_direction){
+          this.show_snackbar_occlude_direction = false;
+        }
+
       }
     },
     stop_ellipse_resize: function () {
@@ -7023,6 +7113,7 @@ export default Vue.extend({
       }
       this.add_override_colors_for_model_runs();
       this.annotations_loading = false;
+      this.instance_context.instance_list = this.instance_list;
       this.update_canvas();
     },
 
@@ -7470,6 +7561,18 @@ export default Vue.extend({
       }
     },
 
+    set_alt_key: function (event) {
+      // Caution used name commands here to that when multiple keys are pressed it still works
+      if (event.keyCode === 18) {
+        // ctrlKey cmd key
+        this.alt_key = false;
+      }
+      if (event.keyCode === 18) {
+        // ctrlKey cmd key
+        this.alt_key = true;
+      }
+    },
+
     // hotkey hotkeys
     keyboard_events_global_up: function (event) {
       if (this.$store.state.user.is_typing_or_menu_open == true) {
@@ -7478,6 +7581,7 @@ export default Vue.extend({
       let locked_frame_number = this.current_frame;
 
       this.set_control_key(event);
+      this.set_alt_key(event);
 
       if (this.show_context_menu) {
         return;
@@ -7604,6 +7708,7 @@ export default Vue.extend({
         cKey = 67;
 
       this.set_control_key(event);
+      this.set_alt_key(event);
       let frame_number_locked = this.current_frame;
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
@@ -7848,7 +7953,7 @@ export default Vue.extend({
       for (const instance of this.instance_list) {
         instance.selected = false;
       }
-      let pasted_instance = this.initialize_instance(instance_clipboard);
+      let pasted_instance = initialize_instance_object(instance_clipboard, this);
       if (next_frames != undefined) {
         let next_frames_to_add = parseInt(next_frames, 10);
         const frames_to_save = [];
@@ -7875,7 +7980,7 @@ export default Vue.extend({
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = this.duplicate_instance(pasted_instance);
-          new_frame_instance = this.initialize_instance(new_frame_instance);
+          new_frame_instance = initialize_instance_object(new_frame_instance, this);
           // Set the last argument to true, to prevent to push to the instance_list here.
           this.add_instance_to_file(new_frame_instance, i);
           frames_to_save.push(i);
@@ -8008,7 +8113,7 @@ export default Vue.extend({
         };
       }
 
-      result = this.initialize_instance(result);
+      result = initialize_instance_object(result, this);
       return result;
     },
     copy_all_instances: function () {
@@ -8128,7 +8233,14 @@ export default Vue.extend({
         return;
       }
       let frame_number = undefined;
-      let instance_list = this.instance_list;
+      let instance_list = this.instance_list.map(elm => {
+        if(elm.type === 'keypoints'){
+          return elm.get_instance_data()
+        }
+        else{
+          return elm
+        }
+      });
 
       if (this.video_mode) {
         if (frame_number_param == undefined) {

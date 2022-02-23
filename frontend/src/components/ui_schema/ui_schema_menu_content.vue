@@ -69,8 +69,6 @@
 <script lang="ts">
 
   import Vue from 'vue';
-  import axios from 'axios';
-  import {UI_Schema} from './ui_schema'
   import instance_type_multiple_select from './../annotation/instance_type_multiple_select'
 
   export default Vue.extend({

@@ -172,7 +172,7 @@
     History,
   } from 'tiptap-extensions'
   import Vue from "vue";
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
 
   export default Vue.extend( {
     name: "discussion_comments",

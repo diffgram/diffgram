@@ -1,6 +1,6 @@
 <template>
-  <v-container fluid>
-    <v-card class="d-flex flex-column">
+    <v-card v-if="current_issue"
+            class="d-flex flex-column">
       <v_error_multiple :error="update_attachments_error">
       </v_error_multiple>
       <v-progress-circular v-if="loading_get_issue" :indeterminate="true" class="ma-8 align-self-center justify-self-center align-center"></v-progress-circular>
@@ -141,13 +141,11 @@
 
     </v-card>
 
-
-  </v-container>
 </template>
 
 <script>
   import Vue from "vue";
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import discussion_comments_new from './discussion_comments_new'
   import discussion_comments_list from './discussion_comments_list'
   import { Editor, EditorContent, EditorMenuBar, EditorMenuBubble, Extension } from 'tiptap';

@@ -10,7 +10,7 @@
               hide-details></v-text-field>
 <v-spacer></v-spacer>
 -->
-  
+
 <v-layout column>
 
   <v_error_multiple :error="error">
@@ -41,7 +41,7 @@
 
 <script lang="ts">
 
-import axios from 'axios';
+import axios from '../../services/customInstance';
 import action_event_existing_single from './action_event_existing_single.vue'
 
 
@@ -50,13 +50,13 @@ import Vue from "vue"; export default Vue.extend( {
 
     props: {
       'project_string_id': {},
-      'flow_event_id': {} 
+      'flow_event_id': {}
       },
   components: {
     action_event_existing_single : action_event_existing_single
   },
   mounted() {
-   
+
    this.refresh_event_list()
 
   },
@@ -70,7 +70,7 @@ import Vue from "vue"; export default Vue.extend( {
       event_list : [],
 
       selected : [],  // would prefer selected_list but vuetify seems to need 'selected'
-      
+
       header_list: [
         {
           text: "Something",

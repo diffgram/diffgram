@@ -21,7 +21,6 @@
 
 <script lang="ts">
 
-import axios from 'axios';
 import share_member_list from '../share/share_member_list';
 import share_new_member from '../share/share_new_member';
 

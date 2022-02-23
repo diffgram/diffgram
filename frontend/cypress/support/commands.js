@@ -199,6 +199,10 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.wait(5000);
   cy.get('[data-cy=email-input]').click({force: true});
   cy.get('[data-cy=email-input]').type(testUser.email);
+  cy.get('[data-cy=password1]').click();
+  cy.get('[data-cy=password1]').type('diffgram123');
+  cy.get('[data-cy=password2]').click();
+  cy.get('[data-cy=password2]').type('diffgram123');
   cy.get('[data-cy="create-user-button"] > .v-btn__content').click();
   cy.wait(500);
   // cy.get('[data-cy="error-email"]').should('not.be.visible');
@@ -219,17 +223,6 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('.v-list.v-select-list div').contains('Not yet.').click({force: true})
   cy.get('.v-slider__tick:nth-child(2)').click();
   cy.get('[data-cy=finish_singup_button]').click();
-  cy.wait(1500);
-  // Get Confirmation Link
-  // Set Password
-  cy.visit('http://localhost:8085/user/edit/');
-  cy.get('.v-main__wrap').click();
-  cy.get('[data-cy="set_password_button"] > .v-btn__content').click();
-  cy.get('[data-cy=password1]').click();
-  cy.get('[data-cy=password1]').type('diffgram123');
-  cy.get('[data-cy=password2]').click();
-  cy.get('[data-cy=password2]').type('diffgram123');
-  cy.get('[data-cy="save_password_button"] > .v-btn__content').click();
   cy.wait(3000);
   // Create test Project
   cy.visit('http://localhost:8085/a/project/new');
@@ -830,9 +823,15 @@ Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wra
 });
 
 Cypress.Commands.add('create_task_template', function () {
+  let task_template_name;
   cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/job/new`)
     // Step 1 Name
-    .get('[data-cy="task-template-name-input"]').type(' +test-e2e')
+    .get('[data-cy="task-template-name-input"]')
+    .get('[data-cy="task-template-name-input"]').invoke('val')
+    .then(sometext => {
+      cy.log(`task template name ${sometext}`)
+      cy.wrap(sometext).as('task_template_name')
+    })
     .get('[data-cy="task-template-step-name"] [data-cy="wizard_navigation_next"]').click()
 
     // Step 2 labels
@@ -874,5 +873,5 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="credential-checkbox-0"]').click({force: true})
     .get('[data-cy="requires-button"]').click()
     .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
-
+    return cy.wrap(task_template_name)
 })

@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak>
 
     <v-col cols="9">
 
@@ -17,23 +17,30 @@
               <h3 class="headline">Almost there!</h3>
             </v-card-title>
 
-            <v-layout >
+            <v-layout>
 
               <v-flex xs12 sm6>
-                <v-text-field label="First name"
-                              data-cy="first_name"
-                              v-model="first_name">
-                </v-text-field>
-                <v-alert type="info"
-                         v-if="error.first_name">
+                <v-text-field
+                  label="*First name"
+                  data-cy="first_name"
+                  v-model="first_name"
+                />
+                <v-alert
+                  type="info"
+                  v-if="error.first_name"
+                >
                   {{error.first_name}}
                 </v-alert>
               </v-flex>
+
+              <div style="width: 10px" />
+
               <v-flex xs12 sm6>
-                <v-text-field label="Last name"
-                              data-cy="last_name"
-                              v-model="last_name">
-                </v-text-field>
+                <v-text-field
+                  label="*Last name"
+                  data-cy="last_name"
+                  v-model="last_name"
+                />
                 <v-alert type="info"
                          v-if="error.last_name">
                   {{error.last_name}}
@@ -57,22 +64,33 @@
                 -->
 
               <v-flex>
-                <v-text-field label="How did you hear about us?"
-                              data-cy="how_hear_about_us"
-                              v-model="how_hear_about_us">
-                </v-text-field>
-              </v-flex>
-
-              <v-flex>
-                <v-text-field label="City"
-                              data-cy="city"
-                              v-model="city">
-                </v-text-field>
+                <v-text-field
+                  label="*City"
+                  data-cy="city"
+                  v-model="city"
+                />
                 <v-alert type="info"
                          v-if="error.city">
                   {{error.city}}
                 </v-alert>
               </v-flex>
+
+              <div style="width: 10px" />
+
+              <v-flex>
+                <v-text-field
+                  label="*Company or Institution"
+                  data-cy="company"
+                  v-model="company"
+                />
+                <v-alert type="info"
+                         v-if="error.company">
+                  {{error.company}}
+                </v-alert>
+              </v-flex>
+
+
+              <div style="width: 10px" />
 
               <diffgram_select
                   data-cy="role"
@@ -86,17 +104,15 @@
             </v-layout>
 
             <v-layout >
-
-              <v-flex md6>
-                <v-text-field label="Company or Institution"
-                              data-cy="company"
-                          v-model="company">
+              <v-flex>
+                <v-text-field label="How did you hear about us?"
+                              data-cy="how_hear_about_us"
+                              v-model="how_hear_about_us">
                 </v-text-field>
-                <v-alert type="info"
-                         v-if="error.company">
-                  {{error.company}}
-                </v-alert>
               </v-flex>
+
+
+              <div style="width: 10px" />
 
               <diffgram_select
                   v-if="role != 'student'"
@@ -135,8 +151,9 @@
                       @click.native="loader = 'loading'"
                       @click="builder_enable_api"
                       data-cy="finish_singup_button"
-                      :disabled="loading">
-                Finish Signup
+                      :disabled="loading"
+                >
+                  Finish Signup
                 <v-icon right> mdi-flag-checkered </v-icon>
               </v-btn>
             </v-card-actions>
@@ -177,8 +194,8 @@
 
 <script lang="ts">
 
-  import axios from 'axios';
-
+  import axios from '../../../services/customInstance';
+  import {getProject} from '../../../services/projectServices'
   import Vue from "vue"; export default Vue.extend( {
     name: 'builder_signup',
     data() {
@@ -198,6 +215,8 @@
         phone_number: null,
         city: null,
         company: null,
+        project_string_id_param: null,
+        user_role: null,
         how_hear_about_us: null,
         demo: null,
 
@@ -275,6 +294,8 @@
       this.first_name = this.$store.state.user.current.first_name
       this.last_name = this.$store.state.user.current.last_name
       this.signup_code = this.$route.query["code"]
+      this.project_string_id_param = this.$route.query["project_string_id"]
+      this.user_role = this.$route.query["role"]
 
     },
 
@@ -317,7 +338,7 @@
             // done any other actions to refresh user information
             this.$store.commit('set_current_user', response.data.user)
 
-            this.route_set_password()
+            this.route_new_project()
 
           } else {
             this.error = response.data.log.error
@@ -333,13 +354,22 @@
           });
       },
 
-      route_new_project: function () {
-        this.$router.push('/a/project/new?builder_api_enabled_success=true')
+      route_new_project: async function () {
+        if(this.project_string_id_param){
+          let [project_data, error] = await getProject(this.project_string_id_param)
+          console.log('project ataa', project_data)
+          this.$store.commit('set_project', project_data.project)
+          if(error){
+            this.error = this.$route_api_errors(error)
+          }
+        }
+        if(this.user_role === 'Editor'){
+          this.$router.push('/me')
+        }
+        else{
+          this.$router.push('/home/dashboard')
+        }
       },
-
-      route_set_password: function () {
-        this.$router.push('/user/account/password/set?initial_setup=true')
-      }
 
     }
   }

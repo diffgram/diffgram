@@ -17,8 +17,17 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('instance', sa.Column('from_instance_id', sa.Integer, sa.ForeignKey('instance.id'), nullable = True))
-    op.add_column('instance', sa.Column('to_instance_id', sa.Integer, sa.ForeignKey('instance.id'), nullable = True))
+    op.add_column('instance', sa.Column('from_instance_id',
+                                        sa.Integer,
+                                        nullable = True,
+                                        default = None))
+    op.add_column('instance', sa.Column('to_instance_id',
+                                        sa.Integer,
+                                        nullable = True,
+                                        default = None))
+
+    op.execute('ALTER TABLE instance ADD CONSTRAINT instance_from_instance_id_fkey FOREIGN KEY (from_instance_id) REFERENCES instance (id) NOT VALID;')
+    op.execute('ALTER TABLE instance ADD CONSTRAINT instance_to_instance_id_fkey FOREIGN KEY (to_instance_id) REFERENCES instance (id) NOT VALID;')
 
 
 def downgrade():

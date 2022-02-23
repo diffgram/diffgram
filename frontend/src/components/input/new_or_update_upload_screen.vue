@@ -244,12 +244,11 @@
 </template>
 
 <script lang="ts">
-  import axios from 'axios';
+  import axios from '../../services/customInstance';
   import Vue from "vue";
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';
   import pLimit from 'p-limit';
-  import sizeof from 'object-sizeof'
 
   export default Vue.extend({
       name: 'new_or_update_upload_screen',
@@ -292,7 +291,7 @@
           loading_annotations: false,
           upload_source: null,
           accepted_annotation_file_types: ['json', 'csv'],
-          accepted_files: ".jpg, .jpeg, .png, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
+          accepted_files: ".jpg, .jpeg, .png, .bmp, .tif, .tiff, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
           file_table_headers: [
             {
               text: 'File Name',

@@ -20,7 +20,7 @@ export const initialize_instance_object = function(instance, component_ctx, scen
     initialized_instance.populate_from_instance_obj(instance);
     return initialized_instance
   }
-  if(instance.type === 'cuboid_3d' && !instance.initialized){
+  else if(instance.type === 'cuboid_3d' && !instance.initialized){
     if(!instance.mesh){
       let cuboid_drawer_tools = new CuboidDrawerTool(scene_controller_3d);
       let cuboid_mesh = cuboid_drawer_tools.create_mesh_from_instance_data(instance)
@@ -35,10 +35,14 @@ export const initialize_instance_object = function(instance, component_ctx, scen
         scene_controller_3d,
         instance.mesh
       );
-
       initialized_instance.populate_from_instance_obj(instance);
     }
     return initialized_instance
+  }
+  else if (instance.type === 'global') {
+    let new_global_instance = component_ctx.new_global_instance();
+    new_global_instance.populate_from_instance_obj(instance)
+    return new_global_instance
   }
   else{
     return instance

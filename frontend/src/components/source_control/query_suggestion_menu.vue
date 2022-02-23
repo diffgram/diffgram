@@ -86,9 +86,7 @@
 
   // TODO pass loading or?
 
-  import axios from 'axios';
-  import v_new_directory from './directory_new'
-  import v_update_directory from './directory_update'
+  import axios from '../../services/customInstance';
   import Vue from "vue";
 
   export default Vue.extend({

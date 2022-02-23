@@ -84,10 +84,10 @@
 </template>
 
 <script lang="ts">
+import Vue from "vue"; 
+import { logout } from "../../services/userServices"
 
-import axios from 'axios';
-
-import Vue from "vue"; export default Vue.extend( {
+export default Vue.extend( {
   name: 'profile_in_menu',
   components: {
 
@@ -98,17 +98,8 @@ import Vue from "vue"; export default Vue.extend( {
     }
   },
   methods: {
-    logout: function () {
-      axios.get('/user/logout')
-        .then(response => {
-
-          this.$store.dispatch('log_out')
-          this.$router.push('/user/login');
-
-        })
-        .catch(error => {
-          console.error(error);
-        });
+    logout: async function () {
+      await logout()
     },
     edit: function () {
       this.$router.push('/user/edit/');
