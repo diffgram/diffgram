@@ -434,7 +434,7 @@ export default Vue.extend({
     data() {
         return {
             draw_mode_local: true,
-            instance_type: "box",
+            instance_type: "circle",
         }
     },
     computed: {
