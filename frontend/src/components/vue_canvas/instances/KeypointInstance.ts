@@ -13,6 +13,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
   public hovered_scale_control_points: boolean = false;
+  public original_nodes: any = [];
   public hovered_control_point_key: string = undefined;
   public start_index_occlusion: number = undefined;
   public occluded: boolean = false;
@@ -181,6 +182,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.nodes.splice(this.node_hover_index, 1);
     this.edges = new_edges;
     this.current_node_connection = []
+  }
+  public save_original_nodes(): void{
+    this.original_nodes = [];
+    for(let node of this.nodes){
+      this.original_nodes.push({...node})
+    }
   }
   public start_rescale(){
     this.is_rescaling = true;
@@ -633,8 +640,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
-
+  public set_nodes_coords_based_on_size(width: number, height: number){
+    let original_width = 800;
+    let original_height = 800;
+    let original_nodes = this.original_nodes;
+    for(let node of original_nodes){
+      
+    }
+  }
   private draw_node(node, ctx, i){
+    console.log('draw node', node.x, node.y)
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {

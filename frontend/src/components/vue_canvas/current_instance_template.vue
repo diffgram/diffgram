@@ -73,14 +73,24 @@
         let y_max = Math.max(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
         ctx.textAlign = "start";
         ctx.lineWidth = '2'
+        let fixed_point = this.$props.instance_template_start_point;
         this.draw_instance_template_bounds(ctx, x_min, y_min);
+
         for (let instance of instance_template.instance_list) {
           // Just keypoints are supported for now
-          if (instance.type == "keypoints") {
-            instance.scale_width = Math.abs(this.$props.instance_template_start_point.x - this.$props.mouse_position.x)
-            instance.scale_height = Math.abs(this.$props.instance_template_start_point.y - this.$props.mouse_position.y)
-            instance.translate_x = x_min;
-            instance.translate_y = y_min;
+          let height = instance.height;
+          let width = instance.width;
+          if (instance.type === "keypoints") {
+            for(let node of instance.nodes){
+              let new_height = this.$props.mouse_position.y - this.$props.instance_template_start_point.y;
+              let new_width = this.$props.mouse_position.x - this.$props.instance_template_start_point.x;
+              let ry = new_height / height
+              let rx = new_width / width
+              console.log('new point', fixed_point.x, rx, node.x)
+              node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+              node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+            }
+            instance.calculate_min_max_points()
             instance.vertex_size = 2;
             instance.line_width = 2;
             instance.draw(ctx);

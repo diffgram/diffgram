@@ -274,7 +274,7 @@
             :instance="selected_instance_for_history"
           >
           </instance_history_sidepanel>
-          
+
           <v-divider></v-divider>
 
         <v-expansion-panels
@@ -6807,7 +6807,7 @@ export default Vue.extend({
             point.y += y_diff;
           });
         }
-        this.add_instance_to_file(
+         this.add_instance_to_file(
           new_instance,
           frame_number
         );
@@ -6839,12 +6839,18 @@ export default Vue.extend({
             this.current_instance_template
           )
         ) {
-          this.instance_template_draw_started = true;
-          this.is_actively_drawing = true;
+
+
           this.instance_template_start_point = {
             x: this.mouse_position.x,
             y: this.mouse_position.y,
           };
+          this.current_instance_template.instance_list[0].save_original_nodes();
+          this.current_instance_template.instance_list[0].width = 1;
+          this.current_instance_template.instance_list[0].height = 1;
+
+          this.instance_template_draw_started = true;
+          this.is_actively_drawing = true;
         } else {
           this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
