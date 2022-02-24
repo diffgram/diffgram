@@ -15,9 +15,6 @@ describe('Export to Cloud Provider', () => {
 
     it('Correctly sends a Job export to AWS Connection', () => {
 
-
-
-      cy.visit('http://localhost:8085/');
       cy.get('#open_main_menu').click();
       cy.get('#export_section').click();
       cy.wait(4000);

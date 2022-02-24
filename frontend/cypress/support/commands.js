@@ -835,6 +835,7 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="task-template-step-name"] [data-cy="wizard_navigation_next"]').click()
 
     // Step 2 labels
+    .wait(2000)
     .get('[data-cy="select-all-labels"]')
     .click({force: true})
     .selectLabel(testLabels[0].name, 'label-select')
