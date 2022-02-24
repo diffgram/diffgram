@@ -81,14 +81,13 @@
           let height = instance.height;
           let width = instance.width;
           if (instance.type === "keypoints") {
-            for(let node of instance.nodes){
-              let new_height = this.$props.mouse_position.y - this.$props.instance_template_start_point.y;
-              let new_width = this.$props.mouse_position.x - this.$props.instance_template_start_point.x;
-              let ry = new_height / height
-              let rx = new_width / width
-              console.log('new point', fixed_point.x, rx, node.x)
-              node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+            let new_height = this.$props.mouse_position.y - this.$props.instance_template_start_point.y;
+            let new_width = this.$props.mouse_position.x - this.$props.instance_template_start_point.x;
+            let ry = new_height / height
+            let rx = new_width / width
+            for (let node of instance.nodes){
               node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+              node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
             }
             instance.calculate_min_max_points()
             instance.vertex_size = 2;

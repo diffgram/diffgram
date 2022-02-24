@@ -293,7 +293,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_moving(){
     this.is_moving = false;
   }
-  public rescale(){
+  public rescale(fixed_point = undefined){
     if(!this.hovered_control_point_key){
       return
     }
@@ -304,7 +304,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let height = this.height;
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
-    let center = this.get_center_point_rotated()
+    if(!fixed_point){
+      fixed_point = this.get_center_point_rotated()
+    }
     let rescaled = true;
     var new_width, rx, new_height, ry;
 
@@ -313,28 +315,28 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         new_width = width + x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       case "left":
         new_width = width - x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       case "top":
         new_height = height - y_move;
         ry = new_height / height
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
         }
         break;
       case "bottom":
         new_height = height + y_move;
         ry = new_height / height
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
         }
         break;
       case "top_right":
@@ -343,8 +345,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         new_width = width + x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       case "top_left":
@@ -353,8 +355,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         new_width = width - x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       case "bottom_right":
@@ -363,8 +365,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         new_width = width + x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       case "bottom_left":
@@ -373,8 +375,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         new_width = width - x_move;
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = center.y  + ry * ( node.y - center.y)
-          node.x = center.x  + rx * ( node.x - center.x)
+          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
         }
         break;
       default:
@@ -640,13 +642,19 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
-  public set_nodes_coords_based_on_size(width: number, height: number){
+  public set_nodes_coords_based_on_size(width: number, height: number, ref_point: {x: number, y:number}){
     let original_width = 800;
     let original_height = 800;
     let original_nodes = this.original_nodes;
-    for(let node of original_nodes){
-      
+    for(let i = 0; i < original_nodes.length; i++){
+      let node = original_nodes[i]
+      let rx = width / original_width;
+      let ry = height / original_height;
+      node.x = ref_point.x + rx * (node.x - ref_point.x)
+      node.y = ref_point.y + ry * (node.y - ref_point.y)
+      this.nodes[i] = {...node}
     }
+
   }
   private draw_node(node, ctx, i){
     console.log('draw node', node.x, node.y)
