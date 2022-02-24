@@ -34,7 +34,7 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
     def test_get_video_frame_from_task(self):
         # Create mock task
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         video_file = data_mocking.create_file({
@@ -64,10 +64,10 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
             'mode_data': 'list'
         }
 
-        endpoint = "/api/v1/task/{}/video/single/{}/frame-list/".format(task.id, video_file.id)
+        endpoint = f"/api/v1/task/{task.id}/video/single/{video_file.id}/frame-list/"
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode(
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode(
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
@@ -76,7 +76,7 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response.status_code, 200)

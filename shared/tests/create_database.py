@@ -6,10 +6,10 @@ from sqlalchemy import create_engine
 
 
 engine = create_engine(settings.DATABASE_URL)
-print('Checking DB: {}'.format(settings.DATABASE_URL))
+print(f"Checking DB: {settings.DATABASE_URL}")
 
 if not database_exists(engine.url):
-    print('Creating DB: {}'.format(settings.DATABASE_URL))
+    print(f"Creating DB: {settings.DATABASE_URL}")
     from shared.database.core import Base
     create_database(engine.url)
     Base.metadata.create_all(engine)
