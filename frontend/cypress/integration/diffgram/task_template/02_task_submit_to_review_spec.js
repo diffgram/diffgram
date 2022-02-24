@@ -1,4 +1,5 @@
 import testUser from "../../../fixtures/users.json";
+import testLabels from "../../../fixtures/labels.json";
 
 describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
@@ -6,6 +7,7 @@ describe("Correctly Submits Task to Review", () => {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
       cy.loginByForm(testUser.email, testUser.password)
+        .createLabels(testLabels)
         .gotToProject(testUser.project_string_id)
 
     });
@@ -46,6 +48,7 @@ describe("Correctly Submits Task to Review", () => {
         .find('.job-title')
         .parent()
         .click({force: true})
+        .wait(6000)
         .get(".image-preview")
         .first()
         .click({force: true})
