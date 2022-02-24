@@ -11,6 +11,7 @@ class WalrusServiceSystemStartupChecker(SystemStartupBase):
 
     def execute_startup_checks(self):
         logger.info('[{}] Performing System Checks...'.format(self.service_name))
+        self.check_settings_values_validity()
         result = SystemEvents.system_startup_events_check(self.service_name)
         if not result:
             raise Exception('System Startup Check Failed.')

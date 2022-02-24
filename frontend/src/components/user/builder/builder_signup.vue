@@ -18,14 +18,14 @@
             </v-card-title>
 
             <v-layout>
-              
+
               <v-flex xs12 sm6>
-                <v-text-field 
+                <v-text-field
                   label="*First name"
                   data-cy="first_name"
                   v-model="first_name"
                 />
-                <v-alert 
+                <v-alert
                   type="info"
                   v-if="error.first_name"
                 >
@@ -36,7 +36,7 @@
               <div style="width: 10px" />
 
               <v-flex xs12 sm6>
-                <v-text-field 
+                <v-text-field
                   label="*Last name"
                   data-cy="last_name"
                   v-model="last_name"
@@ -64,7 +64,7 @@
                 -->
 
               <v-flex>
-                <v-text-field 
+                <v-text-field
                   label="*City"
                   data-cy="city"
                   v-model="city"
@@ -78,7 +78,7 @@
               <div style="width: 10px" />
 
               <v-flex>
-                <v-text-field 
+                <v-text-field
                   label="*Company or Institution"
                   data-cy="company"
                   v-model="company"
@@ -195,7 +195,7 @@
 <script lang="ts">
 
   import axios from '../../../services/customInstance';
-
+  import {getProject} from '../../../services/projectServices'
   import Vue from "vue"; export default Vue.extend( {
     name: 'builder_signup',
     data() {
@@ -215,6 +215,8 @@
         phone_number: null,
         city: null,
         company: null,
+        project_string_id_param: null,
+        user_role: null,
         how_hear_about_us: null,
         demo: null,
 
@@ -292,6 +294,8 @@
       this.first_name = this.$store.state.user.current.first_name
       this.last_name = this.$store.state.user.current.last_name
       this.signup_code = this.$route.query["code"]
+      this.project_string_id_param = this.$route.query["project_string_id"]
+      this.user_role = this.$route.query["role"]
 
     },
 
@@ -350,8 +354,21 @@
           });
       },
 
-      route_new_project: function () {
-        this.$router.push('/home/dashboard')
+      route_new_project: async function () {
+        if(this.project_string_id_param){
+          let [project_data, error] = await getProject(this.project_string_id_param)
+          console.log('project ataa', project_data)
+          this.$store.commit('set_project', project_data.project)
+          if(error){
+            this.error = this.$route_api_errors(error)
+          }
+        }
+        if(this.user_role === 'Editor'){
+          this.$router.push('/me')
+        }
+        else{
+          this.$router.push('/home/dashboard')
+        }
       },
 
     }

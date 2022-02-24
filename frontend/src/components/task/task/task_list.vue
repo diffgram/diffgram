@@ -219,7 +219,8 @@
                   tooltip_message="Reset"
                   @click="column_list = column_list_backup"
                   v-if="column_list != column_list_backup"
-                  icon="autorenew"
+                  icon="mdi-autorenew"
+                  :icon_style="true"
                   color="primary"
                 >
                 </tooltip_button>
@@ -772,7 +773,7 @@ export default Vue.extend({
         "LastUpdated",
         "Action",
       ],
-
+      column_list_backup: [],
       column_list_all: [
         "Select",
         "Status",
@@ -1145,7 +1146,6 @@ export default Vue.extend({
             limit_count: this.per_page_limit,
           }
         );
-
         if (response.data.log.success == true) {
           this.task_list = response.data.task_list;
           this.allow_reviews = response.data.allow_reviews
@@ -1170,6 +1170,9 @@ export default Vue.extend({
               { name: "Assign reviewers", value: 'assignReviewers'},
               { name: "Remove reviewers", value: 'removeReviewers'},
               ]
+          }
+          else{
+            this.column_list_all = this.column_list_all.filter(col => !["AssignedReviewer"].includes(col))
           }
 
           this.update_tasks_with_file_annotations(this.task_list);
