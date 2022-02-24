@@ -265,12 +265,14 @@ Cypress.Commands.add('signupPro', function () {
 })
 
 Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files = 11) {
+  let task_template_name;
   cy.request({
     method: 'POST',
     url: `localhost:8085/api/walrus/test/gen-data`,
     body: {
       'data_type': 'task_template',
       'structure': '1_pass',
+      'name': 'sample_task_template',
       'num_files': num_files,
       'reviews': {
         allow_reviews: true,
@@ -283,7 +285,8 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files = 11) 
     failOnStatusCode: true
   }).then((response) => {
     if (response.body.success) {
-      return true
+      cy.log(response.body.data.name)
+      cy.wrap(response.body.data.name).as('task_template_name');
     }
   })
 })

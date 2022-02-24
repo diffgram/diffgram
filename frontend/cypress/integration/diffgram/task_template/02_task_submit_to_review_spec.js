@@ -6,6 +6,7 @@ describe("Correctly Submits Task to Review", () => {
     beforeEach(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
+
       cy.loginByForm(testUser.email, testUser.password)
         .createLabels(testLabels)
         .gotToProject(testUser.project_string_id)
@@ -14,7 +15,7 @@ describe("Correctly Submits Task to Review", () => {
 
     it("Submits a task to review", () => {
       const url = "/api/v1/task/*/complete";
-      cy.create_task_template()
+      cy.createSampleTasksUsingBackend(10)
         .visit(`http://localhost:8085/job/list`)
         .wait(2000)
         .get('@task_template_name')
