@@ -10,6 +10,7 @@ describe('Export to Cloud Provider', () => {
     beforeEach(function () {
       // login before each test
       cy.loginByForm(testUser.email, testUser.password)
+      cy.gotToProject(testUser.project_string_id);
     })
 
     it('Correctly sends a Job export to AWS Connection', () => {
@@ -20,6 +21,7 @@ describe('Export to Cloud Provider', () => {
       cy.get('#open_main_menu').click();
       cy.get('#export_section').click();
       cy.wait(4000);
+      cy.get('[data-cy=complete-files-only-checkbox]').click({force: true})
       cy.get('[data-cy=generate-export]').click()
 
       cy.wait(9000);
