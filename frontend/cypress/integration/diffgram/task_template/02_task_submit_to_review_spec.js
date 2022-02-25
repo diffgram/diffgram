@@ -3,20 +3,20 @@ import testLabels from "../../../fixtures/labels.json";
 
 describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
-    beforeEach(function () {
+    before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
 
       cy.loginByForm(testUser.email, testUser.password)
-        .createLabels(testLabels)
         .gotToProject(testUser.project_string_id)
-
+        .createLabels(testLabels)
+        .createSampleTasksUsingBackend(10)
     });
 
     it("Submits a task to review", () => {
       const url = "/api/v1/task/*/complete";
-      cy.createSampleTasksUsingBackend(10)
-        .visit(`http://localhost:8085/job/list`)
+
+        cy.visit(`http://localhost:8085/job/list`)
         .wait(2000)
         .get('@task_template_name')
         .then(task_template_name => {
@@ -50,11 +50,12 @@ describe("Correctly Submits Task to Review", () => {
         .parent()
         .click({force: true})
         .wait(6000)
-        .get(".image-preview")
+        .get("tbody > tr")
         .first()
         .click({force: true})
         .wait(6000)
         .intercept(url).as("review_task")
+        .wait(2000)
         .get('[data-cy="submit-to-review"]').click({force: true})
         .wait(2000)
         .get('[data-cy="review-the-task"]').click({force: true})
