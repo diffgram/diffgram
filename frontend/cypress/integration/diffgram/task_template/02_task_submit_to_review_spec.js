@@ -11,6 +11,7 @@ describe("Correctly Submits Task to Review", () => {
         .gotToProject(testUser.project_string_id)
         .createLabels(testLabels)
         .createSampleTasksUsingBackend(10)
+        .wait(10000)
     });
 
     it("Submits and reviews a task", () => {
