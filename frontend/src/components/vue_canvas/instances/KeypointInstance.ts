@@ -643,15 +643,22 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
   }
   public set_nodes_coords_based_on_size(width: number, height: number, ref_point: {x: number, y:number}){
-    let original_width = 800;
-    let original_height = 800;
     let original_nodes = this.original_nodes;
+    let min_x = Math.min(...original_nodes.map(n => n.x)) - this.vertex_size;
+    let max_x = Math.max(...original_nodes.map(n => n.x)) + this.vertex_size;
+    let min_y = Math.min(...original_nodes.map(n => n.y)) - this.vertex_size;
+    let max_y = Math.max(...original_nodes.map(n => n.y)) + this.vertex_size;
+    let original_width = Math.abs(max_x - min_x)
+    let original_height = Math.abs(max_y - min_y)
+    console.log('original_width', original_width)
+    console.log('original_height', original_height)
+    console.log('ref_point', ref_point.x, ref_point.y)
     for(let i = 0; i < original_nodes.length; i++){
       let node = original_nodes[i]
       let rx = width / original_width;
       let ry = height / original_height;
-      node.x = ref_point.x + rx * (node.x - ref_point.x)
-      node.y = ref_point.y + ry * (node.y - ref_point.y)
+      node.x = Math.round(ref_point.x + rx * (node.x - ref_point.x))
+      node.y = Math.round(ref_point.y + ry * (node.y - ref_point.y))
       this.nodes[i] = {...node}
     }
 
