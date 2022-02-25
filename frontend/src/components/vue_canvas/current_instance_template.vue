@@ -69,46 +69,53 @@
 
         let x_min = Math.min(this.$props.mouse_position.x, this.$props.instance_template_start_point.x)
         let y_min = Math.min(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
-        let x_max = Math.max(this.$props.mouse_position.x, this.$props.instance_template_start_point.x)
-        let y_max = Math.max(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
         ctx.textAlign = "start";
         ctx.lineWidth = '2'
         let fixed_point = this.$props.instance_template_start_point;
         this.draw_instance_template_bounds(ctx, x_min, y_min);
 
         for (let instance of instance_template.instance_list) {
+          instance.calculate_min_max_points()
+          instance.width = instance.x_max - instance.x_min
+          instance.height = instance.y_max - instance.y_min
           // Just keypoints are supported for now
           let height = instance.height;
           let width = instance.width;
           if (instance.type === "keypoints") {
-            let new_height = Math.abs(this.$props.mouse_position.y - fixed_point.y);
-            let new_width = Math.abs(this.$props.mouse_position.x - fixed_point.x);
+            let new_height = Math.round(Math.abs(this.$props.mouse_position.y - fixed_point.y));
+            let new_width = Math.round(Math.abs(this.$props.mouse_position.x - fixed_point.x));
             let ry = new_height / height
             let rx = new_width / width
             if(new_height === 0 || new_width === 0){
               done()
               return
             }
+            let c = 0;
             for (let node of instance.nodes){
-              if(this.mouse_position.x >= fixed_point.x){
-                node.x = fixed_point.x + rx * ( node.x - fixed_point.x)
+              let new_x, new_y;
+              new_x = fixed_point.x + rx * ( node.x - fixed_point.x)
+              new_y = fixed_point.y + ry * ( node.y - fixed_point.y)
+              if(isNaN(new_x) || isNaN(new_y)){
+                return
               }
-              else{
-                node.x = fixed_point.x - rx * ( node.x - fixed_point.x)
-              }
-              if(this.mouse_position.y >= fixed_point.y){
-                node.y = fixed_point.y + ry * ( node.y - fixed_point.y)
-              }
-              else{
-                node.y = fixed_point.y - ry * ( node.y - fixed_point.y)
-              }
+              node.x = Math.round(new_x);
+              node.y = Math.round(new_y);
+              if(c === 0){
+                console.log('width, height', width, height)
+                console.log('new_width, height', new_height, new_height)
+                console.log('RX, RY', rx, ry)
+                console.log('fixed_point', fixed_point.x, fixed_point.y)
+                console.log('mouse', this.mouse_position.x, this.mouse_position.y)
 
-
+                console.log('NEW NODE VALUE', node.x, node.y)
+              }
+              c += 1;
             }
             instance.calculate_min_max_points()
             instance.vertex_size = 2;
             instance.line_width = 2;
-            // instance.draw(ctx);
+            console.log('current draw sstart')
+            instance.draw(ctx);
           }
         }
         done();

@@ -149,8 +149,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       } else {
         node.left_or_right = 'right'
       }
-      node.x = this.get_scaled_x(node);
-      node.y = this.get_scaled_y(node);
     }
     this.calculate_min_max_points();
     this.scale_height = undefined;
@@ -221,7 +219,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true
     }
     else {
-
+      console.log('mouse up', this.node_hover_index, this.selected, this.is_hovered)
       if(this.is_moving){
         this.stop_moving();
       }
@@ -263,6 +261,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private move_single_node(node) {
+    console.log('move_single_node')
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
     let old = {...node}
@@ -346,6 +345,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return result
   }
   public rescale(){
+    console.log('rescale')
     if(!this.hovered_control_point_key){
       return
     }
@@ -498,7 +498,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     let node = this.nodes[this.node_hover_index]
     if (node) {
-
+      console.log('move_node')
       node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
       node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
 
@@ -712,6 +712,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return result
   }
   public set_nodes_coords_based_on_size(width: number, height: number, ref_point: {x: number, y:number}){
+    console.log('set_nodes_coords_based_on_size')
     let original_nodes = this.original_nodes;
     let normalized_nodes = this.normalize_nodes(original_nodes);
     let min_x = Math.min(...normalized_nodes.map(n => n.x)) - this.vertex_size;
@@ -738,7 +739,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       node.occluded == true) {
       return
     }
-
+    if(!i){
+      console.log('node', node.x, node.y)
+    }
     if (node.occluded == true) {
       ctx.globalAlpha = 0.3;
     } else {
