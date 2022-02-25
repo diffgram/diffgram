@@ -301,7 +301,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let center = this.get_center_point_rotated()
     let rescaled = true;
     var new_width, rx, new_height, ry;
-    console.log('XMOVE', x_move, width)
+    console.debug('XMOVE', x_move, width)
     switch (this.hovered_control_point_key){
       case "right":
         new_width = width + x_move;
@@ -636,7 +636,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node(node, ctx, i){
-    console.log('draw node', node, node.x, node.y, node.occluded)
+    console.debug('draw node', node, node.x, node.y, node.occluded)
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {
