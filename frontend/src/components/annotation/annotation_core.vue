@@ -6846,7 +6846,7 @@ export default Vue.extend({
             y: this.mouse_position.y,
           };
           this.current_instance_template.instance_list[0].save_original_nodes();
-          this.current_instance_template.instance_list[0].set_nodes_coords_based_on_size(1, 1, this.instance_template_start_point);
+          this.current_instance_template.instance_list[0].set_nodes_coords_based_on_size(10, 10, this.instance_template_start_point);
 
           this.current_instance_template.instance_list[0].width = 1;
           this.current_instance_template.instance_list[0].height = 1;

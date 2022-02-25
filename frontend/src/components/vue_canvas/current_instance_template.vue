@@ -80,11 +80,17 @@
           // Just keypoints are supported for now
           let height = instance.height;
           let width = instance.width;
+          console.log('INSTANCE WIDHT HIEGHT', instance.width, instance.height)
           if (instance.type === "keypoints") {
-            let new_height = this.$props.mouse_position.y - this.$props.instance_template_start_point.y;
-            let new_width = this.$props.mouse_position.x - this.$props.instance_template_start_point.x;
+            let new_height = Math.abs(this.$props.mouse_position.y - fixed_point.y);
+            let new_width = Math.abs(this.$props.mouse_position.x - fixed_point.x);
             let ry = new_height / height
             let rx = new_width / width
+            if(new_height === 0 || new_width === 0){
+              done()
+              return
+            }
+            console.log('AAA', rx, ry, new_width, new_height)
             for (let node of instance.nodes){
               node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
               node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
