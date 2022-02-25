@@ -209,7 +209,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   public process_mouse_up(): boolean {
-    console.log('on_mouse_up')
     if (this.instance_context.draw_mode
     && this.template_creation_mode) {
       if(this.is_node_hovered){
@@ -239,9 +238,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         }
 
       }
-      console.log('node_hover_index', this.node_hover_index)
-      console.log('selected', this.selected)
-      console.log('is_hovered', this.is_hovered)
       if(this.node_hover_index == undefined && !this.selected && this.is_hovered){
         this.select();
       }
@@ -293,7 +289,61 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_moving(){
     this.is_moving = false;
   }
-  public rescale(fixed_point = undefined){
+  private get_fixed_point(key:string){
+    let min_max_points = this.get_rotated_min_max()
+    if(key === 'right'){
+      return {
+        x: min_max_points.min_x,
+        y: (min_max_points.max_y + min_max_points.min_y) / 2
+      }
+    }
+    else if(key === 'left'){
+      return {
+        x: min_max_points.max_x,
+        y: (min_max_points.max_y + min_max_points.min_y) / 2
+      }
+    }
+    else if(key === 'top'){
+      return {
+        x: (min_max_points.max_x + min_max_points.min_x) / 2,
+        y: min_max_points.max_y
+      }
+    }
+    else if(key === 'bottom'){
+      return {
+        x: (min_max_points.max_x + min_max_points.min_x) / 2,
+        y: min_max_points.min_y
+      }
+    }
+    else if(key === 'bottom_right'){
+      return {
+        x: min_max_points.min_x,
+        y: min_max_points.min_y
+      }
+    }
+    else if(key === 'bottom_left'){
+      return {
+        x: min_max_points.max_x,
+        y: min_max_points.min_y
+      }
+    }
+    else if(key === 'top_right'){
+      return {
+        x: min_max_points.min_x,
+        y: min_max_points.max_y
+      }
+    }
+    else if(key === 'top_left'){
+      return {
+        x: min_max_points.max_x,
+        y: min_max_points.max_y
+      }
+    }
+    else{
+      return this.get_center_point_rotated();
+    }
+  }
+  public rescale(){
     if(!this.hovered_control_point_key){
       return
     }
@@ -304,9 +354,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let height = this.height;
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
-    if(!fixed_point){
-      fixed_point = this.get_center_point_rotated()
-    }
+
+    let fixed_point = this.get_fixed_point(this.hovered_control_point_key)
+
     let rescaled = true;
     var new_width, rx, new_height, ry;
 
@@ -642,29 +692,45 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
 
   }
+  public normalize_nodes(node_list){
+    /*
+    * Make node list coords start from (0,0)
+    * */
+    let result = [];
+    let min_x = Math.min(...node_list.map(n => n.x)) - this.vertex_size;
+    let min_y = Math.min(...node_list.map(n => n.y)) - this.vertex_size;
+    for(let node of node_list){
+      let new_node = {
+        ...node,
+        x: node.x - min_x,
+        y: node.y - min_y,
+      }
+      result.push(new_node)
+    }
+    return result
+  }
   public set_nodes_coords_based_on_size(width: number, height: number, ref_point: {x: number, y:number}){
     let original_nodes = this.original_nodes;
-    let min_x = Math.min(...original_nodes.map(n => n.x)) - this.vertex_size;
-    let max_x = Math.max(...original_nodes.map(n => n.x)) + this.vertex_size;
-    let min_y = Math.min(...original_nodes.map(n => n.y)) - this.vertex_size;
-    let max_y = Math.max(...original_nodes.map(n => n.y)) + this.vertex_size;
+    let normalized_nodes = this.normalize_nodes(original_nodes);
+    let min_x = Math.min(...normalized_nodes.map(n => n.x)) - this.vertex_size;
+    let max_x = Math.max(...normalized_nodes.map(n => n.x)) + this.vertex_size;
+    let min_y = Math.min(...normalized_nodes.map(n => n.y)) - this.vertex_size;
+    let max_y = Math.max(...normalized_nodes.map(n => n.y)) + this.vertex_size;
     let original_width = Math.abs(max_x - min_x)
     let original_height = Math.abs(max_y - min_y)
-    console.log('original_width', original_width)
-    console.log('original_height', original_height)
-    console.log('ref_point', ref_point.x, ref_point.y)
-    for(let i = 0; i < original_nodes.length; i++){
-      let node = original_nodes[i]
+    for(let i = 0; i < normalized_nodes.length; i++){
+      let node = normalized_nodes[i]
       let rx = width / original_width;
       let ry = height / original_height;
-      node.x = Math.round(ref_point.x + rx * (node.x - ref_point.x))
-      node.y = Math.round(ref_point.y + ry * (node.y - ref_point.y))
+      node.x = Math.round(ref_point.x + rx * (node.x))
+      node.y = Math.round(ref_point.y + ry * (node.y))
       this.nodes[i] = {...node}
     }
-
+    this.calculate_min_max_points();
+    this.width = this.x_max - this.x_min
+    this.height = this.y_max - this.y_min
   }
   private draw_node(node, ctx, i){
-    console.log('draw node', node.x, node.y)
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {
@@ -735,7 +801,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.beginPath();
       ctx.fillStyle = 'white'
       ctx.lineWidth = 2 / this.zoom_value
-      ctx.arc(point.x, point.y, this.vertex_size + 2 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size + 4 / this.zoom_value, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.fill();
       if(this.is_mouse_in_path(ctx) && !hovered_scale_point){
