@@ -291,57 +291,59 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   private get_fixed_point(key:string){
     let min_max_points = this.get_rotated_min_max()
+    let result;
     if(key === 'right'){
-      return {
-        x: min_max_points.min_x,
-        y: (min_max_points.max_y + min_max_points.min_y) / 2
+      result = {
+        x: Math.round(min_max_points.min_x),
+        y: Math.round((min_max_points.max_y + min_max_points.min_y) / 2)
       }
     }
     else if(key === 'left'){
-      return {
-        x: min_max_points.max_x,
-        y: (min_max_points.max_y + min_max_points.min_y) / 2
+      result = {
+        x: Math.round(min_max_points.max_x),
+        y: Math.round((min_max_points.max_y + min_max_points.min_y) / 2)
       }
     }
     else if(key === 'top'){
-      return {
-        x: (min_max_points.max_x + min_max_points.min_x) / 2,
-        y: min_max_points.max_y
+      result = {
+        x: Math.round((min_max_points.max_x + min_max_points.min_x) / 2),
+        y: Math.round(min_max_points.max_y)
       }
     }
     else if(key === 'bottom'){
-      return {
-        x: (min_max_points.max_x + min_max_points.min_x) / 2,
-        y: min_max_points.min_y
+      result = {
+        x: Math.round(min_max_points.max_y),
+        y: Math.round(min_max_points.min_y)
       }
     }
     else if(key === 'bottom_right'){
-      return {
-        x: min_max_points.min_x,
-        y: min_max_points.min_y
+      result = {
+        x: Math.round(min_max_points.min_x),
+        y: Math.round(min_max_points.min_y)
       }
     }
     else if(key === 'bottom_left'){
-      return {
-        x: min_max_points.max_x,
-        y: min_max_points.min_y
+      result = {
+        x: Math.round(min_max_points.max_x),
+        y: Math.round(min_max_points.min_y)
       }
     }
     else if(key === 'top_right'){
-      return {
-        x: min_max_points.min_x,
-        y: min_max_points.max_y
+      result = {
+        x: Math.round(min_max_points.min_x),
+        y: Math.round(min_max_points.max_y)
       }
     }
     else if(key === 'top_left'){
-      return {
-        x: min_max_points.max_x,
-        y: min_max_points.max_y
+      result = {
+        x: Math.round(min_max_points.max_x),
+        y: Math.round(min_max_points.max_y)
       }
     }
     else{
-      return this.get_center_point_rotated();
+      result = this.get_center_point_rotated();
     }
+    return result
   }
   public rescale(){
     if(!this.hovered_control_point_key){

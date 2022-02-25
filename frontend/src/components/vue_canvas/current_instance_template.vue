@@ -90,13 +90,25 @@
               return
             }
             for (let node of instance.nodes){
-              node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
-              node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+              if(this.mouse_position.x >= fixed_point.x){
+                node.x = fixed_point.x + rx * ( node.x - fixed_point.x)
+              }
+              else{
+                node.x = fixed_point.x - rx * ( node.x - fixed_point.x)
+              }
+              if(this.mouse_position.y >= fixed_point.y){
+                node.y = fixed_point.y + ry * ( node.y - fixed_point.y)
+              }
+              else{
+                node.y = fixed_point.y - ry * ( node.y - fixed_point.y)
+              }
+
+
             }
             instance.calculate_min_max_points()
             instance.vertex_size = 2;
             instance.line_width = 2;
-            instance.draw(ctx);
+            // instance.draw(ctx);
           }
         }
         done();
