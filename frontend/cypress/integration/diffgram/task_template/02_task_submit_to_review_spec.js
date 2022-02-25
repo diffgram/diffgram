@@ -3,7 +3,7 @@ import testLabels from "../../../fixtures/labels.json";
 
 describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
-    before(function () {
+    beforeEach(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
 
@@ -13,8 +13,9 @@ describe("Correctly Submits Task to Review", () => {
         .createSampleTasksUsingBackend(10)
     });
 
-    it("Submits a task to review", () => {
+    it("Submits and reviews a task", () => {
       const url = "/api/v1/task/*/complete";
+      const url_review = "/api/v1/task/*/review";
 
         cy.visit(`http://localhost:8085/job/list`)
         .wait(2000)
@@ -37,24 +38,13 @@ describe("Correctly Submits Task to Review", () => {
         .its("response")
         .should("have.property", "statusCode", 200)
         .wait(6000)
-        .get('[data-cy="go-to-task-list"]').click({force: true});
-    });
-
-    it("Reviews a task", () => {
-      const url = "/api/v1/task/*/review";
-      cy.visit(`http://localhost:8085/job/list`)
+        .get('[data-cy="go-to-task-list"]').click({force: true})
         .wait(2000)
-        .get(`.job-card`)
-        .first()
-        .find('.job-title')
-        .parent()
-        .click({force: true})
-        .wait(6000)
         .get("tbody > tr")
         .first()
         .click({force: true})
-        .wait(6000)
-        .intercept(url).as("review_task")
+        .wait(2000)
+        .intercept(url_review).as("review_task")
         .wait(2000)
         .get('[data-cy="submit-to-review"]').click({force: true})
         .wait(2000)
@@ -63,6 +53,7 @@ describe("Correctly Submits Task to Review", () => {
         .its("response")
         .should("have.property", "statusCode", 200);
     });
+
   });
 })
 ;
