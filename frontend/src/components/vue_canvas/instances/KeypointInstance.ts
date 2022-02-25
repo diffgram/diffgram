@@ -215,7 +215,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true
     }
     else {
-
+      let moving = false;
       if(this.is_moving){
         this.stop_moving();
       }
@@ -225,7 +225,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if(this.node_hover_index != undefined){
         if(this.start_index_occlusion != undefined){
           this.occlude_direction(this.node_hover_index)
-          return true
+          moving = true;
         }
         else{
           this.select();
