@@ -3,7 +3,7 @@ import testLabels from "../../../fixtures/labels.json";
 
 describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
-    beforeEach(function () {
+    before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
       Cypress.Cookies.defaults({preserve: ["session"]})
 
