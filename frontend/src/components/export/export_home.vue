@@ -56,6 +56,7 @@
 
             <div class="pl-4 pr-4">
               <v-checkbox v-model="ann_is_complete"
+                          data-cy="complete-files-only-checkbox"
                           label="Complete Files Only">
               </v-checkbox>
             </div>
