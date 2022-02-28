@@ -181,6 +181,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.nodes.splice(this.node_hover_index, 1);
     this.edges = new_edges;
     this.current_node_connection = []
+    this.is_drawing_edge = false
   }
   public start_rescale(){
     this.is_rescaling = true;
@@ -215,7 +216,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true
     }
     else {
-
+      let moving = false;
       if(this.is_moving){
         this.stop_moving();
       }
@@ -225,7 +226,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if(this.node_hover_index != undefined){
         if(this.start_index_occlusion != undefined){
           this.occlude_direction(this.node_hover_index)
-          return true
+          moving = true;
         }
         else{
           this.select();
@@ -300,7 +301,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let center = this.get_center_point_rotated()
     let rescaled = true;
     var new_width, rx, new_height, ry;
-
+    console.debug('XMOVE', x_move, width)
     switch (this.hovered_control_point_key){
       case "right":
         new_width = width + x_move;
@@ -635,6 +636,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node(node, ctx, i){
+    console.debug('draw node', node, node.x, node.y, node.occluded)
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {
@@ -866,7 +868,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     this.nodes.push(node)
     node.name = this.nodes.length.toString();
-
+    this.calculate_min_max_points()
   }
 
   private draw_icon(
@@ -1001,6 +1003,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     if (this.current_node_connection.length === 0) {
+      return
+    }
+    if(!this.current_node_connection[0]){
       return
     }
     ctx.beginPath();

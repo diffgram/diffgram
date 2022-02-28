@@ -95,7 +95,7 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
                         "a": 1}, "label": {"id": 5, "name": "Car wheel", "default_sequences_to_single_frame": False}}],
             "label_file_colour_map": {}}
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'status': 'active',
             'type': "Normal",
@@ -137,7 +137,7 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
                         external_id='mytestid',
                         connection_id=connection.id,
                         diffgram_class_string='',
-                        type='{}_label_set'.format(connection.integration_name),
+                        type=f"{connection.integration_name}_label_set",
                     )
 
                     self.assertNotEqual(external_map, None)
@@ -148,7 +148,7 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
                         external_id='datasaur_test',
                         connection_id=connection.id,
                         diffgram_class_string='task_template',
-                        type='{}_project'.format(connection.integration_name),
+                        type=f"{connection.integration_name}_project",
                     )
                     self.assertNotEqual(project_map, None)
 
@@ -159,6 +159,6 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
                         file_id=file.id,
                         connection_id=connection.id,
                         diffgram_class_string='file',
-                        type='{}_file'.format(connection.integration_name),
+                        type=f"{connection.integration_name}_file",
                     )
                     self.assertNotEqual(files_maps, None)

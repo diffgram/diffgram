@@ -38,7 +38,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_serialize_trainer_info_default(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -55,7 +55,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_serialize(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -71,7 +71,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_get_job_ids_from_user(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -96,11 +96,11 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test22-job-{}'.format(1),
+            'name': f"my-test22-job-{1}",
             'project': self.project
         }, self.session)
         job2 = data_mocking.create_job({
-            'name': 'my2-tes22t-job-{}'.format(1),
+            'name': f"my2-tes22t-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -125,7 +125,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_get_single_by_ids(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -141,7 +141,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_get_by_job_id(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({
@@ -158,7 +158,7 @@ class TestUserToJob(testing_setup.DiffgramBaseTestCase):
 
     def test_list(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         user_to_job = data_mocking.create_user_to_job({

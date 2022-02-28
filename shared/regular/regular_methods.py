@@ -105,15 +105,15 @@ def transmit_interservice_request(
     }
     if service_target == 'walrus':
 
-        endpoint = settings.WALRUS_SERVICE_URL_BASE + 'api/walrus/v1/interservice/receive'
+        endpoint = f"{settings.WALRUS_SERVICE_URL_BASE}api/walrus/v1/interservice/receive"
     else:
         raise NotImplementedError
     response = requests.post(endpoint, data = json.dumps(data))
     try:
         data = response.json()
-        if logger: logger.info('[Interservice]' + str(data))
+        if logger: logger.info(f"[Interservice]{str(data)}")
     except:
-        if logger: logger.info('[Interservice]' + str(response))
+        if logger: logger.info(f"[Interservice]{str(response)}")
 
 
 def regular_query(

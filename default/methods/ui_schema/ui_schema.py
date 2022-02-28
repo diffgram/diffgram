@@ -235,7 +235,7 @@ def __ui_schema_update(
 
         if getattr(ui_schema, field_key) != field_val:
             setattr(ui_schema, field_key, field_val)
-            log['info'][field_key] = "Updated {}".format(field_key)
+            log['info'][field_key] = f"Updated {field_key}"
 
     if do_add_to_session is True:
         session.add(ui_schema)

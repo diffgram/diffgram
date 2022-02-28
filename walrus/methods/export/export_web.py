@@ -333,7 +333,7 @@ def check_export_billing(
             exclude_removed = True,
             return_kind = "count")
 
-    logger.info('Checking limits for export with {} instances'.format(new_instance_count))
+    logger.info(f"Checking limits for export with {new_instance_count} instances")
 
     if max_allowed_instances:
         if new_instance_count > max_allowed_instances:

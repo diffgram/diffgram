@@ -286,7 +286,7 @@ class Update_Input():
                        "ID", "Project", "project_string_id", ]
 
         for header in header_list:
-            message.append(header + "\t")
+            message.append(f"{header}	")
 
         for input in input_list:
             message.append("\n")
@@ -295,20 +295,20 @@ class Update_Input():
             if input.original_filename:
                 filename = input.original_filename[: 20]
 
-            message.append(str(input.status) + "\t\t")
-            message.append(str(input.percent_complete) + "\t")
-            message.append(datetime.datetime.strftime(input.created_time, date_format) + "\t")
-            message.append(datetime.datetime.strftime(input.time_updated, date_format) + "\t")
-            message.append(str(filename) + "\t")
-            message.append(str(input.id) + "\t")
-            message.append(str(input.project.name) + "\t")
-            message.append(str(input.project.project_string_id) + "\t")
+            message.append(f"{str(input.status)}		")
+            message.append(f"{str(input.percent_complete)}	")
+            message.append(f"{datetime.datetime.strftime(input.created_time, date_format)}	")
+            message.append(f"{datetime.datetime.strftime(input.time_updated, date_format)}	")
+            message.append(f"{str(filename)}	")
+            message.append(f"{str(input.id)}	")
+            message.append(f"{str(input.project.name)}	")
+            message.append(f"{str(input.project.project_string_id)}	")
 
         if input_list:
             try:
                 communicate_via_email.send(
                     email = "support@diffgram.com",
-                    subject = "Input report: " + str(len(input_list)) + " items.",
+                    subject = f"Input report: {str(len(input_list))} items.",
                     message = "".join(message)
                 )
             except Exception as e:

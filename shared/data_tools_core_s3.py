@@ -238,7 +238,7 @@ class DataToolsS3:
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
                                                                'Bucket': bucket_name,
-                                                               'ResponseContentDisposition': 'attachment; filename=' + filename,
+                                                               'ResponseContentDisposition': f"attachment; filename={filename}",
                                                                'Key': blob_name},
                                                            ExpiresIn = int(expiration_time))
         return signed_url

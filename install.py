@@ -47,11 +47,11 @@ class bcolors:
 
     @staticmethod
     def printcolor(string, color):
-        print(color + string + '\033[0m')
+        print(color + string + bcolors.ENDC)
 
     @staticmethod
     def inputcolor(string, color = '\033[96m'):
-        val = input(color + string + '\033[0m')
+        val = input(color + string + bcolors.ENDC)
         return val
 
 
@@ -117,11 +117,11 @@ class DiffgramInstallTool:
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
             client = BlobServiceClient.from_connection_string(connection_string)
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To Azure Account')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To Azure Account")
         except Exception as e:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To Azure Account')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To Azure Account")
             bcolors.printcolor('Error Connecting to Azure: Please check you entered valid credentials.', bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -129,12 +129,12 @@ class DiffgramInstallTool:
             blob_client = client.get_blob_client(container = bucket_name, blob = test_file_path)
             my_content_settings = ContentSettings(content_type = 'text/plain')
             blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Write Permissions")
         except:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Write Permissions")
             bcolors.printcolor('Error Connecting to Azure: Please check you have write permissions on the Azure container.',
                                bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -153,7 +153,7 @@ class DiffgramInstallTool:
                 start = datetime.datetime.utcnow(),
                 expiry = expiry_time,
                 permission = BlobSasPermissions(read = True),
-                content_disposition = 'attachment; filename=' + filename,
+                content_disposition = f"attachment; filename={filename}",
             )
             sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
                 client.account_name,
@@ -164,14 +164,14 @@ class DiffgramInstallTool:
             resp = requests.get(sas_url)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
 
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Read Permissions")
         except:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Read Permissions")
             bcolors.printcolor('Error Connecting to Azure: Please check you have read permissions on the Azure container.',
                                bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -190,23 +190,23 @@ class DiffgramInstallTool:
             credentials = service_account.Credentials.from_service_account_file(account_path)
             client = storage.Client(credentials = credentials)
             bucket = client.get_bucket(bucket_name)
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To GCP Account')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To GCP Account")
         except Exception as e:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To GCP Account')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To GCP Account")
             bcolors.printcolor('Error Connecting to GCP: Please check you entered valid credentials.', bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
         try:
             blob = bucket.blob(test_file_path)
             blob.upload_from_string('This is a diffgram test file', content_type = 'text/plain')
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Write Permissions")
         except:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Write Permissions")
             bcolors.printcolor('Error Connecting to GCP: Please check you have write permissions on the GCP bucket.',
                                bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -218,19 +218,19 @@ class DiffgramInstallTool:
             filename = test_file_path.split("/")[-1]
             url_signed = blob.generate_signed_url(
                 expiration = expiration_time,
-                response_disposition = 'attachment; filename=' + filename
+                response_disposition = f"attachment; filename={filename}"
             )
             resp = requests.get(url_signed)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
 
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Read Permissions")
         except:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Read Permissions")
             bcolors.printcolor('Error Connecting to GCP: Please check you have read permissions on the GCP bucket.',
                                bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -247,11 +247,11 @@ class DiffgramInstallTool:
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
             client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret, region_name = bucket_region)
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Connection To S3 Account')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To S3 Account")
         except Exception as e:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Connection To S3 Account')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To S3 Account")
             bcolors.printcolor('Error Connecting to S3: Please check you entered valid credentials.', bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -260,12 +260,12 @@ class DiffgramInstallTool:
                               Bucket = bucket_name,
                               Key = test_file_path,
                               ContentType = 'text/plain')
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Write Permissions")
         except:
-            print(bcolors.FAIL + '[ERROR] ' + '\033[0m' + 'Write Permissions')
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Write Permissions")
             bcolors.printcolor('Error Connecting to S3: Please check you have write permissions on the S3 bucket.',
                                bcolors.FAIL)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -276,14 +276,14 @@ class DiffgramInstallTool:
             resp = requests.get(signed_url)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
 
-            print(bcolors.OKGREEN + '[OK] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Read Permissions")
         except:
-            print(bcolors.WARNING + '[ERROR] ' + '\033[0m' + 'Read Permissions')
+            print(f"{bcolors.WARNING}[ERROR] {bcolors.ENDC}Read Permissions")
             bcolors.printcolor('Error Connecting to S3: Please check you have read permissions on the S3 bucket.',
                                bcolors.WARNING)
-            print('Details: {}'.format(traceback.format_exc()))
+            print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
@@ -367,78 +367,78 @@ class DiffgramInstallTool:
         system = platform.system().lower()
         release = platform.release().lower()
 
-        os_data = '{} {} {}'.format(os_name, system, release)
+        os_data = f"{os_name} {system} {release}"
         return os_data
 
     def populate_env(self):
         env_file = ''
         bcolors.printcolor('Generating Environment Variables file...', bcolors.OKBLUE)
         if self.static_storage_provider == 'gcp':
-            env_file = 'GCP_SERVICE_ACCOUNT_FILE_PATH={}\n'.format(self.gcp_credentials_path)
-            env_file += 'CLOUD_STORAGE_BUCKET={}\n'.format(self.bucket_name)
-            env_file += 'ML__CLOUD_STORAGE_BUCKET={}\n'.format(self.bucket_name)
+            env_file = f"GCP_SERVICE_ACCOUNT_FILE_PATH={self.gcp_credentials_path}\n"
+            env_file += f"CLOUD_STORAGE_BUCKET={self.bucket_name}\n"
+            env_file += f"ML__CLOUD_STORAGE_BUCKET={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
-            env_file += 'DIFFGRAM_STATIC_STORAGE_PROVIDER={}\n'.format(self.static_storage_provider)
+            env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
         elif self.static_storage_provider == 'aws':
-            env_file = 'DIFFGRAM_AWS_ACCESS_KEY_ID={}\n'.format(self.s3_access_id)
-            env_file += 'DIFFGRAM_AWS_ACCESS_KEY_SECRET={}\n'.format(self.s3_access_secret)
-            env_file += 'DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
-            env_file += 'DIFFGRAM_S3_BUCKET_REGION={}\n'.format(self.bucket_region)
-            env_file += 'ML__DIFFGRAM_S3_BUCKET_NAME={}\n'.format(self.bucket_name)
+            env_file = f"DIFFGRAM_AWS_ACCESS_KEY_ID={self.s3_access_id}\n"
+            env_file += f"DIFFGRAM_AWS_ACCESS_KEY_SECRET={self.s3_access_secret}\n"
+            env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
+            env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
+            env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
-            env_file += 'DIFFGRAM_STATIC_STORAGE_PROVIDER={}\n'.format(self.static_storage_provider)
-            env_file += 'GCP_SERVICE_ACCOUNT_FILE_PATH={}\n'.format('/dev/null')
+            env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
+            env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
         elif self.static_storage_provider == 'azure':
-            env_file = 'DIFFGRAM_AZURE_CONNECTION_STRING={}\n'.format(self.azure_connection_string)
-            env_file += 'DIFFGRAM_AZURE_CONTAINER_NAME={}\n'.format(self.bucket_name)
-            env_file += 'ML__DIFFGRAM_AZURE_CONTAINER_NAME={}\n'.format(self.bucket_name)
+            env_file = f"DIFFGRAM_AZURE_CONNECTION_STRING={self.azure_connection_string}\n"
+            env_file += f"DIFFGRAM_AZURE_CONTAINER_NAME={self.bucket_name}\n"
+            env_file += f"ML__DIFFGRAM_AZURE_CONTAINER_NAME={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
-            env_file += 'DIFFGRAM_STATIC_STORAGE_PROVIDER={}\n'.format(self.static_storage_provider)
-            env_file += 'GCP_SERVICE_ACCOUNT_FILE_PATH={}\n'.format('/dev/null')
+            env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
+            env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
 
         fernet_key = base64.urlsafe_b64encode(os.urandom(32))
-        env_file += 'FERNET_KEY={}\n'.format(fernet_key)
-        env_file += 'USER_PASSWORDS_SECRET={}\n'.format(create_random_string(10))
-        env_file += 'INTER_SERVICE_SECRET={}\n'.format(create_random_string(10))
-        env_file += 'SECRET_KEY={}\n'.format(create_random_string(18))
-        env_file += 'WALRUS_SERVICE_URL_BASE={}\n'.format('http://walrus:8082/')
+        env_file += f"FERNET_KEY={fernet_key}\n"
+        env_file += f"USER_PASSWORDS_SECRET={create_random_string(10)}\n"
+        env_file += f"INTER_SERVICE_SECRET={create_random_string(10)}\n"
+        env_file += f"SECRET_KEY={create_random_string(18)}\n"
+        env_file += "WALRUS_SERVICE_URL_BASE=http://walrus:8082/\n"
 
-        env_file += 'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={}\n'.format(True)
+        env_file += f"DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={True}\n"
 
         install_fingerprint = self.gen_install_finger_print()
-        env_file += 'DIFFGRAM_INSTALL_FINGERPRINT={}\n'.format(install_fingerprint)
-        env_file += 'DIFFGRAM_VERSION_TAG={}\n'.format(self.diffgram_version)
-        env_file += 'DIFFGRAM_HOST_OS={}\n'.format(self.get_system_os())
+        env_file += f"DIFFGRAM_INSTALL_FINGERPRINT={install_fingerprint}\n"
+        env_file += f"DIFFGRAM_VERSION_TAG={self.diffgram_version}\n"
+        env_file += f"DIFFGRAM_HOST_OS={self.get_system_os()}\n"
 
         if self.local_database:
-            env_file += 'POSTGRES_IMAGE={}\n'.format('postgres:12.5')
-            env_file += 'DATABASE_URL={}\n'.format("postgresql+psycopg2://postgres:postgres@db/diffgram")
-            env_file += 'DATABASE_NAME={}\n'.format('diffgram')
-            env_file += 'DATABASE_HOST={}\n'.format("db")
-            env_file += 'DATABASE_NAME={}\n'.format("diffgram")
-            env_file += 'DATABASE_USER={}\n'.format("postgres")
-            env_file += 'DATABASE_PASS={}\n'.format("postgres")
+            env_file += "POSTGRES_IMAGE=postgres:12.5\n"
+            env_file += "DATABASE_URL=postgresql+psycopg2://postgres:postgres@db/diffgram\n"
+            env_file += "DATABASE_NAME=diffgram\n"
+            env_file += "DATABASE_HOST=db\n"
+            env_file += "DATABASE_NAME=diffgram\n"
+            env_file += "DATABASE_USER=postgres\n"
+            env_file += "DATABASE_PASS=postgres\n"
 
         else:
-            env_file += 'POSTGRES_IMAGE={}\n'.format('tianon/true')
-            env_file += 'DATABASE_URL={}\n'.format(self.database_url)
-            env_file += 'DATABASE_HOST={}\n'.format(self.db_host)
-            env_file += 'DATABASE_NAME={}\n'.format(self.db_name)
-            env_file += 'DATABASE_USER={}\n'.format(self.db_username)
-            env_file += 'DATABASE_PASS={}\n'.format(self.db_pass)
+            env_file += "POSTGRES_IMAGE=tianon/true\n"
+            env_file += f"DATABASE_URL={self.database_url}\n"
+            env_file += f"DATABASE_HOST={self.db_host}\n"
+            env_file += f"DATABASE_NAME={self.db_name}\n"
+            env_file += f"DATABASE_USER={self.db_username}\n"
+            env_file += f"DATABASE_PASS={self.db_pass}\n"
 
         if self.mailgun:
-            env_file += 'MAILGUN_KEY={}\n'.format(self.mailgun_key)
-            env_file += 'EMAIL_DOMAIN_NAME={}\n'.format(self.email_domain)
+            env_file += f"MAILGUN_KEY={self.mailgun_key}\n"
+            env_file += f"EMAIL_DOMAIN_NAME={self.email_domain}\n"
 
         if self.z_flag:
-            env_file += 'INTERNAL_POSTGRES_DIR={}\n'.format('/var/lib/postgresql/data:Z')
+            env_file += "INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data:Z\n"
         else:
-            env_file += 'INTERNAL_POSTGRES_DIR={}\n'.format('/var/lib/postgresql/data')
+            env_file += "INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data\n"
         text_file = open(".env", "w")
         text_file.write(env_file)
         text_file.close()
-        bcolors.printcolor('✓ Environment file written to: {}'.format(os.path.abspath(text_file.name)), bcolors.OKGREEN)        
+        bcolors.printcolor(f"✓ Environment file written to: {os.path.abspath(text_file.name)}", bcolors.OKGREEN)
 
 
     def launch_dockers(self):
@@ -448,7 +448,7 @@ class DiffgramInstallTool:
             print('✓ Diffgram Successfully Launched!')
             print('View the Web UI at: http://localhost:8085')
         except Exception as e:
-            print('Error Launching diffgram {}'.format(str(e)))
+            print(f"Error Launching diffgram {str(e)}")
 
     def set_diffgram_version(self):
         version = bcolors.inputcolor('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
@@ -492,7 +492,7 @@ class DiffgramInstallTool:
                     bcolors.printcolor(
                         'Connection test failed: Please check that your DB URL has the correct values and try again.',
                         bcolors.FAIL)
-                    bcolors.printcolor('Error data: {}'.format(str(e)), bcolors.FAIL)
+                    bcolors.printcolor(f"Error data: {str(e)}", bcolors.FAIL)
                     valid = False
 
         z_flag = bcolors.inputcolor('Do Add Z Flag to Postgres Mount? (Use only when using SELinux distros or similar) Y/N [Press Enter to Skip]: ')

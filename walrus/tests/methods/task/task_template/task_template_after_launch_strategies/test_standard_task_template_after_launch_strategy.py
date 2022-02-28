@@ -40,7 +40,7 @@ class TestStandardTaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTest
             'files': [file]
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'status': 'active',
             'type': "Normal",

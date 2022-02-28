@@ -617,8 +617,7 @@ class File(Base, Caching):
                 session, project_id, untrusted_file_id)
 
             if file is None:
-                raise Forbidden("File id not in project " + \
-                                str(untrusted_file_id))
+                raise Forbidden(f"File id not in project {str(untrusted_file_id)}")
 
             if return_mode == "id":
                 trusted_file_list.append(file.id)
@@ -760,8 +759,8 @@ class File(Base, Caching):
         if remove_link is True:
             working_dir_database_models.WorkingDirFileLink.remove(session, working_dir_id, existing_file.id)
 
-        logger.debug('existing_file.type {}'.format(existing_file.type))
-        logger.debug('copy_instance_list {}'.format(copy_instance_list))
+        logger.debug(f"existing_file.type {existing_file.type}")
+        logger.debug(f"copy_instance_list {copy_instance_list}")
         if existing_file.type in ['image', 'frame'] and copy_instance_list is True:
 
             file.count_instances_changed = existing_file.count_instances_changed
@@ -771,12 +770,12 @@ class File(Base, Caching):
                 session = session,
                 file_id = existing_file.id,
                 limit = None)   # Excludes removed by default
-            logger.debug('instance_list len {}'.format(len(instance_list)))
+            logger.debug(f"instance_list len {len(instance_list)}")
             for instance in instance_list:
 
                 instance_sequence_id = instance.sequence_id
                 if sequence_map is not None:
-                    logger.debug('sequence_map {}'.format(sequence_map))
+                    logger.debug(f"sequence_map {sequence_map}")
                     instance_sequence_id = sequence_map.get(instance_sequence_id)
 
                 new_instance = Instance(

@@ -58,14 +58,14 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             'job_id': job.id,
         }
 
-        endpoint = "/api/v1/project/" + job.project.project_string_id + "/job/update"
-        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
+        endpoint = f"/api/v1/project/{job.project.project_string_id}/job/update"
+        credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response.status_code, 200)
@@ -106,15 +106,15 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             'member_list_ids': [user.member.id],
         }
 
-        endpoint = "/api/v1/project/{}/job/new".format(project.project_string_id)
+        endpoint = f"/api/v1/project/{project.project_string_id}/job/new"
         auth_api = common_actions.create_project_auth(project=project, session=self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         print(response.data)
@@ -442,15 +442,15 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             'job_id': job.id,
         }
 
-        endpoint = "/api/v1/project/" + job.project.project_string_id + "/job/set-output-dir"
+        endpoint = f"/api/v1/project/{job.project.project_string_id}/job/set-output-dir"
         auth_api = common_actions.create_project_auth(project=job.project, session=self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response.status_code, 200)
@@ -469,7 +469,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_data_error),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response_error.status_code, 400)

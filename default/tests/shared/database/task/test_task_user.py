@@ -41,7 +41,7 @@ class TestTaskUser(testing_setup.DiffgramBaseTestCase):
 
     def test_new(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -61,7 +61,7 @@ class TestTaskUser(testing_setup.DiffgramBaseTestCase):
 
     def test_serialize(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -83,7 +83,7 @@ class TestTaskUser(testing_setup.DiffgramBaseTestCase):
 
     def test_list(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)

@@ -67,6 +67,7 @@
             @on_task_annotation_complete_and_save="
               on_task_annotation_complete_and_save
             "
+            @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
         </template>
@@ -1343,6 +1344,7 @@ export default Vue.extend({
         left_nav_width: 450,
         on_instance_creation_advance_sequence: true,
         ghost_instances_closed_by_open_view_edit_panel: false,
+        smooth_canvas: true
       },
 
       annotations_loading: false,
@@ -2172,8 +2174,13 @@ export default Vue.extend({
     },
 
     update_label_settings: function (event) {
-      this.label_settings = event;
+      // Add new events individually in toolbar, e.g. @change="$emit('update_something').
+      this.label_settings = event  // this is actually be reference once connected.
       this.refresh = Date.now();
+    },
+    update_smooth_canvas: function (event){
+      if (!this.canvas_element_ctx) { return }
+      this.canvas_element_ctx.imageSmoothingEnabled = event
     },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
@@ -3290,10 +3297,9 @@ export default Vue.extend({
       }
     },
 
-    update_user_settings_from_store() {
-      if (this.$store.state.user.settings.studio_left_nav_width) {
-        this.label_settings.left_nav_width =
-          this.$store.state.user.settings.studio_left_nav_width;
+    update_user_settings_from_store() {   // label_settings
+      for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
+        this.label_settings[key] = value
       }
     },
 
@@ -3423,7 +3429,9 @@ export default Vue.extend({
       }
 
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
+   
     },
+
     fetch_model_run_list: async function () {
       if (!this.$props.model_run_id_list) {
         return;
@@ -3488,6 +3496,8 @@ export default Vue.extend({
       this.refresh = new Date();
       this.canvas_element = document.getElementById("my_canvas");
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
+
+      this.update_smooth_canvas(this.label_settings.smooth_canvas)
 
       this.$forceUpdate();
     },

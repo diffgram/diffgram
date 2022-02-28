@@ -118,7 +118,7 @@ class TaskTimeTracking(Base, SerializerMixin):
         existing_global_record = True
         if time_track_record_global is None:
             # Create new Record
-            logger.info('New Global Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
+            logger.info(f"New Global Track Time Record task_id:{task_id} status:{status} user_id:{user_id}")
             time_track_record_global = TaskTimeTracking(
                 job_id = job_id,
                 task_id = task_id,
@@ -134,7 +134,7 @@ class TaskTimeTracking(Base, SerializerMixin):
 
         existing_status_record = True
         if time_track_record is None:
-            logger.info('New Status Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
+            logger.info(f"New Status Track Time Record task_id:{task_id} status:{status} user_id:{user_id}")
             # Create a status specific record
             time_track_record = TaskTimeTracking(
                 job_id = job_id,
@@ -152,7 +152,7 @@ class TaskTimeTracking(Base, SerializerMixin):
 
         if existing_global_record or existing_status_record:
             # Update Record
-            logger.info('Update Track Time Record task_id:{} status:{} user_id:{}'.format(task_id, status, user_id))
+            logger.info(f"Update Track Time Record task_id:{task_id} status:{status} user_id:{user_id}")
             old_global_time = time_track_record_global.time_spent
             if old_global_time < time_spent:
                 new_time_spent_delta = time_spent - old_global_time

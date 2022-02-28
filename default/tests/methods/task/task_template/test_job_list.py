@@ -39,7 +39,7 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
         all_jobs = []
         for i in range(0, num_jobs):
             job = data_mocking.create_job({
-                'name': 'my-test-job-{}'.format(i),
+                'name': f"my-test-job-{i}",
                 'project': self.project
             }, self.session)
             all_jobs.append(job)
@@ -58,7 +58,7 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
 
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project=self.project, session=self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode(
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode(
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
@@ -67,7 +67,7 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response.status_code, 200)
@@ -88,7 +88,7 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
         all_jobs = []
         for i in range(0, num_jobs):
             job = data_mocking.create_job({
-                'name': 'my-test-job-{}'.format(i),
+                'name': f"my-test-job-{i}",
                 'project': self.project
             }, self.session)
             all_jobs.append(job)
@@ -141,7 +141,7 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
         )
         other_project = other_project_data['project']
         other_job = data_mocking.create_job({
-            'name': 'my-testother-job-{}'.format(1),
+            'name': f'my-testother-job-{1}',
             'project': other_project
         }, self.session)
         query = self.session.query(Job)

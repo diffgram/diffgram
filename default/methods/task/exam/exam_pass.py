@@ -165,7 +165,7 @@ def credential_instance_new(credential_type,
 def notify_user_passed_exam(exam_instance):
     user = exam_instance.exam.user_taking_exam
 
-    subject = "Congrats! You passed " + exam_instance.name
+    subject = f"Congrats! You passed {exam_instance.name}"
 
     message = "View your new credentials"
 

@@ -271,6 +271,7 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files = 11) 
     body: {
       'data_type': 'task_template',
       'structure': '1_pass',
+      'name': 'sample_task_template',
       'num_files': num_files,
       'reviews': {
         allow_reviews: true,
@@ -283,7 +284,8 @@ Cypress.Commands.add('createSampleTasksUsingBackend', function (num_files = 11) 
     failOnStatusCode: true
   }).then((response) => {
     if (response.body.success) {
-      return true
+      cy.log(response.body.data.name)
+      cy.wrap(response.body.data.name).as('task_template_name');
     }
   })
 })
@@ -835,6 +837,7 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="task-template-step-name"] [data-cy="wizard_navigation_next"]').click()
 
     // Step 2 labels
+    .wait(2000)
     .get('[data-cy="select-all-labels"]')
     .click({force: true})
     .selectLabel(testLabels[0].name, 'label-select')

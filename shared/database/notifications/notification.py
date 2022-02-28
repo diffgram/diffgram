@@ -113,9 +113,9 @@ class Notification(Base):
 
     def __build_subject_and_message_for_task(self, session, start_time, event_type='completion'):
         print('BUILDING EMAIL', start_time, event_type)
-        subject = 'New Task Completed: {}'.format(self.notification_relation.task_id)
+        subject = f"New Task Completed: {self.notification_relation.task_id}"
         if event_type == 'creation':
-            subject = 'New Task Created: {}'.format(self.notification_relation.task_id)
+            subject = f"New Task Created: {self.notification_relation.task_id}"
 
         if start_time:
             subject = 'New Tasks Completed.'
@@ -144,8 +144,8 @@ class Notification(Base):
 
             links_list = ''
             for task in tasks_in_time_window:
-                url_task = '[{}] {}task/{}'.format(task.job.name, settings.URL_BASE, task.id)
-                links_list += '{} \n'.format(url_task)
+                url_task = f"[{task.job.name}] {settings.URL_BASE}task/{task.id}"
+                links_list += f"{url_task} \n"
             message += links_list
         else:
             message = 'New Task completed on Project: {} \n Task completed by: {} {} \n'.format(
@@ -164,8 +164,8 @@ class Notification(Base):
         return subject, message
 
     def __build_subject_and_message_for_task_template(self):
-        url_task_template = '{}job/{}'.format(settings.URL_BASE, self.notification_relation.job_id)
-        subject = 'New Task Template Completed: {}'.format(self.notification_relation.job_id)
+        url_task_template = f'{settings.URL_BASE}job/{self.notification_relation.job_id}'
+        subject = f'New Task Template Completed: {self.notification_relation.job_id}'
         message = 'New Task Template completed on Project: {} \n To View the Task Template click the following link: {}'.format(
             self.notification_relation.job.project.name,
             url_task_template
@@ -173,7 +173,7 @@ class Notification(Base):
         return subject, message
 
     def __build_subject_and_message_for_file_upload(self, session=None, start_time=None):
-        subject = 'New File Uploaded: {}'.format(self.notification_relation.input.file_id)
+        subject = f"New File Uploaded: {self.notification_relation.input.file_id}"
 
         if start_time:
             subject = 'New Files Uploaded.'
@@ -189,8 +189,8 @@ class Notification(Base):
             print('fileees', files, start_time, datetime.datetime.utcnow())
             links_list = ''
             for file in files:
-                url_task = '==> {}file/{}'.format(settings.URL_BASE, file.id)
-                links_list += '{} \n'.format(url_task)
+                url_task = f"==> {settings.URL_BASE}file/{file.id}"
+                links_list += f"{url_task} \n"
             message += links_list
         else:
             message = 'New File uploaded on Project: {} \n File uploaded by: {} {} \n'.format(

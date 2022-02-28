@@ -196,7 +196,7 @@ def job_view_core(session,
     # If mode is trainer then force to use org id
 
     if meta["search"] is not None:
-        search_text = '%{}%'.format(meta['search'])
+        search_text = f"%{meta['search']}%"
         query = query.filter(Job.name.ilike(search_text))
 
     query = query.order_by(Job.time_created.desc())
