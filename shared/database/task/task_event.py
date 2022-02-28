@@ -51,6 +51,8 @@ class TaskEvent(Base, SerializerMixin):
             '-member_created',
             '-member_updated',
             '-job',
+            '-user_assignee',
+            '-user_reviewer',
             '-task',
             '-comment',
             '-project'))
