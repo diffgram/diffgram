@@ -188,6 +188,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.nodes.splice(this.node_hover_index, 1);
     this.edges = new_edges;
     this.current_node_connection = []
+    this.is_drawing_edge = false
   }
 
   public save_original_nodes(): void {
@@ -231,8 +232,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       }
 
       return true
-    } else {
-      if (this.is_moving) {
+    }
+    else {
+      let moving = false;
+      if(this.is_moving){
         this.stop_moving();
       }
       if (this.is_rescaling) {
@@ -241,8 +244,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       if (this.node_hover_index != undefined) {
         if (this.start_index_occlusion != undefined) {
           this.occlude_direction(this.node_hover_index)
-          return true
-        } else {
+          moving = true;
+        }
+        else{
           this.select();
         }
 
@@ -1039,7 +1043,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     };
     this.nodes.push(node)
     node.name = this.nodes.length.toString();
-
+    this.calculate_min_max_points()
   }
 
   private draw_icon(
@@ -1174,6 +1178,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     if (this.current_node_connection.length === 0) {
+      return
+    }
+    if(!this.current_node_connection[0]){
       return
     }
     ctx.beginPath();

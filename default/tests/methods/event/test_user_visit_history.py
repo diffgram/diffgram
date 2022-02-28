@@ -53,15 +53,15 @@ class TestUserVisitHistory(testing_setup.DiffgramBaseTestCase):
             'object_type': 'page',
         }, self.session)
 
-        endpoint = "/api/v1/{}/user-visit-history/".format(self.project.project_string_id)
-        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode(
+        endpoint = f"/api/v1/{self.project.project_string_id}/user-visit-history/"
+        credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode(
             'utf-8')
         response = self.client.post(
             endpoint,
             data = json.dumps({'limit': 50}),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json

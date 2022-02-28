@@ -130,10 +130,10 @@ WEBHOOKS_URL_BASE = os.getenv('WEBHOOKS_URL_BASE', 'http://localhost:8085')
 
 # Labelbox Integrations
 LABEL_BOX_SECRET = os.getenv('LABELBOX_SECRET')  # Put a new generated secret here to auth callbacks (seperate from API keys)
-LABEL_BOX_WEBHOOKS_URL = '{}/api/walrus/v1/webhooks/labelbox-webhook'.format(WEBHOOKS_URL_BASE)
+LABEL_BOX_WEBHOOKS_URL = f'{WEBHOOKS_URL_BASE}/api/walrus/v1/webhooks/labelbox-webhook'
 
 # Scale AI Integrations
-SCALE_AI_WEBHOOKS_URL = '{}/api/walrus/v1/webhooks/scale-ai'.format(WEBHOOKS_URL_BASE)
+SCALE_AI_WEBHOOKS_URL = f'{WEBHOOKS_URL_BASE}/api/walrus/v1/webhooks/scale-ai'
 
 # Task Templates Threading Settings
 TASK_TEMPLATE_THREAD_SLEEP_TIME_MIN = 30

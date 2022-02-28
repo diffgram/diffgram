@@ -308,9 +308,11 @@ export default Vue.extend({
       this.instance_context.draw_mode = draw_mode;
       if (draw_mode) {
         this.$refs.instance_template_canvas.canvas_element.style.cursor = 'none';
+        this.instance.hovered_control_point_key = undefined;
       } else {
         this.$refs.instance_template_canvas.canvas_element.style.cursor = 'auto';
         this.instance.selected = false
+        this.instance.is_drawing_edge = false;
       }
 
       if (this.instance_context.draw_mode) {
@@ -370,6 +372,7 @@ export default Vue.extend({
       if (!this.show_context_menu) {
         this.instance.double_click(event);
         this.hide_context_menu()
+        this.$forceUpdate();
       }
 
     },

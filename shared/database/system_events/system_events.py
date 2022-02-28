@@ -69,7 +69,7 @@ class SystemEvents(Base):
             SystemEvents.new(
                 session = session,
                 kind = 'system_startup',
-                description = 'Diffgram System startup for {} service'.format(service_name),
+                description = f"Diffgram System startup for {service_name} service",
                 install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                 previous_version = None,
                 diffgram_version = settings.DIFFGRAM_VERSION_TAG,
@@ -92,7 +92,7 @@ class SystemEvents(Base):
         :param session:
         :return:
         """
-        logger.info('Checking for version upgrades [{}]'.format(service_name))
+        logger.info(f"Checking for version upgrades [{service_name}]")
         latest_recorded_version_event = session.query(SystemEvents).filter(
             SystemEvents.kind == 'version_upgrade'
         ).order_by('created_date').first()
@@ -102,7 +102,7 @@ class SystemEvents(Base):
             system_event = SystemEvents.new(
                 session = session,
                 kind = 'version_upgrade',
-                description = 'Diffgram System startup for {} service'.format(service_name),
+                description = f"Diffgram System startup for {service_name} service",
                 install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                 previous_version = None,
                 diffgram_version = settings.DIFFGRAM_VERSION_TAG,
@@ -120,11 +120,11 @@ class SystemEvents(Base):
             recorded_version = latest_recorded_version_event.diffgram_version
             version_to_check = settings.DIFFGRAM_VERSION_TAG
             if version.parse(version_to_check) > version.parse(recorded_version):
-                logger.info('New version detected: [{}]'.format(version_to_check))
+                logger.info(f"New version detected: [{version_to_check}]")
                 system_event = SystemEvents.new(
                     session = session,
                     kind = 'version_upgrade',
-                    description = 'Diffgram System startup for {} service'.format(service_name),
+                    description = f"Diffgram System startup for {service_name} service",
                     install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                     previous_version = None,
                     diffgram_version = version_to_check,
@@ -137,11 +137,11 @@ class SystemEvents(Base):
                 )
                 return system_event
             elif version_to_check < recorded_version:
-                logger.info('Downgrade version detected: [{}]'.format(version_to_check))
+                logger.info(f"Downgrade version detected: [{version_to_check}]")
                 system_event = SystemEvents.new(
                     session = session,
                     kind = 'version_downgrade',
-                    description = 'Diffgram System startup for {} service'.format(service_name),
+                    description = f"Diffgram System startup for {service_name} service",
                     install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                     previous_version = None,
                     diffgram_version = version_to_check,
@@ -192,7 +192,7 @@ class SystemEvents(Base):
             system_event = SystemEvents.new(
                 session = session,
                 kind = 'os_change',
-                description = 'OS Change for {} service'.format(service_name),
+                description = f"OS Change for {service_name} service",
                 install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
                 previous_version = None,
                 diffgram_version = settings.DIFFGRAM_VERSION_TAG,
@@ -258,7 +258,7 @@ class SystemEvents(Base):
             )
             return True
         except Exception as e:
-            logger.error('Error sending event to segment: {}'.format(str(e)))
+            logger.error(f"Error sending event to segment: {str(e)}")
             logger.error(traceback.format_exc())
             pass
 
@@ -274,13 +274,13 @@ class SystemEvents(Base):
             event_data['event_type'] = 'system'
             result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
             if result.status_code in [200, 202]:
-                logger.info("Sent event: {} to Diffgram Eventhub [{}]".format(self.id, result.status_code))
+                logger.info(f"Sent event: {self.id} to Diffgram Eventhub [{result.status_code}]")
                 return True
             else:
                 logger.error(
-                    "Error sending {} to Diffgram Eventhub. Status Code: {}".format(self.id, result.status_code))
+                    f"Error sending {self.id} to Diffgram Eventhub. Status Code: {result.status_code}")
         except Exception as e:
-            logger.error("Exception sending {} to Diffgram Eventhub: ".format(str(e)))
+            logger.error(f"Exception sending {str(e)} to Diffgram Eventhub: ")
 
     @staticmethod
     def new(session,

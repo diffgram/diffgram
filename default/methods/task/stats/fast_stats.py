@@ -21,7 +21,7 @@ def job_user_stats(job_id, user_id):
 
         if user_id is None or user_id == 'null':
             log = regular_log.default()
-            log['error']['user_id'] = "Invalid, user_id is " + user_id
+            log['error']['user_id'] = f"Invalid, user_id is {user_id}"
             return jsonify(log = log), 400
 
         tasks = Task.stats(

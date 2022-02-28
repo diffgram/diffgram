@@ -681,7 +681,7 @@ class Report_Runner():
 
         # TODO: Add suport or remove from UI the task filter when base class is Task
         if self.item_of_interest in ['task']:
-            logger.warning('No filter supported for task_id. item_of_interest is {}'.format(self.item_of_interest))
+            logger.warning(f"No filter supported for task_id. item_of_interest is {self.item_of_interest}")
             return query
         return query.filter(self.base_class.task_id == task_id)
 

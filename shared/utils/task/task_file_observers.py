@@ -187,7 +187,7 @@ class DirectoryJobObserver(Observer):
                     )
                 self.job_observable.sync_events_manager.set_description(desc)
                 self.job_observable.sync_events_manager.set_transfer_action(action_type)
-                self.job_observable.sync_events_manager.set_event_effect_type('{}_file'.format(action_type))
+                self.job_observable.sync_events_manager.set_event_effect_type(f"{action_type}_file")
                 logger.debug(desc)
 
     def _update_observer(self, action_type=None, trigger_type=None):

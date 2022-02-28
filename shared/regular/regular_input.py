@@ -144,7 +144,7 @@ def input_check(spec,
     # What if variable is allowed to be None?
     if variable is None:
         if required is True:
-            log["error"][name] = "Missing " + name
+            log["error"][name] = f"Missing {name}"
             return log, None, name
         else:
             # Note we return default instead of variable
@@ -158,8 +158,7 @@ def input_check(spec,
 
         if string_len_not_zero is True and not allow_empty:
             if len(variable) == 0:
-                log["error"][name] = "String " + name + \
-                                     " must not be of length zero."
+                log["error"][name] = f"String {name} must not be of length zero."
                 return log, None, name
 
     elif spec_type == list:

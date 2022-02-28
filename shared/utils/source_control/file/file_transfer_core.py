@@ -53,12 +53,12 @@ def perform_sync_events_after_file_transfer(session,
             created_task = None,
             completed_task = None,
             transfer_action = transfer_action,
-            event_effect_type = 'file_{}'.format(transfer_action),
+            event_effect_type = f"file_{transfer_action}",
             event_trigger_type = 'file_operation',
             status = 'completed',
             member_created = member
         )
-        logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+        logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
     # TODO: UPDATE JOBS WHERE DIRECTORY SHOULD BE SYNCED
     # Note that at this point we pass the source directory even though new file link has been created.
     # This is because the session has not been committed and new file link still won't be found in query.

@@ -92,7 +92,7 @@ def task_template_new_exam(session, task_template):
 
 def on_launch_error_retry(retry_state):
     if retry_state.outcome:
-        logger.error('Error Launching job. Retrying... {}/3'.format(retry_state.attempt_number))
+        logger.error(f"Error Launching job. Retrying... {retry_state.attempt_number}/3")
 
 
 class TaskTemplateLauncherThread:
@@ -177,7 +177,7 @@ class TaskTemplateLauncherThread:
                         return
                     job_launch = JobLaunch.get_by_id(session=session, job_launch_id=task_template_queue_element.job_launch_id)
                     job = Job.get_by_id(session, job_id=job_launch.job_id)
-                    logger.critical('Error launching Job {}'.format(job.id))
+                    logger.critical(f"Error launching Job {job.id}")
                     task_template_queue_element.job_launch.status = 'failed'
                     # TODO, we can remove this when we have a better UI visualization for JobLaunch
                     task_template_queue_element.job_launch.job.status = 'failed'
@@ -223,7 +223,7 @@ class AfterLaunchControl:
             self.task_template.interface_connection))
         if self.task_template.interface_connection:
             interface_connection = self.task_template.interface_connection
-            logger.debug('integration name is {}'.format(interface_connection.integration_name))
+            logger.debug(f"integration name is {interface_connection.integration_name}")
             # If task template has an integration with labelbox. Change the after launch strategy.
             if interface_connection.integration_name == 'labelbox':
                 strategy = LabelboxTaskTemplateAfterLaunchStrategy(

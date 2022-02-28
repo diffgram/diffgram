@@ -153,8 +153,7 @@ def task_template_launch_limits(session,
     print(result)
 
     if result > 0:
-        log['error']['file_status'] = "Files processing. " + \
-                                      "Try again in 30-60 minutes."
+        log['error']['file_status'] = f"Files processing. Try again in 30-60 minutes."
 
     # Credentials
     # ie Warn if missing ...

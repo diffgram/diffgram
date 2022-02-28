@@ -33,11 +33,11 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
 
     def __send_request_task_list(self, request_data):
 
-        endpoint = "/api/v1/project/{}/task/list".format(self.project.project_string_id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/task/list"
 
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project=self.project, session=self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode(
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode(
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
@@ -46,7 +46,7 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         return response
@@ -55,13 +55,13 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_tasks = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         all_tasks = []
         for i in range(0, num_tasks):
             task = data_mocking.create_task({
-                'name': 'task{}'.format(i),
+                'name': f"task{i}",
                 'job': job
             }, self.session)
             all_tasks.append(task)
@@ -85,7 +85,7 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         for i in range(0, num_tasks_file):
             task = data_mocking.create_task({
-                'name': 'task{}'.format(i),
+                'name': f"task{i}",
                 'job': job,
                 'file': file
             }, self.session)
@@ -115,13 +115,13 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_tasks = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(2),
+            'name': f"my-test-job-{2}",
             'project': self.project
         }, self.session)
         all_tasks = []
         for i in range(0, num_tasks):
             task = data_mocking.create_task({
-                'name': 'task{}'.format(i),
+                'name': f"task{i}",
                 'job': job
             }, self.session)
             all_tasks.append(task)
