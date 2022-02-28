@@ -5214,11 +5214,17 @@ export default Vue.extend({
         return;
       }
       if (["polygon", "point"].includes(instance.type)) {
+        if(!instance.points){
+          return
+        }
         instance.x_min = Math.min(...instance.points.map((p) => p.x));
         instance.y_min = Math.min(...instance.points.map((p) => p.y));
         instance.x_max = Math.max(...instance.points.map((p) => p.x));
         instance.y_max = Math.max(...instance.points.map((p) => p.y));
       } else if (["cuboid"].includes(instance.type)) {
+        if(!instance.front_face || !instance.rear_face){
+          return
+        }
         instance.x_min = Math.min(
           instance.front_face["top_right"]["x"],
           instance.front_face["bot_right"]["x"],
@@ -5260,18 +5266,22 @@ export default Vue.extend({
           instance.rear_face["bot_right"]["y"]
         );
       } else if (["ellipse"].includes(instance.type)) {
+        if(!instance.center_x || !instance.center_y || !instance.width || !instance.height){
+          return
+        }
         instance.x_min = instance.center_x - instance.width;
         instance.y_min = instance.center_y - instance.height;
         instance.x_max = instance.center_x + instance.width;
         instance.y_max = instance.center_y + instance.height;
       } else if (["curve"].includes(instance.type)) {
+        if(!instance.p1 || !instance.p2){
+          return
+        }
         instance.x_min = Math.min(instance.p1.x, instance.p2.x);
         instance.x_max = Math.max(instance.p1.x, instance.p2.x);
         instance.y_min = Math.min(instance.p1.y, instance.p2.y);
         instance.y_max = Math.max(instance.p1.y, instance.p2.y);
-      } else if (["keypoints"].includes(instance.type)) {
-        // instance.calculate_min_max_points()
-      } else {
+      }  else {
         instance.x_min = parseInt(instance.x_min);
         instance.y_min = parseInt(instance.y_min);
         instance.x_max = parseInt(instance.x_max);
