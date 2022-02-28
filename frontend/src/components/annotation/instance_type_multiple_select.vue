@@ -155,6 +155,9 @@
       },
 
       methods: {
+        fetch_task_templates: async function(){
+
+        },
         toggle () {
           this.$nextTick(() => {
             if (this.all_selected) {
