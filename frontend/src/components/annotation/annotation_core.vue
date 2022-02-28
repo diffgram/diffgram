@@ -679,7 +679,7 @@
               </canvas_current_instance>
               <current_instance_template
                 :ord="6"
-                :current_instance_template="current_instance_template"
+                :current_instance_template="actively_drawing_instance_template"
                 :vertex_size="label_settings.vertex_size"
                 :instance_template_start_point="instance_template_start_point"
                 :instance_template_draw_started="instance_template_draw_started"
@@ -1165,6 +1165,7 @@ export default Vue.extend({
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
+      actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
       snapped_to_instance: undefined,
@@ -6840,16 +6841,16 @@ export default Vue.extend({
           )
         ) {
 
-
+          this.actively_drawing_instance_template = {...this.current_instance_template}
           this.instance_template_start_point = {
             x: this.mouse_position.x,
             y: this.mouse_position.y,
           };
-          this.current_instance_template.instance_list[0].save_original_nodes();
-          this.current_instance_template.instance_list[0].set_nodes_coords_based_on_size(10, 10, this.instance_template_start_point);
+          this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
+          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(10, 10, this.instance_template_start_point);
 
-          this.current_instance_template.instance_list[0].width = 1;
-          this.current_instance_template.instance_list[0].height = 1;
+          this.actively_drawing_instance_template.instance_list[0].width = 1;
+          this.actively_drawing_instance_template.instance_list[0].height = 1;
 
           this.instance_template_draw_started = true;
           this.is_actively_drawing = true;

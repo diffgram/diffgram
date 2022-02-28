@@ -15,6 +15,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public hovered_scale_control_points: boolean = false;
   public original_nodes: any = [];
   public hovered_control_point_key: string = undefined;
+  public current_fixed_point: {x:number, y:number} = undefined;
+  public current_control_point: {x:number, y:number} = undefined;
   public start_index_occlusion: number = undefined;
   public occluded: boolean = false;
   public is_rescaling: boolean = false;
@@ -189,6 +191,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public start_rescale(){
     this.is_rescaling = true;
+    this.current_fixed_point = this.get_fixed_point(this.hovered_control_point_key)
+    let control_points = this.get_scale_control_points()
+    this.current_control_point = control_points[this.hovered_control_point_key]
   }
   public start_movement(): void{
     if (this.node_hover_index != undefined) {
@@ -281,61 +286,39 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_rescaling(){
     this.is_rescaling = false;
     this.hovered_control_point_key = undefined;
+    this.current_fixed_point = undefined;
+    this.current_control_point = undefined;
 
   }
   public stop_moving(){
     this.is_moving = false;
   }
   private get_fixed_point(key:string){
-    let min_max_points = this.get_rotated_min_max()
+    let control_points = this.get_scale_control_points();
     let result;
     if(key === 'right'){
-      result = {
-        x: Math.round(min_max_points.min_x),
-        y: Math.round((min_max_points.max_y + min_max_points.min_y) / 2)
-      }
+      result = control_points.left;
     }
     else if(key === 'left'){
-      result = {
-        x: Math.round(min_max_points.max_x),
-        y: Math.round((min_max_points.max_y + min_max_points.min_y) / 2)
-      }
+      result = control_points.right;
     }
     else if(key === 'top'){
-      result = {
-        x: Math.round((min_max_points.max_x + min_max_points.min_x) / 2),
-        y: Math.round(min_max_points.max_y)
-      }
+      result = control_points.bottom
     }
     else if(key === 'bottom'){
-      result = {
-        x: Math.round(min_max_points.max_y),
-        y: Math.round(min_max_points.min_y)
-      }
+      result = control_points.top
     }
     else if(key === 'bottom_right'){
-      result = {
-        x: Math.round(min_max_points.min_x),
-        y: Math.round(min_max_points.min_y)
-      }
+      result = control_points.top_left
     }
     else if(key === 'bottom_left'){
-      result = {
-        x: Math.round(min_max_points.max_x),
-        y: Math.round(min_max_points.min_y)
-      }
+      result = control_points.top_right
     }
     else if(key === 'top_right'){
-      result = {
-        x: Math.round(min_max_points.min_x),
-        y: Math.round(min_max_points.max_y)
-      }
+      result = control_points.bottom_left
     }
     else if(key === 'top_left'){
-      result = {
-        x: Math.round(min_max_points.max_x),
-        y: Math.round(min_max_points.max_y)
-      }
+      result = control_points.bottom_right
     }
     else{
       result = this.get_center_point_rotated();
@@ -347,13 +330,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return
     }
     let mouse = this.mouse_position;
-    let control_points = this.get_scale_control_points();
-    let points = this.get_rotated_min_max();
     let width = this.width;
     let height = this.height;
-    let x_move = this.mouse_down_delta_event.x;
-    let y_move = this.mouse_down_delta_event.y;
-    let fixed_point = this.get_fixed_point(this.hovered_control_point_key)
+    let fixed_point = this.current_fixed_point;
+    let control_points = this.get_scale_control_points()
     let control_point = control_points[this.hovered_control_point_key]
     let rescaled = true;
     var new_width, rx, new_height, ry;
@@ -376,6 +356,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       case "top":
         new_height = Math.round(height + (control_point.y - this.mouse_position.y));
         ry = new_height / height
+        console.log('fixed', fixed_point.y)
+        console.log('new_height', new_height)
+        console.log('height', height)
+        console.log('control_point.y', control_point.y)
+        console.log('this.mouse_position.y.y', this.mouse_position.y)
         for (let node of this.nodes){
           node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
         }
