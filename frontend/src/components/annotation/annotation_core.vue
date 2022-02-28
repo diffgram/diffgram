@@ -976,7 +976,7 @@ import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
-import {initialize_instance_object} from '../../utils/instance_utils.js';
+import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.js';
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -2921,7 +2921,7 @@ export default Vue.extend({
       }
 
       // Create the previously merged figure as a new instance.
-      let instance_to_unmerge = this.duplicate_instance(instance);
+      let instance_to_unmerge = duplicate_instance(instance, this);
       // Remove point and just leave the points in the figure
       instance_to_unmerge.points = figure_points;
       this.add_instance_to_file(
@@ -3722,7 +3722,7 @@ export default Vue.extend({
       if (!instance) {
         return;
       }
-      let instance_clipboard = this.duplicate_instance(instance);
+      let instance_clipboard = duplicate_instance(instance, this);
       instance_clipboard.id = null;
       instance_clipboard.created_time = null; //
       instance_clipboard.creation_ref_id = null; // we expect this will be set once user accepts it
@@ -6778,8 +6778,8 @@ export default Vue.extend({
       return instance;
     },
     add_instance_template_to_instance_list(frame_number) {
-      this.current_instance_template.instance_list.forEach((instance) => {
-        let new_instance = this.duplicate_instance(instance);
+      this.actively_drawing_instance_template.instance_list.forEach((instance) => {
+        let new_instance = duplicate_instance(instance, this);
         if (this.video_mode == true) {
           new_instance.number =
             this.current_sequence_from_sequence_component.number;
@@ -6841,7 +6841,7 @@ export default Vue.extend({
           )
         ) {
 
-          this.actively_drawing_instance_template = {...this.current_instance_template}
+          this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
           this.instance_template_start_point = {
             x: this.mouse_position.x,
             y: this.mouse_position.y,
@@ -7988,7 +7988,7 @@ export default Vue.extend({
         for ( let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add;i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
-          let new_frame_instance = this.duplicate_instance(pasted_instance);
+          let new_frame_instance = duplicate_instance(pasted_instance, this);
           new_frame_instance = initialize_instance_object(new_frame_instance, this);
           // Set the last argument to true, to prevent to push to the instance_list here.
           this.add_instance_to_file(new_frame_instance, i);
@@ -8030,7 +8030,7 @@ export default Vue.extend({
 
       for (const instance_clipboard of this.clipboard.instance_list) {
         let instance_clipboard_dup =
-          this.duplicate_instance(instance_clipboard);
+          duplicate_instance(instance_clipboard, this);
         await this.add_pasted_instance_to_instance_list(
           instance_clipboard_dup,
           next_frames,
@@ -8073,65 +8073,13 @@ export default Vue.extend({
     on_context_menu_copy_instance: function (instance_index) {
       this.copy_instance(false, instance_index);
     },
-    duplicate_instance: function (instance_to_copy) {
-      let points = [];
-      let nodes = [];
-      let edges = [];
-      if (instance_to_copy.points) {
-        points = [...instance_to_copy.points.map((p) => ({ ...p }))];
-      }
-      if (instance_to_copy.nodes) {
-        nodes = [...instance_to_copy.nodes.map((node) => ({ ...node }))];
-      }
-      if (instance_to_copy.edges) {
-        edges = [...instance_to_copy.edges.map((edge) => ({ ...edge }))];
-      }
-      let result = {
-        ...instance_to_copy,
-        id: undefined,
-        initialized: false,
-        points: points,
-        nodes: nodes,
-        edges: edges,
-        version: undefined,
-        root_id: undefined,
-        previous_id: undefined,
-        action_type: undefined,
-        next_id: undefined,
-        creation_ref_id: undefined,
-        attribute_groups: instance_to_copy.attribute_groups
-          ? { ...instance_to_copy.attribute_groups }
-          : null,
-      };
-
-      if (result.type === "cuboid") {
-        result.rear_face = {
-          ...instance_to_copy.rear_face,
-          top_right: { ...instance_to_copy.rear_face.top_right },
-          top_left: { ...instance_to_copy.rear_face.top_left },
-          bot_left: { ...instance_to_copy.rear_face.bot_left },
-          bot_right: { ...instance_to_copy.rear_face.bot_right },
-        };
-
-        result.front_face = {
-          ...instance_to_copy.front_face,
-          top_right: { ...instance_to_copy.front_face.top_right },
-          top_left: { ...instance_to_copy.front_face.top_left },
-          bot_left: { ...instance_to_copy.front_face.bot_left },
-          bot_right: { ...instance_to_copy.front_face.bot_right },
-        };
-      }
-
-      result = initialize_instance_object(result, this);
-      return result;
-    },
     copy_all_instances: function () {
       let new_instance_list = [];
       for (const instance of this.instance_list) {
         if (instance.soft_delete) {
           continue;
         }
-        let instance_clipboard = this.duplicate_instance(instance);
+        let instance_clipboard = duplicate_instance(instance, this);
         instance_clipboard.selected = false;
         instance_clipboard.original_frame_number = this.current_frame;
         new_instance_list.push(instance_clipboard);
@@ -8156,7 +8104,7 @@ export default Vue.extend({
         const instance_to_copy = this.selected_instance
           ? this.selected_instance
           : this.instance_list[instance_index];
-        this.instance_clipboard = this.duplicate_instance(instance_to_copy);
+        this.instance_clipboard = duplicate_instance(instance_to_copy, this);
         this.instance_clipboard.selected = true;
         this.instance_clipboard.original_frame_number = this.current_frame;
         this.set_clipboard([this.instance_clipboard]);
