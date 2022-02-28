@@ -10,9 +10,8 @@ Vue.use(Vuex)
 const default_user_settings = {
 
       studio_box_info: true,
-      studio_canvas_size: null,
-      studio_right_nav_width: null,
-      studio_left_nav_width: 350
+      studio_left_nav_width: 350,
+      smooth_canvas: true
     }
 
 // TODO should we use a dic object here for some of user properties?
