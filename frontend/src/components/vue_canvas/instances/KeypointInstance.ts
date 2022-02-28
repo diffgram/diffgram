@@ -329,7 +329,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     if (!this.hovered_control_point_key) {
       return
     }
-    let mouse = this.mouse_position;
     let width = this.width;
     let height = this.height;
     let fixed_point = this.current_fixed_point;
@@ -575,7 +574,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let y_max = Math.round(Math.max(...y_node_unrotated_list))
 
     let center_x = (x_max + x_min) / 2;
-    let center_y = (y_max + y_min) / 2;
     let max_y = this.get_scale_control_points().bottom.y
     let center_point = {
       x: center_x,
