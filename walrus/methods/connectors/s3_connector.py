@@ -123,7 +123,7 @@ class S3Connector(Connector):
                     session=session,
                     member_id=opts['event_data']['request_user'],
                     kind='aws_s3_new_import_warning',
-                    description='Skipped import for {}, invalid file type.'.format(opts['path']),
+                    description=f"Skipped import for {opts['path']}, invalid file type.",
                     error_log=log,
                     project_id=project.id,
                     member=member,
@@ -150,7 +150,7 @@ class S3Connector(Connector):
                 session=session,
                 member_id=opts['event_data']['request_user'],
                 kind='aws_s3_new_import_success',
-                description='New cloud import for {}'.format(opts['path']),
+                description=f"New cloud import for {opts['path']}",
                 error_log=opts,
                 project_id=project.id,
                 member=member,
@@ -347,9 +347,9 @@ class S3Connector(Connector):
             filename = generate_file_name_from_export(export, session)
 
             if opts['path'] != '':
-                key = '{}{}.{}'.format(opts['path'], filename, opts['format'].lower())
+                key = f"{opts['path']}{filename}.{opts['format'].lower()}"
             else:
-                key = '{}.{}'.format(filename, opts['format'].lower())
+                key = f"{filename}.{opts['format'].lower()}"
 
             file = io.BytesIO(result)
             self.connection_client.upload_fileobj(file, opts['bucket_name'], key)
@@ -359,7 +359,7 @@ class S3Connector(Connector):
                 session=session,
                 member_id=opts['event_data']['request_user'],
                 kind='aws_s3_new_export_success',
-                description='New cloud export for {}{}'.format(opts['path'], filename),
+                description=f"New cloud export for {opts['path']}{filename}",
                 error_log=opts,
                 member=member,
                 project_id=project.id,
@@ -387,7 +387,7 @@ class S3Connector(Connector):
             resp = requests.get(signed_url)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
         except:
             log['error']['s3_write_perms'] = 'Error Connecting to S3: Please check you have read permissions on the S3 bucket.'
             log['error']['details'] = traceback.format_exc()

@@ -58,9 +58,9 @@ class Test():
 			for i,s in enumerate(difflib.ndiff(a, b)):
 				if s[0]==' ': continue
 				elif s[0]=='-':
-					print(u'Delete "{}" from position {}'.format(s[-1],i))
+					print(f'Delete "{s[-1]}" from position {i}')
 				elif s[0]=='+':
-					print(u'Add "{}" to position {}'.format(s[-1],i))  
+					print(f'Add "{s[-1]}" to position {i}')  
 
 		# Diff falsely fails here....
 

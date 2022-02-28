@@ -31,7 +31,7 @@ class LabelMapUtilTest(tf.test.TestCase):
     for i in range(1, num_classes + 1):
       item = label_map_proto.item.add()
       item.id = i
-      item.name = 'label_' + str(i)
+      item.name = f"label_{str(i)}"
       item.display_name = str(i)
     return label_map_proto
 

@@ -44,7 +44,7 @@ class TestTaskTemplateLaunchHandler(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'type': "Normal",
         }, self.session)
@@ -58,7 +58,7 @@ class TestTaskTemplateLaunchHandler(testing_setup.DiffgramBaseTestCase):
 
     def test_task_template_new_normal(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'type': "Normal",
         }, self.session)
@@ -70,7 +70,7 @@ class TestTaskTemplateLaunchHandler(testing_setup.DiffgramBaseTestCase):
 
     def test_task_template_new_exam(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'type': "Normal",
         }, self.session)
@@ -114,7 +114,7 @@ class TestTaskTemplateLauncherThread(testing_setup.DiffgramBaseTestCase):
             'files': [file]
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'type': "Normal",
             'attached_directories': [
@@ -143,7 +143,7 @@ class TestTaskTemplateLauncherThread(testing_setup.DiffgramBaseTestCase):
             'files': [file]
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'type': "Normal",
             'attached_directories': [

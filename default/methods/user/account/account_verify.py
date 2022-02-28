@@ -114,15 +114,12 @@ def start_verify_via_email( session,
 		if not url_base.endswith('/'):
 			url_base += '/'
 
-		link_verify = url_base + "user/account/verify_email/"+ \
-						 auth.email_sent_to + \
-						 "/" + \
-						 auth.code
+		link_verify = f"{url_base}user/account/verify_email/{auth.email_sent_to}/{auth.code}"
 
 
 		subject = "Verify your Diffgram account now"
 
-		message = " Verify your account now " + link_verify
+		message = f" Verify your account now {link_verify}"
 		
 		message += " "
 

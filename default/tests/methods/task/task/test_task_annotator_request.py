@@ -40,7 +40,7 @@ class TestTaskAnnotatorRequest(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)

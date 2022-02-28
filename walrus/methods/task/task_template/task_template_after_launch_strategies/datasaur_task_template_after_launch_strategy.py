@@ -15,7 +15,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
     def create_datasaur_labelset(self, label_data, connector):
         result = connector.put_data({
             'action_type': 'create_label_set',
-            'name': 'labelset-{}-{}'.format(self.task_template.name, self.task_template.id),
+            'name': f"labelset-{self.task_template.name}-{self.task_template.id}",
             'event_data': {},
             'label_data': label_data
         })
@@ -51,7 +51,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
         """
         datasaur_project = None
         connection = self.task_template.interface_connection
-        logger.debug('Connection for Datasaur: {}'.format(connection))
+        logger.debug(f"Connection for Datasaur: {connection}")
         connector_manager = ConnectorManager(connection=connection, session=self.session)
         connector = connector_manager.get_connector_instance()
         connector.connect()
@@ -62,7 +62,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                 element = {
                     'uuid': str(uuid.uuid4()),
                     'diffgram_label_file': label_element['id'],
-                    'name': '{}'.format(label_element['label']['name']),
+                    'name': f"{label_element['label']['name']}",
                     'color': label_element['colour']['hex'].upper(),
                 }
                 label_data.append(element)
@@ -70,7 +70,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             # First we need to build a label set
             label_set_result = self.create_datasaur_labelset(label_data, connector)
             label_set = label_set_result['result']['createLabelSet']
-            logger.debug('Created label_set {}'.format(label_set))
+            logger.debug(f"Created label_set {label_set}")
             if label_set.get('id'):
                 logger.info('Datasaur Labelset created succesfully ID:'.format(label_set['id']))
                 ExternalMap.new(
@@ -79,7 +79,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                     external_id=label_set['id'],
                     connection=connection,
                     diffgram_class_string='',
-                    type='{}_label_set'.format(connection.integration_name),
+                    type=f"{connection.integration_name}_label_set",
                     url='',
                     add_to_session=True,
                     flush_session=True
@@ -93,7 +93,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                         external_id=label_element['uuid'],
                         connection=connection,
                         diffgram_class_string='label_file',
-                        type='{}_label'.format(connection.integration_name),
+                        type=f"{connection.integration_name}_label",
                         url='',
                         add_to_session=True,
                         flush_session=True
@@ -109,7 +109,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                 files_to_process_by_id[str(file.id)] = file
             print('files_to_process_by_id', files_to_process_by_id)
             result = self.create_datasaur_project(connector, label_set, files_to_process)
-            logger.debug('Create datasaur Project result: {}'.format(result))
+            logger.debug(f"Create datasaur Project result: {result}")
             if 'result' in result:
                 datasaur_project = result['result']
                 ExternalMap.new(
@@ -118,8 +118,8 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                     external_id=datasaur_project['id'],
                     connection=connection,
                     diffgram_class_string='task_template',
-                    type='{}_project'.format(connection.integration_name),
-                    url='https://datasaur.ai/projects/{}/'.format(datasaur_project['id']),
+                    type=f"{connection.integration_name}_project",
+                    url=f"https://datasaur.ai/projects/{datasaur_project['id']}/",
                     add_to_session=True,
                     flush_session=True,
                 )
@@ -137,7 +137,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                         file=diffgram_file,
                         connection=connection,
                         diffgram_class_string='file',
-                        type='{}_file'.format(connection.integration_name),
+                        type=f"{connection.integration_name}_file",
                         url='',
                         add_to_session=True,
                         flush_session=True,
@@ -159,7 +159,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                 raise Exception(result)
 
         except Exception as e:
-            logger.error('Error during datasaur launch strategy. {}'.format(traceback.format_exc()))
+            logger.error(f"Error during datasaur launch strategy. {traceback.format_exc()}")
             if datasaur_project:
                 logger.error('Rolling back project creation...')
                 result = connector.put_data({

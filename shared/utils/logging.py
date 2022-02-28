@@ -73,7 +73,7 @@ class DiffgramLogger:
         handler.setFormatter(logging.Formatter(fmt_str))
         logger = logging.getLogger(self.logger_name)
         logger.addHandler(handler)
-        logger.info('Logger {} setup success.'.format(self.logger_name))
+        logger.info(f"Logger {self.logger_name} setup success.")
         DiffgramLogger.logging_initialized[self.logger_name] = True
         return logger
 

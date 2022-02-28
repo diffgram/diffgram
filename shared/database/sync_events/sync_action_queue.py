@@ -17,7 +17,7 @@ class SyncActionsQueue(Base):
 
     @staticmethod
     def enqueue(session, sync_event):
-        logger.info('Sending sync event to queue - ID: {}'.format(sync_event.id))
+        logger.info(f"Sending sync event to queue - ID: {sync_event.id}")
         elm = SyncActionsQueue(sync_event=sync_event)
         session.add(elm)
         return elm

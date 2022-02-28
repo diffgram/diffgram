@@ -237,7 +237,7 @@ class Event(Base):
                 id = event_id,
                 base_class_string = 'Event')
 
-            logger.debug('Sent interservice request for Event: {}'.format(event_id))
+            logger.debug(f"Sent interservice request for Event: {event_id}")
 
     @staticmethod
     def __launch_new_event_threaded(**kwargs):
@@ -344,13 +344,13 @@ class Event(Base):
             event_data['event_type'] = 'user'
             result = requests.post(settings.EVENTHUB_URL, json = event_data)
             if result.status_code == 200:
-                logger.info("Sent event: {} to Diffgram Eventhub".format(self.id))
+                logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
             else:
                 # print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
         except Exception as e:
-            logger.error("Exception sending {} to Diffgram Eventhub: ".format(str(e)))
+            logger.error(f"Exception sending {str(e)} to Diffgram Eventhub: ")
 
     @staticmethod
     def identify_user(user):
@@ -416,7 +416,7 @@ class Event(Base):
                 }
             )
         except Exception as e:
-            logger.error('Error tracking user: {}'.format(e))
+            logger.error(f"Error tracking user: {e}")
             pass
 
     @staticmethod

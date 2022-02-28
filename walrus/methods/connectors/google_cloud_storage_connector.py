@@ -167,11 +167,11 @@ class GoogleCloudStorageConnector(Connector):
                     session=session,
                     member_id=opts['event_data']['request_user'],
                     kind='google_cloud_new_import_error',
-                    description='New cloud import for {}'.format(opts['path']),
+                    description=f"New cloud import for {opts['path']}",
                     error_log=log
                 )
             raise LookupError(
-                'File must type of: {} {}'.format(str(images_allowed_file_names), str(videos_allowed_file_names)))
+                f"File must type of: {str(images_allowed_file_names)} {str(videos_allowed_file_names)}")
         # metadata = self.connection_client.head_object(Bucket=opts['bucket_name, Key=path)
         with sessionMaker.session_scope() as session:
             member = session.query(Member).filter(Member.user_id == opts['event_data']['request_user']).first()
@@ -189,7 +189,7 @@ class GoogleCloudStorageConnector(Connector):
                 session=session,
                 member_id=opts['event_data']['request_user'],
                 kind='google_cloud_new_import_success',
-                description='New cloud import for {}'.format(opts['path']),
+                description=f"New cloud import for {opts['path']}",
                 error_log=opts
             )
         return {'result': created_input}
@@ -271,7 +271,7 @@ class GoogleCloudStorageConnector(Connector):
                             session=session,
                             member_id=opts['event_data']['request_user'],
                             kind='google_cloud_new_import_warning',
-                            description='Skipped import for {}, invalid file type.'.format(blob.name),
+                            description=f"Skipped import for {blob.name}, invalid file type.",
                             error_log=log,
                             project_id=project.id,
                             member=member,
@@ -298,7 +298,7 @@ class GoogleCloudStorageConnector(Connector):
                         session=session,
                         member_id=opts['event_data']['request_user'],
                         kind='google_cloud_new_import_success',
-                        description='New cloud import for {}'.format(blob.name),
+                        description=f"New cloud import for {blob.name}",
                         error_log=opts,
                         project_id=project.id,
                         member=member,
@@ -401,7 +401,7 @@ class GoogleCloudStorageConnector(Connector):
                     session=session,
                     member_id=opts['event_data']['request_user'],
                     kind='google_cloud_new_export_error',
-                    description='Google cloud export error for {}'.format(opts['path']),
+                    description=f"Google cloud export error for {opts['path']}",
                     error_log=log,
                     member=member,
                     project_id=project.id,
@@ -417,9 +417,9 @@ class GoogleCloudStorageConnector(Connector):
             filename = generate_file_name_from_export(export, session)
 
             if opts['path'] != '':
-                blob = bucket.blob('{}{}.{}'.format(opts['path'], filename, opts['format'].lower()))
+                blob = bucket.blob(f"{opts['path']}{filename}.{opts['format'].lower()}")
             else:
-                blob = bucket.blob('{}.{}'.format(filename, opts['format'].lower()))
+                blob = bucket.blob(f"{filename}.{opts['format'].lower()}")
             blob.upload_from_string(result)
             log = regular_log.default()
             log['opts'] = opts
@@ -427,7 +427,7 @@ class GoogleCloudStorageConnector(Connector):
                 session=session,
                 member_id=opts['event_data']['request_user'],
                 kind='google_cloud_new_export_success',
-                description='New cloud export for {}'.format(blob.name),
+                description=f"New cloud export for {blob.name}",
                 error_log=opts,
                 member=member,
                 project_id=project.id,
@@ -471,12 +471,12 @@ class GoogleCloudStorageConnector(Connector):
             filename = test_file_path.split("/")[-1]
             url_signed = blob.generate_signed_url(
                 expiration = expiration_time,
-                response_disposition = 'attachment; filename=' + filename
+                response_disposition = f"attachment; filename={filename}"
             )
             resp = requests.get(url_signed)
             if resp.status_code != 200:
                 raise Exception(
-                    'Error when accessing presigned URL: Status({}). Error: {}'.format(resp.status_code, resp.text))
+                    f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
         except:
             log['error']['gcp_write_perms'] = 'Error Connecting to GCP: Please check you have read permissions on the GCP bucket.'
             log['error']['details'] = traceback.format_exc()

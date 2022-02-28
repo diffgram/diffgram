@@ -62,11 +62,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 return self.final_query
 
             else:
-                error_msg = 'Invalid children number for start: Must have only 1 and has {}'.format(len(local_tree.children))
+                error_msg = f"Invalid children number for start: Must have only 1 and has {len(local_tree.children)}"
                 logger.error(error_msg)
                 self.log['error']['start'] = error_msg
         else:
-            logger.error('Invalid child count for start. Must be 1 and is {}'.format(len(args)))
+            logger.error(f"Invalid child count for start. Must be 1 and is {len(args)}")
             self.log['error']['start'] = 'Invalid child count for factor. Must be 1'
         return self.final_query
 
@@ -87,7 +87,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             local_tree.or_statement = or_(*conditions)
             return local_tree
         else:
-            logger.error('Invalid child count for expr. Must be 1 and is {}'.format(len(args)))
+            logger.error(f"Invalid child count for expr. Must be 1 and is {len(args)}")
             self.log['error']['expr'] = 'Invalid child count for factor. Must be 1'
 
     def term(self, *args):
@@ -107,7 +107,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             local_tree.and_statement = and_(*conditions)
             return local_tree
         else:
-            logger.error('Invalid child count for term. Must be 1 and is {}'.format(len(args)))
+            logger.error(f"Invalid child count for term. Must be 1 and is {len(args)}")
             self.log['error']['term'] = 'Invalid child count for factor. Must be 1'
 
     def factor(self, *args):
@@ -175,7 +175,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                                                     label_name = label_name,
                                                     project_id = self.diffgram_query.project.id)
             if not label_file:
-                error_string = 'Label {} does not exists'.format(str(label_name))
+                error_string = f"Label {str(label_name)} does not exists"
                 logger.error(error_string)
                 self.log['error']['label_name'] = error_string
                 return
@@ -213,7 +213,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         entity_type1 = self.__determine_entity_type(token1)
         entity_type2 = self.__determine_entity_type(token2)
         if len(token1.value.split('.')) == 1:
-            error_string = 'Error with token: {}. Should specify the label name or global count'.format(token1.value)
+            error_string = f"Error with token: {token1.value}. Should specify the label name or global count"
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
             return False
@@ -280,7 +280,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 return
 
         else:
-            self.log['error']['compare_expr'] = 'Invalid compare expression {}'.format(str(args))
+            self.log['error']['compare_expr'] = f"Invalid compare expression {str(args)}"
 
     def execute_query(self):
         """

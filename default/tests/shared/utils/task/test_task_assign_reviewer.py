@@ -43,7 +43,7 @@ class TestTaskAssignReviewer(testing_setup.DiffgramBaseTestCase):
     def test_task_complete(self):
         # Create mock tasks
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': True
         }, self.session)

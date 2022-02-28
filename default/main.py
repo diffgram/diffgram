@@ -86,7 +86,7 @@ def apply_security_rules(response):
 @app.route('/docs/', defaults={'path' : ''}, methods=['GET'])
 @app.route('/docs/<path:path>', methods=['GET'])
 def docs_redirect(path):
-	return redirect("https://diffgram.readme.io/docs/" + path, code=301)	
+	return redirect(f"https://diffgram.readme.io/docs/{path}", code=301)	
 
 
 @app.route('/', defaults={'path' : ''}, methods=['GET', 'POST'])

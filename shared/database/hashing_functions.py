@@ -27,7 +27,7 @@ def hash_str(string__):
 
 def make_secure_val(string__):
 	string__ = str(string__)
-	return "%s,%s" % (string__, hash_str(string__))
+	return f"{string__},{hash_str(string__)}"
 
 
 def check_secure_val(secure_value):
@@ -74,7 +74,7 @@ def make_password_hash(email, password, salt=None, iterations=None):
 
 	# Future, upgrade to Scrypt or Argon2
 
-	return '%s,%s,%s' % (hash, salt, iterations)
+	return f"{hash},{salt},{iterations}"
 
 
 def valid_password(email, attempted_password, hash):

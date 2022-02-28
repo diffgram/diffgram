@@ -234,7 +234,7 @@ class DataToolsAzure:
             start = datetime.datetime.utcnow(),
             expiry = expiry_time,
             permission = BlobSasPermissions(read = True),
-            content_disposition = 'attachment; filename=' + filename,
+            content_disposition = f"attachment; filename={filename}",
         )
         sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
             self.azure_service_client.account_name,

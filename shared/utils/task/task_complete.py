@@ -32,7 +32,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         status = 'init',
         member_created = None
     )
-    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
     if job.completion_directory and job.output_dir_action in ['copy', 'move']:
         job_observable = task_file_observers.JobObservable(session = session,
                                                            log = log,
@@ -60,7 +60,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         status = 'init',
         member_created = None
     )
-    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
     if job.completion_directory and job.output_dir_action in ['copy', 'move']:
         job_observable = task_file_observers.JobObservable(session = session,
                                                            log = log,

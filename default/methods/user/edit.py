@@ -100,13 +100,13 @@ def user_upload_profile_image():
 
 		file.filename = secure_filename(file.filename) # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/          
 		temp_dir = tempfile.mkdtemp()
-		file_name = temp_dir + "/" + file.filename
+		file_name = f"{temp_dir}/{file.filename}"
 		file.save(file_name)
 
 		with sessionMaker.session_scope() as session:
 			
 			with open(file_name, "rb") as file:              
-				content_type = "image/" + str(extension)
+				content_type = f"image/{str(extension)}"
 				short_file_name = os.path.split(file_name)[1]
 
 				user = session.query(User).filter(User.id == getUserID()).one()
