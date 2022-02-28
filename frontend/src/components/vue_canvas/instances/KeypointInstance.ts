@@ -5,6 +5,7 @@ import {v4 as uuidv4} from 'uuid';
 export class KeypointInstance extends Instance implements InstanceBehaviour {
   public mouse_position: any;
   private CONTROL_POINTS_DISPLACEMENT: number = 3
+  private MINIMUM_CONTROL_POINTS_DISTANCE: number = 20
   public ctx: CanvasRenderingContext2D;
   private vertex_size: number = 5;
   private line_width: number = 2;
@@ -16,6 +17,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public hovered_scale_control_points: boolean = false;
   public original_nodes: any = [];
   public hovered_control_point_key: string = undefined;
+  public current_hovered_control_point_key: string = undefined;
   public current_fixed_point: { x: number, y: number } = undefined;
   public current_control_point: { x: number, y: number } = undefined;
   public start_index_occlusion: number = undefined;
@@ -200,6 +202,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.current_fixed_point = this.get_fixed_point(this.hovered_control_point_key)
     let control_points = this.get_scale_control_points()
     this.current_control_point = control_points[this.hovered_control_point_key]
+    this.current_hovered_control_point_key = this.hovered_control_point_key
   }
 
   public start_movement(): void {
@@ -293,6 +296,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.hovered_control_point_key = undefined;
     this.current_fixed_point = undefined;
     this.current_control_point = undefined;
+    this.current_hovered_control_point_key = undefined;
 
   }
 
@@ -326,21 +330,27 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   public rescale() {
-    if (!this.hovered_control_point_key) {
+    if (!this.current_hovered_control_point_key) {
       return
     }
     let width = this.width;
     let height = this.height;
     let fixed_point = this.current_fixed_point;
     let control_points = this.get_scale_control_points()
-    let control_point = control_points[this.hovered_control_point_key]
+    let control_point = control_points[this.current_hovered_control_point_key]
     let rescaled = true;
     var new_width, rx, new_height, ry;
 
-    switch (this.hovered_control_point_key) {
+    switch (this.current_hovered_control_point_key) {
       case "right":
         new_width = Math.round(width + (this.mouse_position.x - control_point.x));
+        if(new_width <= 0){
+          return
+        }
         rx = new_width / width
+        if(this.mouse_position.x <= fixed_point.x + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.x - this.vertex_size === fixed_point.x) {
             continue
@@ -351,6 +361,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       case "left":
         new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
+        if(this.mouse_position.x >= fixed_point.x - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.x + this.vertex_size === fixed_point.x - this.CONTROL_POINTS_DISPLACEMENT) {
             continue
@@ -361,6 +374,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       case "top":
         new_height = Math.round(height + (control_point.y - this.mouse_position.y));
         ry = new_height / height
+        if(this.mouse_position.y >= fixed_point.y - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y + this.vertex_size === fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
             continue
@@ -371,6 +387,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       case "bottom":
         new_height = Math.round(height + (this.mouse_position.y - control_point.y));
         ry = new_height / height
+        if(this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y - this.vertex_size === fixed_point.y) {
             continue
@@ -383,6 +402,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
+        if(this.mouse_position.y >= fixed_point.y - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
+        if(this.mouse_position.x <= fixed_point.x + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
@@ -398,6 +423,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
+        if(this.mouse_position.y >= fixed_point.y - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
+        if(this.mouse_position.x >= fixed_point.x - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
@@ -413,6 +444,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
+        if(this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
+        if(this.mouse_position.x <= fixed_point.x + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y - this.vertex_size !== fixed_point.y) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
@@ -428,6 +465,12 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
+        if(this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
+        if(this.mouse_position.x >= fixed_point.x - this.MINIMUM_CONTROL_POINTS_DISTANCE){
+          return
+        }
         for (let node of this.nodes) {
           if (node.y - this.vertex_size !== fixed_point.y) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
@@ -442,6 +485,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     if (rescaled) {
       this.get_rotate_point_control_location();
+      this.calculate_min_max_points();
     }
     return rescaled
   }
@@ -791,7 +835,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private get_scale_control_points() {
-    let result = [];
     let points = this.get_rotated_min_max()
 
     return {
