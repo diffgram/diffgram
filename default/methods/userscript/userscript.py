@@ -210,7 +210,7 @@ def __userscript_update(
 
         if getattr(userscript, field_key) != field_val:
             setattr(userscript, field_key, field_val)
-            log['info'][field_key] = "Updated {}".format(field_key)
+            log['info'][field_key] = f"Updated {field_key}"
 
     if do_add_to_session is True:
         session.add(userscript)

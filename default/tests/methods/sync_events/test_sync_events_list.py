@@ -35,13 +35,13 @@ class TestSyncEventsList(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_events = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         all_sync_events = []
         for i in range(0, num_events):
             sync_event = data_mocking.create_sync_event({
-                'description': 'syncevent{}'.format(i),
+                'description': f"syncevent{i}",
                 'job_id': job.id,
                 'project': self.project
             }, self.session)
@@ -59,7 +59,7 @@ class TestSyncEventsList(testing_setup.DiffgramBaseTestCase):
 
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project=self.project, session=self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode(
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode(
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
@@ -68,7 +68,7 @@ class TestSyncEventsList(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_payload),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         print(response.data)
@@ -80,13 +80,13 @@ class TestSyncEventsList(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_tasks = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(2),
+            'name': f"my-test-job-{2}",
             'project': self.project
         }, self.session)
         all_tasks = []
         for i in range(0, num_tasks):
             sync_event = data_mocking.create_sync_event({
-                'description': 'syncevent{}'.format(i),
+                'description': f"syncevent{i}",
                 'job_id': job.id,
                 'project': self.project
             }, self.session)

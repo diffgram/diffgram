@@ -474,7 +474,7 @@ def update_tasks(job, session, log):
         task.label_dict = job.label_dict
         session.add(task)
 
-    log['info']['task_count'] = "Updated " + str(len(task_list)) + " tasks."
+    log['info']['task_count'] = f"Updated {str(len(task_list))} tasks."
     return log
 
 
@@ -770,7 +770,7 @@ def new_or_update_core(session,
     for field_key, field_val in fields_to_process.items():
         if is_updating and getattr(job, field_key) != field_val:
             setattr(job, field_key, field_val)
-            log['info'][field_key] = "Updated {}".format(field_key)
+            log['info'][field_key] = f"Updated {field_key}"
         else:
             setattr(job, field_key, field_val)
 
@@ -810,22 +810,22 @@ def new_or_update_core(session,
 
 def email_about_new_pro_job(job, user):
 
-    subject = "New Draft Pro Job: " + job.name
+    subject = f"New Draft Pro Job: {job.name}"
 
     message = []
 
     message.append(job.name)
     message.append("\n")
-    message.append("ID: " + str(job.id))
+    message.append(f"ID: {str(job.id)}")
     message.append("\n")
-    message.append("file_count_statistic " + str(job.file_count_statistic))
+    message.append(f"file_count_statistic {str(job.file_count_statistic)}")
     message.append("\n")
 
     if user:
         message.append("\n")
-        message.append("User: " + user.first_name + " " + user.last_name)
+        message.append(f"User: {user.first_name} {user.last_name}")
         message.append("\n")
-        message.append("Email:" + str(user.email))
+        message.append(f"Email:{str(user.email)}")
     else:
         message.append("\n No Member.user")
 

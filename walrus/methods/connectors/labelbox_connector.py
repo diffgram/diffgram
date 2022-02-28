@@ -336,7 +336,7 @@ class LabelBoxSyncManager:
     def update_instance_list_for_video(self, frames_data, diffgram_task):
         frame_packet_map = {}
         for frame in frames_data:
-            logger.debug('Processing Frame {}'.format(frame['frameNumber']))
+            logger.debug(f"Processing Frame {frame['frameNumber']}")
             video_data = {
                 'current_frame': frame['frameNumber'],
                 'video_mode': True,
@@ -445,8 +445,8 @@ class LabelBoxSyncManager:
 
     def transform_labelbox_label_to_diffgram_instance(self, label_object, diffgram_label_file_data,
                                                       sequence_num=None, instance_map=None):
-        logger.debug('Bulding instance from: {}'.format(label_object))
-        logger.debug('Bulding instance with diffgram label_file ID: {}'.format(diffgram_label_file_data['id']))
+        logger.debug(f"Bulding instance from: {label_object}")
+        logger.debug(f"Bulding instance with diffgram label_file ID: {diffgram_label_file_data['id']}")
         instance_id = None
         if instance_map.instance_id:
             instance_id = instance_map.instance_id
@@ -489,7 +489,7 @@ class LabelBoxSyncManager:
             'y_min': None,
             'points': []
         }
-        logger.debug('Sequence num is: {}'.format(sequence_num))
+        logger.debug(f"Sequence num is: {sequence_num}")
         if sequence_num is not None:
             diffgram_instance_format['number'] = sequence_num
         diffgram_instance_format['label_file_id'] = diffgram_label_file_data['id']
@@ -606,7 +606,7 @@ class LabelBoxSyncManager:
                                                    'query': query,
                                                    'data': data,
                                                    'event_data': {}})
-        logger.debug('Webhook for {} succesfully created on Labelbox.'.format(self.labelbox_project.uid))
+        logger.debug(f"Webhook for {self.labelbox_project.uid} succesfully created on Labelbox.")
         return result
 
     @_with_task_template
@@ -653,10 +653,10 @@ class LabelBoxSyncManager:
             diffgram_file_external_map = external_map_by_id.get(diffgram_file.id)
             if diffgram_file_external_map and diffgram_file_external_map.external_id and not force_create \
                     and external_map_by_id.get(diffgram_file.id).external_id not in deleted_data_rows:
-                logger.debug('File {} exists. Skipping..'.format(diffgram_file.id))
+                logger.debug(f"File {diffgram_file.id} exists. Skipping..")
                 continue
             if diffgram_file.type == "image":
-                logger.debug('Adding image {}  in Labelbox'.format(diffgram_file.id))
+                logger.debug(f"Adding image {diffgram_file.id}  in Labelbox")
                 if diffgram_file.image:
                     data = diffgram_file.image.serialize_for_source_control(self.session)
                     data_row = {
@@ -669,7 +669,7 @@ class LabelBoxSyncManager:
                     file_urls.append(data_row)
             if diffgram_file.type == "video":
                 if diffgram_file.video:
-                    logger.debug('Adding video {}  in Labelbox'.format(diffgram_file.id))
+                    logger.debug(f"Adding video {diffgram_file.id}  in Labelbox")
                     data = diffgram_file.video.serialize_list_view(self.session, self.task_template.project)
                     data_row = {
                         labelbox.schema.data_row.DataRow.row_data: data['file_signed_url'],
@@ -738,7 +738,7 @@ class LabelBoxSyncManager:
         for dataset in datasets:
             # Assumption here is that the labeling interface has already been checked so we assume we need to
             # create the dataset if it does not exits.
-            logger.debug('Syncing dataset {}-{}  in Labelbox'.format(dataset.nickname, dataset.id))
+            logger.debug(f"Syncing dataset {dataset.nickname}-{dataset.id}  in Labelbox")
             if dataset.default_external_map:
                 # Fetch dataset
                 logger.debug('Dataset already exists... attaching.')
@@ -805,7 +805,7 @@ class LabelBoxSyncManager:
                     session=self.session,
                     external_id=labelbox_dataset.uid,
                     dataset=dataset,
-                    url='https://app.labelbox.com/dataset/{}'.format(labelbox_dataset.uid),
+                    url=f"https://app.labelbox.com/dataset/{labelbox_dataset.uid}",
                     diffgram_class_string="dataset",
                     type="labelbox",
                     add_to_session=True,
@@ -831,14 +831,14 @@ def labelbox_web_hook_manager():
     secret = settings.LABEL_BOX_SECRET
     log = regular_log.default()
     computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg=payload, digestmod=hashlib.sha1).hexdigest()
-    if request.headers['X-Hub-Signature'] != 'sha1=' + computed_signature:
+    if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
         error = 'Error: computed_signature does not match signature provided in the headers'
         logger.error('Error: computed_signature does not match signature provided in the headers')
         return error
     with sessionMaker.session_scope() as session:
         labelbox_event = request.headers['X-Labelbox-Event']
         payload = request.json
-        logger.debug('Payload for labelbox webhooks: {}'.format(payload))
+        logger.debug(f"Payload for labelbox webhooks: {payload}")
         labelbox_project_id = payload['project']['id']
         project_external_mapping = ExternalMap.get(
             session=session,
@@ -850,7 +850,7 @@ def labelbox_web_hook_manager():
             task_template = Job.get_by_id(session, project_external_mapping.job_id)
             if task_template:
                 connection = task_template.interface_connection
-                logger.debug('Connection for labelbox: {}'.format(connection))
+                logger.debug(f"Connection for labelbox: {connection}")
                 connector_manager = ConnectorManager(connection=connection, session=session)
                 connector = connector_manager.get_connector_instance()
                 connector.connect()

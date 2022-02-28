@@ -43,7 +43,7 @@ class TestTaskTrackTime(testing_setup.DiffgramBaseTestCase):
 
     def test_api_task_track_time(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -58,15 +58,15 @@ class TestTaskTrackTime(testing_setup.DiffgramBaseTestCase):
         task1.add_assignee(self.session, self.member.user)
         with self.client.session_transaction() as session:
             session['user_id'] = make_secure_val(self.auth_api.member.user.id)
-            endpoint = "/api/v1/task/{}/track-time".format(task1.id)
+            endpoint = f"/api/v1/task/{task1.id}/track-time"
             auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
@@ -86,7 +86,7 @@ class TestTaskTrackTime(testing_setup.DiffgramBaseTestCase):
 
     def test_track_time_core(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)

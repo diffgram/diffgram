@@ -38,13 +38,13 @@ class TestTaskNextIssue(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_tasks = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         all_tasks = []
         for i in range(0, num_tasks):
             task = data_mocking.create_task({
-                'name': 'task{}'.format(i),
+                'name': f"task{i}",
                 'job': job
             }, self.session)
             all_tasks.append(task)
@@ -69,8 +69,8 @@ class TestTaskNextIssue(testing_setup.DiffgramBaseTestCase):
         )
 
         with self.client.session_transaction() as session:
-            endpoint = "/api/v1/task/{}/next-task-with-issues".format(all_tasks[0].id)
-            credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
+            endpoint = f"/api/v1/task/{all_tasks[0].id}/next-task-with-issues"
+            credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode('utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
         response = self.client.post(
@@ -78,7 +78,7 @@ class TestTaskNextIssue(testing_setup.DiffgramBaseTestCase):
             data = json.dumps({}),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
@@ -90,13 +90,13 @@ class TestTaskNextIssue(testing_setup.DiffgramBaseTestCase):
         # Create mock tasks
         num_tasks = 5
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         all_tasks = []
         for i in range(0, num_tasks):
             task = data_mocking.create_task({
-                'name': 'task{}'.format(i),
+                'name': f"task{i}",
                 'job': job
             }, self.session)
             all_tasks.append(task)

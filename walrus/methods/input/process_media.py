@@ -98,7 +98,7 @@ def process_media_unit_of_work(item):
                 process_media_queue_manager.remove_item_from_processing_list(item)
 
             except Exception as e:
-                logger.error("[Process Media] Main failed on {}".format(item.input_id))
+                logger.error(f"[Process Media] Main failed on {item.input_id}")
                 logger.error(str(e))
                 logger.error(traceback.format_exc())
                 process_media_queue_manager.remove_item_from_processing_list(item)
@@ -129,7 +129,7 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
         try:
             add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE)
         except Exception as exception:
-            logger.info("[Media Queue Failed] {}".format(str(exception)))
+            logger.info(f"[Media Queue Failed] {str(exception)}")
             add_deferred_items_time = 30  # reset
 
 
@@ -147,7 +147,7 @@ def is_memory_available(memory_limit_float = 75.0):
     if memory_percent is None: return True  # Don't stop if this check fails
 
     if memory_percent > memory_limit_float:
-        logger.warn("[Memory] {} % used is > {} limit.".format(memory_percent, memory_limit_float))
+        logger.warn(f"[Memory] {memory_percent} % used is > {memory_limit_float} limit.")
         return False
 
     return True
@@ -161,7 +161,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
         return add_deferred_items_time
 
     if FRAME_QUEUE.qsize() >= 30:
-        logger.info("FRAME QUEUE LIMIT " + str(FRAME_QUEUE.qsize()))
+        logger.info(f"FRAME QUEUE LIMIT {str(FRAME_QUEUE.qsize())}")
         return add_deferred_items_time
 
     with sessionMaker.session_scope_threaded() as session:
@@ -169,7 +169,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
         try:
             update_input = Update_Input(session = session).automatic_retry()
         except Exception as exception:
-            logger.error("Couldn't find Update_Input {}".format(str(exception)))
+            logger.error(f"Couldn't find Update_Input {str(exception)}")
             return 30
 
         input = session.query(Input).with_for_update(skip_locked = True).filter(
@@ -193,7 +193,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
             priority = 100,  # 100 is current default priority
             input_id = input.id)
         add_item_to_queue(item)
-        logger.info(str(input.id) + " Added to queue.")
+        logger.info(f"{str(input.id)} Added to queue.")
 
         return add_deferred_items_time
 
@@ -221,7 +221,7 @@ def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
         if queue.qsize() < limit:
             return True
         else:
-            logger.warn("Queue Presure Too High: {} size is above limit of {} ".format(str(queue.qsize()), limit))
+            logger.warn(f"Queue Presure Too High: {str(queue.qsize())} size is above limit of {limit} ")
             time.sleep(check_interval)
 
 
@@ -464,7 +464,7 @@ class Process_Media():
 
             # We are exiting main loop here
             if len(self.log["error"].keys()) >= 1:
-                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                logger.error(f"Error updating instances: {str(self.log['error'])}")
                 return
 
             return
@@ -474,7 +474,7 @@ class Process_Media():
             # Important!
             # We are exiting main loop here
             if len(self.log["error"].keys()) >= 1:
-                logger.error('Error updating instances: {}'.format(str(self.log['error'])))
+                logger.error(f"Error updating instances: {str(self.log['error'])}")
                 return
 
             return
@@ -529,7 +529,7 @@ class Process_Media():
             # careful we expect keys available here ie
             # log['error']['status_text']
             if len(self.log["error"].keys()) >= 1:
-                logger.error('Error downloading media: {}'.format(str(self.log['error'])))
+                logger.error(f"Error downloading media: {str(self.log['error'])}")
                 self.input.update_log['error'] = self.log['error']
                 return False
 
@@ -611,7 +611,7 @@ class Process_Media():
         )
         if existing_file_list:
             self.input.status = "failed"
-            self.input.status_text = "Existing filename with ID {} in directory.".format(str(existing_file_list[0].id))
+            self.input.status_text = f"Existing filename with ID {str(existing_file_list[0].id)} in directory."
             self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }
@@ -621,7 +621,7 @@ class Process_Media():
 
     def __copy_video(self):
 
-        logger.debug('Copying Video {}'.format(self.input.file_id))
+        logger.debug(f"Copying Video {self.input.file_id}")
 
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
@@ -709,7 +709,7 @@ class Process_Media():
         return new_file
 
     def __copy_image(self):
-        logger.debug('Copying Image {}'.format(self.input.file_id))
+        logger.debug(f"Copying Image {self.input.file_id}")
 
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
@@ -746,7 +746,7 @@ class Process_Media():
     def __copy_file(self):
         # Prep work
         if self.input.media_type == "video":
-            logger.info('Starting Sequenced Copy from File {}'.format(self.input.file.id))
+            logger.info(f"Starting Sequenced Copy from File {self.input.file.id}")
             # Get the sequence_map.
             self.__copy_video()
             return
@@ -789,7 +789,7 @@ class Process_Media():
                 logger.debug(("Image or Frame File Update"))
 
                 if file and file.frame_number:
-                    logger.info("{}, {}".format(file.frame_number, self.input.video_parent_length))
+                    logger.info(f"{file.frame_number}, {self.input.video_parent_length}")
 
                 if process_instance_result is True and self.input.media_type == 'frame':
                     self.__update_parent_video_at_last_frame()
@@ -947,7 +947,7 @@ class Process_Media():
         directory = self.input.directory
         if directory is None:
             directory = self.project.directory_default
-            logger.info("[update_jobs_with_attached_dirs] Default Dir Used : {}".format(self.project.directory_default))
+            logger.info(f"[update_jobs_with_attached_dirs] Default Dir Used : {self.project.directory_default}")
 
         jobs = JobWorkingDir.list(
             session = self.session,
@@ -1018,13 +1018,13 @@ class Process_Media():
 
             if log_has_error(self.log):
                 self.input.status = 'failed'
-                logger.error('Sensor fussion file failed to process. Input {}'.format(self.input.id))
+                logger.error(f"Sensor fussion file failed to process. Input {self.input.id}")
                 logger.error(self.log)
 
             self.declare_success(self.input)
 
         except Exception as e:
-            logger.error('Exception on process sensor fusion: {}'.format(traceback.format_exc()))
+            logger.error(f"Exception on process sensor fusion: {traceback.format_exc()}")
             self.log['error']['process_sensor_fusion_json'] = traceback.format_exc()
             self.input.status = 'failed'
             self.input.update_log = self.log
@@ -1223,7 +1223,7 @@ class Process_Media():
          of frame processing time (which is 25->40% of overall time.)
 
         """
-        print('Processing Frame: {}'.format(self.frame_number))
+        print(f"Processing Frame: {self.frame_number}")
         try:
             result = self.read_raw_file()
             if result is False: return False
@@ -1238,7 +1238,7 @@ class Process_Media():
 
             self.proprogate_frame_instance_update_errors_to_parent(log)
 
-            logger.error('Error Processing frame {}, input {} '.format(self.frame_number, self.input.id))
+            logger.error(f"Error Processing frame {self.frame_number}, input {self.input.id} ")
             logger.error(traceback.format_exc())
 
     def process_image_for_frame(self):
@@ -1473,10 +1473,10 @@ class Process_Media():
             TextFile()
         """
         try:
-            logger.debug('Started processing text file from input: {}'.format(self.input_id))
+            logger.debug(f"Started processing text file from input: {self.input_id}")
             result = self.read_raw_text_file()
             if not result:
-                logger.error('Error reading text file {}'.format(self.input.temp_dir_path_and_filename))
+                logger.error(f"Error reading text file {self.input.temp_dir_path_and_filename}")
             # Why is content_type needed here?
             # self.content_type = "image/" + str(self.input.extension)
 
@@ -1674,7 +1674,7 @@ class Process_Media():
             }
 
         else:
-            logger.error('Invalid media type {}'.format(self.input.media_type))
+            logger.error(f"Invalid media type {self.input.media_type}")
             return
 
         allowed_model_id_list = self.__get_allowed_model_ids()
@@ -1724,7 +1724,7 @@ class Process_Media():
         except Exception as e:
             trace = traceback.format_exc()
             self.input.status = "failed"
-            self.input.status_text = "Instance List Creation error: {}".format(trace)
+            self.input.status_text = f"Instance List Creation error: {trace}"
             logger.error(trace)
 
             return False
@@ -1740,7 +1740,7 @@ class Process_Media():
         if not parent_input.update_log:
             parent_input.update_log = regular_log.default()
 
-        parent_input.update_log['error']["Frame " + str(self.frame_number)] = error_log
+        parent_input.update_log['error'][f"Frame {str(self.frame_number)}"] = error_log
         parent_input.update_log['last_updated'] = str(time.time())
 
         self._add_input_to_session(parent_input)
@@ -1770,11 +1770,10 @@ class Process_Media():
                 imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
         #For bmp, tif and tiff files save as PNG and compress
         elif str(self.input.extension) in ['.bmp', '.tif', '.tiff']:
-            new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
-                                    '.png'
+            new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
         else:
-            raise NotImplementedError(f'Extension: {self.input.extension} not supported yet.')
+            raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
             pass
 
         data_tools.upload_to_cloud_storage(
@@ -1810,7 +1809,7 @@ class Process_Media():
                                       content_type = 'application/json')
         self.new_text_file.tokens_url_signed = data_tools.build_secure_url(self.new_text_file.tokens_url_signed_blob_path,
                                                                            self.new_text_file.tokens_url_signed_expiry)
-        logger.info('Saved Tokens on: {}'.format(self.new_text_file.tokens_url_signed_blob_path))
+        logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
     def save_raw_text_file(self):
         offset = 2592000
@@ -1821,7 +1820,7 @@ class Process_Media():
                                                                    str(self.new_text_file.id))
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
-        logger.debug('Uploading text file from {}'.format(self.input.temp_dir_path_and_filename))
+        logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = self.input.temp_dir_path_and_filename,
@@ -1841,11 +1840,11 @@ class Process_Media():
         """
 
         # Save Thumb
-        self.new_image.url_signed_thumb_blob_path = self.new_image.url_signed_blob_path + "_thumb"
+        self.new_image.url_signed_thumb_blob_path = f"{self.new_image.url_signed_blob_path}_thumb"
 
         thumbnail_image = imresize(self.raw_numpy_image, (160, 160))
 
-        new_temp_filename = self.input.temp_dir + "/resized" + ".jpg"
+        new_temp_filename = f"{self.input.temp_dir}/resized.jpg"
 
         imwrite(new_temp_filename, thumbnail_image, quality=95)
 
@@ -2000,7 +1999,7 @@ class Process_Media():
             self.input.status = "failed"
             self.input.status_text = "Error downloading media."
 
-        logger.info(str(self.input.id) + " InputID Probably Downloaded")
+        logger.info(f"{str(self.input.id)} InputID Probably Downloaded")
 
     def download_from_cloud_storage_to_file(self):
 
@@ -2038,7 +2037,7 @@ class Process_Media():
             self.input.status_text = "Invalid url (Did not start with http)"
             self.log['error']['status_text'] = self.input.status_text
 
-            logger.error("Exceeded retry limit, no valid response LOG: {}".format(str(self.log)))
+            logger.error(f"Exceeded retry limit, no valid response LOG: {str(self.log)}")
             return
         self.input.original_filename, self.input.extension = get_file_name_and_extension(
             self.input.url, input_original_filename = self.input.original_filename)
@@ -2094,15 +2093,15 @@ class Process_Media():
                     # type or something...
                     if len(trial_extension) == 2:
                         # Assume it's the second one
-                        self.input.extension = "." + trial_extension[1]
+                        self.input.extension = f".{trial_extension[1]}"
                     elif len(trial_extension) == 1:
                         # handle if only one item (ie "video" not "video/extension") Is there a better way to
                         # test for this?
-                        self.input.extension = "." + trial_extension[0]
+                        self.input.extension = f".{trial_extension[0]}"
                     else:
                         # Unexpected case, not default "/" split, and not a single extension.
                         self.input.status = "failed"
-                        self.input.status_text = "Invalid Extension" + str(content_type)
+                        self.input.status_text = f"Invalid Extension{str(content_type)}"
                         self.log['error']['status_text'] = self.input.status_text
                         return
 
@@ -2113,7 +2112,7 @@ class Process_Media():
             if self.input.media_type is None or \
                 self.input.media_type not in ["image", "video"]:
                 self.input.status = "failed"
-                self.input.status_text = "Invalid media type: " + str(self.input.extension)
+                self.input.status_text = f"Invalid media type: {str(self.input.extension)}"
                 self.log['error']['status_text'] = self.input.status_text
                 return
 
@@ -2128,9 +2127,9 @@ class Process_Media():
             try:
                 with open(self.input.temp_dir_path_and_filename, 'wb') as f:
                     f.write(response.content)
-                logger.info(str(self.input.id) + " ID Write Finished")
+                logger.info(f"{str(self.input.id)} ID Write Finished")
             except:
-                logger.info(str(self.input.id) + " ID Failure to write")
+                logger.info(f"{str(self.input.id)} ID Failure to write")
 
             self.input.status = "downloaded"
 
@@ -2211,9 +2210,9 @@ class Process_Media():
 
         except Exception as e:
             self.input.status = 'failed'
-            self.log['error']['process_video'] = 'Failed To process video: {}'.format(traceback.format_exc())
+            self.log['error']['process_video'] = f"Failed To process video: {traceback.format_exc()}"
             self.input.update_log = self.log
-            logger.error('Failed To process video: {}'.format(traceback.format_exc()))
+            logger.error(f"Failed To process video: {traceback.format_exc()}")
 
         self.clean_up_temp_dir_on_thread()
 
@@ -2318,7 +2317,7 @@ def get_file_name_and_extension(url, input_original_filename = None):
         if extension == '':
             extension = None
         else:
-            extension = "." + extension
+            extension = f".{extension}"
 
     file_name = secure_filename(file_name)
     if input_original_filename is not None:
@@ -2343,7 +2342,7 @@ def clean_up_temp_dir(path):
         shutil.rmtree(path)  # delete directory
         logger.info("Cleaned successfully")
     except OSError as exc:
-        logger.error("shutil error {}".format(str(exc)))
+        logger.error(f"shutil error {str(exc)}")
         pass
 
 

@@ -37,7 +37,7 @@ def view_working_dir_web(project_string_id, username):
 			out = jsonify( success =  True,
 						   working_dir = working_dir.serialize())
 		elif working_dir_ids:
-			logger.info('Fetching multiple directories {}'.format(str(working_dir_ids)))
+			logger.info(f"Fetching multiple directories {str(working_dir_ids)}")
 			working_dirs = session.query(WorkingDir).filter(WorkingDir.id.in_(working_dir_ids)).all()
 
 			if working_dirs is None:

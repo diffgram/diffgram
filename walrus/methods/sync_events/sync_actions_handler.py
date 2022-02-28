@@ -15,7 +15,7 @@ from shared.utils import job_dir_sync_utils
 
 def on_launch_error_retry(retry_state):
     if retry_state.outcome:
-        logger.error('Error on Sync execution. Retrying... {}/3'.format(retry_state.attempt_number))
+        logger.error(f"Error on Sync execution. Retrying... {retry_state.attempt_number}/3")
 
 
 class SyncActionsHandlerThread:
@@ -96,9 +96,9 @@ class SyncActionsHandlerThread:
 
                 )
             else:
-                logger.info('{} event effect not supported for processing.'.format(sync_event.event_effect_type))
+                logger.info(f"{sync_event.event_effect_type} event effect not supported for processing.")
         else:
-            logger.info('{} event trigger not supported for processing.'.format(sync_event.event_trigger_type))
+            logger.info(f"{sync_event.event_trigger_type} event trigger not supported for processing.")
 
     def check_for_new_sync_actions(self):
         """
@@ -117,7 +117,7 @@ class SyncActionsHandlerThread:
                         self.process_sync_actions(session, sync_action)
                         session.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
                     except Exception as e:
-                        logger.critical('Error executing SynAction {}'.format(sync_action.sync_event.id))
+                        logger.critical(f"Error executing SynAction {sync_action.sync_event.id}")
                         sync_action.sync_event.status = 'failed'
                         sync_action.sync_event.execution_log = traceback.format_exc()
                         sync_action.sync_event.description = str(e)
@@ -136,4 +136,4 @@ class SyncActionsHandlerThread:
                         sync_action.sync_event.description = str(e)
                         session_error.query(SyncActionsQueue).filter(SyncActionsQueue.id == sync_action.id).delete()
                         session_error.add(sync_action.sync_event)
-                logger.critical('Unhandled Error in except clause Sync Action ID: {}'.format(sync_action_id))
+                logger.critical(f"Unhandled Error in except clause Sync Action ID: {sync_action_id}")

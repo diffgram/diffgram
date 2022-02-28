@@ -27,7 +27,7 @@ def api_by_task_is_complete_toggle(task_id):
 			member = get_member(session=session),
 			project_id = task.project_id,
 			file_id = file.id,
-			description = "from_task_" + str(file.ann_is_complete)
+			description = f"from_task_{str(file.ann_is_complete)}"
 			)
 
 		return jsonify( success = True,

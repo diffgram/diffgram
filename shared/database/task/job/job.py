@@ -433,7 +433,7 @@ class Job(Base, Caching):
                     member_id=member_id)
                 if not user:
                     log['error']['reviewer_list'] = {}
-                    log['error']['reviewer_list'][member_id] = "Invalid member_id " + str(member_id)
+                    log['error']['reviewer_list'][member_id] = f"Invalid member_id {str(member_id)}"
                     return log
                 else:
                     user_list.append(user)
@@ -533,7 +533,7 @@ class Job(Base, Caching):
 
                 if not user:
                     log['error']['update_member_list'] = {}
-                    log['error']['update_member_list'][member_id] = "Invalid member_id " + str(member_id)
+                    log['error']['update_member_list'][member_id] = f"Invalid member_id {str(member_id)}"
                     return log
                 else:
                     user_list.append(user)

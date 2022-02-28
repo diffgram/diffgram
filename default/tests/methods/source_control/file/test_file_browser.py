@@ -91,7 +91,7 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
 
         endpoint = "/api/project/{}/user/{}/file/list".format(self.project.project_string_id,
                                                               self.project_data['users'][0].id)
-        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode(
+        credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode(
 
             'utf-8')
 
@@ -100,7 +100,7 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
             data = json.dumps(request_data),
             headers = {
 
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
 
         )
