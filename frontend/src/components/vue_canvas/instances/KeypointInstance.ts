@@ -219,7 +219,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       return true
     }
     else {
-      console.log('mouse up', this.node_hover_index, this.selected, this.is_hovered)
       if(this.is_moving){
         this.stop_moving();
       }
@@ -261,7 +260,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private move_single_node(node) {
-    console.log('move_single_node')
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
     let old = {...node}
@@ -345,7 +343,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return result
   }
   public rescale(){
-    console.log('rescale')
     if(!this.hovered_control_point_key){
       return
     }
@@ -356,79 +353,78 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     let height = this.height;
     let x_move = this.mouse_down_delta_event.x;
     let y_move = this.mouse_down_delta_event.y;
-
     let fixed_point = this.get_fixed_point(this.hovered_control_point_key)
-
+    let control_point = control_points[this.hovered_control_point_key]
     let rescaled = true;
     var new_width, rx, new_height, ry;
 
     switch (this.hovered_control_point_key){
       case "right":
-        new_width = width + x_move;
+        new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.x = Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       case "left":
-        new_width = width - x_move;
+        new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.x = Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       case "top":
-        new_height = height - y_move;
+        new_height = Math.round(height + (control_point.y - this.mouse_position.y));
         ry = new_height / height
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
         }
         break;
       case "bottom":
-        new_height = height + y_move;
+        new_height = Math.round(height + (this.mouse_position.y - control_point.y));
         ry = new_height / height
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
+          node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
         }
         break;
       case "top_right":
-        new_height = height - y_move;
+        new_height = Math.round(height + (control_point.y - this.mouse_position.y));
         ry = new_height / height
-        new_width = width + x_move;
+        new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
+          node.x = Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       case "top_left":
-        new_height = height - y_move;
+        new_height = Math.round(height + (control_point.y - this.mouse_position.y));
         ry = new_height / height
-        new_width = width - x_move;
+        new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
+          node.x = Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       case "bottom_right":
-        new_height = height + y_move;
+        new_height = Math.round(height + (this.mouse_position.y - control_point.y));
         ry = new_height / height
-        new_width = width + x_move;
+        new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.y =  Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
+          node.x =  Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       case "bottom_left":
-        new_height = height + y_move;
+        new_height = Math.round(height + (this.mouse_position.y - control_point.y));
         ry = new_height / height
-        new_width = width - x_move;
+        new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
         for (let node of this.nodes){
-          node.y = fixed_point.y  + ry * ( node.y - fixed_point.y)
-          node.x = fixed_point.x  + rx * ( node.x - fixed_point.x)
+          node.y = Math.round(fixed_point.y  + ry * ( node.y - fixed_point.y))
+          node.x = Math.round(fixed_point.x  + rx * ( node.x - fixed_point.x))
         }
         break;
       default:
@@ -498,7 +494,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     let node = this.nodes[this.node_hover_index]
     if (node) {
-      console.log('move_node')
       node.x = this.get_rotated_point(this.mouse_position, -this.angle).x
       node.y = this.get_rotated_point(this.mouse_position, -this.angle).y
 
@@ -712,7 +707,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     return result
   }
   public set_nodes_coords_based_on_size(width: number, height: number, ref_point: {x: number, y:number}){
-    console.log('set_nodes_coords_based_on_size')
     let original_nodes = this.original_nodes;
     let normalized_nodes = this.normalize_nodes(original_nodes);
     let min_x = Math.min(...normalized_nodes.map(n => n.x)) - this.vertex_size;
@@ -738,9 +732,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {
       return
-    }
-    if(!i){
-      console.log('node', node.x, node.y)
     }
     if (node.occluded == true) {
       ctx.globalAlpha = 0.3;

@@ -556,7 +556,6 @@
             instance.strokeColor = color_data.strokeColor;
             instance.lineWidth = this.get_spatial_line_size();
             instance.vertex_size = this.$props.vertex_size;
-            console.log('instance list draw')
             instance.draw(ctx);
             if(instance.is_hovered || instance.hovered_scale_control_points){
               this.instance_hover_index = i
