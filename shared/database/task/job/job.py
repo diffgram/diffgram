@@ -10,7 +10,7 @@ from shared.database.event.event import Event
 from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
 from shared.database.task.exam.exam import Exam
-
+from shared.database.task.task import TASK_STATUSES
 logger = get_shared_logger()
 
 class Job(Base, Caching):
@@ -1002,7 +1002,7 @@ class Job(Base, Caching):
         return
 
 
-    def job_complete_core(
+    def update_job_status(
             self,
             session):
         """
@@ -1014,16 +1014,33 @@ class Job(Base, Caching):
 
         """
         # for now we assume the stat here to be accurate.
-
-        if self.stat_count_tasks - self.stat_count_complete != 0:
+        num_tasks_complete = Task.list(
+            session = session,
+            status = TASK_STATUSES['complete'],
+            limit_count = None,
+            return_mode = "count",
+            job_id = self.id,
+            project_id = self.project_id
+        )
+        num_tasks_all = Task.list(
+            session = session,
+            status = 'all',
+            limit_count = None,
+            return_mode = "count",
+            job_id = self.id,
+            project_id = self.project_id
+        )
+        print('update_job_status', num_tasks_all, num_tasks_complete)
+        if num_tasks_all - num_tasks_complete != 0:
+            self.status = "active"
+            session.add(self)
             return
-
             # WIP
         if self.type == "Exam":
             # not implemented
             pass
 
-        session.add(self)  # TODO dont add to session like this
+        session.add(self)
         self.status = "complete"
         Event.new_deferred(
             session=session,
