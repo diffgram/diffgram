@@ -2,6 +2,7 @@ import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/annotation_core.vue";
+import * as InstanceUtils from "@/utils/instance_utils";
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -335,7 +336,6 @@ describe("Test annotation_core", () => {
 
   it("correctly calls paste_instance()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.duplicate_instance = () => {}
     wrapper.vm.$store.commit = () => {}
 
     wrapper.vm.add_pasted_instance_to_instance_list = () => {
@@ -345,7 +345,7 @@ describe("Test annotation_core", () => {
     let frame_num = 6;
 
     const spy = jest.spyOn(wrapper.vm, 'copy_instance');
-    const spy2 = jest.spyOn(wrapper.vm, 'duplicate_instance');
+    const spy2 = jest.spyOn(InstanceUtils, 'duplicate_instance');
     const spy3 = jest.spyOn(wrapper.vm, 'add_pasted_instance_to_instance_list');
     const spy4 = jest.spyOn(wrapper.vm, 'set_clipboard');
 
@@ -358,5 +358,102 @@ describe("Test annotation_core", () => {
     expect(spy4).toHaveBeenCalled();
 
   });
-
+  it("correctly calls calculate_min_max_points()", async () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    // Curve type
+    let instance = {
+      type: 'point'
+    };
+    // Point
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBeUndefined();
+    expect(instance.y_min).toBeUndefined();
+    expect(instance.x_max).toBeUndefined();
+    expect(instance.y_max).toBeUndefined();
+    instance.points = [{x:5, y:5}, {x:10, y:10}]
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(5);
+    expect(instance.y_min).toBe(5);
+    expect(instance.x_max).toBe(10);
+    expect(instance.y_max).toBe(10);
+    // Polygon
+    instance.type = 'polygon'
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(5);
+    expect(instance.y_min).toBe(5);
+    expect(instance.x_max).toBe(10);
+    expect(instance.y_max).toBe(10);
+    // Cuboid
+    instance = {
+      type: 'cuboid'
+    };
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBeUndefined();
+    expect(instance.y_min).toBeUndefined();
+    expect(instance.x_max).toBeUndefined();
+    expect(instance.y_max).toBeUndefined();
+    instance.front_face ={
+      top_right: {x: 1, y: 1},
+      bot_right: {x: 1, y: 1},
+      top_left: {x: 1, y: 1},
+      bot_left: {x: 1, y: 1},
+    }
+    instance.rear_face = {
+      top_right: {x: 1, y: 1},
+      bot_right: {x: 15, y: 1},
+      top_left: {x: 1, y: 17},
+      bot_left: {x: 1, y: 1},
+    }
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(1);
+    expect(instance.y_min).toBe(1);
+    expect(instance.x_max).toBe(15);
+    expect(instance.y_max).toBe(17);
+    // ellipse
+    instance = {
+      type: 'ellipse'
+    };
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBeUndefined();
+    expect(instance.y_min).toBeUndefined();
+    expect(instance.x_max).toBeUndefined();
+    expect(instance.y_max).toBeUndefined();
+    instance.center_x = 60;
+    instance.center_y = 60;
+    instance.width = 25;
+    instance.height = 25;
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(35);
+    expect(instance.y_min).toBe(35);
+    expect(instance.x_max).toBe(85);
+    expect(instance.y_max).toBe(85);
+    // curve
+    instance = {
+      type: 'curve'
+    };
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBeUndefined();
+    expect(instance.y_min).toBeUndefined();
+    expect(instance.x_max).toBeUndefined();
+    expect(instance.y_max).toBeUndefined();
+    instance.p1 = {x: 5, y:8};
+    instance.p2 = {x: 55, y:78}
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(5);
+    expect(instance.y_min).toBe(8);
+    expect(instance.x_max).toBe(55);
+    expect(instance.y_max).toBe(78);
+    instance = {
+      type: 'any_other_type'
+    };
+    instance.x_min = 7
+    instance.y_min = 8
+    instance.x_max = 9
+    instance.y_max = 9
+    wrapper.vm.calculate_min_max_points(instance)
+    expect(instance.x_min).toBe(instance.x_min);
+    expect(instance.y_min).toBe(instance.y_min);
+    expect(instance.x_max).toBe(instance.x_max);
+    expect(instance.y_max).toBe(instance.y_max);
+  });
 });
