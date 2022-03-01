@@ -9,10 +9,22 @@
           </annotator_performance>
         </v-col>
         <v-col cols="6">
+          <approval_reject_ratio :job_id="job_id"
+                                 :width="500"
+                                 :height="200"
+                                 class="mb-4"
+                                 :project_string_id="project_string_id">
+
+          </approval_reject_ratio>
           <task_time_spent :job_id="job_id"
                                  :project_string_id="project_string_id">
 
           </task_time_spent>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+
         </v-col>
       </v-row>
       <v-row>
@@ -60,12 +72,14 @@ import axios from '../../services/customInstance';
 import Vue from "vue";
 import task_time_spent from "./task_time_spent.vue";
 import annotator_performance from "./annotator_performance.vue";
+import approval_reject_ratio from "./approval_reject_ratio.vue";
 
 export default Vue.extend({
     name: 'stats_task',
     components: {
       annotator_performance,
       task_time_spent,
+      approval_reject_ratio,
     },
     props: {
       'job_id':
