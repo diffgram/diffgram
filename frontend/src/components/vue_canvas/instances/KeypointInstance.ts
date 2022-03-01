@@ -636,7 +636,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_node(node, ctx, i){
-    console.debug('draw node', node, node.x, node.y, node.occluded)
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
       node.occluded == true) {
