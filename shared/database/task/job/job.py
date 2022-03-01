@@ -11,7 +11,9 @@ from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
 from shared.database.task.exam.exam import Exam
 from shared.database.task.task import TASK_STATUSES
+
 logger = get_shared_logger()
+
 
 class Job(Base, Caching):
     """
@@ -30,25 +32,24 @@ class Job(Base, Caching):
     """
 
     __tablename__ = 'job'
-    id = Column(Integer, primary_key=True)
-    hidden = Column(Boolean, default=False)  # hidden or deleted...
+    id = Column(Integer, primary_key = True)
+    hidden = Column(Boolean, default = False)  # hidden or deleted...
 
-    is_live = Column(Boolean, default=True)
+    is_live = Column(Boolean, default = True)
 
     attached_directories_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
-                                       default={'attached_directories_list': []})
+                                       default = {'attached_directories_list': []})
 
+    security_require_email_verified = Column(Boolean, default = True)
 
-    security_require_email_verified = Column(Boolean, default=True)
-
-    status = Column(String(), default="draft")
+    status = Column(String(), default = "draft")
     # created (or draft?), active, in_review, reported, removed
     # save_for_later, complete, failed
     # in_progress vs "available" depends on point of reference
 
-    type = Column(String(), default='Normal')  # ['Normal', 'Exam', 'Learning']
+    type = Column(String(), default = 'Normal')  # ['Normal', 'Exam', 'Learning']
 
-    is_template = Column(Boolean, default=False)
+    is_template = Column(Boolean, default = False)
     # While we could intuit this from the exam id prefer explicit
     # If it's not a template then we assume it's an Instance of the Exam
     # (or could apply to other template / instance things in future.)
@@ -58,11 +59,11 @@ class Job(Base, Caching):
     instance_type = Column(String)
     # ['polygon', 'box', 'tag', 'text_tokens']
 
-    pro_network = Column(Boolean, default=False)        # Prior had "market" as a share type but a single bool here is more clear.
+    pro_network = Column(Boolean,
+                         default = False)  # Prior had "market" as a share type but a single bool here is more clear.
 
-    
     default_userscript_id = Column(Integer, ForeignKey('userscript.id'))
-    default_userscript = relationship("UserScript", foreign_keys=[default_userscript_id])
+    default_userscript = relationship("UserScript", foreign_keys = [default_userscript_id])
 
     share_type = Column(String())  # ['Market', 'project', 'org']
     permission = Column(String())  # ['invite_only', 'Only me', 'all_secure_users']
@@ -70,32 +71,31 @@ class Job(Base, Caching):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
 
-    category = Column(String(), default='visual')
+    category = Column(String(), default = 'visual')
 
     guide_default_id = Column(Integer, ForeignKey('guide.id'))
-    guide_default = relationship("Guide", foreign_keys=[guide_default_id])
+    guide_default = relationship("Guide", foreign_keys = [guide_default_id])
 
     guide_review_id = Column(Integer, ForeignKey('guide.id'))
-    guide_review = relationship("Guide", foreign_keys=[guide_review_id])
-
+    guide_review = relationship("Guide", foreign_keys = [guide_review_id])
 
     ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
-    ui_schema = relationship("UI_Schema", foreign_keys=[ui_schema_id])
+    ui_schema = relationship("UI_Schema", foreign_keys = [ui_schema_id])
 
     # Primary data storage for job
     directory_id = Column(Integer, ForeignKey('working_dir.id'))
     directory = relationship("WorkingDir",
-                             foreign_keys=[directory_id])
+                             foreign_keys = [directory_id])
 
     # Question, is this also the "original" direction? needed for case of video where original directory
     # is not clear. (video link gets added as normal, but then the video's associated files are seperate right.)
     completion_directory_id = Column(Integer, ForeignKey('working_dir.id'))
     completion_directory = relationship("WorkingDir",
-                                        foreign_keys=[completion_directory_id])
+                                        foreign_keys = [completion_directory_id])
 
     interface_connection_id = Column(Integer, ForeignKey('connection_base.id'))
     interface_connection = relationship("Connection",
-                                        foreign_keys=[interface_connection_id])
+                                        foreign_keys = [interface_connection_id])
 
     completion_action = Column(String())
 
@@ -104,8 +104,8 @@ class Job(Base, Caching):
 
     # Review settings
     # can't seem to make up mind on "file" vs "pass"
-    review_by_human_freqeuncy = Column(String(), default="every_3rd_pass")
-    allow_reviews = Column(Boolean(), default=False)
+    review_by_human_freqeuncy = Column(String(), default = "every_3rd_pass")
+    allow_reviews = Column(Boolean(), default = False)
     # ['every_pass', 'every_3rd_pass', 'every_10th_pass', 'none']
 
     # Label  / quality settings
@@ -119,17 +119,17 @@ class Job(Base, Caching):
 
     passes_per_file = Column(Integer)  # 1, 3, ...
 
-    send_tasks_to_external_provider_on_launch = Column(Boolean, default=False)
+    send_tasks_to_external_provider_on_launch = Column(Boolean, default = False)
 
     file_count = Column(Integer)  # user declared
     launch_datetime_deferred = Column(DateTime)  # system set, ie
     # a rate limit on number of attempts
     launch_datetime = Column(DateTime)  # original / user set
     launch_attempt_log = Column(MutableDict.as_mutable(JSONEncodedDict),
-                                default={})
-    waiting_to_be_launched = Column(Boolean, default=False)
+                                default = {})
+    waiting_to_be_launched = Column(Boolean, default = False)
 
-    pending_initial_dir_sync = Column(Boolean, default=False)
+    pending_initial_dir_sync = Column(Boolean, default = False)
 
     # Available / selected label files
     # By default all on project? # Do we really need this or just get by project?
@@ -138,8 +138,8 @@ class Job(Base, Caching):
     # Cache this in task too ?
     # BUT may be different depending on the mode
     label_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default={'label_file_list_serialized': [],
-                                 'label_file_colour_map': {}})
+                        default = {'label_file_list_serialized': [],
+                                   'label_file_colour_map': {}})
 
     # We are controlling delete behaviour manually in job_cancel.job_cancel_core()
     # Could use delete cascade instead?
@@ -156,13 +156,13 @@ class Job(Base, Caching):
     description = Column(String())
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
-    member_created = relationship("Member", foreign_keys=[member_created_id])
+    member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys=[member_updated_id])
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
-    time_created = Column(DateTime, default=datetime.datetime.utcnow)
-    time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
     time_completed = Column(DateTime)
 
     # Credential requirements??
@@ -188,7 +188,7 @@ class Job(Base, Caching):
     # in case it shows up on details page or some other error...
     # Setting default of 0 doesn't fix this automatically though
     # 0 / 0 is undefined still
-    stat_count_complete = Column(Integer, default=0)
+    stat_count_complete = Column(Integer, default = 0)
     stat_count_labels = Column(Integer)
 
     ##### GRAPH
@@ -198,8 +198,8 @@ class Job(Base, Caching):
 
     parent_id = Column(Integer, ForeignKey('job.id'))
     parent = relationship("Job",
-                          uselist=False,
-                          foreign_keys=[parent_id])
+                          uselist = False,
+                          foreign_keys = [parent_id])
 
     repeatable = Column(Boolean)  # True for exam? Do we actually need this here?
     # repeatable limit?
@@ -211,10 +211,10 @@ class Job(Base, Caching):
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))
     default_external_map = relationship("ExternalMap",
-                                        uselist=False,
-                                        foreign_keys=[default_external_map_id])
+                                        uselist = False,
+                                        foreign_keys = [default_external_map_id])
 
-    cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default={})
+    cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict), default = {})
 
     #####
 
@@ -233,8 +233,7 @@ class Job(Base, Caching):
             return True
         return False
 
-
-    def update_attached_directories(self, session, attached_directories_list, delete_existing=False):
+    def update_attached_directories(self, session, attached_directories_list, delete_existing = False):
         if attached_directories_list:
             # Delete existing directories
             if delete_existing:
@@ -242,13 +241,13 @@ class Job(Base, Caching):
             # Create new relations
             for directory in attached_directories_list:
                 relation = JobWorkingDir(
-                    job=self,
-                    working_dir_id=directory['directory_id'],
-                    sync_type=directory['selected']
+                    job = self,
+                    working_dir_id = directory['directory_id'],
+                    sync_type = directory['selected']
                 )
                 session.add(relation)
 
-    def get_attached_files(self, session, type=None, return_kind='all'):
+    def get_attached_files(self, session, type = None, return_kind = 'all'):
         """
 
         :param session:
@@ -321,16 +320,15 @@ class Job(Base, Caching):
         users = [rel.user for rel in rels]
         return users
 
-
     def check_existing_user_relationship(
-            self,
-            session,
-            user_id: int):
+        self,
+        session,
+        user_id: int):
 
         existing_user_to_job = User_To_Job.get_single_by_ids(
-            session=session,
-            user_id=user_id,
-            job_id=self.id)
+            session = session,
+            user_id = user_id,
+            job_id = self.id)
 
         if self.repeatable is not True:
             if existing_user_to_job:
@@ -344,27 +342,24 @@ class Job(Base, Caching):
 
         return False
 
-
     def get_jobs_open_to_all(
-            session,
-            project):
+        session,
+        project):
 
         query = session.query(Job)
-        
+
         query = query.filter(Job.project_id == project.id)
 
         query = query.filter(
             or_(
-                Job.permission == 'all_secure_users', 
+                Job.permission == 'all_secure_users',
                 Job.permission == None))
 
         return query.all()
 
-
-
     def get_job_IDS_open_to_all(
-            session,
-            project):
+        session,
+        project):
 
         ids_list = []
         valid_jobs_open_to_all = Job.get_jobs_open_to_all(
@@ -377,14 +372,12 @@ class Job(Base, Caching):
             ids_list.append(job.id)
         return ids_list
 
-
-
     def attach_user_to_job(
-            self,
-            session,
-            user,
-            add_to_session: bool = False,
-            relation: str = 'annotator'):
+        self,
+        session,
+        user,
+        add_to_session: bool = False,
+        relation: str = 'annotator'):
 
         user_to_job = User_To_Job(
             job = self,
@@ -397,9 +390,9 @@ class Job(Base, Caching):
         return user_to_job
 
     def remove_user_from_job(
-            session,
-            user_to_job,
-            add_to_session: bool = False):
+        session,
+        user_to_job,
+        add_to_session: bool = False):
 
         user_to_job.archived = True
         session.add(user_to_job)
@@ -429,8 +422,8 @@ class Job(Base, Caching):
             for member_id in reviewer_list_ids:
 
                 user = User.get_by_member_id(
-                    session=session,
-                    member_id=member_id)
+                    session = session,
+                    member_id = member_id)
                 if not user:
                     log['error']['reviewer_list'] = {}
                     log['error']['reviewer_list'][member_id] = f"Invalid member_id {str(member_id)}"
@@ -445,9 +438,9 @@ class Job(Base, Caching):
             user_added_id_list.append(user.id)
 
             existing_user_to_job = User_To_Job.get_single_by_ids(
-                session=session,
-                user_id=user.id,
-                job_id=self.id,
+                session = session,
+                user_id = user.id,
+                job_id = self.id,
                 relation = 'reviewer'
             )
 
@@ -462,9 +455,9 @@ class Job(Base, Caching):
                 continue
 
             self.attach_user_to_job(
-                session=session,
-                user=user,
-                add_to_session=True,
+                session = session,
+                user = user,
+                add_to_session = True,
                 relation = 'reviewer'
             )
 
@@ -472,8 +465,8 @@ class Job(Base, Caching):
 
         # Marked all relations not provided as removed.
         remaining_user_to_job_list = User_To_Job.list(
-            session=session,
-            user_id_ignore_list=user_added_id_list,
+            session = session,
+            user_id_ignore_list = user_added_id_list,
             relation = 'reviewer'
         )
 
@@ -487,17 +480,17 @@ class Job(Base, Caching):
                 log['info']['reviewer_list'][user_to_job.user_id] = "Removed"
 
         self.set_cache_by_key(
-            cache_key='reviewer_list_ids',
-            value=reviewer_list_ids)
+            cache_key = 'reviewer_list_ids',
+            value = reviewer_list_ids)
         session.add(self)
         return log
 
     def update_member_list(
-            self,
-            member_list_ids: list,
-            session,
-            log: dict,
-            add_to_session: bool = True):
+        self,
+        member_list_ids: list,
+        session,
+        log: dict,
+        add_to_session: bool = True):
 
         # TODO feel like this could be a more generic pattern
         # main id is given a list of ids handle updating the attachments
@@ -528,8 +521,8 @@ class Job(Base, Caching):
             for member_id in member_list_ids:
 
                 user = User.get_by_member_id(
-                    session=session,
-                    member_id=member_id)
+                    session = session,
+                    member_id = member_id)
 
                 if not user:
                     log['error']['update_member_list'] = {}
@@ -538,15 +531,14 @@ class Job(Base, Caching):
                 else:
                     user_list.append(user)
 
-
         for user in user_list:
 
             user_added_id_list.append(user.id)
 
             existing_user_to_job = User_To_Job.get_single_by_ids(
-                session=session,
-                user_id=user.id,
-                job_id=self.id)
+                session = session,
+                user_id = user.id,
+                job_id = self.id)
 
             if existing_user_to_job:
                 # Add user back into job
@@ -560,17 +552,17 @@ class Job(Base, Caching):
                 continue
 
             user_to_job = self.attach_user_to_job(
-                session=session,
-                user=user,
-                add_to_session=add_to_session,
+                session = session,
+                user = user,
+                add_to_session = add_to_session,
                 relation = 'annotator')
 
             log['info']['update_member_list'][user.member_id] = "Added"
 
         # careful, user_id not member_id
         remaining_user_to_job_list = User_To_Job.list(
-            session=session,
-            user_id_ignore_list=user_added_id_list
+            session = session,
+            user_id_ignore_list = user_added_id_list
         )
 
         for rel in remaining_user_to_job_list:
@@ -583,31 +575,31 @@ class Job(Base, Caching):
                 log['info']['update_member_list'][rel.user_id] = "Removed"
 
         self.set_cache_by_key(
-            cache_key='member_list_ids',
-            value=member_list_ids)
+            cache_key = 'member_list_ids',
+            value = member_list_ids)
         if add_to_session is True:
             session.add(self)
 
         return log
 
     def regenerate_member_list_ids(
-            self,
-            session):
+        self,
+        session):
         member_list_ids = User_To_Job.list(
-            session=session,
-            job=self,
+            session = session,
+            job = self,
             relation = 'annotator',
-            serialize=True)
+            serialize = True)
         return member_list_ids
 
     def regenerate_reviewer_list_ids(
-            self,
-            session):
+        self,
+        session):
         member_list_ids = User_To_Job.list(
-            session=session,
-            job=self,
+            session = session,
+            job = self,
             relation = 'reviewer',
-            serialize=True)
+            serialize = True)
         return member_list_ids
 
     def serialize_trainer_info_default(self,
@@ -615,9 +607,9 @@ class Job(Base, Caching):
                                        user_id):
 
         user_to_job_serialized = None
-        user_to_job = User_To_Job.get_single_by_ids(session=session,
-                                                    user_id=user_id,
-                                                    job_id=self.id)
+        user_to_job = User_To_Job.get_single_by_ids(session = session,
+                                                    user_id = user_id,
+                                                    job_id = self.id)
         if user_to_job:
             user_to_job_serialized = user_to_job.serialize_trainer_info_default()
 
@@ -665,7 +657,7 @@ class Job(Base, Caching):
 
     # TODO way too much repeating with these serialize functions let's combine it
 
-    def get_attached_dirs(self, session, sync_types=['sync']):
+    def get_attached_dirs(self, session, sync_types = ['sync']):
         attached_dirs_rels = session.query(WorkingDir).join(JobWorkingDir).filter(
             JobWorkingDir.job_id == self.id,
             JobWorkingDir.sync_type != 'archived'
@@ -692,16 +684,16 @@ class Job(Base, Caching):
 
     # INFO DEFAULT
     def serialize_builder_info_default(
-            self,
-            session,
-            user=None):
+        self,
+        session,
+        user = None):
 
         # TODO share this with trainer info function
         user_to_job_serialized = None
         if user:
-            user_to_job = User_To_Job.get_single_by_ids(session=session,
-                                                        user_id=user.id,
-                                                        job_id=self.id)
+            user_to_job = User_To_Job.get_single_by_ids(session = session,
+                                                        user_id = user.id,
+                                                        job_id = self.id)
             if user_to_job:
                 user_to_job_serialized = user_to_job.serialize_trainer_info_default()
 
@@ -712,24 +704,24 @@ class Job(Base, Caching):
             percent_completed = (self.stat_count_complete / self.stat_count_tasks) * 100
             tasks_remaining = self.stat_count_tasks - self.stat_count_complete
         external_mappings = ExternalMap.get(
-            session=session,
-            job_id=self.id,
-            diffgram_class_string='task_template',
-            return_kind='all'
+            session = session,
+            job_id = self.id,
+            diffgram_class_string = 'task_template',
+            return_kind = 'all'
         )
         member_list_ids = None
 
         if session:
             member_list_ids = self.get_with_cache(
-                cache_key='member_list_ids',
-                cache_miss_function=self.regenerate_member_list_ids,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'member_list_ids',
+                cache_miss_function = self.regenerate_member_list_ids,
+                session = session,
+                miss_function_args = {'session': session})
             reviewer_list_ids = self.get_with_cache(
-                cache_key='reviewer_list_ids',
-                cache_miss_function=self.regenerate_reviewer_list_ids,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'reviewer_list_ids',
+                cache_miss_function = self.regenerate_reviewer_list_ids,
+                session = session,
+                miss_function_args = {'session': session})
         external_mappings_serialized = [x.serialize() for x in external_mappings]
 
         default_userscript = None
@@ -758,10 +750,10 @@ class Job(Base, Caching):
             'time_completed': self.time_completed,
             'user_to_job': user_to_job_serialized,
             'attached_directories_dict': self.get_with_cache(
-                cache_key='attached_directories_dict',
-                cache_miss_function=self.get_attached_dirs_serialized,
-                session=session,
-                miss_function_args={'session': session}),
+                cache_key = 'attached_directories_dict',
+                cache_miss_function = self.get_attached_dirs_serialized,
+                session = session,
+                miss_function_args = {'session': session}),
             'external_mappings': external_mappings_serialized,
 
             'file_count_statistic': self.file_count_statistic,
@@ -800,15 +792,15 @@ class Job(Base, Caching):
         member_list_ids = None
         if session:
             member_list_ids = self.get_with_cache(
-                cache_key='member_list_ids',
-                cache_miss_function=self.regenerate_member_list_ids,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'member_list_ids',
+                cache_miss_function = self.regenerate_member_list_ids,
+                session = session,
+                miss_function_args = {'session': session})
             reviewer_list_ids = self.get_with_cache(
-                cache_key='reviewer_list_ids',
-                cache_miss_function=self.regenerate_reviewer_list_ids,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'reviewer_list_ids',
+                cache_miss_function = self.regenerate_reviewer_list_ids,
+                session = session,
+                miss_function_args = {'session': session})
         return {
             'id': self.id,
             'name': self.name,
@@ -821,10 +813,10 @@ class Job(Base, Caching):
 
             'label_mode': self.label_mode,
             'attached_directories_dict': self.get_with_cache(
-                cache_key='attached_directories_dict',
-                cache_miss_function=self.get_attached_dirs_serialized,
-                session=session,
-                miss_function_args={'session': session}),
+                cache_key = 'attached_directories_dict',
+                cache_miss_function = self.get_attached_dirs_serialized,
+                session = session,
+                miss_function_args = {'session': session}),
             'passes_per_file': self.passes_per_file,
             'share_type': self.share_type,
             'instance_type': self.instance_type,
@@ -875,7 +867,7 @@ class Job(Base, Caching):
     def task_list(self,
                   session,
                   status_list: list = None,
-                  task_type=None):
+                  task_type = None):
 
         query = session.query(Task).filter(Task.job_id == self.id)
 
@@ -887,7 +879,7 @@ class Job(Base, Caching):
 
         return query.all()
 
-    def serialize_for_list_view(self, session=None):
+    def serialize_for_list_view(self, session = None):
 
         stat_count_available = None
         if self.stat_count_tasks:
@@ -896,15 +888,15 @@ class Job(Base, Caching):
         attached_directories_dict = None
         if session:
             member_list_ids = self.get_with_cache(
-                cache_key='member_list_ids',
-                cache_miss_function=self.regenerate_member_list_ids,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'member_list_ids',
+                cache_miss_function = self.regenerate_member_list_ids,
+                session = session,
+                miss_function_args = {'session': session})
             attached_directories_dict = self.get_with_cache(
-                cache_key='attached_directories_dict',
-                cache_miss_function=self.get_attached_dirs_serialized,
-                session=session,
-                miss_function_args={'session': session})
+                cache_key = 'attached_directories_dict',
+                cache_miss_function = self.get_attached_dirs_serialized,
+                session = session,
+                miss_function_args = {'session': session})
         return {
             'id': self.id,
             'cache_info': self.cache_dict.get('__info') if self.cache_dict else None,
@@ -957,8 +949,8 @@ class Job(Base, Caching):
         }
 
     def update_file_count_statistic(
-            self,
-            session):
+        self,
+        session):
         """
         In theory we could count each file as it gets added
         but that seems prone to off by 1 errors in distributed systems
@@ -972,13 +964,12 @@ class Job(Base, Caching):
         """
 
         self.file_count_statistic = WorkingDirFileLink.file_list(
-            session=session,
-            working_dir_id=self.directory_id,
-            counts_only=True,
-            limit=None)
+            session = session,
+            working_dir_id = self.directory_id,
+            counts_only = True,
+            limit = None)
 
         session.add(self)
-
 
     def refresh_stat_count_tasks(self, session):
         task_count_available = Task.list(
@@ -1001,10 +992,9 @@ class Job(Base, Caching):
         session.add(self)
         return
 
-
     def update_job_status(
-            self,
-            session):
+        self,
+        session):
         """
         Checks if job is complete 
 
@@ -1030,23 +1020,17 @@ class Job(Base, Caching):
             job_id = self.id,
             project_id = self.project_id
         )
-        print('update_job_status', num_tasks_all, num_tasks_complete)
         if num_tasks_all - num_tasks_complete != 0:
             self.status = "active"
             session.add(self)
             return
-            # WIP
-        if self.type == "Exam":
-            # not implemented
-            pass
-
         session.add(self)
         self.status = "complete"
         Event.new_deferred(
-            session=session,
-            kind='task_template_completed',
-            project_id=self.project_id,
-            member_id=get_member(session).id if get_member(session) else None,
-            job_id=self.id,
-            wait_for_commit=True
+            session = session,
+            kind = 'task_template_completed',
+            project_id = self.project_id,
+            member_id = get_member(session).id if get_member(session) else None,
+            job_id = self.id,
+            wait_for_commit = True
         )
