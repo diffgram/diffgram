@@ -325,14 +325,12 @@ class Task(Base):
         return user.id in user_id_list
 
     def get_assignees(self, session):
-        task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
-        task_assignees = task_assignees_query.all()
+        task_assignees = TaskUser.list(session, self.id, None, None, 'assignee')
         users = [rel.user for rel in task_assignees]
         return users
 
     def get_reviewers(self, session):
-        task_reviewers_query = TaskUser.list(session, self.id, None, None, 'reviewer')
-        task_reviewers = task_reviewers_query.all()
+        task_reviewers = TaskUser.list(session, self.id, None, None, 'reviewer')
         users = [rel.user for rel in task_reviewers]
         return users
 

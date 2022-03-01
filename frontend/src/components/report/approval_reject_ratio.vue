@@ -1,7 +1,7 @@
 <template>
   <v-card>
-    <v-card-title>Annotator Performance</v-card-title>
-    <v-card-subtitle>Average time an annotator spends per task.</v-card-subtitle>
+    <v-card-title>Approval Rejection Ratio</v-card-title>
+    <v-card-subtitle>Tasks completed vs Changes Requested.</v-card-subtitle>
     <v-card-text>
       <div>
         <member_select
@@ -15,10 +15,12 @@
         ></member_select>
       </div>
       <div>
-        <bar_horizontal_chart
+        <bar_stacked_horizontal_chart
+          :width="width"
+          :height="height"
           :chart-data="chart_data"
           :options="bar_chart_options_time_series">
-        </bar_horizontal_chart>
+        </bar_stacked_horizontal_chart>
       </div>
     </v-card-text>
   </v-card>
@@ -27,15 +29,21 @@
 
 <script>
 import {runReport} from '../../services/reportServices'
-import Bar_horizontal_chart from "@/components/report/charts/bar_horizontal_chart";
+import bar_stacked_horizontal_chart from "@/components/report/charts/bar_stacked_horizontal_chart";
 export default {
   name: "annotator_performance",
-  components: {Bar_horizontal_chart},
+  components: {bar_stacked_horizontal_chart},
   props: {
     job_id: {
       default: null
     },
     project_string_id: {
+      default: null
+    },
+    width: {
+      default: null
+    },
+    height: {
       default: null
     }
   },
@@ -48,6 +56,7 @@ export default {
         labels: []
       },
       bar_chart_options_time_series: {
+        height: 100,
         responsive: true,
         maintainAspectRatio: true,
         elements: {
@@ -66,15 +75,20 @@ export default {
         },
         scales:{
           xAxes: [{
+            stacked: true,
             ticks: {
               beginAtZero: true
             },
           }],
+          yAxes: [{
+            stacked: true,
+          }],
+
         }
       },
       report_template: {
-        item_of_interest: 'annotator_performance',
-        group_by: 'task',
+        item_of_interest: 'approval_reject_ratio',
+        group_by: 'user',
         job_id: null, // Populated on mounted(),
         period: 'all',
         view_type: 'all',
@@ -106,9 +120,9 @@ export default {
         labels: labels,
         datasets: [
           {
-            backgroundColor: '#757575',
+            backgroundColor: 'blue',
             borderColor: 'white',
-            label: 'Average Time Per Task (Mins)',
+            label: 'Tasks Completed / Changes Requested',
             data: values
           }
         ]
@@ -118,7 +132,6 @@ export default {
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
       if(result){
-        console.log('aaa', result)
         this.report_result = result;
         let labels = [];
         for(let i = 0; i< result.stats.labels.length; i++){
@@ -128,10 +141,16 @@ export default {
           labels: labels,
           datasets: [
             {
-              backgroundColor: '#757575',
+              backgroundColor: '#4caf50',
               borderColor: 'white',
-              label: 'Average Time Per Task (Mins)',
-              data: result.stats.values
+              label: 'Tasks Completed',
+              data: result.stats.values_completed
+            },
+            {
+              backgroundColor: '#ff5352',
+              borderColor: 'white',
+              label: 'Changes Requested',
+              data: result.stats.values_rejected
             }
           ]
         }
