@@ -258,7 +258,6 @@ export default Vue.extend({
             initial_words_measures: [],
             lines: [],
             tokens: [],
-            instances: [],
             instance_list: [],
             invisible_labels: [],
             //effects
@@ -512,7 +511,7 @@ export default Vue.extend({
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
-                    id: this.instances.length,
+                    id: this.new_instance_list.get().length,
                     type: "relation",
                     start_instance: instance_id,
                     label_id: this.current_label.id,
@@ -542,6 +541,11 @@ export default Vue.extend({
                 this.new_instance_list.push([created_instance])
                 const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
+
+                //New command pattern
+                const new_command = new CreateInstanceCommand()
+                this.new_command_manager.executeCommand(new_command)
+
                 this.has_changed = true
             }
             this.instance_in_progress = null;
@@ -565,7 +569,7 @@ export default Vue.extend({
         // function to initialize drawing new instance
         on_start_draw_instance: function(start_token) {
             this.instance_in_progress = {
-                id: this.instances.length,
+                id: this.new_instance_list.get().length,
                 type: "text_token",
                 start_token,
                 label_id: this.current_label.id,
@@ -576,13 +580,12 @@ export default Vue.extend({
         on_finish_draw_instance: async function(end_token) {
             if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
             this.instance_in_progress.end_token = end_token
-            const instance_exists = this.instances.find(instance => 
+            const instance_exists = this.new_instance_list.get().find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token && !instance.soft_delete
                 ||
                 instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token && !instance.soft_delete
                 )
             if (!instance_exists) {
-                this.instances.push(this.instance_in_progress)
                 const created_instance = new TextAnnotationInstance();
                 created_instance.create_frontend_instance(
                     this.instance_in_progress.start_token,

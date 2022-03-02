@@ -26,6 +26,7 @@ export default class InstanceList {
     
     public get(): Array<Instance> {
         const non_deleted = this.instance_list.filter(instance => instance.soft_delete !== true)
+        console.log(non_deleted)
         return non_deleted
     }
 
