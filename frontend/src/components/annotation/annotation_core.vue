@@ -1169,6 +1169,7 @@ export default Vue.extend({
       actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
+      z_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -3430,7 +3431,7 @@ export default Vue.extend({
       }
 
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
-   
+
     },
 
     fetch_model_run_list: async function () {
@@ -5787,22 +5788,14 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-      // want view only mode to access this so updates zoom properly
-
-      /*
-      // https://stackoverflow.com/questions/17389280/check-if-window-has-focus/17389334
-      if (document.hasFocus() == false) {
-        console.debug("refocused")
-        window.focus()
-      }
-      */
-
-      this.mouse_position = this.mouse_transform(event, this.mouse_position);
-      if (this.shift_key === true) {
+      if (this.z_key === true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
+        this.$forceUpdate();
         return;
       }
+      this.mouse_position = this.mouse_transform(event, this.mouse_position);
+
       this.move_something(event);
 
       this.update_mouse_style();
@@ -5811,6 +5804,7 @@ export default Vue.extend({
         if (this.instance_type == "polygon") {
           this.detect_other_polygon_points();
           if (this.current_polygon_point_list.length >= 1) {
+
             if (this.shift_key == true) {
               let x_diff = this.helper_difference_absolute(
                 this.mouse_position.x,
@@ -5824,7 +5818,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              //console.debug(x_diff, y_diff)
+              console.log(x_diff, y_diff)
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
@@ -7620,6 +7614,9 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+      if(event.keyCode === 90){
+        this.z_key = false;
+      }
 
       if (event.keyCode === 72) {
         // h key
@@ -7748,7 +7745,9 @@ export default Vue.extend({
         //
         this.shift_key = true;
       }
-
+      if(event.keyCode === 90){
+        this.z_key = true;
+      }
       this.may_save(event);
 
       this.may_snap_to_instance(event);
