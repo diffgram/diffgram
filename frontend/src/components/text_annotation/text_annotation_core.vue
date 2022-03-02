@@ -32,7 +32,7 @@
     </div>
     <div style="display: flex; flex-direction: row">
         <text_sidebar
-            :instance_list="instance_list.filter(instance => !instance.soft_delete)"
+            :instance_list="new_instance_list ? new_instance_list.get().filter(instance => !instance.soft_delete) : []"
             :label_list="label_list"
             :loading="rendering"
             :label_file_colour_map="label_file_colour_map"
@@ -104,7 +104,7 @@
                     />
                 </g>
                 <text
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
                     :key="`instance_${instance.get_instance_data().id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
@@ -118,7 +118,7 @@
                     {{ instance.label_file.label.name }}
                 </text>
                 <rect
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_start_${instance.get_instance_data().id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
@@ -132,7 +132,7 @@
                     class="unselectable"
                 />
                 <circle
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_start_marker_${instance.get_instance_data().id}`"
                     :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
@@ -141,7 +141,7 @@
                     class="unselectable"
                 />
                 <rect
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_end_${instance.get_instance_data().id}`"
                     :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
@@ -155,7 +155,7 @@
                     class="unselectable"
                 />
                 <path
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_end_marker_${instance.get_instance_data().id}`"
                     :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
@@ -205,12 +205,16 @@ import Vue from "vue";
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
-import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
+import { CreateInstanceCommand as CreateInstanceCommandLegacy } from "../annotation/commands/create_instance_command";
 import { UpdateInstanceCommand } from "../annotation/commands/update_instance_command"
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
 import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
+// New command pattern
+import CommandManager from "../../helpers/command/command_manager"
+import InstanceList from "../../helpers/instance_list"
+import { CreateInstanceCommand } from "../../helpers/command/command"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -271,7 +275,10 @@ export default Vue.extend({
             // Command
             command_manager: undefined,
             has_changed: false,
-            save_loading: false
+            save_loading: false,
+            // New command pattern
+            new_instance_list: undefined,
+            new_command_manager: undefined,
         }
     },
     mounted() {
@@ -283,13 +290,13 @@ export default Vue.extend({
     computed: {
         render_rects: function() {
             let rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
+            this.new_instance_list.get().filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
+            this.new_instance_list.get().filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
@@ -453,6 +460,9 @@ export default Vue.extend({
                 set_words = words
             }
             this.command_manager = new CommandManagerAnnotationCore()
+            // New command pattern
+            this.new_command_manager = new CommandManager()
+
             this.initial_words_measures = set_words
             setTimeout(() => this.initialize_token_render(), 1000)
             this.initialize_instance_list()
@@ -494,7 +504,7 @@ export default Vue.extend({
         },
         // function to draw relations between instances
         on_draw_relation: async function(instance_id) {
-            const is_text_token = this.instance_list.find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
+            const is_text_token = this.new_instance_list.get().find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
             if (!is_text_token) return
             this.unselectable = true
@@ -516,7 +526,7 @@ export default Vue.extend({
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
-            const relation_already_exists = this.instance_list.find(inst => 
+            const relation_already_exists = this.new_instance_list.get().find(inst => 
                 inst.type === "relation" && 
                 inst.from_instance_id === this.instance_in_progress.start_instance && 
                 inst.to_instance_id === this.instance_in_progress.end_instance && 
@@ -529,8 +539,8 @@ export default Vue.extend({
                     this.instance_in_progress.end_instance,
                     {...this.current_label}
                 )
-                this.instance_list.push(created_instance)
-                const command = new CreateInstanceCommand(created_instance, this)
+                this.new_instance_list.push([created_instance])
+                const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
@@ -546,7 +556,7 @@ export default Vue.extend({
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
-            const instance = this.instance_list.find(instance => instance.get_instance_data().id === instance_id)
+            const instance = this.new_instance_list.get().find(instance => instance.get_instance_data().id === instance_id)
             this.hover_instance = instance
         },
         on_instance_stop_hover: function() {
@@ -579,8 +589,8 @@ export default Vue.extend({
                     this.instance_in_progress.end_token,
                     {...this.current_label}
                 )
-                this.instance_list.push(created_instance)
-                const command = new CreateInstanceCommand(created_instance, this)
+                this.new_instance_list.push([created_instance])
+                const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
@@ -605,7 +615,7 @@ export default Vue.extend({
             if (instance.type === "text_token") {
                 initial_instance = new TextAnnotationInstance()
                 initial_instance.create_instance(id, start_token, end_token, label_file)
-                this.instance_list.map(instance_rel => {
+                this.new_instance_list.get().map(instance_rel => {
                     if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
                         instance_rel.soft_delete = true
                         this.command_manager = new CommandManagerAnnotationCore()
@@ -620,7 +630,7 @@ export default Vue.extend({
             instance.label_file = {...label}
             instance.label_file_id = label.id
 
-            const instance_index = this.instance_list.indexOf(instance)
+            const instance_index = this.new_instance_list.get().indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
             this.has_changed = true
@@ -632,7 +642,7 @@ export default Vue.extend({
             if (instance.type === "text_token") {
                 initial_instance = new TextAnnotationInstance()
                 initial_instance.create_instance(id, start_token, end_token, label_file)
-                this.instance_list.map(instance_rel => {
+                this.new_instance_list.get().map(instance_rel => {
                     if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
                         instance_rel.soft_delete = true
                         this.command_manager = new CommandManagerAnnotationCore()
@@ -647,7 +657,7 @@ export default Vue.extend({
             instance.soft_delete = true
             this.hover_instance = null
 
-            const instance_index = this.instance_list.indexOf(instance)
+            const instance_index = this.new_instance_list.get().indexOf(instance)
             const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
             this.command_manager.executeCommand(command)
             this.has_changed = true
@@ -674,21 +684,8 @@ export default Vue.extend({
                 payload = {}
             }
             const instance_list = await getInstanceList(url, payload)
-            instance_list.map(instance => {
-                if (instance.type === "text_token") {
-                    const { id, start_token, end_token, label_file, creation_ref_id } = instance
-                    const new_instance = new TextAnnotationInstance()
-                    new_instance.create_instance(id, start_token, end_token, label_file)
-                    new_instance.creation_ref_id = creation_ref_id
-                    this.instance_list.push(new_instance)
-                } else {
-                    const { id, from_instance_id, to_instance_id, label_file, creation_ref_id, soft_delete } = instance
-                    const new_instance = new TextRelationInstance()
-                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
-                    new_instance.creation_ref_id = creation_ref_id
-                    this.instance_list.push(new_instance)
-                }
-            })
+            // New command patterm
+            this.new_instance_list = new InstanceList(instance_list)
         },
         save: async function (index = null) {
             this.has_changed = false
@@ -700,25 +697,25 @@ export default Vue.extend({
                 url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
             }
             if (!this.instance_in_progress) {
-                const res = await postInstanceList(url, this.instance_list)
+                const res = await postInstanceList(url, this.new_instance_list.get())
                 const {added_instances} = res
                 added_instances.map(add_insatnce => {
                     if (!index) {
-                        const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
-                        this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                        const old_id = this.new_instance_list.get().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
+                        this.new_instance_list.get().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
                         if (this.instance_in_progress) {
                             this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
                         }
-                        this.instance_list
+                        this.new_instance_list.get()
                             .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
                             .map(instance => {
                                 if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
                                 else instance.to_instance_id = add_insatnce.id
                             })
                     } else {
-                        const old_id = this.instance_list[index].id
-                        this.instance_list[index].id = add_insatnce.id
-                        this.instance_list
+                        const old_id = this.new_instance_list.get()[index].id
+                        this.new_instance_list.get()[index].id = add_insatnce.id
+                        this.new_instance_list.get()
                             .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
                             .map(instance => {
                                 if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
@@ -830,13 +827,13 @@ export default Vue.extend({
                         return []
                     }
                 } else {
-                    const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
+                    const start_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
                     if (!start_instance) {
                         instance.soft_delete = true
                         return []
                     }
                     starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-                    const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
+                    const end_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
                     if (!end_instance) {
                         instance.soft_delete = true
                         return []
@@ -985,9 +982,9 @@ export default Vue.extend({
         },
         // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
-            const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().from_instance_id)
+            const start_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().from_instance_id)
             const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-            const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().to_instance_id)
+            const end_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().to_instance_id)
             const end_token = this.tokens.find(token => token.id === end_instance.end_token)
             return starting_token.id < end_token.id
         },
