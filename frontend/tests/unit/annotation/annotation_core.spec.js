@@ -456,4 +456,76 @@ describe("Test annotation_core", () => {
     expect(instance.x_max).toBe(instance.x_max);
     expect(instance.y_max).toBe(instance.y_max);
   });
+
+  it("correctly checks that turbo mode is enabled", async () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    wrapper.vm.$store.commit = () => {}
+
+    wrapper.vm.move_position_based_on_mouse = () => {};
+    wrapper.vm.move_something = () => {};
+    wrapper.vm.update_mouse_style = () => {};
+    wrapper.vm.detect_other_polygon_points = () => {};
+    wrapper.vm.polygon_insert_point = () => {};
+    wrapper.vm.generate_event_interactions = () => {};
+    wrapper.vm.mouse_transform = () => ({x: 25, y: 25});
+
+    const spy = jest.spyOn(wrapper.vm, 'move_position_based_on_mouse');
+    const spy2 = jest.spyOn(wrapper.vm, 'move_something');
+    const spy3 = jest.spyOn(wrapper.vm, 'update_mouse_style');
+    const spy4 = jest.spyOn(wrapper.vm, 'detect_other_polygon_points');
+    const spy5 = jest.spyOn(wrapper.vm, 'polygon_insert_point');
+    const spy6 = jest.spyOn(wrapper.vm, 'generate_event_interactions');
+    const spy7 = jest.spyOn(wrapper.vm, 'helper_difference_absolute');
+    const spy8 = jest.spyOn(wrapper.vm, 'mouse_transform');
+    wrapper.setData({
+      shift_key: true,
+      instance_type: 'polygon',
+      current_polygon_point_list: [{x:1, y:1}]
+    })
+    let event = {};
+    await wrapper.vm.mouse_move(event);
+
+    expect(spy4).toHaveBeenCalled();
+    expect(spy7).toHaveBeenCalledTimes(2);
+    expect(spy5).toHaveBeenCalled();
+  });
+
+  it("correctly pans when z key is pressed", async () => {
+    const wrapper = shallowMount(annotation_core, props, localVue);
+    wrapper.vm.$store.commit = () => {}
+
+    wrapper.vm.move_position_based_on_mouse = () => {};
+    wrapper.vm.move_something = () => {};
+    wrapper.vm.mouse_transform = () => ({x: 25, y: 25});
+    wrapper.vm.helper_difference_absolute = () => {};
+    wrapper.vm.update_mouse_style = () => {};
+    wrapper.vm.detect_other_polygon_points = () => {};
+    wrapper.vm.polygon_insert_point = () => {};
+    wrapper.vm.generate_event_interactions = () => {};
+
+    const spy = jest.spyOn(wrapper.vm, 'move_position_based_on_mouse');
+    const spy2 = jest.spyOn(wrapper.vm, 'move_something');
+    const spy3 = jest.spyOn(wrapper.vm, 'update_mouse_style');
+    const spy4 = jest.spyOn(wrapper.vm, 'detect_other_polygon_points');
+    const spy5 = jest.spyOn(wrapper.vm, 'polygon_insert_point');
+    const spy6 = jest.spyOn(wrapper.vm, 'generate_event_interactions');
+    const spy7 = jest.spyOn(wrapper.vm, 'helper_difference_absolute');
+    const spy8 = jest.spyOn(wrapper.vm, 'mouse_transform');
+    wrapper.setData({
+      z_key: true,
+      instance_type: 'polygon',
+      mouse_position: {x: 25, y: 25},
+      current_polygon_point_list: [{x:1, y:1}],
+      canvas_element: {
+        style:{
+          cursor: 'auto'
+        }
+      },
+      canvas_mouse_tools: {
+        mouse_transform: () => {}
+      }
+    })
+    let event = {};
+    await wrapper.vm.mouse_move(event);
+  });
 });

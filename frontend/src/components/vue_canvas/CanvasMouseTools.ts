@@ -65,7 +65,7 @@ export class CanvasMouseTools {
   public pan_x(movement_x){
     this.canvas_ctx.translate(-movement_x, 0);
   }
-  
+
   public pan_y(movement_y){
     this.canvas_ctx.translate(0, -movement_y);
   }
@@ -219,7 +219,7 @@ export class CanvasMouseTools {
       // Check we are near border.
       // This helps this only fire when near border, and also helps avoid
       // large movements when heavily zoomed in, since naturally when zoomed in this value will be large.
-    
+
       if (Math.abs(bounds_before_zoom.min_point.x) < 50) {
         // Move the new border based on new boundry after zooming
         // This number must always be positive, handling the case of the boundry crossing the mouse
