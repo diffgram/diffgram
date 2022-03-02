@@ -172,8 +172,6 @@ def get_annotations_common(
 
     """
 
-    print("HERE WE ARE FETCHING DATA IN LOAD")
-
     if file_id is None or file_id == "undefined":
         return jsonify("No file_id"), 400
 

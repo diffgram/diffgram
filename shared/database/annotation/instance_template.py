@@ -110,7 +110,6 @@ class InstanceTemplate(Base):
     def serialize(self, session):
         instance_list = self.get_instance_list(session)
         instance_list_serialized = [inst.serialize() for inst in instance_list]
-        print(instance_list_serialized)
         return {
             'id': self.id,
             'instance_list': instance_list_serialized,

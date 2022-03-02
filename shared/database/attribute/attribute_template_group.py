@@ -324,8 +324,6 @@ class Attribute_Template_Group(Base):
 
         for template in attribute_template_list:
 
-            print("Looking a template group")
-
             # Somehow append group to list.
             # TODO group serialize handles serializeing templates within group
 
@@ -336,7 +334,6 @@ class Attribute_Template_Group(Base):
             # Depth limit.
 
             if template.kind == "children":
-                print("Children, recusing graph")
 
                 child_group_list = Attribute_Template_Group.child_group_list(
                     session = session,

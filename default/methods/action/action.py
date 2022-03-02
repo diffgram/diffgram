@@ -269,8 +269,6 @@ class Action_Session():
             if constraints_result is False:
                 self.log['error']['constraint'] = "Invalid next action."
                 return
-
-        # print(operation)
         operation()
 
     def condition(self):
