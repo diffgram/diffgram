@@ -11,13 +11,7 @@ from shared.database.task.job.job import Job
 def task_template_members_list_api(task_template_id):
     # PIN is at the "project level" eg for all users the job is pinned.
     # this is different from other "star" concepts which may be used specific
-
-    spec_list = []
-    log, input, untrusted_input = regular_input.master(request = request,
-                                                       spec_list = spec_list)
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log = log), 400
-
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
         members_serialized, log = task_template_members_list_core(session = session, job_id = task_template_id, log=log)
         return jsonify(members_serialized), 200
