@@ -15,6 +15,7 @@
       >
         <template slot="second_row">
           <toolbar
+            ref="toolbar"
             :height="50"
             :command_manager="command_manager"
             :save_loading="
@@ -975,6 +976,7 @@ import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
+import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.js';
@@ -1169,6 +1171,7 @@ export default Vue.extend({
       actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
+      z_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -1379,12 +1382,13 @@ export default Vue.extend({
       // We could also use this dictionary for other parts
       // that rely on type to specifcy an icon
       instance_type_list: [
+        { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
         {
           name: "polygon",
           display_name: "Polygon",
           icon: "mdi-vector-polygon",
         },
-        { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
+
         { name: "tag", display_name: "Tag", icon: "mdi-tag" },
         { name: "point", display_name: "Point", icon: "mdi-circle-slice-8" },
         { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
@@ -1559,14 +1563,13 @@ export default Vue.extend({
       let allowed_types = undefined;
 
       if(ui_schema && ui_schema.instance_selector){
-        let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+        allowed_types = ui_schema.instance_selector.allowed_instance_types.map(elm => elm.name);
       }
       if (!allowed_types) {
         return this.instance_type_list;
       } else {
-        return this.instance_type_list.filter((elm) =>
-          allowed_types.includes(elm.name)
-        );
+        return this.instance_type_list.filter((elm) => allowed_types.includes(elm.name));
+
       }
     },
     clipboard: function () {
@@ -2809,51 +2812,56 @@ export default Vue.extend({
       }
     },
     fetch_instance_template: async function () {
-      try {
-        this.loading_instance_templates = true;
-        this.canvas_element = document.getElementById("my_canvas");
-        this.canvas_element_ctx = this.canvas_element.getContext("2d");
-        const response = await axios.post(
-          `/api/v1/project/${this.$props.project_string_id}/instance-template/list`,
-          {}
-        );
-        if (response.data.instance_template_list) {
-          this.instance_template_list =
-            response.data.instance_template_list.map((instance_template) => {
-              instance_template.instance_list =
-                instance_template.instance_list.map((instance) => {
-                  instance.reference_width = instance_template.reference_width;
-                  instance.reference_height = instance_template.reference_height;
-                  let initialized_instance = initialize_instance_object(instance, this);
-                  return initialized_instance;
-                });
-              // Note that here we are creating a new object for the instance list, all references are lost.
-              instance_template.instance_list =
-                this.create_instance_list_with_class_types(
-                  instance_template.instance_list
-                );
 
-              return instance_template;
-            });
-          this.instance_template_list.forEach((inst) => {
-            let icon = "mdi-shape";
-            if (
-              inst.instance_list &&
-              inst.instance_list[0].type == "keypoints"
-            ) {
-              icon = "mdi-vector-polyline-edit";
-            }
-            this.instance_type_list.push({
-              name: inst.id,
-              display_name: inst.name,
-              icon: icon,
-            });
+      this.loading_instance_templates = true;
+      this.canvas_element = document.getElementById("my_canvas");
+      this.canvas_element_ctx = this.canvas_element.getContext("2d");
+      const [data, error] = await getInstanceTemplatesFromProject(this.$props.project_string_id);
+      if (data && data.instance_template_list) {
+        this.instance_template_list =
+          data.instance_template_list.map((instance_template) => {
+            instance_template.instance_list =
+              instance_template.instance_list.map((instance) => {
+                instance.reference_width = instance_template.reference_width;
+                instance.reference_height = instance_template.reference_height;
+                let initialized_instance = initialize_instance_object(instance, this);
+                return initialized_instance;
+              });
+            // Note that here we are creating a new object for the instance list, all references are lost.
+            instance_template.instance_list =
+              this.create_instance_list_with_class_types(
+                instance_template.instance_list
+              );
+
+            return instance_template;
           });
+        this.instance_template_list.forEach((inst) => {
+          let icon = "mdi-shape";
+          if (
+            inst.instance_list &&
+            inst.instance_list[0].type == "keypoints"
+          ) {
+            icon = "mdi-vector-polyline-edit";
+          }
+          this.instance_type_list.push({
+            name: inst.id,
+            display_name: inst.name,
+            icon: icon,
+          });
+        });
+        await this.$nextTick();
+        if(this.filtered_instance_type_list && this.filtered_instance_type_list[0]){
+          this.instance_type = this.filtered_instance_type_list[0].name;
+          if(this.$refs.toolbar){
+            this.$refs.toolbar.instance_type = this.instance_type;
+          }
+
         }
-      } catch (error) {
-      } finally {
-        this.loading_instance_templates = false;
       }
+      if(error){
+        console.error(error)
+      }
+      this.loading_instance_templates = false;
     },
     redo: function () {
       if (!this.command_manager) {
@@ -3430,7 +3438,7 @@ export default Vue.extend({
       }
 
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
-   
+
     },
 
     fetch_model_run_list: async function () {
@@ -5787,22 +5795,14 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-      // want view only mode to access this so updates zoom properly
-
-      /*
-      // https://stackoverflow.com/questions/17389280/check-if-window-has-focus/17389334
-      if (document.hasFocus() == false) {
-        console.debug("refocused")
-        window.focus()
-      }
-      */
-
-      this.mouse_position = this.mouse_transform(event, this.mouse_position);
-      if (this.shift_key === true) {
+      if (this.z_key === true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
+        this.$forceUpdate();
         return;
       }
+      this.mouse_position = this.mouse_transform(event, this.mouse_position);
+
       this.move_something(event);
 
       this.update_mouse_style();
@@ -5811,6 +5811,7 @@ export default Vue.extend({
         if (this.instance_type == "polygon") {
           this.detect_other_polygon_points();
           if (this.current_polygon_point_list.length >= 1) {
+
             if (this.shift_key == true) {
               let x_diff = this.helper_difference_absolute(
                 this.mouse_position.x,
@@ -5824,7 +5825,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              //console.debug(x_diff, y_diff)
+              console.log(x_diff, y_diff)
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
@@ -7007,6 +7008,9 @@ export default Vue.extend({
         };
       } else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
+          if(this.task.id === '-1' || this.task.id === -1){
+            return
+          }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
           file = this.$props.task.file;
@@ -7021,6 +7025,9 @@ export default Vue.extend({
         };
       }
       else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        if(this.task.id === '-1' || this.task.id === -1){
+          return
+        }
         url = "/api/v1/task/" + this.task.id + "/annotation/list";
       }
       try {
@@ -7057,6 +7064,9 @@ export default Vue.extend({
         this.annotations_loading = false;
       } else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
+          if(this.task.id === '-1' || this.task.id === -1){
+            return
+          }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
           file = this.$props.task.file;
@@ -7080,6 +7090,9 @@ export default Vue.extend({
         }
         return;
       } else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        if(this.task.id === '-1' || this.task.id === -1){
+          return
+        }
         url = "/api/v1/task/" + this.task.id + "/annotation/list";
         try {
           const response = await axios.get(url, {});
@@ -7620,6 +7633,9 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+      if(event.keyCode === 90){
+        this.z_key = false;
+      }
 
       if (event.keyCode === 72) {
         // h key
@@ -7748,7 +7764,9 @@ export default Vue.extend({
         //
         this.shift_key = true;
       }
-
+      if(event.keyCode === 90){
+        this.z_key = true;
+      }
       this.may_save(event);
 
       this.may_snap_to_instance(event);
