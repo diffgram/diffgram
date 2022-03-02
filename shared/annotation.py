@@ -1619,7 +1619,6 @@ class Annotation_Update():
         if self.instance.type != 'relation':
             return
 
-        print('AAAAAA', self.instance.id, from_id, to_id, from_ref, to_ref)
         if from_id is None and not from_ref:
             self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
             return

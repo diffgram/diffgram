@@ -77,7 +77,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         task_id = task.id,
         wait_for_commit = True
     )
-    job.job_complete_core(session)
+
 
 
 def send_to_review_randomly(session, task, task_update_manager):
@@ -197,7 +197,7 @@ def task_complete(session,
             job = job,
             log = log
         )
-
+    job.update_job_status(session)
     return True, new_file
 
 

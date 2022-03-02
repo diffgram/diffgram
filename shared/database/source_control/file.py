@@ -219,10 +219,7 @@ class File(Base, Caching):
                 name_list.append(val)
             elif type(val) == int:
                 id_list.append(val)
-        print('name_list', name_list)
-        print('id_list', id_list)
         if directory_id is not None:
-            print('dir case')
             file_list_id_db = session.query(File)\
                 .join(working_dir_database_models.WorkingDirFileLink,
                       working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
@@ -371,7 +368,6 @@ class File(Base, Caching):
 
         file = self.serialize_base_file()
 
-        #print('serialize with type', self.type)
         if self.type == "image":
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
@@ -754,7 +750,6 @@ class File(Base, Caching):
         # At the moment we don't pass add_link as True when copying it for task
         if add_link is True:
             working_dir_database_models.WorkingDirFileLink.add(session, working_dir_id, file)
-        # print("Added link")
 
         if remove_link is True:
             working_dir_database_models.WorkingDirFileLink.remove(session, working_dir_id, existing_file.id)
@@ -961,13 +956,11 @@ class File(Base, Caching):
 
             # start_time = time.time()
             video = video_parent_file.video
-            # print("video pull", (time.time() - start_time) * 1000)
 
             if video:
                 # A new file would never have this created prior...
                 file.global_frame_number = video.calculate_global_reference_frame(
                     frame_number=file.frame_number)
-            # print("Global frame:", file.global_frame_number)
             else:
                 print("Error, no .Video while trying to create new File")
 

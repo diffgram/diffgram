@@ -454,7 +454,6 @@ class Event(Base):
             date_to_string = date_to_string,
             base_class = Event
         )
-        print(date_from_string)
 
         if file_id:
             query = query.filter(Event.file_id == file_id)
