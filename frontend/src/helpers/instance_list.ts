@@ -4,7 +4,7 @@ import { TextAnnotationInstance, TextRelationInstance } from "../components/vue_
 export default class InstanceList {
     private instance_list: Array<Instance> = [];
 
-    constructor(instances: Array<Object>) {
+    constructor(instances: Array<any>) {
         if (instances && instances.length > 0) {
             instances.map(instance => {
                 if (instance.type === "text_token") {
@@ -31,14 +31,6 @@ export default class InstanceList {
 
     public get_all(): Array<Instance> {
         return this.instance_list
-    }
-
-    public filter(): Array<Instance> {
-        return this.instance_list
-    }
-
-    public find(): Instance {
-        return this.instance_list[0]
     }
 
     public push(instances: Array<Instance>) {
