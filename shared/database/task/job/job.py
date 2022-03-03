@@ -376,7 +376,7 @@ class Job(Base, Caching):
         self,
         session,
         user,
-        add_to_session: bool = False,
+        add_to_session: bool = True,
         relation: str = 'annotator'):
 
         user_to_job = User_To_Job(
