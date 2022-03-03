@@ -26,7 +26,8 @@ def task_template_members_list_core(session, job_id, log):
     reviewers = task_template.get_reviewers(session)
 
     assignees = task_template.get_assignees(session)
-
+    print('assignees', assignees)
+    print('reviewers', assignees)
     reviewers_serialized = []
     for user in reviewers:
         reviewers_serialized.append(user.serialize())

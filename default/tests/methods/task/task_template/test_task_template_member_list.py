@@ -54,8 +54,8 @@ class TesTaskTemplateMemberList(testing_setup.DiffgramBaseTestCase):
             'project': self.project
         }, self.session)
 
-        task_template.attach_user_to_job(session = self.session, user = self.member.user)
-        task_template.attach_user_to_job(session = self.session, user = self.reviewer, relation = 'reviewer')
+        task_template.attach_user_to_job(session = self.session, user = self.member.user, add_to_session = True)
+        task_template.attach_user_to_job(session = self.session, user = self.reviewer, relation = 'reviewer', add_to_session = True)
         self.session.commit()
         request_data = {}
 
