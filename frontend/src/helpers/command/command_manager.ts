@@ -1,22 +1,25 @@
 import { Command } from "./command";
-import CommandHistory from "./history";
+import CommandHistory from "../history";
 
 
 export default class CommandManager {
-    private command_history: CommandHistory = new CommandHistory()
-    private command_index: number = -1;
+    private command_history: CommandHistory;
+    constructor(command_history: CommandHistory) {
+        this.command_history = command_history;
+    }
 
     public executeCommand(command: Command) {
         command.execute()
         this.command_history.push(command)
-        this.command_index = this.command_index + 1
     }
 
     public undo() {
-        if (this.command_index === -1) return;
-        const command_to_undo = this.command_history[this.command_index]
-        command_to_undo
+        const command_to_undo = this.command_history.pop()
+        return command_to_undo
     }
-    
-    public redo() {}
+
+    public redo() {
+        const command_to_redo = this.command_history.repush()
+        return command_to_redo
+    }
 }

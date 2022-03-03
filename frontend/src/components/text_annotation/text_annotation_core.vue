@@ -214,6 +214,7 @@ import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
 // New command pattern
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
+import History from "../../helpers/history"
 import { CreateInstanceCommand } from "../../helpers/command/command"
 
 export default Vue.extend({
@@ -278,6 +279,7 @@ export default Vue.extend({
             // New command pattern
             new_instance_list: undefined,
             new_command_manager: undefined,
+            new_history: undefined,
         }
     },
     mounted() {
@@ -331,12 +333,10 @@ export default Vue.extend({
             }
         },
         undo_disabled: function() {
-            const { command_manager } = this;
-            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == undefined
+            return !this.new_history || !this.new_history.undo_posible
         },
         redo_disabled: function() {
-            const { command_manager } = this;
-            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == command_manager.command_history.length - 1
+            return !this.new_history || !this.new_history.redo_posible
         }
     },
     watch: {
@@ -460,7 +460,8 @@ export default Vue.extend({
             }
             this.command_manager = new CommandManagerAnnotationCore()
             // New command pattern
-            this.new_command_manager = new CommandManager()
+            this.new_history = new History()
+            this.new_command_manager = new CommandManager(this.new_history)
 
             this.initial_words_measures = set_words
             setTimeout(() => this.initialize_token_render(), 1000)
@@ -543,7 +544,7 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
 
                 //New command pattern
-                const new_command = new CreateInstanceCommand()
+                const new_command = new CreateInstanceCommand([])
                 this.new_command_manager.executeCommand(new_command)
 
                 this.has_changed = true
@@ -595,6 +596,10 @@ export default Vue.extend({
                 this.new_instance_list.push([created_instance])
                 const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
+
+                //New command pattern
+                const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
+                this.new_command_manager.executeCommand(new_command)
                 this.has_changed = true
             }
             if (window.getSelection) {
@@ -730,22 +735,18 @@ export default Vue.extend({
             this.save_loading = false
         },
         undo: function () {
-            if (!this.command_manager) {
-                return;
-            }
-            let undone = this.command_manager.undo();
-            if (undone) {
-                this.has_changed = true;
-            }
+            if (!this.new_history.undo_posible) return;
+
+            let undone = this.new_command_manager.undo();
+
+            if (undone) this.has_changed = true;
         },
         redo: function () {
-            if (!this.command_manager) {
-                return;
-            }
-            let redone = this.command_manager.redo();
-            if (redone) {
-                this.has_changed = true;
-            }
+            if (!this.new_history.redo_posible) return;
+
+            let redone = this.new_command_manager.redo();
+            
+            if (redone) this.has_changed = true;
         },
         change_file(direction, file) {
             if (direction == "next" || direction == "previous") {
