@@ -561,12 +561,14 @@ class WorkingDirFileLink(Base):
         # BUT at least this is all in one query...
         if isinstance(type, list):
             if "text" in type:
+                print('filter files', type)
                 query = query.filter(
                     or_(
                         and_(File.type == "image", File.video_id == None),
                         File.type == "video",
                         File.type == "text",
-                        File.type == "sensor_fusion"
+                        File.type == "sensor_fusion",
+                        File.type == "audio"
                     )
                 )
             else:
