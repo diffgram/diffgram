@@ -456,7 +456,12 @@
                   color="primary">
                 </tooltip_icon>
 
-
+                <tooltip_icon
+                  v-if="props.item.media_type == 'audio'"
+                  tooltip_message="Audio"
+                  icon="mdi-music-box"
+                  color="primary">
+                </tooltip_icon>
                 <div v-if="props.item.media_type == 'video'">
 
                   <tooltip_icon

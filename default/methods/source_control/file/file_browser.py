@@ -583,10 +583,10 @@ class File_Browser():
         if self.metadata['machine_made_setting'] == "Human only":
             has_some_machine_made_instances = False
 
-        media_type = self.metadata.get("media_type", None)
-
+        media_type = self.metadata.get("media_type", "all")
+        media_type_query = media_type.lower()
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text", "sensor_fusion"]
+            media_type_query = ["image", "video", "text", "sensor_fusion", "audio"]
 
         if media_type in ['Image', 'image']:
             media_type_query = "image"
@@ -599,6 +599,9 @@ class File_Browser():
 
         if media_type in ['Sensor Fusion', 'sensor_fusion']:
             media_type_query = "sensor_fusion"
+
+        if media_type in ['audio']:
+            media_type_query = 'audio'
 
         exclude_removed = True
         if self.metadata['file_view_mode'] in ["changes"]:
@@ -673,7 +676,7 @@ class File_Browser():
                 self.metadata['prev_page'] = self.metadata['page'] - 1
             else:
                 self.metadata['prev_page'] = None
-
+        print('working_dir_file_list', working_dir_file_list, len(working_dir_file_list))
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':

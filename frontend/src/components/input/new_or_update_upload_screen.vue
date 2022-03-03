@@ -291,7 +291,7 @@
           loading_annotations: false,
           upload_source: null,
           accepted_annotation_file_types: ['json', 'csv'],
-          accepted_files: ".jpg, .jpeg, .png, .bmp, .tif, .tiff, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
+          accepted_files: ".jpg, .jpeg, .png, .bmp, .tif, .tiff, .mp4, .m4v, .mov, .avi, .csv, .txt, .json, .mp3, .wav, .flac",
           file_table_headers: [
             {
               text: 'File Name',

@@ -387,6 +387,10 @@ class File(Base, Caching):
             if self.text_file:
                 file['text'] = self.text_file.serialize()
 
+        if self.type == "audio":
+            if self.audio_file:
+                file['audio'] = self.audio_file.serialize()
+
         if self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
