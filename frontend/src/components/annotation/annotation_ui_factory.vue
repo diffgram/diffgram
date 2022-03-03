@@ -72,6 +72,18 @@
           @request_new_task="change_task"
         />
       </div>
+      <div v-else-if="annotation_interface === 'audio'">
+        <audio_annotation_core
+          :file="current_file"
+          :task="task"
+          :job_id="job_id"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
+        />
+      </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -160,6 +172,7 @@ import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
+import audio_annotation_core from "../annotation/audio_annotation/audio_annotation_core";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
@@ -173,7 +186,8 @@ export default Vue.extend({
     no_credentials_dialog,
     empty_file_editor_placeholder,
     sensor_fusion_editor,
-    text_annotation_core
+    text_annotation_core,
+    audio_annotation_core
   },
   props: {
     project_string_id: {
@@ -345,6 +359,9 @@ export default Vue.extend({
         else if(this.current_file.type === 'text'){
           return 'text'
         }
+        else if(this.current_file.type === 'audio'){
+          return 'audio'
+        }
       }
       if(this.task){
         if(this.task.file.type === 'image' || this.task.file.type === 'video'){
@@ -355,6 +372,9 @@ export default Vue.extend({
         }
         else if(this.task.file.type === 'text'){
           return 'text';
+        }
+        else if(this.task.file.type === 'audio'){
+          return 'audio'
         }
       }
 
