@@ -56,6 +56,7 @@ images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
 sensor_fusion_allowed_extensions = [".json"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
+audio_allowed_file_names = [".mp3", ".wav", ".flac"]
 csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
@@ -1097,6 +1098,7 @@ class Process_Media():
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
+            "audio": self.process_one_audio_file,
             "frame": self.process_frame,
             "sensor_fusion": self.process_sensor_fusion_json,
             "video": self.process_video,
@@ -1467,6 +1469,68 @@ class Process_Media():
             video_file_id = self.input.parent_file_id,
             regenerate_preview_images = True)
 
+    def process_one_audio_file(self):
+        try:
+            logger.debug(f"Started processing audio file from input: {self.input_id}")
+
+            self.new_audio_file = TextFile(original_filename = self.input.original_filename)
+            self.session.add(self.new_text_file)
+            self.session.flush()
+
+            self.try_to_commit()
+
+            if self.project:
+                # with either object or id... this assumes we don't have project_id set.
+                self.project_id = self.project.id
+
+            ### Main
+            self.save_raw_text_file()
+
+            self.input.file = File.new(
+                session = self.session,
+                working_dir_id = self.working_dir_id,
+                file_type = "text",
+                text_file_id = self.new_text_file.id,
+                original_filename = self.input.original_filename,
+                project_id = self.project_id,
+                input_id = self.input.id,
+                file_metadata = self.input.file_metadata,
+                text_tokenizer = 'nltk'
+            )
+            raw_text = result.read()
+            raw_text = raw_text.decode('utf-8')
+            self.save_text_tokens(raw_text, self.input.file)
+            # Set success state for input.
+            if self.input.media_type == 'text':
+
+                if self.input.status != "failed":  # if we haven't already set a status
+                    # May need this on video too
+                    # Context of for example the packet for instances attached to it
+                    # Not loading successfully
+                    # We default this to init so 'failed' string instead of None
+                    self.input.status = "success"
+                    self.input.percent_complete = 100
+                    self.input.time_completed = datetime.datetime.utcnow()
+
+                # Question, could we just call close() on temp_dir_path_and_filename instead here?
+                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
+                # basically, if the default is that delete=True on close, hmmm
+
+                # allow_csv is True by default but gets set to False by process csv...
+                try:
+                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                except OSError as exc:
+                    logger.error("shutil error")
+                    pass
+        except Exception as e:
+            message = traceback.format_exc()
+            logger.error(message)
+            self.log['error']['text_file_upload'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
+
+        return True
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -2250,6 +2314,9 @@ class Process_Media():
 
         if extension in text_allowed_file_names:
             return 'text'
+
+        if extension in audio_allowed_file_names:
+            return 'audio'
 
         if extension in csv_allowed_file_names:
 

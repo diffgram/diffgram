@@ -12,6 +12,7 @@ from shared.settings import settings
 from shared.database.task.task import Task
 import random
 import string
+from sqlalchemy.orm.session import Session
 from shared.database.sync_events.sync_event import SyncEvent
 from shared.database.task.job.job import Job
 from shared.database.system_events.system_events import SystemEvents
@@ -32,7 +33,7 @@ from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
-
+from shared.database.audio.audio_file import AudioFile
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
@@ -53,6 +54,21 @@ def register_member(user, session):
     regular_methods.commit_with_rollback(session)
     return new_member
 
+
+def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
+    audio = AudioFile(
+        original_filename = audio_data.get('original_filename'),
+        description = audio_data.get('description'),
+        soft_delete = audio_data.get('soft_delete'),
+        url_public = audio_data.get('url_public'),
+        url_signed = audio_data.get('url_signed'),
+        url_signed_blob_path = audio_data.get('url_signed_blob_path'),
+        url_signed_expiry = audio_data.get('url_signed_expiry'),
+        url_signed_expiry_force_refresh = audio_data.get('url_signed_expiry_force_refresh'),
+    )
+    session.add(audio)
+    session.commit()
+    return audio
 
 def register_user(user_data: dict, session):
     """
