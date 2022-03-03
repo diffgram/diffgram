@@ -69,6 +69,10 @@ class Instance(Base):
     end_char = Column(Integer())
     sentence = Column(Integer())
 
+    # For Audio Instances
+    start_time = Column(Float())
+    end_time = Column(Float())
+
     # Keyframe list?
 
     # ie for video

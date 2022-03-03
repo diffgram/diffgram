@@ -30,7 +30,15 @@ def upgrade():
                     sa.Column('time_created', sa.DateTime(), default = datetime.datetime.utcnow),
                     sa.Column('time_updated', sa.DateTime(), onupdate = datetime.datetime.utcnow))
 
+    op.add_column('file', sa.Column('audio_file_id', sa.Integer()))
+    op.create_foreign_key("audio_file_id_fkey", "file", "audio_file", ["audio_file_id"], ["id"])
+
+    op.add_column('instance', sa.Column('start_time', sa.Float()))
+    op.add_column('instance', sa.Column('end_time', sa.Float()))
 
 def downgrade():
+    op.drop_column('file', 'audio_file_id')
+    op.drop_column('instance', 'start_time')
+    op.drop_column('instance', 'end_time')
     op.drop_table('audio_file')
 

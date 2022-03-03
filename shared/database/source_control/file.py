@@ -6,6 +6,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from werkzeug.exceptions import Forbidden
 from shared.database.text_file import TextFile
 from shared.database.point_cloud.point_cloud import PointCloud
+from shared.database.audio.audio_file import AudioFile
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
 from shared.database.label import Label
@@ -111,6 +112,10 @@ class File(Base, Caching):
 
     text_file_id = Column(Integer, ForeignKey('text_file.id'))
     text_file = relationship(TextFile, foreign_keys=[text_file_id])
+
+    audio_file_id = Column(Integer, ForeignKey('audio_file.id'))
+    audio_file = relationship(AudioFile, foreign_keys=[audio_file_id])
+
 
     original_filename = Column(String())
 
@@ -863,6 +868,7 @@ class File(Base, Caching):
             image_id=None,
             point_cloud_id=None,
             text_file_id=None,
+            audio_file_id=None,
             video_id=None,
             frame_number=None,
             label_id=None,
@@ -912,6 +918,7 @@ class File(Base, Caching):
             type=file_type,
             project_id=project_id,
             label_id=label_id,
+            audio_file_id=audio_file_id,
             text_file_id=text_file_id,
             video_id=video_id,
             video_parent_file_id=video_parent_file_id,
