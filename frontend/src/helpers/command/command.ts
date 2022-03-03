@@ -19,6 +19,7 @@ export abstract class Command {
             return initializedInstance;
         }
 
+
         if (instance.type === "relation") {
             let newInstance = instance.get_instance_data();
             let initializedInstance = new TextRelationInstance()
@@ -27,13 +28,27 @@ export abstract class Command {
         }
     }
 
-    undo() {}
+    protected get_insatnces_ids(): Array<any> {
+        const id_list = this.instances.map(instance => instance.get_instance_data().id)
+        return id_list
+    }
+
+    undo() {
+        const id_list = this.get_insatnces_ids()
+        this.instance_list.get().forEach((existing_instance, index, array_of_instances) => {
+            const { id, creation_ref_id} = existing_instance.get_instance_data()
+            if (id_list.includes(id) || id_list.includes(creation_ref_id)) {
+                array_of_instances[index].soft_delete = true
+            }
+        });
+    }
 
     abstract execute()
 }
 
 export class CreateInstanceCommand extends Command {
     execute() {
+        console.log("execute", this.instances)
         this.instances.forEach((_, index, array_of_instances) => {
             array_of_instances[index].soft_delete = false
         })

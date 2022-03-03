@@ -15,11 +15,13 @@ export default class CommandManager {
 
     public undo() {
         const command_to_undo = this.command_history.pop()
-        return command_to_undo
+        command_to_undo.undo()
+        return true
     }
 
     public redo() {
         const command_to_redo = this.command_history.repush()
-        return command_to_redo
+        command_to_redo.execute()
+        return true
     }
 }
