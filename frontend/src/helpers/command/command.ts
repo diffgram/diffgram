@@ -28,13 +28,13 @@ export abstract class Command {
         }
     }
 
-    protected get_insatnces_ids(): Array<any> {
+    protected get_instances_ids(): Array<any> {
         const id_list = this.instances.map(instance => instance.get_instance_data().id)
         return id_list
     }
 
     undo() {
-        const id_list = this.get_insatnces_ids()
+        const id_list = this.get_instances_ids()
         this.instance_list.get().forEach((existing_instance, index, array_of_instances) => {
             const { id, creation_ref_id} = existing_instance.get_instance_data()
             if (id_list.includes(id) || id_list.includes(creation_ref_id)) {
@@ -48,7 +48,14 @@ export abstract class Command {
 
 export class CreateInstanceCommand extends Command {
     execute() {
-        console.log("execute", this.instances)
+        const id_list = this.get_instances_ids()
+        this.instance_list.get_all().forEach((existing_instance, index, array_of_instances) => {
+            const { id, creation_ref_id} = existing_instance.get_instance_data()
+            if (id_list.includes(id) || id_list.includes(creation_ref_id)) {
+                array_of_instances[index].soft_delete = false
+            }
+        });
+
         this.instances.forEach((_, index, array_of_instances) => {
             array_of_instances[index].soft_delete = false
         })
