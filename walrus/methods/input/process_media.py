@@ -33,6 +33,7 @@ from shared.data_tools_core import Data_tools
 global Update_Input
 from methods.input.input_update import Update_Input
 from shared.database.model.model_run import ModelRun
+from shared.database.audio.audio_file import AudioFile
 from shared.database.model.model import Model
 from shared.utils import job_dir_sync_utils
 from shared.database.task.job.job import Job
@@ -1473,8 +1474,8 @@ class Process_Media():
         try:
             logger.debug(f"Started processing audio file from input: {self.input_id}")
 
-            self.new_audio_file = TextFile(original_filename = self.input.original_filename)
-            self.session.add(self.new_text_file)
+            self.new_audio_file = AudioFile(original_filename = self.input.original_filename)
+            self.session.add(self.new_audio_file)
             self.session.flush()
 
             self.try_to_commit()
@@ -1484,44 +1485,29 @@ class Process_Media():
                 self.project_id = self.project.id
 
             ### Main
-            self.save_raw_text_file()
+            self.save_raw_audio_file()
 
             self.input.file = File.new(
                 session = self.session,
                 working_dir_id = self.working_dir_id,
-                file_type = "text",
-                text_file_id = self.new_text_file.id,
+                file_type = "audio",
+                audio_file_id = self.new_audio_file.id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
                 input_id = self.input.id,
                 file_metadata = self.input.file_metadata,
-                text_tokenizer = 'nltk'
             )
-            raw_text = result.read()
-            raw_text = raw_text.decode('utf-8')
-            self.save_text_tokens(raw_text, self.input.file)
-            # Set success state for input.
-            if self.input.media_type == 'text':
 
-                if self.input.status != "failed":  # if we haven't already set a status
-                    # May need this on video too
-                    # Context of for example the packet for instances attached to it
-                    # Not loading successfully
-                    # We default this to init so 'failed' string instead of None
-                    self.input.status = "success"
-                    self.input.percent_complete = 100
-                    self.input.time_completed = datetime.datetime.utcnow()
+            if self.input.status != "failed":
+                self.input.status = "success"
+                self.input.percent_complete = 100
+                self.input.time_completed = datetime.datetime.utcnow()
 
-                # Question, could we just call close() on temp_dir_path_and_filename instead here?
-                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-                # basically, if the default is that delete=True on close, hmmm
-
-                # allow_csv is True by default but gets set to False by process csv...
-                try:
-                    shutil.rmtree(self.input.temp_dir)  # delete directory
-                except OSError as exc:
-                    logger.error("shutil error")
-                    pass
+            try:
+                shutil.rmtree(self.input.temp_dir)  # delete directory
+            except OSError as exc:
+                logger.error("shutil error")
+                pass
         except Exception as e:
             message = traceback.format_exc()
             logger.error(message)
@@ -1875,6 +1861,25 @@ class Process_Media():
                                                                            self.new_text_file.tokens_url_signed_expiry)
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
+    def save_raw_audio_file(self):
+        offset = 2592000
+        self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+
+        self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
+                                                                   str(self.project_id),
+                                                                   str(self.new_audio_file.id))
+
+        # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
+        logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
+
+        data_tools.upload_to_cloud_storage(
+            temp_local_path = self.input.temp_dir_path_and_filename,
+            blob_path = self.new_audio_file.url_signed_blob_path,
+            content_type = "text/plain",
+        )
+
+        self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
+                                                                    offset)
     def save_raw_text_file(self):
         offset = 2592000
         self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
