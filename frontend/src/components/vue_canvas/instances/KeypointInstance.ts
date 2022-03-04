@@ -14,6 +14,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
+  public is_edge_hovered: boolean = false;
   public hovered_scale_control_points: boolean = false;
   public original_nodes: any = [];
   public hovered_control_point_key: string = undefined;
@@ -1269,6 +1270,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ctx.lineTo(x2, y2)
         ctx.stroke()
         ctx.fill();
+        if(this.)
 
       }
       ctx.globalAlpha = 1;

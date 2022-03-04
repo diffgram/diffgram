@@ -2,7 +2,7 @@
   <v-dialog v-model="is_open" width="700px" :persistent="true" :no-click-animation="true"
             content-class="dialog-instance-template">
 
-    <v-card elevation="0" class="pa-4 ma-0">
+    <v-card elevation="0" class="pa-4 ma-0 pointertest">
       <v-card-title>
         Create KeyPoints Template:
 
@@ -30,11 +30,13 @@
           <instance_template_creation_toolbar
             class="ma-0 pa-0"
             ref="instance_template_creation_toolbar"
+            :color_tool_active="instance_context.color_tool_active"
             @draw_mode_update="update_draw_mode_on_instances"
             @set_background="set_background"
             :project_string_id="project_string_id"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
+            @coloring_tool_clicked="activate_color_tool"
           >
 
           </instance_template_creation_toolbar>
@@ -48,7 +50,7 @@
             @mouseup="mouse_up"
             @contextmenu="contextmenu"
             :canvas_width="canvas_width"
-            :show_target_reticle="instance_context.draw_mode && instance && !instance.is_drawing_edge"
+            :show_target_reticle="instance_context.draw_mode && instance && !instance.is_drawing_edge && !instance_context.color_tool_active"
             :show_context_menu="show_context_menu"
             :canvas_height="canvas_height"
             :reticle_colour="{
@@ -79,6 +81,8 @@
               :mouse_position="props.mouse_position"
               :instance="instance"
               @hide_context_menu="hide_context_menu"
+
+              @change_color="change_color"
             />
 
           </drawable_canvas>
@@ -107,12 +111,12 @@
       </v-card-actions>
 
     </v-card>
-    <v-snackbar color="secondary"
+    <v-snackbar color="primary"
                 :timeout="5000"
                 v-if="show_snackbar"
                 v-model="show_snackbar"
                 :multi-line="true"
-                top
+                bottom
     >
       {{ snackbar_text }}
     </v-snackbar>
@@ -129,8 +133,9 @@
   import instance_drawer from '../vue_canvas/instance_drawer';
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+  import {iconFillPaint} from "@/utils/custom_icons";
 
-export default Vue.extend({
+  export default Vue.extend({
   name: "instance_template_creation_dialog",
   props: {
     project_string_id: undefined,
@@ -171,6 +176,7 @@ export default Vue.extend({
   mounted() {
 
     document.addEventListener('mousedown', this.mouse_events_global_down)
+    this.instance_context.color = '#0eee11'
 
   },
   beforeDestroy() {
@@ -178,6 +184,20 @@ export default Vue.extend({
   },
 
   methods: {
+    change_color: function(color){
+      this.instance_context.color = color;
+    },
+    activate_color_tool: function(){
+      if(this.instance_context.color_tool_active){
+        this.instance_context.color_tool_active = false;
+        this.close_snackbar()
+      }
+      else{
+        this.instance_context.color_tool_active = true;
+        this.open_snackbar('Click the nodes and edges to color them.')
+      }
+
+    },
     detect_clicks_outside_context_menu: function (e) {
 
       // skip clicks on the actual context menu
@@ -351,6 +371,10 @@ export default Vue.extend({
       return interaction_generator.generate_interaction();
     },
     mouse_move: function (event) {
+      if(this.instance_context.color_tool_active){
+        console.log('SET ICONS')
+        this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
+      }
       const interaction = this.generate_interaction_from_event(event);
       if (interaction) {
         interaction.process();

@@ -1,6 +1,6 @@
 import {Interaction} from "../../Interaction";
 import {KeypointInstance} from "../../../instances/KeypointInstance";
-
+import {iconFillPaint} from '../../../../../utils/custom_icons'
 export class KeypointInstanceMouseMove extends Interaction {
   /**
    * Represents the interaction of a user pressing the mouse button
@@ -47,19 +47,23 @@ export class KeypointInstanceMouseMove extends Interaction {
   }
 
   process(): boolean {
-    if(this.draw_mode){
+    if(this.draw_mode && !this.key_point_instance.instance_context.color_tool_active){
       this.key_point_instance.ctx.canvas.style.cursor = 'none'
     }
     else{
       this.key_point_instance.ctx.canvas.style.cursor = 'default'
     }
 
-    if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode) {
+    if (this.key_point_instance.is_node_hovered && this.key_point_instance.instance_context.draw_mode && !this.key_point_instance.instance_context.color_tool_active) {
       this.key_point_instance.ctx.canvas.style.cursor = 'copy'
+    }
+    else if(this.key_point_instance.instance_context.color_tool_active){
+      this.key_point_instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
     }
     else if(this.key_point_instance.hovered_scale_control_points){
       this.set_hover_scale_points();
     }
+
     else if (this.key_point_instance.is_node_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'pointer'
     }
@@ -80,14 +84,12 @@ export class KeypointInstanceMouseMove extends Interaction {
     else if (this.key_point_instance.is_bounding_box_hovered && !this.key_point_instance.instance_context.draw_mode) {
       this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'
     }
-
-
-
-
     if (!this.key_point_instance.instance_context.draw_mode) {
       return this.key_point_instance.move();
     }
+
     return false
   }
 
 }
+
