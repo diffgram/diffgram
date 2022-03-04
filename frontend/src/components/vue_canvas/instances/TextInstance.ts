@@ -1,5 +1,6 @@
 import { Instance } from "./Instance";
 import { v4 as uuidv4 } from 'uuid'
+import { TextInstanceData, RelationInstanceData } from "../../../helpers/interfaces/InstanceData";
 
 export class TextAnnotationInstance extends Instance {
     public start_token: string = null;
@@ -40,8 +41,8 @@ export class TextAnnotationInstance extends Instance {
         this.end_token = end_token;
     }
 
-    public get_instance_data(): object {
-        return {
+    public get_instance_data(): TextInstanceData {
+        const payload: TextInstanceData = {
             id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
@@ -53,6 +54,7 @@ export class TextAnnotationInstance extends Instance {
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer
         }
+        return payload
     }
 }
 
@@ -97,8 +99,8 @@ export class TextRelationInstance extends Instance {
         else this.to_creation_ref = end_instance;
     }
 
-    public get_instance_data(): object {
-        return {
+    public get_instance_data(): RelationInstanceData {
+        const payload: RelationInstanceData = {
             id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
@@ -110,5 +112,7 @@ export class TextRelationInstance extends Instance {
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer
         }
+        
+        return payload
     }
 }
