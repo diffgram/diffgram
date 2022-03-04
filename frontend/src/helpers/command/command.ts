@@ -12,20 +12,19 @@ export abstract class Command {
     }
 
     private _copyInstance(instance: Instance): Instance {
-        if (instance.type === "text_token") {
-            let newInstance = instance.get_instance_data();
-            let initializedInstance = new TextAnnotationInstance()
-            initializedInstance.populate_from_instance_obj(newInstance)
-            return initializedInstance;
-        }
+        let initializedInstance;
+        let newInstance = instance.get_instance_data();
 
+        if (instance.type === "text_token") {
+            initializedInstance = new TextAnnotationInstance()
+        }
 
         if (instance.type === "relation") {
-            let newInstance = instance.get_instance_data();
-            let initializedInstance = new TextRelationInstance()
-            initializedInstance.populate_from_instance_obj(newInstance)
-            return initializedInstance;
+            initializedInstance = new TextRelationInstance()
         }
+
+        initializedInstance.populate_from_instance_obj(newInstance)
+        return initializedInstance;
     }
 
     protected get_instances_ids(): Array<any> {
@@ -60,4 +59,8 @@ export class CreateInstanceCommand extends Command {
             array_of_instances[index].soft_delete = false
         })
     }
+}
+
+export class UpdateInstanceCommand extends Command {
+    execute() {}
 }
