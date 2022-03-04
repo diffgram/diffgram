@@ -544,7 +544,7 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
 
                 //New command pattern
-                const new_command = new CreateInstanceCommand([])
+                const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
                 this.new_command_manager.executeCommand(new_command)
 
                 this.has_changed = true
