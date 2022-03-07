@@ -73,7 +73,7 @@
         ctx.lineWidth = '2'
         let fixed_point = this.$props.instance_template_start_point;
         this.draw_instance_template_bounds(ctx, x_min, y_min);
-
+        let new_nodes = []
         for (let instance of instance_template.instance_list) {
           // Just keypoints are supported for now
           let height = instance.height;
@@ -123,14 +123,20 @@
                   new_y = fixed_point.y + ry * ( node.y - fixed_point.y)
                 }
               }
-
-
               if(isNaN(new_x) || isNaN(new_y)){
                 return
               }
-              node.x = Math.round(new_x);
-              node.y = Math.round(new_y);
+              new_nodes.push({
+                x: new_x,
+                y: new_y,
+              })
               c += 1;
+            }
+            if(new_nodes.length > 0){
+              for (let i =0; i < new_nodes.length; i++){
+                instance.nodes[i].x = new_nodes[i].x
+                instance.nodes[i].y = new_nodes[i].y
+              }
             }
             instance.calculate_min_max_points()
             instance.vertex_size = 2;

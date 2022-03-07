@@ -29,6 +29,29 @@
     >
     </tooltip_button>
 
+    <button_with_menu
+      tooltip_message="Select Color"
+      @click="$emit('coloring_tool_clicked')"
+      :color="color.hex"
+      icon="mdi-square"
+      :icon_style="true"
+      :bottom="true"
+    >
+      <template slot="content">
+        <slider-picker v-model="color" />
+      </template>
+    </button_with_menu>
+    <tooltip_button
+      tooltip_message="Coloring Tool"
+      @click="$emit('coloring_tool_clicked')"
+      :color="color_tool_active ? 'secondary' : 'primary'"
+      :active="color_tool_active"
+      icon="mdi-format-color-fill"
+      :icon_style="true"
+      :bottom="true"
+    >
+    </tooltip_button>
+
     <v-switch data-cy="edit_toggle_instance_template_create"
               v-model="draw_mode"
               @change="edit_mode_toggle"
@@ -49,6 +72,7 @@
     name: "instance_template_creation_toolbar",
     props: {
       project_string_id: undefined,
+      color_tool_active: false
       instance: {
         default: () => ({
           nodes: []
@@ -61,7 +85,24 @@
     },
     data: function(){
       return {
+        color: {
+          hex: '#194d33',
+          hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+          hsv: { h: 150, s: 0.66, v: 0.30, a: 1 },
+          rgba: { r: 25, g: 77, b: 51, a: 1 },
+          a: 1
+        },
         draw_mode: true,
+      }
+    },
+    watch:{
+      color: {
+        handler: function(new_val, old_val){
+
+            this.$emit('change_color', new_val)
+          }
+        ,
+        deep: true
       }
     },
     mounted() {
