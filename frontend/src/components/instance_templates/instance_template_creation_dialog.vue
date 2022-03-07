@@ -33,6 +33,7 @@
             @draw_mode_update="update_draw_mode_on_instances"
             @set_background="set_background"
             :project_string_id="project_string_id"
+            :instance="instance"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
             @mode_set="on_mode_set"
@@ -268,6 +269,7 @@ export default Vue.extend({
           edges = this.$props.instance_template.instance_list[i].edges;
           this.name = this.$props.instance_template.name;
           this.instance.nodes = nodes;
+          this.instance.nodes.sort((a, b) => a.ordinal < b.ordinal ? -1 : 1)
           this.instance.edges = edges;
           this.instance.id = this.$props.instance_template.instance_list[i].id
           this.mode = this.$props.instance_template.mode;
