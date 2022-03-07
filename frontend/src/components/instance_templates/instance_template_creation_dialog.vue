@@ -35,6 +35,7 @@
             :project_string_id="project_string_id"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
+            @mode_set="on_mode_set"
           >
 
           </instance_template_creation_toolbar>
@@ -155,6 +156,7 @@ export default Vue.extend({
       instance: undefined,
       error: {},
       bg_color: 'grey',
+      mode: '1_click',
       image_bg: undefined,
       canvas_wrapper: undefined,
       canvas_width: 600,
@@ -178,6 +180,9 @@ export default Vue.extend({
   },
 
   methods: {
+    on_mode_set: function(mode){
+      this.mode = mode;
+    },
     detect_clicks_outside_context_menu: function (e) {
 
       // skip clicks on the actual context menu
@@ -265,6 +270,8 @@ export default Vue.extend({
           this.instance.nodes = nodes;
           this.instance.edges = edges;
           this.instance.id = this.$props.instance_template.instance_list[i].id
+          this.mode = this.$props.instance_template.mode;
+          this.$refs.instance_template_creation_toolbar.set_mode(this.mode)
         }
 
       }
@@ -432,6 +439,7 @@ export default Vue.extend({
           `/api/v1/project/${this.$props.project_string_id}/instance-template/${this.$props.instance_template.id}`,
           {
             name: this.name,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })
@@ -464,6 +472,7 @@ export default Vue.extend({
             name: this.name,
             reference_height: this.canvas_height,
             reference_width: this.canvas_width,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })

@@ -34,18 +34,22 @@
               @change="edit_mode_toggle"
               :label="mode_text">
     </v-switch>
+    <v-spacer></v-spacer>
+    <guided_1_click_mode_selector ref="mode_selector" @mode_set="on_mode_set"></guided_1_click_mode_selector>
   </v-layout>
 </template>
 
 <script>
   import Vue from "vue";
-
+  import guided_1_click_mode_selector from './guided_1_click_mode_selector';
   export default Vue.extend({
     name: "instance_template_creation_toolbar",
     props: {
       project_string_id: undefined,
     },
-    components:{},
+    components:{
+      guided_1_click_mode_selector: guided_1_click_mode_selector
+    },
     data: function(){
       return {
         draw_mode: true,
@@ -57,6 +61,17 @@
     },
 
     methods: {
+      set_mode: function(mode){
+        if(mode === '1_click'){
+          this.$refs.mode_selector.set_active(0)
+        }
+        else if(mode === 'guided'){
+          this.$refs.mode_selector.set_active(1)
+        }
+      },
+      on_mode_set: function(mode){
+        this.$emit('mode_set', mode)
+      },
       zoom_in: function(){
         this.$emit('zoom_in');
       },
