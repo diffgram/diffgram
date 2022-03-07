@@ -1,4 +1,4 @@
-interface InstanceData {
+export interface InstanceData {
     id: number | string;
     creation_ref_id: string;
     type: string;

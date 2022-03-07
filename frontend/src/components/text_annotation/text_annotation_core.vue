@@ -219,7 +219,7 @@ import {
     CreateInstanceCommand, 
     UpdateInstanceCommand,
     DeleteInstanceCommand
-    } from "../../helpers/command/command"
+    } from "../../helpers/command/avalible_commands"
 
 export default Vue.extend({
     name: "text_token_core",
