@@ -215,7 +215,11 @@ import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
-import { CreateInstanceCommand, UpdateInstanceCommand } from "../../helpers/command/command"
+import { 
+    CreateInstanceCommand, 
+    UpdateInstanceCommand,
+    DeleteInstanceCommand
+    } from "../../helpers/command/command"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -652,30 +656,9 @@ export default Vue.extend({
             this.has_changed = true
         },
         delete_instance: async function(instance) {
-            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
-            let initial_instance;
-
-            if (instance.type === "text_token") {
-                initial_instance = new TextAnnotationInstance()
-                initial_instance.create_instance(id, start_token, end_token, label_file)
-                this.new_instance_list.get().map(instance_rel => {
-                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
-                        instance_rel.soft_delete = true
-                        this.command_manager = new CommandManagerAnnotationCore()
-                    }
-                })
-            } else {
-                initial_instance = new TextRelationInstance()
-                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
-            }
-            initial_instance.initialized = false
-            initial_instance.creation_ref_id = creation_ref_id
-            instance.soft_delete = true
             this.hover_instance = null
-
-            const instance_index = this.new_instance_list.get().indexOf(instance)
-            const command = new UpdateInstanceCommandLegacy(instance, instance_index, initial_instance, this)
-            this.command_manager.executeCommand(command)
+            const new_delete_command = new DeleteInstanceCommand([instance], this.new_instance_list)
+            this.new_command_manager.executeCommand(new_delete_command)
             this.has_changed = true
         },
         change_label_visibility: async function(label) {

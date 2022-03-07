@@ -85,3 +85,21 @@ export class UpdateInstanceCommand extends Command {
         })
     }
 }
+
+export class DeleteInstanceCommand extends Command {
+    execute() {
+        console.log("executing delete")
+        this.instances.map((instance, index) => {
+            instance.soft_delete = true;
+            this.instance_list.replace(instance, this.replacement_indexes[index])
+        })
+    }
+
+    undo() {
+        console.log("undo delete")
+        this.instances.map((instance, index) => {
+            instance.soft_delete = false;
+            this.instance_list.replace(instance, this.replacement_indexes[index])
+        })
+    }
+}
