@@ -38,7 +38,7 @@
       :bottom="true"
     >
       <template slot="content">
-        <slider-picker v-model="color" @change="$emit('change_color')" />
+        <slider-picker v-model="color" />
       </template>
     </button_with_menu>
     <tooltip_button
@@ -80,6 +80,16 @@
           a: 1
         },
         draw_mode: true,
+      }
+    },
+    watch:{
+      color: {
+        handler: function(new_val, old_val){
+
+            this.$emit('change_color', new_val)
+          }
+        ,
+        deep: true
       }
     },
     mounted() {

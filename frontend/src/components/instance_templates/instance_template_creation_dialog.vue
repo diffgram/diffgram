@@ -36,6 +36,7 @@
             :project_string_id="project_string_id"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
+            @change_color="change_color"
             @coloring_tool_clicked="activate_color_tool"
           >
 
@@ -82,7 +83,7 @@
               :instance="instance"
               @hide_context_menu="hide_context_menu"
 
-              @change_color="change_color"
+
             />
 
           </drawable_canvas>
@@ -176,7 +177,13 @@
   mounted() {
 
     document.addEventListener('mousedown', this.mouse_events_global_down)
-    this.instance_context.color = '#0eee11'
+    this.instance_context.color = {
+      hex: '#194d33',
+      hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+      hsv: { h: 150, s: 0.66, v: 0.30, a: 1 },
+      rgba: { r: 25, g: 77, b: 51, a: 1 },
+      a: 1
+    };
 
   },
   beforeDestroy() {
@@ -185,6 +192,7 @@
 
   methods: {
     change_color: function(color){
+      console.log('asadasd', color)
       this.instance_context.color = color;
     },
     activate_color_tool: function(){
@@ -326,6 +334,7 @@
     },
     update_draw_mode_on_instances: function (draw_mode) {
       this.instance_context.draw_mode = draw_mode;
+      this.instance_context.color_tool_active = false;
       if (draw_mode) {
         this.$refs.instance_template_canvas.canvas_element.style.cursor = 'none';
         this.instance.hovered_control_point_key = undefined;
@@ -372,7 +381,6 @@
     },
     mouse_move: function (event) {
       if(this.instance_context.color_tool_active){
-        console.log('SET ICONS')
         this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
       }
       const interaction = this.generate_interaction_from_event(event);
