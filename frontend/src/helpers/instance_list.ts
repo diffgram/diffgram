@@ -36,4 +36,8 @@ export default class InstanceList {
     public push(instances: Array<Instance>) {
         this.instance_list = [... this.instance_list, ... instances]
     }
+
+    public replace(instance: Instance, index: number) {
+        this.instance_list.splice(index, 1, instance);
+    }
 }

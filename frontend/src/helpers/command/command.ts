@@ -5,13 +5,17 @@ import InstanceList from "../instance_list";
 export abstract class Command {   
     protected instances: Array<Instance>;
     protected instance_list: InstanceList;
+    protected replacement_indexes: Array<number> = [];
 
     constructor(updated_instances: Array<Instance>, instance_list: InstanceList) {
-        this.instances = updated_instances.map(inst => this._copyInstance(inst))
+        this.instances = updated_instances.map(inst => {
+            this.replacement_indexes.push(instance_list.get_all().indexOf(inst))
+            return this._copyInstance(inst)
+        })
         this.instance_list = instance_list
     }
 
-    private _copyInstance(instance: Instance): Instance {
+    protected _copyInstance(instance: Instance): Instance {
         let initializedInstance;
         let newInstance = instance.get_instance_data();
 
@@ -25,24 +29,15 @@ export abstract class Command {
 
         initializedInstance.populate_from_instance_obj(newInstance)
         return initializedInstance;
-    }
+    };
 
-    protected get_instances_ids(): Array<any> {
-        const id_list = this.instances.map(instance => instance.get_instance_data().id)
+    protected get_instances_ids(): Array<string | number> {
+        const id_list: Array<string | number> = this.instances.map(instance => instance.get_instance_data().id)
         return id_list
-    }
+    };
 
-    undo() {
-        const id_list = this.get_instances_ids()
-        this.instance_list.get().forEach((existing_instance, index, array_of_instances) => {
-            const { id, creation_ref_id } = existing_instance.get_instance_data()
-            if (id_list.includes(id) || id_list.includes(creation_ref_id)) {
-                array_of_instances[index].soft_delete = true
-            }
-        });
-    }
-
-    abstract execute()
+    abstract execute(): void;
+    abstract undo(): void;
 }
 
 export class CreateInstanceCommand extends Command {
@@ -59,8 +54,34 @@ export class CreateInstanceCommand extends Command {
             array_of_instances[index].soft_delete = false
         })
     }
+
+    undo() {
+        const id_list = this.get_instances_ids()
+        this.instance_list.get().forEach((existing_instance, index, array_of_instances) => {
+            const { id, creation_ref_id } = existing_instance.get_instance_data()
+            if (id_list.includes(id) || id_list.includes(creation_ref_id)) {
+                array_of_instances[index].soft_delete = true
+            }
+        });
+    };
 }
 
 export class UpdateInstanceCommand extends Command {
-    execute() {}
+    private initial_instances: Array<Instance>;
+
+    public set_initial_instances(initial_instances: Array<Instance>): void {
+        this.initial_instances = initial_instances.map(instance => this._copyInstance(instance));
+    }
+
+    execute() {
+        this.instances.map((instance, index) => {
+            this.instance_list.replace(instance, this.replacement_indexes[index])
+        })
+    }
+
+    undo() {
+        this.initial_instances.map((instance, index) => {
+            this.instance_list.replace(instance, this.replacement_indexes[index])
+        })
+    }
 }
