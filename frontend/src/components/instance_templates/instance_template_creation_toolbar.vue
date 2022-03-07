@@ -72,7 +72,7 @@
     name: "instance_template_creation_toolbar",
     props: {
       project_string_id: undefined,
-      color_tool_active: false
+      color_tool_active: false,
       instance: {
         default: () => ({
           nodes: []
