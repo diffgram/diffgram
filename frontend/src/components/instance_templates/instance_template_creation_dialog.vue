@@ -3,13 +3,10 @@
             content-class="dialog-instance-template">
 
     <v-card elevation="0" class="pa-4 ma-0 pointertest">
-      <v-card-title>
+      <v-card-title class="pa-0 ma-0">
         Create KeyPoints Template:
 
       </v-card-title>
-      <v-card-subtitle class="mt-1">
-
-      </v-card-subtitle>
       <v-card-text>
         <v-container class="flex flex-column pa-0 ma-0" >
           <v-text-field class="ma-0 pa-0"

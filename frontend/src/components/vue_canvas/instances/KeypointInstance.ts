@@ -1247,9 +1247,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
           ctx.strokeStyle = hovercolor
         }
         else{
-          let hovercolor = getContrastColor(node.color.hex);
-          ctx.strokeStyle = hovercolor
-          ctx.fillStyle = hovercolor
+          if(node.color){
+            let hovercolor = getContrastColor(node.color.hex);
+            ctx.strokeStyle = hovercolor
+            ctx.fillStyle = hovercolor
+          }
+          else{
+            ctx.strokeStyle = 'green'
+            ctx.fillStyle = 'green'
+          }
+
         }
       }
 
