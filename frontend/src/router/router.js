@@ -6,7 +6,6 @@ const routerOptions = [
     // home
     path: '/',
     component: 'marketing/home_unbounce',
-    alias: ['/training_data', '/training_data_software', '/os', '/marketing/os'],
     meta: {external_page: true}
   },
   {
@@ -192,13 +191,6 @@ const routerOptions = [
     component: 'action/action_event_list',
     props: true,
     meta: {requiresAuth: true}
-  },
-
-  {
-    path: '/join',
-    component: 'hiring/hiring_home',
-    props: true,
-    meta: {requiresAuth: false}
   },
   {
     path: '/org/:org_id/settings',
