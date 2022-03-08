@@ -10,29 +10,10 @@ const routerOptions = [
     meta: {external_page: true}
   },
   {
-    path: '/enterprise/contact',
-    alias: ['/contact'],
-    component: 'products/builder/enterprise_contact_us',
-    meta: {external_page: true}
-  },
-  {
     path: '/what_is_tdm',
     component: 'marketing/what_is_tdm',
     alias: ['/tdm'],
     meta: {external_page: true}
-  },
-  {
-    path: '/segmentation',
-    component: 'marketing/marketing_segmentation',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/security',
-    alias: ['/secure'],
-    component: 'marketing/marketing_security',
-    props: false,
-    meta: {requiresAuth: false}
   },
   {
     path: '/install',
@@ -42,106 +23,15 @@ const routerOptions = [
     meta: {requiresAuth: false}
   },
   {
-    path: '/your_next_step',
-    component: 'marketing/marketing_your_next_step',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/single_application',
-    component: 'marketing/marketing_single_application',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/open_source',
-    component: 'marketing/marketing_open_source',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/automation',
-    component: 'marketing/marketing_automation',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/human_tasks_workflow',
-    component: 'marketing/marketing_human_tasks_workflow',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/white_label_customization',
-    component: 'marketing/marketing_white_label_customization',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/ease_of_use',
-    component: 'marketing/marketing_ease_of_use',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/engineering_led_support',
-    component: 'marketing/marketing_engineering_led_support',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/diffgram-vs-sagemaker',
-    alias: ['/sagemaker'],
-    component: 'marketing/marketing_vs_sagemaker_groundtruth',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/why_diffgram',
-    component: 'marketing/why_diffgram',
-    alias: ['/why'],
-    meta: {external_page: true}
-  },
-  {
     path: '/learn/build_vs_buy',
     component: 'marketing/build_vs_buy',
     alias: ['/build_vs_buy'],
     meta: {external_page: true}
   },
   {
-    path: '/video_annotation',
-    component: 'marketing/video_annotation',
-    alias: ['/video'],
-    meta: {external_page: true}
-  },
-  {
     path: '/pricing',
     component: 'products/pricing',
     meta: {external_page: true}
-  },
-  {
-    path: '/streaming',
-    component: 'marketing/marketing_streaming',
-    meta: {external_page: true}
-  },
-  {
-    path: '/versioning',
-    component: 'marketing/marketing_versioning',
-    meta: {external_page: true}
-  },
-  {
-    path: '/enterprise',
-    component: 'marketing/marketing_enterprise',
-    meta: {external_page: true}
-  },
-  {
-    path: '/enterprise/hub',
-    component: 'marketing/marketing_enterprise_hub',
-    meta: {external_page: true}
-  },
-  {
-    path: '/sticker',
-    component: 'products/builder/web_sticker'
   },
   {
     path: '/order/premium',
