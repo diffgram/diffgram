@@ -4,6 +4,7 @@ import CommandHistory from "../history";
 
 export default class CommandManager {
     private command_history: CommandHistory;
+    
     constructor(command_history: CommandHistory) {
         this.command_history = command_history;
     }
