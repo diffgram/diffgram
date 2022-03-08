@@ -44,6 +44,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
+  public guided_mode_nodes: any = [];
+  public guided_mode_active: boolean = false;
   public instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
   public label_settings: any = undefined
@@ -237,13 +239,30 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     edge_to_color.color = this.instance_context.color;
   }
-
+  public add_guided_mode_node(ordinal){
+    let node = this.nodes.find(n => n.ordinal === ordinal);
+    if(!node){
+      return
+    }
+    node.x = this.mouse_position.x;
+    node.y = this.mouse_position.y;
+    this.guided_mode_nodes.push(node);
+    node.ordinal = this.guided_mode_nodes.length;
+  }
+  public reset_guided_nodes(){
+    this.guided_mode_nodes = [];
+  }
+  public finish_guided_nodes_drawing(){
+    this.nodes = [];
+    for(let n of this.guided_mode_nodes){
+      this.nodes.push(n)
+    }
+  }
   public color_node() {
     let node_to_color = this.nodes[this.node_hover_index]
     if (!node_to_color) {
       return
     }
-    console.log('COLOR NODE', node_to_color, this.instance_context)
     node_to_color.color = this.instance_context.color;
   }
 
@@ -255,15 +274,17 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       } else {
         if (!this.instance_context.color_tool_active) {
           this.add_node_to_instance();
-        } else if (this.instance_context.color_tool_active) {
+        }
+        else if(this.instance_context.draw_mode && this.instance_context.keypoints_draw_mode === 'guided'){
+          this.add_guided_mode_node()
+        }
+        else if (this.instance_context.color_tool_active) {
           if (this.is_node_hovered) {
             this.color_node();
           }
           if (this.is_edge_hovered && !this.is_node_hovered) {
             this.color_edge();
           }
-
-
         }
 
       }
@@ -963,7 +984,21 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     }
   }
-
+  public draw_guided_nodes(ctx){
+    let i = 0;
+    console.log('DRAWW', this.guided_mode_nodes)
+    if(this.instance_context.keypoints_draw_mode != 'guided'){
+      return
+    }
+    if(!this.guided_mode_active){
+      return
+    }
+    for (let node of this.guided_mode_nodes) {
+      // order of operations
+      this.draw_node(node, ctx, i);
+      i += 1
+    }
+  }
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -986,12 +1021,16 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_scale_control_points(ctx);
 
     this.nearest_points_dict = {}
-
-    for (let node of this.nodes) {
-      // order of operations
-      this.draw_node(node, ctx, i);
-      i += 1
+    console.log('guided_mode_active', this.guided_mode_active)
+    if(!this.guided_mode_active){
+      for (let node of this.nodes) {
+        // order of operations
+        this.draw_node(node, ctx, i);
+        i += 1
+      }
     }
+
+    this.draw_guided_nodes(ctx)
 
     this.draw_rotate_point(ctx)
     this.determine_and_set_nearest_node_hovered(ctx)
@@ -1096,21 +1135,26 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.is_drawing_edge = true;
     }
   }
-
-  public add_node_to_instance() {
-    if (this.is_drawing_edge) {
-      return
-    }
+  public create_node_from_mouse_point(){
     let node = {
       x: this.mouse_position.x,
       y: this.mouse_position.y,
       id: uuidv4(),
       occluded: undefined,
       left_or_right: undefined,
-      name: undefined
+      name: undefined,
+      ordinal: undefined
     };
+    return node
+  }
+  public add_node_to_instance() {
+    if (this.is_drawing_edge) {
+      return
+    }
+    let node = this.create_node_from_mouse_point();
     this.nodes.push(node)
     node.name = this.nodes.length.toString();
+    node.ordinal = this.nodes.length;
     this.calculate_min_max_points()
   }
 
@@ -1342,6 +1386,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_edges(ctx) {
+    if(this.guided_mode_active){
+      return
+    }
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     if (this.template_creation_mode) {
       ctx.lineWidth = 6 / this.zoom_value

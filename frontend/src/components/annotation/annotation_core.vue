@@ -53,6 +53,7 @@
             @save="save()"
             @change_file="change_file($event)"
             @annotation_show="annotation_show_activate"
+            @keypoints_mode_set="on_keypoints_mode_set"
             @show_duration_change="set_annotation_show_duration"
             @canvas_scale_global_changed="on_canvas_scale_global_changed"
             @change_task="trigger_task_change($event, task, false)"
@@ -149,13 +150,18 @@
       v-if="show_custom_snackbar"
       v-model="show_custom_snackbar"
       :multi-line="true"
-      :timeout="-1"
+      :timeout="custom_snackbar_timeout"
+      :color="custom_snackbar_color"
+      top
+      left
     >
-      {{ snackbar_message }}
+      <p class="font-weight-bold" :style="`color: ${custom_snackbar_text_color}`">{{ snackbar_message }}</p>
+      <p  class="font-weight-light font-italic" :style="`color: ${custom_snackbar_text_color}`">{{ snackbar_message_secondary }}</p>
 
       <template v-slot:action="{ attrs }">
         <v-btn
-          color="red"
+          v-if="custom_snackbar_show_close_button"
+          :color="custom_snackbar_text_color"
           text
           v-bind="attrs"
           @click="show_custom_snackbar = false"
@@ -164,6 +170,8 @@
         </v-btn>
       </template>
     </v-snackbar>
+
+
 
     <v-snackbar
       v-if="show_snackbar_auto_border"
@@ -955,6 +963,7 @@ import current_instance_template from "../vue_canvas/current_instance_template.v
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
 import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
+import {getContrastColor} from '../../utils/colorUtils'
 import { ellipse } from "../vue_canvas/ellipse.js";
 import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.js";
 import { CreateInstanceCommand } from "./commands/create_instance_command.js";
@@ -1167,6 +1176,7 @@ export default Vue.extend({
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
+      guided_nodes_ordinal: 1,
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
@@ -1202,6 +1212,11 @@ export default Vue.extend({
       display_refresh_cache_button: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
+      custom_snackbar_timeout: -1,
+      custom_snackbar_text_color: 'white',
+      custom_snackbar_color: -1,
+      snackbar_message_secondary: '',
+      custom_snackbar_show_close_button: true,
       snackbar_message: undefined,
       selected_instance_template: undefined,
       instance_template_start_point: undefined,
@@ -1546,6 +1561,18 @@ export default Vue.extend({
     };
   },
   computed: {
+    actively_drawing_keypoints_instance: function(){
+      if(this.actively_drawing_instance_template && this.actively_drawing_instance_template.instance_list){
+        return this.actively_drawing_instance_template.instance_list[0]
+      }
+
+    },
+    current_keypoints_instance: function(){
+      if(this.current_instance_template && this.current_instance_template.instance_list){
+        return this.current_instance_template.instance_list[0]
+      }
+
+    },
     any_frame_saving: function(){
       return this.save_loading_frames_list.length > 0;
     },
@@ -2126,6 +2153,30 @@ export default Vue.extend({
   },
 
   methods: {
+    on_keypoints_mode_set: function(mode){
+      this.instance_context.mode = mode;
+    },
+    show_snackbar_guided_keypoints_drawing(ordinal){
+      let instance = this.current_keypoints_instance;
+      console.log('show_snackbar_guided_keypoints_drawing', instance)
+      if(!instance){
+        return
+      }
+
+      let node = instance.nodes.find(elm => elm.ordinal === ordinal);
+      if(!node){
+        return
+      }
+      let color = node.color ? node.color.hex : 'primary';
+      let textColor =  node.color ? getContrastColor(node.color.hex) : 'white';
+      this.show_snackbar(`${node.ordinal}. "${node.name}"`,
+        color,
+        -1,
+        false,
+        textColor,
+        'Hold N+Click to draw as occluded. Esc to exit.'
+        )
+    },
     on_task_annotation_complete_and_save: async function () {
       await this.save(false);
       const response = await finishTaskAnnotation(this.task.id);
@@ -2679,8 +2730,17 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-    show_snackbar: function (message) {
+    show_snackbar: function (message, color = 'primary',
+                             timeout = -1,
+                             show_close_button = true,
+                             text_color = 'white',
+                             text_secondary = '') {
       this.snackbar_message = message;
+      this.custom_snackbar_color = color;
+      this.custom_snackbar_timeout = timeout;
+      this.snackbar_message_secondary = text_secondary;
+      this.custom_snackbar_text_color = text_color;
+      this.show_close_button = show_close_button;
       this.show_custom_snackbar = true;
     },
     show_snackbar_occlusion: function (message) {
@@ -3511,11 +3571,23 @@ export default Vue.extend({
       this.$forceUpdate();
     },
 
+    async set_keypoints_instance_draw_mode(){
+      if(!this.current_instance_template || !this.is_keypoint_template){
+        return
+      }
+      await this.$nextTick();
+      this.$refs.toolbar.set_mode(this.current_instance_template.mode)
+      if(this.current_instance_template.mode === 'guided'){
+        this.show_snackbar_guided_keypoints_drawing(1)
+      }
+      this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
+    },
     change_instance_type: function ($event) {
       this.instance_type = $event;
       this.current_polygon_point_list = [];
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
+      this.set_keypoints_instance_draw_mode();
     },
 
     validate_sequences: function () {
@@ -6848,33 +6920,58 @@ export default Vue.extend({
       }
       return false;
     },
+    add_node_guided_mode: function(){
+      if(!this.actively_drawing_keypoints_instance){
+        return
+      }
+      if(this.guided_nodes_ordinal === 1){
+        this.actively_drawing_keypoints_instance.reset_guided_nodes();
+      }
+      this.actively_drawing_keypoints_instance.add_guided_mode_node(this.guided_nodes_ordinal);
+      this.guided_nodes_ordinal += 1;
+      this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
+      if(this.guided_nodes_ordinal - 1 === this.actively_drawing_keypoints_instance.nodes.length){
+        this.actively_drawing_keypoints_instance.finish_guided_nodes_drawing();
+        this.edit_mode_toggle(false);
+        this.actively_drawing_keypoints_instance.select()
+        this.actively_drawing_keypoints_instance.guided_mode_active = false
+      }
+    },
+    start_keypoints_drawing: function(){
+      this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
+      this.instance_template_start_point = {
+        x: this.mouse_position.x,
+        y: this.mouse_position.y,
+      };
+      if(this.current_instance_template.mode === '1_click'){
+        this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
+        this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
+        this.actively_drawing_instance_template.instance_list[0].width = 1;
+        this.actively_drawing_instance_template.instance_list[0].height = 1;
+      }
+      else if(this.current_instance_template.mode === 'guided'){
+        this.actively_drawing_keypoints_instance.guided_mode_active = true;
+        this.add_node_guided_mode();
+      }
+      this.instance_template_draw_started = true;
+      this.is_actively_drawing = true;
+    },
     instance_template_mouse_up: function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
-        this.add_instance_template_to_instance_list(frame_number);
-        this.instance_template_draw_started = undefined;
-        this.is_actively_drawing = undefined;
-        this.instance_template_start_point = undefined;
+        if(this.actively_drawing_instance_template.mode === 'guided'){
+          this.add_node_guided_mode();
+        }
+        else{
+          this.add_instance_template_to_instance_list(frame_number);
+          this.instance_template_draw_started = undefined;
+          this.is_actively_drawing = undefined;
+          this.instance_template_start_point = undefined;
+        }
+
       } else {
         // TODO: Might need to change this logic when we support more than one instance per instance template.
-        if (
-          this.instance_template_has_keypoints_type(
-            this.current_instance_template
-          )
-        ) {
-
-          this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
-          this.instance_template_start_point = {
-            x: this.mouse_position.x,
-            y: this.mouse_position.y,
-          };
-          this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
-          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
-
-          this.actively_drawing_instance_template.instance_list[0].width = 1;
-          this.actively_drawing_instance_template.instance_list[0].height = 1;
-
-          this.instance_template_draw_started = true;
-          this.is_actively_drawing = true;
+        if (this.instance_template_has_keypoints_type(this.current_instance_template)) {
+          this.start_keypoints_drawing();
         } else {
           this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
@@ -8163,6 +8260,13 @@ export default Vue.extend({
       this.draw_mode = draw_mode; // context from external component like toolbar
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
+      if(this.draw_mode && this.is_keypoint_template && this.current_instance_template.mode === 'guided'){
+        this.guided_nodes_ordinal = 1;
+        this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
+      }
+      else{
+        this.show_custom_snackbar = false;
+      }
     },
     update_sequence_data: function(instance_list, frame_number, response){
       /*

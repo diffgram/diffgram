@@ -21,7 +21,7 @@
             <draggable v-model="items">
               <transition-group >
                 <v-list-item  v-for="(element, index) in items" :key="index" style="border-bottom: 1px solid #e0e0e0">
-                  <v-list-item-avatar color="primary">
+                  <v-list-item-avatar :color="element.color ? element.color.hex : 'primary'">
                     <span class="white--text">{{ index+1 }}</span>
                   </v-list-item-avatar>
                   <v-list-item-title><h3 class="font-weight-light">{{element.name}}</h3></v-list-item-title>
@@ -47,6 +47,9 @@ export default Vue.extend({
     nodes: {
       default: [],
 
+    },
+    show_order_editor: {
+      default: true
     }
   },
   components: {
@@ -75,7 +78,7 @@ export default Vue.extend({
   methods: {
     trigger_save: function(){
       for(let i = 0; i < this.items.length; i++){
-        this.items.ordinal = i;
+        this.items[i].ordinal = i + 1;
       }
       this.$emit('order_updated', this.items)
       this.$refs.menu.close_menu();
