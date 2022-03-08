@@ -24,7 +24,9 @@ export default class UpdateInstanceLabelCommand extends Command {
 
     undo() {
         this.initial_instances.map((instance, index) => {
-            this.instance_list.replace(instance, this.replacement_indexes[index])
+            const instance_to_modify = this.instance_list.get_all()[this.replacement_indexes[index]]
+            instance_to_modify.label_file = {...instance.label_file}
+            instance_to_modify.label_file_id = instance.id
         })
     }
 }
