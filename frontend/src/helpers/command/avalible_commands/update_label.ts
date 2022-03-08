@@ -10,7 +10,7 @@ export default class UpdateInstanceLabelCommand extends Command {
     }
 
     execute() {
-        this.initial_instances = this.instances.map(inst => this._copyInstance(inst))
+        if (this.initial_instances.length === 0) this.initial_instances = this.instances.map(inst => this._copyInstance(inst))
 
         this.instances.forEach((_, index, instanceArray) => {
             instanceArray[index].label_file = { ...this.label }
