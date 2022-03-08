@@ -1,6 +1,9 @@
+import { Instance } from "../../../components/vue_canvas/instances/Instance";
 import { Command } from "../command"
 
 export default class DeleteInstanceCommand extends Command {
+    private deleted_relations: Array<Instance> = [];
+    
     execute() {
         this.instances.map((instance, index) => {
             instance.soft_delete = true;

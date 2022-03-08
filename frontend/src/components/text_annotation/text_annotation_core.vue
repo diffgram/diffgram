@@ -218,7 +218,8 @@ import History from "../../helpers/history"
 import { 
     CreateInstanceCommand, 
     UpdateInstanceCommand,
-    DeleteInstanceCommand
+    DeleteInstanceCommand,
+    UpdateInstanceLabelCommand
     } from "../../helpers/command/avalible_commands"
 
 export default Vue.extend({
@@ -619,39 +620,39 @@ export default Vue.extend({
         },
         change_instance_label: async function(event) {
             const { instance, label } = event
-            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
-            if (label.id === label_file.id) return
+            // const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
+            // if (label.id === label_file.id) return
 
-            let initial_instances = [];
+            // let initial_instances = [];
 
-            if (instance.type === "text_token") {
-                const initial_instance = new TextAnnotationInstance()
-                initial_instance.create_instance(id, start_token, end_token, label_file)
-                initial_instances.push(initial_instance)
+            // if (instance.type === "text_token") {
+            //     const initial_instance = new TextAnnotationInstance()
+            //     initial_instance.create_instance(id, start_token, end_token, label_file)
+            //     initial_instances.push(initial_instance)
 
-                this.new_instance_list.get().map(instance_rel => {
-                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
-                        instance_rel.soft_delete = true
-                    }
-                })
-            } else {
-                const initial_instance = new TextRelationInstance()
-                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
-                initial_instances.push(initial_instance)
-            }
+            //     this.new_instance_list.get().map(instance_rel => {
+            //         if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
+            //             instance_rel.soft_delete = true
+            //         }
+            //     })
+            // } else {
+            //     const initial_instance = new TextRelationInstance()
+            //     initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
+            //     initial_instances.push(initial_instance)
+            // }
 
-            const updated_initial_instances = initial_instances.map(ini_instance => {
-                ini_instance.initialized = false
-                ini_instance.creation_ref_id = creation_ref_id
-                return ini_instance
-            })
+            // const updated_initial_instances = initial_instances.map(ini_instance => {
+            //     ini_instance.initialized = false
+            //     ini_instance.creation_ref_id = creation_ref_id
+            //     return ini_instance
+            // })
             
-            instance.label_file = {...label}
-            instance.label_file_id = label.id
+            // instance.label_file = {...label}
+            // instance.label_file_id = label.id
 
             // New command pattern
-            const new_command = new UpdateInstanceCommand([instance], this.new_instance_list)
-            new_command.set_initial_instances(updated_initial_instances)
+            const new_command = new UpdateInstanceLabelCommand([instance], this.new_instance_list)
+            new_command.set_new_label(label)
             this.new_command_manager.executeCommand(new_command)
             this.has_changed = true
         },

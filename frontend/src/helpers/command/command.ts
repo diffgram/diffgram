@@ -7,8 +7,8 @@ export abstract class Command {
     protected instance_list: InstanceList;
     protected replacement_indexes: Array<number> = [];
 
-    constructor(updated_instances: Array<Instance>, instance_list: InstanceList) {
-        this.instances = updated_instances.map(inst => {
+    constructor(received_instances: Array<Instance>, instance_list: InstanceList) {
+        this.instances = received_instances.map(inst => {
             this.replacement_indexes.push(instance_list.get_all().indexOf(inst))
             return this._copyInstance(inst)
         })
