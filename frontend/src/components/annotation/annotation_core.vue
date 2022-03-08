@@ -6920,7 +6920,7 @@ export default Vue.extend({
       }
       return false;
     },
-    add_node_guided_mode: function(){
+    add_node_guided_mode: function(frame_number){
       if(!this.actively_drawing_keypoints_instance){
         return
       }
@@ -6932,12 +6932,16 @@ export default Vue.extend({
       this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
       if(this.guided_nodes_ordinal - 1 === this.actively_drawing_keypoints_instance.nodes.length){
         this.actively_drawing_keypoints_instance.finish_guided_nodes_drawing();
-        this.edit_mode_toggle(false);
         this.actively_drawing_keypoints_instance.select()
         this.actively_drawing_keypoints_instance.guided_mode_active = false
+        this.add_instance_template_to_instance_list(frame_number);
+        this.instance_template_draw_started = undefined;
+        this.is_actively_drawing = undefined;
+        this.instance_template_start_point = undefined;
+        this.edit_mode_toggle(false);
       }
     },
-    start_keypoints_drawing: function(){
+    start_keypoints_drawing: function(frame_number){
       this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
       this.instance_template_start_point = {
         x: this.mouse_position.x,
@@ -6951,7 +6955,7 @@ export default Vue.extend({
       }
       else if(this.current_instance_template.mode === 'guided'){
         this.actively_drawing_keypoints_instance.guided_mode_active = true;
-        this.add_node_guided_mode();
+        this.add_node_guided_mode(frame_number);
       }
       this.instance_template_draw_started = true;
       this.is_actively_drawing = true;
@@ -6959,7 +6963,7 @@ export default Vue.extend({
     instance_template_mouse_up: function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
         if(this.actively_drawing_instance_template.mode === 'guided'){
-          this.add_node_guided_mode();
+          this.add_node_guided_mode(frame_number);
         }
         else{
           this.add_instance_template_to_instance_list(frame_number);
@@ -6971,7 +6975,7 @@ export default Vue.extend({
       } else {
         // TODO: Might need to change this logic when we support more than one instance per instance template.
         if (this.instance_template_has_keypoints_type(this.current_instance_template)) {
-          this.start_keypoints_drawing();
+          this.start_keypoints_drawing(frame_number);
         } else {
           this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
