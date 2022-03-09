@@ -103,6 +103,7 @@
                         class="unselectable"
                     />
                 </g>
+                <g v-if="render_rects.length > 0">
                 <text
                     v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
                     :key="`instance_${instance.get_instance_data().id}`"
@@ -175,6 +176,7 @@
                     style="cursor: pointer"
                     class="unselectable"
                 />
+            </g>
                 <g
                     v-for="(line, index) in lines"
                     :transform="`translate(0, ${25 + line.y})`"
@@ -206,7 +208,6 @@ import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
 import { CreateInstanceCommand as CreateInstanceCommandLegacy } from "../annotation/commands/create_instance_command";
-import { UpdateInstanceCommand as UpdateInstanceCommandLegacy } from "../annotation/commands/update_instance_command"
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
@@ -217,7 +218,6 @@ import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
 import { 
     CreateInstanceCommand, 
-    UpdateInstanceCommand,
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand
     } from "../../helpers/command/avalible_commands"
@@ -295,6 +295,8 @@ export default Vue.extend({
     },
     computed: {
         render_rects: function() {
+            if (this.rendering || this.resizing) return [];
+
             let rects_to_draw = [];
             this.new_instance_list.get().filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
@@ -666,8 +668,8 @@ export default Vue.extend({
                 url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
             }
             if (!this.instance_in_progress) {
-                const res = await postInstanceList(url, this.new_instance_list.get())
-                const {added_instances} = res
+                const res = await postInstanceList(url, this.new_instance_list.get_all())
+                const { added_instances } = res
                 added_instances.map(add_insatnce => {
                     if (!index) {
                         const old_id = this.new_instance_list.get().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
@@ -775,9 +777,8 @@ export default Vue.extend({
             })
         },
         // draw_instance - is only returning rects that have to be drawn
-        draw_instance: function(instance) {
+        draw_instance: function(instance) {            
             try {
-
                 let starting_token;
                 let end_token;
                 if (instance.type === 'text_token') {
