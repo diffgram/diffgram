@@ -7,9 +7,6 @@
         Create KeyPoints Template:
 
       </v-card-title>
-      <v-card-subtitle class="mt-1">
-
-      </v-card-subtitle>
       <v-card-text>
         <v-container class="flex flex-column pa-0 ma-0" >
           <v-text-field class="ma-0 pa-0"
