@@ -3,6 +3,7 @@
     <ui_schema_context_menu
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
+      :label_settings="label_settings"
       @close_context_menu="show_ui_schema_context_menu = false"
       @start_edit_ui_schema="edit_ui_schema()"
     >
@@ -3302,10 +3303,18 @@ export default Vue.extend({
       }
 
       if (this.$props.enabled_edit_schema == true) {
-        this.edit_ui_schema();
+        this.initialize_ui_schema_data()
       }
     },
+    initialize_ui_schema_data: function(){
+      this.edit_ui_schema();
+      let ui_schema_loaded = this.$store.state.ui_schema.current;
+      console.log('ui_schema', ui_schema_loaded)
+      if(ui_schema_loaded && ui_schema_loaded.label_settings){
+        this.label_settings = ui_schema_loaded.label_settings
+      }
 
+    },
     update_user_settings_from_store() {   // label_settings
       for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
         this.label_settings[key] = value

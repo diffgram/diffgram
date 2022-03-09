@@ -43,7 +43,7 @@
   <div
       class="save-menu"
       :class="{visible: show_context_menu}"
-      :style="{top: '70px', right: '0px'}"
+      :style="{top: '270px', right: '0px', zIndex: 1}"
     >
 
     <v-card outlined
@@ -304,6 +304,9 @@
       'create_new_on_load' :{
         default: false
       },
+      'label_settings': {
+        default: null
+      }
 
     },
     data() {
@@ -417,6 +420,13 @@
     },
 
     watch: {
+      label_settings: {
+        handler: function(new_val, old_val){
+          this.$store.commit('set_ui_schema_element_value',
+            ['label_settings', "default_settings", {...new_val}])
+        },
+        deep: true
+      },
       show_context_menu(isVisible) {
 
         if (isVisible == true) {

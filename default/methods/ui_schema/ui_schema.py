@@ -25,6 +25,26 @@ ui_schema_button_spec_list = [
     }
 ]
 
+ui_schema_label_settings_spec_list = [
+    {"visible": {
+        'default': True,
+        'kind': bool
+    }
+    },
+    {"style": {
+        'default': None,
+        'kind': str,
+        'required': False
+    }
+    },
+    {"default_settings": {
+        'default': None,
+        'kind': dict,
+        'required': False
+    }
+    }
+]
+
 ui_schema_logo_spec_list = [
     {"url": {
         'default': None,
@@ -67,7 +87,7 @@ all_ui_schema_specs = {
 
     'main_canvas': ui_schema_button_spec_list,
 
-    'label_settings': ui_schema_button_spec_list,
+    'label_settings': ui_schema_label_settings_spec_list,
 
     'allow_actions': ui_schema_button_spec_list,
     'block_actions': ui_schema_button_spec_list,
