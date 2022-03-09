@@ -2154,11 +2154,14 @@ export default Vue.extend({
 
   methods: {
     on_keypoints_mode_set: function(mode){
-      this.instance_context.mode = mode;
+      this.instance_context.keypoints_draw_mode = mode;
+      this.current_instance_template.mode = mode;
+      if(this.current_instance_template.mode === 'guided' && this.draw_mode){
+        this.show_snackbar_guided_keypoints_drawing(1)
+      }
     },
     show_snackbar_guided_keypoints_drawing(ordinal){
       let instance = this.current_keypoints_instance;
-      console.log('show_snackbar_guided_keypoints_drawing', instance)
       if(!instance){
         return
       }
@@ -3577,7 +3580,7 @@ export default Vue.extend({
       }
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      if(this.current_instance_template.mode === 'guided'){
+      if(this.current_instance_template.mode === 'guided' && this.draw_mode){
         this.show_snackbar_guided_keypoints_drawing(1)
       }
       this.instance_context.keypoints_draw_mode = this.current_instance_template.mode

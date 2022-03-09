@@ -248,6 +248,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     node.y = this.mouse_position.y;
     this.guided_mode_nodes.push(node);
     node.ordinal = this.guided_mode_nodes.length;
+    console.log('ADDED GUIDED NODE', node)
   }
   public reset_guided_nodes(){
     this.guided_mode_nodes = [];
@@ -257,6 +258,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     for(let n of this.guided_mode_nodes){
       this.nodes.push(n)
     }
+    this.calculate_min_max_points()
+    this.calculate_center()
   }
   public color_node() {
     let node_to_color = this.nodes[this.node_hover_index]
@@ -373,7 +376,27 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_moving() {
     this.is_moving = false;
   }
-
+  private get_opposite_control_key(key){
+    let result = undefined;
+    if (key === 'right') {
+      result = 'left';
+    } else if (key === 'left') {
+      result = 'right';
+    } else if (key === 'top') {
+      result = 'bottom'
+    } else if (key === 'bottom') {
+      result = 'top'
+    } else if (key === 'bottom_right') {
+      result = 'top_left'
+    } else if (key === 'bottom_left') {
+      result = 'top_right'
+    } else if (key === 'top_right') {
+      result = 'bottom_left'
+    } else if (key === 'top_left') {
+      result = 'bottom_right'
+    }
+    return result;
+  }
   private get_fixed_point(key: string) {
     let control_points = this.get_scale_control_points();
     let result;
@@ -938,7 +961,11 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       right: {x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT, y: (points.max_y + points.min_y) / 2},
     }
     if(this.current_hovered_control_point_key){
-      result[this.current_hovered_control_point_key] = this.current_fixed_point;
+      let fixed_key = this.get_opposite_control_key(this.current_hovered_control_point_key)
+      if(fixed_key){
+        result[fixed_key] = this.current_fixed_point;
+      }
+
     }
     return result
 
@@ -986,7 +1013,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public draw_guided_nodes(ctx){
     let i = 0;
-    console.log('DRAWW', this.guided_mode_nodes)
+    console.log('draw_guided_nodes', this.guided_mode_active, this.instance_context.keypoints_draw_mode)
+    console.log('guided_mode_nodes', this.guided_mode_nodes,)
     if(this.instance_context.keypoints_draw_mode != 'guided'){
       return
     }
@@ -1021,7 +1049,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.draw_scale_control_points(ctx);
 
     this.nearest_points_dict = {}
-    console.log('guided_mode_active', this.guided_mode_active)
+
     if(!this.guided_mode_active){
       for (let node of this.nodes) {
         // order of operations

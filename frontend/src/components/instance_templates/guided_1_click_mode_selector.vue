@@ -1,12 +1,12 @@
 <template>
   <v-btn-toggle @change="on_toggle_change" v-model="toggle_exclusive" color="secondary" class="mr-2">
-    <v-btn  class="pa-1 pt-4 pb-4" x-small>
+    <v-btn  data-cy="1_click_mode_button" class="pa-1 pt-4 pb-4" x-small>
 
       <v-icon>mdi-cursor-default-click-outline</v-icon>
       <span class="button-text">1 Click</span>
     </v-btn>
 
-    <v-btn  class="pa-1 pt-4 pb-4" x-small>
+    <v-btn   data-cy="guided_mode_button" class="pa-1 pt-4 pb-4" x-small>
       <v-icon>mdi-handshake-outline</v-icon>
       <span class="button-text">Guided</span>
     </v-btn>

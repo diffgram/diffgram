@@ -112,7 +112,6 @@
 
     methods: {
       on_nodes_order_updated: function(new_nodes){
-        console.log('NEW NODES', new_nodes)
         this.instance.nodes = new_nodes;
       },
       set_mode: function(mode){
