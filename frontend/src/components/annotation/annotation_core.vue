@@ -1173,6 +1173,7 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      n_key: false,
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
@@ -6930,7 +6931,11 @@ export default Vue.extend({
       if(this.guided_nodes_ordinal === 1){
         this.actively_drawing_keypoints_instance.reset_guided_nodes();
       }
-      this.actively_drawing_keypoints_instance.add_guided_mode_node(this.guided_nodes_ordinal);
+      let occlude = false;
+      if(this.n_key){
+        occlude = true;
+      }
+      this.actively_drawing_keypoints_instance.add_guided_mode_node(this.guided_nodes_ordinal, occlude);
       this.guided_nodes_ordinal += 1;
       this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
       if(this.guided_nodes_ordinal - 1 === this.actively_drawing_keypoints_instance.nodes.length){
@@ -7737,6 +7742,11 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+      if (event.keyCode === 78) {
+        // shift
+        //
+        this.n_key = false;
+      }
       if(event.keyCode === 90){
         this.z_key = false;
       }
@@ -7862,7 +7872,11 @@ export default Vue.extend({
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
-
+      if (event.keyCode === 78) {
+        // shift
+        //
+        this.n_key = true;
+      }
       if (event.keyCode === shiftKey) {
         // shift
         //

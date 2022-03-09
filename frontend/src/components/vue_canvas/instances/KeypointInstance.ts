@@ -239,7 +239,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     edge_to_color.color = this.instance_context.color;
   }
-  public add_guided_mode_node(ordinal){
+  public add_guided_mode_node(ordinal, occlude = false){
     let node = this.nodes.find(n => n.ordinal === ordinal);
     if(!node){
       return
@@ -247,6 +247,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     node.x = this.mouse_position.x;
     node.y = this.mouse_position.y;
     this.guided_mode_nodes.push(node);
+    node.occluded = occlude
     node.ordinal = this.guided_mode_nodes.length;
     console.log('ADDED GUIDED NODE', node)
   }
