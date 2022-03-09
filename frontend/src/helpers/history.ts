@@ -1,20 +1,20 @@
-import { Command } from "./command/command"
+import { CommandInterface } from "./interfaces/Command";
 
 export default class CommandHistory {
-    private history: Array<Command> = [];
-    private undone_history: Array<Command> = [];
+    private history: Array<CommandInterface> = [];
+    private undone_history: Array<CommandInterface> = [];
 
     public undo_posible: Boolean = false;
     public redo_posible: Boolean = false;
 
-    public push(command: Command) {
+    public push(command: CommandInterface) {
         this.undone_history = [];
         this.history.push(command)
         this.update_status()
     }
 
-    public pop(): Command {
-        if (!this.undo_posible) return;
+    public pop(): CommandInterface {
+        if (!this.undo_posible) return null;
 
         const command = this.history.pop()
         this.undone_history.push(command)
@@ -22,8 +22,8 @@ export default class CommandHistory {
         return command
     }
 
-    public repush(): Command {
-        if (!this.redo_posible) return;
+    public repush(): CommandInterface {
+        if (!this.redo_posible) return null;
 
         const command = this.undone_history.pop()
         this.history.push(command)

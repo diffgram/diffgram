@@ -1,8 +1,9 @@
 import { Instance } from "../../components/vue_canvas/instances/Instance"
 import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
 import InstanceList from "../instance_list";
+import { CommandInterface } from "../interfaces/Command";
 
-export abstract class Command {   
+export abstract class Command implements CommandInterface {   
     protected instances: Array<Instance>;
     protected instance_list: InstanceList;
     protected replacement_indexes: Array<number> = [];
