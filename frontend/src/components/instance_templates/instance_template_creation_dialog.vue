@@ -178,7 +178,9 @@
     }
   },
   mounted() {
-
+    if (window.Cypress) {
+      window.InstanceTemplateDialog = this;
+    }
     document.addEventListener('mousedown', this.mouse_events_global_down)
     this.instance_context.color = {
       hex: '#194d33',

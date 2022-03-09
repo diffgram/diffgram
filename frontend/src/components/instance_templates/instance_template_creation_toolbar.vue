@@ -31,6 +31,7 @@
 
     <button_with_menu
       tooltip_message="Select Color"
+      datacy="select-color"
       @click="$emit('coloring_tool_clicked')"
       :color="color.hex"
       icon="mdi-square"
@@ -38,10 +39,13 @@
       :bottom="true"
     >
       <template slot="content">
-        <slider-picker v-model="color" />
+        <div data-cy="color-selector-container">
+          <slider-picker id="color-picker-instance-template" v-model="color" />
+        </div>
       </template>
     </button_with_menu>
     <tooltip_button
+      datacy="activate-coloring-button"
       tooltip_message="Coloring Tool"
       @click="$emit('coloring_tool_clicked')"
       :color="color_tool_active ? 'secondary' : 'primary'"

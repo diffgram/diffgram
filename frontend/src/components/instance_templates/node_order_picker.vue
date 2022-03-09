@@ -1,6 +1,7 @@
 <template>
   <button_with_menu
     :menu_open="is_open"
+    datacy="node-ordering-button"
     tooltip_message="Set Node Drawing Order"
     icon="mdi-sort-bool-descending"
     color="primary"
@@ -14,13 +15,13 @@
         <v-card-title>
           Node Drawing Order
           <v-spacer></v-spacer>
-          <v-btn @click="trigger_save" color="success" small> <v-icon>mdi-content-save</v-icon>Save</v-btn>
+          <v-btn @click="trigger_save" data-cy="save_order_button"color="success" small> <v-icon>mdi-content-save</v-icon>Save</v-btn>
         </v-card-title>
         <v-card-text style="border: 1px solid #e0e0e0">
           <v-list>
             <draggable v-model="items">
               <transition-group >
-                <v-list-item  v-for="(element, index) in items" :key="index" style="border-bottom: 1px solid #e0e0e0">
+                <v-list-item  :data-cy="`node-item-${index}`" v-for="(element, index) in items" :key="index" style="border-bottom: 1px solid #e0e0e0">
                   <v-list-item-avatar :color="element.color ? element.color.hex : 'primary'">
                     <span class="white--text">{{ index+1 }}</span>
                   </v-list-item-avatar>

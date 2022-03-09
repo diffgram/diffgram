@@ -31,7 +31,7 @@ def update_instance_template_api(project_string_id, instance_template_id):
         }},
         {"mode": {
             'kind': str,
-            'required': True
+            'required': False
         }},
     ]
 
