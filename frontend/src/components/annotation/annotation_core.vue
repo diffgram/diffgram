@@ -6868,7 +6868,7 @@ export default Vue.extend({
             y: this.mouse_position.y,
           };
           this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
-          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(10, 10, this.instance_template_start_point);
+          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
 
           this.actively_drawing_instance_template.instance_list[0].width = 1;
           this.actively_drawing_instance_template.instance_list[0].height = 1;
@@ -7870,6 +7870,7 @@ export default Vue.extend({
       this.instance_template_draw_started = false;
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
+      this.actively_drawing_instance_template = undefined;
     },
     show_loading_paste: function(){
       this.show_snackbar_paste = true;
