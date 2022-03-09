@@ -1,18 +1,21 @@
 import { CommandInterface } from "../../../../src/helpers/interfaces/Command";
 
 export default class TestCommand implements CommandInterface {
-    public test_command_name: string;
-    public successfully_executed: boolean;
-    public successfully_undone: boolean;
+    public name: string;
+    private mockExecute: Function;
+    private mockUndo: Function;
 
-    constructor(test_command_name: string) {
-        this.test_command_name = test_command_name;
+    constructor(name: string, mockExecute?: Function, mockUndo?: Function) {
+        this.name = name;
+        this.mockExecute = mockExecute;
+        this.mockUndo = mockUndo;
     }
 
     execute() {
-        this.successfully_executed = true;
+        this.mockExecute()
     };
+    
     undo() {
-        this.successfully_undone = true;
+        this.mockUndo()
     };
 }

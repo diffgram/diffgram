@@ -1,6 +1,7 @@
 import { CommandInterface } from "./interfaces/Command";
+import { HistoryInterface } from "./interfaces/History";
 
-export default class CommandHistory {
+export default class CommandHistory implements HistoryInterface {
     private history: Array<CommandInterface> = [];
     private undone_history: Array<CommandInterface> = [];
 
