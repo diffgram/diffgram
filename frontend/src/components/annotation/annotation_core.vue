@@ -706,6 +706,7 @@
               :mouse_position="mouse_position"
               :show_context_menu="show_context_menu"
               :instance_clipboard="instance_clipboard"
+              :instance_focused_index="instance_focused_index"
               :draw_mode="draw_mode"
               :selected_instance_index="selected_instance_index"
               :project_string_id="project_string_id"
@@ -718,6 +719,8 @@
               :video_mode="video_mode"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
+              @focus_instance="on_context_menu_click_focus_instance"
+              @stop_focus_instance="on_context_menu_click_stop_focus_instance"
               @open_issue_panel="open_issue_panel"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
@@ -1165,6 +1168,7 @@ export default Vue.extend({
   data() {
     return {
       submitted_to_review: false,
+      f_key: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
@@ -2126,6 +2130,18 @@ export default Vue.extend({
   },
 
   methods: {
+    on_context_menu_click_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
+      }
+
+    },
+    on_context_menu_click_stop_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.show_all();
+      }
+
+    },
     on_task_annotation_complete_and_save: async function () {
       await this.save(false);
       const response = await finishTaskAnnotation(this.task.id);
@@ -3077,7 +3093,6 @@ export default Vue.extend({
       // Do we want to support focusing more than one at a time?
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
-
       // careful can't use id, since newly created instances won't have an ID!
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
@@ -3088,6 +3103,7 @@ export default Vue.extend({
 
     focus_instance_show_all() {
       this.instance_focused_index = null;
+      this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
       this.reset_to_full();
     },
@@ -3883,8 +3899,9 @@ export default Vue.extend({
 
     auto_revert_snapped_to_instance_if_unchanged: function (instance) {
       if (this.snapped_to_instance == instance) {
-        this.focus_instance_show_all();
-        this.snapped_to_instance = undefined;
+        if(this.$refs.instance_detail_list){
+          this.$refs.instance_detail_list.show_all();
+        }
         return true;
       }
       return false;
@@ -4732,6 +4749,10 @@ export default Vue.extend({
         if (!this.is_allowed_instance_to_merge(instance_to_select)) {
           return;
         }
+      }
+      if(this.f_key){
+        this.focus_instance({index: this.instance_hover_index})
+        return
       }
 
       if (instance_to_select) {
@@ -7628,6 +7649,14 @@ export default Vue.extend({
       if (this.show_context_menu) {
         return;
       }
+      if(event.keyCode === 70){
+        if(this.instance_focused_index != undefined && this.instance_focused_index != this.instance_hover_index){
+          if(this.$refs.instance_detail_list){
+            this.$refs.instance_detail_list.show_all();
+          }
+        }
+        this.f_key = false
+      }
       if (event.keyCode === 16) {
         // shift
         //
@@ -7758,7 +7787,11 @@ export default Vue.extend({
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
+      if(event.keyCode === 70){
 
+        this.f_key = true
+
+      }
       if (event.keyCode === shiftKey) {
         // shift
         //

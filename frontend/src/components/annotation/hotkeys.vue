@@ -13,7 +13,6 @@
   <p> <kbd>W</kbd> Toggle Label Menu </p>
   <p> <kbd>H</kbd> Hide/Show All Instances in File. </p>
   <p> <kbd>Shift + T</kbd>Remove/Add Instance Transparency </p>
-  <p> <kbd>O</kbd> Hide/Show Occluded KeyPoints </p>
   <p> <kbd>G</kbd> Toggle Ghost Instances </p>
   <p> <kbd>1 - 9</kbd> Change label </p>
 
@@ -32,7 +31,7 @@
 
   <p> <kbd>←</kbd>,<kbd>→</kbd> or <kbd>A</kbd>, <kbd>D</kbd> Previous or Next Frame</p>
 
-  <p> <kbd>F</kbd> New Sequence </p>
+  <p> <kbd>N</kbd> New Sequence </p>
   <p> <kbd>Shift</kbd> + <kbd>n</kbd> Jump to Next Instance </p>
   <h2> Image / Frame </h2>
   <p> <kbd>S</kbd> Save </p>
