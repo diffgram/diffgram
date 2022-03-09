@@ -279,9 +279,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         if (!this.instance_context.color_tool_active) {
           this.add_node_to_instance();
         }
-        else if(this.instance_context.draw_mode && this.instance_context.keypoints_draw_mode === 'guided'){
-          this.add_guided_mode_node()
-        }
         else if (this.instance_context.color_tool_active) {
           if (this.is_node_hovered) {
             this.color_node();
