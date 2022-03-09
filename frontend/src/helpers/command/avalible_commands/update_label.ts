@@ -1,9 +1,9 @@
-import { Instance } from "../../../components/vue_canvas/instances/Instance";
+import { InstanceInterface } from "../../interfaces/InstanceData";
 import { Command } from "../command";
 
 export default class UpdateInstanceLabelCommand extends Command {
     private label: any;
-    private initial_instances: Array<Instance> = [];
+    private initial_instances: Array<InstanceInterface> = [];
 
     public set_new_label(label: any): void {
         this.label = {...label};

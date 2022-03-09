@@ -296,6 +296,7 @@ export default Vue.extend({
     computed: {
         render_rects: function() {
             if (this.rendering || this.resizing) return [];
+            if (this.tokens.length === 0) return [];
 
             let rects_to_draw = [];
             this.new_instance_list.get().filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {

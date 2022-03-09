@@ -1,8 +1,8 @@
 import { Instance } from "./Instance";
 import { v4 as uuidv4 } from 'uuid'
-import { TextInstanceData, RelationInstanceData } from "../../../helpers/interfaces/InstanceData";
+import { TextInstanceData, RelationInstanceData, InstanceInterface } from "../../../helpers/interfaces/InstanceData";
 
-export class TextAnnotationInstance extends Instance {
+export class TextAnnotationInstance extends Instance implements InstanceInterface {
     public start_token: string = null;
     public end_token: string = null;
     public initialized: boolean = true;
@@ -58,7 +58,7 @@ export class TextAnnotationInstance extends Instance {
     }
 }
 
-export class TextRelationInstance extends Instance {
+export class TextRelationInstance extends Instance  implements InstanceInterface{
     public from_instance_id: number = null;
     public to_instance_id: number = null;
     public initialized: boolean = true;

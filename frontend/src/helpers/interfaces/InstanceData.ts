@@ -14,6 +14,12 @@ export interface TextInstanceData extends InstanceData {
     end_token: string
 }
 
+export interface InstanceInterface extends InstanceData {
+    create_instance: Function;
+    create_frontend_instance: Function;
+    get_instance_data: Function;
+}
+
 export interface RelationInstanceData extends InstanceData {
     from_instance_id: number | string;
     to_instance_id: number | string;

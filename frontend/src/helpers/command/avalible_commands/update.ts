@@ -1,10 +1,10 @@
 import { Command } from "../command"
-import { Instance } from "../../../components/vue_canvas/instances/Instance"
+import { InstanceInterface } from "../../interfaces/InstanceData";
 
 export default class UpdateInstanceCommand extends Command {
-    private initial_instances: Array<Instance>;
+    private initial_instances: Array<InstanceInterface>;
 
-    public set_initial_instances(initial_instances: Array<Instance>): void {
+    public set_initial_instances(initial_instances: Array<InstanceInterface>): void {
         this.initial_instances = initial_instances.map(instance => this._copyInstance(instance));
     }
 

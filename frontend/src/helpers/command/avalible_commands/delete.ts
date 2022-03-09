@@ -1,10 +1,10 @@
-import { Instance } from "../../../components/vue_canvas/instances/Instance";
+import { InstanceInterface } from "../../interfaces/InstanceData";
 import { Command } from "../command"
 
 export default class DeleteInstanceCommand extends Command {
     private deleted_relations: Array<number> = [];
 
-    private find_linked_relations(instance: Instance) {
+    private find_linked_relations(instance: InstanceInterface) {
         const { id } = instance.get_instance_data()
         
         this.instance_list.get_all()
