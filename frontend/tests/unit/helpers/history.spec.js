@@ -1,7 +1,7 @@
 import CommandHistory from "../../../src/helpers/history";
-import TestCommand from "./TestCommand";
+import TestCommand from "./TestCalsses/TestCommand";
 
-describe("Testing history class", () => {
+describe("Testing CommandHistory class", () => {
     let history;
     let test_command;
 

@@ -1,4 +1,4 @@
-import { CommandInterface } from "../../../src/helpers/interfaces/Command";
+import { CommandInterface } from "../../../../src/helpers/interfaces/Command";
 
 export default class TestCommand implements CommandInterface {
     public test_command_name: string;

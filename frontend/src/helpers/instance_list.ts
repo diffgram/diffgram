@@ -7,7 +7,7 @@ export default class InstanceList {
     constructor(instances?: Array<any>) {
         if (instances && instances.length > 0) {
             instances.map(instance => {
-                let new_instance: any;
+                let new_instance: InstanceInterface;
                 const { id, label_file, creation_ref_id } = instance;
 
                 if (instance.type === "text_token") {
@@ -21,6 +21,8 @@ export default class InstanceList {
                     new_instance = new TextRelationInstance()
                     new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
                 }
+
+                else return
 
                 new_instance.creation_ref_id = creation_ref_id
                 this.instance_list.push(new_instance)
