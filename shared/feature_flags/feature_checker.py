@@ -99,13 +99,19 @@ class FeatureChecker:
         # 1. Get from Project
         if self.project:
             plan = self.project.plan
-            logger.info(f"project on plan {plan.template.public_name}")
+            if plan:
+                logger.info(f"project {self.project.project_string_id} on plan {plan.template.public_name}")
+            else:
+                logger.info(f"project {self.project.project_string_id} has no plan")
 
         # 2. Get from user
         if not plan:
             if self.user:
                 plan = self.user.default_plan
-                logger.info(f"User on plan {plan.template.public_name}")
+                if plan:
+                    logger.info(f"User on plan {plan.template.public_name}")
+                else:
+                    logger.info(f"project {self.project.project_string_id} has no plan")
 
         # 3. Failsafe, assume free
         if not plan:
