@@ -383,7 +383,7 @@
             </v-card-subtitle>
 
             <!-- CREDIT CARD -->
-            <credit_card show_account_info=false>
+            <credit_card :show_account_info="false">
             </credit_card>
 
             <br>
@@ -448,7 +448,7 @@
             </v-card-title>
 
             <!-- CREDIT CARD -->
-            <credit_card show_account_info=false>
+            <credit_card :show_account_info="false">
             </credit_card>
 
             <br>

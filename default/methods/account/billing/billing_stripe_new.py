@@ -27,9 +27,30 @@ def stripe_new_customer_api(project_string_id):
         return jsonify(log = {'error': {'ALLOW_STRIPE_BILLING': 'Not Allowed for this version'}}), 400
 
     with sessionMaker.session_scope() as session:
+        member = get_member(session = session)
+        user = member.user
+        account_id = input.get('account_id')
+        if account_id is None and user:
+            account_list = Account.get_list(
+                session = session,
+                user_id = user.id,
+                mode_trainer_or_builder = "builder",
+                account_type = "billing",
+                by_primary_user = True)
+            if account_list:
+                account_id = account_list[0].id
+            else:
+                new_account = Account.account_new_core(
+                    session = session,
+                    primary_user = user,
+                    mode_trainer_or_builder = "builder",
+                    account_type = "billing",
+                    nickname = "My Account")
+                account_id = new_account.id
+
         result, log = stripe_new_customer_core(session = session,
                                                token = input['token'],
-                                               account_id = input['account_id'],
+                                               account_id = account_id,
                                                log = log)
         if result is False:
             return jsonify(log = log), 400
