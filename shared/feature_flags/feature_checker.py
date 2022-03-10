@@ -99,6 +99,7 @@ class FeatureChecker:
         # 1. Get from Project
         if self.project:
             plan = self.project.plan
+            logger.info(f"project on plan {plan.template.public_name}")
 
         # 2. Get from user
         if not plan:
@@ -114,12 +115,12 @@ class FeatureChecker:
             self.session.add(self.project)
             logger.info(f"Attached new free plan to project {self.project.project_string_id}")
 
-            # Attach free plan to users who don't have the plan
-            self.user.default_plan = plan
-            self.session.add(self.user)
-            logger.info(f"Attached new free plan to user {self.user.id}")
+            if self.user:
+                # Attach free plan to users who don't have the plan
+                self.user.default_plan = plan
+                self.session.add(self.user)
+                logger.info(f"Attached new free plan to user {self.user.id}")
 
-            logger.info(f"project on plan {plan.template.public_name}")
         if not plan:
             return None
 
