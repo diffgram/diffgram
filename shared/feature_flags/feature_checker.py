@@ -88,6 +88,12 @@ class FeatureChecker:
         if flag_name not in self.FEATURE_FLAGS:
             return None
 
+        # SuperAdmin bypass for diffgram.com
+        if self.user:    
+            if self.user.is_super_admin is True:
+                if settings.IS_OPEN_SOURCE is False:  
+                    return None
+
         plan = None
 
         # 1. Get from Project
