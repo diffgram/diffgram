@@ -190,9 +190,11 @@
     methods: {
       on_click_stop_focus_instance: function(){
         this.$emit('stop_focus_instance', this.instance_hover_index_locked);
+        this.close();
       },
       on_click_focus_instance: function(){
         this.$emit('focus_instance', this.instance_hover_index_locked);
+        this.close();
       },
       on_node_updated: function(){
         let instance_update = {
@@ -261,6 +263,7 @@
       },
       show_instance_history_panel: function () {
         this.$emit('open_instance_history_panel', this.instance_hover_index_locked);
+        this.close();
       },
       close_instance_history_panel: function () {
         this.$emit('close_instance_history_panel', this.instance_hover_index_locked);
