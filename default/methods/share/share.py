@@ -182,10 +182,6 @@ class Share_Project():
 
     def check_free_tier_member_limits(self):
 
-        if self.user_who_made_request.is_super_admin is True:
-            if settings.IS_OPEN_SOURCE  == False:
-                return True
-
         existing_members = self.project.regenerate_member_list()
 
         feature_checker = FeatureChecker(
