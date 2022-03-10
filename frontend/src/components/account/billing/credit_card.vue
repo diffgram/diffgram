@@ -5,70 +5,78 @@
         but displaying info is optional,
         ie in case of order screen -->
 
+    <div style="border: 2px solid #e0e0e0; width: 35%" class="ma-4">
+      <h3 class="font-weight-light ml-4"><span class="font-weight-bold">Project: </span> {{$store.state.project.current.project_string_id}}</h3>
+      <h3 class="font-weight-light ml-4"><span class="font-weight-bold">User: </span> {{$store.state.user.current.email}}</h3>
+
+    </div>
+    <h3 class="font-weight-light ml-4">Credit Card Info: </h3>
     <v_account_info :show_account_info="show_account_info"
                     @account="account = $event">
     </v_account_info>
 
 
-        </v-btn>
+    <v-alert type="success"
+             :value="stripe_success">
+      Card saved.
+    </v-alert>
 
+    <v-alert type="success"
+             class="ml-4 mr-4"
+             outlined
+             :value="account.payment_method_on_file == true">
+      Using Card on Saved file.
+    </v-alert>
 
-        <v-alert type="success"
-                 :value="stripe_success">
-          Card saved.
-        </v-alert>
+    <!-- Hard to use normal loading thing since
+   stripe wants to have the element loaded
+   in the DOM-->
 
-        <v-alert type="info"
-                 outlined
-                 :value="account.payment_method_on_file == true">
-          Card on file.
-        </v-alert>
-
-        <!-- Hard to use normal loading thing since
-       stripe wants to have the element loaded
-       in the DOM-->
-
-        <v-container v-if=" account.payment_method_on_file != true &&
+    <v-container v-if=" account.payment_method_on_file != true &&
                             !stripe_success">
 
-          <form method="post" id="payment-form">
-            <div class="form-row">
-              <label for="card-element">
-                Credit or debit card
-              </label>
-              <div id="card-element">
-                <!-- A Stripe Element will be inserted here. -->
-              </div>
+      <form method="post" id="payment-form">
+        <div class="form-row">
+          <label for="card-element">
+            Credit or debit card
+          </label>
+          <div id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+          </div>
 
-              <!-- Used to display form errors. -->
-              <div id="card-errors" role="alert"></div>
-            </div>
+          <!-- Used to display form errors. -->
+          <div id="card-errors" role="alert"></div>
+        </div>
 
-          </form>
-          <v-flex class="pa-3">
+      </form>
+      <v-flex class="pa-3">
 
-            <v-btn color="primary"
-                   @click="createToken"
-                   :disabled="loading">
-              Add Card
-            </v-btn>
-
-          </v-flex>
-
-          <v_error_multiple :error="error">
-          </v_error_multiple>
-
-        </v-container>
-
-        <!-- Disable for Jan release -->
-        <!--
         <v-btn color="primary"
-               @click="stripe_charge_account">
-          Charge
+               @click="createToken"
+               :disabled="loading">
+          Add Card
         </v-btn>
-        -->
 
+      </v-flex>
 
+      <div class="d-flex flex-column">
+        <v_error_multiple :error="error">
+        </v_error_multiple>
+        <div class="d-flex">
+          <v-btn @click="$router.push('/a/project/new/')" color="success" ><v-icon>mdi-plus</v-icon>Create Project</v-btn>
+          <v-btn @click="$router.push('/projects/')" color="secondary"><v-icon>mdi-folder</v-icon>Change Project</v-btn>
+        </div>
+      </div>
+
+    </v-container>
+
+    <!-- Disable for Jan release -->
+    <!--
+    <v-btn color="primary"
+           @click="stripe_charge_account">
+      Charge
+    </v-btn>
+    -->
 
 
   </div>
@@ -76,14 +84,19 @@
 
 <script lang="ts">
 
-  import axios from '../../../services/customInstance';
+import axios from '../../../services/customInstance';
+import account_info from "../account/account_info"
+import Vue from "vue";
 
-  import Vue from "vue"; export default Vue.extend( {
+export default Vue.extend({
     name: 'credit_card',
     props: {
-      'show_account_info' : {
+      'show_account_info': {
         default: true
       }
+    },
+    components:{
+      v_account_info: account_info
     },
     data() {
       return {
@@ -95,19 +108,17 @@
         stripe_success: false,
 
         account: {
-          id: 1,
+          id: null,
           payment_method_on_file: false
         },
 
-        error: {
-
-        },
+        error: {},
 
 
         stripe: null,
 
 
-        style : {
+        style: {
           base: {
             color: '#32325d',
             fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
@@ -126,9 +137,7 @@
       }
     },
 
-    computed: {
-
-    },
+    computed: {},
     mounted() {
 
       let stripe_script = document.createElement('script')
@@ -145,14 +154,13 @@
         if (self.account.payment_method_on_file != true) {
 
 
-
           // @ts-ignore
           //self.stripe = Stripe('pk_test_704Rwhx7wXhQUoPTfuqiN55i')
           // @ts-ignore
           self.stripe = Stripe('pk_live_QjJ0c5QXD4T61JLbNWN3m11F')
           self.elements = self.stripe.elements();
 
-          self.card = self.elements.create('card', { style: self.style });
+          self.card = self.elements.create('card', {style: self.style});
 
           self.card.mount('#card-element');
 
@@ -172,7 +180,6 @@
         self.loading = false
 
       }, 1000)
-
 
 
     },
@@ -209,11 +216,16 @@
 
         this.loading = true;
         this.error = {}
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        console.log('asdasd', project_string_id)
+        if(!project_string_id){
+          this.error = {'no_projects_created': 'Please create a project or go to existing project to upgrade to a premium account.'}
+          return
+        }
+        axios.post(`/api/v1/project/${String(project_string_id)}/account/billing/stripe/token`, {
 
-        axios.post(`/api/v1/project/${String(this.$store.state.project.current.project_string_id)}/account/billing/stripe/token`, {
-
-            'account_id': this.account.id,
-            'token': token
+          'account_id': this.account.id,
+          'token': token
 
         }).then(response => {
 
@@ -268,5 +280,4 @@
       }
     }
   }
-
 ) </script>
