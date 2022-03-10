@@ -6,11 +6,10 @@
       <div class="d-flex flex-column">
         <div class="d-flex">
           <span >In focus mode.</span>
-          <v-btn x-small @click="show_all()">
-            Exit
+          <v-btn @click="show_all()">
+            Exit (F)
           </v-btn>
         </div>
-        <span style="font-size: 0.7rem" class="font-italic">(Hover out of instance and press F to Stop Focusing)</span>
 
       </div>
     </v-alert>

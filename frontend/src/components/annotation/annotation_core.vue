@@ -1168,7 +1168,6 @@ export default Vue.extend({
   data() {
     return {
       submitted_to_review: false,
-      f_key: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
@@ -3861,6 +3860,7 @@ export default Vue.extend({
     },
 
     get_center_point_of_instance: function (instance) {
+      if (instance == undefined) {return }
       let x = instance.x_max - instance.width / 2;
       let y = instance.y_max - instance.height / 2;
       return { x: x, y: y };
@@ -4750,10 +4750,7 @@ export default Vue.extend({
           return;
         }
       }
-      if(this.f_key){
-        this.focus_instance({index: this.instance_hover_index})
-        return
-      }
+
 
       if (instance_to_select) {
         instance_to_select.selected = !instance_to_select.selected;
@@ -7649,14 +7646,7 @@ export default Vue.extend({
       if (this.show_context_menu) {
         return;
       }
-      if(event.keyCode === 70){
-        if(this.instance_focused_index != undefined && this.instance_focused_index != this.instance_hover_index){
-          if(this.$refs.instance_detail_list){
-            this.$refs.instance_detail_list.show_all();
-          }
-        }
-        this.f_key = false
-      }
+
       if (event.keyCode === 16) {
         // shift
         //
@@ -7671,7 +7661,7 @@ export default Vue.extend({
         this.show_annotations = !this.show_annotations;
       }
 
-      if (event.key === "f") {
+      if (event.key === "n") {
         this.force_new_sequence_request = Date.now();
       }
 
@@ -7724,8 +7714,14 @@ export default Vue.extend({
     },
 
     may_snap_to_instance: function (event) {
-      if (this.shift_key == true && event.key === "F") {
-        this.snap_to_instance(this.selected_instance);
+      if (event.key === "f") {
+        if (this.instance_hover_index != undefined) {
+          this.focus_instance({index: this.instance_hover_index})
+        } else {
+          if(this.$refs.instance_detail_list){
+            this.$refs.instance_detail_list.show_all();
+          }
+        }
       }
     },
 
@@ -7787,11 +7783,7 @@ export default Vue.extend({
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
-      if(event.keyCode === 70){
 
-        this.f_key = true
-
-      }
       if (event.keyCode === shiftKey) {
         // shift
         //

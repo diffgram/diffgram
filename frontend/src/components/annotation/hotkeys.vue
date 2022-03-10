@@ -19,7 +19,7 @@
   <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
 
   <h2> Instance </h2>
-  <p> <kbd>Shift</kbd> + <kbd>f</kbd> Snap to Selected Instance / Unsnap </p>
+  <p> <kbd>F</kbd> Snap to Hovered Instance / Unsnap </p>
   <p> <kbd>Ctrl</kbd> + <kbd>c</kbd> Copy Selected Instance </p>
   <p> <kbd>Ctrl</kbd> + <kbd>v</kbd> Paste Selected Instance </p>
 
