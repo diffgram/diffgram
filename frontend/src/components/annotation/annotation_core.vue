@@ -155,8 +155,12 @@
       top
       left
     >
-      <p class="font-weight-bold" :style="`color: ${custom_snackbar_text_color}`">{{ snackbar_message }}</p>
-      <p  class="font-weight-light font-italic" :style="`color: ${custom_snackbar_text_color}`">{{ snackbar_message_secondary }}</p>
+      <h1 class="font-weight-bold" :style="`color: ${custom_snackbar_text_color}`">
+        {{ snackbar_message }}
+      </h1>
+      <p  class="font-weight-light font-italic pt-3" :style="`color: ${custom_snackbar_text_color}`">
+        {{ snackbar_message_secondary }}
+      </p>
 
       <template v-slot:action="{ attrs }">
         <v-btn
@@ -2178,7 +2182,7 @@ export default Vue.extend({
         -1,
         false,
         textColor,
-        'Hold N+Click to draw as occluded. Esc to exit.'
+        'Hold "N" while drawing to mark occluded. Esc to exit.'
         )
     },
     on_task_annotation_complete_and_save: async function () {
