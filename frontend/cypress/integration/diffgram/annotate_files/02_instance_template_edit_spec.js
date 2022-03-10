@@ -68,11 +68,12 @@ describe('Instance Template Creation', () => {
         .get('[data-cy=activate-coloring-button]').click({force: true})
         .mousedowncanvas(nodes[0].x, nodes[0].y)
         .mouseupcanvas(nodes[0].x, nodes[0].y)
+        .wait(500)
         .mouseupcanvas(0, 0)
+        .wait(2000)
         .window().then(window => {
           let component = window.InstanceTemplateDialog
           let node_1 = component.instance.nodes.find(n => n.name === '1')
-          cy.log(component.instance)
           expect(node_1.color.hex).to.eq('#FF0000');
         })
     })
