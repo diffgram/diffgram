@@ -24,6 +24,7 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-file-upload';
+import '@4tw/cypress-drag-drop'
 import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';

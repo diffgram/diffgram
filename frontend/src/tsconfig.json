@@ -15,7 +15,7 @@
     "sourceMap": true,
     "allowJs": true,
     "baseUrl": ".",
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "cypress", "@4tw/cypress-drag-drop"],
     "paths": {
       "components/*": [
         "src/components/*"
