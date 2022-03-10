@@ -62,7 +62,7 @@
 
       <!-- Undo Redo -->
 
-      <div v-if="show_undo_redo == true && command_manager">
+      <div class="d-flex align-center" v-if="show_undo_redo == true && command_manager">
         <tooltip_button
           :disabled="
             save_loading ||
@@ -85,8 +85,7 @@
             save_loading ||
             view_only_mode ||
             command_manager.command_history.length == 0 ||
-            command_manager.command_index ==
-              command_manager.command_history.length - 1
+            command_manager.command_index == command_manager.command_history.length - 1
           "
           color="primary"
           :icon_style="true"
@@ -144,7 +143,7 @@
       <v-divider vertical></v-divider>
 
       <ui_schema name="zoom" data-cy="toolbar_zoom_info">
-        <div class="pt-3 pl-2 pr-2">
+        <div class="pt-3 pl-1 pr-1">
           <v-tooltip bottom color="info">
             <template v-slot:activator="{ on }">
               <v-chip v-on="on" color="white" small text-color="primary">
@@ -200,6 +199,14 @@
           </diffgram_select>
         </div>
       </ui_schema>
+
+      <div class="d-flex align-center">
+        <guided_1_click_mode_selector v-if="is_keypoint_template"
+                                      @mode_set="on_mode_set"
+                                      ref="keypoints_mode_selector">
+
+        </guided_1_click_mode_selector>
+      </div>
 
       <tooltip_button
         v-if="instance_type == 'tag'"
@@ -268,10 +275,10 @@
         </tooltip_button>
       </div>
       <div class="has-changed">
-        <div style="width: 100px">
+        <div style="width: 70px">
           <span v-if="save_loading"> Saving. </span>
           <span v-else>
-            <span v-if="has_changed">Changes Detected...</span>
+            <span v-if="has_changed">Pending</span>
             <span v-else>Saved.</span>
           </span>
         </div>
@@ -958,10 +965,12 @@ import file_relations_card from "./file_relations_card.vue";
 import task_meta_data_card from "./task_meta_data_card.vue";
 import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
+import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
 
 export default Vue.extend({
   name: "toolbar",
   components: {
+    Guided_1_click_mode_selector,
     label_select_annotation,
     file_meta_data_card,
     time_tracker,
@@ -1069,6 +1078,20 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_mode_set: function(mode){
+      this.$emit('keypoints_mode_set', mode)
+    },
+    set_mode: function(mode){
+      if(!this.$refs.keypoints_mode_selector){
+        return
+      }
+      if(mode === '1_click'){
+        this.$refs.keypoints_mode_selector.set_active(0)
+      }
+      else if(mode === 'guided'){
+        this.$refs.keypoints_mode_selector.set_active(1)
+      }
+    },
     go_to_job: function(){
       if(this.task.job.type === 'examination'){
         this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)

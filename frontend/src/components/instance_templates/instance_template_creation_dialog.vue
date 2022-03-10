@@ -3,7 +3,7 @@
             content-class="dialog-instance-template">
 
     <v-card elevation="0" class="pa-4 ma-0 pointertest">
-      <v-card-title class="pa-0 ma-0">
+      <v-card-title>
         Create KeyPoints Template:
 
       </v-card-title>
@@ -31,8 +31,10 @@
             @draw_mode_update="update_draw_mode_on_instances"
             @set_background="set_background"
             :project_string_id="project_string_id"
+            :instance="instance"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
+            @mode_set="on_mode_set"
             @change_color="change_color"
             @coloring_tool_clicked="activate_color_tool"
           >
@@ -158,6 +160,7 @@
       instance: undefined,
       error: {},
       bg_color: 'grey',
+      mode: '1_click',
       image_bg: undefined,
       canvas_wrapper: undefined,
       canvas_width: 600,
@@ -172,7 +175,9 @@
     }
   },
   mounted() {
-
+    if (window.Cypress) {
+      window.InstanceTemplateDialog = this;
+    }
     document.addEventListener('mousedown', this.mouse_events_global_down)
     this.instance_context.color = {
       hex: '#194d33',
@@ -188,6 +193,9 @@
   },
 
   methods: {
+    on_mode_set: function(mode){
+      this.mode = mode;
+    },
     change_color: function(color){
       console.log('asadasd', color)
       this.instance_context.color = color;
@@ -288,8 +296,11 @@
           edges = this.$props.instance_template.instance_list[i].edges;
           this.name = this.$props.instance_template.name;
           this.instance.nodes = nodes;
+          this.instance.nodes.sort((a, b) => a.ordinal < b.ordinal ? -1 : 1)
           this.instance.edges = edges;
           this.instance.id = this.$props.instance_template.instance_list[i].id
+          this.mode = this.$props.instance_template.mode;
+          this.$refs.instance_template_creation_toolbar.set_mode(this.mode)
         }
 
       }
@@ -461,6 +472,7 @@
           `/api/v1/project/${this.$props.project_string_id}/instance-template/${this.$props.instance_template.id}`,
           {
             name: this.name,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })
@@ -493,6 +505,7 @@
             name: this.name,
             reference_height: this.canvas_height,
             reference_width: this.canvas_width,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })
