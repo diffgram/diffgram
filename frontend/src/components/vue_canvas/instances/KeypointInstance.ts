@@ -984,14 +984,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.beginPath();
       ctx.fillStyle = 'white'
       ctx.lineWidth = 2 / this.zoom_value
-      ctx.arc(point.x, point.y, this.vertex_size + 4 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.fill();
 
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#FFFFFF";
       ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-      ctx.arc(point.x, point.y, this.vertex_size + 8 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
       if (this.is_mouse_in_path(ctx) && !hovered_scale_point) {
         hovered_scale_point = true;
         hover_key = key;
