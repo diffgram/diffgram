@@ -718,6 +718,7 @@
               :mouse_position="mouse_position"
               :show_context_menu="show_context_menu"
               :instance_clipboard="instance_clipboard"
+              :instance_focused_index="instance_focused_index"
               :draw_mode="draw_mode"
               :selected_instance_index="selected_instance_index"
               :project_string_id="project_string_id"
@@ -730,6 +731,8 @@
               :video_mode="video_mode"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
+              @focus_instance="on_context_menu_click_focus_instance"
+              @stop_focus_instance="on_context_menu_click_stop_focus_instance"
               @open_issue_panel="open_issue_panel"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
@@ -2185,6 +2188,18 @@ export default Vue.extend({
         'Hold "N" while drawing to mark occluded. Esc to exit.'
         )
     },
+    on_context_menu_click_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
+      }
+
+    },
+    on_context_menu_click_stop_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.show_all();
+      }
+
+    },
     on_task_annotation_complete_and_save: async function () {
       await this.save(false);
       const response = await finishTaskAnnotation(this.task.id);
@@ -3145,7 +3160,6 @@ export default Vue.extend({
       // Do we want to support focusing more than one at a time?
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
-
       // careful can't use id, since newly created instances won't have an ID!
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
@@ -3156,6 +3170,7 @@ export default Vue.extend({
 
     focus_instance_show_all() {
       this.instance_focused_index = null;
+      this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
       this.reset_to_full();
     },
@@ -3925,6 +3940,7 @@ export default Vue.extend({
     },
 
     get_center_point_of_instance: function (instance) {
+      if (instance == undefined) {return }
       let x = instance.x_max - instance.width / 2;
       let y = instance.y_max - instance.height / 2;
       return { x: x, y: y };
@@ -3963,8 +3979,9 @@ export default Vue.extend({
 
     auto_revert_snapped_to_instance_if_unchanged: function (instance) {
       if (this.snapped_to_instance == instance) {
-        this.focus_instance_show_all();
-        this.snapped_to_instance = undefined;
+        if(this.$refs.instance_detail_list){
+          this.$refs.instance_detail_list.show_all();
+        }
         return true;
       }
       return false;
@@ -4813,6 +4830,7 @@ export default Vue.extend({
           return;
         }
       }
+
 
       if (instance_to_select) {
         instance_to_select.selected = !instance_to_select.selected;
@@ -7741,6 +7759,7 @@ export default Vue.extend({
       if (this.show_context_menu) {
         return;
       }
+
       if (event.keyCode === 16) {
         // shift
         //
@@ -7760,7 +7779,7 @@ export default Vue.extend({
         this.show_annotations = !this.show_annotations;
       }
 
-      if (event.key === "f") {
+      if (event.key === "n") {
         this.force_new_sequence_request = Date.now();
       }
 
@@ -7813,8 +7832,14 @@ export default Vue.extend({
     },
 
     may_snap_to_instance: function (event) {
-      if (this.shift_key == true && event.key === "F") {
-        this.snap_to_instance(this.selected_instance);
+      if (event.key === "f") {
+        if (this.instance_hover_index != undefined) {
+          this.focus_instance({index: this.instance_hover_index})
+        } else {
+          if(this.$refs.instance_detail_list){
+            this.$refs.instance_detail_list.show_all();
+          }
+        }
       }
     },
 
