@@ -217,7 +217,7 @@ class Instance(Base):
         sequence_id = None,
         exclude_removed = True,
         number = None,
-        limit = 100,
+        limit = None,
         return_kind = "objects",
         date_to = None,
         date_from = None,
