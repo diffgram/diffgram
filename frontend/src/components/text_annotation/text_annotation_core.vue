@@ -220,7 +220,7 @@ import {
     CreateInstanceCommand, 
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand
-    } from "../../helpers/command/avalible_commands"
+    } from "../../helpers/command/available_commands"
 
 export default Vue.extend({
     name: "text_token_core",
