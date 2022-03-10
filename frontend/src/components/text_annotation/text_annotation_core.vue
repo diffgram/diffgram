@@ -111,7 +111,7 @@
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer;"
                     class="unselectable"
@@ -127,7 +127,7 @@
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                     class="unselectable"
@@ -150,7 +150,7 @@
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                     class="unselectable"
@@ -170,7 +170,7 @@
                     :y="rect.y"
                     :width="rect.width"
                     @mouseenter="() => on_instance_hover(rect.instance_id)"
-                    @mousedown="() => on_draw_relation(rect.instance_id)"
+                    @mousedown="() => on_trigger_instance_click(rect.instance_id)"
                     @mouseleave="on_instance_stop_hover"
                     :height="rect.instance_type === 'text_token' ? 3 : 1"
                     style="cursor: pointer"
@@ -266,7 +266,9 @@ export default Vue.extend({
             tokens: [],
             instance_list: [],
             invisible_labels: [],
+            //Modes
             search_mode: false,
+            bulk_label: false,
             //effects
             hover_instance: null,
             //Helpers
@@ -304,6 +306,7 @@ export default Vue.extend({
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
+
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
             this.new_instance_list.get().filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
@@ -389,6 +392,41 @@ export default Vue.extend({
             })
             this.trigger_task_change('next')
         },
+        bulk_labeling: function(instance_id) {
+            const instance = this.new_instance_list.get().find(inst => inst.id === instance_id)
+            if (instance.start_token !== instance.end_token) return;
+
+            const instance_word = this.tokens[instance.start_token].word
+            let same_token_indexes = [];
+            this.tokens.map((token, index) => {
+                if (token.word.toLowerCase() === instance_word.toLowerCase()) same_token_indexes.push(index)
+            })
+
+            const newly_created_instances = [];
+            const working_insatnce_list = this.new_instance_list.get().filter(inst => inst.type === "text_token")
+            same_token_indexes.map(index => {
+                const instance_already_exists = working_insatnce_list.find(inst => inst.start_token === index && inst.end_token === index)
+                if(!instance_already_exists) {
+                    const created_instance = new TextAnnotationInstance();
+                    created_instance.create_frontend_instance(
+                        this.tokens[index].id, 
+                        this.tokens[index].id,
+                        {...instance.label_file}
+                    )
+
+                    newly_created_instances.push(created_instance)
+                }
+            })
+
+
+            if (newly_created_instances.length > 0) {
+                this.new_instance_list.push(newly_created_instances)
+                const new_command = new CreateInstanceCommand(newly_created_instances, this.new_instance_list)
+                this.new_command_manager.executeCommand(new_command)
+    
+                this.has_changed = true
+            }
+        },
         trigger_task_change: async function (direction, assign_to_user = false) {
             if (this.has_changed) {
                 await this.save();
@@ -435,10 +473,18 @@ export default Vue.extend({
             else if (e.keyCode === 71 && !this.search_mode) {
                 this.search_mode = true;
             }
+
+            else if (e.keyCode === 66 && !this.bulk_label) {
+                this.bulk_label = true;
+            }
         },
         keyup_event_listeners: function(e) {
             if (e.keyCode === 71) {
                 this.search_mode = false;
+            }
+
+            else if (e.keyCode === 66) {
+                this.bulk_label = false;
             }
         },
         start_autosave: function () {
@@ -557,6 +603,10 @@ export default Vue.extend({
             this.current_label = event
         },
         // function to draw relations between instances
+        on_trigger_instance_click: function(instance_id) {
+            if (this.bulk_label) return this.bulk_labeling(instance_id)
+            this.on_draw_relation(instance_id)
+        },
         on_draw_relation: async function(instance_id) {
             const is_text_token = this.new_instance_list.get().find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
@@ -824,7 +874,7 @@ export default Vue.extend({
             })
         },
         // draw_instance - is only returning rects that have to be drawn
-        draw_instance: function(instance) {            
+        draw_instance: function(instance) {  
             try {
                 let starting_token;
                 let end_token;
@@ -854,6 +904,7 @@ export default Vue.extend({
                     end_token = this.tokens.find(token => token.id === end_instance.end_token)
                 }
                 if (starting_token.id === end_token.id) {
+                    console.log("here color", instance.label_file)
                     const rect = {
                         instance_id: instance.get_instance_data().id,
                         x: starting_token.start_x,
@@ -863,6 +914,7 @@ export default Vue.extend({
                         instance_type: instance.type,
                         color: instance.label_file.colour.hex
                     }
+                    console.log("here", rect)
                     return [rect]
                 }
     
