@@ -48,7 +48,7 @@
             xmlns="http://www.w3.org/2000/svg"
             direction="ltr"
             id="svg0:60"
-            @mouseup="on_draw_text_token"
+            @mouseup="trigger_mouseup"
             :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${text_field_width}`"
             :class="unselectable && 'unselectable'"
         >
@@ -266,6 +266,7 @@ export default Vue.extend({
             tokens: [],
             instance_list: [],
             invisible_labels: [],
+            search_mode: false,
             //effects
             hover_instance: null,
             //Helpers
@@ -395,8 +396,10 @@ export default Vue.extend({
             this.$emit("request_new_task", direction, this.task, assign_to_user);
         },
         hot_key_listeners: function() {
-            window.removeEventListener("keydown", this.esk_event_listener)
-            window.addEventListener("keydown", this.esk_event_listener)
+            window.removeEventListener("keydown", this.keydown_event_listeners)
+            window.addEventListener("keydown", this.keydown_event_listeners)
+            window.removeEventListener("keyup", this.keyup_event_listeners)
+            window.addEventListener("keyup", this.keyup_event_listeners)
         },
         on_unload_listener: function() {
             window.addEventListener("beforeunload", this.leave_listener);
@@ -416,7 +419,7 @@ export default Vue.extend({
                 return confirmationMessage;
             }
         },
-        esk_event_listener: async function(e) {
+        keydown_event_listeners: async function(e) {
             if (e.keyCode === 27) {
                 this.instance_in_progress = null
                 this.path = {};
@@ -424,8 +427,18 @@ export default Vue.extend({
                 this.relation_drawing = false;
                 window.removeEventListener('mousemove', this.draw_relation_listener)
             }
+
             else if (e.keyCode === 83) {
                 await this.save();
+            }
+
+            else if (e.keyCode === 71 && !this.search_mode) {
+                this.search_mode = true;
+            }
+        },
+        keyup_event_listeners: function(e) {
+            if (e.keyCode === 71) {
+                this.search_mode = false;
             }
         },
         start_autosave: function () {
@@ -437,6 +450,39 @@ export default Vue.extend({
         detect_is_ok_to_save: async function () {
             if (this.has_changed && !this.instance_in_progress) {
                 await this.save();
+            }
+        },
+        trigger_mouseup: function(e) {
+            if (this.search_mode) return this.search_in_google(e)
+            this.on_draw_text_token(e)
+        },
+        search_in_google: function(e) {
+            const selection = window.getSelection()
+            const start_token_id = parseInt(selection.anchorNode.parentNode.id)
+            let end_token_id;
+            if (selection.focusNode.nodeName === "#text") {
+                end_token_id = parseInt(selection.focusNode.parentNode.id)
+            } else {
+                end_token_id = parseInt(selection.focusNode.previousSibling.id)
+            }
+            if (!e.target.nodeName.includes('text') && start_token_id == end_token_id) {
+                this.instance_in_progress = null
+                return
+            }
+            let search_quiery = '';
+            for (let i = start_token_id; i <= end_token_id; i++) {
+                search_quiery += this.tokens[i].word;
+                if (i < end_token_id) search_quiery += "+"
+            }
+            window.open(`https://www.google.com/search?q=${search_quiery}`,'_newtab');
+            if (window.getSelection) {
+                if (window.getSelection().empty) {  // Chrome
+                    window.getSelection().empty();
+                } else if (window.getSelection().removeAllRanges) {  // Firefox
+                    window.getSelection().removeAllRanges();
+                }
+                } else if (document.selection) {  // IE?
+                document.selection.empty();
             }
         },
         on_draw_text_token: function(e) {
