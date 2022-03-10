@@ -39,6 +39,7 @@ def stripe_new_customer_api(project_string_id):
                 by_primary_user = True)
             if account_list:
                 account_id = account_list[0].id
+                logger.info(f'No account provided. Fallback to use Account ID: {new_account}')
             else:
                 new_account = Account.account_new_core(
                     session = session,
@@ -46,6 +47,8 @@ def stripe_new_customer_api(project_string_id):
                     mode_trainer_or_builder = "builder",
                     account_type = "billing",
                     nickname = "My Account")
+                logger.info(f'User has no billing accounts attached. Creating a new one...')
+                logger.info(f'New account created for payment: Account ID: {new_account}')
                 account_id = new_account.id
 
         result, log = stripe_new_customer_core(session = session,

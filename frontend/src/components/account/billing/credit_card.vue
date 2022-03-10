@@ -5,6 +5,12 @@
         but displaying info is optional,
         ie in case of order screen -->
 
+    <div style="border: 2px solid #e0e0e0; width: 35%" class="ma-4">
+      <h3 class="font-weight-light ml-4"><span class="font-weight-bold">Project: </span> {{$store.state.project.current.project_string_id}}</h3>
+      <h3 class="font-weight-light ml-4"><span class="font-weight-bold">User: </span> {{$store.state.user.current.email}}</h3>
+
+    </div>
+    <h3 class="font-weight-light ml-4">Credit Card Info: </h3>
     <v_account_info :show_account_info="show_account_info"
                     @account="account = $event">
     </v_account_info>
@@ -15,10 +21,11 @@
       Card saved.
     </v-alert>
 
-    <v-alert type="info"
+    <v-alert type="success"
+             class="ml-4 mr-4"
              outlined
              :value="account.payment_method_on_file == true">
-      Card on file.
+      Using Card on Saved file.
     </v-alert>
 
     <!-- Hard to use normal loading thing since
@@ -52,8 +59,14 @@
 
       </v-flex>
 
-      <v_error_multiple :error="error">
-      </v_error_multiple>
+      <div class="d-flex flex-column">
+        <v_error_multiple :error="error">
+        </v_error_multiple>
+        <div class="d-flex">
+          <v-btn @click="$router.push('/a/project/new/')" color="success" ><v-icon>mdi-plus</v-icon>Create Project</v-btn>
+          <v-btn @click="$router.push('/projects/')" color="secondary"><v-icon>mdi-folder</v-icon>Change Project</v-btn>
+        </div>
+      </div>
 
     </v-container>
 
@@ -203,8 +216,13 @@ export default Vue.extend({
 
         this.loading = true;
         this.error = {}
-
-        axios.post(`/api/v1/project/${String(this.$store.state.project.current.project_string_id)}/account/billing/stripe/token`, {
+        let project_string_id = this.$store.state.project.current.project_string_id;
+        console.log('asdasd', project_string_id)
+        if(!project_string_id){
+          this.error = {'no_projects_created': 'Please create a project or go to existing project to upgrade to a premium account.'}
+          return
+        }
+        axios.post(`/api/v1/project/${String(project_string_id)}/account/billing/stripe/token`, {
 
           'account_id': this.account.id,
           'token': token

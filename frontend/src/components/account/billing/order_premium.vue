@@ -4,9 +4,9 @@
     <v-container>
 
       <v-card>
-        <h1 class="pa-4"> Order Premium Now </h1>
+        <h1 class="pa-4 text-center"> Order Premium Now </h1>
         <v-card-title>
-          How many users?
+          1. How many users?
         </v-card-title>
 
         <v-layout>
@@ -391,10 +391,39 @@
           </v-card>
         </div>
 
+
+
+        <div v-if="$store.state.user.logged_in == true && !install_fingerprint && !email">
+          <v-card>
+
+            <v-card-title>
+              2.Payment Details
+            </v-card-title>
+
+            <!-- CREDIT CARD -->
+            <credit_card :show_account_info="false">
+            </credit_card>
+
+            <br>
+            <br>
+          </v-card>
+        </div>
+
+        <div v-else-if="!$store.state.user.logged_in == true && !install_fingerprint && !email">
+          <v-alert type="info"
+                   prominent
+          >
+
+            Please <a style="color: white"
+                      href="/user/login?redirect=%2Forder%2Fpremium"> login</a>
+            to finish ordering.
+
+          </v-alert>
+        </div>
         <v-card class="mt-8 mb-4">
           <v-card-text class="text--primary">
             <h2 class="pt-4 pb-2">
-              You will be charged {{$format_money(calculated_charge)}}
+              3. You will be charged {{$format_money(calculated_charge)}}
               USD
               {{monthly_or_annual}}
               for {{premium_plan_user_count}} users
@@ -425,11 +454,13 @@
           <v-card-actions>
 
             <v-btn v-if="($store.state.user.logged_in == true) || (install_fingerprint && email)  "
-                   color="primary"
+                   color="success"
+                   x-large
                    :disabled="loading"
                    @click="order()"
                    block
             >
+              <v-icon>mdi-credit-card-outline</v-icon>
               Order
             </v-btn>
 
@@ -439,35 +470,6 @@
           </v_error_multiple>
 
         </v-card>
-
-        <div v-if="$store.state.user.logged_in == true && !install_fingerprint && !email">
-          <v-card>
-
-            <v-card-title>
-              Payment Method
-            </v-card-title>
-
-            <!-- CREDIT CARD -->
-            <credit_card :show_account_info="false">
-            </credit_card>
-
-            <br>
-            <br>
-          </v-card>
-        </div>
-
-        <div v-else-if="!$store.state.user.logged_in == true && !install_fingerprint && !email">
-          <v-alert type="info"
-                   prominent
-          >
-
-            Please <a style="color: white"
-                      href="/user/login?redirect=%2Forder%2Fpremium"> login</a>
-            to finish ordering.
-
-          </v-alert>
-        </div>
-
       </v-card>
 
 
