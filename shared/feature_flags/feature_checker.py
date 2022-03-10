@@ -88,27 +88,45 @@ class FeatureChecker:
         if flag_name not in self.FEATURE_FLAGS:
             return None
 
+        # SuperAdmin bypass for diffgram.com
+        if self.user:    
+            if self.user.is_super_admin is True:
+                if settings.IS_OPEN_SOURCE is False:  
+                    return None
+
         plan = None
-        if self.user:
-            if self.user.default_plan:
-                plan = self.user.default_plan
-                logger.info(f"User on plan {plan.template.public_name}")
+
+        # 1. Get from Project
+        if self.project:
+            plan = self.project.plan
+            if plan:
+                logger.info(f"project {self.project.project_string_id} on plan {plan.template.public_name}")
             else:
-                plan = self.get_or_create_free_plan()
+                logger.info(f"project {self.project.project_string_id} has no plan")
+
+        # 2. Get from user
+        if not plan:
+            if self.user:
+                plan = self.user.default_plan
+                if plan:
+                    logger.info(f"User on plan {plan.template.public_name}")
+                else:
+                    logger.info(f"project {self.project.project_string_id} has no plan")
+
+        # 3. Failsafe, assume free
+        if not plan:
+            plan = self.get_or_create_free_plan()
+            # Attach free plan to project that don't have the plan
+            self.project.plan = plan
+            self.session.add(self.project)
+            logger.info(f"Attached new free plan to project {self.project.project_string_id}")
+
+            if self.user:
                 # Attach free plan to users who don't have the plan
                 self.user.default_plan = plan
                 self.session.add(self.user)
                 logger.info(f"Attached new free plan to user {self.user.id}")
 
-        elif self.project:
-            plan = self.project.plan
-            if not plan:
-                plan = self.get_or_create_free_plan()
-                # Attach free plan to project that don't have the plan
-                self.project.plan = plan
-                self.session.add(self.project)
-                logger.info(f"Attached new free plan to project {self.project.project_string_id}")
-            logger.info(f"project on plan {plan.template.public_name}")
         if not plan:
             return None
 
