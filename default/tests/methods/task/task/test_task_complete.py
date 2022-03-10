@@ -43,7 +43,7 @@ class TestTaskComplete(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': False
         }, self.session)
@@ -58,7 +58,7 @@ class TestTaskComplete(testing_setup.DiffgramBaseTestCase):
         request_data = {
             'action': 'approve'
         }
-        endpoint = "/api/v1/task/{}/complete".format(self.task.id)
+        endpoint = f"/api/v1/task/{self.task.id}/complete"
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         auth_api.member.user = data_mocking.register_user({
             'username': 'test_user',
@@ -69,7 +69,7 @@ class TestTaskComplete(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         with self.client.session_transaction() as session:
             session['user_id'] = make_secure_val(auth_api.member.user.id)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         self.task.add_assignee(self.session, auth_api.member.user)
         self.session.commit()
         response = self.client.post(
@@ -77,7 +77,7 @@ class TestTaskComplete(testing_setup.DiffgramBaseTestCase):
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
@@ -86,7 +86,7 @@ class TestTaskComplete(testing_setup.DiffgramBaseTestCase):
 
     def test_task_complete_core(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': False
         }, self.session)

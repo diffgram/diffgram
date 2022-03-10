@@ -1,146 +1,133 @@
 <template>
   <div id="create_issue_panel">
-  <v-container max-width="750px">
-    <v-card>
-      <v-card-title class="headline d-flex align-center">
-        <v-icon size="36" color="warning">mdi-alert</v-icon>
-        Create Issue
-      </v-card-title>
+    <v-card
+            elevation=0
+            max-width="750px"
+            >
+
       <v-card-text>
-        <v-container class="d-flex flex-column">
-
-          <v-text-field
-                v-model="current_issue.title"
-                label="Issue Name"
-                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                        >
-          </v-text-field>
-
-          <p class="ma-0"><strong>Attached Instances</strong></p>
-          <v-container class="d-flex flex-wrap">
-            <v-chip color="primary" small v-for="instance in selected_instances">
-              <template>
-                <span style="font-size: 10px">
-                    ID: {{instance.id}}
-                </span>
-              </template>
-            </v-chip>
-          </v-container>
-        </v-container>
-        <v-container>
-          <v-container  class="d-flex justify-end pb-0 pr-4">
-
-            <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
-
-              <div class="menubar d-flex justify-end flex-wrap">
-
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.bold() }"
-                  @click="commands.bold"
-                >
-                  <v-icon size="18">mdi-format-bold</v-icon>
-                </v-btn>
-
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.italic() }"
-                  @click="commands.italic"
-                >
-                  <v-icon size="18">mdi-format-italic</v-icon>
-                </v-btn>
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.underline() }"
-                  @click="commands.underline"
-                >
-                  <v-icon size="18" name="underline" >mdi-format-underline</v-icon>
-                </v-btn>
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.bullet_list() }"
-                  @click="commands.bullet_list"
-                >
-                  <v-icon size="18" name="underline" >mdi-format-list-bulleted</v-icon>
-                </v-btn>
-
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.strike() }"
-                  @click="commands.strike"
-                >
-                  <v-icon size="18">mdi-format-strikethrough</v-icon>
-                </v-btn>
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.code_block() }"
-                  @click="commands.code_block"
-                >
-                  <v-icon size="18">mdi-xml</v-icon>
-                </v-btn>
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.paragraph() }"
-                  @click="commands.paragraph"
-                >
-                  <v-icon size="18">mdi-format-paragraph</v-icon>
-                </v-btn>
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.heading({ level: 1 }) }"
-                  @click="commands.heading({ level: 1 })"
-                >
-                  <v-icon size="18">mdi-format-header-1</v-icon>
-                </v-btn>
-
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.heading({ level: 2 }) }"
-                  @click="commands.heading({ level: 2 })"
-                >
-                  <v-icon size="18">mdi-format-header-2</v-icon>
-                </v-btn>
-
-                <v-btn
-                  class="menubar__button pa-0"
-                  style="width: 20px"
-                  icon
-                  :class="{ 'is-active': isActive.heading({ level: 3 }) }"
-                  @click="commands.heading({ level: 3 })"
-                >
-                  <v-icon size="18">mdi-format-header-3</v-icon>
-                </v-btn>
 
 
-              </div>
-            </editor-menu-bar>
+      <v-layout class="pt-0">
+        <v-text-field
+              v-model="current_issue.title"
+              label="Issue Name"
+              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+              @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                      >
+        </v-text-field>
+      </v-layout>
+
+      <v-layout>
+        <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
+
+          <div class="menubar d-flex justify-end flex-wrap">
+
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.bold() }"
+              @click="commands.bold"
+            >
+              <v-icon size="18">mdi-format-bold</v-icon>
+            </v-btn>
+
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.italic() }"
+              @click="commands.italic"
+            >
+              <v-icon size="18">mdi-format-italic</v-icon>
+            </v-btn>
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.underline() }"
+              @click="commands.underline"
+            >
+              <v-icon size="18" name="underline" >mdi-format-underline</v-icon>
+            </v-btn>
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.bullet_list() }"
+              @click="commands.bullet_list"
+            >
+              <v-icon size="18" name="underline" >mdi-format-list-bulleted</v-icon>
+            </v-btn>
+
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.strike() }"
+              @click="commands.strike"
+            >
+              <v-icon size="18">mdi-format-strikethrough</v-icon>
+            </v-btn>
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.code_block() }"
+              @click="commands.code_block"
+            >
+              <v-icon size="18">mdi-xml</v-icon>
+            </v-btn>
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.paragraph() }"
+              @click="commands.paragraph"
+            >
+              <v-icon size="18">mdi-format-paragraph</v-icon>
+            </v-btn>
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.heading({ level: 1 }) }"
+              @click="commands.heading({ level: 1 })"
+            >
+              <v-icon size="18">mdi-format-header-1</v-icon>
+            </v-btn>
+
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.heading({ level: 2 }) }"
+              @click="commands.heading({ level: 2 })"
+            >
+              <v-icon size="18">mdi-format-header-2</v-icon>
+            </v-btn>
+
+            <v-btn
+              class="menubar__button pa-0"
+              style="width: 20px"
+              icon
+              :class="{ 'is-active': isActive.heading({ level: 3 }) }"
+              @click="commands.heading({ level: 3 })"
+            >
+              <v-icon size="18">mdi-format-header-3</v-icon>
+            </v-btn>
 
 
-          </v-container>
-          <editor-content :editor="editor"
-                          class="discussion-create">
+          </div>
+        </editor-menu-bar>
+      </v-layout>
+
+      <editor-content :editor="editor"
+                      class="discussion-create">
 
           </editor-content>
-        </v-container>
+
 
       </v-card-text>
 
@@ -172,8 +159,27 @@
         </v-btn
         >
       </v-card-actions>
+
+      <div v-if="selected_instances && selected_instances.length > 0">
+        <p class="ma-0"><strong>Attached Instances</strong></p>
+        <v-container class="d-flex flex-wrap">
+          <v-chip color="primary" small v-for="instance in selected_instances">
+            <template>
+              <span style="font-size: 10px">
+                  ID: {{instance.id}}
+              </span>
+            </template>
+          </v-chip>
+        </v-container>
+      </div>
+      <div v-else>
+        <p>
+          No Annotations Selected.
+        </p>
+      </div>
+
+
     </v-card>
-  </v-container>
   </div>
 </template>
 

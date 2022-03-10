@@ -97,7 +97,7 @@ def project_update_core(session,
 
 		email = member.user.email
 
-		subject = project.project_string_id + " scheduled for deletion."
+		subject = f"{project.project_string_id} scheduled for deletion."
 
 		message = project.project_string_id + \
 		" may be deleted in approximately 30 days." + \
@@ -126,7 +126,7 @@ def project_update_core(session,
 		
 		email = member.user.email
 
-		subject = project.project_string_id + " now public."
+		subject = f"{project.project_string_id} now public."
 
 		message = project.project_string_id + \
 		" is now publicly accessible." + \

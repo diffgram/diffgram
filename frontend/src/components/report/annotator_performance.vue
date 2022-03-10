@@ -106,14 +106,13 @@ export default {
         labels: labels,
         datasets: [
           {
-            backgroundColor: 'blue',
+            backgroundColor: '#757575',
             borderColor: 'white',
             label: 'Average Time Per Task (Mins)',
             data: values
           }
         ]
       }
-      console.log('AAAAA', this.chart_data)
     },
     gen_report: async function(){
       this.loading = true
@@ -129,7 +128,7 @@ export default {
           labels: labels,
           datasets: [
             {
-              backgroundColor: 'blue',
+              backgroundColor: '#757575',
               borderColor: 'white',
               label: 'Average Time Per Task (Mins)',
               data: result.stats.values

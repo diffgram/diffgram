@@ -61,7 +61,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
 
         # Test review mode
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': True
         }, self.session)
@@ -76,7 +76,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
 
         # Test Auto Assign call
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': True,
         }, self.session)
@@ -102,7 +102,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
 
         # Test Auto Assign call with reviewer
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': True
         }, self.session)
@@ -136,7 +136,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
             'files': [original_file]
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'completion_directory_id': completion_dir.id
         }, self.session)
@@ -157,7 +157,7 @@ class TestSyncEventsManager(testing_setup.DiffgramBaseTestCase):
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         original_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
         }, self.session)
         task = data_mocking.create_task({'name': 'test task',

@@ -105,7 +105,7 @@ class QueryCreator:
                 return suggestions, suggest_type
             for x in self.parser.terminals:
                 print(x.user_repr())
-            logger.error('Unexpected token {}'.format(str(token_exception)))
+            logger.error(f"Unexpected token {str(token_exception)}")
             return False, None
 
     def create_query(self, query_string):

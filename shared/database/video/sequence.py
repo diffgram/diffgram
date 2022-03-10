@@ -199,7 +199,7 @@ class Sequence(Base):
                 instance = self.get_preview_instance(session = session)
 
                 if instance:
-                    logger.debug("Rebuilding Instance {} Preview".format(instance.id))
+                    logger.debug(f"Rebuilding Instance {instance.id} Preview")
 
                     self.instance_preview_cache = instance.serialize_for_sequence_preview(
                         session = session)
@@ -229,7 +229,7 @@ class Sequence(Base):
             the instance we are getting has a thumbnail.
         """
         if instance:
-            logger.debug('Regenerating instance thumb for {}'.format(instance.id))
+            logger.debug(f"Regenerating instance thumb for {instance.id}")
             self.regenerate_instance_thumb(
                 session = session,
                 instance = instance)
@@ -303,7 +303,7 @@ class Sequence(Base):
         is_new_sequence = False
 
         # Default case, instance already had a sequence id
-        logger.debug('Updating sequence for sequence id {}'.format(instance.sequence_id))
+        logger.debug(f"Updating sequence for sequence id {instance.sequence_id}")
         if instance.sequence_id:
             sequence = Sequence.update_single_existing_sequence(
                 session = session,
@@ -312,7 +312,7 @@ class Sequence(Base):
             )
 
         if not instance.sequence_id:
-            logger.debug('No ID checking for number {}'.format(instance.number))
+            logger.debug(f"No ID checking for number {instance.number}")
             # Most common case for new instances
             # We have a number from UI but we don't have it mapped To a sequence
 

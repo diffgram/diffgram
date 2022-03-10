@@ -50,7 +50,7 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project,
             'allow_reviews': True
         }, self.session)
@@ -64,17 +64,17 @@ class TestTasUserRemove(testing_setup.DiffgramBaseTestCase):
             'user_id_list': [self.member.user_id]
         }
         relation = self.task.add_reviewer(session = self.session, user = self.member.user)
-        endpoint = "/api/v1/project/{}/task/{}/user/remove".format(self.project.project_string_id, self.task.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/task/{self.task.id}/user/remove"
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
 
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
 
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
 

@@ -412,7 +412,7 @@ class Annotation_Update():
         """
 
         if not self.instance_list_new:
-            logger.error('Error, please provide instance_list_new {}'.format(str(self.log)))
+            logger.error(f"Error, please provide instance_list_new {str(self.log)}")
             return None
 
         # Remove requirement for label_file_id in this case
@@ -425,8 +425,8 @@ class Annotation_Update():
                                   overwrite_existing_instances = True)
 
         if len(self.log["error"].keys()) >= 1:
-            logger.error('Error updating annotation {}'.format(str(self.log)))
-            logger.error('Instance list is: {}'.format(self.instance_list_new))
+            logger.error(f"Error updating annotation {str(self.log)}")
+            logger.error(f"Instance list is: {self.instance_list_new}")
             return self.return_orginal_file_type()
 
         return self.new_added_instances
@@ -449,10 +449,10 @@ class Annotation_Update():
 
         if len(ids_not_included) > 0:
             frame_numbers_instance_list_new = [x.get('frame_number') for x in self.instance_list_new]
-            logger.error('Invalid payload on annotation update missing IDs {}'.format(ids_not_included))
-            logger.error('Frame Number {}'.format(self.frame_number))
-            logger.error('frame_numbers_instance_list_new: {}'.format(frame_numbers_instance_list_new))
-            logger.error('File ID {}'.format(self.file.id))
+            logger.error(f"Invalid payload on annotation update missing IDs {ids_not_included}")
+            logger.error(f"Frame Number {self.frame_number}")
+            logger.error(f"frame_numbers_instance_list_new: {frame_numbers_instance_list_new}")
+            logger.error(f"File ID {self.file.id}")
             self.log['warning'] = {}
             self.log['warning'][
                 'new_instance_list_missing_ids'] = 'Invalid payload sent to server, missing the following instances IDs {}'.format(
@@ -509,8 +509,8 @@ class Annotation_Update():
         payload_includes_all_instances = self.__check_all_instances_available_in_new_instance_list()
 
         if not payload_includes_all_instances:
-            logger.error('Error updating annotation {}'.format(str(self.log)))
-            logger.error('Instance list is: {}'.format(self.instance_list_new))
+            logger.error(f"Error updating annotation {str(self.log)}")
+            logger.error(f"Instance list is: {self.instance_list_new}")
             return self.return_orginal_file_type()
 
         self.build_existing_hash_list()
@@ -525,8 +525,8 @@ class Annotation_Update():
         # This may be a little aggressive, eg maybe shuold just "warn" on instances that are invalid.
         # Primary concern in current context is that we don't delete left over ones.
         if len(self.log["error"].keys()) >= 1:
-            logger.error('Error updating annotation {}'.format(str(self.log)))
-            logger.error('Instance list is: {}'.format(self.instance_list_new))
+            logger.error(f"Error updating annotation {str(self.log)}")
+            logger.error(f"Instance list is: {self.instance_list_new}")
             return self.return_orginal_file_type()
 
         self.update_file_hash()
@@ -547,7 +547,7 @@ class Annotation_Update():
                     member = self.member)
 
         else:
-            logger.error('Error updating annotation {}'.format(str(self.log)))
+            logger.error(f"Error updating annotation {str(self.log)}")
         return self.return_orginal_file_type()
 
     def main(self):
@@ -680,8 +680,8 @@ class Annotation_Update():
             else:
                 # Collision detected, we keep the newest instance by created time (which was order sorted).
                 # So this one is just to be deleted and not added to results.
-                logger.warning('Collision detected on {} instance id: {}'.format(inst.hash, inst.id))
-                logger.warning('hashes_dict: {}'.format(hashes_dict))
+                logger.warning(f"Collision detected on {inst.hash} instance id: {inst.id}")
+                logger.warning(f"hashes_dict: {hashes_dict}")
                 inst.soft_delete = True
                 inst.action_type = "from_collision"
                 self.session.add(inst)
@@ -746,7 +746,7 @@ class Annotation_Update():
         """
         project = self.project
         if self.task:
-            logger.info('getting project from task {}'.format(self.task.id))
+            logger.info(f"getting project from task {self.task.id}")
             project = self.task.project
 
         assert project is not None
@@ -766,6 +766,11 @@ class Annotation_Update():
 
         if self.instance.label_file_id in self.allowed_label_file_id_list:
             return True
+
+        if self.instance.type == "global":
+            self.instance.label_file_id = None      # Ensure is None for Security
+            return True
+
         self.log['error']['valid_label_file'] = "Permission issue with " + \
                                                 str(self.instance.label_file_id) + " label_file_id."
         return False
@@ -862,7 +867,7 @@ class Annotation_Update():
             self.log['duplicate_instance_refs'] = [existing_instance.get('creation_ref_id')]
 
         self.log['debug'] = self.__build_debug_log()
-        logger.warning('Error Duplicate IDs detected on instance_list. Id is: {}'.format(existing_instance.get('id')))
+        logger.warning(f"Error Duplicate IDs detected on instance_list. Id is: {existing_instance.get('id')}")
 
         instance_created_time = instance.get('client_created_time')
         if instance_created_time is None:
@@ -994,7 +999,7 @@ class Annotation_Update():
         try:
             cleaned_instance_list = self.__identify_and_merge_duplicate_ids(self.instance_list_new)
         except Exception as exception:
-            logger.warning(str(exception) + "_trace_4f36a2aa")
+            logger.warning(f"{str(exception)}_trace_4f36a2aa")
             communicate_via_email.send(settings.DEFAULT_ENGINEERING_EMAIL,
                                        '[Exception] Duplicate ID On Annotation_Update', str(self.log))
         valid_models = self.check_allowed_model_ids(cleaned_instance_list)
@@ -1011,7 +1016,7 @@ class Annotation_Update():
                         elm['label_file_id']['required'] = False
 
             if self.instance_proposed.get('type') == 'global':
-                self.instance_proposed['label_file_id'] = -1  # to bypass check
+                self.instance_proposed['label_file_id'] = -1  # to bypass input type check
 
             self.log, input = regular_input.input_check_many(
                 spec_list = self.per_instance_spec_list,
@@ -1107,7 +1112,7 @@ class Annotation_Update():
             )
 
     def get_min_coordinates_instance(self, instance):
-        logger.debug('Getting min coordinates for {} - {}'.format(instance.id, instance.type))
+        logger.debug(f"Getting min coordinates for {instance.id} - {instance.type}")
 
         if instance.type in ['text_token', 'relation', 'global']:
             return 0, 0
@@ -1157,11 +1162,11 @@ class Annotation_Update():
                    instance.center_3d['y'] - (instance.dimensions_3d['height'] / 2), \
                    instance.center_3d['z'] - (instance.dimensions_3d['depth'] / 2)
         else:
-            logger.error('Invalid instance type for image crop: {}'.format(instance.type))
+            logger.error(f"Invalid instance type for image crop: {instance.type}")
             return None
 
     def get_max_coordinates_instance(self, instance):
-        logger.debug('Getting max coordinates for {} - {}'.format(instance.id, instance.type))
+        logger.debug(f"Getting max coordinates for {instance.id} - {instance.type}")
 
         if instance.type in ['text_token', 'relation', 'global']:
             return 0, 0
@@ -1210,7 +1215,7 @@ class Annotation_Update():
                    instance.center_3d['y'] + (instance.dimensions_3d['height'] / 2), \
                    instance.center_3d['z'] + (instance.dimensions_3d['depth'] / 2)
         else:
-            logger.error('Invalid instance type for image crop: {}'.format(instance.type))
+            logger.error(f"Invalid instance type for image crop: {instance.type}")
             return None
 
     def update_instance(self,
@@ -1297,11 +1302,11 @@ class Annotation_Update():
             member_created_id = self.member.id
 
         if self.file:
-            logger.debug('Creating Instance with file id: {}'.format(self.file.id))
-            logger.debug('Creating Instance with project id: {}'.format(self.file.project.id))
-            logger.debug('Creating Instance with type: {}'.format(type))
+            logger.debug(f"Creating Instance with file id: {self.file.id}")
+            logger.debug(f"Creating Instance with project id: {self.file.project.id}")
+            logger.debug(f"Creating Instance with type: {type}")
             logger.debug(
-                'Creating Instance with TOKENS: {} {} {} {}'.format(start_sentence, end_sentence, end_char, start_char))
+                f"Creating Instance with TOKENS: {start_sentence} {end_sentence} {end_char} {start_char}")
         if version is None:
             version = 0
         version += 1
@@ -1378,13 +1383,13 @@ class Annotation_Update():
                                           to_ref = to_creation_ref)
 
         if len(self.log["error"].keys()) >= 1:
-            logger.error('Error on instance creation {}'.format(self.log))
+            logger.error(f"Error on instance creation {self.log}")
             return False
 
         self.deduct_spatial_coordinates()
 
         if len(self.log["error"].keys()) >= 1:
-            logger.error('Error on instance creation {}'.format(self.log))
+            logger.error(f"Error on instance creation {self.log}")
             return False
 
         """
@@ -1404,14 +1409,14 @@ class Annotation_Update():
         try:  # wrap new concept in try block just in case
             self.instance = self.__validate_user_deletion(self.instance, is_new_instance)
         except Exception as e:
-            logger.error(str(e) + ' trace_82j2j__validate_user_deletion')
+            logger.error(f"{str(e)} trace_82j2j__validate_user_deletion")
             communicate_via_email.send(settings.DEFAULT_ENGINEERING_EMAIL, '[Exception] __validate_user_deletion',
                                        str(self.log))
 
         self.__perform_external_map_action()
 
         self.update_cache_single_instance_in_list_context()
-        logger.debug('is_new_instance {}'.format(is_new_instance))
+        logger.debug(f"is_new_instance {is_new_instance}")
         if is_new_instance is False:
             return
 
@@ -1614,7 +1619,6 @@ class Annotation_Update():
         if self.instance.type != 'relation':
             return
 
-        print('AAAAAA', self.instance.id, from_id, to_id, from_ref, to_ref)
         if from_id is None and not from_ref:
             self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
             return
@@ -1725,7 +1729,7 @@ class Annotation_Update():
         else:
             # This case can happen when 2 instances with the exact same data are sent on instance_list_new.
             # We only want to keep one of them.
-            logger.warning('Got duplicated hash {}'.format(self.instance.hash))
+            logger.warning(f"Got duplicated hash {self.instance.hash}")
             # The instance_dict hash will always have the newest instance (sorted by created_time)
             self.duplicate_hash_new_instance_list.append(self.instance)
             existing_instance = self.new_instance_dict_hash[self.instance.hash]
@@ -2042,7 +2046,7 @@ class Annotation_Update():
         self,
         instance):
 
-        logger.info("Newly Deleted {}".format(instance.id))
+        logger.info(f"Newly Deleted {instance.id}")
 
         self.new_deleted_instances.append(instance.id)
 
@@ -2099,7 +2103,7 @@ def task_annotation_update(
 
     except Exception as e:
         trace = traceback.format_exc()
-        logger.error('File {} is Locked'.format(task.file_id))
+        logger.error(f"File {task.file_id} is Locked")
         logger.error(trace)
         log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
         return False, None
@@ -2185,7 +2189,7 @@ def annotation_update_web(
             file_id = file_id)
     except Exception as e:
         trace = traceback.format_exc()
-        logger.error('File {} is Locked'.format(file_id))
+        logger.error(f"File {file_id} is Locked")
         logger.error(trace)
         log['error']['file_locked'] = 'File is being saved by another process, please try again later.'
         return False, None
@@ -2224,7 +2228,7 @@ def annotation_update_web(
         member_id = user.member_id,
         project_id = project.id,
         file_id = new_file.id,
-        description = "Changed " + str(new_file.count_instances_changed)
+        description = f"Changed {str(new_file.count_instances_changed)}"
     )
 
     return new_file.serialize_with_type(session), annotation_update

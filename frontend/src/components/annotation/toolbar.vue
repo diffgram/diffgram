@@ -447,9 +447,7 @@
       >
         <template slot="content">
           <v-layout class="pb-4">
-            <!-- View Task Information -->
-            <!-- THIS IS QA CAROUSEL, ITS HIDDEN CUZ WE DON'T SUPPORT IN FOR 3D AND TEXT YET -->
-             <!-- <div>
+             <div>
                 <button_with_menu
                   datacy="open-annotation-show-menu"
                   v-if="annotation_show_on !== true"
@@ -497,7 +495,7 @@
                   :icon_style="true"
                   :bottom="true"
                 />
-              </div> -->
+              </div>
             <tooltip_button
                 tooltip_message="Refresh Instances"
                 v-if="$store.state.user.current.is_super_admin == true"
@@ -538,6 +536,15 @@
                       min="0"
                       max="100"
                     ></v-slider>
+
+                    <v-checkbox
+                      class="pt-0"
+                      label="Smooth Canvas"
+                      v-model="label_settings_local.smooth_canvas"
+                      @change="trigger_smooth_canvas_events()"
+                    >
+                    </v-checkbox>
+
 
                     <v-btn icon @click="filter_reset()">
                       <v-icon color="primary"> autorenew </v-icon>
@@ -1078,10 +1085,20 @@ export default Vue.extend({
         this.label_settings_local.canvas_scale_global_setting
       );
     },
+    trigger_smooth_canvas_events: function () {
+      this.$emit('smooth_canvas_changed', this.label_settings_local.smooth_canvas),
+      this.$store.commit('set_user_setting', [
+        'smooth_canvas',
+        this.label_settings_local.smooth_canvas,
+      ])
+    },
     filter_reset: function () {
       this.label_settings_local.filter_brightness = 100;
       this.label_settings_local.filter_contrast = 100;
       this.label_settings_local.filter_grayscale = 0;
+
+      this.label_settings_local.smooth_canvas = true
+      this.trigger_smooth_canvas_events()
     },
   },
 });

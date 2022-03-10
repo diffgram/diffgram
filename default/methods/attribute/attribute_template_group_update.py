@@ -153,7 +153,7 @@ def group_update_core(
 					file_id = untrusted_label_file_id)
 
 				if label_file is None:
-					log['error']['label_file_id'] = "Invalid" + str(untrusted_label_file_id)
+					log['error']['label_file_id'] = f"Invalid{str(untrusted_label_file_id)}"
 					return log
 
 				new_attachment = Attribute_Template_Group_to_File.set(

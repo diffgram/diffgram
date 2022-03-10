@@ -27,8 +27,8 @@
                  dismissible
         >
           Looking for more?
-          Enterprise Subscriptions at $4,000/month.
-          <a href="https://diffgram.com/contact"
+          Consider Diffgram Enterprise
+          <a href="https://diffgram.com/main/contact"
              target="_blank">
             Book A Demo</a>
           or email sales@diffgram.com
@@ -503,12 +503,12 @@
         return {
 
           show_ROI_calculator: false,
-          premium_plan_user_count: 5,
+          premium_plan_user_count: 10,
           annual_pricing: false,
           max_users: 20,
           promo_code: '',
           promo_valid: false,
-          plan_rate: 12900,  // as integer
+          plan_rate: 24900,  // as integer
           error: {},
           success: false,
           loading: false,
@@ -529,8 +529,8 @@
           install_fingerprint: null,
           email: null,
           promo_map: {
-            'switch': .20,
-            'holiday': .30
+            'switch': .10,
+            'holiday': .10
           },
 
           bar_chart_options_non_time_series: {
@@ -556,10 +556,7 @@
         }
       },
       created() {
-        if (this.$store.state.user.logged_in == true) {
-          this.show_ROI_calculator = true
-          // keep focus on ordering
-        }
+
         if (this.$route.query.install_fingerprint) {
           this.install_fingerprint = this.$route.query.install_fingerprint;
         }
@@ -570,7 +567,7 @@
       computed: {
         calculated_charge() {
 
-          this.plan_rate = 12900
+          this.plan_rate = 24900
           let savings_rate = 0
 
           if (this.annual_pricing) {

@@ -31,6 +31,8 @@ from shared.database.image import Image
 from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
+from shared.database.input import Input
+
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
@@ -112,6 +114,21 @@ def register_user(user_data: dict, session):
                                                                           user_data['project_string_id'])
     return new_user
 
+
+def create_image(image_data, session):
+    im_obj = Image(**image_data)
+    session.add(im_obj)
+    session.commit()
+    return im_obj
+
+
+def create_input(input_data, session):
+    input_obj = Input(
+        **input_data
+    )
+    session.add(input_obj)
+    session.commit()
+    return input_obj
 
 
 def create_event(event_data, session):
@@ -340,12 +357,12 @@ def create_job(job_data, session):
     if job_data.get('project'):
         job = Job(member_created = None, project = job_data.get('project'))
     else:
-        project_string_id = '{}-job-project'.format(get_random_string(8))
+        project_string_id = f"{get_random_string(8)}-job-project"
         project_context = {
             'project_string_id': project_string_id,
-            'project_name': '{}-job-project'.format(project_string_id),
+            'project_name': f"{project_string_id}-job-project",
             'users': [
-                {'username': '{}-job-user'.format(get_random_string(5)),
+                {'username': f"{get_random_string(5)}-job-user",
                  'email': 'test@test.com',
                  'password': 'diffgram123',
                  'project_string_id': project_string_id
@@ -571,7 +588,7 @@ def create_task(task_data, session):
 
     # # #
     if 'job' not in task_data:
-        job = create_job({'name': 'jobtest:{}'.format(task_data.get('name'))}, session)
+        job = create_job({'name': f"jobtest:{task_data.get('name')}"}, session)
     else:
         job = task_data.get('job')
     task.job_id = job.id
@@ -693,8 +710,8 @@ def create_project_with_context(context_data, session):
 
     default_project_limit = 10
     user = register_user(
-        {'username': 'project_owner_{}'.format(project_string_id),
-         'email': 'test{}@test.com'.format(project_string_id),
+        {'username': f"project_owner_{project_string_id}",
+         'email': f"test{project_string_id}@test.com",
          'password': 'diffgram123'},
         session
     )

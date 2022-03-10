@@ -60,7 +60,7 @@
                     color="primary"
                     large
                     data-cy="resume_last_task"
-                    :disabled="last_task_event === false || resume_task_loading"
+                    :disabled="!last_task_event || resume_task_loading || (last_task_event && !last_task_event.task_id)"
                     @click="route_resume_task()"
                   >
                     Resume

@@ -15,6 +15,7 @@
       >
         <template slot="second_row">
           <toolbar
+            ref="toolbar"
             :height="50"
             :command_manager="command_manager"
             :save_loading="
@@ -67,6 +68,7 @@
             @on_task_annotation_complete_and_save="
               on_task_annotation_complete_and_save
             "
+            @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
         </template>
@@ -274,46 +276,10 @@
             :instance="selected_instance_for_history"
           >
           </instance_history_sidepanel>
-          <create_issue_panel
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            v-show="show_issue_panel == true && !current_issue"
-            :instance_list="instance_list"
-            :task="task"
-            :file="file"
-            :frame_number="this.video_mode ? this.current_frame : undefined"
-            :mouse_position="issue_mouse_position"
-            @new_issue_created="refresh_issues_sidepanel"
-            @open_side_panel="open_issue_panel"
-            @close_issue_panel="close_issue_panel"
-          ></create_issue_panel>
-          <view_edit_issue_panel
-            v-if="!loading"
-            v-show="show_issue_panel == true && current_issue"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :instance_list="instance_list"
-            :current_issue_id="current_issue ? current_issue.id : undefined"
-            :file="file"
-            @close_view_edit_panel="close_view_edit_issue_panel"
-            @start_attach_instance_edition="start_attach_instance_edition"
-            @update_issues_list="update_issues_list"
-            @stop_attach_instance_edition="stop_attach_instance_edition"
-            @update_canvas="update_canvas"
-            ref="view_edit_issue_panel"
-          ></view_edit_issue_panel>
 
           <v-divider></v-divider>
 
         <v-expansion-panels
-          v-model="userscript_minimized"
           :accordion="true"
           :inset="false"
           :multiple="false"
@@ -328,15 +294,13 @@
             <v-expansion-panel-header
               data-cy="show_userscript_panel_button"
               class="d-flex justify-start pa-0 pr-1 align-center"
-              @click="userscript_minimized = !userscript_minimized"
-              v-if="userscript_minimized"
               style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
               <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
                 mdi-language-javascript
               </v-icon>
 
-              <h4>Interactive Automations</h4>
+              <h4>Scripts</h4>
 
               <v-spacer></v-spacer>
 
@@ -345,7 +309,6 @@
             <v-expansion-panel-content>
 
               <userscript
-                v-show="!userscript_minimized"
                 :project_string_id_prop="project_string_id"
                 :create_instance="event_create_instance"
                 :current_userscript_prop="get_userscript()"
@@ -363,22 +326,108 @@
           </v-expansion-panel>
         </v-expansion-panels>
 
+        <v-expansion-panels
+          v-model="issues_expansion_panel"
+          :accordion="true"
+          :inset="false"
+          :multiple="false"
+          :focusable="true"
+          :disabled="false"
+          :flat="true"
+          :hover="false"
+          :tile="true"
+        >
+          <v-expansion-panel>
 
-          <issues_sidepanel
-            :minimized="minimize_issues_sidepanel"
-            :project_string_id="
-              project_string_id
-                ? project_string_id
-                : this.$store.state.project.current.project_string_id
-            "
-            :task="task"
-            :file="file"
-            @view_issue_detail="open_view_edit_panel"
-            @issues_fetched="issues_fetched"
-            @minimize_issues_panel="minimize_issues_sidepanel = true"
-            @maximize_issues_panel="minimize_issues_sidepanel = false"
-            ref="issues_sidepanel"
-          ></issues_sidepanel>
+            <v-expansion-panel-header
+              data-cy="show_issues_panel_button"
+              class="d-flex justify-start pa-0 sidebar-accordeon-header align-center">
+
+              <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
+                mdi-comment-multiple
+              </v-icon>
+
+              <h4>Issues</h4>
+
+              <v-spacer></v-spacer>
+
+              <v-chip x-small class="d-flex justify-center flex-grow-0">
+                  {{ issues_list.length }}
+              </v-chip>
+
+            </v-expansion-panel-header>
+
+            <v-expansion-panel-content>
+
+              <tooltip_button
+                  v-if="show_modify_an_issue != true"
+                  tooltip_message="New Issue"
+                  datacy="new_issue_in_side_panel"
+                  @click="show_modify_an_issue=true"
+                  icon="add"
+                  :icon_style="true"
+                  color="primary"
+                              >
+              </tooltip_button>
+
+             <create_issue_panel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              v-show="show_modify_an_issue == true && !current_issue"
+              :instance_list="instance_list"
+              :task="task"
+              :file="file"
+              :frame_number="this.video_mode ? this.current_frame : undefined"
+              :mouse_position="issue_mouse_position"
+              @new_issue_created="refresh_issues_sidepanel"
+              @open_side_panel="open_issue_panel"
+              @close_issue_panel="close_issue_panel"
+            ></create_issue_panel>
+
+            <view_edit_issue_panel
+              v-if="!loading"
+              v-show="show_modify_an_issue == true && current_issue"
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :instance_list="instance_list"
+              :current_issue_id="current_issue ? current_issue.id : undefined"
+              :file="file"
+              @close_view_edit_panel="close_view_edit_issue_panel"
+              @start_attach_instance_edition="start_attach_instance_edition"
+              @update_issues_list="update_issues_list"
+              @stop_attach_instance_edition="stop_attach_instance_edition"
+              @update_canvas="update_canvas"
+              ref="view_edit_issue_panel"
+            ></view_edit_issue_panel>
+
+            <!-- List -->
+            <issues_sidepanel
+              :project_string_id="
+                project_string_id
+                  ? project_string_id
+                  : this.$store.state.project.current.project_string_id
+              "
+              :task="task"
+              :file="file"
+              @view_issue_detail="open_view_edit_panel"
+              @issues_fetched="issues_fetched"
+              ref="issues_sidepanel"
+            ></issues_sidepanel>
+
+
+
+            </v-expansion-panel-content>
+
+          </v-expansion-panel>
+        </v-expansion-panels>
+
         </v-navigation-drawer>
 
         <!-- TODO would want to think a bit about how to block scrolling
@@ -632,7 +681,7 @@
               </canvas_current_instance>
               <current_instance_template
                 :ord="6"
-                :current_instance_template="current_instance_template"
+                :current_instance_template="actively_drawing_instance_template"
                 :vertex_size="label_settings.vertex_size"
                 :instance_template_start_point="instance_template_start_point"
                 :instance_template_draw_started="instance_template_draw_started"
@@ -657,6 +706,7 @@
               :mouse_position="mouse_position"
               :show_context_menu="show_context_menu"
               :instance_clipboard="instance_clipboard"
+              :instance_focused_index="instance_focused_index"
               :draw_mode="draw_mode"
               :selected_instance_index="selected_instance_index"
               :project_string_id="project_string_id"
@@ -669,6 +719,8 @@
               :video_mode="video_mode"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
+              @focus_instance="on_context_menu_click_focus_instance"
+              @stop_focus_instance="on_context_menu_click_stop_focus_instance"
               @open_issue_panel="open_issue_panel"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
@@ -927,9 +979,10 @@ import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
+import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
-import {initialize_instance_object} from '../../utils/instance_utils.js';
+import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.js';
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1093,8 +1146,8 @@ export default Vue.extend({
 
       this.clear_selected();
     },
-    show_issue_panel: function () {
-      if (this.show_issue_panel == true) {
+    show_modify_an_issue: function () {
+      if (this.show_modify_an_issue == true) {
         this.label_settings.show_ghost_instances = false;
         this.label_settings.ghost_instances_closed_by_open_view_edit_panel =
           true;
@@ -1118,8 +1171,10 @@ export default Vue.extend({
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       instance_rotate_control_mouse_hover: null,
+      actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
+      z_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -1142,8 +1197,6 @@ export default Vue.extend({
       parent_merge_instance_index: null,
       instances_to_merge: [],
 
-      userscript_minimized: true,
-
       event_create_instance: undefined,
 
       selected_instance_for_history: undefined,
@@ -1159,7 +1212,7 @@ export default Vue.extend({
       instance_context: new InstanceContext(),
       instance_template_draw_started: false,
       mouse_down_delta_event: { x: 0, y: 0 },
-      issues_list: undefined,
+      issues_list: [],
       canvas_alert_x: undefined,
       canvas_alert_y: undefined,
       original_edit_instance: undefined,
@@ -1176,7 +1229,7 @@ export default Vue.extend({
       request_change_current_instance: null,
       current_issue: undefined,
       share_dialog_open: false,
-      show_issue_panel: false,
+      show_modify_an_issue: false,
       snackbar_issues: false, // Controls the display of snackbar with info message when selecting instance on issues.
       trigger_refresh_current_instance: null,
       ellipse_hovered_corner: undefined,
@@ -1298,12 +1351,13 @@ export default Vue.extend({
         left_nav_width: 450,
         on_instance_creation_advance_sequence: true,
         ghost_instances_closed_by_open_view_edit_panel: false,
+        smooth_canvas: true
       },
 
       annotations_loading: false,
       save_loading_image: false,
 
-      minimize_issues_sidepanel: false,
+      issues_expansion_panel: false,
 
       source_control_menu: false,
 
@@ -1331,12 +1385,13 @@ export default Vue.extend({
       // We could also use this dictionary for other parts
       // that rely on type to specifcy an icon
       instance_type_list: [
+        { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
         {
           name: "polygon",
           display_name: "Polygon",
           icon: "mdi-vector-polygon",
         },
-        { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
+
         { name: "tag", display_name: "Tag", icon: "mdi-tag" },
         { name: "point", display_name: "Point", icon: "mdi-circle-slice-8" },
         { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
@@ -1511,14 +1566,13 @@ export default Vue.extend({
       let allowed_types = undefined;
 
       if(ui_schema && ui_schema.instance_selector){
-        let allowed_types = ui_schema.instance_selector.allowed_instance_types;
+        allowed_types = ui_schema.instance_selector.allowed_instance_types.map(elm => elm.name);
       }
       if (!allowed_types) {
         return this.instance_type_list;
       } else {
-        return this.instance_type_list.filter((elm) =>
-          allowed_types.includes(elm.name)
-        );
+        return this.instance_type_list.filter((elm) => allowed_types.includes(elm.name));
+
       }
     },
     clipboard: function () {
@@ -2075,6 +2129,18 @@ export default Vue.extend({
   },
 
   methods: {
+    on_context_menu_click_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
+      }
+
+    },
+    on_context_menu_click_stop_focus_instance: function(instance_index){
+      if(this.$refs.instance_detail_list){
+        this.$refs.instance_detail_list.show_all();
+      }
+
+    },
     on_task_annotation_complete_and_save: async function () {
       await this.save(false);
       const response = await finishTaskAnnotation(this.task.id);
@@ -2127,8 +2193,13 @@ export default Vue.extend({
     },
 
     update_label_settings: function (event) {
-      this.label_settings = event;
+      // Add new events individually in toolbar, e.g. @change="$emit('update_something').
+      this.label_settings = event  // this is actually be reference once connected.
       this.refresh = Date.now();
+    },
+    update_smooth_canvas: function (event){
+      if (!this.canvas_element_ctx) { return }
+      this.canvas_element_ctx.imageSmoothingEnabled = event
     },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
@@ -2756,51 +2827,56 @@ export default Vue.extend({
       }
     },
     fetch_instance_template: async function () {
-      try {
-        this.loading_instance_templates = true;
-        this.canvas_element = document.getElementById("my_canvas");
-        this.canvas_element_ctx = this.canvas_element.getContext("2d");
-        const response = await axios.post(
-          `/api/v1/project/${this.$props.project_string_id}/instance-template/list`,
-          {}
-        );
-        if (response.data.instance_template_list) {
-          this.instance_template_list =
-            response.data.instance_template_list.map((instance_template) => {
-              instance_template.instance_list =
-                instance_template.instance_list.map((instance) => {
-                  instance.reference_width = instance_template.reference_width;
-                  instance.reference_height = instance_template.reference_height;
-                  let initialized_instance = initialize_instance_object(instance, this);
-                  return initialized_instance;
-                });
-              // Note that here we are creating a new object for the instance list, all references are lost.
-              instance_template.instance_list =
-                this.create_instance_list_with_class_types(
-                  instance_template.instance_list
-                );
 
-              return instance_template;
-            });
-          this.instance_template_list.forEach((inst) => {
-            let icon = "mdi-shape";
-            if (
-              inst.instance_list &&
-              inst.instance_list[0].type == "keypoints"
-            ) {
-              icon = "mdi-vector-polyline-edit";
-            }
-            this.instance_type_list.push({
-              name: inst.id,
-              display_name: inst.name,
-              icon: icon,
-            });
+      this.loading_instance_templates = true;
+      this.canvas_element = document.getElementById("my_canvas");
+      this.canvas_element_ctx = this.canvas_element.getContext("2d");
+      const [data, error] = await getInstanceTemplatesFromProject(this.$props.project_string_id);
+      if (data && data.instance_template_list) {
+        this.instance_template_list =
+          data.instance_template_list.map((instance_template) => {
+            instance_template.instance_list =
+              instance_template.instance_list.map((instance) => {
+                instance.reference_width = instance_template.reference_width;
+                instance.reference_height = instance_template.reference_height;
+                let initialized_instance = initialize_instance_object(instance, this);
+                return initialized_instance;
+              });
+            // Note that here we are creating a new object for the instance list, all references are lost.
+            instance_template.instance_list =
+              this.create_instance_list_with_class_types(
+                instance_template.instance_list
+              );
+
+            return instance_template;
           });
+        this.instance_template_list.forEach((inst) => {
+          let icon = "mdi-shape";
+          if (
+            inst.instance_list &&
+            inst.instance_list[0].type == "keypoints"
+          ) {
+            icon = "mdi-vector-polyline-edit";
+          }
+          this.instance_type_list.push({
+            name: inst.id,
+            display_name: inst.name,
+            icon: icon,
+          });
+        });
+        await this.$nextTick();
+        if(this.filtered_instance_type_list && this.filtered_instance_type_list[0]){
+          this.instance_type = this.filtered_instance_type_list[0].name;
+          if(this.$refs.toolbar){
+            this.$refs.toolbar.instance_type = this.instance_type;
+          }
+
         }
-      } catch (error) {
-      } finally {
-        this.loading_instance_templates = false;
       }
+      if(error){
+        console.error(error)
+      }
+      this.loading_instance_templates = false;
     },
     redo: function () {
       if (!this.command_manager) {
@@ -2842,7 +2918,7 @@ export default Vue.extend({
     },
     open_view_edit_panel(issue) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true;
 
       // Case for edit/view mode.
       this.current_issue = issue;
@@ -2875,7 +2951,7 @@ export default Vue.extend({
       }
 
       // Create the previously merged figure as a new instance.
-      let instance_to_unmerge = this.duplicate_instance(instance);
+      let instance_to_unmerge = duplicate_instance(instance, this);
       // Remove point and just leave the points in the figure
       instance_to_unmerge.points = figure_points;
       this.add_instance_to_file(
@@ -2897,7 +2973,8 @@ export default Vue.extend({
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_issue_panel = true;
+      this.show_modify_an_issue = true
+      this.issues_expansion_panel = 0
       // Close context menu and set select instance mode
       this.show_context_menu = false;
       this.issue_mouse_position = mouse_position;
@@ -2921,13 +2998,13 @@ export default Vue.extend({
     },
     close_view_edit_issue_panel() {
       this.current_issue = undefined;
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);
     },
     close_issue_panel() {
-      this.show_issue_panel = false;
+      this.show_modify_an_issue = false;
       this.$store.commit("set_instance_select_for_issue", false);
       this.snackbar_issues = false;
       this.issue_mouse_position = undefined;
@@ -3015,7 +3092,6 @@ export default Vue.extend({
       // Do we want to support focusing more than one at a time?
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
-
       // careful can't use id, since newly created instances won't have an ID!
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
@@ -3026,6 +3102,7 @@ export default Vue.extend({
 
     focus_instance_show_all() {
       this.instance_focused_index = null;
+      this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
       this.reset_to_full();
     },
@@ -3244,10 +3321,9 @@ export default Vue.extend({
       }
     },
 
-    update_user_settings_from_store() {
-      if (this.$store.state.user.settings.studio_left_nav_width) {
-        this.label_settings.left_nav_width =
-          this.$store.state.user.settings.studio_left_nav_width;
+    update_user_settings_from_store() {   // label_settings
+      for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
+        this.label_settings[key] = value
       }
     },
 
@@ -3377,7 +3453,9 @@ export default Vue.extend({
       }
 
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
+
     },
+
     fetch_model_run_list: async function () {
       if (!this.$props.model_run_id_list) {
         return;
@@ -3442,6 +3520,8 @@ export default Vue.extend({
       this.refresh = new Date();
       this.canvas_element = document.getElementById("my_canvas");
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
+
+      this.update_smooth_canvas(this.label_settings.smooth_canvas)
 
       this.$forceUpdate();
     },
@@ -3675,7 +3755,7 @@ export default Vue.extend({
       if (!instance) {
         return;
       }
-      let instance_clipboard = this.duplicate_instance(instance);
+      let instance_clipboard = duplicate_instance(instance, this);
       instance_clipboard.id = null;
       instance_clipboard.created_time = null; //
       instance_clipboard.creation_ref_id = null; // we expect this will be set once user accepts it
@@ -3780,6 +3860,7 @@ export default Vue.extend({
     },
 
     get_center_point_of_instance: function (instance) {
+      if (instance == undefined) {return }
       let x = instance.x_max - instance.width / 2;
       let y = instance.y_max - instance.height / 2;
       return { x: x, y: y };
@@ -3818,8 +3899,9 @@ export default Vue.extend({
 
     auto_revert_snapped_to_instance_if_unchanged: function (instance) {
       if (this.snapped_to_instance == instance) {
-        this.focus_instance_show_all();
-        this.snapped_to_instance = undefined;
+        if(this.$refs.instance_detail_list){
+          this.$refs.instance_detail_list.show_all();
+        }
         return true;
       }
       return false;
@@ -4669,6 +4751,7 @@ export default Vue.extend({
         }
       }
 
+
       if (instance_to_select) {
         instance_to_select.selected = !instance_to_select.selected;
         instance_to_select.status = "updated";
@@ -5167,11 +5250,17 @@ export default Vue.extend({
         return;
       }
       if (["polygon", "point"].includes(instance.type)) {
+        if(!instance.points){
+          return
+        }
         instance.x_min = Math.min(...instance.points.map((p) => p.x));
         instance.y_min = Math.min(...instance.points.map((p) => p.y));
         instance.x_max = Math.max(...instance.points.map((p) => p.x));
         instance.y_max = Math.max(...instance.points.map((p) => p.y));
       } else if (["cuboid"].includes(instance.type)) {
+        if(!instance.front_face || !instance.rear_face){
+          return
+        }
         instance.x_min = Math.min(
           instance.front_face["top_right"]["x"],
           instance.front_face["bot_right"]["x"],
@@ -5213,18 +5302,22 @@ export default Vue.extend({
           instance.rear_face["bot_right"]["y"]
         );
       } else if (["ellipse"].includes(instance.type)) {
+        if(!instance.center_x || !instance.center_y || !instance.width || !instance.height){
+          return
+        }
         instance.x_min = instance.center_x - instance.width;
         instance.y_min = instance.center_y - instance.height;
         instance.x_max = instance.center_x + instance.width;
         instance.y_max = instance.center_y + instance.height;
       } else if (["curve"].includes(instance.type)) {
+        if(!instance.p1 || !instance.p2){
+          return
+        }
         instance.x_min = Math.min(instance.p1.x, instance.p2.x);
         instance.x_max = Math.max(instance.p1.x, instance.p2.x);
         instance.y_min = Math.min(instance.p1.y, instance.p2.y);
         instance.y_max = Math.max(instance.p1.y, instance.p2.y);
-      } else if (["keypoints"].includes(instance.type)) {
-        // instance.calculate_min_max_points()
-      } else {
+      }  else {
         instance.x_min = parseInt(instance.x_min);
         instance.y_min = parseInt(instance.y_min);
         instance.x_max = parseInt(instance.x_max);
@@ -5720,22 +5813,14 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-      // want view only mode to access this so updates zoom properly
-
-      /*
-      // https://stackoverflow.com/questions/17389280/check-if-window-has-focus/17389334
-      if (document.hasFocus() == false) {
-        console.debug("refocused")
-        window.focus()
-      }
-      */
-
-      this.mouse_position = this.mouse_transform(event, this.mouse_position);
-      if (this.shift_key === true) {
+      if (this.z_key === true) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
+        this.$forceUpdate();
         return;
       }
+      this.mouse_position = this.mouse_transform(event, this.mouse_position);
+
       this.move_something(event);
 
       this.update_mouse_style();
@@ -5744,6 +5829,7 @@ export default Vue.extend({
         if (this.instance_type == "polygon") {
           this.detect_other_polygon_points();
           if (this.current_polygon_point_list.length >= 1) {
+
             if (this.shift_key == true) {
               let x_diff = this.helper_difference_absolute(
                 this.mouse_position.x,
@@ -5757,7 +5843,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              //console.debug(x_diff, y_diff)
+              console.log(x_diff, y_diff)
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
@@ -6731,8 +6817,8 @@ export default Vue.extend({
       return instance;
     },
     add_instance_template_to_instance_list(frame_number) {
-      this.current_instance_template.instance_list.forEach((instance) => {
-        let new_instance = this.duplicate_instance(instance);
+      this.actively_drawing_instance_template.instance_list.forEach((instance) => {
+        let new_instance = duplicate_instance(instance, this);
         if (this.video_mode == true) {
           new_instance.number =
             this.current_sequence_from_sequence_component.number;
@@ -6761,7 +6847,7 @@ export default Vue.extend({
             point.y += y_diff;
           });
         }
-        this.add_instance_to_file(
+         this.add_instance_to_file(
           new_instance,
           frame_number
         );
@@ -6793,12 +6879,20 @@ export default Vue.extend({
             this.current_instance_template
           )
         ) {
-          this.instance_template_draw_started = true;
-          this.is_actively_drawing = true;
+
+          this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
           this.instance_template_start_point = {
             x: this.mouse_position.x,
             y: this.mouse_position.y,
           };
+          this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
+          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
+
+          this.actively_drawing_instance_template.instance_list[0].width = 1;
+          this.actively_drawing_instance_template.instance_list[0].height = 1;
+
+          this.instance_template_draw_started = true;
+          this.is_actively_drawing = true;
         } else {
           this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
@@ -6932,6 +7026,9 @@ export default Vue.extend({
         };
       } else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
+          if(this.task.id === '-1' || this.task.id === -1){
+            return
+          }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
           file = this.$props.task.file;
@@ -6946,6 +7043,9 @@ export default Vue.extend({
         };
       }
       else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        if(this.task.id === '-1' || this.task.id === -1){
+          return
+        }
         url = "/api/v1/task/" + this.task.id + "/annotation/list";
       }
       try {
@@ -6982,6 +7082,9 @@ export default Vue.extend({
         this.annotations_loading = false;
       } else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
+          if(this.task.id === '-1' || this.task.id === -1){
+            return
+          }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
           file = this.$props.task.file;
@@ -7005,6 +7108,9 @@ export default Vue.extend({
         }
         return;
       } else if (this.$store.state.builder_or_trainer.mode == "trainer") {
+        if(this.task.id === '-1' || this.task.id === -1){
+          return
+        }
         url = "/api/v1/task/" + this.task.id + "/annotation/list";
         try {
           const response = await axios.get(url, {});
@@ -7540,10 +7646,14 @@ export default Vue.extend({
       if (this.show_context_menu) {
         return;
       }
+
       if (event.keyCode === 16) {
         // shift
         //
         this.shift_key = false;
+      }
+      if(event.keyCode === 90){
+        this.z_key = false;
       }
 
       if (event.keyCode === 72) {
@@ -7551,7 +7661,7 @@ export default Vue.extend({
         this.show_annotations = !this.show_annotations;
       }
 
-      if (event.key === "f") {
+      if (event.key === "n") {
         this.force_new_sequence_request = Date.now();
       }
 
@@ -7604,8 +7714,14 @@ export default Vue.extend({
     },
 
     may_snap_to_instance: function (event) {
-      if (this.shift_key == true && event.key === "F") {
-        this.snap_to_instance(this.selected_instance);
+      if (event.key === "f") {
+        if (this.instance_hover_index != undefined) {
+          this.focus_instance({index: this.instance_hover_index})
+        } else {
+          if(this.$refs.instance_detail_list){
+            this.$refs.instance_detail_list.show_all();
+          }
+        }
       }
     },
 
@@ -7673,7 +7789,9 @@ export default Vue.extend({
         //
         this.shift_key = true;
       }
-
+      if(event.keyCode === 90){
+        this.z_key = true;
+      }
       this.may_save(event);
 
       this.may_snap_to_instance(event);
@@ -7777,6 +7895,7 @@ export default Vue.extend({
       this.instance_template_draw_started = false;
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
+      this.actively_drawing_instance_template = undefined;
     },
     show_loading_paste: function(){
       this.show_snackbar_paste = true;
@@ -7933,7 +8052,7 @@ export default Vue.extend({
         for ( let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add;i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
-          let new_frame_instance = this.duplicate_instance(pasted_instance);
+          let new_frame_instance = duplicate_instance(pasted_instance, this);
           new_frame_instance = initialize_instance_object(new_frame_instance, this);
           // Set the last argument to true, to prevent to push to the instance_list here.
           this.add_instance_to_file(new_frame_instance, i);
@@ -7975,7 +8094,7 @@ export default Vue.extend({
 
       for (const instance_clipboard of this.clipboard.instance_list) {
         let instance_clipboard_dup =
-          this.duplicate_instance(instance_clipboard);
+          duplicate_instance(instance_clipboard, this);
         await this.add_pasted_instance_to_instance_list(
           instance_clipboard_dup,
           next_frames,
@@ -8018,65 +8137,13 @@ export default Vue.extend({
     on_context_menu_copy_instance: function (instance_index) {
       this.copy_instance(false, instance_index);
     },
-    duplicate_instance: function (instance_to_copy) {
-      let points = [];
-      let nodes = [];
-      let edges = [];
-      if (instance_to_copy.points) {
-        points = [...instance_to_copy.points.map((p) => ({ ...p }))];
-      }
-      if (instance_to_copy.nodes) {
-        nodes = [...instance_to_copy.nodes.map((node) => ({ ...node }))];
-      }
-      if (instance_to_copy.edges) {
-        edges = [...instance_to_copy.edges.map((edge) => ({ ...edge }))];
-      }
-      let result = {
-        ...instance_to_copy,
-        id: undefined,
-        initialized: false,
-        points: points,
-        nodes: nodes,
-        edges: edges,
-        version: undefined,
-        root_id: undefined,
-        previous_id: undefined,
-        action_type: undefined,
-        next_id: undefined,
-        creation_ref_id: undefined,
-        attribute_groups: instance_to_copy.attribute_groups
-          ? { ...instance_to_copy.attribute_groups }
-          : null,
-      };
-
-      if (result.type === "cuboid") {
-        result.rear_face = {
-          ...instance_to_copy.rear_face,
-          top_right: { ...instance_to_copy.rear_face.top_right },
-          top_left: { ...instance_to_copy.rear_face.top_left },
-          bot_left: { ...instance_to_copy.rear_face.bot_left },
-          bot_right: { ...instance_to_copy.rear_face.bot_right },
-        };
-
-        result.front_face = {
-          ...instance_to_copy.front_face,
-          top_right: { ...instance_to_copy.front_face.top_right },
-          top_left: { ...instance_to_copy.front_face.top_left },
-          bot_left: { ...instance_to_copy.front_face.bot_left },
-          bot_right: { ...instance_to_copy.front_face.bot_right },
-        };
-      }
-
-      result = initialize_instance_object(result, this);
-      return result;
-    },
     copy_all_instances: function () {
       let new_instance_list = [];
       for (const instance of this.instance_list) {
         if (instance.soft_delete) {
           continue;
         }
-        let instance_clipboard = this.duplicate_instance(instance);
+        let instance_clipboard = duplicate_instance(instance, this);
         instance_clipboard.selected = false;
         instance_clipboard.original_frame_number = this.current_frame;
         new_instance_list.push(instance_clipboard);
@@ -8101,7 +8168,7 @@ export default Vue.extend({
         const instance_to_copy = this.selected_instance
           ? this.selected_instance
           : this.instance_list[instance_index];
-        this.instance_clipboard = this.duplicate_instance(instance_to_copy);
+        this.instance_clipboard = duplicate_instance(instance_to_copy, this);
         this.instance_clipboard.selected = true;
         this.instance_clipboard.original_frame_number = this.current_frame;
         this.set_clipboard([this.instance_clipboard]);

@@ -8,25 +8,28 @@ import os
 from shared.database_setup_supporting import *
 
 parent_path = pathlib.Path(__file__).parent.parent.parent.absolute()
-init_config_path = '{}/shared'.format(parent_path)
+init_config_path = f"{parent_path}/shared"
 
 os.chdir(init_config_path)
 
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
     raise Exception('DIFFGRAM_SYSTEM_MODE must be in "testing" mode to perform any kind of test')
 
+if not settings.UNIT_TESTING_DATABASE_URL:
+    raise Exception('UNIT_TESTING_DATABASE_URL is not set. Please set this to your testing DB.')
+
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--keep-db", action="store_true", default=False, help="Don't destroy Database when finishing tests."
+        "--keep-db", action = "store_true", default = False, help = "Don't destroy Database when finishing tests."
     )
 
 
 def pytest_configure(config):
-    engine = create_engine(settings.DATABASE_URL)
-    print('Checking DB: {}'.format(settings.DATABASE_URL))
+    engine = create_engine(settings.UNIT_TESTING_DATABASE_URL)
+    print(f"Checking DB: {settings.UNIT_TESTING_DATABASE_URL}")
     if not database_exists(engine.url):
-        print('Creating DB: {}'.format(settings.DATABASE_URL))
+        print(f"Creating DB: {settings.UNIT_TESTING_DATABASE_URL}")
         create_database(engine.url)
         alembic_args = [
             '--raiseerr',
@@ -40,6 +43,5 @@ def pytest_configure(config):
 
 def pytest_unconfigure(config):
     if not config.getoption('--keep-db'):
-        print('Destroying database: {}'.format(settings.DATABASE_URL))
-        drop_database(settings.DATABASE_URL)
-
+        print(f"Destroying database: {settings.UNIT_TESTING_DATABASE_URL}")
+        drop_database(settings.UNIT_TESTING_DATABASE_URL)

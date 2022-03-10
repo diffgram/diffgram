@@ -31,10 +31,17 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
         self.project_data = project_data
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
+        self.member.user = data_mocking.register_user({
+            'username': 'test_user',
+            'email': 'test@test.com',
+            'password': 'diffgram123',
+            'project_string_id': 'myproject',
+            'member_id': self.member.id
+        }, self.session)
 
     def test_serialize(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -58,7 +65,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
 
     def test_generate_task_creation_event(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -75,12 +82,12 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
 
     def test_generate_task_completion_event(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         task = data_mocking.create_task({'name': 'test task', 'file': file, 'job_id': job.id}, self.session)
-        task_event = TaskEvent.generate_task_completion_event(self.session, task, self.member)
+        task_event = TaskEvent.generate_task_completion_event(self.session, task, self.member, self.member.user)
 
         result = task_event.serialize()
 
@@ -92,7 +99,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
 
     def test_generate_task_review_complete(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -109,7 +116,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
 
     def test_generate_task_in_progress_complete(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
@@ -127,7 +134,7 @@ class TestTaskEvent(testing_setup.DiffgramBaseTestCase):
 
     def test_generate_task_comment_event(self):
         job = data_mocking.create_job({
-            'name': 'my-test-job-{}'.format(1),
+            'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)

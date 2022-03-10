@@ -139,7 +139,7 @@ class Semantic_segmentation_data_prep():
                 ImageDraw.Draw(background).polygon(points_local, outline = 255, fill = 255)
             background = np.array(background)
 
-            file_name = self.temp + "/" + str(i) + ".png"
+            file_name = f"{self.temp}/{str(i)}.png"
 
             # Could do 0 index thing but this preserves which polygon it'session referring to... not sure
 
@@ -226,7 +226,7 @@ class Semantic_segmentation_data_prep():
 
         mask = np.array(mask)
 
-        file_name = self.temp + "/" + str(image.id) + ".png"
+        file_name = f"{self.temp}/{str(image.id)}.png"
 
         # Is this the path we want???
         # OR should we save by time stamp? I guess export dir is already unique

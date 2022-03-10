@@ -63,7 +63,7 @@ def job_resync_core(session,
     result = True
     task_template = Job.get_by_id(session = session, job_id = task_template_id)
     if task_template.project_id != project.id:
-        log['error']['project_id'] = 'Invalid job given for project {}'.format(project.project_string_id)
+        log['error']['project_id'] = f"Invalid job given for project {project.project_string_id}"
         return False, log
 
     t = threading.Thread(
@@ -92,7 +92,7 @@ def threaded_job_resync(task_template_id, member_id):
             for file in files:
                 if file.id not in file_ids:
                     logger.info(
-                        'Resyncing File {} on Job {} From Dir {}'.format(file.id, task_template_id, directory.id))
+                        f"Resyncing File {file.id} on Job {task_template_id} From Dir {directory.id}")
                     job_sync_dir_manger = job_dir_sync_utils.JobDirectorySyncManager(
                         session = session,
                         job = task_template,
@@ -110,5 +110,5 @@ def threaded_job_resync(task_template_id, member_id):
                     task_template.update_file_count_statistic(session = session)
                     missing_files.append(file)
 
-    logger.info('Resyncing on Job {} Success. {} Missing files synced'.format(task_template_id, len(missing_files)))
+    logger.info(f"Resyncing on Job {task_template_id} Success. {len(missing_files)} Missing files synced")
     return missing_files

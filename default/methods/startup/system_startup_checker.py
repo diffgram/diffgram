@@ -10,7 +10,8 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
         self.service_name = settings.DIFFGRAM_SERVICE_NAME
 
     def execute_startup_checks(self):
-        logger.info('[{}] Performing System Checks...'.format(self.service_name))
+        logger.info(f"[{self.service_name}] Performing System Checks...")
+        self.check_settings_values_validity()
         result = SystemEvents.system_startup_events_check(self.service_name)
         if not result:
             raise Exception('System Startup Check Failed.')

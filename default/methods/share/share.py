@@ -182,6 +182,10 @@ class Share_Project():
 
     def check_free_tier_member_limits(self):
 
+        if self.user_who_made_request.is_super_admin is True:
+            if settings.IS_OPEN_SOURCE  == False:
+                return True
+
         existing_members = self.project.regenerate_member_list()
 
         feature_checker = FeatureChecker(
@@ -230,11 +234,10 @@ class Share_Project():
         # exists
 
         self.user_to_modify = User.get_by_email(self.session, input['email'])
-        print(input['email'], 'aaaa', self.user_to_modify)
-        if self.user_who_made_request.is_super_admin is not True:
-            if self.user_to_modify == self.user_who_made_request:
-                self.log['error']['user_who_made_request'] = "You are already on the project."
-                return
+        
+        if self.user_to_modify == self.user_who_made_request:
+            self.log['error']['user_who_made_request'] = "You are already on the project."
+            return
         # Assumes if user exists to add permissions directly
         if self.user_to_modify:
 
@@ -273,9 +276,8 @@ class Share_Project():
             signup_code.permission_level = input['permission_type']
             self.session.add(signup_code)
 
-            signup_link = settings.URL_BASE + "user/new?" + \
-                          "code=" + signup_code.code + \
-                          "&email=" + signup_code.email_sent_to
+            signup_link = f'{settings.URL_BASE}user/new?code={signup_code.code}&email={signup_code.email_sent_to}' \
+                          f'&project={self.project_string_id}'
 
             self.invite_user(
                 signup_link = signup_link,
@@ -378,16 +380,16 @@ class Share_Project():
         if self.notify is False:
             return
 
-        subject = "Added to project " + self.project_string_id
+        subject = f"Added to project {self.project_string_id}"
 
-        message = " You have been added to: " + self.project_string_id
-        message += " as a " + str(permission_type)
+        message = f" You have been added to: {self.project_string_id}"
+        message += f" as a {str(permission_type)}"
 
         message += ". Access the project here. " + settings.URL_BASE + \
                    "project/" + self.project_string_id
 
-        message += " Added by " + str(self.user_who_made_request.email)
-        message += " With personal note of:" + str(note)
+        message += f" Added by {str(self.user_who_made_request.email)}"
+        message += f" With personal note of:{str(note)}"
 
         communicate_via_email.send(self.user_to_modify.email, subject, message)
 
@@ -408,15 +410,15 @@ class Share_Project():
 
         # We still notify here since the user doesn't exist...
 
-        subject = "Added to project " + self.project_string_id
+        subject = f"Added to project {self.project_string_id}"
 
-        message = " You have been added to: " + self.project_string_id
-        message += " as an: " + str(permission_type)
+        message = f" You have been added to: {self.project_string_id}"
+        message += f" as an: {str(permission_type)}"
 
-        message += " Create an account to get started here: " + signup_link
+        message += f" Create an account to get started here: {signup_link}"
 
-        message += " Added by " + str(self.user_who_made_request.email)
-        message += " " + str(note)
+        message += f" Added by {str(self.user_who_made_request.email)}"
+        message += f" {str(note)}"
 
         # Careful, can't use self.user_to_modify here since user doesn't exist yet....
         communicate_via_email.send(email, subject, message)

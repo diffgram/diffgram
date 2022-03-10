@@ -58,7 +58,7 @@ class DataToolsGCP:
         url = blob.create_resumable_upload_session(content_type = content_type)
         if input is not None:
             input.resumable_url = url
-        logger.info('New GCP Resumable upload: {}'.format(url))
+        logger.info(f"New GCP Resumable upload: {url}")
         return url
 
     def transmit_chunk_of_resumable_upload(
@@ -125,9 +125,9 @@ class DataToolsGCP:
                 data = stream,
                 headers = headers
             )
-            logger.info('GCP Chunk Response: {}'.format(response))
+            logger.info(f"GCP Chunk Response: {response}")
         except Exception as e:
-            logger.error('Upload TO GCP Failed: {}'.format(traceback.format_exc()))
+            logger.error(f"Upload TO GCP Failed: {traceback.format_exc()}")
             raise e
             # TODO if we are going to have a try block
             # here should we error / pass this to Input instance in some way?
@@ -244,7 +244,7 @@ class DataToolsGCP:
         filename = blob_name.split("/")[-1]
         url_signed = blob.generate_signed_url(
             expiration = expiration_time,
-            response_disposition = 'attachment; filename=' + filename
+            response_disposition = f"attachment; filename={filename}"
         )
         return url_signed
 
@@ -288,13 +288,13 @@ class DataToolsGCP:
 
         inference.url_signed_expiry = int(time.time() + 2592000)  # 1 month
 
-        dir = ai.ml.blob_dir + "/out/" + str(inference.image.id)
+        dir = f"{ai.ml.blob_dir}/out/{str(inference.image.id)}"
 
-        blob = self.bucket.blob(dir + "_out.jpg")
+        blob = self.bucket.blob(f"{dir}_out.jpg")
         inference.processed_image_url = blob.generate_signed_url(
             expiration = inference.url_signed_expiry)
 
-        blob = self.bucket.blob(dir + "_out_thumb.jpg")
+        blob = self.bucket.blob(f"{dir}_out_thumb.jpg")
         inference.processed_image_url_thumb = blob.generate_signed_url(
             expiration = inference.url_signed_expiry)
 
@@ -304,7 +304,7 @@ class DataToolsGCP:
 
         # TODO this name may changed base on AI package
 
-        blob_name = version.ml.blob_dir + "/frozen/frozen_inference_graph.pb"
+        blob_name = f"{version.ml.blob_dir}/frozen/frozen_inference_graph.pb"
         version.ml.url_model = self.build_secure_url(
             blob_name,
             600,
@@ -315,7 +315,7 @@ class DataToolsGCP:
     def url_tensorboard_update(self, session, version):
         # Careful this returns blob object not name
         blob = list(self.ML_bucket.list_blobs(
-            prefix = version.ml.blob_dir + "/events",
+            prefix = f"{version.ml.blob_dir}/events",
             max_results = 1))
         if len(blob) >= 1:
             version.ml.url_tensorboard = self.build_secure_url(
@@ -374,15 +374,15 @@ class DataToolsGCP:
         out = ""
         for i, file in enumerate(file_list):
             new = "\nitem {"
-            id = "\nid: " + str(label_dict[file.id])
-            name = "\nname: '" + str(file.label.name) + "'\n }\n"
+            id = f"\nid: {str(label_dict[file.id])}"
+            name = f"\nname: '{str(file.label.name)}'\n }}\n"
             out += new + id + name
 
-        blob = self.ML_bucket.blob(ai.ml.blob_dir + "/label_map.pbtext")
+        blob = self.ML_bucket.blob(f"{ai.ml.blob_dir}/label_map.pbtext")
         blob.upload_from_string(out, content_type = 'text/pbtext')
 
         # TODO maybe rename to label_map_job_dir  ? to differentiate between blob and ml job
-        ai.ml.label_map_dir = ai.ml.job_dir + "/label_map.pbtext"
+        ai.ml.label_map_dir = f"{ai.ml.job_dir}/label_map.pbtext"
 
         print("Built label_map", file = sys.stderr)
 
@@ -463,8 +463,8 @@ class DataToolsGCP:
 
         yaml_data = yaml.dump(annotations_list, default_flow_style = False)
         json_data = json.dumps(annotations_list)
-        ai.ml.annotations_string_yaml = ai.ml.blob_dir + "/annotations.yaml"
-        ai.ml.annotations_string_json = ai.ml.blob_dir + "/annotations.json"
+        ai.ml.annotations_string_yaml = f"{ai.ml.blob_dir}/annotations.yaml"
+        ai.ml.annotations_string_json = f"{ai.ml.blob_dir}/annotations.json"
         session.add(ai)
         blob = self.ML_bucket.blob(ai.ml.annotations_string_yaml)
         blob.upload_from_string(yaml_data, content_type = 'text/yaml')
@@ -502,7 +502,7 @@ class DataToolsGCP:
                 start_at_1_label += 1
                 lowest_label = label_id
 
-        project_str = str(project.id) + "/" + str(version.id) + "/ml/" + str(ml_settings.ml_compute_engine_id)
+        project_str = f"{str(project.id)}/{str(version.id)}/ml/{str(ml_settings.ml_compute_engine_id)}"
         project_str += "/label_map.pbtext"
 
         categoryMap = {}

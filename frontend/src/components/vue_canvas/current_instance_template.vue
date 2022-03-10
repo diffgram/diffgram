@@ -69,18 +69,76 @@
 
         let x_min = Math.min(this.$props.mouse_position.x, this.$props.instance_template_start_point.x)
         let y_min = Math.min(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
-        let x_max = Math.max(this.$props.mouse_position.x, this.$props.instance_template_start_point.x)
-        let y_max = Math.max(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
         ctx.textAlign = "start";
         ctx.lineWidth = '2'
+        let fixed_point = this.$props.instance_template_start_point;
         this.draw_instance_template_bounds(ctx, x_min, y_min);
+        let new_nodes = []
         for (let instance of instance_template.instance_list) {
           // Just keypoints are supported for now
-          if (instance.type == "keypoints") {
-            instance.scale_width = Math.abs(this.$props.instance_template_start_point.x - this.$props.mouse_position.x)
-            instance.scale_height = Math.abs(this.$props.instance_template_start_point.y - this.$props.mouse_position.y)
-            instance.translate_x = x_min;
-            instance.translate_y = y_min;
+          let height = instance.height;
+          let width = instance.width;
+          if (instance.type === "keypoints") {
+            let new_height = Math.round(Math.abs(this.$props.mouse_position.y - fixed_point.y));
+            let new_width = Math.round(Math.abs(this.$props.mouse_position.x - fixed_point.x));
+            let ry = new_height / height
+            let rx = new_width / width
+            if(new_height === 0 || new_width === 0){
+              done()
+              return
+            }
+            let c = 0;
+            for (let node of instance.nodes){
+              let new_x, new_y;
+              if(this.mouse_position.x >= fixed_point.x){
+                if(node.x >= fixed_point.x){
+                  new_x = fixed_point.x + rx * ( node.x - fixed_point.x)
+                }
+                else{
+                  new_x = fixed_point.x - rx * ( node.x - fixed_point.x)
+                }
+              }
+              else{
+                if(node.x >= fixed_point.x){
+                  new_x = fixed_point.x - rx * ( node.x - fixed_point.x)
+                }
+                else{
+                  new_x = fixed_point.x + rx * ( node.x - fixed_point.x)
+                }
+              }
+
+              if(this.mouse_position.y >= fixed_point.y){
+                if(node.y >= fixed_point.y){
+                  new_y = fixed_point.y + ry * ( node.y - fixed_point.y)
+                }
+                else{
+                  new_y = fixed_point.y - ry * ( node.y - fixed_point.y)
+                }
+              }
+              else{
+                if(node.y >= fixed_point.y){
+                  new_y = fixed_point.y - ry * ( node.y - fixed_point.y)
+                }
+                else{
+                  new_y = fixed_point.y + ry * ( node.y - fixed_point.y)
+                }
+              }
+              if(isNaN(new_x) || isNaN(new_y)){
+                return
+              }
+              new_nodes.push({
+                x: new_x,
+                y: new_y,
+              })
+              c += 1;
+            }
+            if(new_nodes.length > 0){
+              for (let i =0; i < new_nodes.length; i++){
+                instance.nodes[i].x = new_nodes[i].x
+                instance.nodes[i].y = new_nodes[i].y
+              }
+            }
+            instance.calculate_min_max_points()
             instance.vertex_size = 2;
             instance.line_width = 2;
             instance.draw(ctx);

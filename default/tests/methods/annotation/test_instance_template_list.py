@@ -64,15 +64,15 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
                 }
             ]
         }, self.session)
-        endpoint = "/api/v1/project/{}/instance-template/list".format(self.project.project_string_id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/instance-template/list"
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json

@@ -1,6 +1,6 @@
 <template>
   <div class="text-center">
-    <v-dialog data-cy="add_assignee_dialog" v-if="dialog" v-model="dialog" width="500" @keydown.esc="on_cancel" @click:outside="on_cancel">
+    <v-dialog data-cy="add_assignee_dialog" v-if="dialog" v-model="dialog" width="600" @keydown.esc="on_cancel" @click:outside="on_cancel">
       <v-card>
         <v-card-title v-if="dialog_type === 'assignee'" class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} assignees </v-card-title>
         <v-card-title v-else class="text-h5 grey lighten-2"> {{ remove_mode ? 'Remove' : 'Manage'}} reviewers </v-card-title>
@@ -21,7 +21,7 @@
 
         </v-card-text>
 
-        <v-card-actions>
+        <v-card-actions class="mt-9">
           <v-spacer></v-spacer>
           <v-btn id="review-dialog-cancel" color="primary" @click="on_cancel" text> Cancel </v-btn>
           <v-btn :loading="loading" data-cy="finish-user-assignment" id="review-dialog-submit" :color="remove_mode ? 'error' : 'success'" @click="on_assign" text> Submit </v-btn>
@@ -68,6 +68,14 @@ export default Vue.extend({
     job:{
       type: Object,
       default: {}
+    },
+    members_list_prop:{
+      type: Array,
+      default: []
+    },
+    reviewers_list_prop:{
+      type: Array,
+      default: []
     }
   },
   data() {
@@ -86,6 +94,21 @@ export default Vue.extend({
       handler: function(){
         this.populate_members();
       }
+    },
+    reviewers_list_prop: {
+      handler: function(){
+        this.populate_members();
+      }
+    },
+    members_list_prop: {
+      handler: function(){
+        this.populate_members();
+      }
+    },
+    dialog_type: {
+      handler: function(){
+        this.populate_members();
+      }
     }
   },
   mounted () {
@@ -94,24 +117,15 @@ export default Vue.extend({
   },
   methods: {
       populate_members: function(){
-        let member_id_list = this.$props.job.member_list_ids;
         this.member_list = [];
-        if(member_id_list){
-          if(member_id_list.includes('all')){
-            this.member_list = this.$store.state.project.current.member_list.map(m => m)
-          }
-          else{
-            for(let id of member_id_list){
-              let member = this.$store.state.project.current.member_list.find(
-                member => member.id === id
-              )
-              if(member){
-                this.member_list.push(member)
-              }
-            }
-          }
-
+        console.log('POPULATE', this.$props.dialog_type)
+        if(this.$props.dialog_type === 'reviewer'){
+          this.member_list = this.reviewers_list_prop;
         }
+        else{
+          this.member_list = this.members_list_prop;
+        }
+        this.$forceUpdate();
       },
       on_assign: function() {
           this.$emit("assign", this.member_list_ids)

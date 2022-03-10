@@ -12,9 +12,9 @@ class Communicate_Via_Email():
 
     def send(self, email, subject, message, email_list = []):
 
-        result = requests.post("https://api.mailgun.net/v3/" + self.domain_name + "/messages",
+        result = requests.post(f"https://api.mailgun.net/v3/{self.domain_name}/messages",
                              auth = ("api", self.api_key),
-                             data = {"from": "Diffgram <web@" + self.domain_name + ">",
+                             data = {"from": f"Diffgram <web@{self.domain_name}>",
                                      "to": [str(email)] if len(email_list) == 0 else [str(email) for email in
                                                                                       email_list],
                                      "subject": str(subject),

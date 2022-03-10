@@ -50,7 +50,7 @@ def api_enable_user():
 
 			Event.new(
 				session = session,
-				kind = "api_enable_" + str(input['api_name']),
+				kind = f"api_enable_{str(input['api_name'])}",
 				member_id = user.member_id,
 				success = True,
 				email = user.email)

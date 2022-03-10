@@ -44,15 +44,15 @@ class TestEventCreate(testing_setup.DiffgramBaseTestCase):
             'object_type': 'page',
         }
 
-        endpoint = "/api/v1/project/{}/event/create".format(self.project.project_string_id)
-        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode(
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/event/create"
+        credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode(
             'utf-8')
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json

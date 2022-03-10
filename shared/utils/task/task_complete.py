@@ -32,7 +32,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         status = 'init',
         member_created = None
     )
-    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
     if job.completion_directory and job.output_dir_action in ['copy', 'move']:
         job_observable = task_file_observers.JobObservable(session = session,
                                                            log = log,
@@ -60,7 +60,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         status = 'init',
         member_created = None
     )
-    logger.debug('Created sync_event {}'.format(sync_event_manager.sync_event.id))
+    logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
     if job.completion_directory and job.output_dir_action in ['copy', 'move']:
         job_observable = task_file_observers.JobObservable(session = session,
                                                            log = log,
@@ -77,7 +77,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         task_id = task.id,
         wait_for_commit = True
     )
-    job.job_complete_core(session)
+
 
 
 def send_to_review_randomly(session, task, task_update_manager):
@@ -140,7 +140,6 @@ def task_complete(session,
             member = member
         )
         if job.allow_reviews:
-
             if post_review:
                 task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
@@ -151,7 +150,7 @@ def task_complete(session,
                     task_update_manager = task_update_manager
                 )
         else:
-            task_update_manager.status = 'complete'
+            task_update_manager.status = TASK_STATUSES['complete']
             task_update_manager.main()
 
         # Careful, this is only relevant for normal
@@ -198,7 +197,7 @@ def task_complete(session,
             job = job,
             log = log
         )
-
+    job.update_job_status(session)
     return True, new_file
 
 

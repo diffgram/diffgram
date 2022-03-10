@@ -166,7 +166,7 @@ class WorkingDir(Base):
 
         if nickname:
             if nickname_match_type == "ilike":
-                nickname_search = "%{}%".format(nickname)
+                nickname_search = f"%{nickname}%"
                 query = query.filter(WorkingDir.nickname.ilike(nickname_search))
             else:
                 query = query.filter(WorkingDir.nickname == nickname)
@@ -576,7 +576,7 @@ class WorkingDirFileLink(Base):
 
         if original_filename is not None:
             if original_filename_match_type == "ilike":
-                original_filename_search = "%{}%".format(original_filename)
+                original_filename_search = f"%{original_filename}%"
                 query = query.filter(File.original_filename.ilike(original_filename_search))
             else:
                 query = query.filter(File.original_filename == original_filename)

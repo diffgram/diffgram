@@ -8,7 +8,7 @@
       <div v-on="on">
         <file_preview
           v-if="file.type === 'image' || file.type === 'video'"
-          class="d-flex file-preview"
+          :class="`d-flex file-preview ${file.type}-preview`"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
           :key="file.id"
@@ -27,7 +27,7 @@
 
       <file_preview
         v-if="file.type === 'image' || file.type === 'video'"
-        class="d-flex file-preview"
+        :class="`d-flex file-preview ${file.type}-preview`"
         file_preview_width="500"
         file_preview_height="500"
         :key="file.id + 'expanded'"

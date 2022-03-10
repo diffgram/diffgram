@@ -10,7 +10,7 @@
         </v-card-title>
 
         <v-container>
-          
+
         <v_error_multiple :error="error"
                           data-cy="error-email">
         </v_error_multiple>
@@ -22,7 +22,7 @@
                       :rules="[rules.email]">
         </v-text-field>
 
-        <v-text-field 
+        <v-text-field
           :append-icon="password_hide ? 'visibility' : 'visibility_off'"
           @click:append="() => (password_hide = !password_hide)"
           :type="password_hide ? 'password' : 'text'"
@@ -33,14 +33,14 @@
           v-model="password"
         />
 
-        <v-text-field 
+        <v-text-field
             :append-icon="password_hide_check ? 'visibility' : 'visibility_off'"
             @click:append="() => (password_hide_check = !password_hide_check)"
             :type="password_hide_check ? 'password' : 'text'"
             label="Retype Password"
             validate-on-blur
             data-cy="password2"
-            :rules="[rules.password_check]"
+            :rules="[password_checker]"
             v-model="password_check"
         />
 
@@ -91,7 +91,7 @@
 <script lang="ts">
 
   import axios from '../../../services/customInstance';
-
+  import {getProject} from '../../../services/projectServices'
   import Vue from "vue";
 
   export default Vue.extend( {
@@ -107,6 +107,7 @@
 
         signup_code: null, // Optional
         error_signup_code: null,
+        project_string_id: null,
         password: null as String,
         password_hide: true,
 
@@ -126,18 +127,7 @@
             }
             return true
           },
-          password_check: function (value) {
 
-            // Run equals check first
-            if (this.password != this.password_check) {
-              return "Passwords must match"
-            }
-
-            // Don't need to rerun password check
-            // since if they equal, and the first password as checked
-            // then all clear
-            return true
-        }
         }
 
       }
@@ -155,6 +145,7 @@
 
       this.email = this.$route.query["email"]
       this.signup_code = this.$route.query["code"]
+      this.project_string_id = this.$route.query["project"]
 
       // log out by default (if logged in) since we will be putting a new  cookie here
       // and edge case but would be strange if made new account and then didn't change
@@ -165,6 +156,18 @@
     },
 
     methods: {
+      password_checker: function (value) {
+
+        // Run equals check first
+        if (this.password != this.password_check) {
+          return "Passwords must match"
+        }
+
+        // Don't need to rerun password check
+        // since if they equal, and the first password as checked
+        // then all clear
+        return true
+      },
       route_account_login: function () {
         this.$router.push("/user/login");
       },
@@ -177,7 +180,7 @@
             console.error(error);
           });
       },
-      new_user: function () {
+      new_user: async function () {
 
         this.error = {}
 
@@ -188,18 +191,17 @@
         }
 
         this.loading = true;
-
-        axios.post('/api/v1/user/new', {
-         'email': this.email,
-         'signup_code': this.signup_code,
-         'password': this.password,
-         'password_check': this.password_check
-        }).then(response => {
-
-
+        try{
+          let response = await axios.post('/api/v1/user/new', {
+            'email': this.email,
+            'signup_code': this.signup_code,
+            'password': this.password,
+            'password_check': this.password_check
+          });
 
           this.$store.commit('log_in');
           this.$store.commit('set_user_name', this.email)
+
           if (response.data.user) {
             this.$store.commit('set_current_user', response.data.user)
           }
@@ -218,19 +220,26 @@
           if (auth) {
             if (auth.type == "invite_to_org") {
 
-                if(["Admin"].includes(auth.user_permission_level)) {
+              if(["Admin"].includes(auth.user_permission_level)) {
 
-                      this.$router.push('/user/builder/signup');
-                  }
+                this.$router.push('/user/builder/signup');
+              }
 
-                if(auth.user_permission_level == "Annotator") {
+              if(auth.user_permission_level == "Annotator") {
 
-                    this.$router.push('/user/trainer/signup');
-                  }
+                this.$router.push('/user/trainer/signup');
+              }
             }
             if (auth.type == "add_to_project") {
               //this.$router.push('/studio/annotate/' + response.data.project_string_id);
-              this.$router.push('/home/dashboard');
+              if(this.project_string_id){
+                this.$router.push(`/user/builder/signup?project_string_id=${this.project_string_id}&role=${auth.user_permission_level}`);
+              }
+              else{
+                this.$router.push(`/user/builder/signup?role=${auth.user_permission_level}`);
+              }
+
+
             }
 
             return
@@ -242,13 +251,13 @@
             this.$router.push('/project/' + response.data.project_string_id);
             this.$store.commit('set_project_string_id', response.data.user.project_string_id)
           }
+        }
+        catch(e){
+          console.error(e)
+          this.error = this.$route_api_errors(e)
+          this.loading = false
 
-
-        })
-          .catch(error => {
-            this.error = this.$route_api_errors(error)
-            this.loading = false
-          });
+        }
       }
     }
   }

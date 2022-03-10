@@ -30,14 +30,14 @@ class ScaleAITaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             connection=connection,
             diffgram_class_string='task_template',
             type=connection.integration_name,
-            url='https://dashboard.scale.com/test/tasks?project={}'.format(scale_ai_project['name']),
+            url=f"https://dashboard.scale.com/test/tasks?project={scale_ai_project['name']}",
             add_to_session=True,
             flush_session=True
         )
         # Commented to bottom to avoid circular dependencies on job.
         self.task_template.default_external_map = external_map
 
-        logger.debug('Created ScaleAI Project {}'.format(scale_ai_project['name']))
+        logger.debug(f"Created ScaleAI Project {scale_ai_project['name']}")
 
     def execute_after_launch_strategy(self):
         """
@@ -51,7 +51,7 @@ class ScaleAITaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             # We don't check perms here because we assume this was checked on the task template creation.
             # Otherwise, we would need request context here, which we don't have.
             connection = self.task_template.interface_connection
-            logger.debug('Connection for ScaleAI: {}'.format(connection))
+            logger.debug(f"Connection for ScaleAI: {connection}")
             connector_manager = ConnectorManager(connection=connection, session=self.session)
             connector = connector_manager.get_connector_instance()
             connector.connect()

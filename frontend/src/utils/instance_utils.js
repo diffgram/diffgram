@@ -2,6 +2,58 @@ import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInsta
 import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
 import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
 
+export const duplicate_instance = function(instance_to_copy, component_ctx){
+  let points = [];
+  let nodes = [];
+  let edges = [];
+  if (instance_to_copy.points) {
+    points = [...instance_to_copy.points.map((p) => ({ ...p }))];
+  }
+  if (instance_to_copy.nodes) {
+    nodes = [...instance_to_copy.nodes.map((node) => ({ ...node }))];
+  }
+  if (instance_to_copy.edges) {
+    edges = [...instance_to_copy.edges.map((edge) => ({ ...edge }))];
+  }
+  let result = {
+    ...instance_to_copy,
+    id: undefined,
+    initialized: false,
+    points: points,
+    nodes: nodes,
+    edges: edges,
+    version: undefined,
+    root_id: undefined,
+    previous_id: undefined,
+    action_type: undefined,
+    next_id: undefined,
+    creation_ref_id: undefined,
+    attribute_groups: instance_to_copy.attribute_groups
+      ? { ...instance_to_copy.attribute_groups }
+      : null,
+  };
+
+  if (result.type === "cuboid") {
+    result.rear_face = {
+      ...instance_to_copy.rear_face,
+      top_right: { ...instance_to_copy.rear_face.top_right },
+      top_left: { ...instance_to_copy.rear_face.top_left },
+      bot_left: { ...instance_to_copy.rear_face.bot_left },
+      bot_right: { ...instance_to_copy.rear_face.bot_right },
+    };
+
+    result.front_face = {
+      ...instance_to_copy.front_face,
+      top_right: { ...instance_to_copy.front_face.top_right },
+      top_left: { ...instance_to_copy.front_face.top_left },
+      bot_left: { ...instance_to_copy.front_face.bot_left },
+      bot_right: { ...instance_to_copy.front_face.bot_right },
+    };
+  }
+
+  result = initialize_instance_object(result, component_ctx);
+  return result;
+}
 
 export const initialize_instance_object = function(instance, component_ctx, scene_controller_3d = undefined){
   let initialized_instance;
@@ -40,7 +92,7 @@ export const initialize_instance_object = function(instance, component_ctx, scen
     return initialized_instance
   }
   else if (instance.type === 'global') {
-    let new_global_instance = this.new_global_instance();
+    let new_global_instance = component_ctx.new_global_instance();
     new_global_instance.populate_from_instance_obj(instance)
     return new_global_instance
   }
@@ -61,5 +113,13 @@ export const create_instance_list_with_class_types = function(instance_list, com
     let initialized_instance = initialize_instance_object(current_instance, component_ctx, scene_controller_3d)
     result.push(initialized_instance);
   }
+  return result;
+}
+
+export const duplicate_instance_template = function(instance_template, component_ctx){
+  let result = {...instance_template}
+  result.instance_list = instance_template.instance_list.map(inst => {
+    return duplicate_instance(inst, component_ctx);
+  })
   return result;
 }

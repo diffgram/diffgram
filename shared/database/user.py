@@ -171,8 +171,16 @@ class User(Base):
         if self.project_current:
             project_current = self.project_current.serialize()
 
+        kind = None
+        member_id = None
+        if self.member:
+            kind = self.member.kind
+            member_id = self.member_id
         return {
             'id': self.id,
+            'user_id': self.id,
+            'member_id': member_id,
+            'member_kind': kind,
             'current_project_string_id': self.current_project_string_id,
             'is_super_admin': self.is_super_admin,
             'first_name': self.first_name,

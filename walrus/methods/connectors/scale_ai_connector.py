@@ -278,7 +278,7 @@ class ScaleAISyncManager:
             external_id=scale_ai_task.id,
             connection=task.job.interface_connection,
             diffgram_class_string='task',
-            type='{}_task'.format(task.job.interface_connection.integration_name),
+            type=f"{task.job.interface_connection.integration_name}_task",
             url='',
             add_to_session=True,
             flush_session=True
@@ -286,7 +286,7 @@ class ScaleAISyncManager:
         # Commented to bottom to avoid circular dependencies on job.
         self.task_template.default_external_map = external_map
 
-        logger.debug('Created ScaleAI Task {}'.format(scale_ai_task.id))
+        logger.debug(f"Created ScaleAI Task {scale_ai_task.id}")
         return external_map
 
     def set_task_in_progress(self, task):
@@ -384,7 +384,7 @@ class ScaleAISyncManager:
         objects_to_annotate = self.get_label_objects()
         scale_ai_project = self.get_scale_ai_project()
         attachment_type = task.file.type
-        logger.debug('Creating ScaleAI of for task_template type {}'.format(self.task_template.instance_type))
+        logger.debug(f"Creating ScaleAI of for task_template type {self.task_template.instance_type}")
         if self.task_template.instance_type == 'box':
             scale_ai_type = 'bounding_box'
             if self.task_template.guide_default:
@@ -471,7 +471,7 @@ def send_task_to_scale_ai():
         if task:
             task_template = task.job
             connection = task_template.interface_connection
-            logger.debug('Connection for ScaleAI: {}'.format(connection))
+            logger.debug(f"Connection for ScaleAI: {connection}")
             connector_manager = ConnectorManager(connection=connection, session=session)
             connector = connector_manager.get_connector_instance()
             connector.connect()
@@ -485,7 +485,7 @@ def send_task_to_scale_ai():
             )
 
             scale_ai_task, log = scale_ai_sync_manager.send_diffgram_task(task)
-            logger.debug('Scale AI create result: {} || {}'.format(scale_ai_task, log))
+            logger.debug(f"Scale AI create result: {scale_ai_task} || {log}")
             if not scale_ai_task:
                 return jsonify(log=log), 400
 
@@ -527,7 +527,7 @@ def task_completed_scaleai():
         external_map_task = ExternalMap.get(
             session=session,
             external_id=input['task']['task_id'],
-            type='{}_task'.format('scale_ai')
+            type="scale_ai_task"
         )
         task = external_map_task.task
         task_template = task.job

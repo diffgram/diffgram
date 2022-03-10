@@ -106,7 +106,7 @@ class Upload():
             # Try finding the pre_labels with the file_name as a backup
             file_data = pre_labels.get(file_name)
             if file_data is None:
-                logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
+                logger.warning(f"Input: {input.id} File {file_name} has no pre_labeled data associated")
                 return
 
         if file_data.get('file_metadata'):
@@ -133,7 +133,7 @@ class Upload():
             # Try finding the pre_labels with the file_name as a backup
             file_data = pre_labels.get(file_name)
             if file_data is None:
-                logger.warning('Input: {} File {} has no pre_labeled data associated'.format(input.id, file_name))
+                logger.warning(f"Input: {input.id} File {file_name} has no pre_labeled data associated")
                 return
         project_labels = self.get_project_labels()
 
@@ -239,7 +239,7 @@ class Upload():
             member_id=user.member_id if user else None,
             success=True,
             project_id=self.project.id,
-            description=str(input.media_type) + " " + str(self.project.project_string_id),
+            description=f"{str(input.media_type)} {str(self.project.project_string_id)}",
             input_id=input.id
         )
 
@@ -252,10 +252,10 @@ class Upload():
 
         stream = self.binary_file.stream.read()
         content_size = len(stream)
-        logger.info('upload_large_api: raw_data_blob_path {}'.format(input.raw_data_blob_path))
-        logger.info('upload_large_api: input_type {}'.format(input.type))
-        logger.info('upload_large_api: media_type {}'.format(input.media_type))
-        logger.info('upload_large_api: input ID {}'.format(input.id))
+        logger.info(f"upload_large_api: raw_data_blob_path {input.raw_data_blob_path}")
+        logger.info(f"upload_large_api: input_type {input.type}")
+        logger.info(f"upload_large_api: media_type {input.media_type}")
+        logger.info(f"upload_large_api: input ID {input.id}")
         try:
             response = data_tools.transmit_chunk_of_resumable_upload(
                 stream=stream,
@@ -269,7 +269,7 @@ class Upload():
                 chunk_index=self.dzchunkindex,
                 input = self.input,
             )
-            logger.info('Upload Response: {}'.format(response))
+            logger.info(f"Upload Response: {response}")
             if response is False:
                 logger.error('Upload failed: Please try again, or try using API/SDK. (Raw upload error)')
                 input.status = "failed"
@@ -277,7 +277,7 @@ class Upload():
                 return
 
         except Exception as exception:
-            logger.error('Upload failed: {}'.format(traceback.format_exc()))
+            logger.error(f"Upload failed: {traceback.format_exc()}")
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
             raise Exception #TODO REMOVE
@@ -352,7 +352,7 @@ class Upload():
 
         if not self.input.media_type:
             self.input.status = "failed"
-            self.input.status_text = "Invalid file type: " + self.input.extension
+            self.input.status_text = f"Invalid file type: {self.input.extension}"
 
         # self.input.user =
 
@@ -482,7 +482,7 @@ def input_from_local(session,
     input.media_type = Process_Media.determine_media_type(input.extension)
     if not input.media_type:
         input.status = "failed"
-        input.status_text = "Invalid file type: " + input.extension
+        input.status_text = f"Invalid file type: {input.extension}"
         return False, log, input
 
     session.add(input)

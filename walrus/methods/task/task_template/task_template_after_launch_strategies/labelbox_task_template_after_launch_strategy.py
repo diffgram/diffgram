@@ -27,7 +27,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
         for label_element in self.task_template.label_dict['label_file_list_serialized']:
 
             element = {
-                'name': '{}'.format(label_element['label']['name']),
+                'name': f"{label_element['label']['name']}",
                 'color': label_element['colour']['hex'].upper(),
                 'tool': self.LABELBOX_DIFFGRAM_TOOLS_MAPPING[self.task_template.instance_type],
                 'required': False,
@@ -131,7 +131,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             'event_data': {},
         })
         if result_has_error(result):
-            raise Exception('Failed to setup labelbox project. {}'.format(str(result)))
+            raise Exception(f"Failed to setup labelbox project. {str(result)}")
         if 'result' in result:
             labelbox_project = result['result']
         else:
@@ -146,14 +146,14 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             connection=connection,
             diffgram_class_string='task_template',
             type=connection.integration_name,
-            url='https://app.labelbox.com/projects/{}/overview'.format(labelbox_project.uid),
+            url=f"https://app.labelbox.com/projects/{labelbox_project.uid}/overview",
             add_to_session=True,
             flush_session=True
         )
         # Commented to bottom to avoid circular dependencies on job.
         self.task_template.default_external_map = external_map
 
-        logger.debug('Created Labelbox Project {}'.format(labelbox_project.uid))
+        logger.debug(f"Created Labelbox Project {labelbox_project.uid}")
         return external_map
 
     def get_labelbox_frontend(self, connector):
@@ -162,7 +162,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             'event_data': {},
         })
         if result_has_error(result):
-            raise Exception('Failed to setup labelbox frontend. {}'.format(str(result)))
+            raise Exception(f"Failed to setup labelbox frontend. {str(result)}")
         frontend = result['result']
         logger.debug('Created Labelbox Frontend.')
         return frontend
@@ -178,7 +178,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             'event_data': {},
         })
         if result_has_error(result):
-            raise Exception('Failed to setup labelbox onthology. {}'.format(str(result)))
+            raise Exception(f"Failed to setup labelbox onthology. {str(result)}")
         logger.debug('Created Labelbox Project Ontology.')
         # Now save ontology relations
         query_ontology = """
@@ -210,7 +210,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             # We don't check perms here because we assume this was checked on the task template creation.
             # Otherwise, we would need request context here, which we don't have.
             connection = self.task_template.interface_connection
-            logger.debug('Connection for labelbox: {}'.format(connection))
+            logger.debug(f"Connection for labelbox: {connection}")
             connector_manager = ConnectorManager(connection=connection, session=self.session)
             connector = connector_manager.get_connector_instance()
             connector.connect()
@@ -262,7 +262,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
                     self.task_template.default_external_map = None
                     self.session.delete(self.task_template.default_external_map)
                 labelbox_project.delete()
-                logger.debug('ROLLBACK. Deleted Labelbox Project {}'.format(labelbox_project.uid))
+                logger.debug(f"ROLLBACK. Deleted Labelbox Project {labelbox_project.uid}")
                 # Allow time for rate limiter in case of a rate limit exception.
                 time.sleep(5)
             raise e

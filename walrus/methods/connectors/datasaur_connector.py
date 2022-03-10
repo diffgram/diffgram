@@ -51,8 +51,8 @@ class DatasaurClient:
 
     def download_file_locally(self, diffgram_file, dir='/tmp'):
         random_name = str(uuid.uuid4())
-        dir_path = '{}/{}'.format(dir, random_name)
-        full_path = '{}/{}/{}'.format(dir, random_name, diffgram_file.text_file.original_filename)
+        dir_path = f"{dir}/{random_name}"
+        full_path = f"{dir}/{random_name}/{diffgram_file.text_file.original_filename}"
         os.umask(0)
         os.makedirs(os.path.dirname(full_path), mode=0o777, exist_ok=True)
         blob = self.bucket.blob(diffgram_file.get_blob_path())
@@ -87,7 +87,7 @@ class DatasaurClient:
         # TODO REMOVE AND IMPLEMENT A TOKEN REFRESH MECHANISM
         access_token = self.get_access_token()
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
             'Content-Type': 'application/json'
         }
         data = {
@@ -115,7 +115,7 @@ class DatasaurClient:
         # TODO REMOVE AND IMPLEMENT A TOKEN REFRESH MECHANISM
         access_token = self.get_access_token()
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
             'Content-Type': 'application/json'
         }
         data = {
@@ -172,11 +172,11 @@ class DatasaurClient:
         """
         data = {
             "operationName": "DeleteProjectMutation",
-            "variables": json.dumps({"input": {"projectId": "{}".format(project_id)}}),
+            "variables": json.dumps({"input": {"projectId": f"{project_id}"}}),
             "query": query,
         }
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
             # 'Content-Type': 'application/json'
         }
         response = requests.post(self.API_URL, headers=headers, data=data)
@@ -282,7 +282,7 @@ class DatasaurClient:
             "query": query,
         }
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
             # 'Content-Type': 'application/json'
         }
         response = requests.post(self.API_URL, headers=headers, data=data)
@@ -292,7 +292,7 @@ class DatasaurClient:
     def get_projects_list(self, status_list=("COMPLETE", "CREATED", "IN_PROGRESS")):
         access_token = self.get_access_token()
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
             'Content-Type': 'application/json'
         }
         data = {
@@ -427,7 +427,7 @@ class DatasaurClient:
             "query": query,
         }
         headers = {
-            'Authorization': 'Bearer {}'.format(self.get_access_token()),
+            'Authorization': f"Bearer {self.get_access_token()}",
             # 'Content-Type': 'application/json'
         }
         response = requests.post(self.API_URL, headers=headers, data=data)
@@ -536,12 +536,12 @@ class DatasaurClient:
         files_data = {}
         i = 1
         for file in raw_files:
-            map[str(i)] = ["variables.input.documents.{}.file".format(i - 1)]
+            map[str(i)] = [f"variables.input.documents.{i - 1}.file"]
             files_data[str(i)] = file
             i += 1
         data['map'] = json.dumps(map)
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
+            'Authorization': f"Bearer {access_token}",
         }
         response = requests.post(self.API_URL,
                                  headers=headers,
@@ -744,7 +744,7 @@ class DatasaurSyncManager:
             Task.file_id == diffgram_file.id
         ).first()
         if 'log' in file_export_data and 'error' in file_export_data['log']:
-            logger.error('Error fetching export data {}'.format(file_export_data))
+            logger.error(f"Error fetching export data {file_export_data}")
         label_items = file_export_data['result']['labelSet']['labelItems']
         label_items_by_id = {}
         for label in label_items:
@@ -760,7 +760,7 @@ class DatasaurSyncManager:
                 label_items_by_id[label['id']] = label
                 label_items_by_id[label['id']]['label_file_id'] = external_map_label.file_id
             else:
-                logger.error('No label_file found for datasaur ID: {}'.format(label['id']))
+                logger.error(f"No label_file found for datasaur ID: {label['id']}")
                 return
 
         sentences = file_export_data['result']['sentences']
@@ -814,7 +814,7 @@ class DatasaurSyncManager:
                            task_action='complete_task',
                            commit_input=True,
                            mode="update")
-            logger.info('Updated Task {} from datasaur.'.format(task.id))
+            logger.info(f"Updated Task {task.id} from datasaur.")
 
     def sync_projects_for_task_template(self, task_template):
         connection = task_template.interface_connection
@@ -828,7 +828,7 @@ class DatasaurSyncManager:
             type = 'datasaur_project',
             return_kind = 'first')
         if not project_map:
-            logger.error('Could not find external map for task template {}'.format(task_template.id))
+            logger.error(f"Could not find external map for task template {task_template.id}")
             return
 
         # Fetch all completed projects
@@ -840,15 +840,15 @@ class DatasaurSyncManager:
         # For each project, generate a export for all files.
         if 'log' in project_data:
             if 'error' in project_data['log']:
-                logger.error('Error fetching datasaur project {}'.format(project_data['log']['error']))
-                logger.error('Datasaur project ID {} not found. Maybe was deleted?'.format(project_map.external_id))
+                logger.error(f"Error fetching datasaur project {project_data['log']['error']}")
+                logger.error(f"Datasaur project ID {project_map.external_id} not found. Maybe was deleted?")
                 return
         datasaur_project = project_data['result']
-        logger.debug('Fetched project: {}'.format(datasaur_project))
+        logger.debug(f"Fetched project: {datasaur_project}")
         if project_map:
             task_template = project_map.job
             if datasaur_project['status'] != 'COMPLETE':
-                logger.debug('Datasaur project {} is not completed. Skipping...'.format(datasaur_project['id']))
+                logger.debug(f"Datasaur project {datasaur_project['id']} is not completed. Skipping...")
                 return
             # Now get All files from the project
             files_map = ExternalMap.get(
@@ -860,10 +860,10 @@ class DatasaurSyncManager:
             for file_map in files_map:
                 diffgram_file = file_map.file
                 datasaur_file_id = file_map.external_id
-                logger.debug('Syncing File from Datasaur {}'.format(diffgram_file.id))
+                logger.debug(f"Syncing File from Datasaur {diffgram_file.id}")
                 self.fetch_instances_from_file(task_template, diffgram_file, datasaur_file_id, datasaur_connector)
         else:
-            logger.error('Could not find external map for task_template {}'.format(task_template.id))
+            logger.error(f"Could not find external map for task_template {task_template.id}")
 
     def perform_complete_projects_sync(self):
         """

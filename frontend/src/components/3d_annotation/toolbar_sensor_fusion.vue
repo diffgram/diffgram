@@ -208,6 +208,7 @@
         :task="task"
         @complete_task="$emit('complete_task')"
         @replace_file="$emit('replace_file', $event)"
+        @on_task_annotation_complete_and_save="$emit('on_task_annotation_complete_and_save')"
         :save_and_complete="true"
         :loading="save_loading"
         :disabled="save_loading || view_only_mode || (!file && !task)"

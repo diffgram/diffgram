@@ -182,7 +182,6 @@ def credential_view_core(session,
         meta['no_results_match_meta'] = True
 
     end_time = time.time()
-    print("credential list time", end_time - start_time)
 
     return output_file_list, meta
 

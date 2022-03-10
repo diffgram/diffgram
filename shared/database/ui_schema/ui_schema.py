@@ -172,7 +172,7 @@ class UI_Schema(Base, SerializerMixin):
 
         if name:
             if name_match_type == "ilike":
-                name_search = "%{}%".format(name)
+                name_search = f"%{name}%"
                 query = query.filter(UI_Schema.name.ilike(name_search))
             else:
                 query = query.filter(UI_Schema.name == name)

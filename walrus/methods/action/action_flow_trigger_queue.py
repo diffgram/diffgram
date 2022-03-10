@@ -119,7 +119,7 @@ class ActionFlowTriggerQueueThread:
         """
         if not action_flow_trigger_event:
             return None
-        logger.info('Executing flow for event {}'.format(action_flow_trigger_event.id))
+        logger.info(f"Executing flow for event {action_flow_trigger_event.id}")
         # Check if there are any other duplicate events on the window (In case of a concurrent update on the queue)
         # And if so delete, duplicate trigger_events with aggregations
         project = action_flow_trigger_event.project
@@ -158,14 +158,14 @@ class ActionFlowTriggerQueueThread:
                         ActionFlowTriggerEventQueue.id == action_flow_trigger_event.id
                     ).delete()
         except Exception as e:
-            logger.error('Errror on action flow trigger queue. {}'.format(str(e)))
+            logger.error(f"Errror on action flow trigger queue. {str(e)}")
             if action_flow_trigger_event_id:
                 with sessionMaker.session_scope_threaded() as session:
                     action_flow_trigger_event = session.query(ActionFlowTriggerEventQueue).filter(
                         ActionFlowTriggerEventQueue.id == action_flow_trigger_event_id
                     ).first()
 
-                    logger.critical('Error launching Processing action event {}'.format(action_flow_trigger_event.id))
+                    logger.critical(f"Error launching Processing action event {action_flow_trigger_event.id}")
                     logger.error(traceback.format_exc())
                     logger.info('Deleting Action Trigger Event queue element'.format(action_flow_trigger_event.id))
                     session.query(ActionFlowTriggerEventQueue).filter(
