@@ -5,7 +5,8 @@
 
   <p> <kbd>Esc</kbd> Cancel drawing relation </p>
   <p> <kbd>S</kbd> Save </p>
-  <p> <kbd>G</kbd> + <b>Select</b> Fast search in Google </p>
+  <p> <kbd>G</kbd> + <b>Select</b> Google It (Fast search in Google) </p>
+  <p> <kbd>B</kbd> + <b>Click</b> Label all in document (Beta) </p>
 
 </v-layout>
 
