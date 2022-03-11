@@ -929,6 +929,7 @@
       </v-btn>
     </v-snackbar>
     <qa_carousel
+      ref="qa_carrousel"
       :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
       :instance_list="instance_list"
@@ -3166,6 +3167,7 @@ export default Vue.extend({
         this.instance_list[this.instance_focused_index],
       ];
       this.snap_to_instance(this.selected_instance);
+      this.$forceUpdate();
     },
 
     focus_instance_show_all() {
@@ -3947,6 +3949,10 @@ export default Vue.extend({
     },
 
     get_focus_point_of_instance: function (instance) {
+      console.log('get_focus_point_of_instance', instance)
+      if(!instance){
+        return
+      }
       let point = { x: 0, y: 0 };
       let center_point = this.get_center_point_of_instance(instance);
       let center_of_frame = {
@@ -3988,6 +3994,9 @@ export default Vue.extend({
     },
 
     get_zoom_region_of_instance: function (instance) {
+      if(!instance){
+        return
+      }
       let max_zoom = 10;
       let padding = -2;
       let max_x = this.clamp_values(
@@ -4011,6 +4020,9 @@ export default Vue.extend({
     },
 
     snap_to_instance: function (instance) {
+      if(!instance){
+        return
+      }
       if (this.label_settings.enable_snap_to_instance == false) {
         return;
       }
@@ -4245,6 +4257,12 @@ export default Vue.extend({
     },
 
     point_is_intersecting_circle: function (mouse, point, radius = 8) {
+      if(!point){
+        return
+      }
+      if(!mouse){
+        return
+      }
       // Careful this is effected by scale
       // bool, true if point if intersecting circle
       let radius_scaled = radius / this.zoom_value;
@@ -7490,46 +7508,60 @@ export default Vue.extend({
       this.$emit("request_new_task", direction, task, assign_to_user);
     },
 
-        reset_for_file_change_context: function (){
-          this.current_sequence_annotation_core_prop = {
-            id: null,
-            number: null
-          }
-          this.video_mode = false   // if we don't have this can be issues switching to say an image
-          this.instance_buffer_dict = {}
-          this.instance_buffer_metadata = {}
-          this.instance_list = []
-          if(this.video_mode){
-            this.$refs.video_controllers.reset_cache();
-          }
+      reset_for_file_change_context: function (){
+        this.current_sequence_annotation_core_prop = {
+          id: null,
+          number: null
+        }
+        this.video_mode = false   // if we don't have this can be issues switching to say an image
+        this.instance_buffer_dict = {}
+        this.instance_buffer_metadata = {}
+        this.instance_list = []
+        if(this.video_mode){
+          this.$refs.video_controllers.reset_cache();
+        }
+        if(this.$refs.qa_carrousel){
+          this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+          this.$refs.qa_carrousel.annotation_show_progress = 0
+          this.annotation_show_current_instance = 0
+        }
 
-        },
-        annotation_show_activate(show_type){
-          this.annotation_show_on = !this.annotation_show_on
-          this.annotation_show_type = show_type
-        },
-        annotation_show_change_item() {
-          let do_change_item
+      },
+      annotation_show_activate(show_type){
+        this.annotation_show_on = !this.annotation_show_on
+        this.annotation_show_type = show_type
+        if(this.$refs.qa_carrousel && this.annotation_show_on){
+          let instance = this.instance_list[this.$refs.qa_carrousel.annotation_show_current_instance]
+          this.snap_to_instance(instance)
+          this.$refs.qa_carrousel.play()
+        }
 
-      let file = this.file || this.task.file;
-      if (file.type == "video") {
-        if (this.$refs.video_controllers.at_end_of_video == true) {
+        if(!this.annotation_show_on && this.$refs.instance_detail_list){
+          this.$refs.instance_detail_list.show_all();
+        }
+      },
+      annotation_show_change_item(direction = "next") {
+        let do_change_item
+
+        let file = this.file || this.task.file;
+        if (file.type == "video") {
+          if (this.$refs.video_controllers.at_end_of_video == true) {
+            do_change_item = true;
+          } else {
+            this.$refs.video_controllers.move_frame(1);
+          }
+        }
+        if (file.type == "image") {
           do_change_item = true;
-        } else {
-          this.$refs.video_controllers.move_frame(1);
         }
-      }
-      if (file.type == "image") {
-        do_change_item = true;
-      }
 
-      if (do_change_item == true) {
-        if (this.annotation_show_type === "task") {
-          return this.trigger_task_change("next", this.$props.task, true);
+        if (do_change_item == true) {
+          if (this.annotation_show_type === "task") {
+            return this.trigger_task_change(direction, this.$props.task, false);
+          }
+          this.change_file(direction);
         }
-        this.change_file("next");
-      }
-    },
+      },
     set_annotation_show_duration(duration) {
       this.annotation_show_duration_per_instance = (duration + 1) * 1000;
     },
@@ -7964,7 +7996,10 @@ export default Vue.extend({
       if (this.ctrl_key && event.keyCode == vKey) {
         this.paste_instance(undefined, undefined, frame_number_locked);
       }
+      if(this.shift_key && event.keyCode === 82){ // CTRL + r
+        this.annotation_show_activate(!this.task && this.file && this.file.id ? 'file' : 'task')
 
+      }
       if (event.keyCode === 90 && this.ctrl_key) {
         // ctrl + z
         this.undo();
