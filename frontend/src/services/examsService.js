@@ -3,7 +3,6 @@ import axios from './customInstance'
 export const get_examinations = async (project_string_id, exam_id, mode) => {
   try {
     let url = `/api/v1/job/list`;
-    console.log('get_examinations')
     const {data} = await axios.post(url, {
       metadata: {
         project_string_id: project_string_id,

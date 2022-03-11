@@ -249,7 +249,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     this.guided_mode_nodes.push(node);
     node.occluded = occlude
     node.ordinal = this.guided_mode_nodes.length;
-    console.log('ADDED GUIDED NODE', node)
   }
   public reset_guided_nodes(){
     this.guided_mode_nodes = [];
@@ -1011,8 +1010,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
   public draw_guided_nodes(ctx){
     let i = 0;
-    console.log('draw_guided_nodes', this.guided_mode_active, this.instance_context.keypoints_draw_mode)
-    console.log('guided_mode_nodes', this.guided_mode_nodes,)
     if(this.instance_context.keypoints_draw_mode != 'guided'){
       return
     }

@@ -217,7 +217,6 @@ export default Vue.extend({
         this.loading = true;
         this.error = {}
         let project_string_id = this.$store.state.project.current.project_string_id;
-        console.log('asdasd', project_string_id)
         if(!project_string_id){
           this.error = {'no_projects_created': 'Please create a project or go to existing project to upgrade to a premium account.'}
           return
