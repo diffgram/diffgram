@@ -219,9 +219,30 @@
                 </v_annotation_trainer_menu>
 
                 <v-divider vertical></v-divider>
+
+                <div v-if="search_mode">
+                    <tooltip_button
+                        color="primary"
+                        icon="mdi-search-web"
+                        :icon_style="true"
+                        :bottom="true"
+                        disabled
+                    />
+                </div>
+
+                <div v-if="bulk_mode">
+                    <tooltip_button
+                        color="primary"
+                        icon="mdi-bullseye"
+                        :icon_style="true"
+                        :bottom="true"
+                        disabled
+                    />
+                </div>
                 </v-layout>
             </div>
         </v-toolbar-items>
+        
         <v-toolbar-items v-else>
             <div style="width: 10px" />
             <tooltip_button
@@ -344,8 +365,7 @@
                     :icon_style="true"
                     :bottom="true"
                     disabled
-                >
-                </tooltip_button>
+                />
             </div>
 
              <div v-if="bulk_mode">
@@ -355,8 +375,7 @@
                     :icon_style="true"
                     :bottom="true"
                     disabled
-                >
-                </tooltip_button>
+                />
             </div>
 
 
