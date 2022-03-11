@@ -758,7 +758,7 @@ export default Vue.extend({
             // New command patterm
             this.new_instance_list = new InstanceList(instance_list)
         },
-        save: async function (index = null) {
+        save: async function () {
             this.has_changed = false
             this.save_loading = true
             let url;
@@ -771,28 +771,18 @@ export default Vue.extend({
                 const res = await postInstanceList(url, this.new_instance_list.get_all())
                 const { added_instances } = res
                 added_instances.map(add_insatnce => {
-                    if (!index) {
-                        const old_id = this.new_instance_list.get().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
-                        this.new_instance_list.get().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
-                        if (this.instance_in_progress) {
-                            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
-                        }
-                        this.new_instance_list.get()
-                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                            .map(instance => {
-                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                                else instance.to_instance_id = add_insatnce.id
-                            })
-                    } else {
-                        const old_id = this.new_instance_list.get()[index].id
-                        this.new_instance_list.get()[index].id = add_insatnce.id
-                        this.new_instance_list.get()
-                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                            .map(instance => {
-                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                                else instance.to_instance_id = add_insatnce.id
-                            })
+                    const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
+                    const old_id = old_instance.get_instance_data().id
+                    this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                    if (this.instance_in_progress) {
+                        this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
                     }
+                    this.new_instance_list.get_all()
+                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
+                        .map(instance => {
+                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 })
             }
             this.save_loading = false
