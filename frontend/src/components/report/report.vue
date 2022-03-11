@@ -968,9 +968,7 @@ export default Vue.extend({
     },
     methods: {
       on_change_item_of_interest: function(new_item){
-        console.log('ITEM', new_item, this.item_of_interest_list)
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
-        console.log('item_of_interest', item_of_interest)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
         this.has_changes = true;
       },
@@ -1195,7 +1193,6 @@ export default Vue.extend({
           this.report_template
         )
         let csvContent = csv_formatter.get_csv_data()
-        console.log('AAAA', csvContent)
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
         var encodedUri = encodeURI(csvContent);
         var link = document.createElement("a");

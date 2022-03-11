@@ -259,7 +259,6 @@ export default Vue.extend({
         this.view_only = true;
       }
 
-      console.log('this.$route.query',this.$route.query)
     }
 
     if (

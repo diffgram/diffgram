@@ -198,7 +198,6 @@ import Vue from "vue"; export default Vue.extend( {
           this.$emit('member_invited')
 
         } else {
-          console.log('response', response)
           if(response['data']['errors']['free_tier_limit']){
             this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
             this.details_free_tier_limit = response['data']['errors']['free_tier_limit']

@@ -721,7 +721,6 @@ const ui_schema = {
       // use example
       // this.$emit('set_ui_schema_element_value',
       //  [this.target_element, 'allowed_instance_types', new_type_list])
-      console.log('aaa', payload)
       const element = payload[0]
       if (element === undefined) {
         throw new Error("set_ui_schema_element_value element is undefined")
