@@ -904,7 +904,6 @@ export default Vue.extend({
                     end_token = this.tokens.find(token => token.id === end_instance.end_token)
                 }
                 if (starting_token.id === end_token.id) {
-                    console.log("here color", instance.label_file)
                     const rect = {
                         instance_id: instance.get_instance_data().id,
                         x: starting_token.start_x,
@@ -914,7 +913,6 @@ export default Vue.extend({
                         instance_type: instance.type,
                         color: instance.label_file.colour.hex
                     }
-                    console.log("here", rect)
                     return [rect]
                 }
     
