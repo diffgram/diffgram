@@ -282,6 +282,7 @@ export default Vue.extend({
             unselectable: false,
             text_field_heigth: 100,
             text_field_width: '100%',
+            re_render_func: undefined,
             // Command
             command_manager: undefined,
             has_changed: false,
@@ -449,7 +450,8 @@ export default Vue.extend({
             this.resizing = true
             this.lines = []
             this.tokens = []
-            setTimeout(() => this.initialize_token_render(), 1000)
+            clearTimeout(this.re_render_func);
+            this.re_render_func = setTimeout(this.initialize_token_render, 1000)
         },
         leave_listener: function(e) {
             if (this.has_changed || this.save_loading) {
