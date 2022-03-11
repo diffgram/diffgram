@@ -51,7 +51,28 @@
             elevation="5"
             >
       <v-card-title class="pb-0">
-
+        <tooltip_button
+          v-if="!edit_name"
+          tooltip_message="Edit Name"
+          datacy="ui_schema_edit_name"
+          @click="edit_name = !edit_name"
+          icon="mdi-rename-box"
+          :icon_style="true"
+          color="primary"
+          :disabled="!$store.state.ui_schema.current"
+        >
+        </tooltip_button>
+        <tooltip_button
+          v-else
+          tooltip_message="Stop Editing"
+          datacy="ui_schema_edit_name"
+          @click="edit_name = !edit_name"
+          icon="mdi-cancel"
+          :icon_style="true"
+          color="primary"
+          :disabled="!$store.state.ui_schema.current"
+        >
+        </tooltip_button>
         <div v-if="edit_name == false" @dblclick="edit_name=true">
           {{$store.state.ui_schema.current.name}}
         </div>
@@ -69,18 +90,7 @@
           </v-text-field>
         </div>
 
-        <v-spacer></v-spacer>
 
-        <tooltip_button
-            tooltip_message="Edit Name"
-            datacy="ui_schema_edit_name"
-            @click="edit_name = !edit_name"
-            icon="mdi-rename-box"
-            :icon_style="true"
-            color="primary"
-            :disabled="!$store.state.ui_schema.current"
-                        >
-        </tooltip_button>
       </v-card-title>
 
       <v-alert
@@ -113,7 +123,8 @@
             :loading="loading"
             :disabled="loading
                     || !ui_schema_exists
-                    || public_not_super_admin"
+                    || public_not_super_admin
+                    || !current_ui_schema"
             :icon_style="true"
             color="primary"
                         >
@@ -180,6 +191,7 @@
 
 
         <ui_schema_selector
+          ref="ui_schema_selector"
           :project_string_id="project_string_id"
           @change="change($event)"
           :disabled="selector_disabled"
@@ -266,7 +278,9 @@
   </v-container>
 </v-card>
 </div>
-
+<v-snackbar  timeout="2000" top v-if="snackbar_visible" color="success" v-model="snackbar_visible">
+  <h4 class="text-center">{{snackbar_message}}</h4>
+</v-snackbar>
 </div>
 
 </template>
@@ -313,7 +327,8 @@
       // move context menu off the page out of view when hidden
       return {
         selector_disabled: false,
-
+        snackbar_visible: false,
+        snackbar_message: "",
         top: '-1000px',
         left: '-1000px',
         instance_hover_index_locked: null,
@@ -410,6 +425,9 @@
     },
 
     computed: {
+      current_ui_schema: function(){
+        return this.$store.state.ui_schema.current;
+      },
       public_not_super_admin: function () {
            if (this.$store.state.ui_schema.current.is_public == true
             && this.$store.state.user.current.is_super_admin != true) {
@@ -581,18 +599,28 @@
         }
 
       },
+      show_snackbar: function(message){
+        this.snackbar_visible = true;
+        this.snackbar_message = message
+      },
       update_ui_schema_with_servercall: async function(){
-
-        if (!this.get_ui_schema() || !this.get_ui_schema().id) { return }
+        if (!this.get_ui_schema() || !this.get_ui_schema().id) {
+          return
+        }
 
         this.loading = true;
         this.error = {}
 
         try{
-          const result = await axios.post(
+          const response = await axios.post(
             `/api/v1/project/${this.project_string_id}/ui_schema/update`,
             this.get_ui_schema()
           )
+          if(response.status === 200){
+            await this.$refs.ui_schema_selector.refresh();
+            this.$refs.ui_schema_selector.set_ui_schema(response.data.ui_schema);
+            this.show_snackbar("UI Schema Saved.")
+          }
 
         }
         catch (error) {
@@ -611,6 +639,7 @@
         if(event.id == this.$store.state.ui_schema.current.id) { return }
 
         this.$store.commit('set_ui_schema', event)
+        this.$emit('set_ui_schema', event)
       },
 
       toggle_is_visible: async function () {
