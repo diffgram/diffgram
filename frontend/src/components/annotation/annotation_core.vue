@@ -66,9 +66,7 @@
             @replace_file="$emit('replace_file', $event)"
             @open_instance_template_dialog="open_instance_template_dialog()"
             @copy_all_instances="copy_all_instances"
-            @on_task_annotation_complete_and_save="
-              on_task_annotation_complete_and_save
-            "
+            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
             @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
@@ -3601,7 +3599,10 @@ export default Vue.extend({
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
       if(this.current_instance_template.mode === 'guided' && this.draw_mode){
-        this.show_snackbar_guided_keypoints_drawing(1)
+        this.show_snackbar_guided_keypoints_drawing(1);
+      }
+      if(this.current_instance_template.mode !== 'guided'){
+        this.show_custom_snackbar = false;
       }
       this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
     },
@@ -5923,7 +5924,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              console.log(x_diff, y_diff)
+
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
@@ -6990,13 +6991,31 @@ export default Vue.extend({
       this.instance_template_draw_started = true;
       this.is_actively_drawing = true;
     },
-    instance_template_mouse_up: function (frame_number = undefined) {
+    instance_template_mouse_up: async function (frame_number = undefined) {
       if (this.instance_template_draw_started) {
         if(this.actively_drawing_instance_template.mode === 'guided'){
           this.add_node_guided_mode(frame_number);
         }
         else{
           this.add_instance_template_to_instance_list(frame_number);
+          if(this.actively_drawing_keypoints_instance){
+            let instance = this.actively_drawing_keypoints_instance;
+            let index = this.instance_list.length - 1;
+            for(let i =0; i < this.instance_list.length; i++){
+                if(this.instance_list[i].creation_ref_id === instance.creation_ref_id){
+                  index = i;
+                  break;
+                }
+            }
+            this.edit_mode_toggle(false)
+            instance.select()
+            instance.status = "updated";
+            Vue.set(
+              this.instance_list,
+              this.instance_hover_index,
+              instance
+            );
+          }
           this.instance_template_draw_started = undefined;
           this.is_actively_drawing = undefined;
           this.instance_template_start_point = undefined;

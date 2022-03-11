@@ -499,7 +499,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
           return
         }
         for (let node of this.nodes) {
-          if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.y + this.vertex_size !== fixed_point.y - this.vertex_size) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
           }
           if (node.x - this.vertex_size !== fixed_point.x) {
@@ -520,10 +520,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
           return
         }
         for (let node of this.nodes) {
-          if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.y + this.vertex_size !== fixed_point.y - this.vertex_size) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
           }
-          if (node.x + this.vertex_size !== fixed_point.x - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.x + this.vertex_size !== fixed_point.x - this.vertex_size) {
             node.x = Math.round(fixed_point.x + rx * (node.x - fixed_point.x))
           }
 
@@ -534,10 +534,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
-        if (this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.y <= fixed_point.y + this.vertex_size) {
           return
         }
-        if (this.mouse_position.x <= fixed_point.x + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.x <= fixed_point.x + this.vertex_size) {
           return
         }
         for (let node of this.nodes) {
@@ -555,10 +555,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
-        if (this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.y <= fixed_point.y + this.vertex_size) {
           return
         }
-        if (this.mouse_position.x >= fixed_point.x - this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.x >= fixed_point.x - this.vertex_size) {
           return
         }
         for (let node of this.nodes) {
@@ -943,19 +943,19 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     let result = {
       bottom_left: {
-        x: points.min_x + this.CONTROL_POINTS_DISPLACEMENT,
-        y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT
+        x: points.min_x + this.vertex_size,
+        y: points.max_y + this.vertex_size
       },
       bottom_right: {
-        x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT,
-        y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT
+        x: points.max_x + this.vertex_size,
+        y: points.max_y + this.vertex_size
       },
-      top_right: {x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT, y: points.min_y},
-      top_left: {x: points.min_x + this.CONTROL_POINTS_DISPLACEMENT, y: points.min_y},
+      top_right: {x: points.max_x + this.vertex_size, y: points.min_y},
+      top_left: {x: points.min_x + this.vertex_size, y: points.min_y},
       top: {x: (points.min_x + points.max_x) / 2, y: points.min_y},
-      bottom: {x: (points.min_x + points.max_x) / 2, y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT},
+      bottom: {x: (points.min_x + points.max_x) / 2, y: points.max_y + this.vertex_size},
       left: {x: points.min_x, y: (points.max_y + points.min_y) / 2},
-      right: {x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT, y: (points.max_y + points.min_y) / 2},
+      right: {x: points.max_x + this.vertex_size, y: (points.max_y + points.min_y) / 2},
     }
     if(this.current_hovered_control_point_key){
       let fixed_key = this.get_opposite_control_key(this.current_hovered_control_point_key)
@@ -990,7 +990,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#FFFFFF";
       ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-      ctx.arc(point.x, point.y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size + 5 / this.zoom_value, 0, 2 * Math.PI);
       if (this.is_mouse_in_path(ctx) && !hovered_scale_point) {
         hovered_scale_point = true;
         hover_key = key;
