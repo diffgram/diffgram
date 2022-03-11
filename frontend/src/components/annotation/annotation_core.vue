@@ -3300,6 +3300,7 @@ export default Vue.extend({
       return true;
     },
     created: function () {
+      this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
@@ -3312,6 +3313,23 @@ export default Vue.extend({
       if (this.$props.enabled_edit_schema == true) {
         this.edit_ui_schema()
       }
+    },
+    update_label_settings_from_schema: function(){
+      if(!this.task){
+        return
+      }
+      let job = this.task.job;
+      if(!job){
+        return
+      }
+      let ui_schema = job.ui_schema;
+      if(!ui_schema){
+        return
+      }
+      if(!ui_schema.label_settings || !ui_schema.label_settings.default_settings){
+        return;
+      }
+      this.label_settings = ui_schema.label_settings.default_settings;
     },
     initialize_ui_schema_data: function(){
       let ui_schema_loaded = this.$store.state.ui_schema.current;
