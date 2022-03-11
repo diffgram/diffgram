@@ -51,6 +51,7 @@
             icon="mdi-playlist-play"
             datacy="go-to-task-list"
             tooltip_message="Task List"
+            :disabled="this.task && this.task.job_id === -1"
             @click="go_to_job"
             :bottom="true"
           >

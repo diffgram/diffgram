@@ -3,8 +3,10 @@
     <ui_schema_context_menu
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
+      :label_settings="label_settings"
       @close_context_menu="show_ui_schema_context_menu = false"
       @start_edit_ui_schema="edit_ui_schema()"
+      @set_ui_schema="on_set_ui_schema()"
     >
     </ui_schema_context_menu>
 
@@ -2239,9 +2241,15 @@ export default Vue.extend({
       this.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
+    on_set_ui_schema: function(ui_schema){
+      console.log('on_set', ui_schema)
+      this.initialize_ui_schema_data();
+    },
     edit_ui_schema: function (event) {
+      console.log('EDIT', event)
       this.$store.commit("set_ui_schema_editing_state", true);
       this.show_ui_schema_context_menu = true;
+
     },
     add_ui_schema: function (event) {
       this.$store.commit("set_ui_schema_editing_state", true);
@@ -3373,6 +3381,7 @@ export default Vue.extend({
       return true;
     },
     created: function () {
+      this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
@@ -3383,10 +3392,33 @@ export default Vue.extend({
       }
 
       if (this.$props.enabled_edit_schema == true) {
-        this.edit_ui_schema();
+        this.edit_ui_schema()
       }
     },
+    update_label_settings_from_schema: function(){
+      if(!this.task){
+        return
+      }
+      let job = this.task.job;
+      if(!job){
+        return
+      }
+      let ui_schema = job.ui_schema;
+      if(!ui_schema){
+        return
+      }
+      if(!ui_schema.label_settings || !ui_schema.label_settings.default_settings){
+        return;
+      }
+      this.label_settings = ui_schema.label_settings.default_settings;
+    },
+    initialize_ui_schema_data: function(){
+      let ui_schema_loaded = this.$store.state.ui_schema.current;
+      if(ui_schema_loaded && ui_schema_loaded.label_settings && ui_schema_loaded.label_settings.default_settings){
+        this.label_settings = ui_schema_loaded.label_settings.default_settings
+      }
 
+    },
     update_user_settings_from_store() {   // label_settings
       for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
         this.label_settings[key] = value
