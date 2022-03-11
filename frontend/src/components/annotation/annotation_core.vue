@@ -5924,7 +5924,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              console.log(x_diff, y_diff)
+
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
