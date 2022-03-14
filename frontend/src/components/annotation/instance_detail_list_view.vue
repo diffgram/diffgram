@@ -8,7 +8,7 @@
         Exit
       </v-btn>
     </v-alert>
-    <v-layout row>
+    <div class="d-flex flex-column">
       <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
 
 
@@ -489,7 +489,7 @@
         Showing removed.
       </v-alert>
 
-    </v-layout>
+    </div>
 
 
   </div>
@@ -1079,9 +1079,7 @@ export default Vue.extend({
   cursor: pointer;
 }
 
-.sidebar-accordeon-header {
-  border-bottom: 1px solid #e0e0e0;
-}
+
 </style>
 <style>
 
