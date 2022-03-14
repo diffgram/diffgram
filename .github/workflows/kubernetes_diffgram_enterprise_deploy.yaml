@@ -493,18 +493,18 @@ jobs:
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
           walrusService.numReplicas: 1
-          defaultService.requests.cpu: "2"
-          defaultService.requests.memory: "4G"
-          defaultService.limits.cpu: "2"
-          defaultService.limits.memory: "4G"
-          frontendService.requests.cpu: "2"
-          frontendService.requests.memory: "4G"
-          frontendService.limits.cpu: "2"
-          frontendService.limits.memory: "4G"
-          walrusService.requests.cpu: "2"
-          walrusService.requests.memory: "4G"
-          walrusService.limits.cpu: "2"
-          walrusService.limits.memory: "4G"
+          defaultService.requests.cpu: "1"
+          defaultService.requests.memory: "1G"
+          defaultService.limits.cpu: "1"
+          defaultService.limits.memory: "1G"
+          frontendService.requests.cpu: "1"
+          frontendService.requests.memory: "1G"
+          frontendService.limits.cpu: "1"
+          frontendService.limits.memory: "1G"
+          walrusService.requests.cpu: "1"
+          walrusService.requests.memory: "1G"
+          walrusService.limits.cpu: "1"
+          walrusService.limits.memory: "1G"
           nodeGroupLabel: null
 
       - name: Prepare app.yaml for helm chart.
