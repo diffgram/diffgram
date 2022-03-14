@@ -1181,6 +1181,7 @@ export default Vue.extend({
   data() {
     return {
       n_key: false,
+      mouse_wheel_button: false,
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
@@ -5926,7 +5927,7 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-      if (this.z_key === true) {
+      if (this.z_key === true || this.mouse_wheel_button) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
         this.$forceUpdate();
@@ -6412,7 +6413,7 @@ export default Vue.extend({
       this.double_click_keypoint_special_action();
     },
 
-    mouse_up: function () {
+    mouse_up: function (event) {
       // start LIMITS, returns immediately
       let locked_frame_number = this.current_frame;
       if (this.$props.view_only_mode == true) {
@@ -6430,6 +6431,11 @@ export default Vue.extend({
         if (this.is_actively_resizing == true) {
           this.is_actively_resizing = false;
         }
+      }
+
+      if(event.which === 2){
+        this.mouse_wheel_button = false;
+        return
       }
       this.$store.commit("mouse_state_up");
 
@@ -6697,7 +6703,7 @@ export default Vue.extend({
       // 1: left, 2: middle, 3: right, could be null
       // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
 
-      if (event.which == 2 || event.which == 3) {
+      if (event.which == 3) {
         this.mouse_down_limits_result = false;
         return false;
       }
@@ -7083,10 +7089,13 @@ export default Vue.extend({
       }
       instance.start_movement();
     },
+    set_mouse_wheel: function(){
+      this.mouse_wheel_button = true;
+    },
     mouse_down: function (event) {
       // TODO review using local variables instead of vuex
       // here for performance
-
+      console.log('eventt', event)
       // TODO new method ie
       // this.is_actively_drawing = true
       let locked_frame_number = this.current_frame;
@@ -7098,6 +7107,10 @@ export default Vue.extend({
 
       if (this.mouse_down_limits(event) == false) {
         return;
+      }
+      if(event.which === 2){
+        this.set_mouse_wheel(event);
+        return
       }
 
       this.ghost_may_promote_instance_to_actual();
