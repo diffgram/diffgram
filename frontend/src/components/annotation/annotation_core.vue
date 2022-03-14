@@ -211,7 +211,6 @@
         <v-navigation-drawer
           permanent
           left
-          class="mr-2 pt-2"
           style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
           v-if="!error_no_permissions.data"
           :width="label_settings.left_nav_width"
@@ -240,8 +239,7 @@
             </v-alert>
           </div>
 
-          <instance_detail_list_view  class="pl-2 pr-4"
-                                      ref="instance_detail_list"
+          <instance_detail_list_view ref="instance_detail_list"
                                       v-if="!task_error.task_request"
                                       :instance_list="instance_list"
                                       :model_run_list="model_run_list"
@@ -430,22 +428,6 @@
 
         </v-navigation-drawer>
 
-        <!-- TODO would want to think a bit about how to block scrolling
-          / keep other things locked at top...
-
-        We have the class for padding here so that it doesn't add the extra scroll bar
-
-       TODO think about detecting max height from remaining space between menu and bottom.
-
-
-	      * There's not really a super obvious good way to do that, since if we have the scroll on the other thing that could be full too...
-		  * Could detect if scrolled out all the way, and then scroll the page instead...
-
-       The problem if we have
-       ' style="overflow-y:auto; max-height: 900px" ' on here
-       is that the video sequence gets gobbled up in this
-
-       -->
         <v-container v-if="error_no_permissions.data">
           <v_error_multiple
             class="ma-auto"
