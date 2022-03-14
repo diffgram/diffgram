@@ -3162,6 +3162,7 @@ export default Vue.extend({
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
+      console.log('FOCUSSS', focus)
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
         this.instance_list[this.instance_focused_index],
@@ -3949,7 +3950,6 @@ export default Vue.extend({
     },
 
     get_focus_point_of_instance: function (instance) {
-      console.log('get_focus_point_of_instance', instance)
       if(!instance){
         return
       }
@@ -7537,10 +7537,13 @@ export default Vue.extend({
         }
 
         if(!this.annotation_show_on && this.$refs.instance_detail_list){
+          this.$refs.qa_carrousel.annotation_show_progress = 0;
+          this.$refs.qa_carrousel.annotation_show_current_instance = 0;
+          this.$refs.qa_carrousel.annotation_show_previous_instance = 0;
           this.$refs.instance_detail_list.show_all();
         }
       },
-      annotation_show_change_item(direction = "next") {
+      async annotation_show_change_item(direction = "next") {
         let do_change_item
 
         let file = this.file || this.task.file;
@@ -7548,7 +7551,23 @@ export default Vue.extend({
           if (this.$refs.video_controllers.at_end_of_video == true) {
             do_change_item = true;
           } else {
-            this.$refs.video_controllers.move_frame(1);
+            if(direction === 'next'){
+              await this.$refs.video_controllers.move_frame(1);
+              await this.$nextTick()
+              this.$refs.qa_carrousel.annotation_show_current_instance = 0;
+              this.$refs.qa_carrousel.annotation_show_previous_instance = this.instance_list.length;
+              this.$refs.qa_carrousel.annotation_show_progress = 0
+              this.focus_instance({index: this.$refs.qa_carrousel.annotation_show_current_instance})
+            }
+            else if(direction === 'previous'){
+              await this.$refs.video_controllers.move_frame(-1);
+              await this.$nextTick()
+              this.$refs.qa_carrousel.annotation_show_current_instance = this.instance_list.length;
+              this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+              this.$refs.qa_carrousel.annotation_show_progress = 100
+              this.focus_instance({index: this.$refs.qa_carrousel.annotation_show_current_instance})
+            }
+
           }
         }
         if (file.type == "image") {
@@ -7829,6 +7848,9 @@ export default Vue.extend({
 
       if (event.keyCode === 32) {
         // space
+        if(this.annotation_show_on){
+          return
+        }
         this.toggle_pause_play();
         this.space_bar = false;
         this.canvas_element.style.cursor = "pointer";
@@ -7858,6 +7880,9 @@ export default Vue.extend({
         if (this.shift_key) {
           this.change_file("previous");
         } else {
+          if(this.annotation_show_on){
+            return
+          }
           this.shift_frame_via_store(-1);
         }
       }
@@ -7881,6 +7906,9 @@ export default Vue.extend({
         if (this.shift_key) {
           this.change_file("next");
         } else {
+          if(this.annotation_show_on){
+            return
+          }
           this.shift_frame_via_store(1);
         }
       }

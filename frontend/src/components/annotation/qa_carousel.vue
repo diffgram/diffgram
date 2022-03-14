@@ -78,6 +78,7 @@
               this.annotation_show()
             },
             pause: function(){
+              console.log('PAUSE')
               this.is_paused = true;
               clearTimeout(this.annotation_show_timer)
             },
@@ -99,7 +100,7 @@
                 if (instant_transition) clearTimeout(annotation_show_timer)
                 if (loading) return annotation_show()
 
-                let switch_instance = annotation_show_current_instance < instance_list.length
+                let switch_instance = annotation_show_current_instance < instance_list.length ;
                 if(backwards){
                   switch_instance = annotation_show_current_instance > 0;
                 }
