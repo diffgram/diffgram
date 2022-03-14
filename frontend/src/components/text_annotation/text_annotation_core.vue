@@ -783,9 +783,13 @@ export default Vue.extend({
                         this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
                     }
                     this.new_instance_list.get_all()
-                        .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                        .map(instance => {
-                            if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                        .filter(instance => {
+                            const { from_instance_id, to_instance_id } = instance.get_instance_data()
+                            if (instance.type === "relation") console.log(from_instance_id, to_instance_id)
+                            return instance.type === "relation" && (from_instance_id === old_id || to_instance_id === old_id)
+                        })
+                        .map(instance => {const { from_instance_id } = instance.get_instance_data()
+                            if (from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
                             else instance.to_instance_id = add_insatnce.id
                         })
                 })
