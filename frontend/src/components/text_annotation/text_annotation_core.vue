@@ -396,7 +396,10 @@ export default Vue.extend({
             this.trigger_task_change('next')
         },
         bulk_labeling: function(instance_id) {
-            const instance = this.new_instance_list.get().find(inst => inst.id === instance_id)
+            const instance = this.new_instance_list.get().find(inst => {
+                const { id } = inst.get_instance_data()
+                if (id === instance_id) return inst
+            })
             if (instance.start_token !== instance.end_token) return;
 
             const instance_word = this.tokens[instance.start_token].word
