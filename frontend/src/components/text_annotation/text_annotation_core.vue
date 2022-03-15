@@ -377,6 +377,7 @@ export default Vue.extend({
     methods: {
         on_task_annotation_complete_and_save: async function () {
             await this.save();
+            await this.save();
             const response = await finishTaskAnnotation(this.task.id);
             const new_status = response.data.task.status;
             this.task.status = new_status;
@@ -436,6 +437,7 @@ export default Vue.extend({
         trigger_task_change: async function (direction, assign_to_user = false) {
             if (this.has_changed) {
                 await this.save();
+                await this.save();
             }
             this.$emit("request_new_task", direction, this.task, assign_to_user);
         },
@@ -475,6 +477,7 @@ export default Vue.extend({
 
             else if (e.keyCode === 83) {
                 await this.save();
+                await this.save();
             }
 
             else if (e.keyCode === 71 && !this.search_mode) {
@@ -502,6 +505,7 @@ export default Vue.extend({
         },
         detect_is_ok_to_save: async function () {
             if (this.has_changed && !this.instance_in_progress) {
+                await this.save();
                 await this.save();
             }
         },
@@ -775,6 +779,7 @@ export default Vue.extend({
             if (!this.instance_in_progress) {
                 const res = await postInstanceList(url, this.new_instance_list.get_all())
                 const { added_instances } = res
+                console.log(added_instances)
                 added_instances.map(add_insatnce => {
                     const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
                     const old_id = old_instance.get_instance_data().id
@@ -785,7 +790,6 @@ export default Vue.extend({
                     this.new_instance_list.get_all()
                         .filter(instance => {
                             const { from_instance_id, to_instance_id } = instance.get_instance_data()
-                            if (instance.type === "relation") console.log(from_instance_id, to_instance_id)
                             return instance.type === "relation" && (from_instance_id === old_id || to_instance_id === old_id)
                         })
                         .map(instance => {const { from_instance_id } = instance.get_instance_data()
