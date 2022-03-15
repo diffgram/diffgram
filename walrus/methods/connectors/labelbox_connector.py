@@ -16,6 +16,8 @@ from shared.utils.task import task_complete
 from methods.connectors.connectors import ConnectorManager
 from methods.input.packet import enqueue_packet
 from shared.regular.regular_log import result_has_error
+from shared.regular import regular_log
+import colorsys
 
 def with_labelbox_exception_handler(f):
     def wrapper(*args):
@@ -24,7 +26,8 @@ def with_labelbox_exception_handler(f):
             res = f(*args)
             return res
         except Exception as e:
-            log['error']['connection_error'] = 'Error connecting to Labelbox. Please check you private API key is correct.'
+            log['error'][
+                'connection_error'] = 'Error connecting to Labelbox. Please check you private API key is correct.'
             log['error']['exception_details'] = str(e)
             return {'log': log}
 
@@ -76,7 +79,7 @@ class LabelboxConnector(Connector):
     def __get_frames(self, opts):
         frames_url = opts['frames_url']
         headers = {'Authorization': f"Bearer {self.auth_data['client_secret']}"}
-        ndjson_response = requests.get(frames_url, headers=headers)
+        ndjson_response = requests.get(frames_url, headers = headers)
         frames_data = ndjson_response.text.split('\n')
         result = [json.loads(elm) for elm in frames_data if elm != '']
         return {'result': result}
@@ -103,6 +106,52 @@ class LabelboxConnector(Connector):
         """
         res = self.connection_client.execute(query, data)
         return {'result': res}
+
+    def __map_instance_type(self, labelbox_type):
+
+        instance_types_mapping = {
+            'rectangle': 'box',
+            'point': 'point',
+            'polygon': 'polygon',
+            'superpixel': 'polygon',
+        }
+        return instance_types_mapping[labelbox_type]
+
+    def __import_labels_to_project(self, session, ontology, diffgram_project):
+
+        label_tools = ontology.tools()
+        for tool in label_tools:
+            labelbox_instance_type = tool.tool.value
+            diffgram_instance_type = self.__map_instance_type(labelbox_instance_type)
+            name = tool.name
+            color_hex = tool.color
+            rgb = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
+            hls = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
+            hsv = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
+            color_dict = {"hex": "#194d33",
+                          "hls": {"l": hls[1], "h": hls[0], "s": hls[2], "a": 1},
+                          "rgba": {"a": 1, "g": rgb[2], "r": rgb[0], "b": rgb[2]},
+                          "hsv": {"a": 1, "h": hsv[0], "s": hsv[1], "v":hsv[2]}, "a": 1}
+
+            label_file = File.new_label_file(
+                session = session,
+                name = name,
+                default_sequences_to_single_frame = False,
+                working_dir_id = diffgram_project.directory_default_id,
+                project = diffgram_project,
+                colour = color_dict,
+                log = regular_log.default()
+            )
+
+    def __import_ontology_to_project(self, opts):
+        label_box_project_id = opts['labelbox_project_id']
+        diffgram_project_string_id = opts['project_string_id']
+        with sessionMaker.session_scope_threaded() as session:
+            diffgram_project = Project.get_by_string_id(session = session,
+                                                        project_string_id = diffgram_project_string_id)
+            labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
+            ontology = labelbox_project.ontology()
+            self.__import_labels_to_project(session, ontology, diffgram_project)
 
     @with_labelbox_exception_handler
     @with_connection
@@ -145,13 +194,13 @@ class LabelboxConnector(Connector):
     @with_connection
     def __create_project(self, opts):
         results = []
-        project = self.connection_client.create_project(name=opts['name'])
+        project = self.connection_client.create_project(name = opts['name'])
         return {'result': project}
 
     @with_labelbox_exception_handler
     @with_connection
     def __create_dataset(self, opts):
-        dataset = self.connection_client.create_dataset(name=opts['name'], projects=opts['project'])
+        dataset = self.connection_client.create_dataset(name = opts['name'], projects = opts['project'])
         return {'result': dataset}
 
     @with_labelbox_exception_handler
@@ -192,6 +241,8 @@ class LabelboxConnector(Connector):
             return self.__get_data_rows(opts)
         if action_type == 'get_project':
             return self.__get_project(opts)
+        if action_type == 'get_project_list':
+            return self.__get_projects(opts)
         if action_type == 'get_frames':
             return self.__get_frames(opts)
 
@@ -274,34 +325,34 @@ class LabelBoxSyncManager:
     def update_instance_list_for_image_or_frame(self,
                                                 label_instances,
                                                 diffgram_task,
-                                                video_data=None,
-                                                frame_packet_map=None):
+                                                video_data = None,
+                                                frame_packet_map = None):
         instance_list = []
         count = 1
         for labelbox_instance in label_instances:
             # Check if instance mapping already exists, if so provide instance_id to avoid overriding data.
             instance_map = ExternalMap.get(
-                session=self.session,
-                external_id=labelbox_instance['featureId'],
-                diffgram_class_string='instance',
-                type='labelbox_instance',
-                connection_id=self.task_template.interface_connection.id
+                session = self.session,
+                external_id = labelbox_instance['featureId'],
+                diffgram_class_string = 'instance',
+                type = 'labelbox_instance',
+                connection_id = self.task_template.interface_connection.id
             )
             if not instance_map:
                 instance_map = ExternalMap.new(
-                    session=self.session,
-                    external_id=None,
-                    diffgram_class_string='instance',
-                    type='labelbox_instance',
-                    connection=self.task_template.interface_connection,
-                    add_to_session=True,
-                    flush_session=True
+                    session = self.session,
+                    external_id = None,
+                    diffgram_class_string = 'instance',
+                    type = 'labelbox_instance',
+                    connection = self.task_template.interface_connection,
+                    add_to_session = True,
+                    flush_session = True
                 )
             diffgram_label_file_data = self.task_template.get_label_file_by_name(labelbox_instance['title'])
             diffgram_label_instance = self.transform_labelbox_label_to_diffgram_instance(labelbox_instance,
                                                                                          diffgram_label_file_data,
-                                                                                         instance_map=instance_map,
-                                                                                         sequence_num=count if video_data is not None else None)
+                                                                                         instance_map = instance_map,
+                                                                                         sequence_num = count if video_data is not None else None)
 
             if frame_packet_map is not None:
                 if video_data['current_frame'] not in frame_packet_map:
@@ -313,19 +364,19 @@ class LabelBoxSyncManager:
                 instance_list.append(diffgram_label_instance)
             count += 1
         if instance_list and video_data is None:
-            enqueue_packet(project_string_id=self.task_template.project.project_string_id,
-                           session=self.session,
-                           media_url=None,
-                           media_type='image',
-                           job_id=self.task_template.id,
-                           file_id=diffgram_task.file.id,
-                           instance_list=instance_list,
-                           task_id=diffgram_task.id,
-                           task_action='complete_task',
-                           commit_input=True,
-                           external_map_id=instance_map.id,
-                           external_map_action='set_instance_id',
-                           mode="update_with_existing")
+            enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+                           session = self.session,
+                           media_url = None,
+                           media_type = 'image',
+                           job_id = self.task_template.id,
+                           file_id = diffgram_task.file.id,
+                           instance_list = instance_list,
+                           task_id = diffgram_task.id,
+                           task_action = 'complete_task',
+                           commit_input = True,
+                           external_map_id = instance_map.id,
+                           external_map_action = 'set_instance_id',
+                           mode = "update_with_existing")
             return True
         elif instance_list:
             return True
@@ -346,19 +397,19 @@ class LabelBoxSyncManager:
             if len(label_instances) > 0:
                 result = self.update_instance_list_for_image_or_frame(label_instances,
                                                                       diffgram_task,
-                                                                      video_data=video_data,
-                                                                      frame_packet_map=frame_packet_map)
-        enqueue_packet(project_string_id=self.task_template.project.project_string_id,
-                       session=self.session,
-                       media_url=None,
-                       media_type='video',
-                       job_id=self.task_template.id,
-                       file_id=diffgram_task.file.id,
-                       frame_packet_map=frame_packet_map,
-                       task_id=diffgram_task.id,
-                       task_action='complete_task',
-                       commit_input=True,
-                       mode="update_with_existing")
+                                                                      video_data = video_data,
+                                                                      frame_packet_map = frame_packet_map)
+        enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+                       session = self.session,
+                       media_url = None,
+                       media_type = 'video',
+                       job_id = self.task_template.id,
+                       file_id = diffgram_task.file.id,
+                       frame_packet_map = frame_packet_map,
+                       task_id = diffgram_task.id,
+                       task_action = 'complete_task',
+                       commit_input = True,
+                       mode = "update_with_existing")
         return result
 
     @_with_task_template
@@ -382,10 +433,10 @@ class LabelBoxSyncManager:
         else:
             label_instances = label['objects']
         file_external_mapping = ExternalMap.get(
-            session=self.session,
-            external_id=labelbox_data_row_id,
-            diffgram_class_string='file',
-            type='labelbox'
+            session = self.session,
+            external_id = labelbox_data_row_id,
+            diffgram_class_string = 'file',
+            type = 'labelbox'
         )
         if file_external_mapping:
             diffgram_task = self.session.query(Task).filter(Task.job_id == self.task_template.id,
@@ -394,13 +445,13 @@ class LabelBoxSyncManager:
             if diffgram_task:
                 # Build external mapping
                 diffgram_task.default_external_map = ExternalMap.new(
-                    session=self.session,
-                    external_id=payload['id'],
-                    task=diffgram_task,
-                    diffgram_class_string="task",
-                    type="labelbox",
-                    add_to_session=True,
-                    flush_session=True
+                    session = self.session,
+                    external_id = payload['id'],
+                    task = diffgram_task,
+                    diffgram_class_string = "task",
+                    type = "labelbox",
+                    add_to_session = True,
+                    flush_session = True
                 )
                 self.session.add(diffgram_task)
                 # Now process Labels and add them to file.
@@ -444,7 +495,7 @@ class LabelBoxSyncManager:
         return int(x_min), int(x_max), int(y_min), int(y_max)
 
     def transform_labelbox_label_to_diffgram_instance(self, label_object, diffgram_label_file_data,
-                                                      sequence_num=None, instance_map=None):
+                                                      sequence_num = None, instance_map = None):
         logger.debug(f"Bulding instance from: {label_object}")
         logger.debug(f"Bulding instance with diffgram label_file ID: {diffgram_label_file_data['id']}")
         instance_id = None
@@ -562,13 +613,13 @@ class LabelBoxSyncManager:
             if diffgram_file.image:
                 data = self.image.serialize_for_source_control(self.session)
                 data_row = labelbox_dataset.create_data_row(
-                    row_data=data['url_signed'])
+                    row_data = data['url_signed'])
         if diffgram_file.type == "video":
             if diffgram_file.video:
                 data = self.video.serialize_list_view(self.session, self.task_template.project)
 
             data_row = labelbox_dataset.create_data_row(
-                row_data=data['file_signed_url'])
+                row_data = data['file_signed_url'])
         return data_row
 
     def transform_labelbox_label_to_diffgram_instances(self):
@@ -610,7 +661,7 @@ class LabelBoxSyncManager:
         return result
 
     @_with_task_template
-    def add_files_to_labelbox_dataset(self, diffgram_files=[], labelbox_dataset=None, force_create=False):
+    def add_files_to_labelbox_dataset(self, diffgram_files = [], labelbox_dataset = None, force_create = False):
         """
             Adds the files to labelbox.
             Important! If you call this method multiple times, multiple versions of the same file will
@@ -628,11 +679,11 @@ class LabelBoxSyncManager:
         file_ids = [x.id for x in diffgram_files]
 
         datarow_external_maps = ExternalMap.get(
-            session=self.session,
-            file_id=file_ids,
-            diffgram_class_string='file',
-            type='labelbox',
-            return_kind='all'
+            session = self.session,
+            file_id = file_ids,
+            diffgram_class_string = 'file',
+            type = 'labelbox',
+            return_kind = 'all'
         )
         # To avoid querying external map each time on for loop.
         external_map_by_id = {ext_map.file_id: ext_map for ext_map in datarow_external_maps}
@@ -652,7 +703,7 @@ class LabelBoxSyncManager:
             # We have to re-create it if it was deleted for some reason.
             diffgram_file_external_map = external_map_by_id.get(diffgram_file.id)
             if diffgram_file_external_map and diffgram_file_external_map.external_id and not force_create \
-                    and external_map_by_id.get(diffgram_file.id).external_id not in deleted_data_rows:
+                and external_map_by_id.get(diffgram_file.id).external_id not in deleted_data_rows:
                 logger.debug(f"File {diffgram_file.id} exists. Skipping..")
                 continue
             if diffgram_file.type == "image":
@@ -710,13 +761,13 @@ class LabelBoxSyncManager:
         for datarow in created_datarows:
             file = diffgram_files_by_id[int(datarow['externalId'])]
             file.default_external_map = ExternalMap.new(
-                session=self.session,
-                external_id=datarow['id'],
-                file=file,
-                diffgram_class_string="file",
-                type="labelbox",
-                add_to_session=True,
-                flush_session=True
+                session = self.session,
+                external_id = datarow['id'],
+                file = file,
+                diffgram_class_string = "file",
+                type = "labelbox",
+                add_to_session = True,
+                flush_session = True
             )
             self.session.add(file)
 
@@ -776,22 +827,22 @@ class LabelBoxSyncManager:
                     })
 
                     dataset.default_external_map = ExternalMap.new(
-                        session=self.session,
-                        external_id=labelbox_dataset.uid,
-                        dataset=dataset,
-                        diffgram_class_string="dataset",
-                        type="labelbox",
-                        add_to_session=True,
-                        flush_session=True
+                        session = self.session,
+                        external_id = labelbox_dataset.uid,
+                        dataset = dataset,
+                        diffgram_class_string = "dataset",
+                        type = "labelbox",
+                        add_to_session = True,
+                        flush_session = True
                     )
                     self.session.add(dataset)
 
                 file_list = WorkingDirFileLink.file_list(self.session,
                                                          dataset.id,
-                                                         limit=None)
-                self.add_files_to_labelbox_dataset(diffgram_files=file_list,
-                                                   labelbox_dataset=labelbox_dataset,
-                                                   force_create=force_create)
+                                                         limit = None)
+                self.add_files_to_labelbox_dataset(diffgram_files = file_list,
+                                                   labelbox_dataset = labelbox_dataset,
+                                                   force_create = force_create)
             else:
 
                 logger.debug('Dataset does not exist... creating.')
@@ -802,24 +853,24 @@ class LabelBoxSyncManager:
                                                            'project': self.labelbox_project})
                 labelbox_dataset = result['result']
                 dataset.default_external_map = ExternalMap.new(
-                    session=self.session,
-                    external_id=labelbox_dataset.uid,
-                    dataset=dataset,
-                    url=f"https://app.labelbox.com/dataset/{labelbox_dataset.uid}",
-                    diffgram_class_string="dataset",
-                    type="labelbox",
-                    add_to_session=True,
-                    flush_session=True,
+                    session = self.session,
+                    external_id = labelbox_dataset.uid,
+                    dataset = dataset,
+                    url = f"https://app.labelbox.com/dataset/{labelbox_dataset.uid}",
+                    diffgram_class_string = "dataset",
+                    type = "labelbox",
+                    add_to_session = True,
+                    flush_session = True,
                 )
                 self.session.add(dataset)
                 file_list = WorkingDirFileLink.file_list(self.session,
                                                          dataset.id,
-                                                         limit=None)
+                                                         limit = None)
 
-                self.add_files_to_labelbox_dataset(diffgram_files=file_list, labelbox_dataset=labelbox_dataset)
+                self.add_files_to_labelbox_dataset(diffgram_files = file_list, labelbox_dataset = labelbox_dataset)
 
 
-@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods=['POST'])
+@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
 def labelbox_web_hook_manager():
     """
         Webhook for receiving data on Diffgram once finished on labelbox.
@@ -830,7 +881,8 @@ def labelbox_web_hook_manager():
     payload = request.data
     secret = settings.LABEL_BOX_SECRET
     log = regular_log.default()
-    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg=payload, digestmod=hashlib.sha1).hexdigest()
+    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg = payload,
+                                  digestmod = hashlib.sha1).hexdigest()
     if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
         error = 'Error: computed_signature does not match signature provided in the headers'
         logger.error('Error: computed_signature does not match signature provided in the headers')
@@ -841,25 +893,25 @@ def labelbox_web_hook_manager():
         logger.debug(f"Payload for labelbox webhooks: {payload}")
         labelbox_project_id = payload['project']['id']
         project_external_mapping = ExternalMap.get(
-            session=session,
-            external_id=labelbox_project_id,
-            type='labelbox',
-            diffgram_class_string='task_template'
+            session = session,
+            external_id = labelbox_project_id,
+            type = 'labelbox',
+            diffgram_class_string = 'task_template'
         )
         if project_external_mapping:
             task_template = Job.get_by_id(session, project_external_mapping.job_id)
             if task_template:
                 connection = task_template.interface_connection
                 logger.debug(f"Connection for labelbox: {connection}")
-                connector_manager = ConnectorManager(connection=connection, session=session)
+                connector_manager = ConnectorManager(connection = connection, session = session)
                 connector = connector_manager.get_connector_instance()
                 connector.connect()
                 sync_manager = LabelBoxSyncManager(
-                    session=session,
-                    task_template=task_template,
-                    labelbox_project=None,
-                    log=log,
-                    labelbox_connector=connector
+                    session = session,
+                    task_template = task_template,
+                    labelbox_project = None,
+                    log = log,
+                    labelbox_connector = connector
                 )
                 sync_manager.handle_task_creation_hook(payload)
                 return jsonify({'message': 'OK.'})
