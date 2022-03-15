@@ -8,7 +8,9 @@
            alt="">
     </div>
     <h4>1. Select Labelbox Project: </h4>
-    <v-select item-text="name" item-value="id" :items="labelbox_projects" v-model="project_migration_data.labelbox_project_id"></v-select>
+    <v-select @change="on_project_selected" item-text="name" item-value="id" :items="labelbox_projects" v-model="project_migration_data.labelbox_project_id"></v-select>
+    <v-checkbox label="Import Schema" disabled v-model="project_migration_data.import_schema"></v-checkbox>
+    <v-checkbox label="Import Files (Images Only)" v-model="project_migration_data.import_files"></v-checkbox>
   </v-container>
 </template>
 
@@ -28,7 +30,11 @@ export default Vue.extend({
         default: null
       },
       project_migration_data: {
-        default: {},
+        default: {
+          import_schema: true,
+          import_files: false,
+
+        },
         required: true
       }
     },
@@ -43,6 +49,9 @@ export default Vue.extend({
       await this.get_labelbox_projects();
     },
     methods: {
+      on_project_selected: function(val){
+        this.project_migration_data.labelbox_project_id = val;
+      },
       get_labelbox_projects: async function () {
         if(!this.project_migration_data){
           return

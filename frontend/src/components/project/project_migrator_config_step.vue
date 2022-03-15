@@ -4,6 +4,7 @@
     <h4>Set the migration parameters</h4>
 
     <migration_config_labelbox
+      @project_selected="on_project_selected"
       :project_string_id="project_string_id"
       :project_migration_data="project_migration_data"
       v-if="project_migration_data.connection && project_migration_data.connection.integration_name === 'labelbox'">
@@ -13,7 +14,7 @@
     <wizard_navigation
       @next="on_next_button_click"
       :loading_next="loading_steps"
-      :disabled_next="loading_steps"
+      :disabled_next="loading_steps || !project_migration_data.labelbox_project_id"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
@@ -50,6 +51,9 @@ export default Vue.extend( {
 
   },
   methods: {
+    on_project_selected: function(){
+
+    },
     on_next_button_click: function(){
       this.$emit('next_step');
     }

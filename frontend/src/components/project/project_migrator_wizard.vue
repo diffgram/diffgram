@@ -47,7 +47,9 @@
           </v-stepper-content>
 
           <v-stepper-content step="2" style="height: 100%">
-            <project_migrator_config_step :project_migration_data="project_migration_data" :project_string_id="project_string_id">
+            <project_migrator_config_step
+              @next_step="go_to_step(3)"
+              :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
             </project_migrator_config_step>
 
@@ -55,7 +57,9 @@
 
           <v-stepper-content step="3" style="height: 100%">
 
+            <project_migrator_confirm_step :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
+            </project_migrator_confirm_step>
           </v-stepper-content>
 
         </v-stepper-items>
@@ -69,6 +73,7 @@
 <script lang="ts">
 
 import project_migrator_connection_step from './project_migrator_connection_step'
+import project_migrator_confirm_step from './project_migrator_confirm_step'
 import project_migrator_config_step from './project_migrator_config_step'
 
 import Vue from "vue";
@@ -81,6 +86,7 @@ export default Vue.extend( {
   },
   components:{
     project_migrator_connection_step,
+    project_migrator_confirm_step,
     project_migrator_config_step,
   },
   data() {
@@ -90,7 +96,9 @@ export default Vue.extend( {
       connection: undefined,
       project_migration_data:{
         connection: undefined,
-        labelbox_project_id: null
+        labelbox_project_id: null,
+        import_schema: true,
+        import_files: false,
       }
     }
   },

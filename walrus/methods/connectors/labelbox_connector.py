@@ -337,6 +337,35 @@ class LabelboxConnector(Connector):
 
     @with_labelbox_exception_handler
     @with_connection
+    def __get_project_stats(self, opts):
+        project_id = opts['labelbox_project_id']
+        project = self.connection_client.get_project(project_id = project_id)
+        datasets = project.datasets()
+        ontology = project.ontology()
+        labels = ontology.tools()
+        dataset_count = 0
+        labels_count = len(labels)
+        for d in datasets:
+            dataset_count += 1
+
+        attr_count = 0
+        attr_global_count = 0
+        for label in labels:
+            attr_count += len(label.classifications)
+        for c in ontology.classifications():
+            attr_global_count += 1
+
+        return {
+            'result':{
+                'dataset_count': dataset_count,
+                'attr_count': attr_count,
+                'labels_count': labels_count,
+                'attr_global_count': attr_global_count,
+            }
+        }
+
+    @with_labelbox_exception_handler
+    @with_connection
     def __attach_dataset(self, opts):
         project = opts['project']
         dataset = opts['dataset']
@@ -427,6 +456,8 @@ class LabelboxConnector(Connector):
             return self.__get_projects(opts)
         if action_type == 'get_frames':
             return self.__get_frames(opts)
+        if action_type == 'get_project_stats':
+            return self.__get_project_stats(opts)
 
     @with_connection
     def put_data(self, opts):
