@@ -182,7 +182,7 @@
                     mdi-file
                   </v-icon>
 
-                   Per File  
+                   Per File
 
                 </v-btn>
               </v-btn-toggle>
@@ -543,9 +543,7 @@ export default Vue.extend( {
     go_to_step: function(step){
       if(step === 4 && this.group.is_global){
         step = step + 1
-        console.log('www', step)
       }
-      console.log('aaa', step)
       this.step = step
     },
     on_change_step: function(){

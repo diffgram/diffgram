@@ -7,7 +7,7 @@ gunicorn==19.9.0
 psycopg2-binary==2.8.5
 numpy==1.21.0
 scipy==1.6.2
-pillow==9.0.0
+pillow==9.0.1
 pyyaml==5.4
 proglog==0.1.9
 google-cloud-storage==1.35.1

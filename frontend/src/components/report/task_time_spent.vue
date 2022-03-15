@@ -88,7 +88,6 @@ export default {
   },
   methods: {
     handleClick: function (point, chart_items) {
-      console.log('CLICKKKK', point, chart_items)
       if (chart_items.length) {
         let task_id = chart_items[0]._view.label;
         let routeData = this.$router.resolve({name: 'routeName', query: {data: "someData"}});

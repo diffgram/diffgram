@@ -41,6 +41,7 @@
       }
     },
     methods: {
+
       draw: function (ctx, done) {
 
         if (this.draw_mode == false) {
@@ -67,6 +68,35 @@
 
         let instance_template = this.$props.current_instance_template;
 
+        if(instance_template.mode === 'guided'){
+          this.draw_guided_mode(ctx, done, instance_template);
+        }
+        else if(instance_template.mode === '1_click'){
+          this.draw_1_click_mode(ctx, done, instance_template)
+        }
+
+
+      },
+      draw_guided_mode: function(ctx, done, instance_template){
+        for (let instance of instance_template.instance_list) {
+          instance.calculate_min_max_points()
+          instance.draw(ctx);
+        }
+        done()
+
+      },
+      draw_instance_template_bounds: function (ctx, x_min, y_min) {
+        ctx.fillStyle = "rgba(228, 230, 232, 0.5)";
+
+        ctx.fillRect(x_min,
+          y_min,
+          Math.abs(this.$props.mouse_position.x - this.$props.instance_template_start_point.x),
+          Math.abs(this.$props.mouse_position.y - this.$props.instance_template_start_point.y))
+        ctx.fill();
+
+
+      },
+      draw_1_click_mode: function(ctx, done, instance_template){
         let x_min = Math.min(this.$props.mouse_position.x, this.$props.instance_template_start_point.x)
         let y_min = Math.min(this.$props.mouse_position.y, this.$props.instance_template_start_point.y)
         ctx.textAlign = "start";
@@ -145,18 +175,6 @@
           }
         }
         done();
-
-      },
-      draw_instance_template_bounds: function (ctx, x_min, y_min) {
-        ctx.fillStyle = "rgba(228, 230, 232, 0.5)";
-
-        ctx.fillRect(x_min,
-          y_min,
-          Math.abs(this.$props.mouse_position.x - this.$props.instance_template_start_point.x),
-          Math.abs(this.$props.mouse_position.y - this.$props.instance_template_start_point.y))
-        ctx.fill();
-
-
       },
       set_color: function (instance, ctx, opacity) {
         this.colour = this.label_file_colour_map[instance.label_file.id]

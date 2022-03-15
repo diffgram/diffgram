@@ -13,6 +13,7 @@
   <p> <kbd>W</kbd> Toggle Label Menu </p>
   <p> <kbd>H</kbd> Hide/Show All Instances in File. </p>
   <p> <kbd>Shift + T</kbd>Remove/Add Instance Transparency </p>
+  <p> <kbd>Shift + R</kbd>Start Review Carrousel </p>
   <p> <kbd>G</kbd> Toggle Ghost Instances </p>
   <p> <kbd>1 - 9</kbd> Change label </p>
 
@@ -41,6 +42,10 @@
   <p> <kbd>Mouse wheel</kbd> Zoom / pan </p>
 
   <p> <kbd>Z</kbd> Pan Only </p>
+
+  <h2> Keypoints:  </h2>
+  <p> <kbd>O</kbd> Show/Hide Occluded Nodes  </p>
+  <p>On Guided Mode: <b>Hold</b> <kbd>n</kbd> to draw a node as occluded.  </p>
 
   <h2> Polygons </h2>
   <p> <kbd>Enter</kbd> Complete polygon (Or click first point again)  </p>

@@ -10,7 +10,7 @@ from shared.database import hashing_functions
 from methods.user.account import account_verify
 from methods.user.account import auth_code  # TODO rename this / put in Auth() class
 from shared.database import hashing_functions
-
+from shared.database.account.account import Account
 
 @routes.route('/api/v1/user/pro/new',
               methods = ['POST'])
@@ -301,6 +301,13 @@ def user_new_core(session,
     session.add(new_user)
 
     Event.identify_user(new_user)
+
+    Account.account_new_core(
+        session = session,
+        primary_user = new_user,
+        mode_trainer_or_builder = "builder",
+        account_type = "billing",
+        nickname = "My Account")
 
     Event.new(
         session = session,

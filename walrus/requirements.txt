@@ -6,7 +6,7 @@ gunicorn==20.0.4
 psycopg2-binary==2.8.5
 numpy==1.21.0
 scipy==1.1.0
-pillow==9.0.0
+pillow==9.0.1
 pyyaml==5.4
 moviepy==1.0.3
 google-cloud-storage==1.35.1

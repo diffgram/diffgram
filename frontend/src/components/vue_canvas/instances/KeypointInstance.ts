@@ -44,6 +44,8 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
+  public guided_mode_nodes: any = [];
+  public guided_mode_active: boolean = false;
   public instance_rotate_control_mouse_hover: boolean = undefined
   public angle: number = 0
   public label_settings: any = undefined
@@ -237,13 +239,33 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
     }
     edge_to_color.color = this.instance_context.color;
   }
-
+  public add_guided_mode_node(ordinal, occlude = false){
+    let node = this.nodes.find(n => n.ordinal === ordinal);
+    if(!node){
+      return
+    }
+    node.x = this.mouse_position.x;
+    node.y = this.mouse_position.y;
+    this.guided_mode_nodes.push(node);
+    node.occluded = occlude
+    node.ordinal = this.guided_mode_nodes.length;
+  }
+  public reset_guided_nodes(){
+    this.guided_mode_nodes = [];
+  }
+  public finish_guided_nodes_drawing(){
+    this.nodes = [];
+    for(let n of this.guided_mode_nodes){
+      this.nodes.push(n)
+    }
+    this.calculate_min_max_points()
+    this.calculate_center()
+  }
   public color_node() {
     let node_to_color = this.nodes[this.node_hover_index]
     if (!node_to_color) {
       return
     }
-    console.log('COLOR NODE', node_to_color, this.instance_context)
     node_to_color.color = this.instance_context.color;
   }
 
@@ -255,15 +277,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       } else {
         if (!this.instance_context.color_tool_active) {
           this.add_node_to_instance();
-        } else if (this.instance_context.color_tool_active) {
+        }
+        else if (this.instance_context.color_tool_active) {
           if (this.is_node_hovered) {
             this.color_node();
           }
           if (this.is_edge_hovered && !this.is_node_hovered) {
             this.color_edge();
           }
-
-
         }
 
       }
@@ -352,7 +373,27 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   public stop_moving() {
     this.is_moving = false;
   }
-
+  private get_opposite_control_key(key){
+    let result = undefined;
+    if (key === 'right') {
+      result = 'left';
+    } else if (key === 'left') {
+      result = 'right';
+    } else if (key === 'top') {
+      result = 'bottom'
+    } else if (key === 'bottom') {
+      result = 'top'
+    } else if (key === 'bottom_right') {
+      result = 'top_left'
+    } else if (key === 'bottom_left') {
+      result = 'top_right'
+    } else if (key === 'top_right') {
+      result = 'bottom_left'
+    } else if (key === 'top_left') {
+      result = 'bottom_right'
+    }
+    return result;
+  }
   private get_fixed_point(key: string) {
     let control_points = this.get_scale_control_points();
     let result;
@@ -458,7 +499,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
           return
         }
         for (let node of this.nodes) {
-          if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.y + this.vertex_size !== fixed_point.y - this.vertex_size) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
           }
           if (node.x - this.vertex_size !== fixed_point.x) {
@@ -479,10 +520,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
           return
         }
         for (let node of this.nodes) {
-          if (node.y + this.vertex_size !== fixed_point.y - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.y + this.vertex_size !== fixed_point.y - this.vertex_size) {
             node.y = Math.round(fixed_point.y + ry * (node.y - fixed_point.y))
           }
-          if (node.x + this.vertex_size !== fixed_point.x - this.CONTROL_POINTS_DISPLACEMENT) {
+          if (node.x + this.vertex_size !== fixed_point.x - this.vertex_size) {
             node.x = Math.round(fixed_point.x + rx * (node.x - fixed_point.x))
           }
 
@@ -493,10 +534,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (this.mouse_position.x - control_point.x));
         rx = new_width / width
-        if (this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.y <= fixed_point.y + this.vertex_size) {
           return
         }
-        if (this.mouse_position.x <= fixed_point.x + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.x <= fixed_point.x + this.vertex_size) {
           return
         }
         for (let node of this.nodes) {
@@ -514,10 +555,10 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
         ry = new_height / height
         new_width = Math.round(width + (control_point.x - this.mouse_position.x));
         rx = new_width / width
-        if (this.mouse_position.y <= fixed_point.y + this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.y <= fixed_point.y + this.vertex_size) {
           return
         }
-        if (this.mouse_position.x >= fixed_point.x - this.MINIMUM_CONTROL_POINTS_DISTANCE) {
+        if (this.mouse_position.x >= fixed_point.x - this.vertex_size) {
           return
         }
         for (let node of this.nodes) {
@@ -902,22 +943,26 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     let result = {
       bottom_left: {
-        x: points.min_x + this.CONTROL_POINTS_DISPLACEMENT,
-        y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT
+        x: points.min_x + this.vertex_size,
+        y: points.max_y + this.vertex_size
       },
       bottom_right: {
-        x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT,
-        y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT
+        x: points.max_x + this.vertex_size,
+        y: points.max_y + this.vertex_size
       },
-      top_right: {x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT, y: points.min_y},
-      top_left: {x: points.min_x + this.CONTROL_POINTS_DISPLACEMENT, y: points.min_y},
+      top_right: {x: points.max_x + this.vertex_size, y: points.min_y},
+      top_left: {x: points.min_x + this.vertex_size, y: points.min_y},
       top: {x: (points.min_x + points.max_x) / 2, y: points.min_y},
-      bottom: {x: (points.min_x + points.max_x) / 2, y: points.max_y + this.CONTROL_POINTS_DISPLACEMENT},
+      bottom: {x: (points.min_x + points.max_x) / 2, y: points.max_y + this.vertex_size},
       left: {x: points.min_x, y: (points.max_y + points.min_y) / 2},
-      right: {x: points.max_x + this.CONTROL_POINTS_DISPLACEMENT, y: (points.max_y + points.min_y) / 2},
+      right: {x: points.max_x + this.vertex_size, y: (points.max_y + points.min_y) / 2},
     }
     if(this.current_hovered_control_point_key){
-      result[this.current_hovered_control_point_key] = this.current_fixed_point;
+      let fixed_key = this.get_opposite_control_key(this.current_hovered_control_point_key)
+      if(fixed_key){
+        result[fixed_key] = this.current_fixed_point;
+      }
+
     }
     return result
 
@@ -938,14 +983,14 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       ctx.beginPath();
       ctx.fillStyle = 'white'
       ctx.lineWidth = 2 / this.zoom_value
-      ctx.arc(point.x, point.y, this.vertex_size + 4 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size / this.zoom_value, 0, 2 * Math.PI);
       ctx.stroke();
       ctx.fill();
 
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#FFFFFF";
       ctx.fillStyle = 'rgba(0, 0, 0, 0)';
-      ctx.arc(point.x, point.y, this.vertex_size + 8 / this.zoom_value, 0, 2 * Math.PI);
+      ctx.arc(point.x, point.y, this.vertex_size + 5 / this.zoom_value, 0, 2 * Math.PI);
       if (this.is_mouse_in_path(ctx) && !hovered_scale_point) {
         hovered_scale_point = true;
         hover_key = key;
@@ -963,7 +1008,20 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     }
   }
-
+  public draw_guided_nodes(ctx){
+    let i = 0;
+    if(this.instance_context.keypoints_draw_mode != 'guided'){
+      return
+    }
+    if(!this.guided_mode_active){
+      return
+    }
+    for (let node of this.guided_mode_nodes) {
+      // order of operations
+      this.draw_node(node, ctx, i);
+      i += 1
+    }
+  }
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -987,11 +1045,15 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
 
     this.nearest_points_dict = {}
 
-    for (let node of this.nodes) {
-      // order of operations
-      this.draw_node(node, ctx, i);
-      i += 1
+    if(!this.guided_mode_active){
+      for (let node of this.nodes) {
+        // order of operations
+        this.draw_node(node, ctx, i);
+        i += 1
+      }
     }
+
+    this.draw_guided_nodes(ctx)
 
     this.draw_rotate_point(ctx)
     this.determine_and_set_nearest_node_hovered(ctx)
@@ -1096,21 +1158,26 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
       this.is_drawing_edge = true;
     }
   }
-
-  public add_node_to_instance() {
-    if (this.is_drawing_edge) {
-      return
-    }
+  public create_node_from_mouse_point(){
     let node = {
       x: this.mouse_position.x,
       y: this.mouse_position.y,
       id: uuidv4(),
       occluded: undefined,
       left_or_right: undefined,
-      name: undefined
+      name: undefined,
+      ordinal: undefined
     };
+    return node
+  }
+  public add_node_to_instance() {
+    if (this.is_drawing_edge) {
+      return
+    }
+    let node = this.create_node_from_mouse_point();
     this.nodes.push(node)
     node.name = this.nodes.length.toString();
+    node.ordinal = this.nodes.length;
     this.calculate_min_max_points()
   }
 
@@ -1342,6 +1409,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour {
   }
 
   private draw_edges(ctx) {
+    if(this.guided_mode_active){
+      return
+    }
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;
     if (this.template_creation_mode) {
       ctx.lineWidth = 6 / this.zoom_value

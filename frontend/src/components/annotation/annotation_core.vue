@@ -3,8 +3,10 @@
     <ui_schema_context_menu
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
+      :label_settings="label_settings"
       @close_context_menu="show_ui_schema_context_menu = false"
       @start_edit_ui_schema="edit_ui_schema()"
+      @set_ui_schema="on_set_ui_schema()"
     >
     </ui_schema_context_menu>
 
@@ -53,6 +55,7 @@
             @save="save()"
             @change_file="change_file($event)"
             @annotation_show="annotation_show_activate"
+            @keypoints_mode_set="on_keypoints_mode_set"
             @show_duration_change="set_annotation_show_duration"
             @canvas_scale_global_changed="on_canvas_scale_global_changed"
             @change_task="trigger_task_change($event, task, false)"
@@ -65,9 +68,7 @@
             @replace_file="$emit('replace_file', $event)"
             @open_instance_template_dialog="open_instance_template_dialog()"
             @copy_all_instances="copy_all_instances"
-            @on_task_annotation_complete_and_save="
-              on_task_annotation_complete_and_save
-            "
+            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
             @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
@@ -149,13 +150,22 @@
       v-if="show_custom_snackbar"
       v-model="show_custom_snackbar"
       :multi-line="true"
-      :timeout="-1"
+      :timeout="custom_snackbar_timeout"
+      :color="custom_snackbar_color"
+      top
+      left
     >
-      {{ snackbar_message }}
+      <h1 class="font-weight-bold" :style="`color: ${custom_snackbar_text_color}`">
+        {{ snackbar_message }}
+      </h1>
+      <p  class="font-weight-light font-italic pt-3" :style="`color: ${custom_snackbar_text_color}`">
+        {{ snackbar_message_secondary }}
+      </p>
 
       <template v-slot:action="{ attrs }">
         <v-btn
-          color="red"
+          v-if="custom_snackbar_show_close_button"
+          :color="custom_snackbar_text_color"
           text
           v-bind="attrs"
           @click="show_custom_snackbar = false"
@@ -164,6 +174,8 @@
         </v-btn>
       </template>
     </v-snackbar>
+
+
 
     <v-snackbar
       v-if="show_snackbar_auto_border"
@@ -917,6 +929,7 @@
       </v-btn>
     </v-snackbar>
     <qa_carousel
+      ref="qa_carrousel"
       :annotation_show_on="annotation_show_on"
       :loading="loading || annotations_loading || full_file_loading"
       :instance_list="instance_list"
@@ -958,6 +971,7 @@ import current_instance_template from "../vue_canvas/current_instance_template.v
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
 import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
+import {getContrastColor} from '../../utils/colorUtils'
 import { ellipse } from "../vue_canvas/ellipse.js";
 import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.js";
 import { CreateInstanceCommand } from "./commands/create_instance_command.js";
@@ -1167,9 +1181,12 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      n_key: false,
+      mouse_wheel_button: false,
       submitted_to_review: false,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
+      guided_nodes_ordinal: 1,
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
       video_parent_file_instance_list: [],
@@ -1205,6 +1222,11 @@ export default Vue.extend({
       display_refresh_cache_button: false,
       canvas_mouse_tools: false,
       show_custom_snackbar: false,
+      custom_snackbar_timeout: -1,
+      custom_snackbar_text_color: 'white',
+      custom_snackbar_color: -1,
+      snackbar_message_secondary: '',
+      custom_snackbar_show_close_button: true,
       snackbar_message: undefined,
       selected_instance_template: undefined,
       instance_template_start_point: undefined,
@@ -1334,7 +1356,7 @@ export default Vue.extend({
         show_attribute_text: true,
         show_list: true,
         show_occluded_keypoints: true,
-        show_left_right_arrows: true,
+        show_left_right_arrows: false,
         allow_multiple_instance_select: false,
         font_size: 20,
         spatial_line_size: 2,
@@ -1549,6 +1571,18 @@ export default Vue.extend({
     };
   },
   computed: {
+    actively_drawing_keypoints_instance: function(){
+      if(this.actively_drawing_instance_template && this.actively_drawing_instance_template.instance_list){
+        return this.actively_drawing_instance_template.instance_list[0]
+      }
+
+    },
+    current_keypoints_instance: function(){
+      if(this.current_instance_template && this.current_instance_template.instance_list){
+        return this.current_instance_template.instance_list[0]
+      }
+
+    },
     any_frame_saving: function(){
       return this.save_loading_frames_list.length > 0;
     },
@@ -2129,6 +2163,33 @@ export default Vue.extend({
   },
 
   methods: {
+    on_keypoints_mode_set: function(mode){
+      this.instance_context.keypoints_draw_mode = mode;
+      this.current_instance_template.mode = mode;
+      if(this.current_instance_template.mode === 'guided' && this.draw_mode){
+        this.show_snackbar_guided_keypoints_drawing(1)
+      }
+    },
+    show_snackbar_guided_keypoints_drawing(ordinal){
+      let instance = this.current_keypoints_instance;
+      if(!instance){
+        return
+      }
+
+      let node = instance.nodes.find(elm => elm.ordinal === ordinal);
+      if(!node){
+        return
+      }
+      let color = node.color ? node.color.hex : 'primary';
+      let textColor =  node.color ? getContrastColor(node.color.hex) : 'white';
+      this.show_snackbar(`${node.ordinal}. "${node.name}"`,
+        color,
+        -1,
+        false,
+        textColor,
+        'Hold "N" while drawing to mark occluded. Esc to exit.'
+        )
+    },
     on_context_menu_click_focus_instance: function(instance_index){
       if(this.$refs.instance_detail_list){
         this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
@@ -2182,9 +2243,15 @@ export default Vue.extend({
       this.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
+    on_set_ui_schema: function(ui_schema){
+      console.log('on_set', ui_schema)
+      this.initialize_ui_schema_data();
+    },
     edit_ui_schema: function (event) {
+      console.log('EDIT', event)
       this.$store.commit("set_ui_schema_editing_state", true);
       this.show_ui_schema_context_menu = true;
+
     },
     add_ui_schema: function (event) {
       this.$store.commit("set_ui_schema_editing_state", true);
@@ -2694,8 +2761,17 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-    show_snackbar: function (message) {
+    show_snackbar: function (message, color = 'primary',
+                             timeout = -1,
+                             show_close_button = true,
+                             text_color = 'white',
+                             text_secondary = '') {
       this.snackbar_message = message;
+      this.custom_snackbar_color = color;
+      this.custom_snackbar_timeout = timeout;
+      this.snackbar_message_secondary = text_secondary;
+      this.custom_snackbar_text_color = text_color;
+      this.show_close_button = show_close_button;
       this.show_custom_snackbar = true;
     },
     show_snackbar_occlusion: function (message) {
@@ -3093,11 +3169,13 @@ export default Vue.extend({
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
+      console.log('FOCUSSS', focus)
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
         this.instance_list[this.instance_focused_index],
       ];
       this.snap_to_instance(this.selected_instance);
+      this.$forceUpdate();
     },
 
     focus_instance_show_all() {
@@ -3307,6 +3385,7 @@ export default Vue.extend({
       return true;
     },
     created: function () {
+      this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
@@ -3317,10 +3396,33 @@ export default Vue.extend({
       }
 
       if (this.$props.enabled_edit_schema == true) {
-        this.edit_ui_schema();
+        this.edit_ui_schema()
       }
     },
+    update_label_settings_from_schema: function(){
+      if(!this.task){
+        return
+      }
+      let job = this.task.job;
+      if(!job){
+        return
+      }
+      let ui_schema = job.ui_schema;
+      if(!ui_schema){
+        return
+      }
+      if(!ui_schema.label_settings || !ui_schema.label_settings.default_settings){
+        return;
+      }
+      this.label_settings = ui_schema.label_settings.default_settings;
+    },
+    initialize_ui_schema_data: function(){
+      let ui_schema_loaded = this.$store.state.ui_schema.current;
+      if(ui_schema_loaded && ui_schema_loaded.label_settings && ui_schema_loaded.label_settings.default_settings){
+        this.label_settings = ui_schema_loaded.label_settings.default_settings
+      }
 
+    },
     update_user_settings_from_store() {   // label_settings
       for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
         this.label_settings[key] = value
@@ -3526,11 +3628,26 @@ export default Vue.extend({
       this.$forceUpdate();
     },
 
+    async set_keypoints_instance_draw_mode(){
+      if(!this.current_instance_template || !this.is_keypoint_template){
+        return
+      }
+      await this.$nextTick();
+      this.$refs.toolbar.set_mode(this.current_instance_template.mode)
+      if(this.current_instance_template.mode === 'guided' && this.draw_mode){
+        this.show_snackbar_guided_keypoints_drawing(1);
+      }
+      if(this.current_instance_template.mode !== 'guided'){
+        this.show_custom_snackbar = false;
+      }
+      this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
+    },
     change_instance_type: function ($event) {
       this.instance_type = $event;
       this.current_polygon_point_list = [];
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
+      this.set_keypoints_instance_draw_mode();
     },
 
     validate_sequences: function () {
@@ -3867,6 +3984,9 @@ export default Vue.extend({
     },
 
     get_focus_point_of_instance: function (instance) {
+      if(!instance){
+        return
+      }
       let point = { x: 0, y: 0 };
       let center_point = this.get_center_point_of_instance(instance);
       let center_of_frame = {
@@ -3908,6 +4028,9 @@ export default Vue.extend({
     },
 
     get_zoom_region_of_instance: function (instance) {
+      if(!instance){
+        return
+      }
       let max_zoom = 10;
       let padding = -2;
       let max_x = this.clamp_values(
@@ -3931,6 +4054,9 @@ export default Vue.extend({
     },
 
     snap_to_instance: function (instance) {
+      if(!instance){
+        return
+      }
       if (this.label_settings.enable_snap_to_instance == false) {
         return;
       }
@@ -4165,6 +4291,12 @@ export default Vue.extend({
     },
 
     point_is_intersecting_circle: function (mouse, point, radius = 8) {
+      if(!point){
+        return
+      }
+      if(!mouse){
+        return
+      }
       // Careful this is effected by scale
       // bool, true if point if intersecting circle
       let radius_scaled = radius / this.zoom_value;
@@ -5813,7 +5945,7 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-      if (this.z_key === true) {
+      if (this.z_key === true || this.mouse_wheel_button) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
         this.$forceUpdate();
@@ -5843,7 +5975,7 @@ export default Vue.extend({
                   this.current_polygon_point_list.length - 1
                 ].y
               );
-              console.log(x_diff, y_diff)
+
               if (x_diff > 10 || y_diff > 10) {
                 //TODO this is a hacky way to do it!!!
                 this.mouse_down_position.x = this.mouse_position.x;
@@ -6299,7 +6431,7 @@ export default Vue.extend({
       this.double_click_keypoint_special_action();
     },
 
-    mouse_up: function () {
+    mouse_up: function (event) {
       // start LIMITS, returns immediately
       let locked_frame_number = this.current_frame;
       if (this.$props.view_only_mode == true) {
@@ -6317,6 +6449,11 @@ export default Vue.extend({
         if (this.is_actively_resizing == true) {
           this.is_actively_resizing = false;
         }
+      }
+
+      if(event.which === 2){
+        this.mouse_wheel_button = false;
+        return
       }
       this.$store.commit("mouse_state_up");
 
@@ -6584,7 +6721,7 @@ export default Vue.extend({
       // 1: left, 2: middle, 3: right, could be null
       // https://stackoverflow.com/questions/1206203/how-to-distinguish-between-left-and-right-mouse-click-with-jquery
 
-      if (event.which == 2 || event.which == 3) {
+      if (event.which == 3) {
         this.mouse_down_limits_result = false;
         return false;
       }
@@ -6866,33 +7003,84 @@ export default Vue.extend({
       }
       return false;
     },
-    instance_template_mouse_up: function (frame_number = undefined) {
-      if (this.instance_template_draw_started) {
+    add_node_guided_mode: function(frame_number){
+      if(!this.actively_drawing_keypoints_instance){
+        return
+      }
+      if(this.guided_nodes_ordinal === 1){
+        this.actively_drawing_keypoints_instance.reset_guided_nodes();
+      }
+      let occlude = false;
+      if(this.n_key){
+        occlude = true;
+      }
+      this.actively_drawing_keypoints_instance.add_guided_mode_node(this.guided_nodes_ordinal, occlude);
+      this.guided_nodes_ordinal += 1;
+      this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
+      if(this.guided_nodes_ordinal - 1 === this.actively_drawing_keypoints_instance.nodes.length){
+        this.actively_drawing_keypoints_instance.finish_guided_nodes_drawing();
+        this.actively_drawing_keypoints_instance.select()
+        this.actively_drawing_keypoints_instance.guided_mode_active = false
         this.add_instance_template_to_instance_list(frame_number);
         this.instance_template_draw_started = undefined;
         this.is_actively_drawing = undefined;
         this.instance_template_start_point = undefined;
+        this.edit_mode_toggle(false);
+      }
+    },
+    start_keypoints_drawing: function(frame_number){
+      this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
+      this.instance_template_start_point = {
+        x: this.mouse_position.x,
+        y: this.mouse_position.y,
+      };
+      if(this.current_instance_template.mode === '1_click'){
+        this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
+        this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
+        this.actively_drawing_instance_template.instance_list[0].width = 1;
+        this.actively_drawing_instance_template.instance_list[0].height = 1;
+      }
+      else if(this.current_instance_template.mode === 'guided'){
+        this.actively_drawing_keypoints_instance.guided_mode_active = true;
+        this.add_node_guided_mode(frame_number);
+      }
+      this.instance_template_draw_started = true;
+      this.is_actively_drawing = true;
+    },
+    instance_template_mouse_up: async function (frame_number = undefined) {
+      if (this.instance_template_draw_started) {
+        if(this.actively_drawing_instance_template.mode === 'guided'){
+          this.add_node_guided_mode(frame_number);
+        }
+        else{
+          this.add_instance_template_to_instance_list(frame_number);
+          if(this.actively_drawing_keypoints_instance){
+            let instance = this.actively_drawing_keypoints_instance;
+            let index = this.instance_list.length - 1;
+            for(let i =0; i < this.instance_list.length; i++){
+                if(this.instance_list[i].creation_ref_id === instance.creation_ref_id){
+                  index = i;
+                  break;
+                }
+            }
+            this.edit_mode_toggle(false)
+            instance.select()
+            instance.status = "updated";
+            Vue.set(
+              this.instance_list,
+              this.instance_hover_index,
+              instance
+            );
+          }
+          this.instance_template_draw_started = undefined;
+          this.is_actively_drawing = undefined;
+          this.instance_template_start_point = undefined;
+        }
+
       } else {
         // TODO: Might need to change this logic when we support more than one instance per instance template.
-        if (
-          this.instance_template_has_keypoints_type(
-            this.current_instance_template
-          )
-        ) {
-
-          this.actively_drawing_instance_template = duplicate_instance_template(this.current_instance_template, this);
-          this.instance_template_start_point = {
-            x: this.mouse_position.x,
-            y: this.mouse_position.y,
-          };
-          this.actively_drawing_instance_template.instance_list[0].save_original_nodes();
-          this.actively_drawing_instance_template.instance_list[0].set_nodes_coords_based_on_size(30, 30, this.instance_template_start_point);
-
-          this.actively_drawing_instance_template.instance_list[0].width = 1;
-          this.actively_drawing_instance_template.instance_list[0].height = 1;
-
-          this.instance_template_draw_started = true;
-          this.is_actively_drawing = true;
+        if (this.instance_template_has_keypoints_type(this.current_instance_template)) {
+          this.start_keypoints_drawing(frame_number);
         } else {
           this.add_instance_template_to_instance_list(frame_number);
           this.instance_template_draw_started = undefined;
@@ -6919,10 +7107,13 @@ export default Vue.extend({
       }
       instance.start_movement();
     },
+    set_mouse_wheel: function(){
+      this.mouse_wheel_button = true;
+    },
     mouse_down: function (event) {
       // TODO review using local variables instead of vuex
       // here for performance
-
+      console.log('eventt', event)
       // TODO new method ie
       // this.is_actively_drawing = true
       let locked_frame_number = this.current_frame;
@@ -6934,6 +7125,10 @@ export default Vue.extend({
 
       if (this.mouse_down_limits(event) == false) {
         return;
+      }
+      if(event.which === 2){
+        this.set_mouse_wheel(event);
+        return
       }
 
       this.ghost_may_promote_instance_to_actual();
@@ -7377,46 +7572,79 @@ export default Vue.extend({
       this.$emit("request_new_task", direction, task, assign_to_user);
     },
 
-        reset_for_file_change_context: function (){
-          this.current_sequence_annotation_core_prop = {
-            id: null,
-            number: null
-          }
-          this.video_mode = false   // if we don't have this can be issues switching to say an image
-          this.instance_buffer_dict = {}
-          this.instance_buffer_metadata = {}
-          this.instance_list = []
-          if(this.video_mode){
-            this.$refs.video_controllers.reset_cache();
-          }
+      reset_for_file_change_context: function (){
+        this.current_sequence_annotation_core_prop = {
+          id: null,
+          number: null
+        }
+        this.video_mode = false   // if we don't have this can be issues switching to say an image
+        this.instance_buffer_dict = {}
+        this.instance_buffer_metadata = {}
+        this.instance_list = []
+        if(this.video_mode){
+          this.$refs.video_controllers.reset_cache();
+        }
+        if(this.$refs.qa_carrousel){
+          this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+          this.$refs.qa_carrousel.annotation_show_progress = 0
+          this.annotation_show_current_instance = 0
+        }
 
-        },
-        annotation_show_activate(show_type){
-          this.annotation_show_on = !this.annotation_show_on
-          this.annotation_show_type = show_type
-        },
-        annotation_show_change_item() {
-          let do_change_item
+      },
+      annotation_show_activate(show_type){
+        this.annotation_show_on = !this.annotation_show_on
+        this.annotation_show_type = show_type
+        if(this.$refs.qa_carrousel && this.annotation_show_on){
+          let instance = this.instance_list[this.$refs.qa_carrousel.annotation_show_current_instance]
+          this.snap_to_instance(instance)
+          this.$refs.qa_carrousel.play()
+        }
 
-      let file = this.file || this.task.file;
-      if (file.type == "video") {
-        if (this.$refs.video_controllers.at_end_of_video == true) {
+        if(!this.annotation_show_on && this.$refs.instance_detail_list){
+          this.$refs.qa_carrousel.annotation_show_progress = 0;
+          this.$refs.qa_carrousel.annotation_show_current_instance = 0;
+          this.$refs.qa_carrousel.annotation_show_previous_instance = 0;
+          this.$refs.instance_detail_list.show_all();
+        }
+      },
+      async annotation_show_change_item(direction = "next") {
+        let do_change_item
+
+        let file = this.file || this.task.file;
+        if (file.type == "video") {
+          if (this.$refs.video_controllers.at_end_of_video == true) {
+            do_change_item = true;
+          } else {
+            if(direction === 'next'){
+              await this.$refs.video_controllers.move_frame(1);
+              await this.$nextTick()
+              this.$refs.qa_carrousel.annotation_show_current_instance = 0;
+              this.$refs.qa_carrousel.annotation_show_previous_instance = this.instance_list.length;
+              this.$refs.qa_carrousel.annotation_show_progress = 0
+              this.focus_instance({index: this.$refs.qa_carrousel.annotation_show_current_instance})
+            }
+            else if(direction === 'previous'){
+              await this.$refs.video_controllers.move_frame(-1);
+              await this.$nextTick()
+              this.$refs.qa_carrousel.annotation_show_current_instance = this.instance_list.length;
+              this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+              this.$refs.qa_carrousel.annotation_show_progress = 100
+              this.focus_instance({index: this.$refs.qa_carrousel.annotation_show_current_instance})
+            }
+
+          }
+        }
+        if (file.type == "image") {
           do_change_item = true;
-        } else {
-          this.$refs.video_controllers.move_frame(1);
         }
-      }
-      if (file.type == "image") {
-        do_change_item = true;
-      }
 
-      if (do_change_item == true) {
-        if (this.annotation_show_type === "task") {
-          return this.trigger_task_change("next", this.$props.task, true);
+        if (do_change_item == true) {
+          if (this.annotation_show_type === "task") {
+            return this.trigger_task_change(direction, this.$props.task, false);
+          }
+          this.change_file(direction);
         }
-        this.change_file("next");
-      }
-    },
+      },
     set_annotation_show_duration(duration) {
       this.annotation_show_duration_per_instance = (duration + 1) * 1000;
     },
@@ -7652,6 +7880,11 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+      if (event.keyCode === 78) {
+        // shift
+        //
+        this.n_key = false;
+      }
       if(event.keyCode === 90){
         this.z_key = false;
       }
@@ -7679,6 +7912,9 @@ export default Vue.extend({
 
       if (event.keyCode === 32) {
         // space
+        if(this.annotation_show_on){
+          return
+        }
         this.toggle_pause_play();
         this.space_bar = false;
         this.canvas_element.style.cursor = "pointer";
@@ -7708,6 +7944,9 @@ export default Vue.extend({
         if (this.shift_key) {
           this.change_file("previous");
         } else {
+          if(this.annotation_show_on){
+            return
+          }
           this.shift_frame_via_store(-1);
         }
       }
@@ -7731,6 +7970,9 @@ export default Vue.extend({
         if (this.shift_key) {
           this.change_file("next");
         } else {
+          if(this.annotation_show_on){
+            return
+          }
           this.shift_frame_via_store(1);
         }
       }
@@ -7783,7 +8025,11 @@ export default Vue.extend({
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
-
+      if (event.keyCode === 78) {
+        // shift
+        //
+        this.n_key = true;
+      }
       if (event.keyCode === shiftKey) {
         // shift
         //
@@ -7842,7 +8088,10 @@ export default Vue.extend({
       if (this.ctrl_key && event.keyCode == vKey) {
         this.paste_instance(undefined, undefined, frame_number_locked);
       }
+      if(this.shift_key && event.keyCode === 82){ // CTRL + r
+        this.annotation_show_activate(!this.task && this.file && this.file.id ? 'file' : 'task')
 
+      }
       if (event.keyCode === 90 && this.ctrl_key) {
         // ctrl + z
         this.undo();
@@ -8188,6 +8437,13 @@ export default Vue.extend({
       this.draw_mode = draw_mode; // context from external component like toolbar
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
+      if(this.draw_mode && this.is_keypoint_template && this.current_instance_template.mode === 'guided'){
+        this.guided_nodes_ordinal = 1;
+        this.show_snackbar_guided_keypoints_drawing(this.guided_nodes_ordinal)
+      }
+      else{
+        this.show_custom_snackbar = false;
+      }
     },
     update_sequence_data: function(instance_list, frame_number, response){
       /*

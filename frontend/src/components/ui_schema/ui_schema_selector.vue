@@ -221,6 +221,13 @@ export default Vue.extend({
   },
 
   methods: {
+    set_ui_schema: function(uis){
+      let new_schema = this.internal_ui_schema_list.find(elm => elm.id === uis.id)
+      if(new_schema){
+        this.current_ui_schema = new_schema;
+      }
+
+    },
     async refresh(){
 
       this.loading = true;
