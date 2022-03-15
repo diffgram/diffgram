@@ -17,7 +17,11 @@ from methods.connectors.connectors import ConnectorManager
 from methods.input.packet import enqueue_packet
 from shared.regular.regular_log import result_has_error
 from shared.regular import regular_log
+from shared.database.auth.member import Member
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.attribute.attribute_template import Attribute_Template
 import colorsys
+
 
 def with_labelbox_exception_handler(f):
     def wrapper(*args):
@@ -117,41 +121,219 @@ class LabelboxConnector(Connector):
         }
         return instance_types_mapping[labelbox_type]
 
-    def __import_labels_to_project(self, session, ontology, diffgram_project):
+    def __map_attribute_type(self, labelbox_type):
+
+        attr_types_mapping = {
+            'radio': 'radio',
+            'checklist': 'multiple_select',
+            'dropdown': 'select',
+            'text': 'text',
+        }
+        return attr_types_mapping[labelbox_type]
+
+    def __set_multiple_select_attribute_data(self, session, clsf, existing_attribute_group, member):
+        """
+            Creates a diffgram attribute from the give labelbox classification object.
+        :param clsf:
+        :return:
+        """
+
+        logger.info(f'Creating Multi Select Type Attribute data: {existing_attribute_group.name}')
+
+        for option in clsf.options:
+            existing_attr = Attribute_Template.get_by_name(
+                session = session,
+                attr_template_group = existing_attribute_group,
+                name = option.value
+            )
+            if existing_attr is None:
+                existing_attr = Attribute_Template.new(
+                    existing_attribute_group.project,
+                    member,
+                    existing_attribute_group,
+                    name = option.value
+
+                )
+                session.add(existing_attr)
+                logger.log(f'Created Multi Select Type Attribute Option: {option.value}')
+            else:
+                logger.info(f'Multi Select option {option.value} already exists.')
+
+    def __set_select_attribute_data(self, session, clsf, existing_attribute_group, member):
+        """
+            Creates a diffgram attribute from the give labelbox classification object.
+        :param clsf:
+        :return:
+        """
+
+        logger.info(f'Creating Select Type Attribute data: {existing_attribute_group.name}')
+
+        for option in clsf.options:
+            existing_attr = Attribute_Template.get_by_name(
+                session = session,
+                attr_template_group = existing_attribute_group,
+                name = option.value
+            )
+            if existing_attr is None:
+                existing_attr = Attribute_Template.new(
+                    existing_attribute_group.project,
+                    member,
+                    existing_attribute_group,
+                    name = option.value
+
+                )
+                session.add(existing_attr)
+                logger.log(f'Created Select Type Attribute Option: {option.value}')
+            else:
+                logger.info(f'Select option {option.value} already exists.')
+
+    def __set_radio_attribute_data(self, session, clsf, existing_attribute_group, member):
+        """
+            Creates a diffgram attribute from the give labelbox classification object.
+        :param clsf:
+        :return:
+        """
+
+        logger.info(f'Creating Radio Type Attribute data: {existing_attribute_group.name}')
+
+        for option in clsf.options:
+            existing_attr = Attribute_Template.get_by_name(
+                session = session,
+                attr_template_group = existing_attribute_group,
+                name = option.value
+            )
+            if existing_attr is None:
+
+                existing_attr = Attribute_Template.new(
+                    existing_attribute_group.project,
+                    member,
+                    existing_attribute_group,
+                    name = option.value
+
+                )
+                session.add(existing_attr)
+                logger.log(f'Created Radio Attribute Option: {option.value}')
+            else:
+                logger.info(f'Radio option {option.value} already exists.')
+
+    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool):
+        """
+            Creates all the classifications from the given labelbox tool as attributes in diffgram.
+            If the attribute name and type already exists, it will update the options of the attribute.
+        :param session:
+        :param label_file:
+        :param diffgram_project:
+        :param member:
+        :param tool:
+        :return:
+        """
+        classifications = tool.classifications
+        logger.log(f'Creating Attributes from Labelbox tool "{tool.name}"')
+        for clsf in classifications:
+            class_type = clsf.class_type.value
+            attr_name = clsf.name
+            diffgram_attribute_type = self.__map_attribute_type(class_type)
+            # Search for attribute to see if it exists
+            existing_attribute = Attribute_Template_Group.get_by_name_and_type(
+                session = session,
+                project_id = diffgram_project.id,
+                name = attr_name,
+                kind = diffgram_attribute_type
+            )
+            if existing_attribute is None:
+                # Create the attribute
+                logger.info(f'Creating attribute "{attr_name}"')
+                existing_attribute = Attribute_Template_Group.new(
+                    session = session,
+                    project = diffgram_project,
+                    member = member
+                )
+            existing_attribute.is_new = False
+            existing_attribute.name = clsf.name
+            existing_attribute.prompt = clsf.name
+            existing_attribute.is_global = False
+
+            if existing_attribute.kind == 'radio':
+                self.__set_radio_attribute_data(
+                    session = session,
+                    clsf = clsf,
+                    existing_attribute_group = existing_attribute,
+                    member = member
+                )
+            elif existing_attribute.kind == 'select':
+                self.__set_select_attribute_data(
+                    session = session,
+                    clsf = clsf,
+                    existing_attribute_group = existing_attribute,
+                    member = member
+                )
+            elif existing_attribute == 'multiple_select':
+                self.__set_multiple_select_attribute_data(
+                    session = session,
+                    clsf = clsf,
+                    existing_attribute_group = existing_attribute,
+                    member = member
+                )
+            elif existing_attribute.kind == 'text':
+                continue
+
+    def __import_labels_to_project(self, session, ontology, diffgram_project, member):
 
         label_tools = ontology.tools()
+        logger.info(f'Importing labels from ontology "{ontology.name}"')
         for tool in label_tools:
             labelbox_instance_type = tool.tool.value
             diffgram_instance_type = self.__map_instance_type(labelbox_instance_type)
             name = tool.name
             color_hex = tool.color
-            rgb = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
+            rgb = tuple(int(color_hex[i:i + 2], 16) for i in (0, 2, 4))
             hls = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
             hsv = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
             color_dict = {"hex": "#194d33",
                           "hls": {"l": hls[1], "h": hls[0], "s": hls[2], "a": 1},
                           "rgba": {"a": 1, "g": rgb[2], "r": rgb[0], "b": rgb[2]},
-                          "hsv": {"a": 1, "h": hsv[0], "s": hsv[1], "v":hsv[2]}, "a": 1}
+                          "hsv": {"a": 1, "h": hsv[0], "s": hsv[1], "v": hsv[2]}, "a": 1}
 
-            label_file = File.new_label_file(
+            label_file = File.get_by_label_name(
                 session = session,
-                name = name,
-                default_sequences_to_single_frame = False,
-                working_dir_id = diffgram_project.directory_default_id,
-                project = diffgram_project,
-                colour = color_dict,
-                log = regular_log.default()
+                label_name = name,
+                project_id = diffgram_project.id
             )
+            if label_file is None:
+
+                label_file = File.new_label_file(
+                    session = session,
+                    name = name,
+                    default_sequences_to_single_frame = False,
+                    working_dir_id = diffgram_project.directory_default_id,
+                    project = diffgram_project,
+                    colour = color_dict,
+                    log = regular_log.default()
+                )
+                logger.info(f'Created Label: "{name}"')
+            else:
+                logger.info(f'Label File "{name}" already exists.')
+
+            if tool.classifications and len(tool.classifications) > 0:
+                self.__add_attributes_to_label_file(label_file = label_file,
+                                                    session = session,
+                                                    diffgram_project = diffgram_project,
+                                                    member = member,
+                                                    tool = tool)
 
     def __import_ontology_to_project(self, opts):
         label_box_project_id = opts['labelbox_project_id']
         diffgram_project_string_id = opts['project_string_id']
+        member_id = opts['member_id']
+        logger.info(f'Starting ontolgy import for project {diffgram_project_string_id}')
+        logger.info(f'Labelbox project  {label_box_project_id}')
         with sessionMaker.session_scope_threaded() as session:
+            member = Member.get_by_id(session, member_id = member_id)
             diffgram_project = Project.get_by_string_id(session = session,
                                                         project_string_id = diffgram_project_string_id)
             labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
             ontology = labelbox_project.ontology()
-            self.__import_labels_to_project(session, ontology, diffgram_project)
+            self.__import_labels_to_project(session, ontology, diffgram_project, member)
 
     @with_labelbox_exception_handler
     @with_connection

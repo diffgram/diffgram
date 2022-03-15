@@ -294,6 +294,16 @@ class Attribute_Template_Group(Base):
 
     # WIP
 
+    @staticmethod
+    def get_by_name_and_type(session, project_id, name, kind):
+        result = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.kind == kind
+        ).first()
+
+        return result
+
     def recurse_graph(
         session,
         group,
