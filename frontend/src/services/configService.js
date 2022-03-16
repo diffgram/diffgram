@@ -26,10 +26,9 @@ export const get_install_info = async () => {
 export const is_open_source = async () => {
   try {
     const { data } = await axios.get('/api/configs/is-open-source')
-    return data
-  } catch(error) {
-    return {
-      error
-    }
+    return [data, null]
+  } catch(e) {
+    return [null, e]
+
   }
 }
