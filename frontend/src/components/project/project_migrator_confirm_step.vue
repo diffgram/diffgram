@@ -12,29 +12,29 @@
     <v-container v-if="stats">
       <h1 class="mb-4">Data to Import: </h1>
       <p style="font-size: 1.2rem">
-        <v-icon size="32" color="success">mdi-check</v-icon>
-        <strong class="secondary--text">Number of Attributes: </strong>
-        <strong>{{stats.attr_count}}</strong>
+        <v-icon size="48" color="success">mdi-check</v-icon>
+        <strong class="primary--text">Number of Attributes: </strong>
+        <strong style="font-size: 1.5rem" class="secondary--text">{{stats.attr_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
-        <v-icon size="32" color="success">mdi-check</v-icon>
-        <strong class="secondary--text">Number of Global Attributes: </strong>
-        <strong>{{stats.attr_global_count}}</strong>
+        <v-icon size="48" color="success">mdi-check</v-icon>
+        <strong class="primary--text">Number of Global Attributes: </strong>
+        <strong style="font-size: 1.5rem" class="secondary--text">{{stats.attr_global_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
-        <v-icon size="32" color="success">mdi-check</v-icon>
-        <strong class="secondary--text">Number of Labels: </strong>
-        <strong>{{stats.labels_count}}</strong>
+        <v-icon size="48" color="success">mdi-check</v-icon>
+        <strong class="primary--text">Number of Labels: </strong>
+        <strong style="font-size: 1.5rem" class="secondary--text">{{stats.labels_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
-        <v-icon size="32" color="success">mdi-check</v-icon>
-        <strong class="secondary--text">Number of Datasets: </strong>
-        <strong>{{stats.dataset_count}}</strong>
+        <v-icon size="48" color="success">mdi-check</v-icon>
+        <strong class="primary--text">Number of Datasets: </strong>
+        <strong style="font-size: 1.5rem" class="secondary--text">{{stats.dataset_count}}</strong>
       </p>
     </v-container>
 
     <div class="d-flex justify-center align-center">
-      <v-btn color="success" x-large>
+      <v-btn @click="$emit('start_migration')" color="success" x-large>
         <v-icon>mdi-application-import</v-icon>
         Start Project Import
       </v-btn>

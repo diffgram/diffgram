@@ -1,6 +1,7 @@
 <template>
   <v-card elevation="0">
     <v-card-text>
+      <v_error_multiple :error="error"></v_error_multiple>
       <v-stepper v-model="step" :non-linear="true" style="height: 100%;" @change="on_change_step">
         <v-stepper-header class="ma-0 pl-8 pr-8">
           <v-stepper-step
@@ -57,7 +58,9 @@
 
           <v-stepper-content step="3" style="height: 100%">
 
-            <project_migrator_confirm_step :project_migration_data="project_migration_data" :project_string_id="project_string_id">
+            <project_migrator_confirm_step
+              @start_migration="on_start_migration"
+              :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
             </project_migrator_confirm_step>
           </v-stepper-content>
@@ -75,6 +78,7 @@
 import project_migrator_connection_step from './project_migrator_connection_step'
 import project_migrator_confirm_step from './project_migrator_confirm_step'
 import project_migrator_config_step from './project_migrator_config_step'
+import {start_project_migration} from '../../services/projectMigrationServices'
 
 import Vue from "vue";
 export default Vue.extend( {
@@ -94,6 +98,7 @@ export default Vue.extend( {
       step: 1,
       global_progress: 0,
       connection: undefined,
+      error: undefined,
       project_migration_data:{
         connection: undefined,
         labelbox_project_id: null,
@@ -121,6 +126,12 @@ export default Vue.extend( {
     },
     set_connection: function(conn){
       this.project_migration_data.connection = conn;
+    },
+    on_start_migration: async function(){
+      let [result, error] = await start_project_migration(this.project_string_id, this.project_migration_data);
+      if(error){
+        this.error = this.$route_api_errors(error);
+      }
     }
   }
 }

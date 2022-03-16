@@ -155,7 +155,7 @@ class LabelboxConnector(Connector):
 
                 )
                 session.add(existing_attr)
-                logger.log(f'Created Multi Select Type Attribute Option: {option.value}')
+                logger.info(f'Created Multi Select Type Attribute Option: {option.value}')
             else:
                 logger.info(f'Multi Select option {option.value} already exists.')
 
@@ -183,7 +183,7 @@ class LabelboxConnector(Connector):
 
                 )
                 session.add(existing_attr)
-                logger.log(f'Created Select Type Attribute Option: {option.value}')
+                logger.info(f'Created Select Type Attribute Option: {option.value}')
             else:
                 logger.info(f'Select option {option.value} already exists.')
 
@@ -212,7 +212,7 @@ class LabelboxConnector(Connector):
 
                 )
                 session.add(existing_attr)
-                logger.log(f'Created Radio Attribute Option: {option.value}')
+                logger.info(f'Created Radio Attribute Option: {option.value}')
             else:
                 logger.info(f'Radio option {option.value} already exists.')
 
@@ -228,7 +228,7 @@ class LabelboxConnector(Connector):
         :return:
         """
         classifications = tool.classifications
-        logger.log(f'Creating Attributes from Labelbox tool "{tool.name}"')
+        logger.info(f'Creating Attributes from Labelbox tool "{tool.name}"')
         for clsf in classifications:
             class_type = clsf.class_type.value
             attr_name = clsf.name
@@ -248,6 +248,7 @@ class LabelboxConnector(Connector):
                     project = diffgram_project,
                     member = member
                 )
+            existing_attribute.kind = diffgram_attribute_type
             existing_attribute.is_new = False
             existing_attribute.name = clsf.name
             existing_attribute.prompt = clsf.name
@@ -277,7 +278,7 @@ class LabelboxConnector(Connector):
             elif existing_attribute.kind == 'text':
                 continue
 
-    def __import_labels_to_project(self, session, ontology, diffgram_project, member):
+    def __import_labels_to_project(self, session, ontology, diffgram_project, member, log):
 
         label_tools = ontology.tools()
         logger.info(f'Importing labels from ontology "{ontology.name}"')
@@ -286,6 +287,7 @@ class LabelboxConnector(Connector):
             diffgram_instance_type = self.__map_instance_type(labelbox_instance_type)
             name = tool.name
             color_hex = tool.color
+            color_hex = color_hex.lstrip('#')
             rgb = tuple(int(color_hex[i:i + 2], 16) for i in (0, 2, 4))
             hls = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
             hsv = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
@@ -308,7 +310,7 @@ class LabelboxConnector(Connector):
                     working_dir_id = diffgram_project.directory_default_id,
                     project = diffgram_project,
                     colour = color_dict,
-                    log = regular_log.default()
+                    log = log
                 )
                 logger.info(f'Created Label: "{name}"')
             else:
@@ -321,19 +323,29 @@ class LabelboxConnector(Connector):
                                                     member = member,
                                                     tool = tool)
 
-    def __import_ontology_to_project(self, opts):
-        label_box_project_id = opts['labelbox_project_id']
-        diffgram_project_string_id = opts['project_string_id']
-        member_id = opts['member_id']
+    def __import_ontology_to_project(self, labelbox_project_id, diffgram_project_string_id, member_id, log):
         logger.info(f'Starting ontolgy import for project {diffgram_project_string_id}')
-        logger.info(f'Labelbox project  {label_box_project_id}')
+        logger.info(f'Labelbox project  {labelbox_project_id}')
+
         with sessionMaker.session_scope_threaded() as session:
             member = Member.get_by_id(session, member_id = member_id)
             diffgram_project = Project.get_by_string_id(session = session,
                                                         project_string_id = diffgram_project_string_id)
-            labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
+            labelbox_project = self.connection_client.get_project(project_id = labelbox_project_id)
             ontology = labelbox_project.ontology()
-            self.__import_labels_to_project(session, ontology, diffgram_project, member)
+            self.__import_labels_to_project(session, ontology, diffgram_project, member, log)
+
+    def __import_project_to_diffgram(self, opts):
+        label_box_project_id = opts['labelbox_project_id']
+        diffgram_project_string_id = opts['project_string_id']
+        member_id = opts['member_id']
+        log = regular_log.default()
+        self.__import_ontology_to_project(label_box_project_id,
+                                          diffgram_project_string_id,
+                                          member_id,
+                                          log)
+
+        return True, log
 
     @with_labelbox_exception_handler
     @with_connection
@@ -458,6 +470,8 @@ class LabelboxConnector(Connector):
             return self.__get_frames(opts)
         if action_type == 'get_project_stats':
             return self.__get_project_stats(opts)
+        if action_type == 'import_project':
+            return self.__import_project_to_diffgram(opts)
 
     @with_connection
     def put_data(self, opts):
