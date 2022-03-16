@@ -29,6 +29,8 @@ class InstanceTemplate(Base):
     # 'active, or 'archived'
     status = Column(String(), default = 'active')
 
+    mode = Column(String(), default = '1_click')
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -73,6 +75,7 @@ class InstanceTemplate(Base):
             add_to_session: bool = True,
             member_created = None,
             reference_width = None,
+            mode = '1_click',
             reference_height = None,
             flush_session: bool = True):
 
@@ -81,6 +84,7 @@ class InstanceTemplate(Base):
             name = name,
             member_created_id = member_created.id,
             reference_height = reference_height,
+            mode = mode,
             reference_width = reference_width,
         )
         if add_to_session:
@@ -110,10 +114,10 @@ class InstanceTemplate(Base):
     def serialize(self, session):
         instance_list = self.get_instance_list(session)
         instance_list_serialized = [inst.serialize() for inst in instance_list]
-        print(instance_list_serialized)
         return {
             'id': self.id,
             'instance_list': instance_list_serialized,
+            'mode': self.mode,
             'name': self.name,
             'project_id': self.project_id,
             'member_created_id': self.member_created_id,

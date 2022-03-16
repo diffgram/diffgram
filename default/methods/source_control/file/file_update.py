@@ -313,8 +313,7 @@ def file_update_core(
             )
 
     if mode == "REMOVE":
-        log['info']['remove'] = "Removed " + \
-                                str(file_touched_count) + " file(s)."
+        log['info']['remove'] = f"Removed {str(file_touched_count)} file(s)."
 
     if mode == "TRANSFER":
         if transfer_action == "copy":
@@ -322,8 +321,7 @@ def file_update_core(
                                             str(file_touched_count) + " file(s)."
 
         if transfer_action == "move":
-            log['info']['transfer_count'] = "Moved " + \
-                                            str(file_touched_count) + " file(s)."
+            log['info']['transfer_count'] = f"Moved {str(file_touched_count)} file(s)."
 
     # We could log this for all of these operations I guess
     # But seems especially important for the select from meta data

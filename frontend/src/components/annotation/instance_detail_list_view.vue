@@ -3,10 +3,15 @@
     <v-alert type="success"
              class="ma-0"
              :value="focus_mode">
-      In focus mode.
-      <v-btn @click="show_all()">
-        Exit
-      </v-btn>
+      <div class="d-flex flex-column">
+        <div class="d-flex">
+          <span >In focus mode.</span>
+          <v-btn @click="show_all()">
+            Exit (F)
+          </v-btn>
+        </div>
+
+      </div>
     </v-alert>
     <v-layout row>
       <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
@@ -978,7 +983,6 @@ export default Vue.extend({
 
         this.current_instance = instance
         this.current_instance_index = index
-
         let instance_id = null  // so it clears if no valid ID yet... not sure if this is a good idea
         if (instance && instance.id) {
           instance_id = instance.id

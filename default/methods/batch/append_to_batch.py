@@ -60,7 +60,7 @@ def save_pre_labeled_data_to_db(batch_id):
     """
     with sessionMaker.session_scope_threaded() as session:
         batch = InputBatch.get_by_id(session, batch_id)
-        logger.info('Batch ID {} pre labeled data download started.'.format(batch_id))
+        logger.info(f'Batch ID {batch_id} pre labeled data download started.')
         try:
             if batch.data_temp_dir:
                 batch.download_status_pre_labeled_data = 'downloading'
@@ -71,11 +71,11 @@ def save_pre_labeled_data_to_db(batch_id):
                 batch.pre_labeled_data = json_data
                 batch.download_status_pre_labeled_data = 'success'
                 session.add(batch)
-                logger.info('Batch ID {} pre labeled data download success.'.format(batch_id))
+                logger.info(f'Batch ID {batch_id} pre labeled data download success.')
 
         except Exception as e:
             batch.download_status_pre_labeled_data = 'failed'
-            logger.error('Batch ID {} pre labeled data download failed. {}'.format(batch_id, traceback.format_exc()))
+            logger.error(f'Batch ID {batch_id} pre labeled data download failed. {traceback.format_exc()}')
 
 
 def append_to_batch_core(session, log, batch_id, member, project, request):
@@ -102,7 +102,7 @@ def append_to_batch_core(session, log, batch_id, member, project, request):
         size = int(new_range.split('/')[1])
         chunk_start = int(new_range.split('-')[0])
         chunk_end = int(chunks.split('-')[1])
-        temp_dir_path = '/tmp/batches/{}_batch_payload.json'.format(batch.id)
+        temp_dir_path = f'/tmp/batches/{batch.id}_batch_payload.json'
         if chunk_start == 0:
             session.add(batch)
             url = data_tools.create_resumable_upload_session(

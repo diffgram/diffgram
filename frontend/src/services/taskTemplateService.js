@@ -51,3 +51,17 @@ export const archive_task_template = async (job_id, job_list, mode) => {
     return[null, e]
   }
 }
+
+export const get_task_template_members = async (job_id) => {
+  try{
+    let response = await axios.get(`/api/v1/job/${job_id}/members-list`, {})
+    if (response.status === 200) {
+      return [response.data, null]
+    }
+
+    return [false, null]
+  }
+  catch (e){
+    return[null, e]
+  }
+}

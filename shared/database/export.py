@@ -142,7 +142,7 @@ class Export(Base):
 
         share_request = None
         if self.user:
-            share_request = "Request " + self.user.email + " to access the project to visually explore this data."
+            share_request = f"Request {self.user.email} to access the project to visually explore this data."
 
         return {
             'docs_high_level': docs_high_level,

@@ -61,7 +61,7 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
         )
 
         task = data_mocking.create_task({
-            'name': 'task{}'.format(1),
+            'name': f"task{1}",
             'job': job,
             'file': file,
         }, self.session)
@@ -74,15 +74,15 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
 
         request_data = {}
 
-        endpoint = "/api/v1/project/" + self.project.project_string_id + "/issues/" + str(discussion.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/issues/{str(discussion.id)}"
         auth_api = common_actions.create_project_auth(project = job.project, session = self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response_with_task_id = self.client.get(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response_with_task_id.json

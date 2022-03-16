@@ -71,8 +71,7 @@ class Instance_tools():
 
 	def get_migration_path(self, project, image):
 
-		return settings.PROJECT_IMAGES_BASE_DIR + \
-			str(project.id) + "/" + str(image.id)
+		return f"{settings.PROJECT_IMAGES_BASE_DIR + str(project.id)}/{str(image.id)}"
 
 
 
@@ -84,8 +83,8 @@ class Instance_tools():
 		x_min, y_min = instance.x_min, instance.y_min
 		x_max, y_max = instance.x_max, instance.y_max
 		print(x_min, y_min, x_max, y_max)
-		logger.debug('Min Coordinates: ({},{})'.format(x_min, y_min))
-		logger.debug('Max Coordinates: ({},{})'.format(x_max, y_max))
+		logger.debug(f"Min Coordinates: ({x_min},{y_min})")
+		logger.debug(f"Max Coordinates: ({x_max},{y_max})")
 		cropped_image = image[y_min : y_max, x_min : x_max]
 
 		# Maintain aspect ratio
@@ -111,10 +110,10 @@ class Instance_tools():
 		# as well, but I think it would reduce other issues if we saved
 		# it to the sequence instead?
 
-		image_out_filename = self.temp + 'image_out.jpg'
+		image_out_filename = f"{self.temp}image_out.jpg"
 		imwrite(image_out_filename, cropped_image)
 
-		instance.preview_image_blob_dir = settings.PROJECT_INSTANCES_IMAGES_BASE_DIR + str(instance.id) + "/_thumb.jpg"
+		instance.preview_image_blob_dir = f"{settings.PROJECT_INSTANCES_IMAGES_BASE_DIR + str(instance.id)}/_thumb.jpg"
 
 		data_tools.upload_to_cloud_storage(
 			temp_local_path = image_out_filename,

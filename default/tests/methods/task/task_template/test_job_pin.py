@@ -39,11 +39,11 @@ class TestJobPin(testing_setup.DiffgramBaseTestCase):
 
         request_data = {}
 
-        endpoint = "/api/v1/job/{}/pin".format(job.id)
+        endpoint = f"/api/v1/job/{job.id}/pin"
 
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-            credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode(
+            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode(
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
@@ -52,7 +52,7 @@ class TestJobPin(testing_setup.DiffgramBaseTestCase):
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
@@ -64,7 +64,7 @@ class TestJobPin(testing_setup.DiffgramBaseTestCase):
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json

@@ -20,6 +20,7 @@
     "test": "mochapack --webpack-config ./build/webpack.dev.conf.js --require test/setup.js --require mocha-snapshots src/**/*.spec.js"
   },
   "dependencies": {
+    "@4tw/cypress-drag-drop": "^2.1.0",
     "@babel/plugin-transform-modules-commonjs": "^7.16.0",
     "@babel/runtime": "^7.16.3",
     "@cypress/browserify-preprocessor": "^3.0.1",
@@ -31,7 +32,7 @@
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
-    "cypress": "9.2.0",
+    "cypress": "9.5.1",
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
     "highlight.js": "^10.6.0",
@@ -86,7 +87,8 @@
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@mdi/font": "^5.8.55",
-    "@types/jest": "^26.0.3",
+    "@types/jest": "^27.4.1",
+    "@types/mocha": "^9.1.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "@vue/babel-plugin-transform-vue-jsx": "^1.2.1",

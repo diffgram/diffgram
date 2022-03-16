@@ -51,6 +51,7 @@
             icon="mdi-playlist-play"
             datacy="go-to-task-list"
             tooltip_message="Task List"
+            :disabled="this.task && this.task.job_id === -1"
             @click="go_to_job"
             :bottom="true"
           >
@@ -62,7 +63,7 @@
 
       <!-- Undo Redo -->
 
-      <div v-if="show_undo_redo == true && command_manager">
+      <div class="d-flex align-center" v-if="show_undo_redo == true && command_manager">
         <tooltip_button
           :disabled="
             save_loading ||
@@ -85,8 +86,7 @@
             save_loading ||
             view_only_mode ||
             command_manager.command_history.length == 0 ||
-            command_manager.command_index ==
-              command_manager.command_history.length - 1
+            command_manager.command_index == command_manager.command_history.length - 1
           "
           color="primary"
           :icon_style="true"
@@ -144,7 +144,7 @@
       <v-divider vertical></v-divider>
 
       <ui_schema name="zoom" data-cy="toolbar_zoom_info">
-        <div class="pt-3 pl-2 pr-2">
+        <div class="pt-3 pl-1 pr-1">
           <v-tooltip bottom color="info">
             <template v-slot:activator="{ on }">
               <v-chip v-on="on" color="white" small text-color="primary">
@@ -200,6 +200,14 @@
           </diffgram_select>
         </div>
       </ui_schema>
+
+      <div class="d-flex align-center">
+        <guided_1_click_mode_selector v-if="is_keypoint_template"
+                                      @mode_set="on_mode_set"
+                                      ref="keypoints_mode_selector">
+
+        </guided_1_click_mode_selector>
+      </div>
 
       <tooltip_button
         v-if="instance_type == 'tag'"
@@ -268,10 +276,10 @@
         </tooltip_button>
       </div>
       <div class="has-changed">
-        <div style="width: 100px">
+        <div style="width: 70px">
           <span v-if="save_loading"> Saving. </span>
           <span v-else>
-            <span v-if="has_changed">Changes Detected...</span>
+            <span v-if="has_changed">Pending</span>
             <span v-else>Saved.</span>
           </span>
         </div>
@@ -447,9 +455,7 @@
       >
         <template slot="content">
           <v-layout class="pb-4">
-            <!-- View Task Information -->
-            <!-- THIS IS QA CAROUSEL, ITS HIDDEN CUZ WE DON'T SUPPORT IN FOR 3D AND TEXT YET -->
-             <!-- <div>
+             <div>
                 <button_with_menu
                   datacy="open-annotation-show-menu"
                   v-if="annotation_show_on !== true"
@@ -497,7 +503,7 @@
                   :icon_style="true"
                   :bottom="true"
                 />
-              </div> -->
+              </div>
             <tooltip_button
                 tooltip_message="Refresh Instances"
                 v-if="$store.state.user.current.is_super_admin == true"
@@ -538,6 +544,15 @@
                       min="0"
                       max="100"
                     ></v-slider>
+
+                    <v-checkbox
+                      class="pt-0"
+                      label="Smooth Canvas"
+                      v-model="label_settings_local.smooth_canvas"
+                      @change="trigger_smooth_canvas_events()"
+                    >
+                    </v-checkbox>
+
 
                     <v-btn icon @click="filter_reset()">
                       <v-icon color="primary"> autorenew </v-icon>
@@ -951,10 +966,12 @@ import file_relations_card from "./file_relations_card.vue";
 import task_meta_data_card from "./task_meta_data_card.vue";
 import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
+import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
 
 export default Vue.extend({
   name: "toolbar",
   components: {
+    Guided_1_click_mode_selector,
     label_select_annotation,
     file_meta_data_card,
     time_tracker,
@@ -1062,6 +1079,20 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_mode_set: function(mode){
+      this.$emit('keypoints_mode_set', mode)
+    },
+    set_mode: function(mode){
+      if(!this.$refs.keypoints_mode_selector){
+        return
+      }
+      if(mode === '1_click'){
+        this.$refs.keypoints_mode_selector.set_active(0)
+      }
+      else if(mode === 'guided'){
+        this.$refs.keypoints_mode_selector.set_active(1)
+      }
+    },
     go_to_job: function(){
       if(this.task.job.type === 'examination'){
         this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)
@@ -1078,10 +1109,20 @@ export default Vue.extend({
         this.label_settings_local.canvas_scale_global_setting
       );
     },
+    trigger_smooth_canvas_events: function () {
+      this.$emit('smooth_canvas_changed', this.label_settings_local.smooth_canvas),
+      this.$store.commit('set_user_setting', [
+        'smooth_canvas',
+        this.label_settings_local.smooth_canvas,
+      ])
+    },
     filter_reset: function () {
       this.label_settings_local.filter_brightness = 100;
       this.label_settings_local.filter_contrast = 100;
       this.label_settings_local.filter_grayscale = 0;
+
+      this.label_settings_local.smooth_canvas = true
+      this.trigger_smooth_canvas_events()
     },
   },
 });

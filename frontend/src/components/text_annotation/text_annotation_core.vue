@@ -17,6 +17,8 @@
                 :label_file_colour_map="label_file_colour_map"
                 :task="task"
                 :file="file"
+                :search_mode="search_mode"
+                :bulk_mode="bulk_label"
                 @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
                 @task_update_toggle_deferred="defer_task"
                 @change_label_file="change_label_file"
@@ -32,7 +34,7 @@
     </div>
     <div style="display: flex; flex-direction: row">
         <text_sidebar
-            :instance_list="instance_list.filter(instance => !instance.soft_delete)"
+            :instance_list="new_instance_list ? new_instance_list.get().filter(instance => !instance.soft_delete) : []"
             :label_list="label_list"
             :loading="rendering"
             :label_file_colour_map="label_file_colour_map"
@@ -48,9 +50,8 @@
             xmlns="http://www.w3.org/2000/svg"
             direction="ltr"
             id="svg0:60"
-            width="100%"
-            @mouseup="on_draw_text_token"
-            style="height: 5000px"
+            @mouseup="trigger_mouseup"
+            :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${text_field_width}`"
             :class="unselectable && 'unselectable'"
         >
             <g v-if="rendering" transform="translate(0, 23.5)">
@@ -65,6 +66,19 @@
                         {{ word.value }}
                 </text>
                 <text x="40">Loading...</text>
+            </g>
+            <g v-if="resizing" transform="translate(0, 23.5)">
+                <text
+                    v-for="(word, index) in initial_words_measures"
+                    :key="word.value + index"
+                    :ref="`word_${index}`"
+                    x="40"
+                    y="5"
+                    fill="white"
+                    text-anchor="middle">
+                        {{ word.value }}
+                </text>
+                <text x="40">Resizing...</text>
             </g>
             <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
                 <g
@@ -91,14 +105,15 @@
                         class="unselectable"
                     />
                 </g>
+                <g v-if="render_rects.length > 0">
                 <text
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
                     :key="`instance_${instance.get_instance_data().id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer;"
                     class="unselectable"
@@ -106,7 +121,7 @@
                     {{ instance.label_file.label.name }}
                 </text>
                 <rect
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_start_${instance.get_instance_data().id}`"
                     :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
@@ -114,14 +129,14 @@
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                     class="unselectable"
                 />
                 <circle
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-                    :key="`rel_start_marker_${instance.id}`"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    :key="`rel_start_marker_${instance.get_instance_data().id}`"
                     :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
@@ -129,7 +144,7 @@
                     class="unselectable"
                 />
                 <rect
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_end_${instance.get_instance_data().id}`"
                     :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
@@ -137,13 +152,13 @@
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-                    @mousedown="() => on_draw_relation(instance.get_instance_data().id)"
+                    @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
                     @mouseleave="on_instance_stop_hover"
                     style="font-size: 10px; cursor: pointer"
                     class="unselectable"
                 />
                 <path
-                    v-for="instance in instance_list.filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
+                    v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
                     :key="`rel_end_marker_${instance.get_instance_data().id}`"
                     :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`"
                     :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
@@ -157,12 +172,13 @@
                     :y="rect.y"
                     :width="rect.width"
                     @mouseenter="() => on_instance_hover(rect.instance_id)"
-                    @mousedown="() => on_draw_relation(rect.instance_id)"
+                    @mousedown="() => on_trigger_instance_click(rect.instance_id)"
                     @mouseleave="on_instance_stop_hover"
                     :height="rect.instance_type === 'text_token' ? 3 : 1"
                     style="cursor: pointer"
                     class="unselectable"
                 />
+            </g>
                 <g
                     v-for="(line, index) in lines"
                     :transform="`translate(0, ${25 + line.y})`"
@@ -193,12 +209,20 @@ import Vue from "vue";
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import { CommandManagerAnnotationCore } from "../annotation/annotation_core_command_manager"
-import { CreateInstanceCommand } from "../annotation/commands/create_instance_command";
-import { UpdateInstanceCommand } from "../annotation/commands/update_instance_command"
+import { CreateInstanceCommand as CreateInstanceCommandLegacy } from "../annotation/commands/create_instance_command";
 import { TextAnnotationInstance, TextRelationInstance } from "../vue_canvas/instances/TextInstance"
 import { postInstanceList, getInstanceList } from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
 import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
+// New command pattern
+import CommandManager from "../../helpers/command/command_manager"
+import InstanceList from "../../helpers/instance_list"
+import History from "../../helpers/history"
+import { 
+    CreateInstanceCommand, 
+    DeleteInstanceCommand,
+    UpdateInstanceLabelCommand
+    } from "../../helpers/command/available_commands"
 
 export default Vue.extend({
     name: "text_token_core",
@@ -237,13 +261,16 @@ export default Vue.extend({
             text: null,
             current_label: null,
             rendering: true,
+            resizing: false,
             relation_drawing: false,
             initial_words_measures: [],
             lines: [],
             tokens: [],
-            instances: [],
             instance_list: [],
             invisible_labels: [],
+            //Modes
+            search_mode: false,
+            bulk_label: false,
             //effects
             hover_instance: null,
             //Helpers
@@ -253,10 +280,17 @@ export default Vue.extend({
             additional_line_space: 30,
             show_default_navigation: true,
             unselectable: false,
+            text_field_heigth: 100,
+            text_field_width: '100%',
+            re_render_func: undefined,
             // Command
             command_manager: undefined,
             has_changed: false,
-            save_loading: false
+            save_loading: false,
+            // New command pattern
+            new_instance_list: undefined,
+            new_command_manager: undefined,
+            new_history: undefined,
         }
     },
     mounted() {
@@ -267,14 +301,18 @@ export default Vue.extend({
     },
     computed: {
         render_rects: function() {
+            if (this.rendering || this.resizing) return [];
+            if (this.tokens.length === 0) return [];
+
             let rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
+            this.new_instance_list.get().filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
+
             this.find_intersections(rects_to_draw)
             rects_to_draw = [];
-            this.instance_list.filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
+            this.new_instance_list.get().filter(instance => !instance.soft_delete  && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
                 const instance_rects = this.draw_instance(instance)
                 rects_to_draw = [...rects_to_draw, ...instance_rects]
             })
@@ -310,16 +348,14 @@ export default Vue.extend({
             }
         },
         undo_disabled: function() {
-            const { command_manager } = this;
-            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == undefined
+            return !this.new_history || !this.new_history.undo_posible
         },
         redo_disabled: function() {
-            const { command_manager } = this;
-            return !command_manager || command_manager.command_history.length == 0 || command_manager.command_index == command_manager.command_history.length - 1
+            return !this.new_history || !this.new_history.redo_posible
         }
     },
     watch: {
-        file: function(newValue) {
+        file: function() {
             this.rendering = true
             this.instance_list = [];
             this.text = null;
@@ -328,7 +364,7 @@ export default Vue.extend({
             this.lines = []
             this.on_mount()
         },
-        task: function(newValue) {
+        task: function() {
             this.rendering = true
             this.instance_list = [];
             this.text = null;
@@ -340,6 +376,7 @@ export default Vue.extend({
     },
     methods: {
         on_task_annotation_complete_and_save: async function () {
+            await this.save();
             await this.save();
             const response = await finishTaskAnnotation(this.task.id);
             const new_status = response.data.task.status;
@@ -359,19 +396,67 @@ export default Vue.extend({
             })
             this.trigger_task_change('next')
         },
+        bulk_labeling: function(instance_id) {
+            const instance = this.new_instance_list.get().find(inst => {
+                const { id } = inst.get_instance_data()
+                if (id === instance_id) return inst
+            })
+            if (instance.start_token !== instance.end_token) return;
+
+            const instance_word = this.tokens[instance.start_token].word
+            let same_token_indexes = [];
+            this.tokens.map((token, index) => {
+                if (token.word.toLowerCase() === instance_word.toLowerCase()) same_token_indexes.push(index)
+            })
+
+            const newly_created_instances = [];
+            const working_insatnce_list = this.new_instance_list.get().filter(inst => inst.type === "text_token")
+            same_token_indexes.map(index => {
+                const instance_already_exists = working_insatnce_list.find(inst => inst.start_token === index && inst.end_token === index)
+                if(!instance_already_exists) {
+                    const created_instance = new TextAnnotationInstance();
+                    created_instance.create_frontend_instance(
+                        this.tokens[index].id, 
+                        this.tokens[index].id,
+                        {...instance.label_file}
+                    )
+
+                    newly_created_instances.push(created_instance)
+                }
+            })
+
+
+            if (newly_created_instances.length > 0) {
+                this.new_instance_list.push(newly_created_instances)
+                const new_command = new CreateInstanceCommand(newly_created_instances, this.new_instance_list)
+                this.new_command_manager.executeCommand(new_command)
+    
+                this.has_changed = true
+            }
+        },
         trigger_task_change: async function (direction, assign_to_user = false) {
             if (this.has_changed) {
+                await this.save();
                 await this.save();
             }
             this.$emit("request_new_task", direction, this.task, assign_to_user);
         },
         hot_key_listeners: function() {
-            window.removeEventListener("keydown", this.esk_event_listener)
-            window.addEventListener("keydown", this.esk_event_listener)
-
+            window.removeEventListener("keydown", this.keydown_event_listeners)
+            window.addEventListener("keydown", this.keydown_event_listeners)
+            window.removeEventListener("keyup", this.keyup_event_listeners)
+            window.addEventListener("keyup", this.keyup_event_listeners)
         },
         on_unload_listener: function() {
             window.addEventListener("beforeunload", this.leave_listener);
+            window.addEventListener("resize", this.resize_listener)
+        },
+        resize_listener: function() {
+            this.resizing = true
+            this.lines = []
+            this.tokens = []
+            clearTimeout(this.re_render_func);
+            this.re_render_func = setTimeout(this.initialize_token_render, 1000)
         },
         leave_listener: function(e) {
             if (this.has_changed || this.save_loading) {
@@ -381,7 +466,7 @@ export default Vue.extend({
                 return confirmationMessage;
             }
         },
-        esk_event_listener: async function(e) {
+        keydown_event_listeners: async function(e) {
             if (e.keyCode === 27) {
                 this.instance_in_progress = null
                 this.path = {};
@@ -389,8 +474,27 @@ export default Vue.extend({
                 this.relation_drawing = false;
                 window.removeEventListener('mousemove', this.draw_relation_listener)
             }
+
             else if (e.keyCode === 83) {
                 await this.save();
+                await this.save();
+            }
+
+            else if (e.keyCode === 71 && !this.search_mode) {
+                this.search_mode = true;
+            }
+
+            else if (e.keyCode === 66 && !this.bulk_label) {
+                this.bulk_label = true;
+            }
+        },
+        keyup_event_listeners: function(e) {
+            if (e.keyCode === 71) {
+                this.search_mode = false;
+            }
+
+            else if (e.keyCode === 66) {
+                this.bulk_label = false;
             }
         },
         start_autosave: function () {
@@ -402,7 +506,42 @@ export default Vue.extend({
         detect_is_ok_to_save: async function () {
             if (this.has_changed && !this.instance_in_progress) {
                 await this.save();
+                await this.save();
             }
+        },
+        trigger_mouseup: function(e) {
+            if (this.search_mode) return this.search_in_google(e)
+            this.on_draw_text_token(e)
+        },
+        search_in_google: function(e) {
+            const selection = window.getSelection()
+            const start_token_id = parseInt(selection.anchorNode.parentNode.id)
+            let end_token_id;
+            if (selection.focusNode.nodeName === "#text") {
+                end_token_id = parseInt(selection.focusNode.parentNode.id)
+            } else {
+                end_token_id = parseInt(selection.focusNode.previousSibling.id)
+            }
+            if (!e.target.nodeName.includes('text') && start_token_id == end_token_id) {
+                this.instance_in_progress = null
+                return
+            }
+            let search_quiery = '';
+            for (let i = start_token_id; i <= end_token_id; i++) {
+                search_quiery += this.tokens[i].word;
+                if (i < end_token_id) search_quiery += "+"
+            }
+            window.open(`https://www.google.com/search?q=${search_quiery}`,'_newtab');
+            if (window.getSelection) {
+                if (window.getSelection().empty) {  // Chrome
+                    window.getSelection().empty();
+                } else if (window.getSelection().removeAllRanges) {  // Firefox
+                    window.getSelection().removeAllRanges();
+                }
+                } else if (document.selection) {  // IE?
+                document.selection.empty();
+            }
+            this.search_mode = false
         },
         on_draw_text_token: function(e) {
             if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
@@ -432,6 +571,10 @@ export default Vue.extend({
                 set_words = words
             }
             this.command_manager = new CommandManagerAnnotationCore()
+            // New command pattern
+            this.new_history = new History()
+            this.new_command_manager = new CommandManager(this.new_history)
+
             this.initial_words_measures = set_words
             setTimeout(() => this.initialize_token_render(), 1000)
             this.initialize_instance_list()
@@ -466,13 +609,18 @@ export default Vue.extend({
 
             this.tokens = tokens
             this.rendering = false
+            this.resizing = false
         },
         change_label_file: function(event) {
             this.current_label = event
         },
         // function to draw relations between instances
+        on_trigger_instance_click: function(instance_id) {
+            if (this.bulk_label) return this.bulk_labeling(instance_id)
+            this.on_draw_relation(instance_id)
+        },
         on_draw_relation: async function(instance_id) {
-            const is_text_token = this.instance_list.find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
+            const is_text_token = this.new_instance_list.get().find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
             if (!is_text_token) return
             this.unselectable = true
@@ -480,7 +628,7 @@ export default Vue.extend({
             if (!this.relation_drawing) {
                 this.relation_drawing = true
                 this.instance_in_progress = {
-                    id: this.instances.length,
+                    id: this.new_instance_list.get().length,
                     type: "relation",
                     start_instance: instance_id,
                     label_id: this.current_label.id,
@@ -494,7 +642,7 @@ export default Vue.extend({
 
             this.relation_drawing = false;
             this.instance_in_progress.end_instance = instance_id;
-            const relation_already_exists = this.instance_list.find(inst => 
+            const relation_already_exists = this.new_instance_list.get().find(inst => 
                 inst.type === "relation" && 
                 inst.from_instance_id === this.instance_in_progress.start_instance && 
                 inst.to_instance_id === this.instance_in_progress.end_instance && 
@@ -507,9 +655,14 @@ export default Vue.extend({
                     this.instance_in_progress.end_instance,
                     {...this.current_label}
                 )
-                this.instance_list.push(created_instance)
-                const command = new CreateInstanceCommand(created_instance, this)
+                this.new_instance_list.push([created_instance])
+                const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
+
+                //New command pattern
+                const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
+                this.new_command_manager.executeCommand(new_command)
+
                 this.has_changed = true
             }
             this.instance_in_progress = null;
@@ -524,7 +677,7 @@ export default Vue.extend({
         },
         //function to hover on instance
         on_instance_hover: function(instance_id) {
-            const instance = this.instance_list.find(instance => instance.get_instance_data().id === instance_id)
+            const instance = this.new_instance_list.get().find(instance => instance.get_instance_data().id === instance_id)
             this.hover_instance = instance
         },
         on_instance_stop_hover: function() {
@@ -533,7 +686,7 @@ export default Vue.extend({
         // function to initialize drawing new instance
         on_start_draw_instance: function(start_token) {
             this.instance_in_progress = {
-                id: this.instances.length,
+                id: this.new_instance_list.get().length,
                 type: "text_token",
                 start_token,
                 label_id: this.current_label.id,
@@ -544,22 +697,25 @@ export default Vue.extend({
         on_finish_draw_instance: async function(end_token) {
             if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
             this.instance_in_progress.end_token = end_token
-            const instance_exists = this.instances.find(instance => 
+            const instance_exists = this.new_instance_list.get().find(instance => 
                 instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token && !instance.soft_delete
                 ||
                 instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token && !instance.soft_delete
                 )
             if (!instance_exists) {
-                this.instances.push(this.instance_in_progress)
                 const created_instance = new TextAnnotationInstance();
                 created_instance.create_frontend_instance(
                     this.instance_in_progress.start_token,
                     this.instance_in_progress.end_token,
                     {...this.current_label}
                 )
-                this.instance_list.push(created_instance)
-                const command = new CreateInstanceCommand(created_instance, this)
+                this.new_instance_list.push([created_instance])
+                const command = new CreateInstanceCommandLegacy(created_instance, this)
                 this.command_manager.executeCommand(command)
+
+                //New command pattern
+                const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
+                this.new_command_manager.executeCommand(new_command)
                 this.has_changed = true
             }
             if (window.getSelection) {
@@ -575,59 +731,15 @@ export default Vue.extend({
         },
         change_instance_label: async function(event) {
             const { instance, label } = event
-            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
-            if (label.id === label_file.id) return
-
-            let initial_instance;
-
-            if (instance.type === "text_token") {
-                initial_instance = new TextAnnotationInstance()
-                initial_instance.create_instance(id, start_token, end_token, label_file)
-                this.instance_list.map(instance_rel => {
-                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
-                        instance_rel.soft_delete = true
-                        this.command_manager = new CommandManagerAnnotationCore()
-                    }
-                })
-            } else {
-                initial_instance = new TextRelationInstance()
-                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
-            }
-            initial_instance.initialized = false
-            initial_instance.creation_ref_id = creation_ref_id
-            instance.label_file = {...label}
-            instance.label_file_id = label.id
-
-            const instance_index = this.instance_list.indexOf(instance)
-            const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
-            this.command_manager.executeCommand(command)
+            const new_command = new UpdateInstanceLabelCommand([instance], this.new_instance_list)
+            new_command.set_new_label(label)
+            this.new_command_manager.executeCommand(new_command)
             this.has_changed = true
         },
         delete_instance: async function(instance) {
-            const { id, start_token, end_token, label_file, creation_ref_id, from_instance_id, to_instance_id } = instance.get_instance_data()
-            let initial_instance;
-
-            if (instance.type === "text_token") {
-                initial_instance = new TextAnnotationInstance()
-                initial_instance.create_instance(id, start_token, end_token, label_file)
-                this.instance_list.map(instance_rel => {
-                    if (instance_rel.type === "relation" && (instance_rel.from_instance_id === id || instance_rel.to_instance_id === id)) {
-                        instance_rel.soft_delete = true
-                        this.command_manager = new CommandManagerAnnotationCore()
-                    }
-                })
-            } else {
-                initial_instance = new TextRelationInstance()
-                initial_instance.create_instance(id, from_instance_id, to_instance_id, label_file)
-            }
-            initial_instance.initialized = false
-            initial_instance.creation_ref_id = creation_ref_id
-            instance.soft_delete = true
             this.hover_instance = null
-
-            const instance_index = this.instance_list.indexOf(instance)
-            const command = new UpdateInstanceCommand(instance, instance_index, initial_instance, this)
-            this.command_manager.executeCommand(command)
+            const new_delete_command = new DeleteInstanceCommand([instance], this.new_instance_list)
+            this.new_command_manager.executeCommand(new_delete_command)
             this.has_changed = true
         },
         change_label_visibility: async function(label) {
@@ -652,23 +764,10 @@ export default Vue.extend({
                 payload = {}
             }
             const instance_list = await getInstanceList(url, payload)
-            instance_list.map(instance => {
-                if (instance.type === "text_token") {
-                    const { id, start_token, end_token, label_file, creation_ref_id } = instance
-                    const new_instance = new TextAnnotationInstance()
-                    new_instance.create_instance(id, start_token, end_token, label_file)
-                    new_instance.creation_ref_id = creation_ref_id
-                    this.instance_list.push(new_instance)
-                } else {
-                    const { id, from_instance_id, to_instance_id, label_file, creation_ref_id, soft_delete } = instance
-                    const new_instance = new TextRelationInstance()
-                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
-                    new_instance.creation_ref_id = creation_ref_id
-                    this.instance_list.push(new_instance)
-                }
-            })
+            // New command patterm
+            this.new_instance_list = new InstanceList(instance_list)
         },
-        save: async function (index = null) {
+        save: async function () {
             this.has_changed = false
             this.save_loading = true
             let url;
@@ -678,52 +777,42 @@ export default Vue.extend({
                 url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
             }
             if (!this.instance_in_progress) {
-                const res = await postInstanceList(url, this.instance_list)
-                const {added_instances} = res
+                const res = await postInstanceList(url, this.new_instance_list.get_all())
+                const { added_instances } = res
+                console.log(added_instances)
                 added_instances.map(add_insatnce => {
-                    if (!index) {
-                        const old_id = this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id
-                        this.instance_list.find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
-                        if (this.instance_in_progress) {
-                            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
-                        }
-                        this.instance_list
-                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                            .map(instance => {
-                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                                else instance.to_instance_id = add_insatnce.id
-                            })
-                    } else {
-                        const old_id = this.instance_list[index].id
-                        this.instance_list[index].id = add_insatnce.id
-                        this.instance_list
-                            .filter(instance => instance.type === "relation" && (instance.from_instance_id === old_id || instance.to_instance_id === old_id))
-                            .map(instance => {
-                                if (instance.from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-                                else instance.to_instance_id = add_insatnce.id
-                            })
+                    const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
+                    const old_id = old_instance.get_instance_data().id
+                    this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+                    if (this.instance_in_progress) {
+                        this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
                     }
+                    this.new_instance_list.get_all()
+                        .filter(instance => {
+                            const { from_instance_id, to_instance_id } = instance.get_instance_data()
+                            return instance.type === "relation" && (from_instance_id === old_id || to_instance_id === old_id)
+                        })
+                        .map(instance => {const { from_instance_id } = instance.get_instance_data()
+                            if (from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
+                            else instance.to_instance_id = add_insatnce.id
+                        })
                 })
             }
             this.save_loading = false
         },
         undo: function () {
-            if (!this.command_manager) {
-                return;
-            }
-            let undone = this.command_manager.undo();
-            if (undone) {
-                this.has_changed = true;
-            }
+            if (!this.new_history.undo_posible) return;
+
+            let undone = this.new_command_manager.undo();
+
+            if (undone) this.has_changed = true;
         },
         redo: function () {
-            if (!this.command_manager) {
-                return;
-            }
-            let redone = this.command_manager.redo();
-            if (redone) {
-                this.has_changed = true;
-            }
+            if (!this.new_history.redo_posible) return;
+
+            let redone = this.new_command_manager.redo();
+            
+            if (redone) this.has_changed = true;
         },
         change_file(direction, file) {
             if (direction == "next" || direction == "previous") {
@@ -791,181 +880,180 @@ export default Vue.extend({
             })
         },
         // draw_instance - is only returning rects that have to be drawn
-        draw_instance: function(instance) {
-            let starting_token;
-            let end_token;
-            if (instance.type === 'text_token') {
-                starting_token = this.tokens.find(token => token.id === instance.start_token)
-                if (!starting_token) {
-                    instance.soft_delete = true
-                    return []
+        draw_instance: function(instance) {  
+            try {
+                let starting_token;
+                let end_token;
+                if (instance.type === 'text_token') {
+                    starting_token = this.tokens.find(token => token.id === instance.start_token)
+                    if (!starting_token) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    end_token = this.tokens.find(token => token.id === instance.end_token)
+                    if (!end_token) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                } else {
+                    const start_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
+                    if (!start_instance) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    starting_token = this.tokens.find(token => token.id === start_instance.start_token)
+                    const end_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
+                    if (!end_instance) {
+                        instance.soft_delete = true
+                        return []
+                    }
+                    end_token = this.tokens.find(token => token.id === end_instance.end_token)
                 }
-                end_token = this.tokens.find(token => token.id === instance.end_token)
-                if (!end_token) {
-                    instance.soft_delete = true
-                    return []
-                }
-            } else {
-                const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().from_instance_id)
-                if (!start_instance) {
-                    instance.soft_delete = true
-                    return []
-                }
-                starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-                const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === instance.get_instance_data().to_instance_id)
-                if (!end_instance) {
-                    instance.soft_delete = true
-                    return []
-                }
-                end_token = this.tokens.find(token => token.id === end_instance.end_token)
-            }
-            if (starting_token.id === end_token.id) {
-                const rect = {
-                    instance_id: instance.get_instance_data().id,
-                    x: starting_token.start_x,
-                    y: this.lines[starting_token.line].y + 3,
-                    line: starting_token.line,
-                    width: starting_token.width,
-                    instance_type: instance.type,
-                    color: instance.label_file.colour.hex
-                }
-                return [rect]
-            }
-
-            if (starting_token.line === end_token.line) {
-                if (starting_token.id < end_token.id) {
+                if (starting_token.id === end_token.id) {
                     const rect = {
                         instance_id: instance.get_instance_data().id,
                         x: starting_token.start_x,
                         y: this.lines[starting_token.line].y + 3,
                         line: starting_token.line,
-                        width: end_token.start_x + end_token.width - starting_token.start_x,
+                        width: starting_token.width,
                         instance_type: instance.type,
                         color: instance.label_file.colour.hex
                     }
-
-                    return [rect]
-                } else {
-                    const rect = {
-                        instance_id: instance.get_instance_data().id,
-                        x: end_token.start_x,
-                        y: this.lines[end_token.line].y + 3,
-                        line: starting_token.line,
-                        width: starting_token.start_x + starting_token.width - end_token.start_x,
-                        instance_type: instance.type,
-                        color: instance.label_file.colour.hex
-                    }
-
                     return [rect]
                 }
-            }
-
-            if (starting_token.line !== end_token.line) {
-                if (starting_token.id > end_token.id) {
-                    const rects = [];
-                    for (let i = end_token.line; i <= starting_token.line; ++i) {
-                        if (i === starting_token.line) {
-                            const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: starting_token.start_x + starting_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
+    
+                if (starting_token.line === end_token.line) {
+                    if (starting_token.id < end_token.id) {
+                        const rect = {
+                            instance_id: instance.get_instance_data().id,
+                            x: starting_token.start_x,
+                            y: this.lines[starting_token.line].y + 3,
+                            line: starting_token.line,
+                            width: end_token.start_x + end_token.width - starting_token.start_x,
+                            instance_type: instance.type,
+                            color: instance.label_file.colour.hex
                         }
-                        else if (i === end_token.line) {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: end_token.start_x,
-                                y: this.lines[end_token.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
+    
+                        return [rect]
+                    } else {
+                        const rect = {
+                            instance_id: instance.get_instance_data().id,
+                            x: end_token.start_x,
+                            y: this.lines[end_token.line].y + 3,
+                            line: starting_token.line,
+                            width: starting_token.start_x + starting_token.width - end_token.start_x,
+                            instance_type: instance.type,
+                            color: instance.label_file.colour.hex
                         }
-                        else {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
-                            const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
+    
+                        return [rect]
                     }
-                    return rects
-                } else {
-                    const rects = [];
-                    for (let i = starting_token.line; i <= end_token.line; ++i) {
-                        if (i === starting_token.line) {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: starting_token.start_x,
-                                y: this.lines[starting_token.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - starting_token.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                        else if (i === end_token.line) {
-                            const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: end_token.start_x + end_token.width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                        else {
-                            const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
-                            const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
-                            const rect = {
-                                instance_id: instance.get_instance_data().id,
-                                x: first_token_in_the_line.start_x,
-                                y: this.lines[first_token_in_the_line.line].y + 3,
-                                line: i,
-                                width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
-                                instance_type: instance.type,
-                                color: instance.label_file.colour.hex
-                            }
-                            rects.push(rect)
-                        }
-                    }
-                    return rects
                 }
+    
+                if (starting_token.line !== end_token.line) {
+                    if (starting_token.id > end_token.id) {
+                        const rects = [];
+                        for (let i = end_token.line; i <= starting_token.line; ++i) {
+                            if (i === starting_token.line) {
+                                const first_token_in_the_line = this.tokens.find(token => token.line == starting_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: starting_token.start_x + starting_token.width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else if (i === end_token.line) {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == end_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: end_token.start_x,
+                                    y: this.lines[end_token.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
+                                const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                        }
+                        return rects
+                    } else {
+                        const rects = [];
+                        for (let i = starting_token.line; i <= end_token.line; ++i) {
+                            if (i === starting_token.line) {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == starting_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: starting_token.start_x,
+                                    y: this.lines[starting_token.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - starting_token.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else if (i === end_token.line) {
+                                const first_token_in_the_line = this.tokens.find(token => token.line == end_token.line)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: end_token.start_x + end_token.width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                            else {
+                                const last_token_in_the_line = this.tokens.filter(token => token.line == this.lines[i].id)
+                                const first_token_in_the_line = this.tokens.find(token => token.line == this.lines[i].id)
+                                const rect = {
+                                    instance_id: instance.get_instance_data().id,
+                                    x: first_token_in_the_line.start_x,
+                                    y: this.lines[first_token_in_the_line.line].y + 3,
+                                    line: i,
+                                    width: last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x,
+                                    instance_type: instance.type,
+                                    color: instance.label_file.colour.hex
+                                }
+                                rects.push(rect)
+                            }
+                        }
+                        return rects
+                    }
+                }
+                return []
             }
-            const trial_rect = {
-                x: starting_token.start_x,
-                y: this.lines[starting_token.line].y + 3,
-                width: starting_token.width,
-                instance_type: instance.type
+            catch(e) {
+                return []
             }
-            return [trial_rect]
         },
         // this is function to check what direction relation arrow should piint to
         insatance_orientation_direct: function(relational_instance) {
-            const start_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().from_instance_id)
+            const start_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().from_instance_id)
             const starting_token = this.tokens.find(token => token.id === start_instance.start_token)
-            const end_instance = this.instance_list.find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().to_instance_id)
+            const end_instance = this.new_instance_list.get().find(find_instance => find_instance.get_instance_data().id === relational_instance.get_instance_data().to_instance_id)
             const end_token = this.tokens.find(token => token.id === end_instance.end_token)
             return starting_token.id < end_token.id
         },

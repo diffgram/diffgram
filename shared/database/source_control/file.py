@@ -219,10 +219,7 @@ class File(Base, Caching):
                 name_list.append(val)
             elif type(val) == int:
                 id_list.append(val)
-        print('name_list', name_list)
-        print('id_list', id_list)
         if directory_id is not None:
-            print('dir case')
             file_list_id_db = session.query(File)\
                 .join(working_dir_database_models.WorkingDirFileLink,
                       working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
@@ -371,7 +368,6 @@ class File(Base, Caching):
 
         file = self.serialize_base_file()
 
-        #print('serialize with type', self.type)
         if self.type == "image":
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
@@ -617,8 +613,7 @@ class File(Base, Caching):
                 session, project_id, untrusted_file_id)
 
             if file is None:
-                raise Forbidden("File id not in project " + \
-                                str(untrusted_file_id))
+                raise Forbidden(f"File id not in project {str(untrusted_file_id)}")
 
             if return_mode == "id":
                 trusted_file_list.append(file.id)
@@ -755,13 +750,12 @@ class File(Base, Caching):
         # At the moment we don't pass add_link as True when copying it for task
         if add_link is True:
             working_dir_database_models.WorkingDirFileLink.add(session, working_dir_id, file)
-        # print("Added link")
 
         if remove_link is True:
             working_dir_database_models.WorkingDirFileLink.remove(session, working_dir_id, existing_file.id)
 
-        logger.debug('existing_file.type {}'.format(existing_file.type))
-        logger.debug('copy_instance_list {}'.format(copy_instance_list))
+        logger.debug(f"existing_file.type {existing_file.type}")
+        logger.debug(f"copy_instance_list {copy_instance_list}")
         if existing_file.type in ['image', 'frame'] and copy_instance_list is True:
 
             file.count_instances_changed = existing_file.count_instances_changed
@@ -771,12 +765,12 @@ class File(Base, Caching):
                 session = session,
                 file_id = existing_file.id,
                 limit = None)   # Excludes removed by default
-            logger.debug('instance_list len {}'.format(len(instance_list)))
+            logger.debug(f"instance_list len {len(instance_list)}")
             for instance in instance_list:
 
                 instance_sequence_id = instance.sequence_id
                 if sequence_map is not None:
-                    logger.debug('sequence_map {}'.format(sequence_map))
+                    logger.debug(f"sequence_map {sequence_map}")
                     instance_sequence_id = sequence_map.get(instance_sequence_id)
 
                 new_instance = Instance(
@@ -962,13 +956,11 @@ class File(Base, Caching):
 
             # start_time = time.time()
             video = video_parent_file.video
-            # print("video pull", (time.time() - start_time) * 1000)
 
             if video:
                 # A new file would never have this created prior...
                 file.global_frame_number = video.calculate_global_reference_frame(
                     frame_number=file.frame_number)
-            # print("Global frame:", file.global_frame_number)
             else:
                 print("Error, no .Video while trying to create new File")
 

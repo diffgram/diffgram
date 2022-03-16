@@ -78,7 +78,7 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
         )
 
         task = data_mocking.create_task({
-            'name': 'task{}'.format(1),
+            'name': f'task{1}',
             'job': job,
             'file': file,
         }, self.session)
@@ -95,15 +95,15 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
             'task_id': task.id,
         }
 
-        endpoint = "/api/v1/project/" + self.project.project_string_id + "/discussions/list"
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/discussions/list"
         auth_api = common_actions.create_project_auth(project=job.project, session=self.session)
-        credentials = b64encode("{}:{}".format(auth_api.client_id, auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         response_with_task_id = self.client.post(
             endpoint,
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response_with_task_id.json
@@ -118,7 +118,7 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
 
@@ -134,7 +134,7 @@ class TeseIssueList(testing_setup.DiffgramBaseTestCase):
             data=json.dumps(request_data),
             headers={
                 'directory_id': str(job.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
 

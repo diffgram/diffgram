@@ -36,9 +36,11 @@ class Job_permissions():
             def inner(*args, **kwds):
 
                 job_id = kwds.get('job_id', None)
-                if job_id is None or job_id == "null" or job_id == "undefined":
+                task_template_id = kwds.get('task_template_id', None)
+                if (job_id is None or job_id == "null" or job_id == "undefined") and task_template_id is None:
                     raise Forbidden("job_id is invalid")
-
+                if task_template_id is not None:
+                    job_id = task_template_id
                 with sessionMaker.session_scope() as session:
 
                     # Permissions cascading from project

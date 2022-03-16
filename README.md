@@ -70,7 +70,7 @@ Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
 2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
 3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
-4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide) Available Now. Plus Text & Audio Coming Soon.
+4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide), Text Available Now. Audio & More Coming Soon.
 5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
 6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
 7. [Explore](#Explore) - Query & Visually See Annotations

@@ -13,13 +13,15 @@ export class InstanceTemplateCreationInteractionGenerator implements Interaction
   current_instance: Instance;
   draw_mode: boolean;
   event: Event;
+  color_tool_active: boolean
 
-  constructor(event, instance_hover_index, instance_list, draw_mode, current_instance) {
+  constructor(event, instance_hover_index, instance_list, draw_mode, current_instance, color_tool_active = false) {
     this.event = event;
     this.instance_hover_index = instance_hover_index;
     this.current_instance = current_instance;
     this.instance_list = instance_list;
     this.draw_mode = draw_mode;
+    this.color_tool_active = color_tool_active;
 
   }
   private get_hovered_instance(): Instance{

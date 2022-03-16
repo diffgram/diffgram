@@ -155,6 +155,7 @@ def web_export_to_file(project_string_id):
             log["error"]["directory"] = "Invalid directory"
             return jsonify(log = log), 400
 
+
         # Caution assumes project.user_primary
         # Billing check
         log = check_export_billing(
@@ -288,14 +289,9 @@ def check_export_billing(
     member,
     log):
     """
-    If not on paid plan...
 
-    Check if directory instance
-    count is high enough
     """
 
-    # Active instances so dates are only relevant to
-    # use for first 30 days enforcing not deleted?
     logger.info('Checking Limits for Plan')
     if settings.ALLOW_STRIPE_BILLING is False:
         return log
@@ -333,7 +329,7 @@ def check_export_billing(
             exclude_removed = True,
             return_kind = "count")
 
-    logger.info('Checking limits for export with {} instances'.format(new_instance_count))
+    logger.info(f"Checking limits for export with {new_instance_count} instances")
 
     if max_allowed_instances:
         if new_instance_count > max_allowed_instances:

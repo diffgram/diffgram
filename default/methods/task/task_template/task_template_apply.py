@@ -138,12 +138,10 @@ def task_template_apply_exam(session,
     # Attach assignees as reviewers for tasks
     parent_assignees = og_task_template.get_assignees(session)
     parent_members_list_ids = [user.member_id for user in parent_assignees]
-    print('REVIEWERS LIST', parent_members_list_ids)
     log_result = task_template.update_reviewer_list(
         session = session,
         reviewer_list_ids = parent_members_list_ids,
         log = regular_log.default())
-    print('REVIEWERS LIST log_result', log_result)
     result = task_new.provision_root_tasks(session = session,
                                            job = task_template,
                                            default_assignee = user,
@@ -174,7 +172,7 @@ def copy_task_template_for_exam(session,
 
     """
     # TODO how do we want to name exam jobs to avoid confusion
-    name = og_task_template.name + " " + user.email
+    name = f"{og_task_template.name} {user.email}"
 
     # Override for now, so review freqeuncy is 1:1
     review_by_human_freqeuncy = "every_pass"
@@ -389,7 +387,6 @@ def user_limits(session,
                                                     count_only = True)
 
     # if user_job_count is None, assumption is that userhas no jobs
-    print(user_job_count)
 
     job_count_max = 999999
 

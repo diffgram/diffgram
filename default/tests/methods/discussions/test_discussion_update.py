@@ -67,15 +67,15 @@ class TeseDiscussionUpdate(testing_setup.DiffgramBaseTestCase):
             'attached_elements': [{'type': 'job', 'id': job.id}],
             'description': new_content
         }
-        endpoint = "/api/v1/project/{}/discussion/{}/update".format(self.project.project_string_id, discussion.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/discussion/{discussion.id}/update"
 
-        credentials = b64encode("{}:{}".format(self.auth_api.client_id, self.auth_api.client_secret).encode()).decode('utf-8')
+        credentials = b64encode(f"{self.auth_api.client_id}:{self.auth_api.client_secret}".encode()).decode('utf-8')
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
             headers = {
                 'directory_id': str(self.project.directory_default_id),
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json

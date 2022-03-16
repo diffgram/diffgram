@@ -89,14 +89,12 @@ export default {
   },
   methods: {
     on_member_list_changed: function(member_list){
-      console.log('MEMBER LIST', member_list);
       let dataset = this.chart_data.datasets[0];
       let values = [];
       let labels = [];
       for(let i = 0; i < this.report_result.stats.values.length; i++){
         let user_id = this.report_result.stats.labels[i];
         let value = this.report_result.stats.values[i];
-        console.log('value', user_id)
         if(member_list.includes(user_id)){
           values.push(value);
           labels.push(`${this.report_result.stats.values_metadata[i].first_name} ${this.report_result.stats.values_metadata[i].last_name}`);
@@ -106,20 +104,18 @@ export default {
         labels: labels,
         datasets: [
           {
-            backgroundColor: 'blue',
+            backgroundColor: '#757575',
             borderColor: 'white',
             label: 'Average Time Per Task (Mins)',
             data: values
           }
         ]
       }
-      console.log('AAAAA', this.chart_data)
     },
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
       if(result){
-        console.log('aaa', result)
         this.report_result = result;
         let labels = [];
         for(let i = 0; i< result.stats.labels.length; i++){
@@ -129,7 +125,7 @@ export default {
           labels: labels,
           datasets: [
             {
-              backgroundColor: 'blue',
+              backgroundColor: '#757575',
               borderColor: 'white',
               label: 'Average Time Per Task (Mins)',
               data: result.stats.values

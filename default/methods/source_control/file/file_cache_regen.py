@@ -67,7 +67,7 @@ def api_file_cache_regen(project_string_id, file_id):
             member_id = member.id,
             project_id = project.id,
             file_id = file_id,
-            description = str('Regenerated Cache. Frame {}'.format(input.get('frame_number')))
+            description = str(f"Regenerated Cache. Frame {input.get('frame_number')}")
         )
 
         log['success'] = True
@@ -89,7 +89,7 @@ def cache_regeneration_core(session, project, file_id, frame_number, log):
     if file.type == 'video':
         # Check that frame number exists
         if frame_number is None:
-            log['error']['frame_number'] = 'File {}: provide frame number.'.format(file_id)
+            log['error']['frame_number'] = f"File {file_id}: provide frame number."
             return result, log
         else:
             file = session.query(File).filter(
@@ -97,7 +97,7 @@ def cache_regeneration_core(session, project, file_id, frame_number, log):
                 File.frame_number == frame_number
             ).first()
             if not file:
-                log['error']['frame_number'] = 'Frame {} does not exists.'.format(frame_number)
+                log['error']['frame_number'] = f"Frame {frame_number} does not exists."
                 return result, log
 
     instance_list_existing = Instance.list(session = session,

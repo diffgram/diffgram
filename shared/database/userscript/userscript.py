@@ -134,7 +134,7 @@ class UserScript(Base):
 
         if name:
             if name_match_type == "ilike":
-                name_search = "%{}%".format(name)
+                name_search = f"%{name}%"
                 query = query.filter(UserScript.name.ilike(name_search))
             else:
                 query = query.filter(UserScript.name == name)

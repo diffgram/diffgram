@@ -32,6 +32,7 @@
                >
 
           <v-icon :large="large"
+                  :class="active ? 'active' : ''"
                   :size="iconSize"
                   :color=color
                   :left="left"
@@ -155,6 +156,9 @@ export default Vue.extend( {
     'text_style': {
       default: false
     },
+    'active': {
+      default: false
+    },
 
     // TODO maybe change this to like "direction" or something so
     // can support bottom, right, left etc...
@@ -221,7 +225,7 @@ export default Vue.extend( {
   },
   methods: {
     refresh_button_state_from_ui_schema(){
-      if (this.$props.ui_schema_name == undefined) { return true } 
+      if (this.$props.ui_schema_name == undefined) { return true }
       this.visible = this.$store.getters.get_ui_schema(this.$props.ui_schema_name, 'visible')
     },
     preventdefault(event) {
@@ -243,3 +247,10 @@ export default Vue.extend( {
 }
 
 ) </script>
+<style scoped>
+.active{
+  border: 2px solid #2296f3;
+  padding: 0.8rem;
+  border-radius: 5px;
+}
+</style>

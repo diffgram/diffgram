@@ -140,14 +140,14 @@ def new_external_export(
                                           bucket_type = 'ml')
         except Exception as exception:
             trace_data = traceback.format_exc()
-            logger.error("[Export, YAML] {}".format(str(exception)))
+            logger.error(f"[Export, YAML] {str(exception)}")
             logger.error(trace_data)
 
         json_data = json.dumps(annotations)
         data_tools.upload_from_string(export.json_blob_name, json_data, content_type = 'text/json', bucket_type = 'ml')
 
     end_time = time.time()
-    logger.info("[Export processor] ran in {}".format(end_time - start_time))
+    logger.info(f"[Export processor] ran in {end_time - start_time}")
 
     Event.new(
         kind = "export_generation",
@@ -181,8 +181,7 @@ def annotation_export_core(
     Generic method to export a file list
     """
 
-    images_dir = settings.PROJECT_IMAGES_BASE_DIR + \
-                 str(project.id) + "/"
+    images_dir = f"{settings.PROJECT_IMAGES_BASE_DIR + str(project.id)}/"
 
     export.file_list_length = len(file_list)
 
@@ -320,7 +319,7 @@ def annotation_export_core(
 
             if index % 10 == 0:
                 # TODO would need to commit the session for this to be useful right?
-                logger.info("Percent done {}".format(export.percent_complete))
+                logger.info(f"Percent done {export.percent_complete}")
                 try_to_commit(session = session)  # push update
 
     export.status = "complete"

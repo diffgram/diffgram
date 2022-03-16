@@ -264,7 +264,6 @@ export default Vue.extend({
         this.view_only = true;
       }
 
-      console.log('this.$route.query',this.$route.query)
     }
 
     if (
@@ -674,6 +673,9 @@ export default Vue.extend({
       }
       if (this.$props.task_id_prop) {
         page_name = "task_detail";
+      }
+      if(this.$props.task_id_prop === -1 || this.$props.task_id_prop === '-1'){
+        return
       }
       const event_data = await create_event(this.computed_project_string_id, {
         file_id: this.$props.file_id_prop,

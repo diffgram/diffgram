@@ -2,14 +2,11 @@
   <v-dialog v-model="is_open" width="700px" :persistent="true" :no-click-animation="true"
             content-class="dialog-instance-template">
 
-    <v-card elevation="0" class="pa-4 ma-0">
+    <v-card elevation="0" class="pa-4 ma-0 pointertest">
       <v-card-title>
         Create KeyPoints Template:
 
       </v-card-title>
-      <v-card-subtitle class="mt-1">
-
-      </v-card-subtitle>
       <v-card-text>
         <v-container class="flex flex-column pa-0 ma-0" >
           <v-text-field class="ma-0 pa-0"
@@ -30,11 +27,16 @@
           <instance_template_creation_toolbar
             class="ma-0 pa-0"
             ref="instance_template_creation_toolbar"
+            :color_tool_active="instance_context.color_tool_active"
             @draw_mode_update="update_draw_mode_on_instances"
             @set_background="set_background"
             :project_string_id="project_string_id"
+            :instance="instance"
             @zoom_in="zoom_in"
             @zoom_out="zoom_out"
+            @mode_set="on_mode_set"
+            @change_color="change_color"
+            @coloring_tool_clicked="activate_color_tool"
           >
 
           </instance_template_creation_toolbar>
@@ -48,7 +50,7 @@
             @mouseup="mouse_up"
             @contextmenu="contextmenu"
             :canvas_width="canvas_width"
-            :show_target_reticle="instance_context.draw_mode && instance && !instance.is_drawing_edge"
+            :show_target_reticle="instance_context.draw_mode && instance && !instance.is_drawing_edge && !instance_context.color_tool_active"
             :show_context_menu="show_context_menu"
             :canvas_height="canvas_height"
             :reticle_colour="{
@@ -79,6 +81,8 @@
               :mouse_position="props.mouse_position"
               :instance="instance"
               @hide_context_menu="hide_context_menu"
+
+
             />
 
           </drawable_canvas>
@@ -107,12 +111,12 @@
       </v-card-actions>
 
     </v-card>
-    <v-snackbar color="secondary"
+    <v-snackbar color="primary"
                 :timeout="5000"
                 v-if="show_snackbar"
                 v-model="show_snackbar"
                 :multi-line="true"
-                top
+                bottom
     >
       {{ snackbar_text }}
     </v-snackbar>
@@ -129,8 +133,9 @@
   import instance_drawer from '../vue_canvas/instance_drawer';
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+  import {iconFillPaint} from "@/utils/custom_icons";
 
-export default Vue.extend({
+  export default Vue.extend({
   name: "instance_template_creation_dialog",
   props: {
     project_string_id: undefined,
@@ -155,6 +160,7 @@ export default Vue.extend({
       instance: undefined,
       error: {},
       bg_color: 'grey',
+      mode: '1_click',
       image_bg: undefined,
       canvas_wrapper: undefined,
       canvas_width: 600,
@@ -169,8 +175,17 @@ export default Vue.extend({
     }
   },
   mounted() {
-
+    if (window.Cypress) {
+      window.InstanceTemplateDialog = this;
+    }
     document.addEventListener('mousedown', this.mouse_events_global_down)
+    this.instance_context.color = {
+      hex: '#194d33',
+      hsl: { h: 150, s: 0.5, l: 0.2, a: 1 },
+      hsv: { h: 150, s: 0.66, v: 0.30, a: 1 },
+      rgba: { r: 25, g: 77, b: 51, a: 1 },
+      a: 1
+    };
 
   },
   beforeDestroy() {
@@ -178,6 +193,24 @@ export default Vue.extend({
   },
 
   methods: {
+    on_mode_set: function(mode){
+      this.mode = mode;
+    },
+    change_color: function(color){
+      console.log('asadasd', color)
+      this.instance_context.color = color;
+    },
+    activate_color_tool: function(){
+      if(this.instance_context.color_tool_active){
+        this.instance_context.color_tool_active = false;
+        this.close_snackbar()
+      }
+      else{
+        this.instance_context.color_tool_active = true;
+        this.open_snackbar('Click the nodes and edges to color them.')
+      }
+
+    },
     detect_clicks_outside_context_menu: function (e) {
 
       // skip clicks on the actual context menu
@@ -263,8 +296,11 @@ export default Vue.extend({
           edges = this.$props.instance_template.instance_list[i].edges;
           this.name = this.$props.instance_template.name;
           this.instance.nodes = nodes;
+          this.instance.nodes.sort((a, b) => a.ordinal < b.ordinal ? -1 : 1)
           this.instance.edges = edges;
           this.instance.id = this.$props.instance_template.instance_list[i].id
+          this.mode = this.$props.instance_template.mode;
+          this.$refs.instance_template_creation_toolbar.set_mode(this.mode)
         }
 
       }
@@ -306,11 +342,14 @@ export default Vue.extend({
     },
     update_draw_mode_on_instances: function (draw_mode) {
       this.instance_context.draw_mode = draw_mode;
+      this.instance_context.color_tool_active = false;
       if (draw_mode) {
         this.$refs.instance_template_canvas.canvas_element.style.cursor = 'none';
+        this.instance.hovered_control_point_key = undefined;
       } else {
         this.$refs.instance_template_canvas.canvas_element.style.cursor = 'auto';
         this.instance.selected = false
+        this.instance.is_drawing_edge = false;
       }
 
       if (this.instance_context.draw_mode) {
@@ -349,6 +388,9 @@ export default Vue.extend({
       return interaction_generator.generate_interaction();
     },
     mouse_move: function (event) {
+      if(this.instance_context.color_tool_active){
+        this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
+      }
       const interaction = this.generate_interaction_from_event(event);
       if (interaction) {
         interaction.process();
@@ -370,6 +412,7 @@ export default Vue.extend({
       if (!this.show_context_menu) {
         this.instance.double_click(event);
         this.hide_context_menu()
+        this.$forceUpdate();
       }
 
     },
@@ -429,6 +472,7 @@ export default Vue.extend({
           `/api/v1/project/${this.$props.project_string_id}/instance-template/${this.$props.instance_template.id}`,
           {
             name: this.name,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })
@@ -461,6 +505,7 @@ export default Vue.extend({
             name: this.name,
             reference_height: this.canvas_height,
             reference_width: this.canvas_width,
+            mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 
           })

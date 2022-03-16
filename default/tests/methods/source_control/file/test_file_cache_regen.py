@@ -52,7 +52,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
         # Image case
         request_data = {}
         self.assertIsNone(file.cache_dict.get('instance_list'))
-        endpoint = "/api/v1/project/{}/file/{}/regenerate-cache".format(self.project.project_string_id, file.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/file/{file.id}/regenerate-cache"
         credentials = b64encode("{}:{}".format(
             self.auth_api.client_id,
             self.auth_api.client_secret).encode()).decode('utf-8')
@@ -61,7 +61,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
             endpoint,
             data = json.dumps(request_data),
             headers = {
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
 
         )
@@ -88,7 +88,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
         # No frame provided case
         request_data = {}
         self.assertIsNone(video_file.cache_dict.get('instance_list'))
-        endpoint = "/api/v1/project/{}/file/{}/regenerate-cache".format(self.project.project_string_id, video_file.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/file/{video_file.id}/regenerate-cache"
         credentials = b64encode("{}:{}".format(
             self.auth_api.client_id,
             self.auth_api.client_secret).encode()).decode('utf-8')
@@ -97,7 +97,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
             endpoint,
             data = json.dumps(request_data),
             headers = {
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
 
         )
@@ -123,7 +123,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
             'frame_number': 54
         }
         self.assertIsNone(frame_file.cache_dict.get('instance_list'))
-        endpoint = "/api/v1/project/{}/file/{}/regenerate-cache".format(self.project.project_string_id, frame_file.id)
+        endpoint = f"/api/v1/project/{self.project.project_string_id}/file/{frame_file.id}/regenerate-cache"
         credentials = b64encode("{}:{}".format(
             self.auth_api.client_id,
             self.auth_api.client_secret).encode()).decode('utf-8')
@@ -132,7 +132,7 @@ class TeseFileCacheRegen(testing_setup.DiffgramBaseTestCase):
             endpoint,
             data = json.dumps(request_data),
             headers = {
-                'Authorization': 'Basic {}'.format(credentials)
+                'Authorization': f"Basic {credentials}"
             }
 
         )

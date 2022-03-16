@@ -219,7 +219,8 @@
                   tooltip_message="Reset"
                   @click="column_list = column_list_backup"
                   v-if="column_list != column_list_backup"
-                  icon="autorenew"
+                  icon="mdi-autorenew"
+                  :icon_style="true"
                   color="primary"
                 >
                 </tooltip_button>
@@ -634,6 +635,8 @@
     </v-dialog>
     <add_assignee
       :job="job"
+      :members_list_prop="members_list"
+      :reviewers_list_prop="reviewers_list"
       :dialog_type="task_assign_dialog_type"
       :dialog="task_assign_dialog_open"
       :assignees="task_to_assign ? task_list.find(task => task.id === task_to_assign)[this.task_assign_dialog_type === 'assignee' ? 'task_assignees' : 'task_reviewers'] : []"
@@ -669,6 +672,7 @@ import task_status_select from "../../regular_concrete/task_status_select.vue";
 import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
 import add_assignee from "../../dialogs/add_assignee.vue"
 import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
+import { get_task_template_members } from "../../../services/taskTemplateService"
 
 import pLimit from "p-limit";
 
@@ -718,10 +722,14 @@ export default Vue.extend({
         ],
 
       task_assign_dialog_open: false,
+      reviewers_list: [],
+      members_list: [],
       task_to_assign: null,
       task_assign_dialog_loading: false,
       task_assign_dialog_type: null,
       task_assign_batch: false,
+      job_assignees: false,
+      job_reviewers: false,
 
       allow_reviews: false,
 
@@ -772,7 +780,7 @@ export default Vue.extend({
         "LastUpdated",
         "Action",
       ],
-
+      column_list_backup: [],
       column_list_all: [
         "Select",
         "Status",
@@ -978,13 +986,26 @@ export default Vue.extend({
   created() {
     this.column_list_backup = this.column_list;
   },
-  mounted() {
+  async mounted() {
     if (this.job) {
       this.pending_initial_dir_sync = this.job.pending_initial_dir_sync;
     }
-    this.task_list_api();
+    await this.get_job_members()
+    await this.task_list_api();
+
   },
   methods: {
+    async get_job_members(){
+      let [members_data, error] = await get_task_template_members(this.job_id);
+      if(error){
+        console.error(error)
+        return
+      }
+      if(members_data){
+        this.members_list = members_data.assignees
+        this.reviewers_list = members_data.reviewers
+      }
+    },
     async next_page() {
       this.page_number += 1;
       await this.task_list_api();
@@ -1145,7 +1166,6 @@ export default Vue.extend({
             limit_count: this.per_page_limit,
           }
         );
-
         if (response.data.log.success == true) {
           this.task_list = response.data.task_list;
           this.allow_reviews = response.data.allow_reviews
@@ -1170,6 +1190,9 @@ export default Vue.extend({
               { name: "Assign reviewers", value: 'assignReviewers'},
               { name: "Remove reviewers", value: 'removeReviewers'},
               ]
+          }
+          else{
+            this.column_list_all = this.column_list_all.filter(col => !["AssignedReviewer"].includes(col))
           }
 
           this.update_tasks_with_file_annotations(this.task_list);

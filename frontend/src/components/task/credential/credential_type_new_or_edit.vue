@@ -223,7 +223,10 @@
             }
 
           }).catch(error => {
-            this.error= error.response.data.log.error
+            if(error.response && error.response.data && error.response.data.log){
+              this.error= error.response.data.log.error
+            }
+
             this.loading = false
             console.error(error)
           });

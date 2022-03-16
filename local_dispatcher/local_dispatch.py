@@ -33,7 +33,7 @@ def route_same_host(path):
     host = 'http://127.0.0.1:8080/'
     host_reached = 'default'
     url_parsed = urllib.parse.urlparse(request.url)
-    path_with_params = '{}?{}'.format(path, urllib.parse.unquote(url_parsed.query))
+    path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
     if path[: 10] == "api/walrus":
         host_reached = 'walrus'
@@ -42,7 +42,7 @@ def route_same_host(path):
     # JS local dev server
     if path[: 3] != "api" or path[: 6] == "static":
         host_reached = 'frontend'
-        return requests.get('http://localhost:8081/{}'.format(path_with_params)).text
+        return requests.get(f"http://localhost:8081/{path_with_params}").text
 
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
 
@@ -76,12 +76,12 @@ def route_multi_host(path):
     # Default host
     host = 'http://default:8080/'
     host_reached = 'default'
-    logging.warning('MULTI HOST {}'.format(path))
+    logging.warning("MULTI HOST {path}")
     url_parsed = urllib.parse.urlparse(request.url)
-    path_with_params = '{}?{}'.format(path, urllib.parse.unquote(url_parsed.query))
+    path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
 
-    logging.warning('MULTI path_with_params {}'.format(path_with_params))
+    logging.warning(f"MULTI path_with_params {path_with_params}")
     if path[: 10] == "api/walrus":
         host_reached = 'walrus'
         host = 'http://walrus:8082/'
@@ -138,8 +138,8 @@ def _proxy(path):
     # TODO could switch the path thing to be "diffgram.com"
     # if want to run front end with production end points
     # (or could use a staging endpoint here too...)
-    print('_proxy:*--------> {}'.format(path))
-    logging.warning('_proxy:*--------> {}'.format(path))
+    print(f"_proxy:*--------> {path}")
+    logging.warning(f"_proxy:*--------> {path}")
     if SAME_HOST:
         print('route_same_host')
         return route_same_host(path)

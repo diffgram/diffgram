@@ -2,10 +2,14 @@ import axios from './customInstance'
 
 export const postInstanceList = async (url, instance_list) => {
     try {
+        const payload = instance_list.map(inst => {
+            if (typeof inst.id === 'string') inst.id = null
+            return inst
+        })
         const { data } = await axios.post(
             url,
             {
-                instance_list,
+                instance_list: payload,
                 and_complete: false
             }
         )
