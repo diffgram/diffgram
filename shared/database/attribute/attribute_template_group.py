@@ -299,7 +299,8 @@ class Attribute_Template_Group(Base):
         result = session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.project_id == project_id,
             Attribute_Template_Group.name == name,
-            Attribute_Template_Group.kind == kind
+            Attribute_Template_Group.kind == kind,
+            Attribute_Template_Group.archived == False
         ).first()
 
         return result

@@ -611,7 +611,7 @@ class Process_Media():
         )
         if existing_file_list:
             self.input.status = "failed"
-            self.input.status_text = f"Existing filename with ID {str(existing_file_list[0].id)} in directory."
+            self.input.status_text = f"Filename {self.input.original_filename} Already Exists in Dir. Existing ID is:{str(existing_file_list[0].id)}"
             self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }

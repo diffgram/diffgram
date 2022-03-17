@@ -40,6 +40,7 @@
 
             <project_migrator_connection_step
               @next_step="go_to_step(2)"
+              @previous_step="go_back_a_step()"
               @connection_changed="set_connection"
               :project_string_id="project_string_id">
 
@@ -50,6 +51,7 @@
           <v-stepper-content step="2" style="height: 100%">
             <project_migrator_config_step
               @next_step="go_to_step(3)"
+              @previous_step="go_back_a_step()"
               :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
             </project_migrator_config_step>
@@ -60,6 +62,7 @@
 
             <project_migrator_confirm_step
               @start_migration="on_start_migration"
+              @previous_step="go_back_a_step()"
               :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
             </project_migrator_confirm_step>

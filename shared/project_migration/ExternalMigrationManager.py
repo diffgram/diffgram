@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from shared.shared_logger import get_shared_logger
 from methods.connectors.connector_interface_utils import get_connector
 import threading
-
+import traceback
 logger = get_shared_logger()
 
 
@@ -57,16 +57,29 @@ class ExternalMigrationManager:
             message = f'Cannot initialize connection {connection_result}'
             self.__set_migration_failure('connection_initialization', message)
             return
-        result = connector.fetch_data(
-            {
-                'action_type': 'import_project',
-                'event_data': {},
-                'project_string_id': self.project_migration.project.project_string_id,
-                'labelbox_project_id': labelbox_project_id,
-                'member_id': self.project_migration.member_created_id,
+        try:
+            result = connector.fetch_data(
+                {
+                    'action_type': 'import_project',
+                    'event_data': {},
+                    'project_string_id': self.project_migration.project.project_string_id,
+                    'labelbox_project_id': labelbox_project_id,
+                    'member_id': self.project_migration.member_created_id,
+                    'project_migration_id': self.project_migration.id,
 
-            }
-        )
+                }
+            )
+        except Exception as e:
+            message = 'Project failed to migrate'
+            logger.error(message)
+            trace_data =()
+            logger.error(trace_data)
+            self.__set_migration_failure('failed_migration', trace_data)
+
+        logger.info('Project Migration Succesful.')
+        self.project_migration.status = 'success'
+        self.project_migration.percent_complete = 100
+        self.session.add(self.project_migration)
         return result
 
 

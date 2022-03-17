@@ -15590,6 +15590,11 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
+simple-syntax-highlighter@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/simple-syntax-highlighter/-/simple-syntax-highlighter-1.5.0.tgz#e7c554fe870beff8b48e4ef51bfa0d82b50e526d"
+  integrity sha512-LeAuBFdclxTKhV1ND58RqroWZ7X8HsDv8RDwt2ErF7Ul5o3mjCv3pNbNw6sn3mCSWeOO6p5Ax/VSuYtFbLq8LQ==
+
 sisteransi@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/sisteransi/-/sisteransi-1.0.5.tgz#134d681297756437cc05ca01370d3a7a571075ed"

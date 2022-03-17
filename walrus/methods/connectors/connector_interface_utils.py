@@ -18,6 +18,7 @@ def get_connector(connector_id, session, input=None, check_perms=True):
     if input is None:
         conn_manager = ConnectorManager(connection=connection, session=session)
         connector_class = conn_manager.get_connector_class()
+
         auth_data = {
             'client_email': connection.account_email,
             'client_id': connection.private_id,
@@ -36,6 +37,7 @@ def get_connector(connector_id, session, input=None, check_perms=True):
         }
 
     config_data = {'project_string_id': connection.project.project_string_id}
+    print('AAAA', connector_class)
     connector = connector_class(auth_data=auth_data, config_data=config_data)
 
     if len(connection_operations.log["error"].keys()) >= 1:

@@ -32,7 +32,7 @@ class Input(Base):
 
     time_last_attempted = Column(Integer)
 
-    # TODO list available modes here...
+    # ["copy_file", "update", "update_with_existing", ""]
     mode = Column(String) 
 
     url = Column(String())

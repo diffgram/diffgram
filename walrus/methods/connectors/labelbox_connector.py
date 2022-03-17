@@ -20,9 +20,12 @@ from shared.regular import regular_log
 from shared.database.auth.member import Member
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.attribute.attribute_template import Attribute_Template
+from shared.database.batch.batch import InputBatch
+from shared.database.project_migration.project_migration import ProjectMigration
 import colorsys
+import uuid
 
-
+SUPPORTED_IMAGE_MIMETYPES = ['image/jpg', 'image/png', 'image/jpeg', 'image/webp', 'image/svg', 'image/tiff', 'image/tif']
 def with_labelbox_exception_handler(f):
     def wrapper(*args):
         log = regular_log.default()
@@ -139,7 +142,7 @@ class LabelboxConnector(Connector):
         """
 
         logger.info(f'Creating Multi Select Type Attribute data: {existing_attribute_group.name}')
-
+        print('OPTIONS ARE', clsf.options)
         for option in clsf.options:
             existing_attr = Attribute_Template.get_by_name(
                 session = session,
@@ -216,6 +219,20 @@ class LabelboxConnector(Connector):
             else:
                 logger.info(f'Radio option {option.value} already exists.')
 
+    def __classification_has_nested_data(self, clsf):
+        options = clsf.options
+        if not options:
+            return False
+
+        for opt in options:
+            nested_opts = opt.options
+            if nested_opts and len(nested_opts) > 0:
+                return True
+        return False
+
+    def __set_treeview_attribute_data(self, session, clsf, existing_attribute_group, member):
+        return
+
     def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool):
         """
             Creates all the classifications from the given labelbox tool as attributes in diffgram.
@@ -228,7 +245,7 @@ class LabelboxConnector(Connector):
         :return:
         """
         classifications = tool.classifications
-        logger.info(f'Creating Attributes from Labelbox tool "{tool.name}"')
+        logger.info(f'>>> Creating Attributes from Labelbox tool "{tool.name}"')
         for clsf in classifications:
             class_type = clsf.class_type.value
             attr_name = clsf.name
@@ -248,11 +265,18 @@ class LabelboxConnector(Connector):
                     project = diffgram_project,
                     member = member
                 )
+            else:
+                logger.info(f'Attribute "{attr_name}" already exists.')
             existing_attribute.kind = diffgram_attribute_type
             existing_attribute.is_new = False
             existing_attribute.name = clsf.name
             existing_attribute.prompt = clsf.name
             existing_attribute.is_global = False
+            logger.info(f'Deducted type {diffgram_attribute_type}')
+            has_nested = self.__classification_has_nested_data(clsf)
+
+            # if has_nested:
+            #     existing_attribute.kind = 'treeview'
 
             if existing_attribute.kind == 'radio':
                 self.__set_radio_attribute_data(
@@ -268,8 +292,15 @@ class LabelboxConnector(Connector):
                     existing_attribute_group = existing_attribute,
                     member = member
                 )
-            elif existing_attribute == 'multiple_select':
+            elif existing_attribute.kind == 'multiple_select':
                 self.__set_multiple_select_attribute_data(
+                    session = session,
+                    clsf = clsf,
+                    existing_attribute_group = existing_attribute,
+                    member = member
+                )
+            elif existing_attribute.kind == 'treeview':
+                self.__set_treeview_attribute_data(
                     session = session,
                     clsf = clsf,
                     existing_attribute_group = existing_attribute,
@@ -278,7 +309,7 @@ class LabelboxConnector(Connector):
             elif existing_attribute.kind == 'text':
                 continue
 
-    def __import_labels_to_project(self, session, ontology, diffgram_project, member, log):
+    def __import_labels_to_project(self, session, ontology, diffgram_project, member, project_migration, log):
 
         label_tools = ontology.tools()
         logger.info(f'Importing labels from ontology "{ontology.name}"')
@@ -323,28 +354,281 @@ class LabelboxConnector(Connector):
                                                     member = member,
                                                     tool = tool)
 
-    def __import_ontology_to_project(self, labelbox_project_id, diffgram_project_string_id, member_id, log):
-        logger.info(f'Starting ontolgy import for project {diffgram_project_string_id}')
-        logger.info(f'Labelbox project  {labelbox_project_id}')
+    def __determine_instance_type(self, object):
 
-        with sessionMaker.session_scope_threaded() as session:
-            member = Member.get_by_id(session, member_id = member_id)
-            diffgram_project = Project.get_by_string_id(session = session,
-                                                        project_string_id = diffgram_project_string_id)
-            labelbox_project = self.connection_client.get_project(project_id = labelbox_project_id)
-            ontology = labelbox_project.ontology()
-            self.__import_labels_to_project(session, ontology, diffgram_project, member, log)
+        if 'polygon' in object:
+            return 'polygon'
+        if 'point' in object:
+            return 'point'
+        if 'bbox' in object:
+            return 'box'
+
+    def __extract_label_file_from_object(self, session, object, ontology, diffgram_project):
+        schema_id = object['schemaId']
+
+        label_file_name = None
+        for tool in ontology.tools():
+            if tool.feature_schema_id == schema_id:
+                label_file_name = tool.name
+
+        label_file = File.get_by_label_name(
+            session = session,
+            label_name = label_file_name,
+            project_id = diffgram_project.id
+        )
+        if not label_file:
+            message = f'Cannot find label name: {label_file_name}. Unexpected error.'
+            logger.error(message)
+            raise Exception(message)
+        return label_file
+
+    def __create_box_instance_dict(self, diffgram_label_file_id, object):
+
+        width = object['bbox']['width']
+        height = object['bbox']['height']
+        top = object['bbox']['top']
+        left = object['bbox']['left']
+        result = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'client_created_time': str(datetime.datetime.now().isoformat()),
+            'label_file_id': diffgram_label_file_id,
+            'x_max': left + width,
+            'x_min': left,
+            'y_max': top + height,
+            'y_min': top,
+            'type': 'box',
+            'width': width,
+            'height': height
+        }
+        return result
+
+    def __create_polygon_instance_dict(self, diffgram_label_file_id, object):
+
+        result = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'client_created_time': str(datetime.datetime.now().isoformat()),
+            'label_file_id': diffgram_label_file_id,
+            'type': 'polygon',
+            'points': object['polygon']
+        }
+        return result
+
+    def __create_point_instance_dict(self, diffgram_label_file_id, object):
+
+        result = {
+            'creation_ref_id': str(uuid.uuid4()),
+            'client_created_time': str(datetime.datetime.now().isoformat()),
+            'label_file_id': diffgram_label_file_id,
+            'type': 'point',
+            'points': [object['point']]
+        }
+        return result
+
+    def __create_instance_list_for_file(self, session, data_row, ontology, diffgram_dataset):
+        labels = data_row.labels()
+        instance_list = []
+        for label in labels:
+            label_data = json.loads(label.label)
+            label_objects = label_data['objects']
+
+            for object in label_objects:
+                instance_type = self.__determine_instance_type(object)
+                label_file = self.__extract_label_file_from_object(object = object,
+                                                                      session = session,
+                                                                      ontology = ontology,
+                                                                      diffgram_project = diffgram_dataset.project)
+                instance = None
+                if instance_type == 'polygon':
+                    instance = self.__create_polygon_instance_dict(label_file.id, object)
+                elif instance_type == 'point':
+                    instance = self.__create_point_instance_dict(label_file.id, object)
+                elif instance_type == 'box':
+                    instance = self.__create_box_instance_dict(label_file.id, object)
+                else:
+                    logger.warning(f'Unsupported instance type {instance_type}. Object is {object}')
+                    continue
+                if instance:
+                    instance_list.append(instance)
+        return instance_list
+
+    def __create_files_in_dataset(self,
+                                  session,
+                                  member,
+                                  diffgram_dataset,
+                                  input_batch,
+                                  ontology,
+                                  project_migration,
+                                  current_count,
+                                  total_count,
+                                  lb_dataset):
+        total_dataset_count = lb_dataset.row_count
+        i = 0
+        for data_row in lb_dataset.data_rows():
+
+            mime_type = data_row.media_attributes['mimeType']
+            if mime_type not in SUPPORTED_IMAGE_MIMETYPES:
+                logger.warning(f'Skipping data row {data_row.uid}. Type {mime_type} not supported')
+                continue
+
+            instance_list = self.__create_instance_list_for_file(session,
+                                                                 data_row,
+                                                                 ontology,
+                                                                 diffgram_dataset)
+
+            media_type = 'image'
+            diffgram_input = enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
+                                            session = session,
+                                            media_url = data_row.row_data,
+                                            media_type = media_type,
+                                            job_id = None,
+                                            file_id = None,
+                                            directory_id = diffgram_dataset.id,
+                                            instance_list = instance_list,
+                                            original_filename = data_row.external_id,
+                                            video_split_duration = None,
+                                            frame_packet_map = None,
+                                            batch_id = input_batch.id,
+                                            enqueue_immediately = False,
+                                            mode = None,
+                                            member = member)
+            current_count += 1
+            project_migration.percent_complete = current_count / total_count
+            session.commit()
+
+            logger.info(f'Progress {project_migration.percent_complete}')
+            logger.info(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
+            i += 1
+
+    def __create_diffgram_dataset(self,
+                                  session,
+                                  member,
+                                  ontology,
+                                  diffgram_project,
+                                  lb_dataset,
+                                  labelbox_project,
+                                  total_file_count,
+                                  current_count,
+                                  project_migration):
+        """
+            Creates a dataset in diffgram. Optionally create all files inside dataset
+        :param diffgram_project:
+        :param lb_dataset:
+        :return:
+        """
+        diffgram_dataset_link = Project_Directory_List.get_by_name(session, diffgram_project.id, lb_dataset.name)
+        if not diffgram_dataset_link:
+            logger.info(f'Creating new dataset {lb_dataset.name}')
+            diffgram_dataset = WorkingDir.new_blank_directory(
+                session = session,
+                nickname = lb_dataset.name,
+                project_id = diffgram_project.id,
+                project_default = False
+            )
+            Project_Directory_List.add(
+                session = session,
+                working_dir_id = diffgram_dataset.id,
+                project_id = diffgram_project.id,
+                nickname = lb_dataset.name
+            )
+            diffgram_project.set_cache_key_dirty('directory_list')
+            logger.info(f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+        else:
+            diffgram_dataset = WorkingDir.get_by_id(session, diffgram_dataset_link.working_dir_id)
+            logger.info(f'Dataset {lb_dataset.name} already exists.')
+            logger.info(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+
+        logger.info(f'Creating files for dataset: {lb_dataset.name} ')
+
+        input_batch = InputBatch.new(
+            session = session,
+            status = 'pending',
+            project_id = diffgram_project.id,
+            member_created_id = member.id,
+            memeber_updated_id = member.id,
+            pre_labeled_data = None
+        )
+        self.__create_files_in_dataset(diffgram_dataset = diffgram_dataset,
+                                       session = session,
+                                       ontology = ontology,
+                                       member = member,
+                                       current_count = current_count,
+                                       project_migration = project_migration,
+                                       input_batch = input_batch,
+                                       total_count = total_file_count,
+                                       lb_dataset = lb_dataset)
+
+        return diffgram_dataset
+
+    def __import_files_and_datasets(self,
+                                    session,
+                                    labelbox_project,
+                                    diffgram_project,
+                                    project_migration,
+                                    member,
+                                    log):
+
+        ontology = labelbox_project.ontology()
+        total_file_count = 0
+        current_count = 0
+        for lb_dataset in labelbox_project.datasets():
+            total_file_count += lb_dataset.row_count
+
+        for lb_dataset in labelbox_project.datasets():
+            self.__create_diffgram_dataset(
+                session = session,
+                diffgram_project = diffgram_project,
+                project_migration = project_migration,
+                current_count = current_count,
+                total_file_count = total_file_count,
+                member = member,
+                ontology = ontology,
+                lb_dataset = lb_dataset,
+                labelbox_project = labelbox_project)
+
+    def __import_ontology_to_project(self, session,
+                                     labelbox_project,
+                                     diffgram_project,
+                                     project_migration,
+                                     member,
+                                     log):
+        logger.info(f'Starting ontolgy import for project {diffgram_project.project_string_id}')
+        logger.info(f'Labelbox project  {labelbox_project.uid}')
+
+        ontology = labelbox_project.ontology()
+        self.__import_labels_to_project(session = session,
+                                        ontology = ontology,
+                                        diffgram_project = diffgram_project,
+                                        project_migration = project_migration,
+                                        member = member,
+                                        log = log)
 
     def __import_project_to_diffgram(self, opts):
         label_box_project_id = opts['labelbox_project_id']
         diffgram_project_string_id = opts['project_string_id']
+        project_migration_id = opts['project_migration_id']
         member_id = opts['member_id']
         log = regular_log.default()
-        self.__import_ontology_to_project(label_box_project_id,
-                                          diffgram_project_string_id,
-                                          member_id,
-                                          log)
 
+        with sessionMaker.session_scope_threaded() as session:
+            member = Member.get_by_id(session, member_id = member_id)
+            project_migration = ProjectMigration.get_by_id(session = session, id = project_migration_id)
+            diffgram_project = Project.get_by_string_id(session = session,
+                                                        project_string_id = diffgram_project_string_id)
+            labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
+            self.__import_ontology_to_project(
+                session = session,
+                labelbox_project = labelbox_project,
+                diffgram_project = diffgram_project,
+                project_migration = project_migration,
+                member = member,
+                log = log)
+
+            if project_migration.import_files:
+                self.__import_files_and_datasets(session = session,
+                                                 labelbox_project = labelbox_project,
+                                                 diffgram_project = diffgram_project,
+                                                 project_migration = project_migration,
+                                                 member = member, log = log)
         return True, log
 
     @with_labelbox_exception_handler
@@ -368,7 +652,7 @@ class LabelboxConnector(Connector):
             attr_global_count += 1
 
         return {
-            'result':{
+            'result': {
                 'dataset_count': dataset_count,
                 'attr_count': attr_count,
                 'labels_count': labels_count,
@@ -382,24 +666,24 @@ class LabelboxConnector(Connector):
         project = opts['project']
         dataset = opts['dataset']
         query = """
-            mutation AttachDataset($projectId: ID!, $datasetId: ID!){ 
-                updateProject( 
-                    where:{ 
-                        id: $projectId 
-                    }, 
-                    data:{ 
-                        setupComplete: "2018-11-29T20:46:59.521Z", 
-                        datasets:{ 
-                            connect:{ 
-                                id: $datasetId
+                mutation AttachDataset($projectId: ID!, $datasetId: ID!){ 
+                    updateProject( 
+                        where:{ 
+                            id: $projectId 
+                        }, 
+                        data:{ 
+                            setupComplete: "2018-11-29T20:46:59.521Z", 
+                            datasets:{ 
+                                connect:{ 
+                                    id: $datasetId
+                                } 
                             } 
                         } 
+                    ){ 
+                        id 
                     } 
-                ){ 
-                    id 
-                } 
-            }
-        """
+                }
+            """
         data = {'projectId': project.uid, 'datasetId': dataset.uid}
         result = self.connection_client.execute(query, data)
         # TODO: implement attach
