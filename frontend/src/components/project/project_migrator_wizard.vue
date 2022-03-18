@@ -61,11 +61,20 @@
           <v-stepper-content step="3" style="height: 100%">
 
             <project_migrator_confirm_step
+              v-if="!migrating"
               @start_migration="on_start_migration"
               @previous_step="go_back_a_step()"
               :project_migration_data="project_migration_data" :project_string_id="project_string_id">
 
             </project_migrator_confirm_step>
+            <project_migration_progress_step
+                v-if="project_migration_id && migrating"
+                :project_string_id="project_string_id"
+                :project_migration_id="project_migration_id"
+                @migration_finished="finish_migration"
+            >
+
+            </project_migration_progress_step>
           </v-stepper-content>
 
         </v-stepper-items>
@@ -81,6 +90,7 @@
 import project_migrator_connection_step from './project_migrator_connection_step'
 import project_migrator_confirm_step from './project_migrator_confirm_step'
 import project_migrator_config_step from './project_migrator_config_step'
+import project_migration_progress_step from './project_migration_progress_step'
 import {start_project_migration} from '../../services/projectMigrationServices'
 
 import Vue from "vue";
@@ -95,6 +105,7 @@ export default Vue.extend( {
     project_migrator_connection_step,
     project_migrator_confirm_step,
     project_migrator_config_step,
+    project_migration_progress_step,
   },
   data() {
     return {
@@ -102,6 +113,8 @@ export default Vue.extend( {
       global_progress: 0,
       connection: undefined,
       error: undefined,
+      migrating: false,
+      project_migration_id: null,
       project_migration_data:{
         connection: undefined,
         labelbox_project_id: null,
@@ -131,10 +144,16 @@ export default Vue.extend( {
       this.project_migration_data.connection = conn;
     },
     on_start_migration: async function(){
+      this.migrating = true
       let [result, error] = await start_project_migration(this.project_string_id, this.project_migration_data);
       if(error){
         this.error = this.$route_api_errors(error);
+        return
       }
+      this.project_migration_id = result.id
+    },
+    finish_migration: function(){
+
     }
   }
 }

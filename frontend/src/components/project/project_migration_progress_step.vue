@@ -1,0 +1,91 @@
+<template>
+  <v-container fluid class="d-flex flex-column align-center justify-center" style="min-height: 600px">
+    <error_multiple :error="error"></error_multiple>
+    <div v-if="progress_percentage < 100" class="d-flex flex-column align-center justify-center" style="width: 100%">
+      <h1>Importing Project Data...</h1>
+      <p>This may take several minutes. Please be patient.</p>
+      <v-progress-linear
+        color="secondary"
+        striped
+        :value="progress_percentage"
+        height="85"
+      >
+        <h1 class="white--text"> {{progress_percentage}} %</h1>
+      </v-progress-linear>
+
+    </div>
+    <div style="width: 100%" v-else class="d-flex flex-column align-center justify-center">
+      <v-icon size="256" color="success">mdi-check-decagram</v-icon>
+      <h1 class="ma-8">Data Succesfully Migrated into Diffgram.</h1>
+      <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels`)" color="primary">
+        <v-icon>mdi-format-list-bulleted</v-icon>
+        View Migrated Labels
+      </v-btn>
+    </div>
+
+  </v-container>
+</template>
+
+<script lang="ts">
+
+import migration_config_labelbox from './migration_config_labelbox';
+import {get_project_migration} from '../../services/projectMigrationServices'
+import Vue from "vue";
+import Error_multiple from "../regular/error_multiple.vue";
+
+export default Vue.extend({
+    name: 'project_migrator_confirm_step',
+    components: {
+      Error_multiple,
+      migration_config_labelbox
+    },
+    props: {
+      project_string_id: {
+        default: null
+      },
+      project_migration_id: {
+        default: null
+      },
+    },
+    data() {
+      return {
+        step: 2,
+        progress_percentage: 0,
+        uploading: false,
+        stats: {},
+        error: null,
+        interval: null,
+        loading: false,
+
+      }
+    },
+    watch:{
+
+    },
+    mounted: async function () {
+      this.update_migration_status();
+    },
+    beforeDestroy() {
+      clearInterval(this.interval)
+    },
+  computed: {},
+    methods: {
+      update_migration_status: async function(){
+
+        this.interval = setInterval(async () =>{
+          let [project_migration_data, err] = await get_project_migration(this.project_string_id, this.project_migration_id)
+          if(err){
+            this.error = this.$route_api_errors(err);
+            return
+          }
+          this.progress_percentage =  project_migration_data.percent_complete;
+          if(this.progress_percentage >= 100){
+            this.$emit('migration_finished')
+          }
+
+        }, 2000)
+
+      }
+    }
+  }
+) </script>

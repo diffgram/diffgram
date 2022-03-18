@@ -283,6 +283,11 @@ class LabelboxConnector(Connector):
             class_type = clsf.class_type.value
             attr_name = clsf.name
             diffgram_attribute_type = self.__map_attribute_type(class_type)
+            has_nested = self.__classification_has_nested_data(clsf)
+
+            if has_nested:
+                diffgram_attribute_type = 'treeview'
+
             # Search for attribute to see if it exists
             existing_attribute = Attribute_Template_Group.get_by_name_and_type(
                 session = session,
@@ -306,10 +311,6 @@ class LabelboxConnector(Connector):
             existing_attribute.prompt = clsf.name
             existing_attribute.is_global = False
             logger.info(f'Deducted type {diffgram_attribute_type}')
-            has_nested = self.__classification_has_nested_data(clsf)
-
-            if has_nested:
-                existing_attribute.kind = 'treeview'
 
             if existing_attribute.kind == 'radio':
                 self.__set_radio_attribute_data(

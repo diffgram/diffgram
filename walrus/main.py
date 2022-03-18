@@ -43,6 +43,7 @@ from methods.interservice.interservice_receive_api import interservice_receive_a
 from methods.data_mocking.generate_data import generate_data_api
 from methods.eventhub.eventhub_new import new_eventhub_web
 from methods.project_migration.project_migration_new import api_new_project_migration
+from methods.project_migration.project_migration_detail import api_project_migration_detail
 from methods import routes as routes_blueprint
 
 with app.app_context():

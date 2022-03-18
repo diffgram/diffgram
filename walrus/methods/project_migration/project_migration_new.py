@@ -7,7 +7,7 @@ from shared.database.external.external import ExternalMap
 from shared.project_migration.ExternalMigrationManager import initialize_migration_threaded
 
 
-@routes.route('/api/walrus/project-migration/<string:project_string_id>/new', methods = ['POST'])
+@routes.route('/api/walrus/project/<string:project_string_id>/project-migration/new', methods = ['POST'])
 @limiter.limit("300 per second")
 @Project_permissions.user_has_project(["admin"])
 def api_new_project_migration(project_string_id):
