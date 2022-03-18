@@ -236,7 +236,7 @@
 
           <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
-          <v-layout column>
+          <v-layout v-if="group.kind !== 'tree'" column>
 
             <v_error_multiple :error="error">
             </v_error_multiple>
@@ -311,6 +311,11 @@
             </div>
 
           </v-layout>
+
+          <v-layout v-else column>
+            Create tree view
+          </v-layout>
+
 
             <wizard_navigation
               @next="go_to_step(6)"
