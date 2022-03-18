@@ -566,7 +566,13 @@
               'name': 'date',
               'icon': 'mdi-calendar',
               'color': 'primary'
-            }
+            },
+            {
+              'display_name': 'Tree',
+              'name': 'tree',
+              'icon': 'mdi-file-tree',
+              'color': 'primary'
+            },
 
             // future
             /*
