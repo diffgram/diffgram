@@ -25,7 +25,10 @@ from shared.database.project_migration.project_migration import ProjectMigration
 import colorsys
 import uuid
 
-SUPPORTED_IMAGE_MIMETYPES = ['image/jpg', 'image/png', 'image/jpeg', 'image/webp', 'image/svg', 'image/tiff', 'image/tif']
+SUPPORTED_IMAGE_MIMETYPES = ['image/jpg', 'image/png', 'image/jpeg', 'image/webp', 'image/svg', 'image/tiff',
+                             'image/tif']
+
+
 def with_labelbox_exception_handler(f):
     def wrapper(*args):
         log = regular_log.default()
@@ -230,8 +233,38 @@ class LabelboxConnector(Connector):
                 return True
         return False
 
-    def __set_treeview_attribute_data(self, session, clsf, existing_attribute_group, member):
-        return
+    def __set_treeview_attribute_data(self, session, clsf, existing_attribute_group, member, tree_view_data = None):
+
+        in_root = False
+        if tree_view_data is None:
+            tree_view_data = []
+            in_root = True
+
+        logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name}')
+        for option in clsf.options:
+            type_opt = option.__class__.__name__
+            display_name = option.name if type_opt == 'Classification' else option.value
+            item = {
+                'id': str(uuid.uuid4()),
+                'name': display_name
+            }
+            if option.options and len(option.options) > 0:
+                item['children'] = []
+                self.__set_treeview_attribute_data(
+                    session = session,
+                    clsf = option,
+                    existing_attribute_group = existing_attribute_group,
+                    member = member,
+                    tree_view_data = item['children'],
+                )
+                logger.info(f'Created Tree View Data Attribute Option: {display_name}')
+
+        if in_root is True:
+            existing_attribute_group.tree_data = tree_view_data
+            session.add(existing_attribute_group)
+
+            logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
+            logger.info(f'Tree Data: {tree_view_data}')
 
     def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool):
         """
@@ -275,8 +308,8 @@ class LabelboxConnector(Connector):
             logger.info(f'Deducted type {diffgram_attribute_type}')
             has_nested = self.__classification_has_nested_data(clsf)
 
-            # if has_nested:
-            #     existing_attribute.kind = 'treeview'
+            if has_nested:
+                existing_attribute.kind = 'treeview'
 
             if existing_attribute.kind == 'radio':
                 self.__set_radio_attribute_data(
@@ -434,9 +467,9 @@ class LabelboxConnector(Connector):
             for object in label_objects:
                 instance_type = self.__determine_instance_type(object)
                 label_file = self.__extract_label_file_from_object(object = object,
-                                                                      session = session,
-                                                                      ontology = ontology,
-                                                                      diffgram_project = diffgram_dataset.project)
+                                                                   session = session,
+                                                                   ontology = ontology,
+                                                                   diffgram_project = diffgram_dataset.project)
                 instance = None
                 if instance_type == 'polygon':
                     instance = self.__create_polygon_instance_dict(label_file.id, object)
