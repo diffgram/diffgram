@@ -313,7 +313,22 @@
           </v-layout>
 
           <v-layout v-else column>
-            Create tree view
+            <v_error_multiple :error="error" />
+
+            <h2 class="pb-2"> 5. Create your tree attribute:</h2>
+            <v-treeview 
+              :items="item_list_to_render"
+              @update:active="add_tree_item"
+              activatable
+              open-on-click 
+            >
+              <template v-slot:prepend="{ item, open }">
+                <v-icon v-if="item.name === 'Add item'">
+                  mdi-plus-circle
+                </v-icon>
+              </template>
+            </v-treeview>
+
           </v-layout>
 
 
@@ -509,13 +524,21 @@ export default Vue.extend( {
       step: 1,
       member_invited: false,
       toggle_global_attribute: 0,
-      group: {}
+      group: {},
+      items: [],
     }
   },
   computed: {
     global_progress: function () {
       return 100 * (parseFloat(this.step) / 6);
     },
+    item_list_to_render: function() {
+      const items_to_render = [...this.items, {
+          id: 1,
+          name: "Add item"
+        }]
+      return items_to_render
+    }
   },
   created() {
     this.group = this.value
@@ -557,8 +580,13 @@ export default Vue.extend( {
     go_back_a_step: function(){
       this.step -= 1
     },
-
-  }
+    add_tree_item: function() {
+      this.items = [...this.items, {
+        id: 2,
+        name: "Added"
+      }]
+    }
+   }
 }
 
 ) </script>
