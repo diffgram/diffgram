@@ -145,7 +145,6 @@ class LabelboxConnector(Connector):
         """
 
         logger.info(f'Creating Multi Select Type Attribute data: {existing_attribute_group.name}')
-        print('OPTIONS ARE', clsf.options)
         for option in clsf.options:
             existing_attr = Attribute_Template.get_by_name(
                 session = session,
@@ -258,9 +257,10 @@ class LabelboxConnector(Connector):
                     tree_view_data = item['children'],
                 )
                 logger.info(f'Created Tree View Data Attribute Option: {display_name}')
+            tree_view_data.append(item)
 
         if in_root is True:
-            existing_attribute_group.tree_data = tree_view_data
+            existing_attribute_group.tree_data = {'data': tree_view_data}
             session.add(existing_attribute_group)
 
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')

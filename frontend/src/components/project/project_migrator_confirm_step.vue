@@ -9,7 +9,7 @@
       If you selected files import too, it will create datasets and files in this project.
     </h2>
 
-    <v-container v-if="stats && !loading">
+    <v-container v-if="stats && !loading && !uploading">
       <h1 class="mb-4">Data to Import: </h1>
       <p style="font-size: 1.2rem">
         <v-icon size="48" color="success">mdi-check</v-icon>
@@ -32,6 +32,7 @@
         <strong style="font-size: 1.5rem" class="secondary--text">{{stats.dataset_count}}</strong>
       </p>
     </v-container>
+
     <v-container class="d-flex justify-center align-center" v-if="loading">
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>
@@ -62,12 +63,16 @@ export default Vue.extend({
       },
       project_migration_data: {
         default: null
+      },
+      uploading: {
+        default: false
       }
     },
     data() {
       return {
         step: 2,
         loading_steps: false,
+        uploading: false,
         stats: {},
         error: null,
         loading: false,

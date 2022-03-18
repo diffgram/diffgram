@@ -107,7 +107,6 @@ def new_project_migration_core(session,
         external_mapping_project_id = external_map.id
     )
     session.commit()
-    print('MIGRATIONADDD', external_map, external_map.id, project_migration.external_mapping_project, project_migration.external_mapping_project_id)
     initialize_migration_threaded(project_migration.id)
 
     project_migration_data = project_migration.serialize()

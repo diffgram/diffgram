@@ -27,7 +27,7 @@ class Attribute_Template_Group(Base):
     parent_id = Column(Integer, ForeignKey('attribute_template.id'))
     root_id = Column(Integer, ForeignKey('attribute_template_group.id'))
 
-    kind = Column(String())  # select_one, check_boxes, ...?
+    kind = Column(String())  # [select, multiple_select, radio, slider, treeview]
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")

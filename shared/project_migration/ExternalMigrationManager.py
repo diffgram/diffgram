@@ -3,6 +3,7 @@ from shared.helpers.sessionMaker import session_scope_threaded
 from sqlalchemy.orm.session import Session
 from shared.shared_logger import get_shared_logger
 from methods.connectors.connector_interface_utils import get_connector
+from shared.helpers import sessionMaker
 import threading
 import traceback
 logger = get_shared_logger()
@@ -18,8 +19,11 @@ class ExternalMigrationManager:
         self.project_migration = project_migration
 
     def __set_migration_failure(self, error_key, error_message):
+        if not self.project_migration.error_log:
+            self.project_migration.error_log = {}
         self.project_migration.error_log['integration'] = error_message
         self.project_migration.status = 'failed'
+        self.session.add(self.project_migration)
         logger.error(error_message)
 
     def start_external_migration(self):
@@ -57,6 +61,7 @@ class ExternalMigrationManager:
             message = f'Cannot initialize connection {connection_result}'
             self.__set_migration_failure('connection_initialization', message)
             return
+        result = None
         try:
             result = connector.fetch_data(
                 {
@@ -72,9 +77,10 @@ class ExternalMigrationManager:
         except Exception as e:
             message = 'Project failed to migrate'
             logger.error(message)
-            trace_data =()
+            trace_data = traceback.format_exc()
             logger.error(trace_data)
             self.__set_migration_failure('failed_migration', trace_data)
+            return
 
         logger.info('Project Migration Succesful.')
         self.project_migration.status = 'success'
@@ -84,7 +90,7 @@ class ExternalMigrationManager:
 
 
 def start_project_migration(project_migration_id):
-    with session_scope_threaded() as session:
+    with sessionMaker.session_scope() as session:
         project_migration = ProjectMigration.get_by_id(session = session, id = project_migration_id)
         manager = ExternalMigrationManager(session = session, project_migration = project_migration)
         manager.start_external_migration()

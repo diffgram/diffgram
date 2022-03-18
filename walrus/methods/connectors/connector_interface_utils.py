@@ -37,7 +37,6 @@ def get_connector(connector_id, session, input=None, check_perms=True):
         }
 
     config_data = {'project_string_id': connection.project.project_string_id}
-    print('AAAA', connector_class)
     connector = connector_class(auth_data=auth_data, config_data=config_data)
 
     if len(connection_operations.log["error"].keys()) >= 1:
