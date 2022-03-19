@@ -326,6 +326,25 @@
                 <v-icon v-if="item.name === 'Add item'">
                   mdi-plus-circle
                 </v-icon>
+                <v-icon v-else-if="item.cildren && item.children.length > 0">
+                  {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                </v-icon>
+              </template>
+              <template v-slot:label="{ item, open }">
+                <v-layout flexe>
+                  <v-text-field
+                    :disabled="item.name === 'Add item'"
+                    :value="item.name"
+                  />
+                  <tooltip_button
+                    v-if="item.name !== 'Add item'"
+                    color="primary"
+                    icon="mdi-plus-circle"
+                    tooltip_message="Add child item"
+                    :icon_style="true"
+                    :bottom="true"
+                />
+                </v-layout>
               </template>
             </v-treeview>
 
@@ -486,6 +505,7 @@ import draggable from 'vuedraggable'
 import attribute from './attribute.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
+import Tooltip_button from "../regular/tooltip_button.vue";
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
@@ -493,7 +513,8 @@ export default Vue.extend( {
     label_select_only,
     attribute_new_or_update,
     draggable,
-    attribute
+    attribute,
+    Tooltip_button
   },
   props: {
 
@@ -580,11 +601,17 @@ export default Vue.extend( {
     go_back_a_step: function(){
       this.step -= 1
     },
-    add_tree_item: function() {
-      this.items = [...this.items, {
-        id: 2,
-        name: "Added"
-      }]
+    add_tree_item: function(e) {
+      const current_id = Math.max.apply(Math, this.items.map(function(item) { return item.id; }))
+      if (e.length !== 0 && !this.items.find(item => item.id === e[0])) {
+        this.items = [
+          ...this.items, 
+          {
+            id: current_id + 1,
+            name: "Added"
+          }
+        ]
+      }
     }
    }
 }
