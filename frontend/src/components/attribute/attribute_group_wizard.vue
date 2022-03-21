@@ -316,17 +316,17 @@
             <v_error_multiple :error="error" />
 
             <h2 class="pb-2"> 5. Create your tree attribute:</h2>
-            <v-treeview 
+            <v-treeview
               :items="item_list_to_render"
               @update:active="add_tree_item"
               activatable
-              open-on-click 
+              open-on-click
             >
               <template v-slot:prepend="{ item, open }">
                 <v-icon v-if="item.name === 'Add item'">
                   mdi-plus-circle
                 </v-icon>
-                <v-icon v-else-if="item.cildren && item.children.length > 0">
+                <v-icon v-else-if="item.children && item.children.length > 0">
                   {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
                 </v-icon>
               </template>
@@ -605,7 +605,7 @@ export default Vue.extend( {
       const current_id = Math.max.apply(Math, this.items.map(function(item) { return item.id; }))
       if (e.length !== 0 && !this.items.find(item => item.id === e[0])) {
         this.items = [
-          ...this.items, 
+          ...this.items,
           {
             id: current_id + 1,
             name: "Added"
