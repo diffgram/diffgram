@@ -10,12 +10,13 @@
           <v-btn class="mr-4" v-if="is_paused" icon @click="play"><v-icon>mdi-play</v-icon></v-btn>
           <v-btn class="mr-4" v-else icon @click="pause"><v-icon>mdi-pause</v-icon></v-btn>
           <v-progress-linear
+            data-cy="show-progress-bar"
             :value="annotation_show_progress"
             height="25"
             color="green"
           >
             <div class="d-flex justify-center align-center">
-              <strong data-cy="show-progress-bar ">
+              <strong>
                 {{
                   loading ?
                     "Loading..." :
