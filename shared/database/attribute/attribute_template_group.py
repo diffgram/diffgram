@@ -2,6 +2,7 @@
 from shared.database.common import *
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class Attribute_Template_Group(Base):
@@ -26,7 +27,7 @@ class Attribute_Template_Group(Base):
     parent_id = Column(Integer, ForeignKey('attribute_template.id'))
     root_id = Column(Integer, ForeignKey('attribute_template_group.id'))
 
-    kind = Column(String())  # select_one, check_boxes, ...?
+    kind = Column(String())  # [select, multiple_select, radio, slider, treeview]
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -47,6 +48,9 @@ class Attribute_Template_Group(Base):
     min_value = Column(Integer)
     max_value = Column(Integer)
 
+    # For Tree View Data
+    tree_data = Column(MutableDict.as_mutable(JSONB))
+
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
     default_external_map = relationship("ExternalMap",
@@ -54,8 +58,7 @@ class Attribute_Template_Group(Base):
                                         foreign_keys = [default_external_map_id])
 
     is_global = Column(Boolean, default = False)
-    global_type = Column(String(), default = 'file')        # Expansion direction eg for frame, series, etc.
-
+    global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
     @staticmethod
     def new(session,
@@ -162,12 +165,11 @@ class Attribute_Template_Group(Base):
 
         return group
 
-
     @staticmethod
     def get_globals(
-            session,
-            project_id,
-            is_global = True):
+        session,
+        project_id,
+        is_global = True):
 
         query = session.query(Attribute_Template_Group)
 
@@ -175,7 +177,6 @@ class Attribute_Template_Group(Base):
         query = query.filter(Attribute_Template_Group.is_global == is_global)
 
         return query.all()
-
 
     @staticmethod
     def from_file_attribute_group_list_serialize(
@@ -234,8 +235,8 @@ class Attribute_Template_Group(Base):
         """
 
         query = session.query(Attribute_Template_Group).filter(
-                Attribute_Template_Group.project_id == project_id,
-                Attribute_Template_Group.archived == archived)
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.archived == archived)
 
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
@@ -293,6 +294,17 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.project_id == project_id).first()
 
     # WIP
+
+    @staticmethod
+    def get_by_name_and_type(session, project_id, name, kind):
+        result = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.kind == kind,
+            Attribute_Template_Group.archived == False
+        ).first()
+
+        return result
 
     def recurse_graph(
         session,

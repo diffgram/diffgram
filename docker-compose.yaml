@@ -22,7 +22,7 @@ services:
     image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8082:8082"
-    expose: [8080]
+    expose: [8082]
     depends_on:
     - db
     - default

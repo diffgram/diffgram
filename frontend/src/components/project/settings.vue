@@ -47,8 +47,16 @@
           </v-card>
 
         </v-container>
+      <v-container>
 
-
+        <v-card>
+          <v-card-title>Migrate Project</v-card-title>
+          <v-card-text>
+            <v-btn @click="$router.push(`/project/${project_string_id}/migrate`)" color="success"><v-icon>mdi-plus</v-icon>New Project Migration</v-btn>
+            <v-btn  color="primary"><v-icon>mdi-eye</v-icon> View Migrations</v-btn>
+          </v-card-text>
+        </v-card>
+      </v-container>
       <v-container>
         <v-card>
           <v-container>
