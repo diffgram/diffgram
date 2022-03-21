@@ -110,7 +110,6 @@ export default Vue.extend({
         console.log('stats', result)
         this.loading = false;
         if(error){
-
           this.error = this.$route_api_errors(error);
           return
         }

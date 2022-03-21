@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="d-flex flex-column align-center justify-center" style="min-height: 600px">
-    <error_multiple :error="error"></error_multiple>
-    <div v-if="progress_percentage < 100" class="d-flex flex-column align-center justify-center" style="width: 100%">
+
+    <div v-if="progress_percentage < 100 && status === 'in_progress'" class="d-flex flex-column align-center justify-center" style="width: 100%">
       <h1>Importing Project Data...</h1>
       <p>This may take several minutes. Please be patient.</p>
       <v-progress-linear
@@ -14,7 +14,7 @@
       </v-progress-linear>
 
     </div>
-    <div style="width: 100%" v-else class="d-flex flex-column align-center justify-center">
+    <div style="width: 100%" v-else-if="progress_percentage >= 100" class="d-flex flex-column align-center justify-center">
       <v-icon size="256" color="success">mdi-check-decagram</v-icon>
       <h1 class="ma-8">Data Succesfully Migrated into Diffgram.</h1>
       <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels`)" color="primary">
@@ -23,6 +23,15 @@
       </v-btn>
     </div>
 
+    <div style="width: 100%" v-else-if="status === 'failed'" class="d-flex flex-column align-center justify-center">
+      <v-icon size="256" color="error">mdi-alert</v-icon>
+      <h1 class="ma-8">Migration Failed.</h1>
+      <v-btn x-large @click="$router.push(`/project/project-migrations`)" color="primary">
+        <v-icon>mdi-format-list-bulleted</v-icon>
+        View Migrations History
+      </v-btn>
+    </div>
+    <error_multiple :error="error"></error_multiple>
   </v-container>
 </template>
 
@@ -51,11 +60,12 @@ export default Vue.extend({
       return {
         step: 2,
         progress_percentage: 0,
+        project_migration: null,
         uploading: false,
-        stats: {},
         error: null,
         interval: null,
         loading: false,
+        status: 'in_progress',
 
       }
     },
@@ -81,6 +91,11 @@ export default Vue.extend({
           this.progress_percentage =  project_migration_data.percent_complete;
           if(this.progress_percentage >= 100){
             this.$emit('migration_finished')
+          }
+          this.project_migration = project_migration_data;
+          if(this.project_migration.status === 'failed'){
+            this.status = 'failed';
+            this.error = this.project_migration.error_log
           }
 
         }, 2000)

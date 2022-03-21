@@ -20,6 +20,7 @@ from shared.regular import regular_log
 from shared.database.auth.member import Member
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.attribute.attribute_template import Attribute_Template
+from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
 from shared.database.batch.batch import InputBatch
 from shared.database.project_migration.project_migration import ProjectMigration
 import colorsys
@@ -266,7 +267,7 @@ class LabelboxConnector(Connector):
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
 
-    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool):
+    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool, is_global= False):
         """
             Creates all the classifications from the given labelbox tool as attributes in diffgram.
             If the attribute name and type already exists, it will update the options of the attribute.
@@ -278,7 +279,10 @@ class LabelboxConnector(Connector):
         :return:
         """
         classifications = tool.classifications
-        logger.info(f'>>> Creating Attributes from Labelbox tool "{tool.name}"')
+        if is_global:
+            logger.info(f'>>> Creating Global Attributes from Labelbox Ontology "{tool.name}"')
+        else:
+            logger.info(f'>>> Creating Attributes from Labelbox tool "{tool.name}"')
         for clsf in classifications:
             class_type = clsf.class_type.value
             attr_name = clsf.name
@@ -310,6 +314,15 @@ class LabelboxConnector(Connector):
             existing_attribute.name = clsf.name
             existing_attribute.prompt = clsf.name
             existing_attribute.is_global = False
+            if is_global:
+                existing_attribute.is_global = True
+            if label_file:
+                link = Attribute_Template_Group_to_File.set(
+                    session = session,
+                    group_id = existing_attribute.id,
+                    file_id = label_file.id)
+                session.add(link)
+            logger.info(f'Added label {label_file.label.name} to Attribute group')
             logger.info(f'Deducted type {diffgram_attribute_type}')
 
             if existing_attribute.kind == 'radio':
@@ -619,6 +632,21 @@ class LabelboxConnector(Connector):
                 lb_dataset = lb_dataset,
                 labelbox_project = labelbox_project)
 
+    def __import_global_attributes_to_project(self,
+                                              session,
+                                              ontology,
+                                              diffgram_project,
+                                              project_migration,
+                                              member,
+                                              log):
+
+        self.__add_attributes_to_label_file(label_file = None,
+                                            session = session,
+                                            diffgram_project = diffgram_project,
+                                            member = member,
+                                            tool = ontology,
+                                            is_global = True)
+
     def __import_ontology_to_project(self, session,
                                      labelbox_project,
                                      diffgram_project,
@@ -635,6 +663,15 @@ class LabelboxConnector(Connector):
                                         project_migration = project_migration,
                                         member = member,
                                         log = log)
+
+        self.__import_global_attributes_to_project(
+            session = session,
+            ontology = ontology,
+            diffgram_project = diffgram_project,
+            project_migration = project_migration,
+            member = member,
+            log = log
+        )
 
     def __import_project_to_diffgram(self, opts):
         label_box_project_id = opts['labelbox_project_id']
