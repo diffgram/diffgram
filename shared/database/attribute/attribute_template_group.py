@@ -278,6 +278,48 @@ class Attribute_Template_Group(Base):
         if return_kind == "objects":
             return query.limit(limit).all()
 
+    def generate_unselected_attribute_answer(self, nested_data = None, nested_result = None):
+        if not self.tree_data:
+            return {}
+
+        current_data = nested_data
+        if nested_data is None:
+            current_data = self.tree_data['data']
+
+        result = nested_result
+        if nested_result is None:
+            result = {}
+
+        for elm in current_data:
+            result[elm['name']] = {
+                'is_selected': False
+            }
+            if elm.get('children') and len(elm.get('children')) > 0:
+                self.generate_unselected_attribute_answer(
+                    nested_data = elm.get('children'),
+                    nested_result = result
+                )
+
+        return result
+    def get_tree_attribute_item_names(self, nested_data = None):
+        """
+            Given the attr group. Extract all the names of the items
+            from the tree structure.
+        :param attr_group:
+        :return:
+        """
+        result = []
+        current_data = self.tree_data['data']
+        if nested_data is not None:
+            current_data = nested_data
+        print('CURRENT DATA', current_data)
+        for item in current_data:
+            result.append(item['name'])
+            if item.get('children') and len(item.get('children')) > 0:
+                nested_res = self.get_tree_attribute_item_names(nested_data = item.get('children'))
+                result = result + nested_res
+        return result
+
     @staticmethod
     def get_by_id(session,
                   id,
@@ -294,6 +336,29 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.project_id == project_id).first()
 
     # WIP
+
+    @staticmethod
+    def get_by_name_and_label(session, project_id, name, label_file_id):
+        result_attrs = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.archived == False
+        ).all()
+
+        id_list = []
+        for elm in result_attrs:
+            id_list.append(elm.id)
+
+        links = session.query(Attribute_Template_Group_to_File).filter(
+            Attribute_Template_Group_to_File.file_id == label_file_id,
+            Attribute_Template_Group_to_File.attribute_template_group_id.in_(id_list)
+        )
+
+        result = links.first()
+        if result:
+            return result.attribute_template_group
+
+        return None
 
     @staticmethod
     def get_by_name_and_type(session, project_id, name, kind):

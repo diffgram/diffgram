@@ -4,6 +4,7 @@
     <h4>Set the migration parameters</h4>
 
     <migration_config_labelbox
+      ref="labelbox_config"
       @project_selected="on_project_selected"
       :project_string_id="project_string_id"
       :project_migration_data="project_migration_data"
@@ -50,8 +51,26 @@ export default Vue.extend( {
   computed: {
 
   },
+  watch:{
+    project_migration_data:{
+      deep: true,
+      handler: function(){
+        this.refresh_config_data()
+      }
+    }
+  },
   methods: {
     on_project_selected: function(){
+
+    },
+    refresh_config_data: function(){
+      if(!this.$refs.labelbox_config){
+        return
+      }
+      if(this.project_migration_data.connection &&
+        this.project_migration_data.connection.integration_name === 'labelbox'){
+        this.$refs.labelbox_config.get_labelbox_projects();
+      }
 
     },
     on_next_button_click: function(){

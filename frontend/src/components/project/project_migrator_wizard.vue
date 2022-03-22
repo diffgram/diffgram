@@ -53,7 +53,6 @@
               @next_step="go_to_step(3)"
               @previous_step="go_back_a_step()"
               :project_migration_data="project_migration_data" :project_string_id="project_string_id">
-
             </project_migrator_config_step>
 
           </v-stepper-content>
@@ -64,16 +63,16 @@
               v-if="!migrating"
               @start_migration="on_start_migration"
               @previous_step="go_back_a_step()"
-              :project_migration_data="project_migration_data" :project_string_id="project_string_id">
-
+              :project_migration_data="project_migration_data"
+              :project_string_id="project_string_id">
             </project_migrator_confirm_step>
             <project_migration_progress_step
                 v-if="project_migration_id && migrating"
                 :project_string_id="project_string_id"
                 :project_migration_id="project_migration_id"
                 @migration_finished="finish_migration"
+                @retry_migration="on_start_migration"
             >
-
             </project_migration_progress_step>
           </v-stepper-content>
 
@@ -141,6 +140,7 @@ export default Vue.extend( {
 
     },
     set_connection: function(conn){
+      this.project_migration_data.connection = conn;
       this.project_migration_data.connection = conn;
     },
     on_start_migration: async function(){

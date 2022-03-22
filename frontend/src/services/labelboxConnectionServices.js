@@ -1,13 +1,14 @@
 import axios from './customInstance'
 
-export const getLabelboxProjectList = async (connection_id) => {
+export const getLabelboxProjectList = async (connection_id, limit = 1000) => {
     let url = `/api/walrus/v1/connectors/${connection_id}/fetch-data`
     try {
         const { data } = await axios.post(
             url,
             {
               opts:{
-                action_type: 'get_project_list'
+                action_type: 'get_project_list',
+                limit: limit
               }
             }
         )
