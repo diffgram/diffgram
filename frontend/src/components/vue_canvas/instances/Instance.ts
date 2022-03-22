@@ -46,8 +46,7 @@ export class Instance {
   public pause_object: false
 
 
-  // Returns any just to avoid warnings in the new Command pattern related class. Need to be replaces with the interface
-  public get_instance_data(): any {
+  public get_instance_data(): object {
     /*
     * Specific instance types should add/remove fields to this object if required.
     * */

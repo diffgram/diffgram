@@ -278,13 +278,10 @@ class LabelboxConnector(Connector):
         :param tool:
         :return:
         """
-
+        classifications = tool.classifications
         if is_global:
-            # Here "tool" is actually an ontology
-            classifications = tool.classifications()
             logger.info(f'>>> Creating Global Attributes from Labelbox Ontology "{tool.name}"')
         else:
-            classifications = tool.classifications
             logger.info(f'>>> Creating Attributes from Labelbox tool "{tool.name}"')
         for clsf in classifications:
             class_type = clsf.class_type.value
@@ -293,7 +290,7 @@ class LabelboxConnector(Connector):
             has_nested = self.__classification_has_nested_data(clsf)
 
             if has_nested:
-                diffgram_attribute_type = 'tree'
+                diffgram_attribute_type = 'treeview'
 
             # Search for attribute to see if it exists
             existing_attribute = Attribute_Template_Group.get_by_name_and_type(
@@ -325,7 +322,7 @@ class LabelboxConnector(Connector):
                     group_id = existing_attribute.id,
                     file_id = label_file.id)
                 session.add(link)
-                logger.info(f'Added label {label_file.label.name} to Attribute group')
+            logger.info(f'Added label {label_file.label.name} to Attribute group')
             logger.info(f'Deducted type {diffgram_attribute_type}')
 
             if existing_attribute.kind == 'radio':
@@ -349,7 +346,7 @@ class LabelboxConnector(Connector):
                     existing_attribute_group = existing_attribute,
                     member = member
                 )
-            elif existing_attribute.kind == 'tree':
+            elif existing_attribute.kind == 'treeview':
                 self.__set_treeview_attribute_data(
                     session = session,
                     clsf = clsf,

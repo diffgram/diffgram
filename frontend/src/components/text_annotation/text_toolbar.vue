@@ -219,30 +219,9 @@
                 </v_annotation_trainer_menu>
 
                 <v-divider vertical></v-divider>
-
-                <div v-if="search_mode">
-                    <tooltip_button
-                        color="primary"
-                        icon="mdi-search-web"
-                        :icon_style="true"
-                        :bottom="true"
-                        disabled
-                    />
-                </div>
-
-                <div v-if="bulk_mode">
-                    <tooltip_button
-                        color="primary"
-                        icon="mdi-bullseye"
-                        :icon_style="true"
-                        :bottom="true"
-                        disabled
-                    />
-                </div>
                 </v-layout>
             </div>
         </v-toolbar-items>
-        
         <v-toolbar-items v-else>
             <div style="width: 10px" />
             <tooltip_button
@@ -358,28 +337,6 @@
 
             <v-divider vertical></v-divider>
 
-             <div v-if="search_mode">
-                <tooltip_button
-                    color="primary"
-                    icon="mdi-search-web"
-                    :icon_style="true"
-                    :bottom="true"
-                    disabled
-                />
-            </div>
-
-             <div v-if="bulk_mode">
-                <tooltip_button
-                    color="primary"
-                    icon="mdi-bullseye"
-                    :icon_style="true"
-                    :bottom="true"
-                    disabled
-                />
-            </div>
-
-
-
         </v-toolbar-items>
     </v-toolbar>
 </template>
@@ -441,14 +398,6 @@ export default Vue.extend({
         file: {
             type: Object,
             default: undefined
-        },
-        search_mode: {
-            type: Boolean,
-            default: false
-        },
-        bulk_mode: {
-            type: Boolean,
-            default: false
         }
     }
 })
