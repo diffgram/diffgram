@@ -485,7 +485,7 @@ class LabelboxConnector(Connector):
         display_name = classification.name if type_opt == 'Classification' else classification.label
         result = {'name': display_name, 'is_selected': False}
         for option in classification.options:
-            result[option.schema_id] = self.__get_tree_attribute_allowed_schemas(option)
+            result[option.feature_schema_id] = self.__get_tree_attribute_allowed_schemas(option)
 
         return result
 
@@ -515,21 +515,42 @@ class LabelboxConnector(Connector):
         :param tree_structure_values:
         :return:
         """
-        classification_list = classification
-        for key, val in tree_structure_values.items():
-            was_set = False
-            if type(classification) == dict:
-                # We standarize to a list since on multiple selects we can have multiple values here.
-                classification_list = [classification]
-            for clsf in classification_list:
-                if key == clsf['schemaId']:
-                    val['is_selected'] = True
-                    was_set = True
-                else:
-                    if type(val) == dict:
-                        self.__set_selected_value_from_schema_id(clsf, val)
-            if was_set:
+        # We standarize to a list since on multiple selects we can have multiple values here.
+        if type(classification) == dict:
+            classification_list = [classification]
+        else:
+            classification_list = classification
+        print('classification_list ', classification_list)
+        for classification in classification_list:
+            answer_list = classification.get('answer')
+            if type(answer_list) == str:
+                # Ignore text description attributes
+                continue
+
+            if answer_list is None:
+                answer_list = classification.get('answers')
+
+            if answer_list is None:
                 return
+            for key, val in tree_structure_values.items():
+                if key in ['name', 'is_selected']:
+                    continue
+                was_set = False
+                if type(answer_list) == dict:
+                    # We standarize to a list since on multiple selects we can have multiple values here.
+                    answer_list = [answer_list]
+                for clsf in answer_list:
+                    print('AAAA', clsf)
+                    if key == clsf['schemaId']:
+                        print('EQUALLLLLLLLLLLLLLLLLLLLLLLLLL')
+                        val['is_selected'] = True
+                        was_set = True
+                    else:
+                        if type(val) == dict:
+                            self.__set_selected_value_from_schema_id(classification, val)
+                if was_set:
+                    return
+
     def __replace_ids_with_names_on_tree_values(self, tree_structure):
         """
             Replaces the nested dictionaries of the tree view so that the keys are the names
@@ -537,18 +558,14 @@ class LabelboxConnector(Connector):
         :param tree_structure:
         :return:
         """
-        import pprint
-        pp = pprint.PrettyPrinter(depth = 4)
-        pp.pprint(tree_structure)
         new_structure = {}
         for key, val in tree_structure.items():
             if key in ['name', 'is_selected']:
                 new_structure[key] = val
                 continue
             data = tree_structure[key].copy()
-            if new_structure.get(tree_structure['name']):
-                new_structure[tree_structure[data['name']]] = self.__replace_ids_with_names_on_tree_values(tree_structure = data)
-
+            if tree_structure.get(key):
+                new_structure[data['name']] = self.__replace_ids_with_names_on_tree_values(tree_structure = data)
         return new_structure
 
 
@@ -568,7 +585,6 @@ class LabelboxConnector(Connector):
             for clsf in tool.classifications:
                 type_opt = clsf.__class__.__name__
                 display_name = clsf.name if type_opt == 'Classification' else clsf.value
-                print('testing', display_name, classification['title'])
                 if display_name == classification['title']:
                     top_level_tree_classification = clsf
         if not top_level_tree_classification:
@@ -577,10 +593,7 @@ class LabelboxConnector(Connector):
 
         # Generate empty tree view structure (all values unselected by default)
         tree_structure_values = self.__get_tree_attribute_allowed_schemas(top_level_tree_classification)
-        import pprint
-        pp = pprint.PrettyPrinter(depth = 4)
-        print('BEFORE')
-        pp.pprint(tree_structure_values)
+        del tree_structure_values['is_selected']
         # Now select all the values based on the classifications on the instance from labelbox
         for current_classification in all_classifications:
             self.__set_selected_value_from_schema_id(current_classification,
@@ -588,7 +601,6 @@ class LabelboxConnector(Connector):
 
         # Cleanup the tree structure so that labelbox ids are removed and only names exists as keys.
         result = self.__replace_ids_with_names_on_tree_values(tree_structure_values)
-        print('result', result)
         # Now replace the featureschema ids with the names:
 
         return result

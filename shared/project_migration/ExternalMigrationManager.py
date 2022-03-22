@@ -21,9 +21,15 @@ class ExternalMigrationManager:
     def __set_migration_failure(self, error_key, error_message):
         if not self.project_migration.error_log:
             self.project_migration.error_log = {}
-        self.project_migration.error_log['integration'] = error_message
-        self.project_migration.status = 'failed'
-        self.session.add(self.project_migration)
+        with sessionMaker.session_scope() as session:
+            migration = ProjectMigration.get_by_id(session, self.project_migration.id)
+            if migration.error_log is None:
+                migration.error_log = {}
+            migration.error_log[error_key] = error_message
+            migration.status = 'failed'
+            session.add(migration)
+            session.commit()
+            print('SAVED MIGRATION', migration.id, migration.status)
         logger.error(error_message)
 
     def start_external_migration(self):
@@ -74,11 +80,11 @@ class ExternalMigrationManager:
 
                 }
             )
+            print('result', result)
         except Exception as e:
             message = 'Project failed to migrate'
             logger.error(message)
             trace_data = traceback.format_exc()
-            logger.error(trace_data)
             self.__set_migration_failure('failed_migration', trace_data)
             return
 

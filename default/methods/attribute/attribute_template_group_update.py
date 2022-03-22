@@ -28,7 +28,8 @@ def api_attribute_template_group_update(project_string_id):
         {'min_value': None},
         {'max_value': None},
         {'mode': str},
-        {'is_global': None}
+        {'is_global': None},
+        {'tree_data': None}
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -65,6 +66,7 @@ def api_attribute_template_group_update(project_string_id):
             min_value = input['min_value'],
             max_value = input['max_value'],
             default_id = input['default_id'],
+            tree_data = input['tree_data'],
             is_global = input['is_global'])
 
         if len(log["error"].keys()) >= 1:
@@ -91,6 +93,7 @@ def group_update_core(
     min_value = None,
     max_value = None,
     default_id: int = None,
+    tree_data: dict = None,
     is_global: bool = False):
     if mode == "ARCHIVE":
 
@@ -177,6 +180,7 @@ def group_update_core(
         group.default_value = default_value
         group.default_id = default_id
         group.is_global = is_global
+        group.tree_data = tree_data
 
         log['info']['update'] = "Success"
 
