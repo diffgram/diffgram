@@ -10,7 +10,7 @@
         :value="progress_percentage"
         height="85"
       >
-        <h1 class="white--text"> {{progress_percentage}} %</h1>
+        <h1 class="white--text"> {{progress_percentage.toFixed(2)}} %</h1>
       </v-progress-linear>
 
     </div>
@@ -29,6 +29,10 @@
       <v-btn x-large @click="$router.push(`/project/project-migrations`)" color="primary">
         <v-icon>mdi-format-list-bulleted</v-icon>
         View Migrations History
+      </v-btn>
+      <v-btn class="mt-4" @click="retry_migration" color="warning">
+        <v-icon>mdi-refresh</v-icon>
+        Retry
       </v-btn>
     </div>
     <error_multiple :error="error"></error_multiple>
@@ -80,6 +84,11 @@ export default Vue.extend({
     },
   computed: {},
     methods: {
+      retry_migration: function(){
+        this.error = {}
+        this.status = 'in_progress';
+        this.$emit('retry_migration')
+      },
       update_migration_status: async function(){
 
         this.interval = setInterval(async () =>{

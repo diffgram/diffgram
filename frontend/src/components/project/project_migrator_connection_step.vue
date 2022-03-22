@@ -12,7 +12,7 @@
 
     </connection_select>
     <v-container class="d-flex justify-center align-center flex-column"
-                 v-if="(!$store.state.connection.connection_list || $store.state.connection.connection_list.length  === 0)">
+                 v-if="(!$store.state.connection.connection_list || $store.state.connection.connection_list.length === 0)">
       <v-icon size="200">mdi-archive</v-icon>
       <h2>
         No Connections Available

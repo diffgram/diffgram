@@ -267,7 +267,7 @@ class LabelboxConnector(Connector):
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
 
-    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool, is_global= False):
+    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool, is_global = False):
         """
             Creates all the classifications from the given labelbox tool as attributes in diffgram.
             If the attribute name and type already exists, it will update the options of the attribute.
@@ -442,10 +442,10 @@ class LabelboxConnector(Connector):
             'creation_ref_id': str(uuid.uuid4()),
             'client_created_time': str(datetime.datetime.now().isoformat()),
             'label_file_id': diffgram_label_file_id,
-            'x_max': left + width,
-            'x_min': left,
-            'y_max': top + height,
-            'y_min': top,
+            'x_max': int(left + width),
+            'x_min': int(left),
+            'y_max': int(top + height),
+            'y_min': int(top),
             'type': 'box',
             'width': width,
             'height': height
@@ -453,13 +453,18 @@ class LabelboxConnector(Connector):
         return result
 
     def __create_polygon_instance_dict(self, diffgram_label_file_id, object):
-
+        points = []
+        for p in object['polygon']:
+            points.append({
+                'x': int(round(p['x'])),
+                'y': int(round(p['y'])),
+            })
         result = {
             'creation_ref_id': str(uuid.uuid4()),
             'client_created_time': str(datetime.datetime.now().isoformat()),
             'label_file_id': diffgram_label_file_id,
             'type': 'polygon',
-            'points': object['polygon']
+            'points': points
         }
         return result
 
@@ -474,6 +479,193 @@ class LabelboxConnector(Connector):
         }
         return result
 
+    def __get_tree_attribute_allowed_schemas(self, classification):
+
+        type_opt = classification.__class__.__name__
+        display_name = classification.name if type_opt == 'Classification' else classification.label
+        result = {'name': display_name, 'is_selected': False}
+        for option in classification.options:
+            result[option.schema_id] = self.__get_tree_attribute_allowed_schemas(option)
+
+        return result
+
+    def __classification_belongs_to_tree_structure(self, tree_allowed_schemas: dict, classification):
+        """
+
+        :param tree_allowed_schemas:
+        :param classification:
+        :return:
+        """
+
+        for key, val in tree_allowed_schemas.items():
+            if key == classification['schemaId']:
+                return True
+            result = self.__classification_belongs_to_tree_structure(
+                tree_allowed_schemas = val
+            )
+            if result is True:
+                return True
+
+        return False
+
+    def __set_selected_value_from_schema_id(self, classification, tree_structure_values: dict):
+        """
+            Traverses the tree structure and sets the classification schema_id as selected.
+        :param classification:
+        :param tree_structure_values:
+        :return:
+        """
+        classification_list = classification
+        for key, val in tree_structure_values.items():
+            was_set = False
+            if type(classification) == dict:
+                # We standarize to a list since on multiple selects we can have multiple values here.
+                classification_list = [classification]
+            for clsf in classification_list:
+                if key == clsf['schemaId']:
+                    val['is_selected'] = True
+                    was_set = True
+                else:
+                    if type(val) == dict:
+                        self.__set_selected_value_from_schema_id(clsf, val)
+            if was_set:
+                return
+    def __replace_ids_with_names_on_tree_values(self, tree_structure):
+        """
+            Replaces the nested dictionaries of the tree view so that the keys are the names
+            of the attributes and not labelbox's schema_id.
+        :param tree_structure:
+        :return:
+        """
+        import pprint
+        pp = pprint.PrettyPrinter(depth = 4)
+        pp.pprint(tree_structure)
+        new_structure = {}
+        for key, val in tree_structure.items():
+            if key in ['name', 'is_selected']:
+                new_structure[key] = val
+                continue
+            data = tree_structure[key].copy()
+            if new_structure.get(tree_structure['name']):
+                new_structure[tree_structure[data['name']]] = self.__replace_ids_with_names_on_tree_values(tree_structure = data)
+
+        return new_structure
+
+
+    def __generate_tree_attribute_structure_from_classification(self, session, classification, attr_group, ontology, all_classifications):
+        """
+            Since labelbox does not nest all attributes at the instance level. This function searches all attributes
+            on the given classification list, and groups the ones that belong to the tree attribute give on the
+            attr_group parameter. All classifications that are not children from the given attr template are ignored.
+        :param classifications:
+        :param attr_group:
+        :return:
+        """
+
+        # First, get the root of the tree.
+        top_level_tree_classification = None
+        for tool in ontology.tools():
+            for clsf in tool.classifications:
+                type_opt = clsf.__class__.__name__
+                display_name = clsf.name if type_opt == 'Classification' else clsf.value
+                print('testing', display_name, classification['title'])
+                if display_name == classification['title']:
+                    top_level_tree_classification = clsf
+        if not top_level_tree_classification:
+            logger.error(f'Cannot find tree classification on labelbox {classification.name}')
+            return
+
+        # Generate empty tree view structure (all values unselected by default)
+        tree_structure_values = self.__get_tree_attribute_allowed_schemas(top_level_tree_classification)
+        import pprint
+        pp = pprint.PrettyPrinter(depth = 4)
+        print('BEFORE')
+        pp.pprint(tree_structure_values)
+        # Now select all the values based on the classifications on the instance from labelbox
+        for current_classification in all_classifications:
+            self.__set_selected_value_from_schema_id(current_classification,
+                                                     tree_structure_values = tree_structure_values)
+
+        # Cleanup the tree structure so that labelbox ids are removed and only names exists as keys.
+        result = self.__replace_ids_with_names_on_tree_values(tree_structure_values)
+        print('result', result)
+        # Now replace the featureschema ids with the names:
+
+        return result
+
+    def add_labelbox_attributes_to_instance(self,
+                                            session,
+                                            classifications,
+                                            diffgram_instance,
+                                            ontology,
+                                            label_file_id,
+                                            diffgram_project):
+        for classification in classifications:
+            attr_group_obj = Attribute_Template_Group.get_by_name_and_label(
+                session = session,
+                name = classification['title'],
+                label_file_id = label_file_id,
+                project_id = diffgram_project.id
+            )
+
+            if not attr_group_obj:
+                logger.warning(f'Attribute group not found: {classification["title"]}. Skipping...')
+                logger.warning(f'Attribute is: {classification}.')
+                return diffgram_instance
+            attr_group = attr_group_obj.serialize()
+            if attr_group['kind'] in ['multiple_select']:
+                diffgram_instance['attribute_groups'][attr_group['id']] = []
+                for answer in classification['answers']:
+                    attr_template = Attribute_Template.get_by_name(session = session,
+                                                                   attr_template_group = attr_group,
+                                                                   name = answer['title'])
+                    diffgram_instance['attribute_groups'][attr_group['id']].append(
+                        {
+                            'display_name': classification['title'],
+                            'value': classification['value'],
+                            'id': attr_template['id'],
+                            'name': attr_template['id']
+                        }
+                    )
+            elif attr_group['kind'] in ['select']:
+                # NOTE: Labelbox does not supportText or dropdown classifications in export for video
+                attr_template = Attribute_Template.get_by_name(session = session,
+                                                               attr_template_group = attr_group,
+                                                               name = classification['answer'][0]['title'])
+                diffgram_instance['attribute_groups'][attr_group['id']] = {
+                    'display_name': classification['answer'][0]['title'],
+                    'value': classification['answer'][0]['value'],
+                    'id': attr_template['id'],
+                    'name': attr_template['id']
+                }
+            elif attr_group['kind'] in ['text']:
+                # NOTE: Labelbox does not supportText or dropdown classifications in export for video
+                diffgram_instance['attribute_groups'][attr_group['id']] = classification['answer']
+            elif attr_group['kind'] in ['radio']:
+                attr_template = Attribute_Template.get_by_name(session = session,
+                                                               attr_template_group = attr_group,
+                                                               name = classification['answer']['title'])
+                diffgram_instance['attribute_groups'][attr_group['id']] = {
+                    'display_name': classification['answer']['title'],
+                    'value': classification['answer']['value'],
+                    'id': attr_template['id'],
+                    'name': attr_template['id']
+                }
+
+            elif attr_group['kind'] in ['tree']:
+                attr_value = self.__generate_tree_attribute_structure_from_classification(
+                    session = session,
+                    classification = classification,
+                    all_classifications = classifications,
+                    attr_group = attr_group_obj,
+                    ontology = ontology
+                )
+                if not diffgram_instance.get('attribute_groups'):
+                    diffgram_instance['attribute_groups']= {}
+                diffgram_instance['attribute_groups'][attr_group['id']] = attr_value
+
+        return diffgram_instance
+
     def __create_instance_list_for_file(self, session, data_row, ontology, diffgram_dataset):
         labels = data_row.labels()
         instance_list = []
@@ -481,24 +673,34 @@ class LabelboxConnector(Connector):
             label_data = json.loads(label.label)
             label_objects = label_data['objects']
 
-            for object in label_objects:
-                instance_type = self.__determine_instance_type(object)
-                label_file = self.__extract_label_file_from_object(object = object,
+            for obj in label_objects:
+                instance_type = self.__determine_instance_type(obj)
+                label_file = self.__extract_label_file_from_object(object = obj,
                                                                    session = session,
                                                                    ontology = ontology,
                                                                    diffgram_project = diffgram_dataset.project)
                 instance = None
                 if instance_type == 'polygon':
-                    instance = self.__create_polygon_instance_dict(label_file.id, object)
+                    instance = self.__create_polygon_instance_dict(label_file.id, obj)
                 elif instance_type == 'point':
-                    instance = self.__create_point_instance_dict(label_file.id, object)
+                    instance = self.__create_point_instance_dict(label_file.id, obj)
                 elif instance_type == 'box':
-                    instance = self.__create_box_instance_dict(label_file.id, object)
+                    instance = self.__create_box_instance_dict(label_file.id, obj)
                 else:
-                    logger.warning(f'Unsupported instance type {instance_type}. Object is {object}')
+                    logger.warning(f'Unsupported instance type {instance_type}. Object is {obj}')
                     continue
                 if instance:
                     instance_list.append(instance)
+
+                if obj.get('classifications'):
+                    self.add_labelbox_attributes_to_instance(
+                        session = session,
+                        classifications = obj.get('classifications'),
+                        diffgram_instance = instance,
+                        ontology = ontology,
+                        diffgram_project = diffgram_dataset.project,
+                        label_file_id = label_file.id
+                    )
         return instance_list
 
     def __create_files_in_dataset(self,
@@ -542,7 +744,7 @@ class LabelboxConnector(Connector):
                                             mode = None,
                                             member = member)
             current_count += 1
-            project_migration.percent_complete = current_count / total_count
+            project_migration.percent_complete = current_count / total_count * 100
             session.commit()
 
             logger.info(f'Progress {project_migration.percent_complete}')
@@ -1151,44 +1353,15 @@ class LabelBoxSyncManager:
 
         if 'classifications' in label_object:
             diffgram_instance_format['attribute_groups'] = {}
-            for classification in label_object['classifications']:
-                attr_group = self.task_template.get_attribute_group_by_name(diffgram_label_file_data,
-                                                                            classification['value'])
-                if attr_group['kind'] in ['multiple_select']:
-                    diffgram_instance_format['attribute_groups'][attr_group['id']] = []
-                    for answer in classification['answers']:
-                        attr_template = self.task_template.get_attribute_template_by_name(attr_group, answer['title'])
-                        diffgram_instance_format['attribute_groups'][attr_group['id']].append(
-                            {
-                                'display_name': classification['title'],
-                                'value': classification['value'],
-                                'id': attr_template['id'],
-                                'name': attr_template['id']
-                            }
-                        )
-                elif attr_group['kind'] in ['select']:
-                    # NOTE: Labelbox does not supportText or dropdown classifications in export for video
-                    attr_template = self.task_template.get_attribute_template_by_name(attr_group,
-                                                                                      classification['answer'][0][
-                                                                                          'title'])
-                    diffgram_instance_format['attribute_groups'][attr_group['id']] = {
-                        'display_name': classification['answer'][0]['title'],
-                        'value': classification['answer'][0]['value'],
-                        'id': attr_template['id'],
-                        'name': attr_template['id']
-                    }
-                elif attr_group['kind'] in ['text']:
-                    # NOTE: Labelbox does not supportText or dropdown classifications in export for video
-                    diffgram_instance_format['attribute_groups'][attr_group['id']] = classification['answer']
-                elif attr_group['kind'] in ['radio']:
-                    attr_template = self.task_template.get_attribute_template_by_name(attr_group,
-                                                                                      classification['answer']['title'])
-                    diffgram_instance_format['attribute_groups'][attr_group['id']] = {
-                        'display_name': classification['answer']['title'],
-                        'value': classification['answer']['value'],
-                        'id': attr_template['id'],
-                        'name': attr_template['id']
-                    }
+            ont = self.labelbox_project.ontology()
+            self.labelbox_connector.add_labelbox_attributes_to_instance(
+                session = self.session,
+                classifications = label_object['classifications'],
+                diffgram_instance = diffgram_instance_format,
+                label_file_id = diffgram_label_file_data['id'],
+                ontology = ont,
+                diffgram_project = self.task_template.project
+            )
         return diffgram_instance_format
 
     @_with_task_template
