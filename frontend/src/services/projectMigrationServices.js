@@ -34,3 +34,18 @@ export const get_project_migration = async (project_string_id, project_migration
     return [null, e]
   }
 }
+
+
+export const get_project_migration_list = async (project_string_id) => {
+
+  try {
+    const response = await axios.get(
+      `/api/walrus/project/${project_string_id}/project-migration/list`,
+      {}
+    );
+    return [response.data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}

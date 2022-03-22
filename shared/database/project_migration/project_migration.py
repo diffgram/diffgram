@@ -3,6 +3,7 @@ from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from shared.regular import regular_log
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import joinedload
 
 class ProjectMigration(Base, SerializerMixin):
     __tablename__ = 'project_migration'
@@ -108,6 +109,16 @@ class ProjectMigration(Base, SerializerMixin):
 
         return query.first()
 
+    @staticmethod
+    def list(
+        session,
+        project_id: int):
+        query = session.query(ProjectMigration) \
+            .options(joinedload(ProjectMigration.connection)) \
+            .filter(ProjectMigration.project_id == project_id).order_by(ProjectMigration.created_time.desc())
+
+        return query.all()
+
     def serialize(self):
         data = self.to_dict(rules = (
             '-member_created',
@@ -115,5 +126,7 @@ class ProjectMigration(Base, SerializerMixin):
             '-project',
             '-connection',
             '-external_mapping_project'))
+
+        data['connection'] = self.connection.serialize()
 
         return data

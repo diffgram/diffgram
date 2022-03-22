@@ -39,6 +39,12 @@ def api_new_project_migration(project_string_id):
             'required': True
         }
         },
+        {"id": {
+            'kind': int,
+            'default': None,
+            'required': False
+        }
+        },
     ]
 
     log, input, untrusted_input = regular_input.master(
@@ -57,6 +63,7 @@ def api_new_project_migration(project_string_id):
             connection_id = input['connection_id'],
             import_schema = input['import_schema'],
             import_files = input['import_files'],
+            existing_migration_id = input['id'],
             project_string_id = project_string_id,
             member = member,
         )
@@ -73,6 +80,7 @@ def new_project_migration_core(session,
                                connection_id,
                                import_schema,
                                import_files,
+                               existing_migration_id,
                                member,
                                log = regular_log.default()):
     """
@@ -86,6 +94,13 @@ def new_project_migration_core(session,
     :param attached_elements:
     :return: created discussion python dict.
     """
+
+    if existing_migration_id:
+        project_migration = ProjectMigration.get_by_id(session, existing_migration_id)
+        initialize_migration_threaded(project_migration.id)
+        project_migration_data = project_migration.serialize()
+        return project_migration_data, log
+
     project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
     external_map = ExternalMap.new(
         session = session,
@@ -104,7 +119,8 @@ def new_project_migration_core(session,
         import_schema = import_schema,
         member_created_id = member.id,
         project_id = project.id,
-        external_mapping_project_id = external_map.id
+        external_mapping_project_id = external_map.id,
+        description = f'Labelbox Project ID: {labelbox_project_id}'
     )
     session.commit()
     initialize_migration_threaded(project_migration.id)
