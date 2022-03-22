@@ -317,30 +317,29 @@
 
             <h2 class="pb-2"> 5. Create your tree attribute:</h2>
             <v-treeview
-              :items="item_list_to_render"
-              @update:active="add_tree_item"
+              :items="items"
+              :active="[]"
               activatable
               open-on-click
             >
-              <template v-slot:prepend="{ item, open }">
-                <v-icon v-if="item.name === 'Add item'">
-                  mdi-plus-circle
-                </v-icon>
-                <v-icon v-else-if="item.children && item.children.length > 0">
-                  {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-                </v-icon>
-              </template>
               <template v-slot:label="{ item, open }">
                 <v-layout flexe>
-                  <v-text-field
-                    :disabled="item.name === 'Add item'"
-                    :value="item.name"
+                  <input 
+                    style="width: 100%"
+                    :value="item.name" 
                   />
                   <tooltip_button
-                    v-if="item.name !== 'Add item'"
                     color="primary"
-                    icon="mdi-plus-circle"
-                    tooltip_message="Add child item"
+                    icon="mdi-plus"
+                    tooltip_message="Add child"
+                    @click.stop.prevent="() => add_tree_item([item.id])"
+                    :icon_style="true"
+                    :bottom="true"
+                  />
+                  <tooltip_button
+                    color="primary"
+                    icon="mdi-delete"
+                    tooltip_message="Delete item"
                     :icon_style="true"
                     :bottom="true"
                 />
@@ -506,6 +505,7 @@ import attribute from './attribute.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
 import Tooltip_button from "../regular/tooltip_button.vue";
+import { v4 as uuidv4 } from "uuid";
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
@@ -546,20 +546,53 @@ export default Vue.extend( {
       member_invited: false,
       toggle_global_attribute: 0,
       group: {},
-      items: [],
+      add_path: [],
+      items: [
+        {
+          id: 0,
+          name: "root",
+          children: [
+            {
+              id: 1,
+              name: "Child 1",
+              children: [
+                {
+                  id: 2,
+                  name: "grandchild 1",
+                  children:[]
+                },
+                {
+                  id: 3,
+                  name: "grandchild 2",
+                  children: []
+                },
+              ]
+            },
+            {
+              id: 4,
+              name: "Child 2",
+              children: [
+                {
+                  id: 5,
+                  name: "grandchild 3",
+                  children: []
+                },
+                {
+                  id: 6,
+                  name: "grandchild 4",
+                  children: []
+                },
+              ]
+            },
+          ]
+        }
+      ],
     }
   },
   computed: {
     global_progress: function () {
       return 100 * (parseFloat(this.step) / 6);
     },
-    item_list_to_render: function() {
-      const items_to_render = [...this.items, {
-          id: 1,
-          name: "Add item"
-        }]
-      return items_to_render
-    }
   },
   created() {
     this.group = this.value
@@ -601,19 +634,54 @@ export default Vue.extend( {
     go_back_a_step: function(){
       this.step -= 1
     },
+    build_path: function(array, id_to_search, path) {
+      array.map((item, index) => {
+        const copy_path = [...path]
+        if (item.id === id_to_search) {
+          copy_path.push(index)
+          this.add_path = copy_path
+          return 
+        }
+        copy_path.push(index)
+        copy_path.push("children")
+        this.build_path(item.children, id_to_search, copy_path)
+      })
+
+      return path
+    },
     add_tree_item: function(e) {
-      const current_id = Math.max.apply(Math, this.items.map(function(item) { return item.id; }))
-      if (e.length !== 0 && !this.items.find(item => item.id === e[0])) {
-        this.items = [
-          ...this.items,
-          {
-            id: current_id + 1,
-            name: "Added"
-          }
-        ]
+      if (e.length > 0) {
+        this.build_path(this.items, e[0], [])
+        
+        const working_copy = [...this.items]
+        let track_item = working_copy
+        this.add_path.map(q_item => {
+          track_item = track_item[q_item]
+        })
+
+        const new_item = {
+          id: uuidv4(),
+          name: "Added item",
+          children: []
+        }
+
+        if (Array.isArray(track_item["children"])) {
+          track_item["children"] = [
+            ...track_item["children"],
+            new_item
+          ]
+        } else {
+          track_item["children"] = [
+            new_item
+          ]
+        }
+
+
+        this.items = working_copy
       }
     }
    }
 }
 
-) </script>
+) 
+</script>
