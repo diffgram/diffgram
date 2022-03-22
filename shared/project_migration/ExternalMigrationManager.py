@@ -29,7 +29,6 @@ class ExternalMigrationManager:
             migration.status = 'failed'
             session.add(migration)
             session.commit()
-            print('SAVED MIGRATION', migration.id, migration.status)
         logger.error(error_message)
 
     def start_external_migration(self):
