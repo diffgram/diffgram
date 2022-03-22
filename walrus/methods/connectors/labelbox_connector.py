@@ -593,15 +593,14 @@ class LabelboxConnector(Connector):
 
         # Generate empty tree view structure (all values unselected by default)
         tree_structure_values = self.__get_tree_attribute_allowed_schemas(top_level_tree_classification)
+        del tree_structure_values['is_selected']
         # Now select all the values based on the classifications on the instance from labelbox
-        print('ALL CLASSIFICATIONS', all_classifications)
         for current_classification in all_classifications:
             self.__set_selected_value_from_schema_id(current_classification,
                                                      tree_structure_values = tree_structure_values)
 
         # Cleanup the tree structure so that labelbox ids are removed and only names exists as keys.
         result = self.__replace_ids_with_names_on_tree_values(tree_structure_values)
-        print('result', result)
         # Now replace the featureschema ids with the names:
 
         return result
