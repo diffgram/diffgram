@@ -1753,10 +1753,11 @@ class Process_Media():
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
         # Use original file for jpg and jpeg
-        if str(self.input.extension) in ['.jpg', '.jpeg']:
+        extension = str(self.input.extension).lower()
+        if extension in ['.jpg', '.jpeg']:
             new_temp_filename = self.input.temp_dir_path_and_filename
         # If PNG is used check compression
-        elif str(self.input.extension) == '.png':
+        elif extension == '.png':
             new_temp_filename = self.input.temp_dir_path_and_filename
             with open(self.input.temp_dir_path_and_filename, 'rb') as f:
                 f.seek(63)
@@ -1769,7 +1770,7 @@ class Process_Media():
                                     str(self.input.extension)
                 imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
         #For bmp, tif and tiff files save as PNG and compress
-        elif str(self.input.extension) in ['.bmp', '.tif', '.tiff']:
+        elif extension in ['.bmp', '.tif', '.tiff']:
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
         else:
