@@ -1866,6 +1866,8 @@ class Process_Media():
         diffgram_image,
         imageio_read_image):
 
+        print('diffgram_image', diffgram_image.shape[0], diffgram_image.shape[1])
+        print('imageio_read_image', imageio_read_image.shape[0], imageio_read_image.shape[1])
         diffgram_image.height = imageio_read_image.shape[0]
         diffgram_image.width = imageio_read_image.shape[1]
 

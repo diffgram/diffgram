@@ -78,6 +78,19 @@ def api_attribute_template_group_update(project_string_id):
             log = log), 200
 
 
+def has_duplicate_children_on_tree_data(tree_data):
+    item_names = []
+    for elm in tree_data:
+        if elm['name'] not in item_names:
+            item_names.append(elm['name'])
+        else:
+            return True
+        if elm.get('children') is not None:
+            has_duplicate = has_duplicate_children_on_tree_data(elm.get('children'))
+            if has_duplicate:
+                return True
+    return False
+
 def group_update_core(
     session,
     project,
@@ -180,6 +193,12 @@ def group_update_core(
         group.default_value = default_value
         group.default_id = default_id
         group.is_global = is_global
+        child_tree_data = tree_data.get('data')
+        if child_tree_data is not None:
+            has_duplicates = has_duplicate_children_on_tree_data(child_tree_data)
+            if has_duplicates:
+                log['error']['tree_data'] = 'Tree data has duplicate keys'
+                return log
         group.tree_data = tree_data
         session.add(group)
         log['info']['update'] = "Success"

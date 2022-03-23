@@ -44,6 +44,7 @@ def enqueue_packet(project_string_id,
                    enqueue_immediately = False,
                    mode = None,
                    allow_duplicates = False,
+                   auto_correct_instances_from_image_metadata = False,
                    extract_labels_from_batch = False,
                    member = None):
     """
@@ -55,6 +56,7 @@ def enqueue_packet(project_string_id,
     diffgram_input = Input()
     project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
+    diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
     diffgram_input.video_parent_length = video_parent_length
