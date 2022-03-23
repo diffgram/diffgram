@@ -4,6 +4,7 @@ from shared.tests.test_utils import common_actions, data_mocking
 from base64 import b64encode
 from methods.project_migration.project_migration_list import list_project_migrations_core
 
+
 class TestProjectMigrationList(testing_setup.DiffgramBaseTestCase):
     """
 
@@ -45,7 +46,7 @@ class TestProjectMigrationList(testing_setup.DiffgramBaseTestCase):
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session, role = "admin")
         credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
         with self.client.session_transaction() as session:
-            endpoint = f"/api/walrus/project/{self.project.project_string_id}/project-migration/detail/list"
+            endpoint = f"/api/walrus/project/{self.project.project_string_id}/project-migration/list"
         response = self.client.get(
             endpoint,
             data = {},
@@ -56,10 +57,9 @@ class TestProjectMigrationList(testing_setup.DiffgramBaseTestCase):
         )
         data = response.json
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['id'], project_migration.id)
-        self.assertEqual(data['status'], project_migration.status)
-        self.assertEqual(data['connection_id'], project_migration.connection_id)
-        self.assertEqual(data['member_created_id'], self.member.id)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]['id'], project_migration2.id)
+        self.assertEqual(data[1]['id'], project_migration.id)
 
     def test_project_migration_detail_core(self):
         project_migration = data_mocking.create_project_migration({
@@ -67,15 +67,18 @@ class TestProjectMigrationList(testing_setup.DiffgramBaseTestCase):
             'member_created_id': self.member.id,
             'project_id': self.project.id
         }, self.session)
-        data, log = project_migration_detail_core(
+        project_migration2 = data_mocking.create_project_migration({
+            'status': 'testing2',
+            'member_created_id': self.member.id,
+            'project_id': self.project.id
+        }, self.session)
+        data, log = list_project_migrations_core(
             session = self.session,
             project_string_id = self.project.project_string_id,
-            project_migration_id = project_migration.id,
             member = self.member,
             log = regular_log.default()
         )
         self.assertEqual(len(log['error'].keys()), 0)
-        self.assertEqual(data['id'], project_migration.id)
-        self.assertEqual(data['status'], project_migration.status)
-        self.assertEqual(data['connection_id'], project_migration.connection_id)
-        self.assertEqual(data['member_created_id'], self.member.id)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]['id'], project_migration2.id)
+        self.assertEqual(data[1]['id'], project_migration.id)
