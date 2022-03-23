@@ -317,13 +317,13 @@
 
             <h2 class="pb-2"> 5. Create your tree attribute:</h2>
             <v-treeview
-              :items="items"
+              :items="tree_items"
               :active="[]"
               activatable
               open-on-click
             >
               <template v-slot:label="{ item, open }">
-                <v-layout v-if="!item.delete" flexe>
+                <v-layout v-if="item.name !== 'Add new'" flexe>
                   <input 
                     style="width: 100%"
                     @click.stop.prevent=""
@@ -356,6 +356,9 @@
                     :icon_style="true"
                     :bottom="true"
                 />
+                </v-layout>
+                <v-layout @click="add_root_tree_item" v-else flexe>
+                  Add new
                 </v-layout>
               </template>
             </v-treeview>
@@ -560,52 +563,20 @@ export default Vue.extend( {
       toggle_global_attribute: 0,
       group: {},
       add_path: [],
-      items: [
-        {
-          id: 0,
-          name: "root",
-          children: [
-            {
-              id: 1,
-              name: "Child 1",
-              children: [
-                {
-                  id: 2,
-                  name: "grandchild 1",
-                  children:[]
-                },
-                {
-                  id: 3,
-                  name: "grandchild 2",
-                  children: []
-                },
-              ]
-            },
-            {
-              id: 4,
-              name: "Child 2",
-              children: [
-                {
-                  id: 5,
-                  name: "grandchild 3",
-                  children: []
-                },
-                {
-                  id: 6,
-                  name: "grandchild 4",
-                  children: []
-                },
-              ]
-            },
-          ]
-        }
-      ],
+      items: [],
     }
   },
   computed: {
     global_progress: function () {
       return 100 * (parseFloat(this.step) / 6);
     },
+    tree_items: function() {
+      const add_too_root_item = {
+        name: "Add new",
+        id: uuidv4()
+      }
+      return [...this.items, add_too_root_item]
+    }
   },
   created() {
     this.group = this.value
@@ -659,8 +630,6 @@ export default Vue.extend( {
         copy_path.push("children")
         this.build_path(item.children, id_to_search, copy_path)
       })
-
-      return path
     },
     delete_tree_item: function(item_id) {
       this.build_path(this.items, item_id, [])
@@ -706,7 +675,7 @@ export default Vue.extend( {
 
         const new_item = {
           id: uuidv4(),
-          name: "Added item",
+          name: "New item",
           children: []
         }
 
@@ -725,6 +694,14 @@ export default Vue.extend( {
         this.items = working_copy
         this.add_path = []
       }
+    },
+    add_root_tree_item: function() {
+      const new_item = {
+        id: uuidv4(),
+        name: "New item",
+        children: []
+      }
+      this.items.push(new_item)
     }
    }
 }
