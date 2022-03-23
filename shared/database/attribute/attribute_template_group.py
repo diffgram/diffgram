@@ -112,7 +112,8 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'default_id': self.default_id,
             'is_global': self.is_global,
-            'global_type': self.global_type
+            'global_type': self.global_type,
+            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_for_export(self):
@@ -132,7 +133,8 @@ class Attribute_Template_Group(Base):
             'min_value': self.min_value,
             'max_value': self.max_value,
             'is_global': self.is_global,
-            'global_type': self.global_type
+            'global_type': self.global_type,
+            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_with_attributes_and_labels(self, session):

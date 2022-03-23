@@ -328,6 +328,7 @@
                     style="width: 100%"
                     @click.stop.prevent=""
                     @input="(e) => change_tree_item_name(e, item.id)"
+                    @change="$emit('change')"
                     :value="item.name" 
                   />
                   <tooltip_button
@@ -533,9 +534,10 @@ export default Vue.extend( {
     Tooltip_button
   },
   props: {
-
     'value': {
-      default: null
+      default: {
+        tree_data: []
+      }
     },
     'kind_list': {
       default: []
@@ -575,7 +577,7 @@ export default Vue.extend( {
         name: "Add new",
         id: uuidv4()
       }
-      return [...this.items, add_too_root_item]
+      return [...this.group.tree_data.data, add_too_root_item]
     }
   },
   created() {
@@ -632,9 +634,9 @@ export default Vue.extend( {
       })
     },
     delete_tree_item: function(item_id) {
-      this.build_path(this.items, item_id, [])
+      this.build_path(this.group.tree_data.data, item_id, [])
 
-      const working_copy = [...this.items]
+      const working_copy = [...this.group.tree_data.data]
       let track_item = working_copy
 
 
@@ -645,29 +647,30 @@ export default Vue.extend( {
       })
 
       track_item.splice(item_to_remove, 1)
-      this.items = working_copy
+      this.group.tree_data.data = working_copy
       this.add_path = []
+      this.$emit('change')
     },
     change_tree_item_name: function(e, item_id) {
       const new_name = e.target.value
 
-      this.build_path(this.items, item_id, [])
+      this.build_path(this.group.tree_data.data, item_id, [])
 
-      const working_copy = [...this.items]
+      const working_copy = [...this.group.tree_data.data]
       let track_item = working_copy
       this.add_path.map(q_item => {
         track_item = track_item[q_item]
       })
 
       track_item["name"] = new_name
-      this.items = working_copy
+      this.group.tree_data.data = working_copy
       this.add_path = []
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
-        this.build_path(this.items, e[0], [])
+        this.build_path(this.group.tree_data.data, e[0], [])
         
-        const working_copy = [...this.items]
+        const working_copy = [...this.group.tree_data.data]
         let track_item = working_copy
         this.add_path.map(q_item => {
           track_item = track_item[q_item]
@@ -691,9 +694,10 @@ export default Vue.extend( {
         }
 
 
-        this.items = working_copy
+        this.group.tree_data.data = working_copy
         this.add_path = []
       }
+      this.$emit('change')
     },
     add_root_tree_item: function() {
       const new_item = {
@@ -701,7 +705,8 @@ export default Vue.extend( {
         name: "New item",
         children: []
       }
-      this.items.push(new_item)
+      this.group.tree_data.data.push(new_item)
+      this.$emit('change')
     }
    }
 }
