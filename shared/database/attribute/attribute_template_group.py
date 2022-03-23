@@ -112,8 +112,13 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'default_id': self.default_id,
             'is_global': self.is_global,
+<<<<<<< HEAD
             'global_type': self.global_type,
             'tree_data': self.tree_data or {"data": []}
+=======
+            'tree_data': self.tree_data,
+            'global_type': self.global_type
+>>>>>>> 0cb40edb7ed167d2c319fd612d6fc50ef8e1597a
         }
 
     def serialize_for_export(self):

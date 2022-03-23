@@ -7,7 +7,7 @@ from shared.database.external.external import ExternalMap
 from shared.project_migration.ExternalMigrationManager import initialize_migration_threaded
 
 
-@routes.route('/api/walrus/project/<string:project_string_id>/project-migration/<string:project_migration_id>', methods = ['GET'])
+@routes.route('/api/walrus/project/<string:project_string_id>/project-migration/detail/<string:project_migration_id>', methods = ['GET'])
 @Project_permissions.user_has_project(["admin"])
 def api_project_migration_detail(project_string_id, project_migration_id):
     """
@@ -17,7 +17,7 @@ def api_project_migration_detail(project_string_id, project_migration_id):
     with sessionMaker.session_scope() as session:
         member = get_member(session)
         log = regular_log.default()
-        project_migration_data, log = new_project_migration_core(
+        project_migration_data, log = project_migration_detail_core(
             session,
             log = log,
             project_migration_id = project_migration_id,
@@ -31,7 +31,7 @@ def api_project_migration_detail(project_string_id, project_migration_id):
     return jsonify(project_migration_data), 200
 
 
-def new_project_migration_core(session,
+def project_migration_detail_core(session,
                                project_migration_id,
                                project_string_id,
                                member,

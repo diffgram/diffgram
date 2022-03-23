@@ -150,20 +150,20 @@ class LabelboxConnector(Connector):
             existing_attr = Attribute_Template.get_by_name(
                 session = session,
                 attr_template_group = existing_attribute_group,
-                name = option.value
+                name = option.label
             )
             if existing_attr is None:
                 existing_attr = Attribute_Template.new(
                     existing_attribute_group.project,
                     member,
                     existing_attribute_group,
-                    name = option.value
+                    name = option.label
 
                 )
                 session.add(existing_attr)
-                logger.info(f'Created Multi Select Type Attribute Option: {option.value}')
+                logger.info(f'Created Multi Select Type Attribute Option: {option.label}')
             else:
-                logger.info(f'Multi Select option {option.value} already exists.')
+                logger.info(f'Multi Select option {option.label} already exists.')
 
     def __set_select_attribute_data(self, session, clsf, existing_attribute_group, member):
         """
@@ -178,20 +178,20 @@ class LabelboxConnector(Connector):
             existing_attr = Attribute_Template.get_by_name(
                 session = session,
                 attr_template_group = existing_attribute_group,
-                name = option.value
+                name = option.label
             )
             if existing_attr is None:
                 existing_attr = Attribute_Template.new(
                     existing_attribute_group.project,
                     member,
                     existing_attribute_group,
-                    name = option.value
+                    name = option.label
 
                 )
                 session.add(existing_attr)
-                logger.info(f'Created Select Type Attribute Option: {option.value}')
+                logger.info(f'Created Select Type Attribute Option: {option.label}')
             else:
-                logger.info(f'Select option {option.value} already exists.')
+                logger.info(f'Select option {option.label} already exists.')
 
     def __set_radio_attribute_data(self, session, clsf, existing_attribute_group, member):
         """
@@ -206,7 +206,7 @@ class LabelboxConnector(Connector):
             existing_attr = Attribute_Template.get_by_name(
                 session = session,
                 attr_template_group = existing_attribute_group,
-                name = option.value
+                name = option.label
             )
             if existing_attr is None:
 
@@ -214,13 +214,16 @@ class LabelboxConnector(Connector):
                     existing_attribute_group.project,
                     member,
                     existing_attribute_group,
-                    name = option.value
+                    name = option.label
 
                 )
                 session.add(existing_attr)
-                logger.info(f'Created Radio Attribute Option: {option.value}')
+                print('OOPPPP0', option)
+                logger.info(f'Created Radio Attribute Option: {option.label}')
             else:
-                logger.info(f'Radio option {option.value} already exists.')
+
+
+                logger.info(f'Radio option {option.label} already exists.')
 
     def __classification_has_nested_data(self, clsf):
         options = clsf.options
@@ -520,7 +523,6 @@ class LabelboxConnector(Connector):
             classification_list = [classification]
         else:
             classification_list = classification
-        print('classification_list ', classification_list)
         for classification in classification_list:
             answer_list = classification.get('answer')
             if type(answer_list) == str:
@@ -540,9 +542,7 @@ class LabelboxConnector(Connector):
                     # We standarize to a list since on multiple selects we can have multiple values here.
                     answer_list = [answer_list]
                 for clsf in answer_list:
-                    print('AAAA', clsf)
                     if key == clsf['schemaId']:
-                        print('EQUALLLLLLLLLLLLLLLLLLLLLLLLLL')
                         val['is_selected'] = True
                         was_set = True
                     else:
@@ -612,70 +612,82 @@ class LabelboxConnector(Connector):
                                             ontology,
                                             label_file_id,
                                             diffgram_project):
-        for classification in classifications:
-            attr_group_obj = Attribute_Template_Group.get_by_name_and_label(
-                session = session,
-                name = classification['title'],
-                label_file_id = label_file_id,
-                project_id = diffgram_project.id
-            )
-
-            if not attr_group_obj:
-                logger.warning(f'Attribute group not found: {classification["title"]}. Skipping...')
-                logger.warning(f'Attribute is: {classification}.')
-                return diffgram_instance
-            attr_group = attr_group_obj.serialize()
-            if attr_group['kind'] in ['multiple_select']:
-                diffgram_instance['attribute_groups'][attr_group['id']] = []
-                for answer in classification['answers']:
-                    attr_template = Attribute_Template.get_by_name(session = session,
-                                                                   attr_template_group = attr_group,
-                                                                   name = answer['title'])
-                    diffgram_instance['attribute_groups'][attr_group['id']].append(
-                        {
-                            'display_name': classification['title'],
-                            'value': classification['value'],
-                            'id': attr_template['id'],
-                            'name': attr_template['id']
-                        }
-                    )
-            elif attr_group['kind'] in ['select']:
-                # NOTE: Labelbox does not supportText or dropdown classifications in export for video
-                attr_template = Attribute_Template.get_by_name(session = session,
-                                                               attr_template_group = attr_group,
-                                                               name = classification['answer'][0]['title'])
-                diffgram_instance['attribute_groups'][attr_group['id']] = {
-                    'display_name': classification['answer'][0]['title'],
-                    'value': classification['answer'][0]['value'],
-                    'id': attr_template['id'],
-                    'name': attr_template['id']
-                }
-            elif attr_group['kind'] in ['text']:
-                # NOTE: Labelbox does not supportText or dropdown classifications in export for video
-                diffgram_instance['attribute_groups'][attr_group['id']] = classification['answer']
-            elif attr_group['kind'] in ['radio']:
-                attr_template = Attribute_Template.get_by_name(session = session,
-                                                               attr_template_group = attr_group,
-                                                               name = classification['answer']['title'])
-                diffgram_instance['attribute_groups'][attr_group['id']] = {
-                    'display_name': classification['answer']['title'],
-                    'value': classification['answer']['value'],
-                    'id': attr_template['id'],
-                    'name': attr_template['id']
-                }
-
-            elif attr_group['kind'] in ['tree']:
-                attr_value = self.__generate_tree_attribute_structure_from_classification(
+        for classification_elm in classifications:
+            logger.info(f'Processing Attribute {classification_elm}....')
+            if type(classification_elm) == dict:
+                classifications_list = [classification_elm]
+            else:
+                classifications_list = classification_elm
+            for classification in classifications_list:
+                attr_group_obj = Attribute_Template_Group.get_by_name_and_label(
                     session = session,
-                    classification = classification,
-                    all_classifications = classifications,
-                    attr_group = attr_group_obj,
-                    ontology = ontology
+                    name = classification['title'],
+                    label_file_id = label_file_id,
+                    project_id = diffgram_project.id
                 )
-                if not diffgram_instance.get('attribute_groups'):
-                    diffgram_instance['attribute_groups']= {}
-                diffgram_instance['attribute_groups'][attr_group['id']] = attr_value
 
+                if not attr_group_obj:
+                    logger.warning(f'Attribute group not found: {classification["title"]}. Skipping...')
+                    logger.warning(f'Attribute is: {classification}.')
+                    continue
+                attr_group = attr_group_obj.serialize()
+                if attr_group['kind'] in ['multiple_select']:
+                    diffgram_instance['attribute_groups'][attr_group['id']] = []
+                    for answer in classification['answers']:
+                        attr_template = Attribute_Template.get_by_name(session = session,
+                                                                       attr_template_group = attr_group_obj,
+                                                                       name = answer['title'])
+                        diffgram_instance['attribute_groups'][attr_group['id']].append(
+                            {
+                                'display_name': classification['title'],
+                                'value': classification['value'],
+                                'id': attr_template.id,
+                                'name': attr_template.name
+                            }
+                        )
+                        logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
+                elif attr_group['kind'] in ['select']:
+                    # NOTE: Labelbox does not supportText or dropdown classifications in export for video
+                    attr_template = Attribute_Template.get_by_name(session = session,
+                                                                   attr_template_group = attr_group_obj,
+                                                                   name = classification['answer'][0]['title'])
+                    diffgram_instance['attribute_groups'][attr_group['id']] = {
+                        'display_name': classification['answer'][0]['title'],
+                        'value': classification['answer'][0]['value'],
+                        'id': attr_template.id,
+                        'name': attr_template.name
+                    }
+                    logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
+
+                elif attr_group['kind'] in ['text']:
+                    # NOTE: Labelbox does not supportText or dropdown classifications in export for video
+                    diffgram_instance['attribute_groups'][attr_group['id']] = classification['answer']
+                    logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
+                elif attr_group['kind'] in ['radio']:
+                    attr_template = Attribute_Template.get_by_name(session = session,
+                                                                   attr_template_group = attr_group_obj,
+                                                                   name = classification['answer']['title'])
+                    diffgram_instance['attribute_groups'][attr_group['id']] = {
+                        'display_name': classification['answer']['title'],
+                        'value': classification['answer']['value'],
+                        'id': attr_template.id,
+                        'name': attr_template.name
+                    }
+                    logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
+
+
+                elif attr_group['kind'] in ['tree']:
+                    attr_value = self.__generate_tree_attribute_structure_from_classification(
+                        session = session,
+                        classification = classification,
+                        all_classifications = classifications,
+                        attr_group = attr_group_obj,
+                        ontology = ontology
+                    )
+                    if not diffgram_instance.get('attribute_groups'):
+                        diffgram_instance['attribute_groups']= {}
+                    diffgram_instance['attribute_groups'][attr_group['id']] = attr_value
+                    logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
         return diffgram_instance
 
     def __create_instance_list_for_file(self, session, data_row, ontology, diffgram_dataset):

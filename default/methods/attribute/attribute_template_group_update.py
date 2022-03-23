@@ -170,7 +170,7 @@ def group_update_core(
                     if existing_attachement.file_id == file_id:
                         session.delete(existing_attachement)
 
-        session.add(group)
+
 
         group.is_new = False
 
@@ -184,7 +184,7 @@ def group_update_core(
         group.default_id = default_id
         group.is_global = is_global
         group.tree_data = tree_data
-
+        session.add(group)
         log['info']['update'] = "Success"
 
         return log

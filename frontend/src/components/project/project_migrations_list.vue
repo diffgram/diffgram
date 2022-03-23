@@ -174,7 +174,7 @@ export default Vue.extend({
         this.loading = true;
         let [result, error] = await get_project_migration_list(this.project_string_id)
         if(error){
-          this.error = this.$route_api_errrors(error)
+          this.error = this.$route_api_errors(error)
           this.loading = false;
           return
         }

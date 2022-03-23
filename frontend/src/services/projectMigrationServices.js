@@ -23,7 +23,7 @@ export const get_project_migration = async (project_string_id, project_migration
 
   try {
     const response = await axios.get(
-      `/api/walrus/project/${project_string_id}/project-migration/${project_migration_id}`,
+      `/api/walrus/project/${project_string_id}/project-migration/detail/${project_migration_id}`,
       {
         project_migration_id: project_migration_id
       }

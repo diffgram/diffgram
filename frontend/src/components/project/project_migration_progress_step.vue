@@ -26,7 +26,7 @@
     <div style="width: 100%" v-else-if="status === 'failed'" class="d-flex flex-column align-center justify-center">
       <v-icon size="256" color="error">mdi-alert</v-icon>
       <h1 class="ma-8">Migration Failed.</h1>
-      <v-btn x-large @click="$router.push(`/project/project-migrations`)" color="primary">
+      <v-btn x-large @click="$router.push(`/project/${project_string_id}/project-migrations`)" color="primary">
         <v-icon>mdi-format-list-bulleted</v-icon>
         View Migrations History
       </v-btn>

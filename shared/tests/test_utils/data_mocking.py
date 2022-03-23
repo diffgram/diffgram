@@ -32,6 +32,7 @@ from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
+from shared.database.project_migration.project_migration import ProjectMigration
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -54,6 +55,28 @@ def register_member(user, session):
     return new_member
 
 
+def create_project_migration(migration_data, session):
+    p_migration = ProjectMigration(
+        created_time = migration_data.get('created_time'),
+        time_completed = migration_data.get('time_completed'),
+        time_updated = migration_data.get('time_updated'),
+        time_last_attempted = migration_data.get('time_last_attempted'),
+        type = migration_data.get('type'),
+        status = migration_data.get('status'),
+        percent_complete = migration_data.get('percent_complete'),
+        description = migration_data.get('description'),
+        external_mapping_project_id = migration_data.get('external_mapping_project_id'),
+        connection_id = migration_data.get('connection_id'),
+        error_log = migration_data.get('error_log'),
+        import_schema = migration_data.get('import_schema'),
+        project_id = migration_data.get('project_id'),
+        migration_log = migration_data.get('migration_log'),
+        member_created_id = migration_data.get('member_created_id'),
+        member_updated_id = migration_data.get('member_updated_id'),
+    )
+    session.add(p_migration)
+    session.commit()
+    return p_migration
 def register_user(user_data: dict, session):
     """
 
