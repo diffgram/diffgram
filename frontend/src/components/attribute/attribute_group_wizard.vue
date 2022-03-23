@@ -325,13 +325,13 @@
               open-on-click
             >
               <template v-slot:label="{ item, open }">
-                <v-layout v-if="item.name !== 'Add new'" flexe>
-                  <input 
+                <v-layout v-if="item.name !== 'Add new'" class="pa-2" style="border: 1px solid #e0e0e0">
+                  <input
                     style="width: 100%"
                     @click.stop.prevent=""
                     @input="(e) => change_tree_item_name(e, item.id)"
                     @change="$emit('change')"
-                    :value="item.name" 
+                    :value="item.name"
                   />
                   <tooltip_button
                     v-if="open"
@@ -628,7 +628,7 @@ export default Vue.extend( {
         if (item.id === id_to_search) {
           copy_path.push(index)
           this.add_path = copy_path
-          return 
+          return
         }
         copy_path.push(index)
         copy_path.push("children")
@@ -667,11 +667,12 @@ export default Vue.extend( {
       track_item["name"] = new_name
       this.group.tree_data.data = working_copy
       this.add_path = []
+      this.$emit('change')
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
         this.build_path(this.group.tree_data.data, e[0], [])
-        
+
         const working_copy = [...this.group.tree_data.data]
         let track_item = working_copy
         this.add_path.map(q_item => {
@@ -713,5 +714,5 @@ export default Vue.extend( {
    }
 }
 
-) 
+)
 </script>

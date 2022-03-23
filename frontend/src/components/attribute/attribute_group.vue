@@ -1031,10 +1031,7 @@
               max_value: max_value,
               mode: mode,
               is_global: this.group.is_global,
-<<<<<<< HEAD
               tree_data: this.group.tree_data
-=======
->>>>>>> 0cb40edb7ed167d2c319fd612d6fc50ef8e1597a
 
             }).then(response => {
 
