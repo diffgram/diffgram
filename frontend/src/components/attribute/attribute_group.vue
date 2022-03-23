@@ -1030,7 +1030,7 @@
               min_value: min_value,
               max_value: max_value,
               mode: mode,
-              is_global: this.group.is_global
+              is_global: this.group.is_global,
 
             }).then(response => {
 

@@ -28,6 +28,9 @@ def create_walrus_testing_app():
     from methods.export.export_generation import new_external_export
     from methods.export.export_view import export_list
     from methods.video.interpolation import interpolate_all_frames
+    from methods.project_migration.project_migration_list import api_project_migration_list
+    from methods.project_migration.project_migration_detail import api_project_migration_detail
+    from methods.project_migration.project_migration_new import api_new_project_migration
     from methods import routes as routes_blueprint
     from shared.helpers.security import limiter
     from sqlalchemy import create_engine

@@ -112,6 +112,7 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'default_id': self.default_id,
             'is_global': self.is_global,
+            'tree_data': self.tree_data,
             'global_type': self.global_type
         }
 
