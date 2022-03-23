@@ -323,7 +323,7 @@
               open-on-click
             >
               <template v-slot:label="{ item, open }">
-                <v-layout flexe>
+                <v-layout v-if="!item.delete" flexe>
                   <input 
                     style="width: 100%"
                     @click.stop.prevent=""
@@ -352,6 +352,7 @@
                     color="primary"
                     icon="mdi-delete"
                     tooltip_message="Delete item"
+                    @click="() => delete_tree_item(item.id)"
                     :icon_style="true"
                     :bottom="true"
                 />
@@ -661,9 +662,28 @@ export default Vue.extend( {
 
       return path
     },
+    delete_tree_item: function(item_id) {
+      this.build_path(this.items, item_id, [])
+
+      const working_copy = [...this.items]
+      let track_item = working_copy
+
+
+      const item_to_remove = this.add_path.pop()
+
+      this.add_path.map(q_item => {
+        track_item = track_item[q_item]
+      })
+
+      track_item.splice(item_to_remove, 1)
+      this.items = working_copy
+      this.add_path = []
+    },
     change_tree_item_name: function(e, item_id) {
       const new_name = e.target.value
+
       this.build_path(this.items, item_id, [])
+
       const working_copy = [...this.items]
       let track_item = working_copy
       this.add_path.map(q_item => {
@@ -672,6 +692,7 @@ export default Vue.extend( {
 
       track_item["name"] = new_name
       this.items = working_copy
+      this.add_path = []
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
@@ -702,6 +723,7 @@ export default Vue.extend( {
 
 
         this.items = working_copy
+        this.add_path = []
       }
     }
    }
