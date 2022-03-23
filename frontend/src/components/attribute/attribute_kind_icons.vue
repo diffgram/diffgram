@@ -69,6 +69,15 @@
     :icon_size="icon_size"
   >
   </tooltip_icon>
+  <tooltip_icon
+    v-if="kind === 'tree'"
+    tooltip_message="Tree"
+    icon="mdi-file-tree"
+    color="primary"
+    :large="large"
+    :icon_size="icon_size"
+  >
+  </tooltip_icon>
 
 
 
