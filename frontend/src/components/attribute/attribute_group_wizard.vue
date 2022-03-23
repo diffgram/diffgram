@@ -326,13 +326,25 @@
                 <v-layout flexe>
                   <input 
                     style="width: 100%"
+                    @click.stop.prevent=""
+                    @input="(e) => change_tree_item_name(e, item.id)"
                     :value="item.name" 
                   />
                   <tooltip_button
+                    v-if="open"
                     color="primary"
                     icon="mdi-plus"
                     tooltip_message="Add child"
                     @click.stop.prevent="() => add_tree_item([item.id])"
+                    :icon_style="true"
+                    :bottom="true"
+                  />
+                  <tooltip_button
+                    v-else
+                    color="primary"
+                    icon="mdi-plus"
+                    tooltip_message="Add child"
+                    @click="() => add_tree_item([item.id])"
                     :icon_style="true"
                     :bottom="true"
                   />
@@ -648,6 +660,18 @@ export default Vue.extend( {
       })
 
       return path
+    },
+    change_tree_item_name: function(e, item_id) {
+      const new_name = e.target.value
+      this.build_path(this.items, item_id, [])
+      const working_copy = [...this.items]
+      let track_item = working_copy
+      this.add_path.map(q_item => {
+        track_item = track_item[q_item]
+      })
+
+      track_item["name"] = new_name
+      this.items = working_copy
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
