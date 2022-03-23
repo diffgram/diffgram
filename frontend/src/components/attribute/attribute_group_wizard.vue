@@ -50,12 +50,14 @@
           <v-stepper-step
             editable
             :complete="step > 5"
-            step="5">
-            Options
+            step="5"
+          >
+            {{ group.kind !== "tree" ? "Options" : "Tree" }}
           </v-stepper-step>
 
-          <v-divider></v-divider>
+          <v-divider v-if="group.kind !== 'tree'"></v-divider>
           <v-stepper-step
+            v-if="group.kind !== 'tree'"
             editable
             :complete="step > 6"
             step="6">
@@ -69,7 +71,7 @@
           color="secondary"
           striped
           :value="global_progress"
-          height="7"
+          :height="group.kind !== 'tree' ? 7 : 6"
         >
         </v-progress-linear>
 
@@ -377,7 +379,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
+          <v-stepper-content v-if="group.kind !== 'tree'" step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -493,7 +495,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="7" data-cy="attribute_wizard_step_7">
+          <v-stepper-content :step="group.kind !== 'tree' ? 7 : 6" data-cy="attribute_wizard_step_7">
 
             <h2> Complete! Great work. </h2>
 
