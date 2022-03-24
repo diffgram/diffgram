@@ -757,6 +757,11 @@ class LabelboxConnector(Connector):
                                                                  diffgram_dataset)
 
             media_type = 'image'
+            metadata = {
+                'width': data_row.media_attributes.get('width'),
+                'height': data_row.media_attributes.get('height')
+            }
+
             diffgram_input = enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
                                             session = session,
                                             media_url = data_row.row_data,
@@ -771,6 +776,7 @@ class LabelboxConnector(Connector):
                                             batch_id = input_batch.id,
                                             enqueue_immediately = False,
                                             mode = None,
+                                            image_metadata = metadata,
                                             auto_correct_instances_from_image_metadata = True,
                                             member = member)
             current_count += 1

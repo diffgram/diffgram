@@ -49,7 +49,7 @@ import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
-
+from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -1540,6 +1540,36 @@ class Process_Media():
 
         return True
 
+    def rotate_instance_list(self, instance_list, width, height):
+
+        if not instance_list:
+            return
+        logger.warning('Rotating Instance List')
+        for i in range(0, len(instance_list)):
+            instance_list[i] = rotate_instance_dict_90_degrees(instance = instance_list[i],
+                                                               width = width,
+                                                               height = height)
+
+
+    def check_metadata_and_auto_correct_instances(self, imageio_read_image, image_metadata):
+        if not self.input.auto_correct_instances_from_image_metadata:
+            return
+        if not image_metadata:
+            return
+        if image_metadata.get('width') is None or image_metadata.get('height') is None:
+            return
+        logger.info('Checking matching metadata and readed image width/height...')
+        readed_image_height = imageio_read_image.shape[0]
+        readed_image_width = imageio_read_image.shape[1]
+        metadata_width = image_metadata.get('width')
+        metadata_height = image_metadata.get('height')
+
+        if metadata_height == readed_image_width and metadata_width == readed_image_height:
+            logger.warning('Detected flipped coordinates on image. Rotating instances to correct positioning')
+            if self.input.instance_list and self.input.instance_list.get('list'):
+                self.rotate_instance_list(self.input.instance_list.get('list'), readed_image_height, readed_image_height)
+
+
     def process_one_image_file(self):
 
         """
@@ -1573,6 +1603,11 @@ class Process_Media():
         ### Main
 
         self.resize_raw_image()
+
+        self.check_metadata_and_auto_correct_instances(
+            imageio_read_image = self.raw_numpy_image,
+            image_metadata = self.input.image_metadata
+        )
 
         self.save_raw_image_file()
 
@@ -1866,8 +1901,6 @@ class Process_Media():
         diffgram_image,
         imageio_read_image):
 
-        print('diffgram_image', diffgram_image.height, diffgram_image.width)
-        print('imageio_read_image', imageio_read_image.shape[0], imageio_read_image.shape[1])
         diffgram_image.height = imageio_read_image.shape[0]
         diffgram_image.width = imageio_read_image.shape[1]
 

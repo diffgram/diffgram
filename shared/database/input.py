@@ -114,6 +114,9 @@ class Input(Base):
 
     file_metadata = Column(MutableDict.as_mutable(JSONB))
 
+    # For storing things like width, height, opacity, etc...
+    image_metadata = Column(MutableDict.as_mutable(JSONB))
+
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys=[task_id])
     task_action = Column(String())
