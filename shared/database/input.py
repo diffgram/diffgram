@@ -63,6 +63,8 @@ class Input(Base):
 
     archived = Column(Boolean, default=False)
 
+    auto_correct_instances_from_image_metadata = Column(Boolean, default=False)
+
 
     raw_data_blob_path = Column(String())
     # video_processed_blob_path = Column(String())

@@ -68,6 +68,8 @@ class ExternalMigrationManager:
             return
         result = None
         try:
+            self.project_migration.status = 'in_progress'
+            self.session.commit()
             result = connector.fetch_data(
                 {
                     'action_type': 'import_project',

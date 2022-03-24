@@ -8,7 +8,7 @@ from shared.project_migration.ExternalMigrationManager import initialize_migrati
 
 
 @routes.route('/api/walrus/project/<string:project_string_id>/project-migration/detail/<string:project_migration_id>', methods = ['GET'])
-@Project_permissions.user_has_project(["admin"])
+@Project_permissions.user_has_project(["admin"], apis_user_list = ["api_enabled_builder"])
 def api_project_migration_detail(project_string_id, project_migration_id):
     """
         Fetches the details of the given project migration ID.
