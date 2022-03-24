@@ -30,9 +30,8 @@ class Attribute_Template(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
 
-    # Reference photo?  / icon?
-
-    # GRAPH is linking to other attribute GROUPS not individual templates
+    # Used for Treeview attributes.
+    parent_id = Column(Integer, ForeignKey('attribute_template.id'))
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -48,6 +47,7 @@ class Attribute_Template(Base):
         project,
         member,
         group,
+        parent_id = None,
         name = None):
         """
         """
@@ -59,10 +59,33 @@ class Attribute_Template(Base):
             project = project,
             member_created = member,
             group = group,
+            parent_id = parent_id,
             name = name
         )
 
         return attribute
+
+    @staticmethod
+    def get_by_name_and_parent_id(session, attr_template_group, name, parent_id):
+        """
+            Mostly used for tree view checks.
+        :param session:
+        :param attr_template_group:
+        :param name:
+        :param parent_id:
+        :return:
+        """
+
+
+        query = session.query(Attribute_Template).filter(
+            Attribute_Template.name == name,
+            Attribute_Template.group_id == attr_template_group.id,
+            Attribute_Template.archived == False,
+            Attribute_Template.parent_id == parent_id
+        )
+
+        result = query.first()
+        return result
 
     @staticmethod
     def get_by_name(session, attr_template_group, name):
@@ -118,6 +141,7 @@ class Attribute_Template(Base):
             'name': self.name,
             'value_type': self.value_type,
             'archived': self.archived,
+            'parent_id': self.parent_id,
             'group_id': self.group_id,
             'display_order': self.display_order
         }
