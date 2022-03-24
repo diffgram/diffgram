@@ -147,6 +147,14 @@
             clearable
           >
           </v-date-picker>
+
+          <v-treeview
+            v-if="group.kind === 'tree' || !group.kind"
+            :items="group.tree_data.data"
+            selectable
+            open-on-click
+          />
+
         </v-layout>
 
       </v-container>
