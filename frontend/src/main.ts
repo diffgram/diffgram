@@ -135,7 +135,18 @@ Vue.component('user_profile_image_edit', user_profile_image_edit)
 import thumbnail from './components/annotation/thumbnail'
 Vue.component('thumbnail', thumbnail)
 
-
+import VueHighlightJS from 'vue-highlight.js';
+import css from 'highlight.js/lib/languages/css';
+import json from 'highlight.js/lib/languages/json';
+import javascript from 'highlight.js/lib/languages/javascript';
+Vue.use(VueHighlightJS, {
+  // Register only languages that you want
+  languages: {
+    css,
+    javascript,
+    json,
+  }
+});
 
 import store from './store'
 

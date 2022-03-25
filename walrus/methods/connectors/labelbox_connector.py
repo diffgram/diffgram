@@ -375,7 +375,7 @@ class LabelboxConnector(Connector):
             rgb = tuple(int(color_hex[i:i + 2], 16) for i in (0, 2, 4))
             hls = colorsys.rgb_to_hsv(rgb[0], rgb[1], rgb[2])
             hsv = colorsys.rgb_to_hls(rgb[0], rgb[1], rgb[2])
-            color_dict = {"hex": "#194d33",
+            color_dict = {"hex": f"#{color_hex}",
                           "hls": {"l": hls[1], "h": hls[0], "s": hls[2], "a": 1},
                           "rgba": {"a": 1, "g": rgb[2], "r": rgb[0], "b": rgb[2]},
                           "hsv": {"a": 1, "h": hsv[0], "s": hsv[1], "v": hsv[2]}, "a": 1}
@@ -612,6 +612,8 @@ class LabelboxConnector(Connector):
                                             ontology,
                                             label_file_id,
                                             diffgram_project):
+        if diffgram_instance.get('attribute_groups') is None:
+            diffgram_instance['attribute_groups'] = {}
         for classification_elm in classifications:
             logger.info(f'Processing Attribute {classification_elm}....')
             if type(classification_elm) == dict:
@@ -648,6 +650,7 @@ class LabelboxConnector(Connector):
                         logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
                 elif attr_group['kind'] in ['select']:
                     # NOTE: Labelbox does not supportText or dropdown classifications in export for video
+
                     attr_template = Attribute_Template.get_by_name(session = session,
                                                                    attr_template_group = attr_group_obj,
                                                                    name = classification['answer'][0]['title'])
@@ -695,7 +698,9 @@ class LabelboxConnector(Connector):
         instance_list = []
         for label in labels:
             label_data = json.loads(label.label)
-            label_objects = label_data['objects']
+            label_objects = label_data.get('objects')
+            if not label_objects:
+                continue
 
             for obj in label_objects:
                 instance_type = self.__determine_instance_type(obj)
@@ -766,6 +771,7 @@ class LabelboxConnector(Connector):
                                             batch_id = input_batch.id,
                                             enqueue_immediately = False,
                                             mode = None,
+                                            auto_correct_instances_from_image_metadata = True,
                                             member = member)
             current_count += 1
             project_migration.percent_complete = current_count / total_count * 100
