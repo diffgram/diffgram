@@ -9,16 +9,15 @@ export class TreeNode implements Node {
     private group_id: number;
 
     constructor(group_id: number, name?: string) {
-        this.group_id = group_id
+        this.group_id = group_id;
         if (name) {
             this.temp_id = uuidv4()
             this.name = name
         }
     }
 
-    initialize_existing_node(id: number, name: string, parent_id: number) {
+    initialize_existing_node(id: number, parent_id: number) {
         this.id = id;
-        this.name = name;
         this.parent_id = parent_id;
     }
 
@@ -59,7 +58,7 @@ export class TreeNode implements Node {
         return {
             id: this.id,
             name: this.name,
-            parent: this.parent_id,
+            parent_id: this.parent_id,
             group_id: this.group_id
         }
     }

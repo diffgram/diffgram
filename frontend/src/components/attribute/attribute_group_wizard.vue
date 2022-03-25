@@ -593,6 +593,12 @@ export default Vue.extend( {
     else{
       this.toggle_global_attribute = 0
     }
+
+   this.group.attribute_template_list.map(attr => {
+     const new_node = new TreeNode(attr.group_id, attr.name)
+     new_node.initialize_existing_node(attr.id, attr.parent_id)
+     this.tree_items_list.push(new_node)
+   })
   },
   watch: {
     value: function (item) {
@@ -627,6 +633,7 @@ export default Vue.extend( {
     },
     save_tree_item: async function(mode, item) {
       if (mode !== "ARCHIVE") {
+        console.log(item.get_API_data())
         const { data: { attribute_template : { id }} } = await attribute_update_or_new(mode, this.project_string_id, item.get_API_data())
         item.set_id(id)
       } else {
