@@ -75,6 +75,7 @@
 
 
 import axios from '../../services/customInstance';
+import { attribute_update_or_new } from "../../services/attributesService"
 
 
  import Vue from "vue"; export default Vue.extend( {
@@ -179,42 +180,24 @@ import axios from '../../services/customInstance';
       },
 
 
-      api_attribute_update_or_new: function (mode) {
-
+      api_attribute_update_or_new: async function (mode) {
         this.loading = true
         this.error = {}
         this.success = false
 
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/attribute',
-          {
-            attribute: this.attribute,
-            mode: mode
+        const { status, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
+        this.error = error
 
-          }).then(response => {
+        if (status === 200) {
+          this.$store.commit('attribute_refresh_group_list')
+          this.success = true
+        }
 
-            this.$store.commit('attribute_refresh_group_list')
-            this.success = true
-            this.loading = false
-
-            // reset
-            if (this.mode == "NEW") {
-
-              this.name = null
-              this.kind = null
-            }
-
-          }).catch(error => {
-
-            if (error)  {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
-              this.loading = false
-              console.log(error)
-            }
-          });
+        this.loading = false
+        if (this.mode == "NEW") {
+          this.name = null
+          this.kind = null
+        }
 
       },
 
