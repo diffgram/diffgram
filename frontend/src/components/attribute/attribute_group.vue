@@ -150,7 +150,8 @@
 
           <v-treeview
             v-if="group.kind === 'tree' || !group.kind"
-            :items="group.tree_data.data"
+            :items="tree_items"
+            selectionType="independent"
             selectable
             open-on-click
           />
@@ -473,6 +474,8 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
+  import { construct_tree } from "../../helpers/tree_view/construct_tree"
+  import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
 
@@ -597,7 +600,9 @@
 
           label_file_list: [],
 
-          group_internal: {}
+          group_internal: {},
+          tree_items_list: [],
+          tree_items: []
 
         }
       },
@@ -627,6 +632,17 @@
         this.original_kind = this.group.kind
 
         this.group_internal = this.$props.group
+
+        if (this.group.kind === "tree") {
+          this.group.attribute_template_list.map(attr => {
+            const new_node = new TreeNode(attr.group_id, attr.name)
+            new_node.initialize_existing_node(attr.id, attr.parent_id)
+            this.tree_items_list.push(new_node)
+          })
+
+          this.tree_items = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
+        }
+
 
       },
       mounted() {

@@ -651,7 +651,7 @@ export default Vue.extend( {
       } else {
         const limit = pLimit(25);
         const deletion_requests = item.map(to_delete => limit(() => attribute_update_or_new(mode, this.project_string_id, to_delete.get_API_data())))
-        const result = await Promise.all(deletion_requests);
+        await Promise.all(deletion_requests);
       }
     },
     delete_tree_item: function(item_id) {
