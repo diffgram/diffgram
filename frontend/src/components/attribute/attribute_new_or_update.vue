@@ -72,11 +72,7 @@
 </template>
 
 <script lang="ts">
-
-
-import axios from '../../services/customInstance';
 import { attribute_update_or_new } from "../../services/attributesService"
-
 
  import Vue from "vue"; export default Vue.extend( {
 
