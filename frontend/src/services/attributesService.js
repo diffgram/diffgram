@@ -8,7 +8,7 @@ export const attribute_update_or_new = async (mode, project_string_id, attribute
             data,
             error: {}
         }
-    } catch(e) {
+    } catch(error) {
         return {
             status: error.response.status,
             data: null,

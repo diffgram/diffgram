@@ -6,8 +6,10 @@ export class TreeNode implements Node {
     private parent_id = null;
     private temp_id: string | null;
     private name: string;
+    private group_id: number;
 
-    constructor(name?: string) {
+    constructor(group_id: number, name?: string) {
+        this.group_id = group_id
         if (name) {
             this.temp_id = uuidv4()
             this.name = name
@@ -50,6 +52,15 @@ export class TreeNode implements Node {
             name: this.name,
             parent: this.parent_id,
             children: []
+        }
+    }
+
+    get_API_data() {
+        return {
+            id: this.id,
+            name: this.name,
+            parent: this.parent_id,
+            group_id: this.group_id
         }
     }
 }

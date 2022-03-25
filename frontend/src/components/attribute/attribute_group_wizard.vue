@@ -626,7 +626,12 @@ export default Vue.extend( {
       this.step -= 1
     },
     save_tree_item: async function(mode, item) {
-      console.log(mode, item)
+      if (mode !== "ARCHIVE") {
+        const { data: { attribute_template : { id }} } = await attribute_update_or_new(mode, this.project_string_id, item.get_API_data())
+        item.set_id(id)
+      } else {
+        console.log("DELETION")
+      }
     },
     delete_tree_item: function(item_id) {
       const all_relatives = find_all_relatives(item_id, this.tree_items_list)
@@ -642,15 +647,16 @@ export default Vue.extend( {
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
-        const new_node = new TreeNode(`New item ${this.tree_items_list.length + 1}`)
+        const new_node = new TreeNode(this.group.id, `New item ${this.tree_items_list.length + 1}`)
         new_node.set_parent(e[0])
         this.tree_items_list.push(new_node)
         this.save_tree_item("NEW", new_node)
       }
     },
     add_root_tree_item: function() {
-      const new_node = new TreeNode(`New item ${this.tree_items_list.length + 1}`)
+      const new_node = new TreeNode(this.group.id, `New item ${this.tree_items_list.length + 1}`)
       this.tree_items_list.push(new_node)
+      this.save_tree_item("NEW", new_node)
     }
    }
 }
