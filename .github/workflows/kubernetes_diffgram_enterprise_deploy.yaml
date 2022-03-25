@@ -2,14 +2,12 @@ name: Kubernetes Enterprise Deploy
 on:
   workflow_dispatch:
     inputs:
-      release:
-        description: 'Choose a branch and leave as "$$current_branch" to deploy current selected branch. WARNING, redeploying the same branch will fail. Make a new branch off that for redeploy.  !! OR !! Ignore the branch selector, delete the "$$" text, and name a release version to deploy.'
-        required: true
-        default: $$current_branch
       environment:
-        description: 'Either "staging" or "production"'
-        required: true
-        default: "staging"
+        type: choice
+        description: Select Environment
+        options:
+        - staging
+        - production
 jobs:
   publish_default_branch:
     runs-on: ubuntu-latest
