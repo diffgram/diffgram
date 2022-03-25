@@ -330,7 +330,6 @@
                     style="width: 100%"
                     @click.stop.prevent=""
                     @input="(e) => change_tree_item_name(e, item.id)"
-                    @change="$emit('change')"
                     :value="item.name"
                   />
                   <tooltip_button
@@ -517,7 +516,6 @@
 
 <script lang="ts">
 
-
 import Vue from "vue";
 import draggable from 'vuedraggable'
 import attribute from './attribute.vue';
@@ -525,6 +523,9 @@ import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
 import Tooltip_button from "../regular/tooltip_button.vue";
 import { v4 as uuidv4 } from "uuid";
+import { TreeNode } from "../../helpers/tree_view/Node"
+import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
+import { attribute_update_or_new } from "../../services/attributesService"
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
@@ -568,6 +569,7 @@ export default Vue.extend( {
       group: {},
       add_path: [],
       items: [],
+      tree_items_list: []
     }
   },
   computed: {
@@ -575,12 +577,13 @@ export default Vue.extend( {
       return 100 * (parseFloat(this.step) / 6);
     },
     tree_items: function() {
+      const tree = construct_tree(this.tree_items_list)
       const add_too_root_item = {
         name: "Add new",
         id: uuidv4()
       }
-      return [...this.group.tree_data.data, add_too_root_item]
-    }
+      return [...tree, add_too_root_item]
+    },
   },
   created() {
     this.group = this.value
@@ -622,94 +625,32 @@ export default Vue.extend( {
     go_back_a_step: function(){
       this.step -= 1
     },
-    build_path: function(array, id_to_search, path) {
-      array.map((item, index) => {
-        const copy_path = [...path]
-        if (item.id === id_to_search) {
-          copy_path.push(index)
-          this.add_path = copy_path
-          return
-        }
-        copy_path.push(index)
-        copy_path.push("children")
-        this.build_path(item.children, id_to_search, copy_path)
-      })
+    save_tree_item: async function(mode, item) {
+      console.log(mode, item)
     },
     delete_tree_item: function(item_id) {
-      this.build_path(this.group.tree_data.data, item_id, [])
-
-      const working_copy = [...this.group.tree_data.data]
-      let track_item = working_copy
-
-
-      const item_to_remove = this.add_path.pop()
-
-      this.add_path.map(q_item => {
-        track_item = track_item[q_item]
-      })
-
-      track_item.splice(item_to_remove, 1)
-      this.group.tree_data.data = working_copy
-      this.add_path = []
-      this.$emit('change')
+      const all_relatives = find_all_relatives(item_id, this.tree_items_list)
+      const list_copy = [...this.tree_items_list].filter(item => !all_relatives.includes(item.get_id()))
+      this.tree_items_list = list_copy
+      this.save_tree_item("ARCHIVE", "node_to_remove")
     },
     change_tree_item_name: function(e, item_id) {
       const new_name = e.target.value
-
-      this.build_path(this.group.tree_data.data, item_id, [])
-
-      const working_copy = [...this.group.tree_data.data]
-      let track_item = working_copy
-      this.add_path.map(q_item => {
-        track_item = track_item[q_item]
-      })
-
-      track_item["name"] = new_name
-      this.group.tree_data.data = working_copy
-      this.add_path = []
-      this.$emit('change')
+      const node_to_modify = this.tree_items_list.find(node => node.get_id() === item_id)
+      node_to_modify.update_name(new_name)
+      this.save_tree_item("UPDATE", node_to_modify)
     },
     add_tree_item: function(e) {
       if (e.length > 0) {
-        this.build_path(this.group.tree_data.data, e[0], [])
-
-        const working_copy = [...this.group.tree_data.data]
-        let track_item = working_copy
-        this.add_path.map(q_item => {
-          track_item = track_item[q_item]
-        })
-
-        const new_item = {
-          id: uuidv4(),
-          name: "New item",
-          children: []
-        }
-
-        if (Array.isArray(track_item["children"])) {
-          track_item["children"] = [
-            ...track_item["children"],
-            new_item
-          ]
-        } else {
-          track_item["children"] = [
-            new_item
-          ]
-        }
-
-
-        this.group.tree_data.data = working_copy
-        this.add_path = []
+        const new_node = new TreeNode(`New item ${this.tree_items_list.length + 1}`)
+        new_node.set_parent(e[0])
+        this.tree_items_list.push(new_node)
+        this.save_tree_item("NEW", new_node)
       }
-      this.$emit('change')
     },
     add_root_tree_item: function() {
-      const new_item = {
-        id: uuidv4(),
-        name: "New item",
-        children: []
-      }
-      this.group.tree_data.data.push(new_item)
-      this.$emit('change')
+      const new_node = new TreeNode(`New item ${this.tree_items_list.length + 1}`)
+      this.tree_items_list.push(new_node)
     }
    }
 }
