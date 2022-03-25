@@ -42,6 +42,7 @@ def enqueue_packet(project_string_id,
                    original_filename = None,
                    external_map_action = None,
                    enqueue_immediately = False,
+                   image_metadata = {},
                    mode = None,
                    allow_duplicates = False,
                    auto_correct_instances_from_image_metadata = False,
@@ -56,6 +57,7 @@ def enqueue_packet(project_string_id,
     diffgram_input = Input()
     project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
+    diffgram_input.image_metadata = image_metadata
     diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
