@@ -789,17 +789,6 @@
           let b = instance_colour.rgba.b
           const preStrokeStyle = ctx.strokeStyle;
           ctx.strokeStyle = preStrokeStyle;
-          // 1) draw primary path
-          let centroid_x = points.map(p => p.x).reduce((a, b) => a+b) / points.length
-          let centroid_y = points.map(p => p.y).reduce((a, b) => a+b) / points.length
-          points = points.map(point => {
-
-            return {
-              x: this.width - point.y,
-              y: point.x
-            }
-          })
-          console.log('poits', points)
           if (points.length >= 1) {
 
             this.draw_label(ctx, points[0].x, points[0].y, instance)

@@ -1550,6 +1550,8 @@ class Process_Media():
                                                                width = width,
                                                                height = height)
 
+        return instance_list
+
 
     def check_metadata_and_auto_correct_instances(self, imageio_read_image, image_metadata):
         if not self.input.auto_correct_instances_from_image_metadata:
@@ -1561,13 +1563,21 @@ class Process_Media():
         logger.info('Checking matching metadata and readed image width/height...')
         readed_image_height = imageio_read_image.shape[0]
         readed_image_width = imageio_read_image.shape[1]
+        logger.info(f'Readed Image width: {readed_image_width} height: {readed_image_height}')
+
+        if readed_image_width == readed_image_height:
+            return
+
         metadata_width = image_metadata.get('width')
         metadata_height = image_metadata.get('height')
+        logger.info(f'Metadata width: {metadata_width} height: {metadata_height}')
 
         if metadata_height == readed_image_width and metadata_width == readed_image_height:
             logger.warning('Detected flipped coordinates on image. Rotating instances to correct positioning')
             if self.input.instance_list and self.input.instance_list.get('list'):
-                self.rotate_instance_list(self.input.instance_list.get('list'), readed_image_height, readed_image_height)
+                self.input.instance_list['list'] = self.rotate_instance_list(self.input.instance_list.get('list'),
+                                                                             readed_image_width,
+                                                                             readed_image_height)
 
 
     def process_one_image_file(self):
@@ -1610,9 +1620,13 @@ class Process_Media():
         )
 
         self.save_raw_image_file()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_file")
+            return
         self.save_raw_image_thumb()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_thumb")
+            return
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1812,14 +1826,23 @@ class Process_Media():
             raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
             pass
 
-        data_tools.upload_to_cloud_storage(
-            temp_local_path = new_temp_filename,
-            blob_path = self.new_image.url_signed_blob_path,
-            content_type = "image/jpg",
-        )
+        try:
+            data_tools.upload_to_cloud_storage(
+                temp_local_path = new_temp_filename,
+                blob_path = self.new_image.url_signed_blob_path,
+                content_type = "image/jpg",
+            )
 
-        self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
+            self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
                                                                 self.new_image.url_signed_expiry)
+        except Exception as e:
+            message = f'Error uploading to cloud storage: {traceback.format_exc()}'
+            logger.error(message)
+            self.input.status = 'failed'
+            self.log['error']['upload_image'] = message
+            self.input.update_log = self.log
+            return
+
         return new_temp_filename
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:

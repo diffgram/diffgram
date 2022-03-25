@@ -13,9 +13,12 @@ def rotate_box(instance:dict, width: int, height: int):
 def rotate_points_instance(instance: dict, width: int, height: int):
     points = instance['points']
     for p in points:
-        p['x'] = width - p['y']
-        p['y'] = p['x']
-
+        print('ROTATING', p)
+        old_x = p['x']
+        old_y = p['y']
+        p['x'] = width - old_y
+        p['y'] = old_x
+        print('NEW ROTATED', p)
     return instance
 
 

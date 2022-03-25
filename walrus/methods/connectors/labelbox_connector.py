@@ -423,7 +423,8 @@ class LabelboxConnector(Connector):
         for tool in ontology.tools():
             if tool.feature_schema_id == schema_id:
                 label_file_name = tool.name
-
+        if label_file_name is None:
+            return
         label_file = File.get_by_label_name(
             session = session,
             label_name = label_file_name,
@@ -708,6 +709,8 @@ class LabelboxConnector(Connector):
                                                                    session = session,
                                                                    ontology = ontology,
                                                                    diffgram_project = diffgram_dataset.project)
+                if label_file is None:
+                    continue
                 instance = None
                 if instance_type == 'polygon':
                     instance = self.__create_polygon_instance_dict(label_file.id, obj)
