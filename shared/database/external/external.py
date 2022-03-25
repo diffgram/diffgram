@@ -44,6 +44,9 @@ class ExternalMap(Base):
     attribute_template_group_id = Column(Integer, ForeignKey('attribute_template_group.id'))
     attribute_template_group = relationship("Attribute_Template_Group", foreign_keys=[attribute_template_group_id])
 
+    attribute_template_id = Column(Integer, ForeignKey('attribute_template.id'))
+    attribute_template = relationship("Attribute_Template", foreign_keys=[attribute_template_id])
+
     user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User", foreign_keys=[user_id])
 
@@ -95,6 +98,7 @@ class ExternalMap(Base):
             task=None,
             attribute_template_group=None,
             attribute_template_group_id=None,
+            attribute_template_id=None,
             file_id=None,
             user=None,
             connection=None,
@@ -113,6 +117,7 @@ class ExternalMap(Base):
             type=type,
             external_id=external_id,
             diffgram_class_string=diffgram_class_string,
+            attribute_template_id=attribute_template_id,
             url=url,
             project=project,
             job=job,
@@ -142,6 +147,7 @@ class ExternalMap(Base):
             file_id=None,
             diffgram_class_string: str = None,
             type: str = None,
+            attribute_template_id: int = None,
             limit=100,
             return_kind="first",  # [first, all, count]
             date_to=None,
@@ -162,6 +168,9 @@ class ExternalMap(Base):
 
         if task_id:
             query = query.filter(ExternalMap.task_id == task_id)
+
+        if attribute_template_id:
+            query = query.filter(ExternalMap.attribute_template_id == attribute_template_id)
 
         if file_id:
             if isinstance(file_id, collections.Iterable):
