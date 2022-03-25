@@ -45,7 +45,7 @@ def api_attribute_update_or_new(project_string_id):
             log = log,
             attribute_dict = input['attribute'],
             mode = input['mode'],
-            parent_id = input['parent_id'],
+            parent_id = input['attribute']['parent_id'],
         )
 
         # For init errors
@@ -207,7 +207,6 @@ class Attribute_Session():
         """
 
         """
-
         self.attribute_template = Attribute_Template.new(
             project = self.project,
             member = self.member,

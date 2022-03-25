@@ -538,6 +538,7 @@ import { v4 as uuidv4 } from "uuid";
 import { TreeNode } from "../../helpers/tree_view/Node"
 import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
 import { attribute_update_or_new } from "../../services/attributesService"
+import pLimit from 'p-limit';
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
@@ -648,14 +649,18 @@ export default Vue.extend( {
         const { data: { attribute_template : { id }} } = await attribute_update_or_new(mode, this.project_string_id, item.get_API_data())
         item.set_id(id)
       } else {
-        console.log("DELETION")
+        const limit = pLimit(25);
+        const deletion_requests = item.map(to_delete => limit(() => attribute_update_or_new(mode, this.project_string_id, to_delete.get_API_data())))
+        const result = await Promise.all(deletion_requests);
+        console.log(result)
       }
     },
     delete_tree_item: function(item_id) {
       const all_relatives = find_all_relatives(item_id, this.tree_items_list)
       const list_copy = [...this.tree_items_list].filter(item => !all_relatives.includes(item.get_id()))
+      const list_to_delete = [...this.tree_items_list].filter(item => all_relatives.includes(item.get_id()))
       this.tree_items_list = list_copy
-      this.save_tree_item("ARCHIVE", "node_to_remove")
+      this.save_tree_item("ARCHIVE", list_to_delete)
     },
     change_tree_item_name: function(e, item_id) {
       const new_name = e.target.value
