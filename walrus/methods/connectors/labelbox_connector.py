@@ -218,11 +218,8 @@ class LabelboxConnector(Connector):
 
                 )
                 session.add(existing_attr)
-                print('OOPPPP0', option)
                 logger.info(f'Created Radio Attribute Option: {option.label}')
             else:
-
-
                 logger.info(f'Radio option {option.label} already exists.')
 
     def __classification_has_nested_data(self, clsf):
@@ -236,37 +233,65 @@ class LabelboxConnector(Connector):
                 return True
         return False
 
-    def __set_treeview_attribute_data(self, session, clsf, existing_attribute_group, member, tree_view_data = None):
+    def __set_treeview_attribute_data(self, session, clsf, existing_attribute_group, member, existing_attr_parent_id = None):
 
         in_root = False
-        if tree_view_data is None:
+        if existing_attr_parent_id is None:
             tree_view_data = []
             in_root = True
 
         logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name}')
         for option in clsf.options:
             type_opt = option.__class__.__name__
-            display_name = option.name if type_opt == 'Classification' else option.value
-            item = {
-                'id': str(uuid.uuid4()),
-                'name': display_name
-            }
+            display_name = option.name if type_opt == 'Classification' else option.label
+            existing_attr = Attribute_Template.get_by_name_and_parent_id(
+                session = session,
+                attr_template_group = existing_attribute_group,
+                name = display_name,
+                parent_id = existing_attr_parent_id
+            )
+            if existing_attr is None:
+                existing_attr = Attribute_Template.new(
+                    existing_attribute_group.project,
+                    member,
+                    existing_attribute_group,
+                    name = display_name,
+                    parent_id = existing_attr_parent_id
+
+                )
+                session.add(existing_attr)
+                session.flush()
+                logger.info(f'Created Tree View Attribute Option: {display_name}')
+            existing_map = ExternalMap.get(
+                session = session,
+                external_id = option.feature_schema_id,
+                diffgram_class_string = 'attribute_template',
+                type = 'labelbox_feature_schema_id',
+                attribute_template_id = existing_attr.id
+            )
+            if not existing_map:
+                map = ExternalMap.new(
+                    session = session,
+                    external_id = option.feature_schema_id,
+                    diffgram_class_string = 'attribute_template',
+                    type = 'labelbox_feature_schema_id',
+                    attribute_template_id = existing_attr.id
+                )
+                session.add(map)
+                logger.info(f'Created external map labelbox_feature_schema_id {existing_attr.id} => {option.feature_schema_id}')
+            else:
+                logger.info(f'Tree View option {display_name} already exists.')
+
             if option.options and len(option.options) > 0:
-                item['children'] = []
                 self.__set_treeview_attribute_data(
                     session = session,
                     clsf = option,
                     existing_attribute_group = existing_attribute_group,
                     member = member,
-                    tree_view_data = item['children'],
+                    existing_attr_parent_id = existing_attr.id,
                 )
                 logger.info(f'Created Tree View Data Attribute Option: {display_name}')
-            tree_view_data.append(item)
-
         if in_root is True:
-            existing_attribute_group.tree_data = {'data': tree_view_data}
-            session.add(existing_attribute_group)
-
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
 
@@ -486,12 +511,20 @@ class LabelboxConnector(Connector):
     def __get_tree_attribute_allowed_schemas(self, classification):
 
         type_opt = classification.__class__.__name__
+        result = [classification.feature_schema_id]
         display_name = classification.name if type_opt == 'Classification' else classification.label
-        result = {'name': display_name, 'is_selected': False}
+        result_name = [display_name]
         for option in classification.options:
-            result[option.feature_schema_id] = self.__get_tree_attribute_allowed_schemas(option)
+            type_opt = option.__class__.__name__
+            display_name = option.name if type_opt == 'Classification' else option.label
+            result.append(option.feature_schema_id)
+            result_name.append(display_name)
+            if option.options and len(option.options) > 0:
+                result_children, result_children_name = self.__get_tree_attribute_allowed_schemas(option)
+                result = result + result_children
+                result_name = result_name + result_children_name
 
-        return result
+        return result, result_name
 
     def __classification_belongs_to_tree_structure(self, tree_allowed_schemas: dict, classification):
         """
@@ -579,30 +612,66 @@ class LabelboxConnector(Connector):
         :param attr_group:
         :return:
         """
-
-        # First, get the root of the tree.
-        top_level_tree_classification = None
+        print('TREEE ATTRI GRUOPPPP', attr_group.id)
+        result = {}
+        root_classification = None
         for tool in ontology.tools():
             for clsf in tool.classifications:
-                type_opt = clsf.__class__.__name__
-                display_name = clsf.name if type_opt == 'Classification' else clsf.value
-                if display_name == classification['title']:
-                    top_level_tree_classification = clsf
-        if not top_level_tree_classification:
-            logger.error(f'Cannot find tree classification on labelbox {classification.name}')
+                if classification['schemaId'] == clsf.feature_schema_id:
+                    root_classification = clsf
+
+        if not root_classification:
+            logger.warning(f'Cannot find root classification for {classification}')
             return
 
-        # Generate empty tree view structure (all values unselected by default)
-        tree_structure_values = self.__get_tree_attribute_allowed_schemas(top_level_tree_classification)
-        del tree_structure_values['is_selected']
-        # Now select all the values based on the classifications on the instance from labelbox
-        for current_classification in all_classifications:
-            self.__set_selected_value_from_schema_id(current_classification,
-                                                     tree_structure_values = tree_structure_values)
+        tree_attribute_schema_ids, allowed_names = self.__get_tree_attribute_allowed_schemas(root_classification)
+        logger.info(f'Allowed schema IDs {tree_attribute_schema_ids}')
+        logger.info(f'Allowed schema Names {allowed_names}')
+        for classification_objs in all_classifications:
+            list_classification = [classification_objs]
+            if type(classification_objs) == list:
+                list_classification = classification_objs
+            for clsf in list_classification:
+                print('clsf', clsf['schemaId'],  clsf['featureId'])
+                if clsf['schemaId'] not in tree_attribute_schema_ids:
+                    print('SKIPPING', clsf)
+                    logger.info(f'Skipping for tree attribute {clsf["title"]}')
+                    continue
+                external_map = ExternalMap.get(
+                    session = session,
+                    type = 'labelbox_feature_schema_id',
+                    external_id = clsf['schemaId'],
+                    diffgram_class_string = 'attribute_template',
+                )
+                print('matched for', clsf['title'], clsf['schemaId'], tree_attribute_schema_ids)
+                print('external_map', external_map, 'clsf', clsf)
+                attr_template_parent_id = None
+                if external_map:
+                    attr_template_parent_id = external_map.attribute_template_id
+                    logger.info(f'Found external mapping for schem_id {clsf["schemaId"]} Attr Template id {attr_template_parent_id}')
 
-        # Cleanup the tree structure so that labelbox ids are removed and only names exists as keys.
-        result = self.__replace_ids_with_names_on_tree_values(tree_structure_values)
-        # Now replace the featureschema ids with the names:
+                print('TRYNG TO FETCH TEMPLATE', attr_group, 'clsf', clsf)
+                answers_list = []
+                if 'answer' in clsf:
+                    answers_list = [clsf['answer']]
+                elif 'answers' in clsf:
+                    answers_list = clsf['answers']
+
+                for answer_obj in answers_list:
+                    answer_list = [answer_obj]
+                    if type(answer_obj) == list:
+                        answers_list = answer_obj
+                    for ans in answers_list:
+                        print('anssswererereer', ans, attr_template_parent_id, attr_group.id)
+                        attr_template = Attribute_Template.get_by_name_and_parent_id(session = session,
+                                                                                     attr_template_group = attr_group,
+                                                                                     name = ans['title'],
+                                                                                     parent_id = attr_template_parent_id)
+                        if not attr_template:
+                            logger.warning(f'Attribute template for {ans["title"]} not found. Skipping...')
+                            continue
+                        result[attr_template.id] = {'selected': True, 'name': attr_template.name}
+
 
         return result
 
@@ -671,6 +740,7 @@ class LabelboxConnector(Connector):
                     attr_template = Attribute_Template.get_by_name(session = session,
                                                                    attr_template_group = attr_group_obj,
                                                                    name = classification['answer']['title'])
+                    print('AAA', classification)
                     diffgram_instance['attribute_groups'][attr_group['id']] = {
                         'display_name': classification['answer']['title'],
                         'value': classification['answer']['value'],
