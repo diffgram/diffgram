@@ -350,14 +350,26 @@
                     :icon_style="true"
                     :bottom="true"
                   />
-                  <tooltip_button
-                    color="primary"
-                    icon="mdi-delete"
-                    tooltip_message="Delete item"
-                    @click="() => delete_tree_item(item.id)"
+                  <button_with_confirm
+                    @confirm_click="delete_tree_item(item.id)"
+                    class="text-right pa-4"
+                    icon="archive"
+                    color="red"
+                    :loading="loading"
+                    :disabled="loading"
                     :icon_style="true"
-                    :bottom="true"
-                />
+                    tooltip_message="Archive"
+                  >
+                    <template slot="content">
+                      <v-layout column>
+
+                        <v-alert type="warning">
+                            Are you sure? This will remove all the nested items too.
+                        </v-alert>
+
+                      </v-layout>
+                    </template>
+                  </button_with_confirm>
                 </v-layout>
                 <v-layout @click="add_root_tree_item" v-else flexe>
                   Add new
@@ -633,7 +645,6 @@ export default Vue.extend( {
     },
     save_tree_item: async function(mode, item) {
       if (mode !== "ARCHIVE") {
-        console.log(item.get_API_data())
         const { data: { attribute_template : { id }} } = await attribute_update_or_new(mode, this.project_string_id, item.get_API_data())
         item.set_id(id)
       } else {

@@ -22,7 +22,7 @@ def api_attribute_update_or_new(project_string_id):
 
     spec_list = [
         {'attribute': dict},
-        {'parent_id': int},
+        {'parent_id': {'type': int, 'required': False}},
         {'mode': str}]
 
     log, input, untrusted_input = regular_input.master(request = request,
