@@ -329,7 +329,7 @@
                   <input
                     style="width: 100%"
                     @click.stop.prevent=""
-                    @input="(e) => change_tree_item_name(e, item.id)"
+                    @change="(e) => change_tree_item_name(e, item.id)"
                     :value="item.name"
                   />
                   <tooltip_button
@@ -652,7 +652,6 @@ export default Vue.extend( {
         const limit = pLimit(25);
         const deletion_requests = item.map(to_delete => limit(() => attribute_update_or_new(mode, this.project_string_id, to_delete.get_API_data())))
         const result = await Promise.all(deletion_requests);
-        console.log(result)
       }
     },
     delete_tree_item: function(item_id) {
