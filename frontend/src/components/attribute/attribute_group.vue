@@ -150,10 +150,12 @@
 
           <v-treeview
             v-if="group.kind === 'tree' || !group.kind"
+            v-model="internal_selected"
             :items="tree_items"
             selectionType="independent"
             selectable
             open-on-click
+            @input="attribute_change"
           />
 
         </v-layout>
@@ -645,14 +647,23 @@
 
 
       },
-      mounted() {
-
-
-      },
-      destroyed() {
-
-      },
       computed: {
+        export_internal_selected: function() {
+          if (this.group.kind !== "tree") return this.internal_selected
+
+          const tree_array = this.internal_selected.map(item => {
+            const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
+            const { id, name } = item_node.get_API_data()
+            return {[id]: { name, "selected": true}}
+            
+          })
+
+          const tree_post_items = {
+            ...tree_array.reduce((a, v) => ({ ...a, ...v}), {}) 
+          }
+
+          return tree_post_items
+        },
 
         select_format: function () {
           /* Convert a list of data base objects into form
@@ -705,9 +716,15 @@
           }
 
         },
+        select_attribute: function() {
+          this.internal_selected = {
+            [this.group.id]: {
+
+            }
+          }
+        },
         // group change
         attribute_change: function () {
-
           /*
            *
            * the theory here is mainly that it is maintaining the same format
@@ -730,7 +747,7 @@
 
            *
            */
-          this.$emit('attribute_change', [this.group, this.internal_selected])
+          this.$emit('attribute_change', [this.group, this.export_internal_selected])
 
         },
 
@@ -878,6 +895,8 @@
                 return attribute.id == value.id
               })
 
+          } else if(this.group.kind == "tree") {
+            this.internal_selected = Object.keys(this.current_instance.attribute_groups[this.group.id]).map(key => parseInt(key))
           } else if (this.group.kind == "text") {
             // in this case nothing to change we are only storing text
             this.internal_selected = value
