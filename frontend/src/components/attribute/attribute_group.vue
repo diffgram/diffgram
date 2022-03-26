@@ -148,15 +148,35 @@
           >
           </v-date-picker>
 
-          <v-treeview
-            v-if="group.kind === 'tree' || !group.kind"
-            v-model="internal_selected"
-            :items="tree_items"
-            selectionType="independent"
-            selectable
-            open-on-click
-            @input="attribute_change"
-          />
+          <v-card
+            width="100%"
+          >
+            <v-sheet class="pa-4 primary lighten-2">
+              <v-text-field
+                v-model="search"
+                label="Start by typing attribute name"
+                dark
+                flat
+                solo-inverted
+                hide-details
+                clearable
+              ></v-text-field>
+            </v-sheet>
+            <p v-if="group.kind === 'tree' && tree_force_rerender">
+              Searching...
+            </p>
+            <v-treeview
+              v-if="group.kind === 'tree' && !tree_force_rerender"
+              v-model="internal_selected"
+              :items="tree_items"
+              :search="search"
+              :open-all="search.length > 0"
+              selectionType="independent"
+              selectable
+              open-on-click
+              @input="attribute_change"
+            />
+          </v-card>
 
         </v-layout>
 
@@ -524,11 +544,14 @@
 
       data() {
         return {
-
+          search: "",
+          tree_force_rerender: false,
+          tree_rerender_timeout: null,
           first_load: true,
           original_kind: null,
           min_value: 1,
           max_value: 10,
+          openIds: [],
 
           loading: false,
           error: {},
@@ -610,6 +633,13 @@
       },
 
       watch: {
+        search: function() {
+          clearTimeout(this.tree_rerender_timeout)
+          this.tree_force_rerender = true
+          this.tree_rerender_timeout = setTimeout(() => {
+            this.tree_force_rerender = false
+          }, 100)
+        },
 
         // not sure if this is right thing to watch
         current_instance() {
@@ -644,8 +674,6 @@
 
           this.tree_items = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
         }
-
-
       },
       computed: {
         export_internal_selected: function() {
@@ -715,13 +743,6 @@
             this.$refs.attribute_group_wizard.update_label_files(new_label_list)
           }
 
-        },
-        select_attribute: function() {
-          this.internal_selected = {
-            [this.group.id]: {
-
-            }
-          }
         },
         // group change
         attribute_change: function () {
