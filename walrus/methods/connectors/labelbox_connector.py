@@ -240,7 +240,7 @@ class LabelboxConnector(Connector):
             tree_view_data = []
             in_root = True
 
-        logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name}')
+        logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name} - {existing_attribute_group.id}')
         for option in clsf.options:
             type_opt = option.__class__.__name__
             display_name = option.name if type_opt == 'Classification' else option.label
@@ -267,17 +267,22 @@ class LabelboxConnector(Connector):
                 external_id = option.feature_schema_id,
                 diffgram_class_string = 'attribute_template',
                 type = 'labelbox_feature_schema_id',
-                attribute_template_id = existing_attr.id
+                attribute_template_id = existing_attr.id,
+                attribute_template_group_id = existing_attribute_group.id
             )
             if not existing_map:
+                # Need to commit the mapping to be able to query it afterward
                 map = ExternalMap.new(
                     session = session,
                     external_id = option.feature_schema_id,
                     diffgram_class_string = 'attribute_template',
                     type = 'labelbox_feature_schema_id',
-                    attribute_template_id = existing_attr.id
+                    attribute_template_id = existing_attr.id,
+                    attribute_template_group_id = existing_attribute_group.id,
+                    attribute_template_group = existing_attribute_group
                 )
                 session.add(map)
+                session.commit()
                 logger.info(f'Created external map labelbox_feature_schema_id {existing_attr.id} => {option.feature_schema_id}')
             else:
                 logger.info(f'Tree View option {display_name} already exists.')
@@ -642,6 +647,7 @@ class LabelboxConnector(Connector):
                     type = 'labelbox_feature_schema_id',
                     external_id = clsf['schemaId'],
                     diffgram_class_string = 'attribute_template',
+                    attribute_template_group_id = attr_group.id
                 )
                 print('matched for', clsf['title'], clsf['schemaId'], tree_attribute_schema_ids)
                 print('external_map', external_map, 'clsf', clsf)

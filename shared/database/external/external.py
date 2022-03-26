@@ -113,6 +113,7 @@ class ExternalMap(Base):
         if file_id is not None:
             file = File.get_by_id(session, file_id=file_id)
             session.add(file)
+        print('new with grouo', attribute_template_group_id)
         external_map = ExternalMap(
             type=type,
             external_id=external_id,
@@ -148,6 +149,7 @@ class ExternalMap(Base):
             diffgram_class_string: str = None,
             type: str = None,
             attribute_template_id: int = None,
+            attribute_template_group_id: int = None,
             limit=100,
             return_kind="first",  # [first, all, count]
             date_to=None,
@@ -171,6 +173,9 @@ class ExternalMap(Base):
 
         if attribute_template_id:
             query = query.filter(ExternalMap.attribute_template_id == attribute_template_id)
+
+        if attribute_template_group_id:
+            query = query.filter(ExternalMap.attribute_template_group_id == attribute_template_group_id)
 
         if file_id:
             if isinstance(file_id, collections.Iterable):
