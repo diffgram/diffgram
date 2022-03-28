@@ -672,7 +672,7 @@
             this.tree_items_list.push(new_node)
           })
 
-          this.tree_items = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
+          this.tree_items = construct_tree(this.tree_items_list)
         }
       },
       computed: {

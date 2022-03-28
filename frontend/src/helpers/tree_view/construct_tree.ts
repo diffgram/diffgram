@@ -43,6 +43,7 @@ export const build_path = (array: Array<any>, parent_id, path) => {
 
 export const construct_tree = (node_list: Array<Node>): Array<any> => {
     const node_list_working_copy = [...node_list]
+    const node_wait_list = []
     const tree = [];
 
     node_list_working_copy.map(item => {
@@ -55,9 +56,31 @@ export const construct_tree = (node_list: Array<Node>): Array<any> => {
             returned_path.map(q_item => {
                 track_item = track_item[q_item]
             })
-            track_item.children.push(render_item)
+            if (track_item) {
+                track_item.children.push(render_item)
+            } else {
+                node_wait_list.push(render_item)
+            }
         }
     })
+
+    while (node_wait_list.length !== 0) {
+        const render_item = node_wait_list.shift()
+        if (!render_item.parent) {
+            tree.push(render_item)
+        } else {
+            const returned_path = build_path(tree, render_item.parent, [])
+            let track_item: any = tree
+            returned_path.map(q_item => {
+                track_item = track_item[q_item]
+            })
+            if (track_item) {
+                track_item.children.push(render_item)
+            } else {
+                node_wait_list.push(render_item)
+            }
+        }
+    }
 
     return tree
 }
