@@ -617,7 +617,6 @@ class LabelboxConnector(Connector):
         :param attr_group:
         :return:
         """
-        print('TREEE ATTRI GRUOPPPP', attr_group.id)
         result = {}
         root_classification = None
         for tool in ontology.tools():
@@ -637,9 +636,7 @@ class LabelboxConnector(Connector):
             if type(classification_objs) == list:
                 list_classification = classification_objs
             for clsf in list_classification:
-                print('clsf', clsf['schemaId'],  clsf['featureId'])
                 if clsf['schemaId'] not in tree_attribute_schema_ids:
-                    print('SKIPPING', clsf)
                     logger.info(f'Skipping for tree attribute {clsf["title"]}')
                     continue
                 external_map = ExternalMap.get(
@@ -649,14 +646,11 @@ class LabelboxConnector(Connector):
                     diffgram_class_string = 'attribute_template',
                     attribute_template_group_id = attr_group.id
                 )
-                print('matched for', clsf['title'], clsf['schemaId'], tree_attribute_schema_ids)
-                print('external_map', external_map, 'clsf', clsf)
                 attr_template_parent_id = None
                 if external_map:
                     attr_template_parent_id = external_map.attribute_template_id
                     logger.info(f'Found external mapping for schem_id {clsf["schemaId"]} Attr Template id {attr_template_parent_id}')
 
-                print('TRYNG TO FETCH TEMPLATE', attr_group, 'clsf', clsf)
                 answers_list = []
                 if 'answer' in clsf:
                     answers_list = [clsf['answer']]
@@ -668,7 +662,6 @@ class LabelboxConnector(Connector):
                     if type(answer_obj) == list:
                         answers_list = answer_obj
                     for ans in answers_list:
-                        print('anssswererereer', ans, attr_template_parent_id, attr_group.id)
                         attr_template = Attribute_Template.get_by_name_and_parent_id(session = session,
                                                                                      attr_template_group = attr_group,
                                                                                      name = ans['title'],
@@ -746,7 +739,6 @@ class LabelboxConnector(Connector):
                     attr_template = Attribute_Template.get_by_name(session = session,
                                                                    attr_template_group = attr_group_obj,
                                                                    name = classification['answer']['title'])
-                    print('AAA', classification)
                     diffgram_instance['attribute_groups'][attr_group['id']] = {
                         'display_name': classification['answer']['title'],
                         'value': classification['answer']['value'],
