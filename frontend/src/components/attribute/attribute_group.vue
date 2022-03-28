@@ -160,6 +160,8 @@
                 solo-inverted
                 hide-details
                 clearable
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
               ></v-text-field>
             </v-sheet>
             <p v-if="group.kind === 'tree' && tree_force_rerender">

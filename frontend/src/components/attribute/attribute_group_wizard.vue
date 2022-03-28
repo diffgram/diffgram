@@ -330,6 +330,8 @@
                     style="width: 100%"
                     @click.stop.prevent=""
                     @change="(e) => change_tree_item_name(e, item.id)"
+                    @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                    @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
                     :value="item.name"
                   />
                   <tooltip_button
