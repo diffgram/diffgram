@@ -7,7 +7,7 @@ from shared.helpers import sessionMaker
 import threading
 import traceback
 logger = get_shared_logger()
-
+import json
 
 class ExternalMigrationManager:
     project_migration: ProjectMigration
@@ -21,14 +21,13 @@ class ExternalMigrationManager:
     def __set_migration_failure(self, error_key, error_message):
         if not self.project_migration.error_log:
             self.project_migration.error_log = {}
-        with sessionMaker.session_scope() as session:
-            migration = ProjectMigration.get_by_id(session, self.project_migration.id)
-            if migration.error_log is None:
-                migration.error_log = {}
-            migration.error_log[error_key] = error_message
-            migration.status = 'failed'
-            session.add(migration)
-            session.commit()
+        migration = ProjectMigration.get_by_id(self.session, self.project_migration.id)
+        if migration.error_log is None:
+            migration.error_log = {}
+        migration.error_log = {}
+        migration.error_log[error_key] = error_message
+        migration.status = 'failed'
+        self.session.add(migration)
         logger.error(error_message)
 
     def start_external_migration(self):
@@ -81,6 +80,7 @@ class ExternalMigrationManager:
 
                 }
             )
+
         except Exception as e:
             message = 'Project failed to migrate'
             logger.error(message)

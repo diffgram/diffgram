@@ -817,7 +817,10 @@ class LabelboxConnector(Connector):
         i = 0
         for data_row in lb_dataset.data_rows():
 
-            mime_type = data_row.media_attributes['mimeType']
+            mime_type = data_row.media_attributes.get('mimeType')
+            if not mime_type:
+                logger.warning(f'Cannot determine mime_type {data_row.media_attributes}')
+                continue
             if mime_type not in SUPPORTED_IMAGE_MIMETYPES:
                 logger.warning(f'Skipping data row {data_row.uid}. Type {mime_type} not supported')
                 continue
