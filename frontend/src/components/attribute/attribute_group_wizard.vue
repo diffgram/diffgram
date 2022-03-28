@@ -590,7 +590,7 @@ export default Vue.extend( {
       return 100 * (parseFloat(this.step) / 6);
     },
     tree_items: function() {
-      const tree = construct_tree(this.tree_items_list)
+      const tree = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
       const add_too_root_item = {
         name: "Add new",
         id: uuidv4()
