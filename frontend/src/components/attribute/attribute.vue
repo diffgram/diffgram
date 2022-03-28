@@ -73,7 +73,7 @@
 
 import axios from '../../services/customInstance';
 import attribute_new_or_update from './attribute_new_or_update.vue';
-
+import { attribute_update_or_new } from "../../services/attributesService"
 
  import Vue from "vue";
 
@@ -119,50 +119,25 @@ export default Vue.extend( {
       }
 
     },
-
-    created() {
-
-    },
-    computed: {
-
-    },
     methods: {
 
       // feels strange to have this here and NOT as part of the edit / update...
 
-      api_attribute_archive: function (mode) {
+      api_attribute_archive: async function (mode) {
 
         this.loading = true
         this.error = {}
         this.success = false
 
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/attribute',
-          {
-            attribute: this.attribute,
-            mode: mode
+        const { status, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
+        this.error = error
 
-          }).then(response => {
+        if (status === 200) {
+          this.$store.commit('attribute_refresh_group_list')
+          this.success = true
+        }
 
-            // WIP
-            // TODO handle refreshing this
-            this.$store.commit('attribute_refresh_group_list')
-
-            this.success = true
-            this.loading = false
-
-
-
-          }).catch(error => {
-
-            if (error.response.status == 400) {
-              this.error = error.response.data.log.error
-            }
-            this.loading = false
-            console.log(error)
-          });
-
+        this.loading = false
       }
 
     }

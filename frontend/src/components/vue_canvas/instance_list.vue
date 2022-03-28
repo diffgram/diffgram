@@ -789,29 +789,6 @@
           let b = instance_colour.rgba.b
           const preStrokeStyle = ctx.strokeStyle;
           ctx.strokeStyle = preStrokeStyle;
-          // 1) draw primary path
-          let centroid_x = points.map(p => p.x).reduce((a, b) => a+b) / points.length
-          let centroid_y = points.map(p => p.y).reduce((a, b) => a+b) / points.length
-          points = points.map(point => {
-              function rotate(cx, cy, x, y, angle) {
-                var radians = (Math.PI / 180) * angle,
-                  cos = Math.cos(radians),
-                  sin = Math.sin(radians),
-                  nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
-                  ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
-                return [nx, ny];
-              }
-              let res = rotate(centroid_x,centroid_y ,point.x , point.y , -90);
-            return {
-              x: res[0],
-              y: res[1],
-            }
-            // return {
-            //   x: point.x,
-            //   y: point.y
-            // }
-          })
-          console.log('poits', points)
           if (points.length >= 1) {
 
             this.draw_label(ctx, points[0].x, points[0].y, instance)

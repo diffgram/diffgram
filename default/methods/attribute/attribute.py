@@ -22,6 +22,7 @@ def api_attribute_update_or_new(project_string_id):
 
     spec_list = [
         {'attribute': dict},
+        {'parent_id': {'type': int, 'required': False}},
         {'mode': str}]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -43,7 +44,8 @@ def api_attribute_update_or_new(project_string_id):
             project = project,
             log = log,
             attribute_dict = input['attribute'],
-            mode = input['mode']
+            mode = input['mode'],
+            parent_id = input['attribute']['parent_id'],
         )
 
         # For init errors
@@ -97,13 +99,15 @@ class Attribute_Session():
         project,
         log,
         attribute_dict,
-        mode
+        mode,
+        parent_id
     ):
 
         self.session = session
         self.member = member
         self.project = project
         self.mode = mode
+        self.parent_id = parent_id
         self.log = log
 
         # Key point, attribute_dict is the UNTRUSTED dictionary input
@@ -176,7 +180,8 @@ class Attribute_Session():
             pass
 
         spec_list = [
-            {'name': str}]
+            {'name': str}
+        ]
 
         self.log, input = regular_input.input_check_many(
             spec_list = spec_list,
@@ -187,6 +192,7 @@ class Attribute_Session():
             return
 
         self.attribute_template.name = input['name']
+        self.attribute_template.parent_id = self.parent_id
 
         self.success()
 
@@ -201,9 +207,9 @@ class Attribute_Session():
         """
 
         """
-
         self.attribute_template = Attribute_Template.new(
             project = self.project,
             member = self.member,
             group = self.group,
+            parent_id = self.parent_id
         )

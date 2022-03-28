@@ -128,6 +128,9 @@ def group_update_core(
         return log
 
     if mode == "UPDATE":
+        print("--------------------------------")
+        print(tree_data)
+        print("--------------------------------")
 
         if label_file_list is not None:
             # Create Attribute_Template_Group_to_File for ones
