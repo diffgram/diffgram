@@ -140,7 +140,7 @@ import draggable from 'vuedraggable'
 
 import attribute_group from './attribute_group.vue';
 import attribute_kind_icons from './attribute_kind_icons.vue';
-import attribute_group_new from './attribute_group_new'
+import attribute_group_new from './attribute_group_new.vue'
 
 
  import Vue from "vue"; export default Vue.extend( {

@@ -40,10 +40,11 @@ class API_Permissions():
             Client secret, project string, and role level matches
         """
 
+        print('AAAA', client_secret, client_id, project_string_id, Roles)
+
         # Gets actual auth object
-
         auth = Auth_api.get(session, client_id)
-
+        print('auth', auth, auth.permission_level)
         if auth is None:
             return False
 

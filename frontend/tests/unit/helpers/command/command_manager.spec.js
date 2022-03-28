@@ -1,6 +1,6 @@
 import CommandManager from "../../../../src/helpers/command/command_manager";
-import TestCommand from "../TestCalsses/TestCommand";
-import TestHistory from "../TestCalsses/TestHistory"
+import TestCommand from "../TestClasses/TestCommand";
+import TestHistory from "../TestClasses/TestHistory"
 
 describe("Testing CommandManager class", () => {
     let command_manager;
@@ -16,7 +16,7 @@ describe("Testing CommandManager class", () => {
         test_command = new TestCommand("One", mockExecte, mockUndo);
         mockPop = jest.fn(() => test_command)
         mockRepush = jest.fn(() => test_command)
-        
+
         const test_history = new TestHistory(mockPush, mockPop, mockRepush);
         command_manager = new CommandManager(test_history);
     })

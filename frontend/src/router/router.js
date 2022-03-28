@@ -667,6 +667,24 @@ const routerOptions = [
     }
   },
   {
+    path: '/project/:project_string_id/migrate',
+    component: 'project/project_migrator_wizard',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Migrate Project"
+    }
+  },
+  {
+    path: '/project/:project_string_id/project-migrations',
+    component: 'project/project_migrations_list',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Project Migrations"
+    }
+  },
+  {
     path: '/project/:project_string_id/export',
     component: 'export/export_home',
     props: true,

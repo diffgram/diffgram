@@ -50,12 +50,14 @@
           <v-stepper-step
             editable
             :complete="step > 5"
-            step="5">
-            Options
+            step="5"
+          >
+            {{ group.kind !== "tree" ? "Options" : "Tree" }}
           </v-stepper-step>
 
-          <v-divider></v-divider>
+          <v-divider v-if="group.kind !== 'tree'"></v-divider>
           <v-stepper-step
+            v-if="group.kind !== 'tree'"
             editable
             :complete="step > 6"
             step="6">
@@ -69,7 +71,7 @@
           color="secondary"
           striped
           :value="global_progress"
-          height="7"
+          :height="group.kind !== 'tree' ? 7 : 6"
         >
         </v-progress-linear>
 
@@ -236,7 +238,7 @@
 
           <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
-          <v-layout column>
+          <v-layout v-if="group.kind !== 'tree'" column>
 
             <v_error_multiple :error="error">
             </v_error_multiple>
@@ -312,6 +314,72 @@
 
           </v-layout>
 
+          <v-layout v-else column>
+            <v_error_multiple :error="error" />
+
+            <h2 class="pb-2"> 5. Create your tree attribute:</h2>
+            <v-treeview
+              :items="tree_items"
+              :active="[]"
+              activatable
+              open-on-click
+            >
+              <template v-slot:label="{ item, open }">
+                <v-layout v-if="item.name !== 'Add new'" class="pa-2" style="border: 1px solid #e0e0e0">
+                  <input
+                    style="width: 100%"
+                    @click.stop.prevent=""
+                    @change="(e) => change_tree_item_name(e, item.id)"
+                    :value="item.name"
+                  />
+                  <tooltip_button
+                    v-if="open"
+                    color="primary"
+                    icon="mdi-plus"
+                    tooltip_message="Add child"
+                    @click.stop.prevent="() => add_tree_item([item.id])"
+                    :icon_style="true"
+                    :bottom="true"
+                  />
+                  <tooltip_button
+                    v-else
+                    color="primary"
+                    icon="mdi-plus"
+                    tooltip_message="Add child"
+                    @click="() => add_tree_item([item.id])"
+                    :icon_style="true"
+                    :bottom="true"
+                  />
+                  <button_with_confirm
+                    @confirm_click="delete_tree_item(item.id)"
+                    class="text-right pa-4"
+                    icon="archive"
+                    color="red"
+                    :loading="loading"
+                    :disabled="loading"
+                    :icon_style="true"
+                    tooltip_message="Archive"
+                  >
+                    <template slot="content">
+                      <v-layout column>
+
+                        <v-alert type="warning">
+                            Are you sure? This will remove all the nested items too.
+                        </v-alert>
+
+                      </v-layout>
+                    </template>
+                  </button_with_confirm>
+                </v-layout>
+                <v-layout @click="add_root_tree_item" v-else flexe>
+                  Add new
+                </v-layout>
+              </template>
+            </v-treeview>
+
+          </v-layout>
+
+
             <wizard_navigation
               @next="go_to_step(6)"
               @back="go_back_a_step()"
@@ -322,7 +390,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
+          <v-stepper-content v-if="group.kind !== 'tree'" step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -438,7 +506,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="7" data-cy="attribute_wizard_step_7">
+          <v-stepper-content :step="group.kind !== 'tree' ? 7 : 6" data-cy="attribute_wizard_step_7">
 
             <h2> Complete! Great work. </h2>
 
@@ -460,12 +528,17 @@
 
 <script lang="ts">
 
-
 import Vue from "vue";
 import draggable from 'vuedraggable'
 import attribute from './attribute.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
+import Tooltip_button from "../regular/tooltip_button.vue";
+import { v4 as uuidv4 } from "uuid";
+import { TreeNode } from "../../helpers/tree_view/Node"
+import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
+import { attribute_update_or_new } from "../../services/attributesService"
+import pLimit from 'p-limit';
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
@@ -473,12 +546,14 @@ export default Vue.extend( {
     label_select_only,
     attribute_new_or_update,
     draggable,
-    attribute
+    attribute,
+    Tooltip_button
   },
   props: {
-
     'value': {
-      default: null
+      default: {
+        tree_data: []
+      }
     },
     'kind_list': {
       default: []
@@ -504,12 +579,23 @@ export default Vue.extend( {
       step: 1,
       member_invited: false,
       toggle_global_attribute: 0,
-      group: {}
+      group: {},
+      add_path: [],
+      items: [],
+      tree_items_list: []
     }
   },
   computed: {
     global_progress: function () {
       return 100 * (parseFloat(this.step) / 6);
+    },
+    tree_items: function() {
+      const tree = construct_tree(this.tree_items_list)
+      const add_too_root_item = {
+        name: "Add new",
+        id: uuidv4()
+      }
+      return [...tree, add_too_root_item]
     },
   },
   created() {
@@ -520,6 +606,12 @@ export default Vue.extend( {
     else{
       this.toggle_global_attribute = 0
     }
+
+   this.group.attribute_template_list.map(attr => {
+     const new_node = new TreeNode(attr.group_id, attr.name)
+     new_node.initialize_existing_node(attr.id, attr.parent_id)
+     this.tree_items_list.push(new_node)
+   })
   },
   watch: {
     value: function (item) {
@@ -552,8 +644,44 @@ export default Vue.extend( {
     go_back_a_step: function(){
       this.step -= 1
     },
-
-  }
+    save_tree_item: async function(mode, item) {
+      if (mode !== "ARCHIVE") {
+        const { data: { attribute_template : { id }} } = await attribute_update_or_new(mode, this.project_string_id, item.get_API_data())
+        item.set_id(id)
+      } else {
+        const limit = pLimit(25);
+        const deletion_requests = item.map(to_delete => limit(() => attribute_update_or_new(mode, this.project_string_id, to_delete.get_API_data())))
+        await Promise.all(deletion_requests);
+      }
+    },
+    delete_tree_item: function(item_id) {
+      const all_relatives = find_all_relatives(item_id, this.tree_items_list)
+      const list_copy = [...this.tree_items_list].filter(item => !all_relatives.includes(item.get_id()))
+      const list_to_delete = [...this.tree_items_list].filter(item => all_relatives.includes(item.get_id()))
+      this.tree_items_list = list_copy
+      this.save_tree_item("ARCHIVE", list_to_delete)
+    },
+    change_tree_item_name: function(e, item_id) {
+      const new_name = e.target.value
+      const node_to_modify = this.tree_items_list.find(node => node.get_id() === item_id)
+      node_to_modify.update_name(new_name)
+      this.save_tree_item("UPDATE", node_to_modify)
+    },
+    add_tree_item: function(e) {
+      if (e.length > 0) {
+        const new_node = new TreeNode(this.group.id, `New item ${this.tree_items_list.length + 1}`)
+        new_node.set_parent(e[0])
+        this.tree_items_list.push(new_node)
+        this.save_tree_item("NEW", new_node)
+      }
+    },
+    add_root_tree_item: function() {
+      const new_node = new TreeNode(this.group.id, `New item ${this.tree_items_list.length + 1}`)
+      this.tree_items_list.push(new_node)
+      this.save_tree_item("NEW", new_node)
+    }
+   }
 }
 
-) </script>
+)
+</script>

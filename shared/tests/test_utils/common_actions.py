@@ -16,7 +16,7 @@ def add_auth_to_session(session, user):
     # Set the user session for request permissions.
     session['user_id'] = cookie_hash
     return session
-def create_project_auth(project, session):
+def create_project_auth(project, session, role = "Editor"):
     auth = Auth_api()
     session.add(auth)
 
@@ -29,7 +29,8 @@ def create_project_auth(project, session):
     member.auth_api = auth
     auth.member_id = member.id
 
-    auth.permission_level = 'Editor'
+
+    auth.permission_level = role
     auth.project_string_id = project.project_string_id
     auth.is_live = True
 
