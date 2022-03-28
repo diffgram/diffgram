@@ -42,6 +42,7 @@ export const build_path = (array: Array<any>, parent_id, path) => {
 }
 
 export const construct_tree = (node_list: Array<Node>): Array<any> => {
+    root_path = [];
     const node_list_working_copy = [...node_list]
     const node_wait_list = []
     const tree = [];
