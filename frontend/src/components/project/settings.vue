@@ -17,17 +17,12 @@
               <v-flex lg4>
                 <v-text-field label="Name"
                               v-model="project.name"
-                              :rules="[rules.name]">
+                              :rules="[rules.name]"
+                              @change="save">
                 </v-text-field>
               </v-flex>
 
             </v-card-text>
-            <v-card-actions>
-              <v-btn @click="save"
-                     color="primary">
-                Save settings
-              </v-btn>
-            </v-card-actions>
 
             </v-container>
           </v-card>
