@@ -173,7 +173,7 @@
               v-model="internal_selected"
               :items="tree_items"
               :search="search"
-              :open-all="search.length > 0"
+              :open-all="search && search.length > 0"
               selectionType="independent"
               selectable
               open-on-click
