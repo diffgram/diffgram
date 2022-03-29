@@ -15,7 +15,7 @@
             <v-card-text>
 
               <v-flex lg4>
-                <v-text-field label="Name"
+                <v-text-field label="Project Name"
                               v-model="project.name"
                               :rules="[rules.name]"
                               @change="save">
@@ -28,6 +28,21 @@
           </v-card>
 
         </v-container>
+
+
+        <v-container>
+
+          <v_collaborate_list_existing :project_string_id="project_string_id">
+          </v_collaborate_list_existing>
+
+        </v-container>
+        <v-container>
+
+          <v_collaborate_new :project_string_id="project_string_id">
+          </v_collaborate_new>
+
+        </v-container>
+
       <v-container>
 
         <v-card>
@@ -40,17 +55,6 @@
       </v-container>
 
 
-      <v-container>
-
-        <v_collaborate_new :project_string_id="project_string_id">
-        </v_collaborate_new>
-
-        <v_collaborate_list_existing :project_string_id="project_string_id">
-        </v_collaborate_list_existing>
-
-        <v-divider></v-divider>
-
-      </v-container>
 
         <v-container>
           <v-card>
