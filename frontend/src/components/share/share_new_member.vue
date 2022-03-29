@@ -50,7 +50,7 @@
 
           <auth_api_new :project_string_id="project_string_id"></auth_api_new>
 
-        </div>
+        </div> 
         <div v-else>
           <v-text-field label="Email"
                         v-model="email"
@@ -60,12 +60,24 @@
                         :disabled="loading">
           </v-text-field>
 
-          <v-select :items="permission_type_list"
-                    v-model="permission_type"
-                    label="Select permission"
-                    item-value="text"
-                    :disabled="loading"
-                    prepend-icon="security"></v-select>
+          <v-layout>
+            <v-select :items="permission_type_list"
+                      v-model="permission_type"
+                      label="Select permission"
+                      item-value="text"
+                      :disabled="loading"
+                      prepend-icon="security"></v-select>
+
+            <tooltip_button
+                tooltip_message="Help"
+                href="https://diffgram.readme.io/docs/project#project-roles"
+                target="_blank"
+                icon="help"
+                :icon_style="true"
+                color="primary">
+            </tooltip_button>
+
+          </v-layout>
 
           <v-layout>
             <v-text-field label="Optional: Include a personal message..."
