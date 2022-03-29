@@ -150,6 +150,7 @@
 
           <v-card
             width="100%"
+            v-if="group.kind === 'tree'"
           >
             <v-sheet class="pa-4 primary lighten-2">
               <v-text-field
@@ -160,13 +161,15 @@
                 solo-inverted
                 hide-details
                 clearable
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
               ></v-text-field>
             </v-sheet>
-            <p v-if="group.kind === 'tree' && tree_force_rerender">
+            <p v-if="tree_force_rerender">
               Searching...
             </p>
             <v-treeview
-              v-if="group.kind === 'tree' && !tree_force_rerender"
+              v-if="!tree_force_rerender"
               v-model="internal_selected"
               :items="tree_items"
               :search="search"
@@ -672,7 +675,7 @@
             this.tree_items_list.push(new_node)
           })
 
-          this.tree_items = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
+          this.tree_items = construct_tree(this.tree_items_list)
         }
       },
       computed: {

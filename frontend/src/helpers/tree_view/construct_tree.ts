@@ -42,24 +42,42 @@ export const build_path = (array: Array<any>, parent_id, path) => {
 }
 
 export const construct_tree = (node_list: Array<Node>): Array<any> => {
-  const node_list_working_copy = [...node_list]
-  const tree = [];
+    root_path = [];
+    const node_list_working_copy = [...node_list]
+    const node_wait_list = []
+    const tree = [];
 
-  node_list_working_copy.map(item => {
-    const render_item = item.get_render_data()
-    if (!render_item.parent) {
-      tree.push(render_item)
-    } else {
-      const returned_path = build_path(tree, render_item.parent, [])
-      let track_item: any = tree
+    node_list_working_copy.map(item => {
+        const render_item = item.get_render_data()
+        if (!render_item.parent) {
+            tree.push(render_item)
+        } else {
+            const returned_path = build_path(tree, render_item.parent, [])
+            let track_item: any = tree
+            returned_path.map(q_item => {
+                track_item = track_item[q_item]
+            })
+            if (returned_path && returned_path.length !== 0 && track_item) {
+                track_item.children.push(render_item)
+            } else {
+                node_wait_list.push(render_item)
+            }
+        }
+    })
 
-      console.log('AAAA', returned_path, tree, render_item)
-      returned_path.map(q_item => {
-        track_item = track_item[q_item]
-      })
-      track_item.children.push(render_item)
+    while (node_wait_list.length !== 0) {
+        const render_item = node_wait_list.shift()
+        const returned_path = build_path(tree, render_item.parent, [])
+        let track_item: any = tree
+        returned_path.map(q_item => {
+            track_item = track_item[q_item]
+        })
+        if (returned_path && returned_path.length !== 0 && track_item) {
+            track_item.children.push(render_item)
+        } else {
+            node_wait_list.push(render_item)
+        }
     }
-  })
 
-  return tree
+    return tree
 }

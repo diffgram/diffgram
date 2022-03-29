@@ -3621,6 +3621,9 @@ export default Vue.extend({
     update_canvas: async function () {
       this.refresh = new Date();
       this.canvas_element = document.getElementById("my_canvas");
+      if(!this.canvas_element){
+        return
+      }
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)

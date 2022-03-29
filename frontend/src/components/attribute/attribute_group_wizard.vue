@@ -330,6 +330,8 @@
                     style="width: 100%"
                     @click.stop.prevent=""
                     @change="(e) => change_tree_item_name(e, item.id)"
+                    @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                    @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
                     :value="item.name"
                   />
                   <tooltip_button
@@ -590,7 +592,7 @@ export default Vue.extend( {
       return 100 * (parseFloat(this.step) / 6);
     },
     tree_items: function() {
-      const tree = construct_tree(this.tree_items_list.sort((a, b) => a.get_id() - b.get_id()))
+      const tree = construct_tree(this.tree_items_list)
       const add_too_root_item = {
         name: "Add new",
         id: uuidv4()
