@@ -27,7 +27,7 @@
                 :loading="loading"
                 @click="member_kind = 'Developer Authentication (API/SDK)'"
                 :disabled="loading">
-            Developer Authentication (API/SDK)
+            Developer Key (API/SDK)
         </v-btn>
 
       </v-card-title>
@@ -38,9 +38,8 @@
           {{errors}}
         </v-alert>
 
-        <h2> <v-icon color="primary">mdi-plus</v-icon> Add members </h2>
-
-        <v-select :items="member_kind_list"
+        <v-select v-if="member_kind == 'Developer Authentication (API/SDK)'"
+                  :items="member_kind_list"
                   v-model="member_kind"
                   label="Member type"
                   item-value="text"
