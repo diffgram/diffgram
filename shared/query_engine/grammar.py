@@ -9,8 +9,11 @@ grammar_definition = """
     AND: "and"
     NAME: CNAME [DOT CNAME]+ | CNAME | NUMBER
     DOT: "."
-    %import common.CNAME 
+    AMPERSAND: "&"
+    CNAME: ("_"|LETTER|"&") ("_"|LETTER|DIGIT|"&")*
     %import common.NUMBER
+    %import common.LETTER
+    %import common.DIGIT
     _WHITESPACE: /[ \t]+/ 
     %ignore _WHITESPACE
 """
