@@ -53,7 +53,7 @@
 
         </div>
         <div v-else-if="type === 'operator'" class="d-flex justify-start align-center">
-          <h4 v-if="item === ''">Select an operator: </h4>
+          <h4>Select an operator: </h4>
           <v-btn class="ma-1" small @click="update_query(` > `)"> ></v-btn>
           <v-btn class="ma-1" small @click="update_query(` < `)"> <</v-btn>
           <v-btn class="ma-1" small @click="update_query(` >= `)"> >=</v-btn>
