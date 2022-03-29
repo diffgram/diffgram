@@ -165,6 +165,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         entity_type = self.__determine_entity_type(token)
         if entity_type == 'labels':
             label_name = token.value.split('.')[1]
+
             label_file = File.get_by_label_name(session = self.session,
                                                 label_name = label_name,
                                                 project_id = self.diffgram_query.project.id)
@@ -246,7 +247,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             compare_op = children[1]
             name2 = children[2]
             entity_type = self.__determine_entity_type(name1)
-
             if self.__validate_expression(name1, name2, compare_op):
                 value_1 = self.__parse_value(name1)
                 value_2 = self.__parse_value(name2)
@@ -291,6 +291,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             grammar defined in grammar.py
         :return:
         """
+
         self.visit(self.diffgram_query.tree)
         if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
             logger.error('Invalid query. Please check your syntax and try again.')
