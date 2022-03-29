@@ -50,7 +50,7 @@ jobs:
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-      - uses: docker/setup-buildx-action@v1
+      - uses: diffgram/publish_docker_images@compositev1
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
