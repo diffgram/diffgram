@@ -81,7 +81,6 @@ class ExternalMigrationManager:
 
                 }
             )
-            print('result', result)
         except Exception as e:
             message = 'Project failed to migrate'
             logger.error(message)
