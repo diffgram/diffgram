@@ -36,9 +36,11 @@
           </v_collaborate_list_existing>
 
         </v-container>
+
         <v-container>
 
-          <v_collaborate_new :project_string_id="project_string_id">
+          <v_collaborate_new :project_string_id="project_string_id"
+                             :enable_view_existing="false">
           </v_collaborate_new>
 
         </v-container>

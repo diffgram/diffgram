@@ -1,21 +1,9 @@
 <template>
   <div id="members_list">
 
-    <v-card-title>
 
-      <h3 v-if="mode == 'project'"
-          class="headline">Members</h3>
-
-       <h3 v-if="mode == 'org'"
-          class="headline">Members in {{$store.state.org.current.name}} </h3>
-
-      <v-btn color="blue darken-1" text
-             href="https://diffgram.readme.io/docs/project"
-             target="_blank"
-             icon>
-        <v-icon>help</v-icon>
-      </v-btn>
-
+    <h3 v-if="mode == 'org'"
+      class="headline">Members in {{$store.state.org.current.name}} </h3>
       <!--
       <v-spacer></v-spacer>
       <v-text-field v-model="search"
@@ -25,19 +13,31 @@
                     hide-details></v-text-field>
           -->
 
-    </v-card-title>
-
     <!-- Only show in project mode till support for removeing from org. -->
 
-    <v-btn  v-if="mode == 'project'"
-            @click="api_member_update('REMOVE')"
-            color="red"
-            class="white--text"
-            :loading="api_member_update_loading"
-            :disabled="api_member_update_loading || selected.length == 0">
-          Remove
-        <v-icon right> mdi-shield-remove </v-icon>
-    </v-btn>
+    <v-layout>
+      <tooltip_button
+        tooltip_message="Remove User"
+        @click="api_member_update('REMOVE')"
+        icon="mdi-shield-remove"
+        :icon_style="true"
+        color="red"
+        :loading="api_member_update_loading"
+        :disabled="api_member_update_loading || selected.length == 0"
+      >
+      </tooltip_button>
+
+      <tooltip_button
+        tooltip_message="Help"
+        href="https://diffgram.readme.io/docs/project"
+        target="_blank"
+        icon="help"
+        :icon_style="true"
+        color="primary"
+      >
+      </tooltip_button>
+
+    </v-layout>
 
     <v_error_multiple :error="error">
     </v_error_multiple>
@@ -58,7 +58,9 @@
                   class="elevation-1"
                   v-model="selected"
                   item-key="member_id"
-                  ref="members_list_table">
+                  ref="members_list_table"
+                  :loading="loading"
+                  >
 
       <!-- appears to have to be item for vuetify syntax-->
       <template slot="item" slot-scope="props">
@@ -88,17 +90,10 @@
 
 
           <td v-if="props.item.member_kind == 'human'">
-            {{props.item.username}}
-          </td>
-          <td v-if="props.item.member_kind == 'api'">
-            {{props.item.client_id}}
-          </td>
-
-          <td v-if="props.item.member_kind == 'human'">
             {{props.item.first_name}} {{ props.item.last_name }}
           </td>
           <td v-if="props.item.member_kind == 'api'">
-              SDK/API Access User
+            {{props.item.client_id}}
           <td>
 
             <div v-if="mode=='project'">
@@ -177,12 +172,6 @@ import Vue from "vue"; export default Vue.extend( {
         align: 'left',
         sortable: true,
         value: 'email'
-      },
-      {
-        text: "Member ID",
-        align: 'left',
-        sortable: false,
-        value: "name"
       },
       {
         text: "Name",
