@@ -45,7 +45,7 @@ def api_attribute_update_or_new(project_string_id):
             log = log,
             attribute_dict = input['attribute'],
             mode = input['mode'],
-            parent_id = input['attribute']['parent_id'],
+            parent_id = input['attribute'].get('parent_id') if input['attribute'] else None,
         )
 
         # For init errors
