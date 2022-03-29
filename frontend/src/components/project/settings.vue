@@ -57,24 +57,6 @@
           </v-card-text>
         </v-card>
       </v-container>
-      <v-container>
-        <v-card>
-          <v-container>
-
-            <h2> Resources </h2>
-
-              <v-btn color="blue darken-1"
-                      text
-                      @click="$router.push('/project/' + project_string_id + '/attributes')"
-                     >
-                <v-icon left>mdi-collage</v-icon>
-                Attributes
-              </v-btn>
-
-
-          </v-container>
-        </v-card>
-      </v-container>
 
 
       <v-container>
