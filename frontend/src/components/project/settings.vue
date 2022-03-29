@@ -21,20 +21,6 @@
                 </v-text-field>
               </v-flex>
 
-              <v-flex lg4>
-                <v-layout>
-
-                  <tooltip_button
-                      tooltip_message="Video help"
-                      href="https://diffgram.readme.io/docs/video-specifications"
-                      icon="help"
-                      :icon_style="true"
-                      color="primary">
-                  </tooltip_button>
-
-                </v-layout>
-              </v-flex>
-
             </v-card-text>
             <v-card-actions>
               <v-btn @click="save"
