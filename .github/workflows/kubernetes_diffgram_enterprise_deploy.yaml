@@ -76,6 +76,10 @@ jobs:
       - name: Create Diffgram Version Production From Tag or Branch
         run: |
           echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
         with:
@@ -135,6 +139,7 @@ jobs:
 
       - name: Check values.yaml
         run: cat values.yaml
+
 
       # Set the target Azure Kubernetes Service (AKS) cluster.
       - name: Set Kubernetes Cluster Context on AKS
@@ -219,6 +224,9 @@ jobs:
         run: |
           echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
 
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
         with:
@@ -226,7 +234,7 @@ jobs:
         env:
           diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
-          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
+          diffgramDomain: ${{ env.GITHUB_REF_SLUG }}.dataannotation.info
           useCertManager: true
           useTls: true
           dbSettings.dbProvider: azure
