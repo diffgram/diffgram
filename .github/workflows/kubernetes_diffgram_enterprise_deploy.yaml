@@ -77,9 +77,6 @@ jobs:
         run: |
           echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
 
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
-
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
         with:
@@ -226,6 +223,8 @@ jobs:
 
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
+        with:
+          slug-maxlength: 50
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
