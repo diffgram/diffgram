@@ -10,10 +10,10 @@ on:
         - production
 jobs:
   publishimages:
-    runs-on: ubuntu-latest
-    needs: [publish-images]
     uses: ./.github/workflows/publish_docker_images.yaml
     environment: ${{ github.event.inputs.environment }}
+    name: Publish Images
+
 
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
