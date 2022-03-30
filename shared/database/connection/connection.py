@@ -17,6 +17,7 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
     },
     'labelbox': {
         'labeling_interface': True,
+        'project_migration': True,
         'allowed_instance_types': ['box', 'polygon']
     },
     'scale_ai': {

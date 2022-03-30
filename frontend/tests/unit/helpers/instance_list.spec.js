@@ -1,5 +1,5 @@
 import InstanceList from "../../../src/helpers/instance_list";
-import TestInstance from "./TestCalsses/TestInstances";
+import TestInstance from "./TestClasses/TestInstances";
 
 describe("Testing InstanceList", () => {
     let instance_list;
@@ -59,44 +59,44 @@ describe("Testing InstanceList", () => {
     it("Constructor initializes correctly text_token instance", () => {
         const insatnces = [{
             id: 0,
-            label_file: {}, 
+            label_file: {},
             type: "text_token",
             creation_ref_id: "ref",
-            start_token: 0, 
+            start_token: 0,
             end_token: 0
         }]
         const instance_list = new InstanceList(insatnces)
-        
+
         expect(instance_list.get().length).toEqual(1)
     })
 
     it("Constructor initializes correctly relation instance", () => {
         const insatnces = [{
             id: 0,
-            label_file: {}, 
+            label_file: {},
             type: "relation",
             creation_ref_id: "ref",
-            from_instance_id: 0, 
-            to_instance_id: 0, 
+            from_instance_id: 0,
+            to_instance_id: 0,
             soft_delete: false
         }]
         const instance_list = new InstanceList(insatnces)
-        
+
         expect(instance_list.get().length).toEqual(1)
     })
 
     it("Constructor does not initialize unknown instance type instance", () => {
         const insatnces = [{
             id: 0,
-            label_file: {}, 
+            label_file: {},
             type: "other",
             creation_ref_id: "ref",
-            from_instance_id: 0, 
-            to_instance_id: 0, 
+            from_instance_id: 0,
+            to_instance_id: 0,
             soft_delete: false
         }]
         const instance_list = new InstanceList(insatnces)
-        
+
         expect(instance_list.get().length).toEqual(0)
     })
 })

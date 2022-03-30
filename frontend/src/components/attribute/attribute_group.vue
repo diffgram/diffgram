@@ -147,6 +147,40 @@
             clearable
           >
           </v-date-picker>
+
+          <v-card
+            width="100%"
+            v-if="group.kind === 'tree'"
+          >
+            <v-sheet class="pa-4 primary lighten-2">
+              <v-text-field
+                v-model="search"
+                label="Start by typing attribute name"
+                dark
+                flat
+                solo-inverted
+                hide-details
+                clearable
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+              ></v-text-field>
+            </v-sheet>
+            <p v-if="tree_force_rerender">
+              Searching...
+            </p>
+            <v-treeview
+              v-if="!tree_force_rerender"
+              v-model="internal_selected"
+              :items="tree_items"
+              :search="search"
+              :open-all="search && search.length > 0"
+              selectionType="independent"
+              selectable
+              open-on-click
+              @input="attribute_change"
+            />
+          </v-card>
+
         </v-layout>
 
       </v-container>
@@ -465,6 +499,8 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
+  import { construct_tree } from "../../helpers/tree_view/construct_tree"
+  import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
 
@@ -511,11 +547,14 @@
 
       data() {
         return {
-
+          search: "",
+          tree_force_rerender: false,
+          tree_rerender_timeout: null,
           first_load: true,
           original_kind: null,
           min_value: 1,
           max_value: 10,
+          openIds: [],
 
           loading: false,
           error: {},
@@ -566,7 +605,13 @@
               'name': 'date',
               'icon': 'mdi-calendar',
               'color': 'primary'
-            }
+            },
+            {
+              'display_name': 'Tree',
+              'name': 'tree',
+              'icon': 'mdi-file-tree',
+              'color': 'primary'
+            },
 
             // future
             /*
@@ -583,12 +628,21 @@
 
           label_file_list: [],
 
-          group_internal: {}
+          group_internal: {},
+          tree_items_list: [],
+          tree_items: []
 
         }
       },
 
       watch: {
+        search: function() {
+          clearTimeout(this.tree_rerender_timeout)
+          this.tree_force_rerender = true
+          this.tree_rerender_timeout = setTimeout(() => {
+            this.tree_force_rerender = false
+          }, 100)
+        },
 
         // not sure if this is right thing to watch
         current_instance() {
@@ -614,15 +668,33 @@
 
         this.group_internal = this.$props.group
 
-      },
-      mounted() {
+        if (this.group.kind === "tree") {
+          this.group.attribute_template_list.map(attr => {
+            const new_node = new TreeNode(attr.group_id, attr.name)
+            new_node.initialize_existing_node(attr.id, attr.parent_id)
+            this.tree_items_list.push(new_node)
+          })
 
-
-      },
-      destroyed() {
-
+          this.tree_items = construct_tree(this.tree_items_list)
+        }
       },
       computed: {
+        export_internal_selected: function() {
+          if (this.group.kind !== "tree") return this.internal_selected
+
+          const tree_array = this.internal_selected.map(item => {
+            const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
+            const { id, name } = item_node.get_API_data()
+            return {[id]: { name, "selected": true}}
+            
+          })
+
+          const tree_post_items = {
+            ...tree_array.reduce((a, v) => ({ ...a, ...v}), {}) 
+          }
+
+          return tree_post_items
+        },
 
         select_format: function () {
           /* Convert a list of data base objects into form
@@ -677,7 +749,6 @@
         },
         // group change
         attribute_change: function () {
-
           /*
            *
            * the theory here is mainly that it is maintaining the same format
@@ -700,7 +771,7 @@
 
            *
            */
-          this.$emit('attribute_change', [this.group, this.internal_selected])
+          this.$emit('attribute_change', [this.group, this.export_internal_selected])
 
         },
 
@@ -848,6 +919,8 @@
                 return attribute.id == value.id
               })
 
+          } else if(this.group.kind == "tree") {
+            this.internal_selected = Object.keys(this.current_instance.attribute_groups[this.group.id]).map(key => parseInt(key))
           } else if (this.group.kind == "text") {
             // in this case nothing to change we are only storing text
             this.internal_selected = value
@@ -1024,7 +1097,8 @@
               min_value: min_value,
               max_value: max_value,
               mode: mode,
-              is_global: this.group.is_global
+              is_global: this.group.is_global,
+              tree_data: this.group.tree_data
 
             }).then(response => {
 

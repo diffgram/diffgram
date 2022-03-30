@@ -789,7 +789,6 @@
           let b = instance_colour.rgba.b
           const preStrokeStyle = ctx.strokeStyle;
           ctx.strokeStyle = preStrokeStyle;
-          // 1) draw primary path
           if (points.length >= 1) {
 
             this.draw_label(ctx, points[0].x, points[0].y, instance)

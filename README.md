@@ -11,7 +11,7 @@ _________________
 [Join Slack Community](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
 ![](./github_assets/slack.PNG)
 •
-[Enterprise](https://diffgram.com/enterprise)
+[Enterprise](https://diffgram.com/main/enterprise)
 •
 [Twitter](https://twitter.com/diffgram)
 
@@ -171,7 +171,7 @@ For more detail [Compare Diffgram Versions](https://diffgram.readme.io/docs/diff
 [Learn more.](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise#premium-licenses-with-open-source)
 
 ### Enterprise
-[Enterprise Edition](https://diffgram.com/enterprise).
+[Enterprise Edition](https://diffgram.com/main/enterprise).
 For companies and teams with 20+ users.
 This is our best level of support, Enterprise focused features, SLAs, and More.
 

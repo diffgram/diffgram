@@ -1,5 +1,5 @@
 import CommandHistory from "../../../src/helpers/history";
-import TestCommand from "./TestCalsses/TestCommand";
+import TestCommand from "./TestClasses/TestCommand";
 
 describe("Testing CommandHistory class", () => {
     let history;
@@ -27,7 +27,7 @@ describe("Testing CommandHistory class", () => {
     it("Successfully undo command", () => {
         history.push(test_command);
         const undone_command = history.pop();
-        
+
         expect(undone_command).toEqual(test_command)
         expect(history.undo_posible).toBeFalsy()
         expect(history.redo_posible).toBeTruthy()
@@ -44,14 +44,14 @@ describe("Testing CommandHistory class", () => {
 
     it("Return null from undo command if undo is not posible", () => {
         expect(history.undo_posible).toBeFalsy();
-        
+
         const undone_command = history.pop();
         expect(undone_command).toEqual(null);
     })
 
     it("Return null from redo command if redo is not posible", () => {
         expect(history.redo_posible).toBeFalsy();
-        
+
         const redone_command = history.repush();
         expect(redone_command).toEqual(null);
     })

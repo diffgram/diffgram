@@ -49,7 +49,7 @@ import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
-
+from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -611,7 +611,7 @@ class Process_Media():
         )
         if existing_file_list:
             self.input.status = "failed"
-            self.input.status_text = f"Existing filename with ID {str(existing_file_list[0].id)} in directory."
+            self.input.status_text = f"Filename {self.input.original_filename} Already Exists in Dir. Existing ID is:{str(existing_file_list[0].id)}"
             self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }
@@ -1540,6 +1540,46 @@ class Process_Media():
 
         return True
 
+    def rotate_instance_list(self, instance_list, width, height):
+
+        if not instance_list:
+            return
+        logger.warning('Rotating Instance List')
+        for i in range(0, len(instance_list)):
+            instance_list[i] = rotate_instance_dict_90_degrees(instance = instance_list[i],
+                                                               width = width,
+                                                               height = height)
+
+        return instance_list
+
+
+    def check_metadata_and_auto_correct_instances(self, imageio_read_image, image_metadata):
+        if not self.input.auto_correct_instances_from_image_metadata:
+            return
+        if not image_metadata:
+            return
+        if image_metadata.get('width') is None or image_metadata.get('height') is None:
+            return
+        logger.info('Checking matching metadata and readed image width/height...')
+        readed_image_height = imageio_read_image.shape[0]
+        readed_image_width = imageio_read_image.shape[1]
+        logger.info(f'Readed Image width: {readed_image_width} height: {readed_image_height}')
+
+        if readed_image_width == readed_image_height:
+            return
+
+        metadata_width = image_metadata.get('width')
+        metadata_height = image_metadata.get('height')
+        logger.info(f'Metadata width: {metadata_width} height: {metadata_height}')
+
+        if metadata_height == readed_image_width and metadata_width == readed_image_height:
+            logger.warning('Detected flipped coordinates on image. Rotating instances to correct positioning')
+            if self.input.instance_list and self.input.instance_list.get('list'):
+                self.input.instance_list['list'] = self.rotate_instance_list(self.input.instance_list.get('list'),
+                                                                             readed_image_width,
+                                                                             readed_image_height)
+
+
     def process_one_image_file(self):
 
         """
@@ -1574,10 +1614,19 @@ class Process_Media():
 
         self.resize_raw_image()
 
+        self.check_metadata_and_auto_correct_instances(
+            imageio_read_image = self.raw_numpy_image,
+            image_metadata = self.input.image_metadata
+        )
+
         self.save_raw_image_file()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_file")
+            return
         self.save_raw_image_thumb()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_thumb")
+            return
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1753,10 +1802,11 @@ class Process_Media():
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
         # Use original file for jpg and jpeg
-        if str(self.input.extension) in ['.jpg', '.jpeg']:
+        extension = str(self.input.extension).lower()
+        if extension in ['.jpg', '.jpeg']:
             new_temp_filename = self.input.temp_dir_path_and_filename
         # If PNG is used check compression
-        elif str(self.input.extension) == '.png':
+        elif extension == '.png':
             new_temp_filename = self.input.temp_dir_path_and_filename
             with open(self.input.temp_dir_path_and_filename, 'rb') as f:
                 f.seek(63)
@@ -1769,21 +1819,30 @@ class Process_Media():
                                     str(self.input.extension)
                 imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
         #For bmp, tif and tiff files save as PNG and compress
-        elif str(self.input.extension) in ['.bmp', '.tif', '.tiff']:
+        elif extension in ['.bmp', '.tif', '.tiff']:
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
         else:
             raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
             pass
 
-        data_tools.upload_to_cloud_storage(
-            temp_local_path = new_temp_filename,
-            blob_path = self.new_image.url_signed_blob_path,
-            content_type = "image/jpg",
-        )
+        try:
+            data_tools.upload_to_cloud_storage(
+                temp_local_path = new_temp_filename,
+                blob_path = self.new_image.url_signed_blob_path,
+                content_type = "image/jpg",
+            )
 
-        self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
+            self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
                                                                 self.new_image.url_signed_expiry)
+        except Exception as e:
+            message = f'Error uploading to cloud storage: {traceback.format_exc()}'
+            logger.error(message)
+            self.input.status = 'failed'
+            self.log['error']['upload_image'] = message
+            self.input.update_log = self.log
+            return
+
         return new_temp_filename
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:

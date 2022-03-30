@@ -1,7 +1,9 @@
 
 <template>
   <div class="d-flex align-center justify-center screen-height" v-cloak>
+
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
+      <v_error_multiple :error="error_login"></v_error_multiple>
       <div class="pa-4 ma-auto text-center" style="width: 100%">
         <img
           src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
@@ -233,6 +235,7 @@ export default Vue.extend({
       },
 
       start_magic_login_success: null,
+      error_login: null,
 
       otp: null,
       otp_current_session: null,
@@ -360,7 +363,7 @@ export default Vue.extend({
         })
         .catch((error) => {
           this.loading = false;
-
+          this.error_login = this.$route_api_errors(error)
           if (error.response) {
             if (error.response.status == 400) {
               this.error = error.response.data.log.error;

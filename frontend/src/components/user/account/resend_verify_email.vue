@@ -15,7 +15,8 @@
 
       <v-alert type="success"
                v-if="start_verify">
-        Check your email. :)
+        Sent. You may need to check your spam folder. If you cannot receive the code
+        please contact your site admin or support@diffgram.com and we will happily validate your account.
       </v-alert>
 
       <v-alert type="info"
