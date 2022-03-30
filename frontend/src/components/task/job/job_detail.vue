@@ -247,6 +247,9 @@
       </v-tabs-items>
     </v-tabs>
     <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
+    <v-snackbar v-model="no_task_snackbar" color="red">
+      No tasks available
+    </v-snackbar>
   </div>
 </template>
 
@@ -285,6 +288,7 @@ export default Vue.extend({
   data() {
     return {
       tab: null,
+      no_task_snackbar: false,
       items: [
         { text: "Oveview", icon: "mdi-view-dashboard" },
         { text: "Discussions", icon: "mdi-comment-multiple" },
@@ -421,10 +425,12 @@ export default Vue.extend({
     api_get_next_task_scoped_to_job: async function (job_id) {
       this.next_task_loading = true;
       const response = await nextTask(job_id);
-      if (response.status === 200) {
+      if (response.status === 200 && response.data.task) {
         let task = response.data.task;
         const routeData = `/task/${task.id}`;
         this.$router.push(routeData);
+      } else {
+        this.no_task_snackbar = true
       }
       this.next_task_loading = false;
     },
