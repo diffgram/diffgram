@@ -66,28 +66,34 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Create Diffgram Version Production From Tag or Branch
-      run: |
-        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
-    - name: Check if tag exists
-      run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }} > /dev/null ; echo $?
-    - name: Check out repository code
-      uses: actions/checkout@v2
-    - name: Test
-      run: |
-        echo $RELEASE_VERSION
-        echo ${{ env.diffgram_version }}
-    - name: Echo
-      run: echo ${{ steps.tag.outputs.result }}
     - run: |
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
-        pwd
-        ls -a
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+    - name: Check if tag exists
+      id: tagCheck
+      continue-on-error: true
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }} > /dev/null ; echo $?
+    - name: Check out repository code
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      uses: actions/checkout@v2
+    - name: Test
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.diffgram_version }}
+    - name: Echo
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: echo ${{ steps.tag.outputs.result }}
+    - name: Publish
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
@@ -105,28 +111,29 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Create Diffgram Version Production From Tag or Branch
-      run: |
-        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
-    - name: Check if tag exists
-      run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }} > /dev/null ; echo $?
-    - name: Check out repository code
-      uses: actions/checkout@v2
-    - name: Test
-      run: |
-        echo $RELEASE_VERSION
-        echo ${{ env.diffgram_version }}
-    - name: Echo
-      run: echo ${{ steps.tag.outputs.result }}
     - run: |
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
-        pwd
-        ls -a
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+    - name: Check if tag exists
+      id: tagCheck
+      continue-on-error: true
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }} > /dev/null ; echo $?
+    - name: Check out repository code
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      uses: actions/checkout@v2
+    - name: Echo
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: echo ${{ steps.tag.outputs.result }}
+    - name: Publish
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
@@ -143,28 +150,30 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Create Diffgram Version Production From Tag or Branch
-      run: |
-        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
-    - name: Check if tag exists
-      run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }} > /dev/null ; echo $?
-    - name: Check out repository code
-      uses: actions/checkout@v2
-    - name: Test
-      run: |
-        echo $RELEASE_VERSION
-        echo ${{ env.diffgram_version }}
-    - name: Echo
-      run: echo ${{ steps.tag.outputs.result }}
     - run: |
         echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
         gcloud auth activate-service-account --key-file=/gcloud-service-key.json
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
-        pwd
-        ls -a
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+    - name: Check if tag exists
+      id: tagCheck
+      continue-on-error: true
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }} > /dev/null ; echo $?
+
+    - name: Check out repository code
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      uses: actions/checkout@v2
+    - name: Echo
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: echo ${{ steps.tag.outputs.result }}
+    - name: Publish
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
+      run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher
