@@ -49,11 +49,11 @@ jobs:
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-      - uses: diffgram/diffgram/.github/actions/publish_docker_images-tests@testk8sdeployv1
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - uses: ./.github/workflows/publish_docker_images-tests@testk8sdeployv1
 
       - name: Extract branch name
         if: github.event_name != 'pull_request'
@@ -182,12 +182,11 @@ jobs:
       IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
     steps:
-      - uses: diffgram/diffgram/.github/actions/publish_docker_images-tests@testk8sdeployv1
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-
+      - uses: ./.github/workflows/publish_docker_images-tests@testk8sdeployv1
       - name: Extract branch name
         if: github.event_name != 'pull_request'
         shell: bash
