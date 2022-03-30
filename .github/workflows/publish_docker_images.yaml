@@ -11,7 +11,11 @@ jobs:
       env:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
+        DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
+    - name: Check if tag exists
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Get Version From Release Tag
@@ -51,6 +55,9 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
+    - name: Check if tag exists
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Get Release Tag
@@ -86,6 +93,9 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
+    - name: Check if tag exists
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Get Release Tag
@@ -120,6 +130,9 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
+    - name: Check if tag exists
+      run: |
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Get Release Tag

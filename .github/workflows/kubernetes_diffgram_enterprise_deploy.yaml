@@ -12,7 +12,6 @@ jobs:
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
     if: "github.event.inputs.environment == 'production'"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
@@ -147,7 +146,6 @@ jobs:
 
   Staging-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
-    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
     environment: ${{ github.event.inputs.environment }}
     if: "github.event.inputs.environment == 'staging'"
     env:
