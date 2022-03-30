@@ -49,7 +49,7 @@ jobs:
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
-      - uses: diffgram/publish_docker_images@testk8sdeployv1
+      - uses: diffgram/diffgram/  publish_docker_images@testk8sdeployv1
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
