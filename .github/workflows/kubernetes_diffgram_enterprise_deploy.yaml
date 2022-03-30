@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-      - uses: ./.github/workflows/publish_docker_images
+      - uses: ./.github/workflows/publish_docker_images.yaml
 
       - name: Extract branch name
         if: github.event_name != 'pull_request'
@@ -186,7 +186,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-      - uses: ./.github/workflows/publish_docker_images
+      - uses: ./.github/workflows/publish_docker_images.yaml
       - name: Extract branch name
         if: github.event_name != 'pull_request'
         shell: bash
