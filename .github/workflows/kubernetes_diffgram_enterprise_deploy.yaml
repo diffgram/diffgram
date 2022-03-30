@@ -224,7 +224,7 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
         with:
-          slug-maxlength: 50
+          slug-maxlength: 30
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
