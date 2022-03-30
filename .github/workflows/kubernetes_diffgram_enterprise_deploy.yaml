@@ -193,7 +193,7 @@ jobs:
           echo "----"
           ls -a ./.github/workflows
           echo "----"
-          cd ././github/workflows
+          cd ./.github/workflows
           pwd
       - uses: ./.github/workflows/publish_docker_images.yaml
       - name: Extract branch name
