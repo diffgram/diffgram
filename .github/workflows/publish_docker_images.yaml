@@ -19,9 +19,15 @@ jobs:
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
         DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
+    - run: |
+        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
+        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
+        gcloud config list
+        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
+        gcloud auth configure-docker --quiet
     - name: Create Diffgram Version Production From Tag or Branch
       run: |
-        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Test
       run: |
         echo  ${{ env.diffgram_version }}
@@ -37,13 +43,6 @@ jobs:
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
-        echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > /gcloud-service-key.json
-        gcloud auth activate-service-account --key-file=/gcloud-service-key.json
-        gcloud config list
-        gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
-        gcloud auth configure-docker --quiet
-        pwd
-        ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
@@ -63,7 +62,7 @@ jobs:
     steps:
     - name: Create Diffgram Version Production From Tag or Branch
       run: |
-        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }} > /dev/null ; echo $?
@@ -102,7 +101,7 @@ jobs:
     steps:
     - name: Create Diffgram Version Production From Tag or Branch
       run: |
-        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }} > /dev/null ; echo $?
@@ -140,7 +139,7 @@ jobs:
     steps:
     - name: Create Diffgram Version Production From Tag or Branch
       run: |
-        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+        echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }} > /dev/null ; echo $?
