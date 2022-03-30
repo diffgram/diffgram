@@ -117,8 +117,7 @@
                       <v-list
                         id="project_list"
                         v-if="$store.state.project_list &&
-                              $store.state.project_list.user_projects_list &&
-                              $store.state.project_list.user_projects_list.length > 1">
+                              $store.state.project_list.user_projects_list">
                         <v-list-item
                           class="project-option"
                           style="cursor: pointer"
