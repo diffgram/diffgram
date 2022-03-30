@@ -188,8 +188,13 @@ jobs:
           ref: ${{ github.ref }}
       - run: |
           ls -a ./
+          echo "----"
           ls -a ./.github
+          echo "----"
           ls -a ./.github/workflows
+          echo "----"
+          cd ././github/workflows
+          pwd
       - uses: ./.github/workflows/publish_docker_images.yaml
       - name: Extract branch name
         if: github.event_name != 'pull_request'
