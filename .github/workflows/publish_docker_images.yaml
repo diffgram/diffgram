@@ -41,17 +41,17 @@ jobs:
         echo "image_exists=true" >> $GITHUB_ENV
 
     - name: Check out repository code
-      if: "env.image_exists == 'true'"
+      if: "env.image_exists != 'true'"
       uses: actions/checkout@v2
     - name: Get Version From Branch Name
       if: github.ref_type != 'branch'
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Echo
-      if: "env.image_exists == 'true'"
+      if: "env.image_exists != 'true'"
       run: echo ${{ steps.tag.outputs.result }}
     - name: Publish
-      if: "env.image_exists == 'true'"
+      if: "env.image_exists != 'true'"
       run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }}
