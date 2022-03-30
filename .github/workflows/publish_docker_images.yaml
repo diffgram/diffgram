@@ -19,15 +19,15 @@ jobs:
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
         DOCKER_CLI_EXPERIMENTAL: enabled
     steps:
-    - name: Get Version From Release Tag/Branch
-      run: echo "RELEASE_VERSION=${{ github.ref_name }}"
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Test
       run: |
-        echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
+        echo  ${{ env.diffgram_version }}
     - name: Check if tag exists
       run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Get Version From Branch Name
@@ -45,11 +45,11 @@ jobs:
         pwd
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile.newrelic
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:newrelic-${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:newrelic-${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default --all-tags
 
   Publish-Walrus-Docker-Image:
@@ -61,17 +61,18 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Get Version From Release Tag/Branch
-      run: echo "RELEASE_VERSION=${{ github.ref_name }}"
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Test
       run: |
         echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
+        echo ${{ env.diffgram_version }}
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
@@ -83,12 +84,12 @@ jobs:
         pwd
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus:${{ env.RELEASE_VERSION }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus:${{ env.diffgram_version }}
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus -f walrus/Dockerfile.newrelic
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:newrelic-${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/walrus:newrelic-${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/walrus --all-tags
   Publish-Frontend-Docker-Image:
     runs-on: ubuntu-latest
@@ -99,17 +100,18 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Get Version From Release Tag/Branch
-      run: echo "RELEASE_VERSION=${{ github.ref_name }}"
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Test
       run: |
         echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
+        echo ${{ env.diffgram_version }}
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
@@ -121,11 +123,11 @@ jobs:
         pwd
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:newrelic-${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/frontend:newrelic-${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/frontend --all-tags
   Publish-Dispatcher-Docker-Image:
     runs-on: ubuntu-latest
@@ -136,17 +138,18 @@ jobs:
         GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
         GOOGLE_APPLICATION_CREDENTIALS: /gcloud-service-key.json
     steps:
-    - name: Get Version From Release Tag/Branch
-      run: echo "RELEASE_VERSION=${{ github.ref_name }}"
+    - name: Create Diffgram Version Production From Tag or Branch
+      run: |
+        echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
     - name: Check if tag exists
       run: |
-        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.RELEASE_VERSION }} > /dev/null ; echo $?
+        docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Check out repository code
       uses: actions/checkout@v2
     - name: Test
       run: |
         echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
+        echo ${{ env.diffgram_version }}
     - name: Echo
       run: echo ${{ steps.tag.outputs.result }}
     - run: |
@@ -158,9 +161,9 @@ jobs:
         pwd
         ls -a
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:newrelic-${{ env.RELEASE_VERSION }}
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/local_dispatcher:newrelic-${{ env.diffgram_version }}
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/local_dispatcher --all-tags
