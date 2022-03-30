@@ -11,8 +11,9 @@ describe("manual_user_assignment", () => {
       });
       cy.loginByForm(testUser.email, testUser.password)
       .gotToProject(testUser.project_string_id)
+      .createSampleTasksUsingBackend(10)
       .create_task_template()
-      .createSampleTasksUsingBackend(10);
+
     });
 
     it("Assign user to one task", () => {
