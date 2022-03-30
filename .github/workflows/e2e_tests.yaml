@@ -1,7 +1,7 @@
 name: Run E2E Cypress Tests
 on:
   pull_request:
-    types: [ready_for_review, push]
+    types: [ready_for_review]
   push:
 jobs:
   E2E-Tests:
