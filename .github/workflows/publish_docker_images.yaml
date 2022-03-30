@@ -32,14 +32,12 @@ jobs:
       run: |
         echo  ${{ env.diffgram_version }}
     - name: Check if tag exists
-      continue-on-error: true
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Set Existing flag
       if: ${{ failure() }}
       run: |
         echo "image_exists=true" >> $GITHUB_ENV
-
     - name: Check out repository code
       if: "env.image_exists != 'true'"
       uses: actions/checkout@v2
