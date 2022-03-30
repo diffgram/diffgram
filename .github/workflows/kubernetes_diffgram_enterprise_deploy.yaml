@@ -12,8 +12,6 @@ jobs:
   publishimages:
     uses: ./.github/workflows/publish_docker_images.yaml
     name: Publish Images
-    with:
-      environment: ${{ github.event.inputs.environment }}
     secrets:
       GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
 
