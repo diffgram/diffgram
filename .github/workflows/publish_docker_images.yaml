@@ -32,24 +32,22 @@ jobs:
       run: |
         echo  ${{ env.diffgram_version }}
     - name: Check if tag exists
+      id: tagCheck
+      continue-on-error: true
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }} > /dev/null ; echo $?
-    - name: Set Existing flag
-      if: ${{ failure() }}
-      run: |
-        echo "image_exists=true" >> $GITHUB_ENV
     - name: Check out repository code
-      if: "env.image_exists != 'true'"
+      if: "steps.tagCheck.outcome == 'failure'"
       uses: actions/checkout@v2
     - name: Get Version From Branch Name
       if: github.ref_type != 'branch'
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Echo
-      if: "env.image_exists != 'true'"
+      if: "steps.tagCheck.outcome == 'failure'"
       run: echo ${{ steps.tag.outputs.result }}
     - name: Publish
-      if: "env.image_exists != 'true'"
+      if: "steps.tagCheck.outcome == 'failure'"
       run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }}
