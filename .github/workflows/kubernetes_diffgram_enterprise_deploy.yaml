@@ -186,6 +186,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+        run: |
+          ls -a ./
+          ls -a ./.github
+          ls -a ./.github/workflows
       - uses: ./.github/workflows/publish_docker_images.yaml
       - name: Extract branch name
         if: github.event_name != 'pull_request'
