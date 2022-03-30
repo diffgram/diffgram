@@ -31,6 +31,7 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
+
     services:
       # Label used to access the service container
       postgres:
@@ -49,6 +50,10 @@ jobs:
     - run: |
         mkdir _work
         ln -s /opt/hostedtoolcache _work/_tool
+        export DISTRIB_ID=Ubuntu
+        export DISTRIB_RELEASE=18.04
+        export DISTRIB_CODENAME=bionic
+        export DISTRIB_DESCRIPTION="Ubuntu 18.04 LTS"
     - uses: actions/setup-node@v2
     - uses: actions/setup-python@v3
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
