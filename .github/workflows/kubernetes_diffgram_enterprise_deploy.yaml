@@ -68,14 +68,15 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: diffgram/diffgram-helm
-
+      - name: Create Diffgram Version Production From Tag or Branch
+        run: |
+          echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release != '$$current_branch'"
         with:
           files: 'values.yaml'
         env:
-          diffgramVersion: newrelic-${{ github.event.inputs.release }}
+          diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
           diffgramDomain: diffgram.com
           useCertManager: true
@@ -126,69 +127,9 @@ jobs:
           frontendService.numReplicas: 1
           walrusService.numReplicas: 1
           nodeGroupLabel: diffgram-apps
-
-      - name: Prepare app.yaml for helm chart.
-        uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release == '$$current_branch'"
-        with:
-          files: 'values.yaml'
-        env:
-          diffgramVersion: newrelic-${{ env.BRANCH_NAME }}
-          diffgramEdition: opencore
-          diffgramDomain: diffgram.com
-          useCertManager: true
-          useTls: true
-          dbSettings.dbProvider: azure
-          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
-          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
-          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
-          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
-          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
-          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
-          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
-          diffgramSecrets.FERNET_KEY: ${{secrets.FERNET_KEY}}
-          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
-          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
-          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
-          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
-          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
-          diffgramSettings.USERDOMAIN: kubernetes_production
-          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
-          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
-          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.DIFFGRAM_AZURE_CONTAINER_NAME}}
-          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.ML__DIFFGRAM_AZURE_CONTAINER_NAME}}
-          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
-          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
-          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
-          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
-          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
-          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
-          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
-          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
-          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
-          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
-          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
-          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
-          diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
-          walrusService.requests.memory: "32G"
-          walrusService.limits.memory: "32G"
-          walrusService.requests.cpu: "8"
-          walrusService.limits.cpu: "8"
-          defaultService.requests.memory: "4G"
-          defaultService.requests.cpu: "2"
-          frontendService.requests.memory: "2G"
-          frontendService.requests.cpu: "1"
-          defaultService.numReplicas: 3
-          frontendService.numReplicas: 1
-          walrusService.numReplicas: 1
-          nodeGroupLabel: diffgram-apps
-
 
       - name: Check values.yaml
         run: cat values.yaml
-
 
       # Set the target Azure Kubernetes Service (AKS) cluster.
       - name: Set Kubernetes Cluster Context on AKS
@@ -261,13 +202,16 @@ jobs:
         with:
           repository: diffgram/diffgram-helm
 
+      - name: Create Diffgram Version Production From Tag or Branch
+        run: |
+          echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release != '$$current_branch'"
         with:
           files: 'values.yaml'
         env:
-          diffgramVersion: ${{ github.event.inputs.release }}
+          diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
           diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
           useCertManager: true
@@ -321,68 +265,6 @@ jobs:
           walrusService.limits.cpu: "1"
           walrusService.limits.memory: "1G"
           nodeGroupLabel: null
-
-      - name: Prepare app.yaml for helm chart.
-        uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release == '$$current_branch'"
-        with:
-          files: 'values.yaml'
-        env:
-          diffgramVersion: ${{ env.BRANCH_NAME }}
-          diffgramEdition: opencore
-          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
-          useCertManager: true
-          useTls: true
-          dbSettings.dbProvider: azure
-          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
-          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
-          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
-          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
-          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
-          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
-          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
-          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
-          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
-          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
-          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
-          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
-          diffgramSettings.USERDOMAIN: kubernetes_production
-          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
-          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
-          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: staging1
-          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: staging1
-          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
-          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
-          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
-          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
-          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
-          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
-          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
-          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
-          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
-          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
-          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
-          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
-          diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
-          defaultService.numReplicas: 1
-          walrusService.numReplicas: 1
-          frontendService.numReplicas: 1
-          defaultService.requests.cpu: "2"
-          defaultService.requests.memory: "4G"
-          defaultService.limits.cpu: "2"
-          defaultService.limits.memory: "4G"
-          frontendService.requests.cpu: "2"
-          frontendService.requests.memory: "4G"
-          frontendService.limits.cpu: "2"
-          frontendService.limits.memory: "4G"
-          walrusService.requests.cpu: "2"
-          walrusService.requests.memory: "4G"
-          walrusService.limits.cpu: "2"
-          walrusService.limits.memory: "4G"
-          nodeGroupLabel: null
-
 
       - name: Check values.yaml
         run: cat values.yaml
