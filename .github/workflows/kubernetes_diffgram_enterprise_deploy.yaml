@@ -182,7 +182,7 @@ jobs:
       IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
     steps:
-      - uses: diffgram/publish_docker_images@testk8sdeployv1
+      - uses: diffgram/diffgram/publish_docker_images@testk8sdeployv1
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
