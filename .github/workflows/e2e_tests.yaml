@@ -31,7 +31,10 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
-
+        USERUSER: root
+        RUNNER_ALLOW_RUNASROOT: true
+        RUNNER_TOOL_CACHE: /opt/hostedtoolcache
+        AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
     services:
       # Label used to access the service container
       postgres:
@@ -48,14 +51,9 @@ jobs:
           --health-retries 5
     steps:
     - run: |
-        export USER=root
-        export RUNNER_ALLOW_RUNASROOT=true
-        export RUNNER_TOOL_CACHE=/opt/hostedtoolcache
-        export AGENT_TOOLSDIRECTORY=/opt/hostedtoolcache
         mkdir -p $AGENT_TOOLSDIRECTORY
         mkdir -p /actions-runner/_work
         ln -s $AGENT_TOOLSDIRECTORY /actions-runner/_work/_tool
-        curl -s https://raw.githubusercontent.com/actions/runner/v2.278.0/scripts/create-latest-svc.sh | bash -s myorg
     - uses: actions/setup-node@v2
     - uses: actions/setup-python@v3
       with:
