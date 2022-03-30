@@ -14,6 +14,7 @@ jobs:
     name: Publish Images
     secrets:
       GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
+      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
 
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest

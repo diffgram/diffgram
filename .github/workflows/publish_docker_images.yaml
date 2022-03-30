@@ -3,6 +3,11 @@ on:
   release:
     types: [published]
   workflow_call:
+    secrets:
+      GOOGLE_SERVICE_ACCOUNT_ENCODED:
+        required: true
+      GOOGLE_PROJECT_NAME:
+        required: true
 jobs:
   Publish-Default-Docker-Image:
     runs-on: ubuntu-latest
