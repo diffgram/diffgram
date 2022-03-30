@@ -37,17 +37,17 @@ jobs:
       run: |
         docker manifest inspect gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }} > /dev/null ; echo $?
     - name: Check out repository code
-      if: "steps.tagCheck.outcome == 'failure' && github.ref_type == 'branch'"
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       uses: actions/checkout@v2
     - name: Get Version From Branch Name
       if: github.ref_type != 'branch'
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
     - name: Echo
-      if: "steps.tagCheck.outcome == 'failure' && github.ref_type == 'branch'"
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       run: echo ${{ steps.tag.outputs.result }}
     - name: Publish
-      if: "steps.tagCheck.outcome == 'failure' && github.ref_type == 'branch'"
+      if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       run: |
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default -f default/Dockerfile
         docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/default:${{ env.diffgram_version }}
