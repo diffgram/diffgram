@@ -28,10 +28,20 @@ jobs:
       GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
 
+  set_env:
+    runs-on: ubuntu-latest
+     steps:
+       - name: Set environment from input
+         if: "github.event.inputs.environment"
+         run: echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+       - name: Set environment from commnet
+         if: "github.event.issue.pull_request != null"
+         run: echo "environment=staging" >> $GITHUB_ENV
 
   pr_commented:
     # This job only runs for pull request comments
     name: PR Comment Deploy
+    needs: set_env
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +58,7 @@ jobs:
           echo "valid_comment=true" >> $GITHUB_ENV
 
       - name: echo env
-        run: echo "env is..... ${{ github.event.inputs.environment }}"
+        run: echo "env is..... ${{ env.environment }}"
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
@@ -67,8 +77,8 @@ jobs:
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ github.event.inputs.environment }}
-    if: "github.event.inputs.environment == 'production' && !github.event.issue.pull_request"
+    environment: ${{ env.environment }}
+    if: "github.env.environment == 'production' && !github.event.issue.pull_request"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
       DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
@@ -203,8 +213,8 @@ jobs:
   Staging-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ github.event.inputs.environment }}
-    if: "github.event.inputs.environment == 'staging'"
+    environment: ${{ env.environment }}
+    if: "github.env.environment == 'staging'"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
