@@ -358,7 +358,8 @@ jobs:
 
       - name: Upgrade Diffgram with Helm
         run: |
-          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
+          kubectl create namespace diffgram-staging-${{ env.GITHUB_REF_SLUG }} --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.GITHUB_REF_SLUG }}
 
       - name: Comment PR
         if: ${{ failure() }}
