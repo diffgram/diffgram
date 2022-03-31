@@ -32,9 +32,9 @@ jobs:
         env:
           NUMBER: ${{ github.event.issue.number }}
       - name: Check that comments belongs to org/repo
-        if: contains(github.event.comment.author_association, ['OWNER', 'COLLABORATOR', 'MEMBER']) &&
-            (github.event.issue.pull_request != null) &&
-            contains(github.event.comment.body, '/deploy')
+        if: "contains(github.event.comment.author_association, ['OWNER', 'COLLABORATOR', 'MEMBER']) &&
+            github.event.issue.pull_request != null &&
+            contains(github.event.comment.body, '/deploy')"
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
       - uses: mshick/add-pr-comment@v1
