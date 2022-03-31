@@ -47,11 +47,19 @@ jobs:
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
 
+      - name: Get time
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
+
       - name: Comment PR
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀"
+          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
+          identifier: "PR_DEPLOY_STARTED"
 
 
   Production-Deploy-Azure-Kubernetes:
@@ -341,9 +349,17 @@ jobs:
         run: |
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
 
+      - name: Get time
+        if: "env.valid_comment == 'true'"
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
+
       - name: Comment PR
         if: "env.valid_comment == 'true'"
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login"
+          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login \n Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
