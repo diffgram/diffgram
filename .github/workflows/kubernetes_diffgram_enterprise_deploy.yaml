@@ -11,6 +11,8 @@ on:
         default: staging
   issue_comment:
     types: [created]
+    inputs:
+      environment: staging
 jobs:
   publishimages:
     needs: [pr_commented]
