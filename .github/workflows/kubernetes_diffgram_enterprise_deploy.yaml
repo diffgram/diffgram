@@ -34,7 +34,7 @@ jobs:
       - name: Set environment from input
         if: "github.event.inputs.environment"
         run: echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
-      - name: Set environment from commnet
+      - name: Set environment from comment
         if: "github.event.issue.pull_request != null"
         run: echo "environment=staging" >> $GITHUB_ENV
 
@@ -58,7 +58,7 @@ jobs:
           echo "valid_comment=true" >> $GITHUB_ENV
 
       - name: echo env
-        run: echo "env is.....  ${{ github.env.environment }}
+        run: echo "env is.....  ${{ github.env.environment }}"
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
