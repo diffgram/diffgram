@@ -38,13 +38,11 @@ jobs:
          github.event.comment.author_association == 'MEMBER' )"
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
-      - uses: mshick/add-pr-comment@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v1
         with:
-          message: |
-            This PR is now Being Deployed... 🚀🚀🚀🚀
-          allow-repeats: true
+          message: "This PR is now Being Deployed... 🚀🚀🚀🚀"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
