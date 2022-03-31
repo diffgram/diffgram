@@ -32,7 +32,6 @@ jobs:
   pr_commented:
     # This job only runs for pull request comments
     name: PR Comment Deploy
-    needs: set_env
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     steps:
