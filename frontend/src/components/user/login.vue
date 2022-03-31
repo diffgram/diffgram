@@ -1,6 +1,6 @@
 
 <template>
-  <div class="d-flex align-center justify-center screen-height" v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak style="background: red">
 
     <v-flex xs6 center v-if="$store.state.user.logged_in != true">
       <v_error_multiple :error="error_login"></v_error_multiple>
