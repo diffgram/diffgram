@@ -275,12 +275,12 @@ jobs:
         with:
           slug-maxlength: 30
 
-      - name: Create Diffgram Domain Slug
-        if: "github.event.issue.pull_request"
+      - name: Create Diffgram Domain Slug from Manual Deploy
+        if: "!github.event.issue.pull_request"
         run: |
           echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
-      - name: Create Diffgram Domain Slug
-        if: "!github.event.issue.pull_request"
+      - name: Create Diffgram Domain Slug from PR
+        if: "github.event.issue.pull_request"
         run: |
           echo "diffgram_domain_slug=${{ env.GITHUB_BASE_REF_SLUG }}" >> $GITHUB_ENV
 
