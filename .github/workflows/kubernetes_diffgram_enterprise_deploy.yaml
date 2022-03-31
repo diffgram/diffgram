@@ -338,5 +338,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           message: |
-            ✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info
+            ✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login
           allow-repeats: true
