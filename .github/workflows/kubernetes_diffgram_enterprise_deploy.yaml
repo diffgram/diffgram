@@ -42,8 +42,8 @@ jobs:
       - name: Comment PR
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "This PR is now Being Deployed... 🚀🚀🚀🚀"
-           github_token: ${{secrets.GITHUB_TOKEN}}
+          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀"
+          github_token: ${{secrets.GITHUB_TOKEN}}
 
 
   Production-Deploy-Azure-Kubernetes:
