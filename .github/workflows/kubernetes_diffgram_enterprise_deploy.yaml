@@ -280,7 +280,7 @@ jobs:
       - name: Create Diffgram Domain Slug
         if: "!github.event.issue.pull_request"
         run: |
-          echo "diffgram_domain_slug=${{ env.GITHUB_HEAD_REF_SLUG }}" >> $GITHUB_ENV
+          echo "diffgram_domain_slug=${{ env.GITHUB_BASE_REF_SLUG }}" >> $GITHUB_ENV
 
 
       - name: Prepare app.yaml for helm chart.
