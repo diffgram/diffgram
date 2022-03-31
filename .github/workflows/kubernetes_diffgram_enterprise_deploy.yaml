@@ -33,10 +33,14 @@ jobs:
     steps:
       - name: Set environment from input
         if: "github.event.inputs.environment"
-        run: echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+        run: |
+          echo "${{ github.event.inputs.environment }}" > DEPLOY_ENV
+          echo "$(cat DEPLOY_ENV)" > DEPLOY_ENV
       - name: Set environment from comment
         if: "github.event.issue.pull_request != null"
-        run: echo "environment=staging" >> $GITHUB_ENV
+        run: |
+          echo "staging" > DEPLOY_ENV
+          echo "staging" > DEPLOY_ENV
 
   pr_commented:
     # This job only runs for pull request comments
@@ -58,7 +62,9 @@ jobs:
           echo "valid_comment=true" >> $GITHUB_ENV
 
       - name: echo env
-        run: echo "env is.....  ${{ github.env.environment }}"
+        run: |
+          echo "env is.....  ${{ github.env.DEPLOY_ENV }}"
+          echo "env is.....  ${{ github.DEPLOY_ENV }}"
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
