@@ -335,6 +335,16 @@ jobs:
       - name: Check values.yaml
         run: cat values.yaml
 
+      - name: Get time
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                     (github.event.comment.author_association == 'OWNER' ||
+                     github.event.comment.author_association == 'COLLABORATOR' ||
+                     github.event.comment.author_association == 'MEMBER' )"
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
 
       # Set the target Azure Kubernetes Service (AKS) cluster.
       - name: Set Kubernetes Cluster Context on AKS
@@ -349,16 +359,15 @@ jobs:
         run: |
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
 
-      - name: Get time
-        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
-                     (github.event.comment.author_association == 'OWNER' ||
-                     github.event.comment.author_association == 'COLLABORATOR' ||
-                     github.event.comment.author_association == 'MEMBER' )"
-        uses: actions/github-script@v3
-        id: get-time
+      - name: Comment PR
+        if: ${{ failure() }}
+        uses: NejcZdovc/comment-pr@v1
         with:
-            script: return new Date().toString()
-            result-encoding: string
+          message: "❌ This PR has failed to deploy \n
+           Execution time: `${{steps.get-time.outputs.result}}` \n
+           Details: https://github.com/diffgram/diffgram/runs/${{ github.run_id }}"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+
 
       - name: Comment PR
         if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
@@ -367,5 +376,6 @@ jobs:
                      github.event.comment.author_association == 'MEMBER' )"
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login \n Execution time: `${{steps.get-time.outputs.result}}`"
+          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login \n
+          Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
