@@ -5,12 +5,11 @@ on:
       - 'main'
       - 'master'
       - 'releases/**'
-      - '**'
+      - 'fix/**'
   pull_request_target:
-    types: [ready_for_review]
+    types: [synchronize]
     branches:
       - '**'
-      - '!DAD**'
 jobs:
   Default-Service-Unit-Tests:
     runs-on: ubuntu-latest
