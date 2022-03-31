@@ -77,8 +77,8 @@ jobs:
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ job.set_env.env.environment }}
-    if: "job.set_env.env.environment == 'production' && !github.event.issue.pull_request"
+    environment: ${{ jobs.set_env.env.environment }}
+    if: "jobs.set_env.env.environment == 'production' && !github.event.issue.pull_request"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
       DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
@@ -213,8 +213,8 @@ jobs:
   Staging-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ job.set_env.env.environment }}
-    if: "job.set_env.env.environment == 'staging'"
+    environment: ${{ jobs.set_env.env.environment }}
+    if: "jobs.set_env.env.environment == 'staging'"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
