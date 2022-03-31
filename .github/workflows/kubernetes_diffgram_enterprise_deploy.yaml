@@ -47,6 +47,8 @@ jobs:
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
 
+      - name: echo env
+        run: echo "env is..... ${{ github.event.inputs.environment }}"
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
