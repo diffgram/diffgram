@@ -273,6 +273,16 @@ jobs:
         with:
           slug-maxlength: 30
 
+      - name: Create Diffgram Domain Slug
+        if: "github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
+      - name: Create Diffgram Domain Slug
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ env.GITHUB_HEAD_REF_SLUG }}" >> $GITHUB_ENV
+
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
         with:
@@ -280,7 +290,7 @@ jobs:
         env:
           diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
-          diffgramDomain: ${{ env.GITHUB_REF_SLUG }}.dataannotation.info
+          diffgramDomain: ${{ env.diffgram_domain_slug }}.dataannotation.info
           useCertManager: true
           useTls: true
           dbSettings.dbProvider: azure
@@ -358,8 +368,8 @@ jobs:
 
       - name: Upgrade Diffgram with Helm
         run: |
-          kubectl create namespace diffgram-staging-${{ env.GITHUB_REF_SLUG }} --dry-run=client -o yaml | kubectl apply -f -
-          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.GITHUB_REF_SLUG }}
+          kubectl create namespace diffgram-staging-${{ env.diffgram_domain_slug }} --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.diffgram_domain_slug }}
 
       - name: Comment PR
         if: ${{ failure() }}
