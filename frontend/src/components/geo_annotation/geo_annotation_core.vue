@@ -20,6 +20,10 @@ import Vue from "vue"
 import L from "leaflet"
 import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
+import CommandManager from "../../helpers/command/command_manager"
+import InstanceList from "../../helpers/instance_list"
+import History from "../../helpers/history"
+import { CreateInstanceCommand, DeleteInstanceCommand, UpdateInstanceLabelCommand } from "../../helpers/command/available_commands"
 import 'leaflet/dist/leaflet.css';
 
 export default Vue.extend({
@@ -49,6 +53,11 @@ export default Vue.extend({
     },
     data () {
         return {
+            // Command pattern
+            history: undefined,
+            instance_list: undefined,
+            command_manager: undefined,
+            //
             drawing_instance: false,
             drawing_center: null,
             drawing_latlng: null,
@@ -89,6 +98,11 @@ export default Vue.extend({
         }).addTo(map);
     },
     methods: {
+        on_mount: function() {
+            this.history = new History();
+            this.command_manager = new CommandManager(this.history)
+            this.instance_list = new InstanceList()
+        },
         draw_instance: function(e) {
             if (!this.drawing_instance) {
                 this.drawing_instance = true
