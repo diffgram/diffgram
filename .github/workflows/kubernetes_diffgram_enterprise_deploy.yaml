@@ -30,13 +30,13 @@ jobs:
 
   set_env:
     runs-on: ubuntu-latest
-     steps:
-       - name: Set environment from input
-         if: "github.event.inputs.environment"
-         run: echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
-       - name: Set environment from commnet
-         if: "github.event.issue.pull_request != null"
-         run: echo "environment=staging" >> $GITHUB_ENV
+    steps:
+      - name: Set environment from input
+        if: "github.event.inputs.environment"
+        run: echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+      - name: Set environment from commnet
+        if: "github.event.issue.pull_request != null"
+        run: echo "environment=staging" >> $GITHUB_ENV
 
   pr_commented:
     # This job only runs for pull request comments
