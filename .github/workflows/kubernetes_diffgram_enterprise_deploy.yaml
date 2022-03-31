@@ -29,7 +29,6 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
 
   set_env:
-    id: set_env
     runs-on: ubuntu-latest
     steps:
       - name: Set environment from input
