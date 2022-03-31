@@ -60,6 +60,7 @@ jobs:
           message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
           identifier: "PR_DEPLOY_STARTED"
+          single_comment: false
 
 
   Production-Deploy-Azure-Kubernetes:
@@ -367,6 +368,7 @@ jobs:
            Execution time: `${{steps.get-time.outputs.result}}` \n
            Details: https://github.com/diffgram/diffgram/runs/${{ github.run_id }}"
           github_token: ${{secrets.GITHUB_TOKEN}}
+          single_comment: false
 
 
       - name: Comment PR
