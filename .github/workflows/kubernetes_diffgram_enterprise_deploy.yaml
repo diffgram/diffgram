@@ -333,11 +333,9 @@ jobs:
         run: |
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
 
-      - uses: mshick/add-pr-comment@v1
+      - name: Comment PR
         if: "env.valid_comment == 'true'"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: NejcZdovc/comment-pr@v1
         with:
-          message: |
-            ✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login
-          allow-repeats: true
+          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login"
+          github_token: ${{secrets.GITHUB_TOKEN}}
