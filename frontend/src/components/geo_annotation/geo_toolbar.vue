@@ -286,8 +286,8 @@
                     :label_file="mode_text"
                     data-cy="edit_toggle"
                     :disabled="view_issue_mode"
-                    v-model="draw_mode_local"
-                    @change="$emit('edit_mode_toggle', draw_mode_local)"
+                    v-model="draw_mode"
+                    @change="$emit('edit_mode_toggle')"
                     :label="mode_text"
                 >
                 </v-switch>
@@ -430,16 +430,19 @@ export default Vue.extend({
             type: Object,
             default: {}
         },
+        draw_mode: {
+            type: Boolean,
+            default: {}
+        }
     },
     data() {
         return {
-            draw_mode_local: true,
             instance_type: "circle",
         }
     },
     computed: {
         mode_text: function () {
-            if (this.draw_mode_local == true) {
+            if (this.draw_mode == true) {
                 return "Draw";
             } else {
                 return "View";

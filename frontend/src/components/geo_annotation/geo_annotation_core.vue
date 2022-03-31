@@ -5,12 +5,21 @@
         :show_default_navigation="!task"
     >
         <template slot="second_row">
-            <geo_toolbar :instance_type_list="instance_type_list" />
+            <geo_toolbar 
+                :instance_type_list="instance_type_list" 
+                :draw_mode="draw_mode"
+                @edit_mode_toggle="change_mode" 
+            />
         </template>
     </main_menu>
     <div style="display: flex; flex-direction: row">
         <geo_sidebar />
-        <div id="map" ref="map" @click="draw_instance" style="height: calc(100vh - 100px); z-index: 0; width: 100%" />
+        <div 
+            id="map" 
+            ref="map" 
+            @click="draw_instance" 
+            :style="`height: calc(100vh - 100px); z-index: 0; width: 100%; cursor: ${cursor}`" 
+        />
     </div>
 </div>
 </template>
@@ -51,12 +60,19 @@ export default Vue.extend({
             }
         },
     },
+    computed: {
+        cursor: function() {
+            return this.draw_mode ? 'crosshair' : 'grab'
+        }
+    },
     data () {
         return {
             // Command pattern
             history: undefined,
             instance_list: undefined,
             command_manager: undefined,
+            // Mode
+            draw_mode: true,
             //
             drawing_instance: false,
             drawing_center: null,
@@ -140,6 +156,10 @@ export default Vue.extend({
         },
         toRadian: function (degree) {
             return degree*Math.PI/180;
+        },
+        change_mode: function() {
+            console.log("here")
+            this.draw_mode = !this.draw_mode
         }
     }
 })
