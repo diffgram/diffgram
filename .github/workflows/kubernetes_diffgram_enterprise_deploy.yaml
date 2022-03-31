@@ -8,19 +8,48 @@ on:
         options:
         - staging
         - production
+        default: staging
+  issue_comment:
+    types: [created]
 jobs:
   publishimages:
+    needs: [pr_commented]
     uses: ./.github/workflows/publish_docker_images.yaml
     name: Publish Images
     secrets:
       GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
 
+
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR Comment Deploy
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo A comment on PR $NUMBER
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+      - name: Check that comments belongs to org/repo
+        if: contains(github.event.comment.author_association, ['OWNER', 'COLLABORATOR', 'MEMBER']) &&
+            (github.event.issue.pull_request != null) &&
+            contains(github.event.comment.body, '/deploy')
+        run: |
+          echo "valid_comment=true" >> $GITHUB_ENV
+      - uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: |
+            This PR is now Being Deployed... 🚀🚀🚀🚀
+          allow-repeats: true
+
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
     environment: ${{ github.event.inputs.environment }}
-    if: "github.event.inputs.environment == 'production'"
+    if: "github.event.inputs.environment == 'production' && !github.event.issue.pull_request"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
       DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
@@ -302,3 +331,12 @@ jobs:
       - name: Upgrade Diffgram with Helm
         run: |
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
+
+      - uses: mshick/add-pr-comment@v1
+        if: "env.valid_comment == 'true'"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: |
+            ✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info
+          allow-repeats: true
