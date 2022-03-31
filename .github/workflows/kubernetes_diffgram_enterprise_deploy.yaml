@@ -12,7 +12,13 @@ on:
   issue_comment:
     types: [created]
     inputs:
-      environment: staging
+      environment:
+        type: choice
+        description: Select Environment
+        options:
+        - staging
+        - production
+        default: staging
 jobs:
   publishimages:
     needs: [pr_commented]
