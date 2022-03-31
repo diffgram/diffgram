@@ -57,7 +57,9 @@ jobs:
       - name: Comment PR
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n Execution time: `${{steps.get-time.outputs.result}}`"
+          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n
+          Execution time: `${{steps.get-time.outputs.result}}` \n
+          To See Deployment Progress go to: https://github.com/diffgram/diffgram/runs/${{ github.run_id }}"
           github_token: ${{secrets.GITHUB_TOKEN}}
           identifier: "PR_DEPLOY_STARTED"
           single_comment: false
