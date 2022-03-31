@@ -180,13 +180,10 @@ class DiffgramDataMocker:
 
         label_file_id = label_file_list[0].id
 
-        print(len(task_list))
         for task in task_list:
-            print(task.id, task.project_id)
             for i in range(count_per_task):
                 self.generate_instance(task, member_created_id, instance_type = "box", label_file_id = label_file_id)
 
-        print("Complete")
 
     def generate_instance(self, task, member_created_id, instance_type, label_file_id):
 
@@ -234,13 +231,14 @@ class DiffgramDataMocker:
             project = Project()
             self.session.add(project)
             self.session.flush()
-            print(project)
             mock_dataset = WorkingDir.new_blank_directory(
                 self.session, project_id = project.id, nickname = mock_dir_name)
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
-
+            # In this case we need to for process_media to finish uploading to that file_list query below return files.
+            # This is not a best practice, but this is only for testing mock data so its not that important.
+            time.sleep(10)
+            self.session.commit()
         elif num_files > self.NUM_IMAGES:
-            print("gen new ones")
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
 
         files_list = WorkingDirFileLink.file_list(
@@ -249,7 +247,6 @@ class DiffgramDataMocker:
             root_files_only = True,
             limit = num_files,
         )
-
         for file in files_list:
             new_file = file_transfer_core(
                 session = self.session,
@@ -356,7 +353,6 @@ class DiffgramDataMocker:
 
         project.set_cache_key_dirty('directory_list')
         self.session.add(project)
-
         return working_dir, False
 
     def generate_sample_files_for_dataset(self, dataset):
