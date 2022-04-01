@@ -33,6 +33,7 @@ import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
 import { CreateInstanceCommand, DeleteInstanceCommand, UpdateInstanceLabelCommand } from "../../helpers/command/available_commands"
+import { GeoCircle } from "../vue_canvas/instances/GeoInstance"
 import 'leaflet/dist/leaflet.css';
 
 export default Vue.extend({
@@ -105,6 +106,7 @@ export default Vue.extend({
         };
     },
     mounted() {
+        this.on_mount()
         var map = L.map('map').setView([51.505, -0.09], 13);
 
         this.map_instance = map
@@ -129,6 +131,13 @@ export default Vue.extend({
                 this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
                 return
             }
+            const newCircle = new GeoCircle()
+            const radius = this.getDistance(this.drawing_center, this.drawing_latlng)
+            newCircle.create_frontend_instance({lat: this.drawing_center.lat, lng: this.drawing_center.lng }, radius)
+            this.instance_list.push([newCircle])
+            const command = new CreateInstanceCommand([newCircle], this.instance_list)
+            this.command_manager.executeCommand(command)
+
             this.drawing_instance = false
             this.drawing_center = null
             this.drawing_latlng = null
@@ -158,7 +167,6 @@ export default Vue.extend({
             return degree*Math.PI/180;
         },
         change_mode: function() {
-            console.log("here")
             this.draw_mode = !this.draw_mode
         }
     }
