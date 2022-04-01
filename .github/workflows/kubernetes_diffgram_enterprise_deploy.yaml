@@ -252,7 +252,18 @@ jobs:
       IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
     steps:
+      - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
+        id: comment-branch
+
+      - name: Check out repository code From PR Branch
+           if: "github.event.issue.pull_request"
+          uses: actions/checkout@v2
+          with:
+            ref: ${{ steps.comment-branch.outputs.head_ref }}
+
       - name: Check out repository code
+          if: "!github.event.issue.pull_request"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
