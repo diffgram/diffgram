@@ -46,6 +46,8 @@ jobs:
          github.event.comment.author_association == 'MEMBER' )"
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
+      - uses: xt0rted/pull-request-comment-branch@v1
+        id: comment-branch
 
       - name: see vars
         run: |
@@ -53,6 +55,7 @@ jobs:
           echo ${{ github }}
           echo ${{ github.event.issue.pull_request }}
           echo ${{ github.event.issue.pull_request.base_ref }}
+          echo ${{ steps.comment-branch.outputs.head_ref }}
           echo '${{ toJSON(github) }}'
       - name: Get time
         uses: actions/github-script@v3
