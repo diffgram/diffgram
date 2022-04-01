@@ -53,6 +53,7 @@ jobs:
           echo ${{ github }}
           echo ${{ github.event.issue.pull_request }}
           echo ${{ github.event.issue.pull_request.base_ref }}
+          echo "$GITHUB_CONTEXT"
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
