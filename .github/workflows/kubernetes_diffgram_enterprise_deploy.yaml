@@ -432,4 +432,3 @@ jobs:
           message: "✔️ This PR Has been Deployed in: https://${{ env.diffgram_domain_slug }}.dataannotation.info/user/login \n
           Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
-          single_comment: false
