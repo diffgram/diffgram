@@ -295,7 +295,7 @@ jobs:
           echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Create Diffgram Version Production From PR
-        if: "!github.event.issue.pull_request"
+        if: "github.event.issue.pull_request"
         run: |
           echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
 
