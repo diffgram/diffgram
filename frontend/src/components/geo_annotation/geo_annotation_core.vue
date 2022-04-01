@@ -8,6 +8,9 @@
             <geo_toolbar 
                 :instance_type_list="instance_type_list" 
                 :draw_mode="draw_mode"
+                :undo_disabled="undo_disabled"
+                :redo_disabled="redo_disabled"
+                :has_changed="has_changed"
                 @edit_mode_toggle="change_mode" 
             />
         </template>
@@ -64,6 +67,12 @@ export default Vue.extend({
     computed: {
         cursor: function() {
             return this.draw_mode ? 'crosshair' : 'grab'
+        },
+        undo_disabled: function() {
+            return !this.history || !this.history.undo_posible
+        },
+        redo_disabled: function() {
+            return !this.history || !this.history.redo_posible
         }
     },
     data () {
@@ -74,6 +83,7 @@ export default Vue.extend({
             command_manager: undefined,
             // Mode
             draw_mode: true,
+            has_changed: false,
             //
             drawing_instance: false,
             drawing_center: null,
@@ -168,7 +178,26 @@ export default Vue.extend({
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode
-        }
+        },
+        undo: function () {
+            if (!this.history.undo_posible) return;
+
+            let undone = this.command_manager.undo();
+
+            if (undone) this.has_changed = true;
+        },
+        redo: function () {
+            if (!this.history.redo_posible) return;
+
+            let redone = this.command_manager.redo();
+            
+            if (redone) this.has_changed = true;
+        },
+        change_file(direction, file) {
+            if (direction == "next" || direction == "previous") {
+                this.$emit("request_file_change", direction, file);
+            }
+        },
     }
 })
 </script>
