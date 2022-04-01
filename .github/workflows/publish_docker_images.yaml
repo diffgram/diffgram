@@ -25,6 +25,7 @@ jobs:
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
+
     - name: Create Diffgram Version Production From Tag or Branch
       if: "!github.event.issue.pull_request"
       run: |
@@ -83,9 +84,22 @@ jobs:
         gcloud config list
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
+
+
     - name: Create Diffgram Version Production From Tag or Branch
+      if: "!github.event.issue.pull_request"
       run: |
         echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
+    - uses: xt0rted/pull-request-comment-branch@v1
+      if: "github.event.issue.pull_request"
+      id: comment-branch
+
+    - name: Create Diffgram Version From PR Comment
+      if: "github.event.issue.pull_request"
+      run: |
+        echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
+
     - name: Check if tag exists
       id: tagCheck
       continue-on-error: true
@@ -129,8 +143,18 @@ jobs:
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
     - name: Create Diffgram Version Production From Tag or Branch
+      if: "!github.event.issue.pull_request"
       run: |
         echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
+    - uses: xt0rted/pull-request-comment-branch@v1
+      if: "github.event.issue.pull_request"
+      id: comment-branch
+
+    - name: Create Diffgram Version From PR Comment
+      if: "github.event.issue.pull_request"
+      run: |
+        echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
     - name: Check if tag exists
       id: tagCheck
       continue-on-error: true
@@ -168,8 +192,18 @@ jobs:
         gcloud config set project ${{ secrets.GOOGLE_PROJECT_NAME }}
         gcloud auth configure-docker --quiet
     - name: Create Diffgram Version Production From Tag or Branch
+      if: "!github.event.issue.pull_request"
       run: |
         echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
+    - uses: xt0rted/pull-request-comment-branch@v1
+      if: "github.event.issue.pull_request"
+      id: comment-branch
+
+    - name: Create Diffgram Version From PR Comment
+      if: "github.event.issue.pull_request"
+      run: |
+        echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
     - name: Check if tag exists
       id: tagCheck
       continue-on-error: true
