@@ -257,13 +257,13 @@ jobs:
         id: comment-branch
 
       - name: Check out repository code From PR Branch
-          if: "github.event.issue.pull_request"
-          uses: actions/checkout@v2
-          with:
-            ref: ${{ steps.comment-branch.outputs.head_ref }}
+        if: "github.event.issue.pull_request"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
 
       - name: Check out repository code
-          if: "!github.event.issue.pull_request"
+        if: "!github.event.issue.pull_request"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
