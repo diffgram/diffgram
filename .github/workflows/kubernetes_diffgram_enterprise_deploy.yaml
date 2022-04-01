@@ -257,13 +257,13 @@ jobs:
         id: comment-branch
 
       - name: Check out repository code From PR Branch
-          if: "github.event.issue.pull_request"
-          uses: actions/checkout@v2
-          with:
-            ref: ${{ steps.comment-branch.outputs.head_ref }}
+        if: "github.event.issue.pull_request"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
 
       - name: Check out repository code
-          if: "!github.event.issue.pull_request"
+        if: "!github.event.issue.pull_request"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
@@ -302,11 +302,6 @@ jobs:
         if: "!github.event.issue.pull_request"
         run: |
           echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
-
-      - uses: xt0rted/pull-request-comment-branch@v1
-        if: "github.event.issue.pull_request"
-        id: comment-branch
-
 
       - uses: gacts/github-slug@v1
         if: "github.event.issue.pull_request"
