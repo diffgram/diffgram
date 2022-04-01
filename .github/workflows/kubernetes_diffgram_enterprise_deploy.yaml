@@ -342,7 +342,7 @@ jobs:
           dbSettings.dbProvider: azure
           dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
           dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbName: db-staging-${{ env.diffgram_version }}
           dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
           diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
           diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
