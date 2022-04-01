@@ -6,6 +6,7 @@ on:
 jobs:
   delete_staging_env:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
