@@ -23,5 +23,5 @@ jobs:
 
       - name: Uninstall Staging Deployment
         run: |
-          helm uninstall diffgram --namespace diffgram-staging-${{ env.GITHUB_BASE_REF_SLUG }}ns
-          kubectl delete namespaces diffgram-staging-${{ env.GITHUB_BASE_REF_SLUG }}ns
+          helm uninstall diffgram --namespace diffgram-staging-${{ env.GITHUB_HEAD_REF_SLUG }}ns
+          kubectl delete namespaces diffgram-staging-${{ env.GITHUB_HEAD_REF_SLUG }}ns
