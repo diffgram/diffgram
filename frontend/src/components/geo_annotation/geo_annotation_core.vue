@@ -29,6 +29,7 @@
     <div style="display: flex; flex-direction: row">
         <geo_sidebar
             :instance_list="instance_list ? instance_list.get() : []"
+            @delete_instance="delete_instance"
         />
         <div 
             id="map" 
@@ -125,6 +126,7 @@ export default Vue.extend({
         },
         draw_instances: function() {
             if (this.instance_list) {
+                console.log(this.instance_list.get_all())
                 this.instance_list.get_all().map(instance => {
                     const already_exists = this.existing_markers.find(marker => marker.options.radius === instance.radius && marker._latlng.lat === instance.origin.lat)
                     if (already_exists && instance.soft_delete) {
@@ -249,6 +251,12 @@ export default Vue.extend({
         },
         toRadian: function (degree) {
             return degree*Math.PI/180;
+        },
+        delete_instance: async function(instance) {
+            const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
+            this.command_manager.executeCommand(delete_command)
+            this.has_changed = true
+            this.draw_instances
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode

@@ -36,6 +36,8 @@ export class GeoCircle extends Instance implements InstanceInterface {
             label_file_id: this.label_file_id,
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
+            origin: this.origin,
+            radius: this.radius
         }
         
         return payload
