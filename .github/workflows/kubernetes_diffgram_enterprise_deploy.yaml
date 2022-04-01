@@ -34,6 +34,7 @@ jobs:
     name: PR Comment Deploy
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
+    env: GITHUB_CONTEXT: ${{ toJSON(github) }}
     steps:
       - run: |
           echo A comment on PR $NUMBER
