@@ -38,6 +38,7 @@
             id="map" 
             ref="map" 
             @click="draw_instance" 
+            @mouseup="change_center"
             :style="`height: calc(100vh - 100px); z-index: 0; width: 100%; cursor: ${cursor}`" 
         />
     </div>
@@ -171,9 +172,9 @@ export default Vue.extend({
             url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             attribution:
                 '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-            zoom: 15,
-            center: [51.505, -0.159],
-            markerLatLng: [51.504, -0.159],
+            zoom: 13,
+            initial_center: [51.505, -0.159],
+            current_center: [51.505, -0.159],
             instance_type_list: [
                 {
                     name: "polygon",
@@ -194,7 +195,7 @@ export default Vue.extend({
     },
     mounted() {
         this.on_mount()
-        var map = L.map('map').setView([51.505, -0.09], 13);
+        var map = L.map('map').setView(this.initial_center, this.zoom);
 
         this.map_instance = map
 
@@ -208,14 +209,25 @@ export default Vue.extend({
             this.command_manager = new CommandManager(this.history)
             this.instance_list = new InstanceList()
         },
+        change_center: function(e) {
+            const center = this.map_instance.getCenter()
+            this.current_center = [center.lat, center.lng]
+            this.map_instance.setView([center.lat, center.lng], this.zoom)
+        },
         draw_instance: function(e) {
+            this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
             if (!this.draw_mode) return;
             if (!this.drawing_instance) {
                 this.drawing_instance = true
                 const point = L.point(e.layerX, e.layerY)
                 const unproject = this.map_instance.layerPointToLatLng(point)
-                this.drawing_center = unproject
-                this.drawing_latlng = unproject
+                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
+                const use_coords = {
+                    lat: unproject.lat - deltas[0],
+                    lng: unproject.lng - deltas[1]
+                }
+                this.drawing_center = use_coords
+                this.drawing_latlng = use_coords
                 this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
                 return
             }
@@ -239,7 +251,12 @@ export default Vue.extend({
         move_mouse_listener: function(e) {
             const point = L.point(e.layerX, e.layerY)
             const unproject = this.map_instance.layerPointToLatLng(point)
-            this.drawing_latlng = unproject
+            const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
+            const use_coords = {
+                lat: unproject.lat - deltas[0],
+                lng: unproject.lng - deltas[1]
+            }
+            this.drawing_latlng = use_coords
         },
         getDistance: function(origin, destination) {
             // return distance in meters
