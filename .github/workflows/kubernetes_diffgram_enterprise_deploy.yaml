@@ -303,11 +303,6 @@ jobs:
         run: |
           echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
 
-      - uses: xt0rted/pull-request-comment-branch@v1
-        if: "github.event.issue.pull_request"
-        id: comment-branch
-
-
       - uses: gacts/github-slug@v1
         if: "github.event.issue.pull_request"
         id: slug
