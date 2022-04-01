@@ -59,7 +59,7 @@ jobs:
         with:
           message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n
           Execution time: `${{steps.get-time.outputs.result}}` \n
-          To See Deployment Progress go to: https://github.com/diffgram/diffgram/runs/${{ github.run_id }}"
+          To See Deployment Progress go to: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
           github_token: ${{secrets.GITHUB_TOKEN}}
           identifier: "PR_DEPLOY_STARTED"
           single_comment: false
@@ -379,7 +379,7 @@ jobs:
         with:
           message: "❌ This PR has failed to deploy \n
            Execution time: `${{steps.get-time.outputs.result}}` \n
-           Details: https://github.com/diffgram/diffgram/runs/${{ github.run_id }}"
+           Details: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
           github_token: ${{secrets.GITHUB_TOKEN}}
           single_comment: false
 
