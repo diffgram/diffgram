@@ -11,6 +11,14 @@ on:
         default: staging
   issue_comment:
     types: [created]
+    inputs:
+      environment:
+        type: choice
+        description: Select Environment
+        options:
+        - staging
+        - production
+        default: staging
 jobs:
   publishimages:
     needs: [pr_commented]
@@ -38,18 +46,41 @@ jobs:
          github.event.comment.author_association == 'MEMBER' )"
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
+      - uses: xt0rted/pull-request-comment-branch@v1
+        id: comment-branch
+
+      - name: see vars
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github }}
+          echo ${{ github.event.issue.pull_request }}
+          echo ${{ github.event.issue.pull_request.base_ref }}
+          echo ${{ steps.comment-branch.outputs.head_ref }}
+          echo '${{ toJSON(github) }}'
+
+
+      - name: Get time
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
 
       - name: Comment PR
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "This PR is now Being Deployed... 🚀🚀🚀🚀"
-           github_token: ${{secrets.GITHUB_TOKEN}}
+          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n
+          Execution time: `${{steps.get-time.outputs.result}}` \n
+          To See Deployment Progress go to: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          identifier: "PR_DEPLOY_STARTED"
+          single_comment: false
 
 
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ github.event.inputs.environment }}
+    environment: production
     if: "github.event.inputs.environment == 'production' && !github.event.issue.pull_request"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
@@ -185,8 +216,8 @@ jobs:
   Staging-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
     needs: [publishimages]
-    environment: ${{ github.event.inputs.environment }}
-    if: "github.event.inputs.environment == 'staging'"
+    environment: staging
+    if: "github.event.inputs.environment == 'staging' || github.event.issue.pull_request"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
@@ -256,6 +287,42 @@ jobs:
         with:
           slug-maxlength: 30
 
+      - name: Create Diffgram Domain Slug from Manual Deploy
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
+
+      - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
+        id: comment-branch
+
+
+      - uses: gacts/github-slug@v1
+        if: "github.event.issue.pull_request"
+        id: slug
+        with:
+          # replace value in "to-slug" this on your choice
+          to-slug: ${{ steps.comment-branch.outputs.head_ref }}
+
+      - name: Truncate String
+        if: "github.event.issue.pull_request"
+        uses: 2428392/gh-truncate-string-action@v1.0.0
+        id: truncatedString
+        with:
+          stringToTruncate: ${{ steps.slug.outputs.slug }}
+          maxLength: 30
+
+      - name: Echo string
+        if: "github.event.issue.pull_request"
+        run: echo ${{ steps.truncatedString.outputs.string }}
+
+
+      - name: Create Diffgram Domain Slug from pr
+        if: "github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
         with:
@@ -263,7 +330,7 @@ jobs:
         env:
           diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
-          diffgramDomain: ${{ env.GITHUB_REF_SLUG }}.dataannotation.info
+          diffgramDomain: ${{ env.diffgram_domain_slug }}.dataannotation.info
           useCertManager: true
           useTls: true
           dbSettings.dbProvider: azure
@@ -319,6 +386,16 @@ jobs:
       - name: Check values.yaml
         run: cat values.yaml
 
+      - name: Get time
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                     (github.event.comment.author_association == 'OWNER' ||
+                     github.event.comment.author_association == 'COLLABORATOR' ||
+                     github.event.comment.author_association == 'MEMBER' )"
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
 
       # Set the target Azure Kubernetes Service (AKS) cluster.
       - name: Set Kubernetes Cluster Context on AKS
@@ -331,13 +408,28 @@ jobs:
 
       - name: Upgrade Diffgram with Helm
         run: |
-          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
+          kubectl create namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns
 
-      - uses: mshick/add-pr-comment@v1
-        if: "env.valid_comment == 'true'"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Comment PR
+        if: ${{ failure() }}
+        uses: NejcZdovc/comment-pr@v1
         with:
-          message: |
-            ✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login
-          allow-repeats: true
+          message: "❌ This PR has failed to deploy \n
+           Execution time: `${{steps.get-time.outputs.result}}` \n
+           Details: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          single_comment: false
+
+
+      - name: Comment PR
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                     (github.event.comment.author_association == 'OWNER' ||
+                     github.event.comment.author_association == 'COLLABORATOR' ||
+                     github.event.comment.author_association == 'MEMBER' )"
+        uses: NejcZdovc/comment-pr@v1
+        with:
+          message: "✔️ This PR Has been Deployed in: https://${{ env.diffgram_domain_slug }}.dataannotation.info/user/login \n
+          Execution time: `${{steps.get-time.outputs.result}}`"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          single_comment: false
