@@ -34,7 +34,6 @@ jobs:
     name: PR Comment Deploy
     if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
-    env: GITHUB_CONTEXT: ${{ toJSON(github) }}
     steps:
       - run: |
           echo A comment on PR $NUMBER
@@ -54,7 +53,7 @@ jobs:
           echo ${{ github }}
           echo ${{ github.event.issue.pull_request }}
           echo ${{ github.event.issue.pull_request.base_ref }}
-          echo "$GITHUB_CONTEXT"
+          echo '${{ toJSON(github) }}'
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
