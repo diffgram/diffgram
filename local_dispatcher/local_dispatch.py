@@ -63,7 +63,7 @@ def route_same_host(path):
                     host_reached)
             }
         }
-        return jsonify(error), 500
+        return jsonify(error), 503
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
@@ -123,7 +123,7 @@ def route_multi_host(path):
                     host_reached)
             }
         }
-        return jsonify(error), 500
+        return jsonify(error), 503
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
                if name.lower() not in excluded_headers]
