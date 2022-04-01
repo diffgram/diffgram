@@ -318,7 +318,7 @@ jobs:
 
 
       - name: Create Diffgram Domain Slug from pr
-        if: "!github.event.issue.pull_request"
+        if: "github.event.issue.pull_request"
         run: |
           echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
 
