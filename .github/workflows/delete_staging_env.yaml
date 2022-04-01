@@ -13,6 +13,14 @@ jobs:
         with:
           slug-maxlength: 30
 
+      # Set the target Azure Kubernetes Service (AKS) cluster.
+      - name: Set Kubernetes Cluster Context on AKS
+        uses: azure/aks-set-context@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+          resource-group: ${{ secrets.AKS_CLUSTER_RESOURCE_GROUP }}
+
       - name: Uninstall Staging Deployment
         run: |
           helm uninstall diffgram --namespace diffgram-staging-${{ env.GITHUB_BASE_REF_SLUG }}ns
