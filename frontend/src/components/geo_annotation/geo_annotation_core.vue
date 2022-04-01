@@ -123,7 +123,6 @@ export default Vue.extend({
                         this.existing_markers.splice(indexToRemove, 1)
                     }
                     else if (!already_exists && !instance.soft_delete) {
-                        console.log(already_exists, instance.soft_delete)
                         const marker = L.circle(instance.origin, {radius: instance.radius, color: instance.label_file.colour.hex})
                         this.existing_markers.push(marker)
                         this.map_instance.addLayer(marker)
@@ -191,6 +190,7 @@ export default Vue.extend({
             this.instance_list = new InstanceList()
         },
         draw_instance: function(e) {
+            if (!this.draw_mode) return;
             if (!this.drawing_instance) {
                 this.drawing_instance = true
                 const point = L.point(e.layerX, e.layerY)
@@ -266,6 +266,13 @@ export default Vue.extend({
         },
         change_label_file: function(event) {
             this.current_label = event
+        },
+        change_label_visibility: async function(label) {
+            if (label.is_visible) {
+                this.invisible_labels = this.invisible_labels.filter(label_id => label_id !== label.id)
+            } else {
+                this.invisible_labels.push(label.id)
+            }
         },
     }
 })
