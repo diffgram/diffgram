@@ -12,11 +12,24 @@
                 :redo_disabled="redo_disabled"
                 :has_changed="has_changed"
                 @edit_mode_toggle="change_mode" 
+
+                :project_string_id="project_string_id"
+                :label_list="label_list"
+                :label_file_colour_map="label_file_colour_map"
+                :task="task"
+                :file="file"
+                @change_label_file="change_label_file"
+                @change_label_visibility="change_label_visibility"
+                @change_file="change_file"
+                @undo="undo()"
+                @redo="redo()"
             />
         </template>
     </main_menu>
     <div style="display: flex; flex-direction: row">
-        <geo_sidebar />
+        <geo_sidebar
+            :instance_list="instance_list ? instance_list.get() : []"
+        />
         <div 
             id="map" 
             ref="map" 
@@ -45,11 +58,37 @@ export default Vue.extend({
         geo_toolbar,
         geo_sidebar
     },
+    props: {
+        file: {
+            type: Object,
+            default: undefined
+        },
+        task: {
+            type: Object,
+            default: undefined
+        },
+        job_id: {
+            type: Number,
+            default: undefined
+        },
+        label_file_colour_map: {
+            type: Object,
+            requered: true
+        },
+        label_list: {
+            type: Array,
+            requered: true
+        },
+        project_string_id: {
+            type: String,
+            requered: true
+        }
+    },
     watch: {
         drawing_instance: function() {
             if (this.drawing_center) {
                 const cal_radius = this.getDistance(this.drawing_center, this.drawing_latlng)
-                const marker = L.circle(this.drawing_center, {radius: cal_radius})
+                const marker = L.circle(this.drawing_center, {radius: cal_radius, color: this.current_label.colour.hex})
                 this.map_instance.addLayer(marker)
                 this.draw_marker_instance = marker
             }
@@ -58,7 +97,7 @@ export default Vue.extend({
             if (this.drawing_center) {
                 this.map_instance.removeLayer(this.draw_marker_instance)
                 const cal_radius = this.getDistance(this.drawing_center, this.drawing_latlng)
-                const marker = L.circle(this.drawing_center, {radius: cal_radius});
+                const marker = L.circle(this.drawing_center, {radius: cal_radius, color: this.current_label.colour.hex});
                 this.map_instance.addLayer(marker)
                 this.draw_marker_instance = marker
             }
@@ -73,6 +112,18 @@ export default Vue.extend({
         },
         redo_disabled: function() {
             return !this.history || !this.history.redo_posible
+        },
+        draw_instances: function() {
+            if (this.instance_list) {
+                this.instance_list.get().map(instance => {
+                    const already_exists = this.existing_markers.find(marker => marker.options.radius === instance.radius && marker._latlng.lat === instance.origin.lat)
+                    if (!already_exists) {
+                        const marker = L.circle(instance.origin, {radius: instance.radius, color: instance.label_file.colour.hex})
+                        this.existing_markers.push(marker)
+                        this.map_instance.addLayer(marker)
+                    }
+                })
+            }
         }
     },
     data () {
@@ -81,6 +132,8 @@ export default Vue.extend({
             history: undefined,
             instance_list: undefined,
             command_manager: undefined,
+            existing_markers: [],
+            current_label: null,
             // Mode
             draw_mode: true,
             has_changed: false,
@@ -110,7 +163,7 @@ export default Vue.extend({
                 {
                     name: "circle",
                     display_name: "Circle",
-                    icon: "mdi-ellipse-outline",
+                    icon: "mdi-checkbox-blank-circle-outline",
                 },
             ],
         };
@@ -143,7 +196,11 @@ export default Vue.extend({
             }
             const newCircle = new GeoCircle()
             const radius = this.getDistance(this.drawing_center, this.drawing_latlng)
-            newCircle.create_frontend_instance({lat: this.drawing_center.lat, lng: this.drawing_center.lng }, radius)
+            newCircle.create_frontend_instance(
+                {lat: this.drawing_center.lat, lng: this.drawing_center.lng}, 
+                radius, 
+                { ...this.current_label }
+            )
             this.instance_list.push([newCircle])
             const command = new CreateInstanceCommand([newCircle], this.instance_list)
             this.command_manager.executeCommand(command)
@@ -152,6 +209,7 @@ export default Vue.extend({
             this.drawing_center = null
             this.drawing_latlng = null
             this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+            this.existing_markers.push(this.draw_marker_instance)
         },
         move_mouse_listener: function(e) {
             const point = L.point(e.layerX, e.layerY)
@@ -197,6 +255,9 @@ export default Vue.extend({
             if (direction == "next" || direction == "previous") {
                 this.$emit("request_file_change", direction, file);
             }
+        },
+        change_label_file: function(event) {
+            this.current_label = event
         },
     }
 })

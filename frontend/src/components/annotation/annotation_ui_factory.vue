@@ -73,7 +73,16 @@
         />
       </div>
       <div v-else-if="annotation_interface === 'geo'">
-        <geo_annotation_core />
+        <geo_annotation_core 
+          :file="current_file"
+          :task="task"
+          :job_id="job_id"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task" 
+        />
       </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder

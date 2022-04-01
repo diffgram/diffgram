@@ -18,11 +18,13 @@ export class GeoCircle extends Instance implements InstanceInterface {
 
     public create_instance() {}
 
-    public create_frontend_instance(origin: Origin, radius: number, soft_delete: boolean = false): void {
+    public create_frontend_instance(origin: Origin, radius: number, label_file: any, soft_delete: boolean = false): void {
         this.origin = origin;
         this.radius = radius;
         this.soft_delete = soft_delete;
         this.creation_ref_id = uuidv4();
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
     }
 
     public get_instance_data() {
