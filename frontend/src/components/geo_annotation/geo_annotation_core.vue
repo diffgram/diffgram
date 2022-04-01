@@ -102,6 +102,13 @@ export default Vue.extend({
                 this.draw_marker_instance = marker
             }
         },
+        file: function() {
+            this.instance_list = [];
+            this.command_manager = undefined;
+            this.history = undefined;
+            this.existing_markers = [];
+            this.on_mount()
+        },
     },
     computed: {
         cursor: function() {
