@@ -51,6 +51,8 @@ jobs:
     - name: Check out repository code
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       uses: actions/checkout@v2
+      with:
+          ref: ${{ env.diffgram_version }}
     - name: Get Version From Branch Name
       if: github.ref_type != 'branch'
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
@@ -108,6 +110,8 @@ jobs:
     - name: Check out repository code
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       uses: actions/checkout@v2
+      with:
+        ref: ${{ env.diffgram_version }}
     - name: Test
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       run: |
@@ -163,6 +167,8 @@ jobs:
     - name: Check out repository code
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       uses: actions/checkout@v2
+      with:
+        ref: ${{ env.diffgram_version }}
     - name: Echo
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       run: echo ${{ steps.tag.outputs.result }}
@@ -213,6 +219,8 @@ jobs:
     - name: Check out repository code
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       uses: actions/checkout@v2
+      with:
+        ref: ${{ env.diffgram_version }}
     - name: Echo
       if: "steps.tagCheck.outcome == 'failure' || github.ref_type == 'branch'"
       run: echo ${{ steps.tag.outputs.result }}
