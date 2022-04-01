@@ -57,6 +57,32 @@ jobs:
           echo ${{ github.event.issue.pull_request.base_ref }}
           echo ${{ steps.comment-branch.outputs.head_ref }}
           echo '${{ toJSON(github) }}'
+      - uses: gacts/github-slug@v1
+        if: "github.event.issue.pull_request"
+        id: slug
+        with:
+          # replace value in "to-slug" this on your choice
+          to-slug: ${{ steps.comment-branch.outputs.head_ref }}
+
+      - name: Truncate String
+        if: "github.event.issue.pull_request"
+        uses: 2428392/gh-truncate-string-action@v1.0.0
+        id: truncatedString
+        with:
+          stringToTruncate: ${{ steps.slug.outputs.slug }}
+          maxLength: 30
+
+      - name: Echo string
+        if: "github.event.issue.pull_request"
+        run: echo ${{ steps.truncatedString.outputs.string }}
+
+
+      - name: Create Diffgram Domain Slug from pr
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
