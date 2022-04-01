@@ -115,9 +115,15 @@ export default Vue.extend({
         },
         draw_instances: function() {
             if (this.instance_list) {
-                this.instance_list.get().map(instance => {
+                this.instance_list.get_all().map(instance => {
                     const already_exists = this.existing_markers.find(marker => marker.options.radius === instance.radius && marker._latlng.lat === instance.origin.lat)
-                    if (!already_exists) {
+                    if (already_exists && instance.soft_delete) {
+                        this.map_instance.removeLayer(already_exists)
+                        const indexToRemove = this.existing_markers.indexOf(already_exists)
+                        this.existing_markers.splice(indexToRemove, 1)
+                    }
+                    else if (!already_exists && !instance.soft_delete) {
+                        console.log(already_exists, instance.soft_delete)
                         const marker = L.circle(instance.origin, {radius: instance.radius, color: instance.label_file.colour.hex})
                         this.existing_markers.push(marker)
                         this.map_instance.addLayer(marker)
@@ -243,6 +249,7 @@ export default Vue.extend({
             let undone = this.command_manager.undo();
 
             if (undone) this.has_changed = true;
+            this.draw_instances
         },
         redo: function () {
             if (!this.history.redo_posible) return;
@@ -250,6 +257,7 @@ export default Vue.extend({
             let redone = this.command_manager.redo();
             
             if (redone) this.has_changed = true;
+            this.draw_instances
         },
         change_file(direction, file) {
             if (direction == "next" || direction == "previous") {
