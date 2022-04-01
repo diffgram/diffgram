@@ -1,6 +1,6 @@
 name: Delete Staging Environment
 on:
-  release:
+  pull_request:
     types: [closed]
 
 jobs:
