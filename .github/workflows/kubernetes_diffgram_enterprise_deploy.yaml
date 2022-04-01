@@ -290,8 +290,14 @@ jobs:
           repository: diffgram/diffgram-helm
 
       - name: Create Diffgram Version Production From Tag or Branch
+        if: "!github.event.issue.pull_request"
         run: |
           echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Create Diffgram Version Production From PR
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
 
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
