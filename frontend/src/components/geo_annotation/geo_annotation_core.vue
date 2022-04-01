@@ -29,7 +29,10 @@
     <div style="display: flex; flex-direction: row">
         <geo_sidebar
             :instance_list="instance_list ? instance_list.get() : []"
+            :label_list="label_list"
+            :label_file_colour_map="label_file_colour_map"
             @delete_instance="delete_instance"
+            @change_instance_label="change_instance_label"
         />
         <div 
             id="map" 
@@ -126,9 +129,13 @@ export default Vue.extend({
         },
         draw_instances: function() {
             if (this.instance_list) {
-                console.log(this.instance_list.get_all())
                 this.instance_list.get_all().map(instance => {
-                    const already_exists = this.existing_markers.find(marker => marker.options.radius === instance.radius && marker._latlng.lat === instance.origin.lat)
+                    const already_exists = this.existing_markers.find(marker => 
+                        marker.options.radius === instance.radius && 
+                        marker._latlng.lat === instance.origin.lat &&
+                        marker._latlng.lng === instance.origin.lng &&
+                        marker.options.color === instance.label_file.colour.hex
+                    )
                     if (already_exists && instance.soft_delete) {
                         this.map_instance.removeLayer(already_exists)
                         const indexToRemove = this.existing_markers.indexOf(already_exists)
@@ -255,6 +262,14 @@ export default Vue.extend({
         delete_instance: async function(instance) {
             const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
             this.command_manager.executeCommand(delete_command)
+            this.has_changed = true
+            this.draw_instances
+        },
+        change_instance_label: async function(event) {
+            const { instance, label } = event
+            const command = new UpdateInstanceLabelCommand([instance], this.instance_list)
+            command.set_new_label(label)
+            this.command_manager.executeCommand(command)
             this.has_changed = true
             this.draw_instances
         },
