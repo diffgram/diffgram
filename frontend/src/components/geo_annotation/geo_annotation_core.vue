@@ -103,6 +103,9 @@ export default Vue.extend({
             }
         },
         file: function() {
+            this.existing_markers.map(marker => {
+                this.map_instance.removeLayer(marker)
+            })
             this.instance_list = [];
             this.command_manager = undefined;
             this.history = undefined;
