@@ -47,6 +47,12 @@ jobs:
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
 
+      - name: see vars
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github }}
+          echo ${{ github.event.issue.pull_request }}
+          echo ${{ github.event.issue.pull_request.base_ref }}
       - name: Get time
         uses: actions/github-script@v3
         id: get-time
@@ -279,6 +285,8 @@ jobs:
         if: "!github.event.issue.pull_request"
         run: |
           echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
+
+
       - name: Create Diffgram Domain Slug from PR
         if: "github.event.issue.pull_request"
         run: |
@@ -391,6 +399,6 @@ jobs:
                      github.event.comment.author_association == 'MEMBER' )"
         uses: NejcZdovc/comment-pr@v1
         with:
-          message: "✔️ This PR Has been Deployed in: https://${{ env.GITHUB_REF_SLUG }}.dataannotation.info/user/login \n
+          message: "✔️ This PR Has been Deployed in: https://${{ env.diffgram_domain_slug }}.dataannotation.info/user/login \n
           Execution time: `${{steps.get-time.outputs.result}}`"
           github_token: ${{secrets.GITHUB_TOKEN}}
