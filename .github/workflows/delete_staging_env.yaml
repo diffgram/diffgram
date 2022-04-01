@@ -1,0 +1,18 @@
+name: Delete Staging Environment
+on:
+  release:
+    types: [closed]
+
+jobs:
+  delete_staging_env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+        with:
+          slug-maxlength: 30
+
+      - name: Uninstall Staging Deployment
+        run: |
+          helm uninstall diffgram --namespace diffgram-staging-${{ env.GITHUB_BASE_REF_SLUG }}ns
+          kubectl delete namespaces diffgram-staging-${{ env.GITHUB_BASE_REF_SLUG }}ns
