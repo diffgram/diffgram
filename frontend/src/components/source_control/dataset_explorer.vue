@@ -102,7 +102,12 @@
                        v-if="loading">
     </v-progress-linear>
 
-    {{none_found}}
+    <v-container v-if="none_found == true"
+                 fluid style="border: 1px solid #ababab"
+                 class="d-flex flex-column align-center justify-center ma-0">
+      <h1 class="pt-4">No Results</h1>
+      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
+    </v-container>
 
     <v-layout id="infinite-list"
               fluid
