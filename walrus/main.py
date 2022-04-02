@@ -121,9 +121,6 @@ actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=settings.ACT
 
 print("Startup in", time.time() - start_time)
 
-
-print("Startup in", time.time() - start_time)
-
 # actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=5,
 #                                               thread_sleep_time_max=6,
 #                                               run_once=False)
