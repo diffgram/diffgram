@@ -96,7 +96,14 @@
       </v-menu>
 
     </v-layout>
-    <v-progress-circular class="text-center align-center justify-center ma-auto" indeterminate v-if="loading"></v-progress-circular>
+
+    <v-progress-linear class="text-center align-center justify-center ma-auto"
+                       indeterminate
+                       v-if="loading">
+    </v-progress-linear>
+
+    {{none_found}}
+
     <v-layout id="infinite-list"
               fluid
               class="files-container d-flex justify-start"
@@ -196,6 +203,7 @@
         show_ground_truth: true,
         infinite_scroll_loading: false,
         loading_models: false,
+        none_found: undefined,
         query_menu_open: false,
         selected_dir: undefined,
         base_model_run: undefined,
@@ -237,6 +245,7 @@
       execute_query: async function(query_str){
         this.query_menu_open = false;
         this.query = query_str;
+        this.file_list = []
         await this.fetch_file_list()
       },
       close_suggestion_menu: async function(query_str){
@@ -261,6 +270,7 @@
           this.infinite_scroll_loading = true;
         }
         try{
+          this.none_found = undefined
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
             'metadata': {
@@ -271,7 +281,10 @@
             'project_string_id': this.$props.project_string_id
 
           })
-          if (response.data['file_list'] != null) {
+          if (response.data['file_list'] == false) {
+            this.none_found = true
+          }
+          else {
             if(reload_all){
               this.file_list = response.data.file_list;
             }
