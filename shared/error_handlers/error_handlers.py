@@ -3,9 +3,15 @@ from flask import jsonify
 from shared.settings import settings
 import traceback
 from shared.shared_logger import get_shared_logger
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, NotFound
 
 logger = get_shared_logger()
+
+
+@current_app.errorhandler(NotFound)
+def handle_exception(e):
+    payload = {'error': str(e)}
+    return jsonify(payload), 404
 
 
 @current_app.errorhandler(Exception)
