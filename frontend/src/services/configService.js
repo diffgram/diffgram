@@ -22,6 +22,28 @@ export const get_install_info = async () => {
     }
 }
 
+export const get_walrus_status = async () => {
+    try {
+        const { data } = await axios.get('/api/walrus/status')
+        return data
+    } catch(error) {
+        return {
+            error
+        }
+    }
+}
+
+export const get_default_status = async () => {
+    try {
+        const { data } = await axios.get('/api/status')
+        return data
+    } catch(error) {
+        return {
+            error
+        }
+    }
+}
+
 
 export const is_open_source = async () => {
   try {

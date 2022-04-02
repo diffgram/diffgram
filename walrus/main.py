@@ -54,10 +54,14 @@ app.register_blueprint(routes_blueprint)
 
 
 @app.route('/', methods=['GET'])
-def default_walrus_alive():
+def walrus_alive():
     return """
 	<img src="https://storage.googleapis.com/diffgram_public/walrus/alive.jpg" width="100%">
 	"""
+
+@app.route('/api/walrus/status', methods=['GET'])
+def walrus_alive_api():
+    return jsonify(True), 200
 
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=14)
 app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024    # 250 Mb limit
