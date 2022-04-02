@@ -144,7 +144,9 @@
                               @vdropzone-removed-file="file_removed"
                               v-on:vdropzone-thumbnail="thumbnail"
                               @vdropzone-sending="drop_zone_sending_event"
-                              @vdropzone-complete="drop_zone_complete">
+                              @vdropzone-complete="drop_zone_complete"
+                              @vdropzone-success="drop_zone_success"
+                              @vdropzone-error="drop_zone_error">
                   <div class="dropzone-custom-content">
                     <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
                     <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
@@ -284,7 +286,7 @@
           error: {},
           sync_job_list: [],
           with_prelabeled: undefined,
-          connection_upload_error: undefined,
+          connection_upload_error: {},
           total_files_update: 0,
           processed_files: 0,
           file_update_error: undefined,
@@ -511,6 +513,8 @@
           if (!connection_file_list || connection_file_list.length === 0) {
             return
           }
+          this.connection_upload_error = {}
+
           const connector_id = this.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;
           try {
@@ -537,11 +541,12 @@
 
               }
             }));
+            this.$emit('declare_success', true)
 
           } catch (error) {
-            // Discuss if there already exists a good abstraction for error handling.
+
             this.connection_upload_error = this.$route_api_errors(error);
-            this.$emit('error_update_files', this.connection_upload_error)
+            this.$emit('error_upload_connections', this.connection_upload_error)
             console.error(error);
           }
         },
@@ -754,35 +759,15 @@
 
           this.is_actively_sending = false
           this.$emit('update_is_actively_sending', this.is_actively_sending)
-
-          // Not super happy with this but something to think on
-          // how deeply we want to integrate this with upload
-          // or if we even want to show this here at all
-
-          if (Date.now() < this.request_refresh + 5000) {
-            return
-          }
-          this.request_refresh = Date.now()
-
-          var self = this
-
-          // "fast" one
-          setTimeout(function () {
-            self.request_refresh = Date.now()
-          }, 2500)
-
-          // "ongoing" one, cleared at destroy
-          // context of long running video operations may be 10 min+
-          // and to user it could look like it's "frozen".
-          // so we use perpetual thing till component is destroyed
-          // long term I'm sure there's some more graceful way here
-
-          this.refresh_interval = setInterval(function () {
-            self.request_refresh = Date.now()
-          }, 20000)
-
-
         },
+
+        drop_zone_success(files, response){
+           this.$emit('declare_success', true)
+        },
+
+        drop_zone_error(file, message, xhr) {
+          this.$emit('error_upload_connections', message)
+        }
 
       }
     }
