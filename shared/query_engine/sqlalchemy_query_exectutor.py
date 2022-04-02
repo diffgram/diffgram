@@ -131,6 +131,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         # If it is not an int then it should be a string entity type (like "file" or "labels")
         value = name_token.value
         value = value.split('.')[0]
+        if value == "label":
+            value = "labels"  # cast to plural
         return value
 
     def get_compare_op(self, token):
@@ -231,7 +233,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 return False
 
             if type(value_1) == int and type(value_2) == int:
-                logger.error('Error: at least 1 value must be a label.')
+                logger.error('Error: at least 1 value must be a label.') 
 
         return True
 
@@ -252,6 +254,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 value_2 = self.__parse_value(name2)
                 if len(self.log['error'].keys()) > 0:
                     return
+
                 self.conditions.append(
                     self.get_compare_op(compare_op)(
                         value_1,
