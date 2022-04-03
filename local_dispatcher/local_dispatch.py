@@ -135,9 +135,6 @@ def route_multi_host(path):
 @app.route('/', defaults = {'path': ''}, methods = ['GET', 'POST'])
 @app.route('/<path:path>', methods = ['GET', 'POST'])
 def _proxy(path):
-    # TODO could switch the path thing to be "diffgram.com"
-    # if want to run front end with production end points
-    # (or could use a staging endpoint here too...)
     print(f"_proxy:*--------> {path}")
     logging.warning(f"_proxy:*--------> {path}")
     if SAME_HOST:
