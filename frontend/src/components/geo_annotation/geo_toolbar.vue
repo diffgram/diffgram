@@ -437,7 +437,7 @@ export default Vue.extend({
     },
     data() {
         return {
-            instance_type: "circle",
+            instance_type: "geo_circle",
         }
     },
     computed: {

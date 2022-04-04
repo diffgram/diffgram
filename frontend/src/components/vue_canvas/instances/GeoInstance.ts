@@ -44,7 +44,39 @@ export class GeoCircle extends Instance implements InstanceInterface {
     }
 }
 
-class GeoBox extends Instance {}
+export class GeoBox extends Instance implements InstanceInterface {
+    public bounds: Array<number>;
+    public type: string = "geo_box";
+
+    constructor() {
+        super();
+    }
+
+    public create_instance() {}
+
+    public create_frontend_instance(bounds: Array<number>, label_file: any, soft_delete: boolean = false): void {
+        this.bounds = bounds;
+        this.soft_delete = soft_delete;
+        this.creation_ref_id = uuidv4();
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+    }
+
+    public get_instance_data() {
+        const payload = {
+            id: this.id || this.creation_ref_id,
+            type: this.type,
+            selected: this.selected,
+            label_file: this.label_file,
+            label_file_id: this.label_file_id,
+            soft_delete: this.soft_delete,
+            creation_ref_id: this.creation_ref_id,
+            bounds: this.bounds,
+        }
+        
+        return payload
+    }
+}
 
 class GeoLine extends Instance {}
 

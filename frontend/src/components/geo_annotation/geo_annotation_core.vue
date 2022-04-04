@@ -55,7 +55,7 @@ import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
 import { CreateInstanceCommand, DeleteInstanceCommand, UpdateInstanceLabelCommand } from "../../helpers/command/available_commands"
-import { GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
+import { GeoBox, GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
 import 'leaflet/dist/leaflet.css';
 
 export default Vue.extend({
@@ -92,18 +92,24 @@ export default Vue.extend({
     },
     watch: {
         drawing_instance: function() {
-            if (this.drawing_center) {
-                const cal_radius = this.getDistance(this.drawing_center, this.drawing_latlng)
-                const marker = L.circle(this.drawing_center, {radius: cal_radius, color: this.current_label.colour.hex})
+            if (this.draw_init) {
+                const cal_radius = this.getDistance(this.draw_init, this.drawing_latlng)
+                const marker = L.circle(this.draw_init, {radius: cal_radius, color: this.current_label.colour.hex})
                 this.map_instance.addLayer(marker)
                 this.draw_marker_instance = marker
             }
         },
         drawing_latlng: function() {
-            if (this.drawing_center) {
+            if (this.draw_init) {
                 this.map_instance.removeLayer(this.draw_marker_instance)
-                const cal_radius = this.getDistance(this.drawing_center, this.drawing_latlng)
-                const marker = L.circle(this.drawing_center, {radius: cal_radius, color: this.current_label.colour.hex});
+                let marker;
+                if (this.current_instance_type === 'geo_circle') {
+                    const cal_radius = this.getDistance(this.draw_init, this.drawing_latlng)
+                    marker = L.circle(this.draw_init, {radius: cal_radius, color: this.current_label.colour.hex});
+                }
+                else if (this.current_instance_type === 'geo_box') {
+                    marker = L.rectangle([[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], {color: this.current_label.colour.hex});
+                }
                 this.map_instance.addLayer(marker)
                 this.draw_marker_instance = marker
             }
@@ -167,6 +173,25 @@ export default Vue.extend({
                             this.map_instance.addLayer(marker)
                         }
                     }
+                    else if (instance.type === 'geo_box') {
+                        const already_exists = this.existing_markers.find(marker => 
+                            marker._bounds._northEast.lat === instance.bounds[0][0] &&
+                            marker._bounds._northEast.lng === instance.bounds[0][1] &&
+                            marker._bounds._southWest.lat === instance.bounds[1][0] &&
+                            marker._bounds._southWest.lng === instance.bounds[1][1] &&
+                            marker.options.color === instance.label_file.colour.hex
+                        )
+                        if (already_exists && instance.soft_delete) {
+                            this.map_instance.removeLayer(already_exists)
+                            const indexToRemove = this.existing_markers.indexOf(already_exists)
+                            this.existing_markers.splice(indexToRemove, 1)
+                        }
+                        else if (!already_exists && !instance.soft_delete) {
+                            const marker = L.rectangle(instance.bounds, {color: instance.label_file.colour.hex})
+                            this.existing_markers.push(marker)
+                            this.map_instance.addLayer(marker)
+                        }
+                    }
                 })
             }
         }
@@ -184,7 +209,7 @@ export default Vue.extend({
             has_changed: false,
             //
             drawing_instance: false,
-            drawing_center: null,
+            draw_init: null,
             drawing_latlng: null,
             draw_marker_instance: null,
             map_instance: null,
@@ -195,19 +220,19 @@ export default Vue.extend({
             zoom: 13,
             initial_center: [51.505, -0.159],
             current_center: [51.505, -0.159],
-            current_instance_type: "circle",
+            current_instance_type: "geo_circle",
             instance_type_list: [
                 {
                     name: "polygon",
                     display_name: "Polygon",
                     icon: "mdi-vector-polygon",
                 },
-                { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
+                { name: "geo_box", display_name: "Box", icon: "mdi-checkbox-blank" },
                 { name: "tag", display_name: "Tag", icon: "mdi-tag" },
                 { name: "geo_point", display_name: "Point", icon: "mdi-circle-slice-8" },
                 { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
                 {
-                    name: "circle",
+                    name: "geo_circle",
                     display_name: "Circle",
                     icon: "mdi-checkbox-blank-circle-outline",
                 },
@@ -260,8 +285,8 @@ export default Vue.extend({
                 return
             }
 
-
             this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
+
             if (!this.drawing_instance) {
                 this.drawing_instance = true
                 const point = L.point(e.layerX, e.layerY)
@@ -271,15 +296,33 @@ export default Vue.extend({
                     lat: unproject.lat - deltas[0],
                     lng: unproject.lng - deltas[1]
                 }
-                this.drawing_center = use_coords
+                this.draw_init = use_coords
                 this.drawing_latlng = use_coords
-                this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
                 return
             }
+
+            if (this.current_instance_type === 'geo_box') {
+                const newBox = new GeoBox()
+                newBox.create_frontend_instance(
+                    [[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], 
+                    { ...this.current_label }
+                )
+                this.instance_list.push([newBox])
+                const command = new CreateInstanceCommand([newBox], this.instance_list)
+                this.command_manager.executeCommand(command)
+
+                this.drawing_instance = false
+                this.draw_init = null
+                this.drawing_latlng = null
+                this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+                this.existing_markers.push(this.draw_marker_instance)
+                return
+            }
+
             const newCircle = new GeoCircle()
-            const radius = this.getDistance(this.drawing_center, this.drawing_latlng)
+            const radius = this.getDistance(this.draw_init, this.drawing_latlng)
             newCircle.create_frontend_instance(
-                {lat: this.drawing_center.lat, lng: this.drawing_center.lng}, 
+                {lat: this.draw_init.lat, lng: this.draw_init.lng}, 
                 radius, 
                 { ...this.current_label }
             )
@@ -288,7 +331,7 @@ export default Vue.extend({
             this.command_manager.executeCommand(command)
 
             this.drawing_instance = false
-            this.drawing_center = null
+            this.draw_init = null
             this.drawing_latlng = null
             this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
             this.existing_markers.push(this.draw_marker_instance)
@@ -379,7 +422,7 @@ export default Vue.extend({
         keydown_event_listeners: async function(e) {
             if (e.keyCode === 27) {
                 this.drawing_instance = false
-                this.drawing_center = null
+                this.draw_init = null
                 this.drawing_latlng = null
                 this.map_instance.removeLayer(this.draw_marker_instance)
                 this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)

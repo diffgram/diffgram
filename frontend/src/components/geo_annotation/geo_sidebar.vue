@@ -39,6 +39,12 @@
                         >
                             mdi-circle-slice-8
                         </v-icon>
+                        <v-icon 
+                            v-if="item.type === 'geo_box'"
+                            :color="item.label_file.colour.hex"
+                        >
+                            mdi-checkbox-blank
+                        </v-icon>
                     </td>
                     <td class="centered-table-items">
                         {{ item.label_file.label.name }}
