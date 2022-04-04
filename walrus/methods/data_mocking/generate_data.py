@@ -6,7 +6,7 @@ from shared.database.task.job.job_working_dir import JobWorkingDir
 from sqlalchemy.orm import Session
 from methods.input.packet import enqueue_packet
 from shared.database.input import Input
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from methods.input.process_media import Process_Media
 from shared.utils.job_dir_sync_utils import JobDirectorySyncManager
 from shared.regular.regular_methods import commit_with_rollback

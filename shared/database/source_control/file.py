@@ -8,10 +8,11 @@ from shared.database.text_file import TextFile
 from shared.database.point_cloud.point_cloud import PointCloud
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from shared.database.text_file import TextFile
 from shared.database.video.sequence import Sequence
 from shared.helpers.sessionMaker import AfterCommitAction
+from shared.database.labels.label_schema import LabelSchema
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
@@ -75,6 +76,8 @@ class File(Base, Caching):
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+
 
     # "added", "removed", "changed"
     state = Column(String())  # for source control
@@ -195,6 +198,10 @@ class File(Base, Caching):
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
+
+    # For label file objects.
+    label_schema_id = Column(Integer, ForeignKey('label_schema.id'))
+    label_schema = relationship(LabelSchema, foreign_keys = [label_schema_id])
 
     __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name = 'unique_frame_number_video'),)
 

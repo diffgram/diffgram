@@ -122,11 +122,11 @@ class Project(Base, Caching):
     org = relationship(Org, foreign_keys = [org_id])
 
     account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship("Account", foreign_keys=[account_id])
+    account = relationship("Account", foreign_keys = [account_id])
 
     plan_id = Column(Integer, ForeignKey('plan.id'))
     plan = relationship('Plan',
-                        foreign_keys=[plan_id])
+                        foreign_keys = [plan_id])
 
     @staticmethod
     def new(session,
@@ -468,7 +468,6 @@ class Project(Base, Caching):
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
 
-    
     def get_global_attributes(self, session):
 
         global_attribute_group_list = Attribute_Template_Group.list(
@@ -477,7 +476,7 @@ class Project(Base, Caching):
             project_id = self.id,
             archived = False,
             is_global = True
-            )
+        )
 
         global_attribute_groups_serialized_list = []
 
@@ -486,7 +485,6 @@ class Project(Base, Caching):
                 attribute_group.serialize_with_attributes(session = session))
 
         return global_attribute_groups_serialized_list
-
 
     def get_label_list(self, session, directory):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(

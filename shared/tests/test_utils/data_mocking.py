@@ -6,7 +6,8 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.permissions.project_permissions import Project_permissions
 from shared.database.source_control.file import File
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
+from shared.database.labels.label_schema import LabelSchema
 from shared.database.event.event import Event
 from shared.settings import settings
 from shared.database.task.task import Task
@@ -54,6 +55,18 @@ def register_member(user, session):
     regular_methods.commit_with_rollback(session)
     return new_member
 
+
+def create_label_schema(schema_data, session):
+    schema = LabelSchema(
+        name = schema_data.get('name'),
+        project_id = schema_data.get('project_id'),
+        member_created_id = schema_data.get('member_created_id'),
+        member_updated_id = schema_data.get('member_updated_id'),
+        archived = schema_data.get('archived'),
+    )
+    session.add(schema)
+    session.commit()
+    return schema
 
 def create_project_migration(migration_data, session):
     p_migration = ProjectMigration(

@@ -127,6 +127,7 @@
 <script lang="ts">
 
   import axios from '../../services/customInstance';
+  import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
 
@@ -156,13 +157,16 @@
         'show_visibility_toggle': {
           default: false
         },
+        'schema_id': {
+          default: undefined
+        },
         'select_this_id_at_load': {},
       },
 
       watch: {
 
         request_refresh_from_project: function () {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         },
 
       },
@@ -172,7 +176,7 @@
           this.label_list = this.label_file_list_prop
           this.selected = this.label_file_list_prop[0]
         } else {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         }
 
         if (this.select_this_id_at_load) {
@@ -217,6 +221,7 @@
         return {
 
           label_refresh_loading: false,
+          error: null,
 
           selected: {},
 
@@ -268,25 +273,20 @@
         },
 
 
-        refresh_label_list_from_project: function () {
+        get_label_list_from_project: function () {
 
           var url = null
           this.label_refresh_loading = true
-          url = '/api/project/' + this.computed_project_string_id
-            + '/labels/refresh'
-
-          axios.get(url, {})
-            .then(response => {
-
-              this.label_list = response.data.labels_out
-              this.selected = this.label_list[0]
-              this.emit_selected()
-              this.label_refresh_loading = false
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
+          let [result, error] = get_labels(this.computed_project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+          }
+          if(result){
+            this.label_list = result.labels_out
+            this.selected = this.label_list[0]
+            this.emit_selected()
+            this.label_refresh_loading = false
+          }
 
         },
 

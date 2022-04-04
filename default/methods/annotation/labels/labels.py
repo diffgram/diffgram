@@ -9,7 +9,7 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 
 from shared.database.video.sequence import Sequence
 from shared.database.video.video import Video
@@ -100,11 +100,9 @@ def new_label_file_object_core(session, input, project_string_id, log):
 
 # Rename labels view?
 
-@routes.route('/api/project/<string:project_string_id>' +
-              '/labels/refresh',
-              methods = ['GET'])
+@routes.route('/api/project/<string:project_string_id>/labels', methods = ['GET'])
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
-def labelRefresh(project_string_id):
+def api_get_labels(project_string_id):
     """
     Get labels from project
 
