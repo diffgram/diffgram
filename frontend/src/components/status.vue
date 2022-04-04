@@ -71,9 +71,10 @@ import Vue from "vue"; export default Vue.extend( {
   name: 'status',
   components: {
   },
+
   props: {
     'show_detail': {
-      default: true,
+      default: false,
       type: Boolean
     }
   },
@@ -90,6 +91,10 @@ import Vue from "vue"; export default Vue.extend( {
     }
   },
   async created() {
+
+    if (this.$route.path == '/status') {
+      this.$props.show_detail = true
+    }
 
     this.check_all()
   },
