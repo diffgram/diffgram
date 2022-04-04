@@ -1,7 +1,12 @@
 <template>
 
-  <v-container fluid style="background: white">
-    <v-container v-if="!loading">
+ 
+    <v-container fluid style="background: white">
+
+      <v-progress-linear v-show="loading"
+                         attach
+                         indeterminate ></v-progress-linear>
+
       <h3>Let's build your query! </h3>
       <h4 v-if="type === 'entities'">What do you want to filter?</h4>
       <h4 v-if="type === 'text'">Select an entity: </h4>
@@ -15,7 +20,8 @@
           <v-btn small
                  class="ma-1"
                  v-for="(item, index) in suggestions"
-                 @click="update_query(`${transform_value(item)} `)">
+                 @click="update_query(`${transform_value(item)}`)"
+                 :disabled="loading">
             {{item}}
           </v-btn>
         </div>
@@ -24,7 +30,8 @@
           <v-btn small
                  class="ma-1"
                  v-for="(item, index) in suggestions"
-                 @click="update_query(`${transform_value(item)}.`)">
+                 @click="update_query(`${transform_value(item)}.`)"
+                 :disabled="loading">
             {{item}}
           </v-btn>
           <h4 class="mt-4" v-if="type === 'text'">Or input a value: </h4>
@@ -33,7 +40,8 @@
             <v-btn v-if="type === 'text'"
                    small
                    color="secondary"
-                   @click="update_query(filter_num.toString() + ' ')">
+                   @click="update_query(filter_num.toString() + ' ')"
+                   :disabled="loading">
               Set
             </v-btn>
           </div>
@@ -54,11 +62,11 @@
         </div>
         <div v-else-if="type === 'operator'" class="d-flex justify-start align-center">
           <h4>Select an operator: </h4>
-          <v-btn class="ma-1" small @click="update_query(` > `)"> ></v-btn>
-          <v-btn class="ma-1" small @click="update_query(` < `)"> <</v-btn>
-          <v-btn class="ma-1" small @click="update_query(` >= `)"> >=</v-btn>
-          <v-btn class="ma-1" small @click="update_query(` = `)"> =</v-btn>
-          <v-btn class="ma-1" small @click="update_query(` != `)"> !=</v-btn>
+          <v-btn class="ma-1" small @click="update_query(` > `)" :disabled="loading"> ></v-btn>
+          <v-btn class="ma-1" small @click="update_query(` < `)" :disabled="loading"> <</v-btn>
+          <v-btn class="ma-1" small @click="update_query(` >= `)" :disabled="loading"> >=</v-btn>
+          <v-btn class="ma-1" small @click="update_query(` = `)" :disabled="loading"> =</v-btn>
+          <v-btn class="ma-1" small @click="update_query(` != `)" :disabled="loading"> !=</v-btn>
         </div>
 
         <div v-else-if="type === 'text'" class="d-flex justify-start align-center">
@@ -73,8 +81,7 @@
         <v-btn data-cy="execute_query_button" color="success" class="text-right" @click="execute_query">Execute</v-btn>
       </div>
     </v-container>
-    <v-progress-circular indeterminate v-else></v-progress-circular>
-  </v-container>
+
 
 
 </template>

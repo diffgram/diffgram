@@ -35,8 +35,8 @@
                 @click="$router.push('/project/' +
                         $store.state.project.current.project_string_id
                         + '/labels')">
-              <v-icon left>mdi-format-paint</v-icon>
-              Schema - Labels, Attributes, Templates
+              <v-icon left>mdi-shape-plus</v-icon>
+              Schema
             </v-btn>
           </v-flex>
 
@@ -61,8 +61,20 @@
                     text
                     style="text-transform: none !important;"
                     @click="route_annotate">
+              <v-icon left>mdi-draw</v-icon>
+              Studio
+            </v-btn>
+          </v-flex>
+
+          <v-flex>
+            <v-btn color="primary"
+                   data-cy="main_menu_data_explorer_full_screen"
+                   :disabled="!$store.state.project.current.project_string_id"
+                    text
+                    style="text-transform: none !important;"
+                    @click="$router.push(`/studio/annotate/${$store.state.project.current.project_string_id}/explorer`)">
               <v-icon left>mdi-compass</v-icon>
-              Studio - Data Explorer
+              Query and Explore
             </v-btn>
           </v-flex>
 
