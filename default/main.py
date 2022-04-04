@@ -89,6 +89,11 @@ def docs_redirect(path):
 	return redirect(f"https://diffgram.readme.io/docs/{path}", code=301)	
 
 
+@app.route('/api/status', methods=['GET'])
+def alive_api():
+    return jsonify(True), 200
+
+
 @app.route('/', defaults={'path' : ''}, methods=['GET', 'POST'])
 @app.route('/<path:path>', methods=['GET', 'POST'])
 def catch_all_unnamed(path):

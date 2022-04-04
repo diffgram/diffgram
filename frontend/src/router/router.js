@@ -217,8 +217,8 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/hiring/application/new',
-    component: 'hiring/application_new',
+    path: '/status',
+    component: 'status',
     props: true,
     meta: {requiresAuth: true}
   },

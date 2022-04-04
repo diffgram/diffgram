@@ -61,9 +61,7 @@
         <v-container>
           <v-card>
             <v-container>
-              <h2> Danger zone</h2>
-
-              <br />
+              <v-card-title> Danger zone</v-card-title>
 
               <v_info_multiple :info="info">
               </v_info_multiple>
@@ -173,6 +171,27 @@
               <!-- Shutdown project end -->
 
               </v-layout>
+
+              </v-container>
+          </v-card>
+        </v-container>
+
+        <v-container>
+          <v-card>
+            <v-container>
+              <v-card-title> Developer Features </v-card-title>
+
+              <v_info_multiple :info="info">
+              </v_info_multiple>
+
+              <v_error_multiple :error="error_multiple">
+              </v_error_multiple>
+
+              <v-btn @click="$router.push(`/status`)"
+                     color="primary">
+              <v-icon>mdi-info</v-icon>
+                Service Status
+              </v-btn>
 
               </v-container>
           </v-card>
