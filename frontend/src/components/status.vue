@@ -1,52 +1,63 @@
 <template>
   <div>
 
-    <h1> Status </h1>
 
-    <tooltip_button
-      tooltip_message="Refresh"
-      @click="check_all"
-      :disabled="default_loading || walrus_loading"
-      color="primary"
-      icon="mdi-refresh"
-      :icon_style="true"
-      :bottom="true"
-    >
-    </tooltip_button>
+    <div v-if="show_detail == false">
+      <v_error_multiple :error="default_error">
+      </v_error_multiple>
+   
+      <v_error_multiple :error="walrus_error">
+      </v_error_multiple>
+    </div>
 
-    <v-card-title> Default Service </v-card-title>
-    <v_error_multiple :error="default_error">
-    </v_error_multiple>
-    <v-alert v-if="default_success" type="success">
-      Default is ok.
-    </v-alert>
-    <v-progress-linear
-      v-if="default_loading"
-      indeterminate
-      rounded
-      height="3"
-      attach
-    ></v-progress-linear>
+    <div v-if="show_detail == true">
+      <h1> Status </h1>
 
-    <v-card-title> Walrus Service </v-card-title>
-    <v_error_multiple :error="walrus_error">
-    </v_error_multiple>
-    <v-alert v-if="walrus_success" type="success">
-      Walrus is ok.
-    </v-alert>
-    <v-progress-linear
-      v-if="walrus_loading"
-      indeterminate
-      rounded
-      height="3"
-      attach
-    ></v-progress-linear>
+      <tooltip_button
+        tooltip_message="Refresh"
+        @click="check_all"
+        :disabled="default_loading || walrus_loading"
+        color="primary"
+        icon="mdi-refresh"
+        :icon_style="true"
+        :bottom="true"
+      >
+      </tooltip_button>
 
-    <v-container fluid class="d-flex justify-start align-center">
-      <h2 class="font-weight-light">
-      Last checked: {{formatted_time}}
-      </h2>
-    </v-container>
+      <v-card-title> Default Service </v-card-title>
+      <v_error_multiple :error="default_error">
+      </v_error_multiple>
+      <v-alert v-if="default_success" type="success">
+        Default is ok.
+      </v-alert>
+      <v-progress-linear
+        v-if="default_loading"
+        indeterminate
+        rounded
+        height="3"
+        attach
+      ></v-progress-linear>
+
+      <v-card-title> Walrus Service </v-card-title>
+      <v_error_multiple :error="walrus_error">
+      </v_error_multiple>
+      <v-alert v-if="walrus_success" type="success">
+        Walrus is ok.
+      </v-alert>
+      <v-progress-linear
+        v-if="walrus_loading"
+        indeterminate
+        rounded
+        height="3"
+        attach
+      ></v-progress-linear>
+
+      <v-container fluid class="d-flex justify-start align-center">
+        <h2 class="font-weight-light">
+        Last checked: {{formatted_time}}
+        </h2>
+      </v-container>
+    </div>
 
   </div>
 </template>
@@ -60,7 +71,13 @@ import Vue from "vue"; export default Vue.extend( {
   name: 'status',
   components: {
   },
-  props: {},
+
+  props: {
+    'show_detail': {
+      default: false,
+      type: Boolean
+    }
+  },
 
   data() {
     return {
@@ -74,6 +91,10 @@ import Vue from "vue"; export default Vue.extend( {
     }
   },
   async created() {
+
+    if (this.$route.path == '/status') {
+      this.$props.show_detail = true
+    }
 
     this.check_all()
   },
