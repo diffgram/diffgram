@@ -365,7 +365,7 @@ jobs:
         if: "!github.event.issue.pull_request"
         id: finalDomain2
         with:
-          source: {{ steps.finalDomain.outputs.value }}
+          source: ${{ steps.finalDomain.outputs.value }}
           find: '.'
           replace: ''               # replace it with a blank string (ie. removing it)
       - run: echo ${{ steps.finalDomain2.outputs.value }}
