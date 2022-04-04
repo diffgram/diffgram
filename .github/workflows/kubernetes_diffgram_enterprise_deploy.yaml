@@ -360,7 +360,7 @@ jobs:
             source: ${{ env.diffgram_domain_slug }}
             find: '.'
             replace: ''               # replace it with a blank string (ie. removing it)
-
+      - run: echo ${{ steps.finalDomain.outputs.value }}
       - name: Create Diffgram Domain Slug from Dispatch
         id: finalDomain
         if: "!github.event.issue.pull_request"
