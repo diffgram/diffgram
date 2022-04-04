@@ -48,7 +48,39 @@ class GeoBox extends Instance {}
 
 class GeoLine extends Instance {}
 
-class GeoPoint extends Instance {}
+export class GeoPoint extends Instance implements InstanceInterface {
+    public origin: Origin;
+    public type: string = "geo_point";
+
+    constructor() {
+        super();
+    }
+
+    public create_instance() {}
+
+    public create_frontend_instance(origin: Origin, label_file: any, soft_delete: boolean = false): void {
+        this.origin = origin;
+        this.soft_delete = soft_delete;
+        this.creation_ref_id = uuidv4();
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+    }
+
+    public get_instance_data() {
+        const payload = {
+            id: this.id || this.creation_ref_id,
+            type: this.type,
+            selected: this.selected,
+            label_file: this.label_file,
+            label_file_id: this.label_file_id,
+            soft_delete: this.soft_delete,
+            creation_ref_id: this.creation_ref_id,
+            origin: this.origin,
+        }
+        
+        return payload
+    }
+}
 
 class GeoTag extends Instance {}
 

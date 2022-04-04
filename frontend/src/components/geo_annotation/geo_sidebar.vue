@@ -33,6 +33,12 @@
                         >
                             mdi-checkbox-blank-circle-outline
                         </v-icon>
+                        <v-icon 
+                            v-if="item.type === 'geo_point'"
+                            :color="item.label_file.colour.hex"
+                        >
+                            mdi-circle-slice-8
+                        </v-icon>
                     </td>
                     <td class="centered-table-items">
                         {{ item.label_file.label.name }}

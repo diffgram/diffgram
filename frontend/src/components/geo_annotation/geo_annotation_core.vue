@@ -18,6 +18,7 @@
                 :label_file_colour_map="label_file_colour_map"
                 :task="task"
                 :file="file"
+                @change_instance_type="change_instance_type"
                 @change_label_file="change_label_file"
                 @change_label_visibility="change_label_visibility"
                 @change_file="change_file"
@@ -54,7 +55,7 @@ import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
 import { CreateInstanceCommand, DeleteInstanceCommand, UpdateInstanceLabelCommand } from "../../helpers/command/available_commands"
-import { GeoCircle } from "../vue_canvas/instances/GeoInstance"
+import { GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
 import 'leaflet/dist/leaflet.css';
 
 export default Vue.extend({
@@ -131,21 +132,40 @@ export default Vue.extend({
         draw_instances: function() {
             if (this.instance_list) {
                 this.instance_list.get_all().map(instance => {
-                    const already_exists = this.existing_markers.find(marker => 
-                        marker.options.radius === instance.radius && 
-                        marker._latlng.lat === instance.origin.lat &&
-                        marker._latlng.lng === instance.origin.lng &&
-                        marker.options.color === instance.label_file.colour.hex
-                    )
-                    if (already_exists && instance.soft_delete) {
-                        this.map_instance.removeLayer(already_exists)
-                        const indexToRemove = this.existing_markers.indexOf(already_exists)
-                        this.existing_markers.splice(indexToRemove, 1)
+                    if (instance.type === 'geo_circle') {
+                        const already_exists = this.existing_markers.find(marker => 
+                            marker.options.radius === instance.radius && 
+                            marker._latlng.lat === instance.origin.lat &&
+                            marker._latlng.lng === instance.origin.lng &&
+                            marker.options.color === instance.label_file.colour.hex
+                        )
+                        if (already_exists && instance.soft_delete) {
+                            this.map_instance.removeLayer(already_exists)
+                            const indexToRemove = this.existing_markers.indexOf(already_exists)
+                            this.existing_markers.splice(indexToRemove, 1)
+                        }
+                        else if (!already_exists && !instance.soft_delete) {
+                            const marker = L.circle(instance.origin, {radius: instance.radius, color: instance.label_file.colour.hex})
+                            this.existing_markers.push(marker)
+                            this.map_instance.addLayer(marker)
+                        }
                     }
-                    else if (!already_exists && !instance.soft_delete) {
-                        const marker = L.circle(instance.origin, {radius: instance.radius, color: instance.label_file.colour.hex})
-                        this.existing_markers.push(marker)
-                        this.map_instance.addLayer(marker)
+                    else if (instance.type === 'geo_point') {
+                        const already_exists = this.existing_markers.find(marker => 
+                            marker._latlng.lat === instance.origin.lat &&
+                            marker._latlng.lng === instance.origin.lng &&
+                            marker.options.color === instance.label_file.colour.hex
+                        )
+                        if (already_exists && instance.soft_delete) {
+                            this.map_instance.removeLayer(already_exists)
+                            const indexToRemove = this.existing_markers.indexOf(already_exists)
+                            this.existing_markers.splice(indexToRemove, 1)
+                        }
+                        else if (!already_exists && !instance.soft_delete) {
+                            const marker = L.circle(instance.origin, {radius: 1, color: instance.label_file.colour.hex})
+                            this.existing_markers.push(marker)
+                            this.map_instance.addLayer(marker)
+                        }
                     }
                 })
             }
@@ -175,6 +195,7 @@ export default Vue.extend({
             zoom: 13,
             initial_center: [51.505, -0.159],
             current_center: [51.505, -0.159],
+            current_instance_type: "circle",
             instance_type_list: [
                 {
                     name: "polygon",
@@ -183,7 +204,7 @@ export default Vue.extend({
                 },
                 { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
                 { name: "tag", display_name: "Tag", icon: "mdi-tag" },
-                { name: "point", display_name: "Point", icon: "mdi-circle-slice-8" },
+                { name: "geo_point", display_name: "Point", icon: "mdi-circle-slice-8" },
                 { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
                 {
                     name: "circle",
@@ -215,8 +236,31 @@ export default Vue.extend({
             this.map_instance.setView([center.lat, center.lng], this.zoom)
         },
         draw_instance: function(e) {
-            this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
             if (!this.draw_mode) return;
+
+            if (this.current_instance_type === 'geo_point') {
+                const point = L.point(e.layerX, e.layerY)
+                const unproject = this.map_instance.layerPointToLatLng(point)
+                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
+                const use_coords = {
+                    lat: unproject.lat - deltas[0],
+                    lng: unproject.lng - deltas[1]
+                }
+
+                const newPoint = new GeoPoint()
+                newPoint.create_frontend_instance(
+                    {lat: use_coords.lat, lng: use_coords.lng}, 
+                    { ...this.current_label }
+                )
+                this.instance_list.push([newPoint])
+                const command = new CreateInstanceCommand([newPoint], this.instance_list)
+                this.command_manager.executeCommand(command)
+                this.draw_instances
+                return
+            }
+
+
+            this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
             if (!this.drawing_instance) {
                 this.drawing_instance = true
                 const point = L.point(e.layerX, e.layerY)
@@ -324,6 +368,9 @@ export default Vue.extend({
                 this.invisible_labels.push(label.id)
             }
         },
+        change_instance_type: function(instance_type) {
+            this.current_instance_type = instance_type
+        }
     }
 })
 </script>
