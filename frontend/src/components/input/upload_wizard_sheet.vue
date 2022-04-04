@@ -63,9 +63,7 @@
         height="12"
       >
       </v-progress-linear>
-
-      <status :show_detail="false"> </status>
-
+      
       <v-stepper-items style="height: 100%">
         <v-stepper-content step="1" style="height: 100%">
           <div class="d-flex justify-center flex-column">
