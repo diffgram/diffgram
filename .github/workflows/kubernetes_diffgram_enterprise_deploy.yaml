@@ -361,13 +361,20 @@ jobs:
             source: ${{ env.GITHUB_REF_SLUG }}
             find: '.'
             replace: ''               # replace it with a blank string (ie. removing it)
-      - run: echo ${{ steps.finalDomain.outputs.value }}
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        id: finalDomain2
+        with:
+          source: {{ steps.finalDomain.outputs.value }}
+          find: '.'
+          replace: ''               # replace it with a blank string (ie. removing it)
+      - run: echo ${{ steps.finalDomain2.outputs.value }}
 
       - name: Create Diffgram Domain Slug from Dispatch
 
         if: "!github.event.issue.pull_request"
         run: |
-          echo "diffgram_domain_slug=${{ steps.finalDomain.outputs.value }}" >> $GITHUB_ENV
+          echo "diffgram_domain_slug=${{ steps.finalDomain2.outputs.value }}" >> $GITHUB_ENV
 
 
       - name: Prepare app.yaml for helm chart.
