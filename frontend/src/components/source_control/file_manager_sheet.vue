@@ -178,6 +178,13 @@
       }
     },
     watch:{
+      show_explorer_full_screen: function (){
+        if (this.$props.show_explorer_full_screen == true) {
+          this.tab = 1
+          this.full_screen_sheet()
+          this.media_sheet = true
+        }
+      },
       tab: function(newval){
         if(newval === 1){
           this.full_screen_sheet();

@@ -244,7 +244,16 @@
 
                   <v-layout>
 
-                    <!-- menu left ?-->
+                    <tooltip_button
+                        v-if="props.item && props.item.label"
+                        tooltip_message="Explore Annotations with this Label"
+                        :href="generate_explore_url(props.item.label.name)"
+                        target="_blank"
+                        icon="mdi-compass"
+                        :icon_style="true"
+                        :bottom="true"
+                        color="primary">
+                    </tooltip_button>                   
 
                     <button_with_menu
                       tooltip_message="Edit"
@@ -660,6 +669,9 @@
       },
 
       methods: {
+        generate_explore_url: function(name){
+          return '/studio/annotate/' + this.$store.state.project.current.project_string_id  + '/explorer?query=labels.' + name + ' > 0'
+        },
         open_sample_labels_dialog: function(){
           this.dialog_confirm_sample_data = true;
         },

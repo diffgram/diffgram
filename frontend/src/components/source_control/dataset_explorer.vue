@@ -1,83 +1,21 @@
 <template>
-  <v-layout class="d-flex flex-column" style="border-top: 1px solid #dcdbdb">
-
-    <v-toolbar extended elevation="0" class="ma-0 pt-6" style="height: 80px">
-      <v-toolbar-title class="d-flex align-center mb-0">
-        <tooltip_button
-          tooltip_message="Refresh"
-          datacy="refresh_explorer"
-          @click="fetch_file_list"
-          icon="refresh"
-          :icon_style="true"
-          color="primary"
-        >
-        </tooltip_button>
-        <v-icon x-large>mdi-folder-home</v-icon>Projects/{{project_string_id}}/Datasets/
-
-      </v-toolbar-title>
-      <div class="d-flex align-center mr-5">
-
-        <v_directory_list :project_string_id="project_string_id"
-                          @change_directory="on_change_ground_truth_dir"
-                          ref="ground_truth_dir_list"
-                          class="mt-5"
-                          :change_on_mount="true"
-                          :show_new="false"
-                          :initial_dir_from_state="true"
-                          :update_from_state="false"
-                          :set_current_dir_on_change="false"
-                          :view_only_mode="false"
-                          :show_update="false"
-                          :set_from_id="current_dir_id">
-        </v_directory_list>
-      </div>
-      <div class="d-flex align-center align-content-center">
-
-        <h4 class="mt-4 mr-4 mb-3">Compare Inferences: </h4>
-        <model_run_selector
-          class="mt-4"
-          :multi_select="false"
-          :model_run_list="model_run_list"
-          @model_run_change="update_base_model_run"
-          :project_string_id="project_string_id">
-
-        </model_run_selector>
-        <h2 class="font-weight-light mr-4 ml-4">VS</h2>
-        <model_run_selector
-          class="mt-4"
-          :multi_select="true"
-          :model_run_list="model_run_list"
-          @model_run_change="update_compare_to_model_runs"
-          :project_string_id="project_string_id">
-
-        </model_run_selector>
-        <div class="mt-4 ml-4">
-          <v-switch
-            v-model="show_ground_truth"
-            :label="`Show Ground Truth`"
-          ></v-switch>
-        </div>
-      </div>
-      <v-spacer></v-spacer>
-
-<!--      <v-btn icon disabled>-->
-<!--        <v-icon>mdi-filter</v-icon>-->
-<!--      </v-btn>-->
-    </v-toolbar>
-
-    <v-layout class="mr-5 ml-5 d-flex flex-column">
+  <v-layout>
+  <v-sheet
+      class="pl-4 pt-2"
+      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px"
+      >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
+      <v-layout>
       <v-menu :value="query_menu_open"
-              max-width="650px"
-
               :offset-y="true"
               :close-on-content-click="false"
               :close-on-click="false"
               z-index="99999999"
-              attach>
+              >
         <template v-slot:activator="{ on, attrs }">
           <v-text-field
+            class="pt-4"
             label="Query your data: "
             v-model="query"
             data-cy="query_input_field"
@@ -94,9 +32,86 @@
           :project_string_id="project_string_id"
           :query="query" ></query_suggestion_menu>
       </v-menu>
+ 
+        <tooltip_button
+          tooltip_message="Refresh"
+          datacy="refresh_explorer"
+          @click="fetch_file_list"
+          icon="refresh"
+          :icon_style="true"
+          color="primary"
+        >
+        </tooltip_button>
+      </v-layout>
 
-    </v-layout>
-    <v-progress-circular class="text-center align-center justify-center ma-auto" indeterminate v-if="loading"></v-progress-circular>
+      <v_directory_list :project_string_id="project_string_id"
+                        @change_directory="on_change_ground_truth_dir"
+                        ref="ground_truth_dir_list"
+                        :change_on_mount="true"
+                        :show_new="false"
+                        :initial_dir_from_state="true"
+                        :update_from_state="false"
+                        :set_current_dir_on_change="false"
+                        :view_only_mode="false"
+                        :show_update="false"
+                        :set_from_id="current_dir_id">
+      </v_directory_list>
+
+      <v-switch
+        class="pr-4"
+        v-model="show_ground_truth"
+        :label="`Show Ground Truth`"
+      ></v-switch>
+
+      <v-switch
+        v-model="compare_models"
+        :label="`Compare Models`"
+      ></v-switch>
+    
+<!--      <v-btn icon disabled>-->
+<!--        <v-icon>mdi-filter</v-icon>-->
+<!--      </v-btn>-->
+
+    <div v-if="compare_models == true">
+      <v-layout column>
+        <h4 class="mt-4 mr-4 mb-3">Compare Inferences: </h4>
+        <model_run_selector
+          class="mt-4"
+          :multi_select="false"
+          :model_run_list="model_run_list"
+          @model_run_change="update_base_model_run"
+          :project_string_id="project_string_id">
+
+        </model_run_selector>
+        <h2 class="font-weight-light">VS</h2>
+        <model_run_selector
+          class="mt-4"
+          :multi_select="true"
+          :model_run_list="model_run_list"
+          @model_run_change="update_compare_to_model_runs"
+          :project_string_id="project_string_id">
+
+        </model_run_selector>
+      </v-layout>
+    </div>
+
+  </v-sheet>
+
+  <v-sheet style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px">
+    <v-progress-linear indeterminate
+                       v-if="loading"
+                       height="10"
+                       attach
+                       class="d-flex flex-column align-center justify-center ma-0">
+    </v-progress-linear>
+
+    <v-container v-if="none_found == true && metadata && metadata.page == 1"
+                 fluid style="border: 1px solid #ababab"
+                 class="d-flex flex-column align-center justify-center ma-0">
+      <h1 class="pt-4">No Results</h1>
+      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
+    </v-container>
+
     <v-layout id="infinite-list"
               fluid
               class="files-container d-flex justify-start"
@@ -127,6 +142,15 @@
     <v-snackbar indeterminate v-if="infinite_scroll_loading">.
       Loading...<v-progress-circular indeterminate></v-progress-circular>
     </v-snackbar>
+
+    <v-container v-if="none_found == true && metadata && metadata.page > 1"
+                 fluid style="border: 1px solid #ababab"
+                 class="d-flex flex-column align-center justify-center ma-0">
+      <h1 class="pt-4">End of Results</h1>
+      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
+    </v-container>
+  
+   </v-sheet>  
   </v-layout>
 </template>
 
@@ -196,8 +220,10 @@
         show_ground_truth: true,
         infinite_scroll_loading: false,
         loading_models: false,
+        none_found: undefined,
         query_menu_open: false,
         selected_dir: undefined,
+        compare_models: false,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
         metadata: {
@@ -237,7 +263,8 @@
       execute_query: async function(query_str){
         this.query_menu_open = false;
         this.query = query_str;
-        await this.fetch_file_list()
+        this.file_list = []
+        await this.fetch_file_list(true)
       },
       close_suggestion_menu: async function(query_str){
         this.query_menu_open = false;
@@ -261,6 +288,7 @@
           this.infinite_scroll_loading = true;
         }
         try{
+          this.none_found = undefined
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
             'metadata': {
@@ -271,7 +299,10 @@
             'project_string_id': this.$props.project_string_id
 
           })
-          if (response.data['file_list'] != null) {
+          if (response.data['file_list'] == false) {
+            this.none_found = true
+          }
+          else {
             if(reload_all){
               this.file_list = response.data.file_list;
             }
@@ -340,5 +371,9 @@
   .files-container::after {
     content: "";
     flex: auto;
+  }
+
+  .v-text-field input {
+    font-size: 1.5em;
   }
 </style>
