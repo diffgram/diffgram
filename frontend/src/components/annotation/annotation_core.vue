@@ -2175,6 +2175,15 @@ export default Vue.extend({
       if(!instance){
         return
       }
+      let has_undefined_ordinals = instance.nodes.find(elm => elm.ordinal == undefined);
+      if(has_undefined_ordinals){
+        instance.nodes = instance.nodes.map((n, i) => {
+          return {
+            ...n,
+            ordinal: i
+          }
+        })
+      }
 
       let node = instance.nodes.find(elm => elm.ordinal === ordinal);
       if(!node){
@@ -3637,6 +3646,7 @@ export default Vue.extend({
       }
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
+      console.log('AAAA', this.current_instance_template, this.current_instance_template.mode === 'guided' && this.draw_mode)
       if(this.current_instance_template.mode === 'guided' && this.draw_mode){
         this.show_snackbar_guided_keypoints_drawing(1);
       }
@@ -7358,10 +7368,11 @@ export default Vue.extend({
          * seperetly for special event handling
          *
          */
-        await this.get_parent_instance_list_for_video();
+
         await this.update_instance_list_from_buffer_or_get_new_buffer(
           play_after_success
         );
+
         this.set_global_instance_on_parent_instance_list();
       } else {
         // Context of Images Only
@@ -7762,6 +7773,7 @@ export default Vue.extend({
           const new_image = await this.addImageProcess(file.image.url_signed);
           this.html_image = new_image;
           this.refresh = Date.now();
+          await this.get_parent_instance_list_for_video();
           await this.get_instances();
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;
