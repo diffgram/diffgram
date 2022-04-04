@@ -147,7 +147,7 @@ jobs:
           repository: diffgram/diffgram-helm
       - name: Create Diffgram Version Production From Tag or Branch
         run: |
-          echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "diffgram_version=newrelic-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
