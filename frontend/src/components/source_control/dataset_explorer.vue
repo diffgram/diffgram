@@ -97,10 +97,18 @@
 
   </v-sheet>
 
-  <v-sheet>
+  <v-sheet style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px">
     <v-progress-linear indeterminate
-                       v-if="loading">
+                       v-if="loading"
+                       class="d-flex flex-column align-center justify-center ma-0">
     </v-progress-linear>
+
+    <v-container v-if="none_found == true && metadata && metadata.page == 1"
+                 fluid style="border: 1px solid #ababab"
+                 class="d-flex flex-column align-center justify-center ma-0">
+      <h1 class="pt-4">No Results</h1>
+      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
+    </v-container>
 
     <v-layout id="infinite-list"
               fluid
@@ -133,10 +141,10 @@
       Loading...<v-progress-circular indeterminate></v-progress-circular>
     </v-snackbar>
 
-    <v-container v-if="none_found == true"
+    <v-container v-if="none_found == true && metadata && metadata.page > 1"
                  fluid style="border: 1px solid #ababab"
                  class="d-flex flex-column align-center justify-center ma-0">
-      <h1 class="pt-4">No Results</h1>
+      <h1 class="pt-4">End of Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
   
