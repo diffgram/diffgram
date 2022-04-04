@@ -42,9 +42,6 @@
       draw_image_bg: function (ctx) {
         let local_brightness = this.canvas_filters['brightness']
 
-        if (this.annotations_loading == true) {
-          local_brightness -= 50
-        }
 
         let brightness = `brightness(${local_brightness}%)`
         let contrast = `contrast(${this.canvas_filters['contrast']}%)`
