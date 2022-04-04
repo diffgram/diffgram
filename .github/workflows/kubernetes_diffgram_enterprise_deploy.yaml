@@ -349,6 +349,24 @@ jobs:
         run: |
           echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
 
+      - name: Create Diffgram Domain Slug from pr
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        with:
+            source: ${{ env.diffgram_domain_slug }}
+            find: '.'
+            replace: ''               # replace it with a blank string (ie. removing it)
+
+      - name: Create Diffgram Domain Slug from Dispatch
+        id: finalDomain
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.finalDomain.outputs.value }}" >> $GITHUB_ENV
+
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
