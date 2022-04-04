@@ -3,7 +3,7 @@
     <v-layout >
 
 
-      <v-select :items="label_list_with_limit"
+      <v-autocomplete :items="label_list_with_limit"
                 v-model="selected"
                 :label="label_prompt"
                 return-object
@@ -14,6 +14,9 @@
                 data-cy="label_select"
                 ref="label_select"
                 class="ma-0"
+                :filter="on_filter_labels"
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open')"
                 >
 
         <template v-slot:item="data">
@@ -102,10 +105,15 @@
         </template>
 
         <template v-slot:no-data>
-          No Labels Templates Created.
-          <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">Create Label Templates</v-btn>
+          <div class="d-flex flex-column align-center justify-center">
+            No Labels Templates Created.
+            <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">
+              <v-icon>mdi-plus</v-icon>
+              Create New
+            </v-btn>
+          </div>
         </template>
-      </v-select>
+      </v-autocomplete>
 
     </v-layout>
 
@@ -231,7 +239,10 @@
       },
 
       methods: {
+        on_filter_labels: function(item, query_text, item_text){
+          return item.label.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
 
+        },
         label_name_truncated: function(name) {
           let max_size = 23
           let default_selector_size = 290 // feels pretty brittle
