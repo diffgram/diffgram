@@ -100,6 +100,8 @@
   <v-sheet style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px">
     <v-progress-linear indeterminate
                        v-if="loading"
+                       height="10"
+                       attach
                        class="d-flex flex-column align-center justify-center ma-0">
     </v-progress-linear>
 
