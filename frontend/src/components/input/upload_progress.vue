@@ -1,6 +1,7 @@
 <template>
  <div>
-  <v-container v-if="(!progress_percentage && percentage < 100) || (progress_percentage && progress_percentage < 100) || is_actively_sending">
+
+  <v-container v-if="!declare_success">
     <h1>Uploading Files...</h1>
     <h3 v-if="formatted_total && formatted_uploaded && !progress_percentage">
       {{formatted_uploaded}} of {{formatted_total}}
