@@ -52,6 +52,7 @@ jobs:
           echo "valid_comment=true" >> $GITHUB_ENV
 
       - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
         id: comment-branch
 
       - name: see vars
