@@ -439,7 +439,7 @@ jobs:
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns
 
       - name: Comment PR
-        if: ${{ failure() }}
+        if: ${{ failure() && github.event.issue.pull_request}}
         uses: NejcZdovc/comment-pr@v1
         with:
           message: "❌ This PR has failed to deploy \n
