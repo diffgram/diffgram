@@ -46,6 +46,13 @@ jobs:
          github.event.comment.author_association == 'MEMBER' )"
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
+
+      - name: Check that comments belongs to org/repo
+        if: "github.event.issue.pull_request != null && !contains(github.event.comment.body, '/deploy') ||
+         !(github.event.comment.author_association == 'OWNER' ||
+         github.event.comment.author_association == 'COLLABORATOR' ||
+         github.event.comment.author_association == 'MEMBER' )"
+        run: exit 1
       - uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
 
