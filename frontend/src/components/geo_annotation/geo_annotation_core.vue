@@ -216,7 +216,8 @@ export default Vue.extend({
     },
     mounted() {
         this.on_mount()
-        var map = L.map('map').setView(this.initial_center, this.zoom);
+        this.hot_key_listeners()
+        const map = L.map('map').setView(this.initial_center, this.zoom);
 
         this.map_instance = map
 
@@ -370,6 +371,19 @@ export default Vue.extend({
         },
         change_instance_type: function(instance_type) {
             this.current_instance_type = instance_type
+        },
+        hot_key_listeners: function() {
+            window.removeEventListener("keydown", this.keydown_event_listeners)
+            window.addEventListener("keydown", this.keydown_event_listeners)
+        },
+        keydown_event_listeners: async function(e) {
+            if (e.keyCode === 27) {
+                this.drawing_instance = false
+                this.drawing_center = null
+                this.drawing_latlng = null
+                this.map_instance.removeLayer(this.draw_marker_instance)
+                this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+            }
         }
     }
 })
