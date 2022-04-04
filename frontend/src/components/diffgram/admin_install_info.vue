@@ -15,6 +15,8 @@
 
     </ul>
 
+    <status> </status>
+
 
   </div>
 </template>
@@ -22,11 +24,13 @@
 <script lang="ts">
 
 import { get_install_info } from "../../services/configService";
+import status from "../status"
 
 import Vue from "vue"; export default Vue.extend( {
 
   name: 'admin_install_info',
   components: {
+    status
   },
   props: [''],
   data() {
