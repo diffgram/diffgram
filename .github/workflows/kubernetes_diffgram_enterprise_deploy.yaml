@@ -358,7 +358,7 @@ jobs:
         if: "!github.event.issue.pull_request"
         id: finalDomain
         with:
-            source: ${{ env.diffgram_domain_slug }}
+            source: ${{ env.GITHUB_REF_SLUG }}
             find: '.'
             replace: ''               # replace it with a blank string (ie. removing it)
       - run: echo ${{ steps.finalDomain.outputs.value }}
