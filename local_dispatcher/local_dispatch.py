@@ -76,7 +76,7 @@ def route_multi_host(path):
     # Default host
     host = 'http://default:8080/'
     host_reached = 'default'
-    logging.warning("MULTI HOST {path}")
+    logging.warning(f"MULTI HOST {path}")
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
