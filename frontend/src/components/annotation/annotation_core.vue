@@ -7368,10 +7368,11 @@ export default Vue.extend({
          * seperetly for special event handling
          *
          */
-        await this.get_parent_instance_list_for_video();
+
         await this.update_instance_list_from_buffer_or_get_new_buffer(
           play_after_success
         );
+
         this.set_global_instance_on_parent_instance_list();
       } else {
         // Context of Images Only
@@ -7772,6 +7773,7 @@ export default Vue.extend({
           const new_image = await this.addImageProcess(file.image.url_signed);
           this.html_image = new_image;
           this.refresh = Date.now();
+          await this.get_parent_instance_list_for_video();
           await this.get_instances();
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;
