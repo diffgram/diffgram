@@ -1,4 +1,5 @@
 import testUser from '../../../fixtures/users.json';
+import labelsForAttributes from "../../../fixtures/labelsForAttributes.json";
 
 const points = [
     {x: 200, y: 25},
@@ -20,6 +21,7 @@ describe('Autoborder', () => {
       })
       // Straight to studio from login
       cy.loginByForm(testUser.email, testUser.password, "?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e");
+      cy.createLabels(labelsForAttributes)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
       cy.uploadAndViewSampleImage(testUser.project_string_id);
       cy.wait(15000)
