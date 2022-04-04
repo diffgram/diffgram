@@ -32,7 +32,10 @@ jobs:
   pr_commented:
     # This job only runs for pull request comments
     name: PR Comment Deploy
-    if: ${{ github.event.issue.pull_request }}
+    if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+          (github.event.comment.author_association == 'OWNER' ||
+          github.event.comment.author_association == 'COLLABORATOR' ||
+          github.event.comment.author_association == 'MEMBER' )"
     runs-on: ubuntu-latest
     steps:
       - run: |
