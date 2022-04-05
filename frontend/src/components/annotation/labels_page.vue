@@ -1,6 +1,9 @@
 <template>
-  <div>
+  <div class="d-flex flex-column pa-4">
+    <h1 class="font-weight-light">Project/{{project_string_id}}/Schema/ <strong>{{current_schema.name}}</strong></h1>
+    <schema_card_selector>
 
+    </schema_card_selector>
     <v-container>
       <v_labels_view
           :show_edit_templates="true"
@@ -11,10 +14,12 @@
       </v_labels_view>
 
     </v-container>
-    <instance_template_list
+    <v-container>
+      <instance_template_list
 
-      :project_string_id="project_string_id"
-    ></instance_template_list>
+        :project_string_id="project_string_id"
+      ></instance_template_list>
+    </v-container>
   </div>
 </template>
 
@@ -22,18 +27,21 @@
 
 import Vue from "vue";
 import {create_event} from "../event/create_event";
-
+import schema_card_selector from './schema_card_selector'
 import instance_template_list from '../instance_templates/instance_template_list'
 export default Vue.extend({
   name: 'labels_page',
   components:{
-    instance_template_list: instance_template_list
+    instance_template_list: instance_template_list,
+    schema_card_selector: schema_card_selector
   },
   props: {
     'project_string_id': {},
   },
   data() {
     return {
+      current_schema: null,
+      label_schema_list: []
     }
   },
   computed: {},

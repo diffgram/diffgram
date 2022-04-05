@@ -57,6 +57,55 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(schema.member_created_id, data['member_created_id'])
 
 
+    def test_serialize(self):
+        project_data = data_mocking.create_project_with_context(
+            {
+                'users': [
+                    {'username': 'Test2',
+                     'email': 'test@test.com',
+                     'password': 'diffgram123',
+                     }
+                ]
+            },
+            self.session
+        )
+        self.project2 = project_data['project']
+        schema1 = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        schema2 = LabelSchema.new(
+            session = self.session,
+            name = 'test2',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        schema3 = LabelSchema.new(
+            session = self.session,
+            name = 'test3',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+
+        schema4 = LabelSchema.new(
+            session = self.session,
+            name = 'test4',
+            project_id = self.project2.id,
+            member_created_id = self.member.id
+        )
+        id_list = [schema1.id, schema2.id, schema3.id]
+        results = LabelSchema.list(session = self.session, project_id = self.project.id)
+        results2 = LabelSchema.list(session = self.session, project_id = self.project2.id)
+
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(results2), 1)
+        for elm in results:
+            self.assertTrue(elm.id in id_list)
+        for elm in results2:
+            self.assertTrue(elm.id in [schema4.id])
+
 class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
     """
 

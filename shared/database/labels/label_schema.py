@@ -52,6 +52,14 @@ class LabelSchema(Base, SerializerMixin):
 
         return data
 
+    @staticmethod
+    def list(session: Session, project_id: int):
+        query = session.query(LabelSchema).filter(
+            LabelSchema.project_id == project_id
+        )
+        result = query.all()
+        return result
+
 
 class LabelSchemaLink(Base, SerializerMixin):
     __tablename__ = 'label_schema_link'

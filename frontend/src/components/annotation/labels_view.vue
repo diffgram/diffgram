@@ -1,412 +1,394 @@
 <template>
-  <v-container fluid  v-cloak id="labels_view" class="d-flex pa-4">
-    <v-card    width="256"
-               class="mx-auto">
-      <v-navigation-drawer>
-        <v-list
-          dense
-          nav
-        >
-          <v-list-item
-            v-for="item in [{icon: 'mdi-plus', name: 'SCHEMA 1'}, {icon: 'mdi-plus', name: 'SCHEMA 2'}, {icon: 'mdi-plus', name: 'SCHEMA 3'}]"
-            :key="item.title"
-            link
-          >
-            <v-list-item-icon>
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-icon>
+  <v-container fluid  v-cloak id="labels_view" class="d-flex flex-column pa-4">
 
-            <v-list-item-content>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-    </v-card>
-    <v_error_multiple :error="error"></v_error_multiple>
+    <div class="d-flex mt-4">
+      <v_error_multiple :error="error"></v_error_multiple>
 
-    <v-layout row>
-      <v-flex>
+      <v-layout row>
+        <v-flex>
 
-        <!-- TODO make max height the height of available space? -->
-        <v-card style="overflow-y:auto; max-height: 700px" elevation="3">
+          <!-- TODO make max height the height of available space? -->
+          <v-card style="overflow-y:auto; max-height: 700px" elevation="3" class="mt-3">
 
-          <v-card-title class="d-flex align-center">
-            Label Templates
+            <v-card-title class="d-flex align-center">
+              Label Templates
 
-            <!-- New label -->
-            <button_with_menu
-              datacy="new_label_template"
-              tooltip_message="New Label Template (Project Wide)"
-              :large="true"
-              v-if="show_edit_templates"
-              @click="$store.commit('set_user_is_typing_or_menu_open', true)"
-              @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
-              icon="add"
-              color="primary"
-              :disabled="any_loading || view_only_mode || video_playing"
-              offset="x"
-            >
-
-              <template slot="content">
-
-                <v_labels_new @label_created="on_label_created">
-                </v_labels_new>
-
-              </template>
-
-            </button_with_menu>
-
-
-            <v-btn color="primary"
-                   text
-                   href="https://diffgram.readme.io/docs/create-your-first-label"
-                   target="_blank"
-                   icon>
-              <v-icon>help</v-icon>
-            </v-btn>
-
-            <!-- For admins -->
-
-
-            <!-- refresh_labels_function is called
-                 on return because that updates the instance list /
-                attribute group information (for annotation use,
-                not managing it)-->
-
-            <!-- The 'set_user_is_typing_or_menu_open' is for disabling hotkeys -->
-
-            <!-- Attributes -->
-
-            <!-- TODO, do we need min width? it seems to nicely detect it by itself...
-                min-width="600"
-                And do we event want or need a direction here?
-
-                [ ] is the new update return value working as expected?
-                -->
-
-            <!-- Hide while WIP. TODO move to regular table -->
-            <!--
-            <v-text-field v-model="search"
-                          append-icon="search"
-                          @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                          @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                          label="Search"
-                          single-line
-                          hide-details></v-text-field>
-            -->
-
-            <tooltip_button
-              v-if="show_create_samples"
-              tooltip_message="Create Sample Labels"
-              @click="open_sample_labels_dialog"
-              icon="mdi-apps-box"
-              :icon_style="true"
-              :bottom="true"
-              color="primary">
-            </tooltip_button>
-
-          </v-card-title>
-
-          <v-alert type="info"
-                   v-if="!loading && Labels.length == 0"
-          >
-            Welcome! Click the plus button to create your first label.
-          </v-alert>
-
-          <v_info_multiple :info="info"
-                           @input="info = {}"
-          >
-          </v_info_multiple>
-          <!-- Do we want this to keep popping back up after new creation?
-              Not clear what rationale was for that-->
-
-          <v-skeleton-loader
-            :loading="any_loading"
-            type="table"
-            data-cy="skeletonloader"
-          >
-
-            <regular_table
-              :header_list="header_list"
-              :column_list="column_list"
-              datacy="labels_table"
-              :item_list="Labels"
-              :elevation="0"
-              ref="label_data_table"
-              @row_hover_index="table_row_hover_index = $event"
-            >
-
-              <template slot="label" slot-scope="props">
-
-                <v-layout>
-                  <div v-if="props.item.colour != undefined" class="d-flex align-center">
-
-
-                    <v-icon :style="style_color(props.item.colour.hex)"
-                            class="clickable"
-                            :disabled="video_playing"
-                            @click="change_label_function(props.item)"
-                    >flag
-                    </v-icon>
-                  </div>
-
-                  <tooltip_icon
-                    tooltip_message="Video Defaults to Single Frame"
-                    v-if="props.item.label && props.item.label.default_sequences_to_single_frame"
-                    icon="mdi-flag-checkered"
-                    color="black">
-                  </tooltip_icon>
-
-                  <div v-if="props.item.id == current_label_file.id">
-
-                    <v-badge v-if="view_only_mode != true &&
-                          instance_type != 'tag'"
-                             overlap
-                             color="secondary"
-                    >
-                      <v-icon slot="badge">check</v-icon>
-                    </v-badge>
-
-                  </div>
-
-
-                  <!-- Annotation Page Case -->
-                  <v-btn :disabled="video_playing"
-                         v-if="!show_edit_templates && current_label_file"
-                         @click="change_label_function(props.item)"
-                         text
-                         style="text-transform: none !important;"
-                         :color="props.item.id == current_label_file.id ? 'secondary' : 'primary' "
-                  >
-                    <h3 :data-cy="props.item.label.name">
-                      {{ props.item.label.name }} </h3>
-                  </v-btn>
-
-                  <!-- Edit Page Case -->
-                  <h3 v-else :data-cy="props.item.label.name"
-
-                  >{{ props.item.label.name }}</h3>
-
-                </v-layout>
-
-              </template>
-
-              <template slot="with_next_instance_buttons"
-                        slot-scope="props"
+              <!-- New label -->
+              <button_with_menu
+                datacy="new_label_template"
+                tooltip_message="New Label Template (Project Wide)"
+                :large="true"
+                v-if="show_edit_templates"
+                @click="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
+                icon="add"
+                color="primary"
+                :disabled="any_loading || view_only_mode || video_playing"
+                offset="x"
               >
 
-                <div v-if="table_row_hover_index == props.index">
-                  <tooltip_button
+                <template slot="content">
 
-                    :disabled="loading"
-                    @click="next_instance(props.item.id)"
-                    icon="mdi-debug-step-over"
-                    tooltip_message="Jump to Next Instance"
-                    color="primary"
-                    :icon_style="true"
-                    :large="false"
-                    :bottom="true"
-                  >
-                  </tooltip_button>
-                </div>
+                  <v_labels_new @label_created="on_label_created">
+                  </v_labels_new>
 
-              </template>
+                </template>
 
+              </button_with_menu>
+
+
+              <v-btn color="primary"
+                     text
+                     href="https://diffgram.readme.io/docs/create-your-first-label"
+                     target="_blank"
+                     icon>
+                <v-icon>help</v-icon>
+              </v-btn>
+
+              <!-- For admins -->
+
+
+              <!-- refresh_labels_function is called
+                   on return because that updates the instance list /
+                  attribute group information (for annotation use,
+                  not managing it)-->
+
+              <!-- The 'set_user_is_typing_or_menu_open' is for disabling hotkeys -->
+
+              <!-- Attributes -->
+
+              <!-- TODO, do we need min width? it seems to nicely detect it by itself...
+                  min-width="600"
+                  And do we event want or need a direction here?
+
+                  [ ] is the new update return value working as expected?
+                  -->
+
+              <!-- Hide while WIP. TODO move to regular table -->
               <!--
-              <td>
-                [category]
-              </td>
+              <v-text-field v-model="search"
+                            append-icon="search"
+                            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+                            label="Search"
+                            single-line
+                            hide-details></v-text-field>
               -->
 
-              <template slot="show_visibility_toggle" slot-scope="props">
+              <tooltip_button
+                v-if="show_create_samples"
+                tooltip_message="Create Sample Labels"
+                @click="open_sample_labels_dialog"
+                icon="mdi-apps-box"
+                :icon_style="true"
+                :bottom="true"
+                color="primary">
+              </tooltip_button>
 
-                <v-layout>
-                  <div v-if="table_row_hover_index == props.index
-                         || props.item.is_visible == false">
+            </v-card-title>
 
-                    <v-layout>
+            <v-alert type="info"
+                     v-if="!loading && Labels.length == 0"
+            >
+              Welcome! Click the plus button to create your first label.
+            </v-alert>
 
-                      <div v-if="props.item.is_visible == true || props.item.is_visible == null">
-                        <v-btn icon @click="toggle_label_visible(props.item)">
-                          <v-icon color="blue">remove_red_eye</v-icon>
-                        </v-btn>
-                      </div>
+            <v_info_multiple :info="info"
+                             @input="info = {}"
+            >
+            </v_info_multiple>
+            <!-- Do we want this to keep popping back up after new creation?
+                Not clear what rationale was for that-->
 
-                      <div v-if="props.item.is_visible == false">
-                        <v-btn icon @click="toggle_label_visible(props.item)">
-                          <v-icon color="grey">remove_red_eye</v-icon>
-                        </v-btn>
-                      </div>
+            <v-skeleton-loader
+              :loading="any_loading"
+              type="table"
+              data-cy="skeletonloader"
+            >
 
-                      <!--
-                      <div v-if="$store.state.user.current.is_super_admin === true">
-                        {{ props.item.id }}
-                      </div>
-                      -->
+              <regular_table
+                :header_list="header_list"
+                :column_list="column_list"
+                datacy="labels_table"
+                :item_list="Labels"
+                :elevation="0"
+                ref="label_data_table"
+                @row_hover_index="table_row_hover_index = $event"
+              >
 
-                    </v-layout>
+                <template slot="label" slot-scope="props">
+
+                  <v-layout>
+                    <div v-if="props.item.colour != undefined" class="d-flex align-center">
+
+
+                      <v-icon :style="style_color(props.item.colour.hex)"
+                              class="clickable"
+                              :disabled="video_playing"
+                              @click="change_label_function(props.item)"
+                      >flag
+                      </v-icon>
+                    </div>
+
+                    <tooltip_icon
+                      tooltip_message="Video Defaults to Single Frame"
+                      v-if="props.item.label && props.item.label.default_sequences_to_single_frame"
+                      icon="mdi-flag-checkered"
+                      color="black">
+                    </tooltip_icon>
+
+                    <div v-if="props.item.id == current_label_file.id">
+
+                      <v-badge v-if="view_only_mode != true &&
+                          instance_type != 'tag'"
+                               overlap
+                               color="secondary"
+                      >
+                        <v-icon slot="badge">check</v-icon>
+                      </v-badge>
+
+                    </div>
+
+
+                    <!-- Annotation Page Case -->
+                    <v-btn :disabled="video_playing"
+                           v-if="!show_edit_templates && current_label_file"
+                           @click="change_label_function(props.item)"
+                           text
+                           style="text-transform: none !important;"
+                           :color="props.item.id == current_label_file.id ? 'secondary' : 'primary' "
+                    >
+                      <h3 :data-cy="props.item.label.name">
+                        {{ props.item.label.name }} </h3>
+                    </v-btn>
+
+                    <!-- Edit Page Case -->
+                    <h3 v-else :data-cy="props.item.label.name"
+
+                    >{{ props.item.label.name }}</h3>
+
+                  </v-layout>
+
+                </template>
+
+                <template slot="with_next_instance_buttons"
+                          slot-scope="props"
+                >
+
+                  <div v-if="table_row_hover_index == props.index">
+                    <tooltip_button
+
+                      :disabled="loading"
+                      @click="next_instance(props.item.id)"
+                      icon="mdi-debug-step-over"
+                      tooltip_message="Jump to Next Instance"
+                      color="primary"
+                      :icon_style="true"
+                      :large="false"
+                      :bottom="true"
+                    >
+                    </tooltip_button>
                   </div>
 
+                </template>
 
-                </v-layout>
-
-              </template>
-
-
-              <!--
-              There doesn't seem to be a good way to get sorted order still
-                  so leave this until there is-->
-              <!--
-              <td>
-                <kbd>{{ props.index }} </kbd>
-              </td>
+                <!--
+                <td>
+                  [category]
+                </td>
                 -->
 
-              <template slot="show_edit_templates" slot-scope="props">
+                <template slot="show_visibility_toggle" slot-scope="props">
 
-                <v-layout>
+                  <v-layout>
+                    <div v-if="table_row_hover_index == props.index
+                         || props.item.is_visible == false">
 
-                  <!-- menu left ?-->
+                      <v-layout>
 
-                  <button_with_menu
-                    tooltip_message="Edit"
-                    icon="edit"
-                    :close_by_button="true"
-                    v-if="view_only_mode != true && show_edit_templates"
-                    @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
-                    @click="$store.commit('set_user_is_typing_or_menu_open', true)"
-                    color="primary"
-                  >
-                    <template slot="content">
+                        <div v-if="props.item.is_visible == true || props.item.is_visible == null">
+                          <v-btn icon @click="toggle_label_visible(props.item)">
+                            <v-icon color="blue">remove_red_eye</v-icon>
+                          </v-btn>
+                        </div>
 
-                      <v_labels_edit :project_string_id="project_string_id"
-                                     :label_file_prop="props.item"
-                                     :edit_label_menu="edit_label_menu"
-                                     :key="props.item.id"
-                                     @request_boxes_refresh="$emit('request_boxes_refresh')">
-                      </v_labels_edit>
+                        <div v-if="props.item.is_visible == false">
+                          <v-btn icon @click="toggle_label_visible(props.item)">
+                            <v-icon color="grey">remove_red_eye</v-icon>
+                          </v-btn>
+                        </div>
 
-                    </template>
-
-                  </button_with_menu>
-
-
-                  <button_with_menu
-                    tooltip_message="Delete"
-                    icon="delete"
-                    :close_by_button="true"
-                    color="primary"
-                  >
-
-                    <template slot="content">
-                      <v-layout column>
-
-                        <v-alert type="warning"
-                        >
-                          Existing instances with this label
-                          will not be effected.
-                        </v-alert>
-                        <!-- TODO option to delete all assoicated instances? -->
-
-                        <v-btn @click="api_file_update('REMOVE', props.item)"
-                               color="error"
-                               :loading="api_file_update_loading"
-                               :disabled="api_file_update_loading">
-                          <v-icon>delete</v-icon>
-                          Delete {{ props.item.label.name }}
-                        </v-btn>
+                        <!--
+                        <div v-if="$store.state.user.current.is_super_admin === true">
+                          {{ props.item.id }}
+                        </div>
+                        -->
 
                       </v-layout>
-                    </template>
+                    </div>
 
-                  </button_with_menu>
 
-                </v-layout>
-              </template>
+                  </v-layout>
 
-            </regular_table>
+                </template>
 
-          </v-skeleton-loader>
 
-        </v-card>
+                <!--
+                There doesn't seem to be a good way to get sorted order still
+                    so leave this until there is-->
+                <!--
+                <td>
+                  <kbd>{{ props.index }} </kbd>
+                </td>
+                  -->
 
-        <!--
-        Only show on label main page
-        as known bug about it refreshing-->
+                <template slot="show_edit_templates" slot-scope="props">
 
-        <div class="pt-4" v-if="show_attributes_table">
-          <v-card>
-            <attribute_home :project_string_id="project_string_id">
+                  <v-layout>
 
-            </attribute_home>
+                    <!-- menu left ?-->
+
+                    <button_with_menu
+                      tooltip_message="Edit"
+                      icon="edit"
+                      :close_by_button="true"
+                      v-if="view_only_mode != true && show_edit_templates"
+                      @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
+                      @click="$store.commit('set_user_is_typing_or_menu_open', true)"
+                      color="primary"
+                    >
+                      <template slot="content">
+
+                        <v_labels_edit :project_string_id="project_string_id"
+                                       :label_file_prop="props.item"
+                                       :edit_label_menu="edit_label_menu"
+                                       :key="props.item.id"
+                                       @request_boxes_refresh="$emit('request_boxes_refresh')">
+                        </v_labels_edit>
+
+                      </template>
+
+                    </button_with_menu>
+
+
+                    <button_with_menu
+                      tooltip_message="Delete"
+                      icon="delete"
+                      :close_by_button="true"
+                      color="primary"
+                    >
+
+                      <template slot="content">
+                        <v-layout column>
+
+                          <v-alert type="warning"
+                          >
+                            Existing instances with this label
+                            will not be effected.
+                          </v-alert>
+                          <!-- TODO option to delete all assoicated instances? -->
+
+                          <v-btn @click="api_file_update('REMOVE', props.item)"
+                                 color="error"
+                                 :loading="api_file_update_loading"
+                                 :disabled="api_file_update_loading">
+                            <v-icon>delete</v-icon>
+                            Delete {{ props.item.label.name }}
+                          </v-btn>
+
+                        </v-layout>
+                      </template>
+
+                    </button_with_menu>
+
+                  </v-layout>
+                </template>
+
+              </regular_table>
+
+            </v-skeleton-loader>
+
           </v-card>
-        </div>
-        <!--
-         Move attributes to be more visible to help reduce confusion.
-        -->
 
-        <v-card v-if="show_edit_templates">
-          <v-alert type="info"
-                   dismissible
-          >
-            Once Tasks are launched the labels for those Tasks are "locked" by default.
-          </v-alert>
+          <!--
+          Only show on label main page
+          as known bug about it refreshing-->
 
+          <div class="pt-4" v-if="show_attributes_table">
+            <v-card>
+              <attribute_home :project_string_id="project_string_id">
+
+              </attribute_home>
+            </v-card>
+          </div>
+          <!--
+           Move attributes to be more visible to help reduce confusion.
+          -->
+
+          <v-card v-if="show_edit_templates">
+            <v-alert type="info"
+                     dismissible
+            >
+              Once Tasks are launched the labels for those Tasks are "locked" by default.
+            </v-alert>
+
+          </v-card>
+
+        </v-flex>
+      </v-layout>
+
+      <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
+        <v-card >
+          <v-card-title class="headline">
+            Create sample data
+          </v-card-title>
+          <v-card-text>
+            Do you want to create sample labels?
+            This will add 3 sample labels to the project.
+          </v-card-text>
+          <v_error_multiple :error="error_sample_data">
+          </v_error_multiple>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="primary darken-1"
+              text
+              @click="dialog_confirm_sample_data = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="success darken-1"
+              text
+              :loading="loading_create_sample_data"
+              @click="create_sample_labels"
+            >
+              Create Sample Labels
+            </v-btn>
+          </v-card-actions>
         </v-card>
+      </v-dialog>
+      <v-snackbar
+        v-model="snackbar_success"
+        :timeout="3000"
+        color="primary"
+      >
+        Sample data created successfully.
 
-      </v-flex>
-    </v-layout>
-
-    <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
-      <v-card >
-        <v-card-title class="headline">
-          Create sample data
-        </v-card-title>
-        <v-card-text>
-          Do you want to create sample labels?
-          This will add 3 sample labels to the project.
-        </v-card-text>
-        <v_error_multiple :error="error_sample_data">
-        </v_error_multiple>
-        <v-card-actions>
-          <v-spacer></v-spacer>
+        <template v-slot:action="{ attrs }">
           <v-btn
-            color="primary darken-1"
+            color="white"
             text
-            @click="dialog_confirm_sample_data = false"
+            v-bind="attrs"
+            @click="snackbar_success = false"
           >
-            Cancel
+            Close
           </v-btn>
-          <v-btn
-            color="success darken-1"
-            text
-            :loading="loading_create_sample_data"
-            @click="create_sample_labels"
-          >
-            Create Sample Labels
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-snackbar
-      v-model="snackbar_success"
-      :timeout="3000"
-      color="primary"
-    >
-      Sample data created successfully.
+        </template>
+      </v-snackbar>
 
-      <template v-slot:action="{ attrs }">
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
-          @click="snackbar_success = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    </div>
+
 
   </v-container>
 </template>
@@ -415,6 +397,7 @@
 
   import axios from '../../services/customInstance';
   import attribute_home from '../attribute/attribute_home'
+  import schema_card_selector from './schema_card_selector'
   import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
@@ -423,6 +406,7 @@
       name: 'labels_view',
 
       components: {
+        schema_card_selector,
         attribute_home
       },
 
@@ -576,6 +560,7 @@
           },
 
           api_file_update_loading: false,
+          current_schema: {},
           error: null,
           snackbar_success: false,
           dialog_confirm_sample_data: false,
