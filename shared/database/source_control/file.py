@@ -199,10 +199,6 @@ class File(Base, Caching):
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
 
-    # For label file objects.
-    label_schema_id = Column(Integer, ForeignKey('label_schema.id'))
-    label_schema = relationship(LabelSchema, foreign_keys = [label_schema_id])
-
     __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name = 'unique_frame_number_video'),)
 
     @staticmethod

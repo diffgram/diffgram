@@ -44,12 +44,52 @@ class LabelSchema(Base, SerializerMixin):
 
         return schema
 
-    @staticmethod
     def serialize(self):
         data = self.to_dict(rules = (
             '-member_created',
             '-member_updated',
             '-project'))
 
+        return data
+
+
+class LabelSchemaLink(Base, SerializerMixin):
+    __tablename__ = 'label_schema_link'
+    id = Column(Integer, primary_key = True)
+
+    schema_id = Column(Integer, ForeignKey('label_schema.id'))
+    schema = relationship("LabelSchema", foreign_keys = [schema_id])
+
+    label_file_id = Column(Integer, ForeignKey('file.id'))
+    label_file = relationship("File", foreign_keys = [label_file_id])
+
+    member_created_id = Column(Integer, ForeignKey('member.id'))
+    member_created = relationship("Member", foreign_keys = [member_created_id])
+
+    member_updated_id = Column(Integer, ForeignKey('member.id'))
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
+
+    @staticmethod
+    def new(session: Session, schema_id: int, label_file_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        schema_link = LabelSchemaLink(
+            schema_id = schema_id,
+            label_file_id = label_file_id,
+            member_created_id = member_created_id
+        )
+
+        session.add(schema_link)
+        session.flush()
+
+        return schema_link
+
+    def serialize(self):
+        data = self.to_dict(rules = (
+            '-schema',
+            '-label_file',
+            '-member_created',
+            '-member_updated'))
 
         return data
