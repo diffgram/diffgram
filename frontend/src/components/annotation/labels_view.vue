@@ -1,7 +1,7 @@
 <template>
   <div v-cloak id="labels_view">
 
-
+      <v_error_multiple :error="error"></v_error_multiple>
       <v-layout row>
         <v-flex>
 
@@ -392,7 +392,7 @@
 
   import axios from '../../services/customInstance';
   import attribute_home from '../attribute/attribute_home'
-
+  import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
 
@@ -553,6 +553,7 @@
           },
 
           api_file_update_loading: false,
+          error: null,
           snackbar_success: false,
           dialog_confirm_sample_data: false,
           loading_create_sample_data: false,
@@ -748,7 +749,7 @@
           return "color:" + hex
         },
 
-        refresh_labels_function: function () {
+        refresh_labels_function: async function () {
           /*
          Label refresh process
          Two methods to *access* refresh labels
@@ -764,39 +765,29 @@
           var url = null
           this.label_refresh_loading = true
 
-          if (['full', 'home', 'own_page'].includes(this.render_mode) == true) {
-            url = '/api/project/' + this.project_string_id + '/labels/refresh'
+          if (!['full', 'home', 'own_page'].includes(this.render_mode) == true) {
+            return
           }
 
-          axios.get(url, {})
-            .then(response => {
+          let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+            return
+          }
+          if(result){
+            this.Labels = result.labels_out
 
-              this.Labels = response.data.labels_out
+            this.label_file_colour_map = result.label_file_colour_map
+            this.$emit('label_file_colour_map', this.label_file_colour_map)
+            this.$emit('label_list', this.Labels)
 
-              this.label_file_colour_map = response.data.label_file_colour_map
-              this.$emit('label_file_colour_map', this.label_file_colour_map)
-              this.$emit('label_list', this.Labels)
-
-              if (this.Labels[0] != null && !this.show_edit_templates) {  // default to first label
-                this.change_label_function(this.Labels[0])
-              } else {
-                // TODO review this
-                //this.label_warning = true
-              }
-
-
-              this.label_refresh_loading = false
-              this.$emit('request_label_refresh_callback', true)
-              this.$store.commit('finish_label_refresh')
-
-
-              //this.Labels[0].is_active = true;
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
-
+            if (this.Labels[0] != null && !this.show_edit_templates) {  // default to first label
+              this.change_label_function(this.Labels[0])
+            }
+            this.label_refresh_loading = false
+            this.$emit('request_label_refresh_callback', true)
+            this.$store.commit('finish_label_refresh')
+          }
         },
         change_label_from_id_function: function (label_id) {
           for (let i in this.Labels) {

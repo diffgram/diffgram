@@ -273,13 +273,14 @@
         },
 
 
-        get_label_list_from_project: function () {
+        get_label_list_from_project: async function () {
 
           var url = null
           this.label_refresh_loading = true
-          let [result, error] = get_labels(this.computed_project_string_id, this.$props.schema_id)
+          let [result, error] = await get_labels(this.computed_project_string_id, this.$props.schema_id)
           if(error){
             this.error = this.$route_api_errors(error)
+            return
           }
           if(result){
             this.label_list = result.labels_out

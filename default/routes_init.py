@@ -82,7 +82,7 @@ def do_routes_importing():
     from methods.share.share import share_member_project_api
 
     from methods.annotation.annotation import annotation_update_via_project_api
-    from methods.annotation.labels.labels import api_label_new
+    from methods.annotation.labels.labels import api_label_new, api_get_labels
     from methods.annotation.labels.view import web_build_name_to_file_id_dict
     from methods.annotation.flags import ann_is_complete_toggle
 

@@ -162,6 +162,7 @@ import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
+import {get_labels} from '../../services/labelServices';
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import Vue from "vue";
 
@@ -463,26 +464,29 @@ export default Vue.extend({
       this.changing_file = false;
     },
 
-        get_labels_from_project: async function () {
-          try{
-            if (this.labels_list_from_project &&
-              this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
-              return
-            }
-            if (!this.computed_project_string_id) {
-              return
-            }
-            var url = '/api/project/' + this.computed_project_string_id + '/labels/refresh'
-            const response = await axios.get(url, {});
-            this.labels_list_from_project = response.data.labels_out
-            this.label_file_colour_map_from_project = response.data.label_file_colour_map
-            this.global_attribute_groups_list = response.data.global_attribute_groups_list
-          }
-          catch(e){
-            console.error(e)
-          }
+    get_labels_from_project: async function () {
+      if (this.labels_list_from_project &&
+        this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
+        return
+      }
+      if (!this.computed_project_string_id) {
+        return
+      }
 
-        },
+      let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+      if(error){
+        console.error(error)
+        return
+      }
+      if(result){
+
+        this.labels_list_from_project = result.labels_out
+        this.label_file_colour_map_from_project = result.label_file_colour_map
+        this.global_attribute_groups_list = result.global_attribute_groups_list
+      }
+
+
+    },
 
     fetch_project_file_list: async function () {
       this.loading = true;

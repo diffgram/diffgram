@@ -82,6 +82,7 @@
   import v_labels_edit from '../annotation/labels_edit'
   import attribute_group_list_manager from '../attribute/attribute_group_list_manager'
   import labels_management_list from '../label/labels_management_list'
+  import {get_labels} from '../../services/labelServices';
 
   export default Vue.extend({
       name: 'labels_attributes_manager',
@@ -127,31 +128,24 @@
           this.$emit('skip', step)
         },
         fetch_labels: async function(){
-
-          if (this.$props.project_string_id == null) {
+          if (this.project_string_id == null) {
             return
           }
+          this.label_refresh_loading = true
+          let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+          if(error){
+            return
+          }
+          if(result){
 
-          try{
-            var url = `/api/project/${this.project_string_id}/labels/refresh`
-            this.labels_loading = true
+            this.label_file_list = result.labels_out
 
-            const response = await axios.get(url, {})
-            this.label_file_list = response.data.labels_out
-
-            this.label_file_colour_map = response.data.label_file_colour_map
+            this.label_file_colour_map = result.label_file_colour_map
 
             this.label_refresh_loading = false
             this.$emit('labels_fetched', this.label_file_list)
-
-
           }
-          catch (e) {
-            console.error(e)
-          }
-          finally {
-            this.labels_loading = false
-          }
+          this.labels_loading = false
         },
 
         open_panel_by_id(id: number){

@@ -1,10 +1,10 @@
 import axios from "@/services/customInstance";
 
 
-export const get_labels = async (project_id, schema_id = undefined) => {
+export const get_labels = async (project_string_id, schema_id = undefined) => {
   try {
     const response = await axios.get(
-      `'/api/project/'${project_string_id}/labels/refresh`,
+      `/api/project/${project_string_id}/labels`,
       {
         params:{
           schema_id: schema_id

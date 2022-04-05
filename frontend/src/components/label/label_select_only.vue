@@ -122,7 +122,7 @@
 <script lang="ts">
 
   import axios from '../../services/customInstance';
-
+  import {get_labels} from '../../services/labelServices';
   import Vue from "vue";
 
   export default Vue.extend({
@@ -170,6 +170,9 @@
           * get it from project scope
           */
         'label_file_list_prop': {},
+        'schema_id': {
+          default: undefined
+        },
 
         'request_refresh_from_project': {
           default: null
@@ -320,33 +323,30 @@
           return false
         },
 
-        refresh_label_list_from_project: function () {
+        refresh_label_list_from_project: async function () {
 
-          var url = null
           this.label_refresh_loading = true
 
-          url = '/api/project/' + this.$store.state.project.current.project_string_id
-            + '/labels/refresh'
+          let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+            return
+          }
+          if(result){
 
-          axios.get(url, {})
-            .then(response => {
+            this.label_list = result.labels_out
 
-              this.label_list = response.data.labels_out
+            if (this.mode == "multiple") {
 
-              if (this.mode == "multiple") {
+              this.refresh_internal_selected()
 
-                this.refresh_internal_selected()
+            }
 
-              }
+            this.emit_selected()
 
-              this.emit_selected()
+            this.label_refresh_loading = false
+          }
 
-              this.label_refresh_loading = false
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
 
         },
 
