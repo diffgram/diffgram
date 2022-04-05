@@ -74,8 +74,5 @@ export const construct_tree = (node_list: Array<Node>): Array<any> => {
         }
     }
 
-    console.log("Unmatched nodes", check_list)
-    console.log(check_list.length ? node_list.find(item => item.id === check_list[0].parent) : "Everything matches")
-
     return tree
 }
