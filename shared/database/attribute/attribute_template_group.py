@@ -225,7 +225,7 @@ class Attribute_Template_Group(Base):
              project_id,
              archived = False,
              recursive = False,
-             limit = 100,
+             limit = None,
              return_kind = "objects",
              is_root = None,
              is_global = None
@@ -251,8 +251,10 @@ class Attribute_Template_Group(Base):
 
         # Future
         if recursive == True:
+            if limit:
+                query = query.limit(limit)
 
-            root_group_list = query.limit(limit).all()
+            root_group_list = query.all()
 
             for group in root_group_list:
                 # Caching / have_children? flag on attribute group?
