@@ -273,12 +273,13 @@ class Attribute_Template_Group(Base):
 
                 return serialized
         ## end future
-
+        if limit:
+            query = query.limit(limit)
         if return_kind == "count":
-            return query.limit(limit).count()
+            return query.count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            return query.all()
 
     def generate_unselected_attribute_answer(self, nested_data = None, nested_result = None):
         if not self.tree_data:
