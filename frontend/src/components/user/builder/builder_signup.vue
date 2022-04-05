@@ -11,11 +11,18 @@
             {{error.general}}
           </v-alert>
 
-          <v-container>
+          <div class="pt-4 ma-auto text-center" style="width: 100%">
+            <img
+              src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
+              height="60px"
+            />
+          </div>
 
-            <v-card-title>
-              <h3 class="headline">Almost there!</h3>
-            </v-card-title>
+          <v-card-title>
+            <h3 class="headline">A journey of a thousand miles continues with this step</h3>
+          </v-card-title>
+
+          <v-container>
 
             <v-layout>
 
@@ -24,6 +31,7 @@
                   label="*First name"
                   data-cy="first_name"
                   v-model="first_name"
+                  :disabled="loading"
                 />
                 <v-alert
                   type="info"
@@ -40,6 +48,7 @@
                   label="*Last name"
                   data-cy="last_name"
                   v-model="last_name"
+                  :disabled="loading"
                 />
                 <v-alert type="info"
                          v-if="error.last_name">
@@ -68,6 +77,7 @@
                   label="*City"
                   data-cy="city"
                   v-model="city"
+                  :disabled="loading"
                 />
                 <v-alert type="info"
                          v-if="error.city">
@@ -82,6 +92,7 @@
                   label="*Company or Institution"
                   data-cy="company"
                   v-model="company"
+                  :disabled="loading"
                 />
                 <v-alert type="info"
                          v-if="error.company">
@@ -107,7 +118,9 @@
               <v-flex>
                 <v-text-field label="How did you hear about us?"
                               data-cy="how_hear_about_us"
-                              v-model="how_hear_about_us">
+                              v-model="how_hear_about_us"
+                              :disabled="loading"
+                              >
                 </v-text-field>
               </v-flex>
 
@@ -119,7 +132,8 @@
                   :item_list="demo_list"
                   v-model="demo"
                   data-cy="demo_select"
-                  label="Are you interested in an Enterprise Demo?"
+                  label="Are you interested in purchasing Enterprise?"
+                  :disabled="loading"
                   >
               </diffgram_select>
 
@@ -140,51 +154,39 @@
                   tick-size="4"
                   step=1
                   data-cy="how_many_data_labelers"
-                  v-model="how_many_data_labelers">
+                  v-model="how_many_data_labelers"
+                  :disabled="loading"
+                        >
               </v-slider>
             </v-layout>
 
-            <v-card-actions>
+            <v-card-actions class="pt-2">
               <v-btn  color="primary"
-                      :loading="loading"
-                      large
-                      @click.native="loader = 'loading'"
+                      block
                       @click="builder_enable_api"
                       data-cy="finish_singup_button"
                       :disabled="loading"
                 >
-                  Finish Signup
-                <v-icon right> mdi-flag-checkered </v-icon>
+               <v-icon left> mdi-flag-checkered </v-icon>
+                  Finish
               </v-btn>
             </v-card-actions>
 
           </v-container>
+
+          <v-progress-linear
+            v-if="loading"
+            attach
+            indeterminate
+            height="20">
+
+          </v-progress-linear>
+
         </v-card>
 
       </div>
 
 
-
-      <div class="pl-4 pr-4">
-        <v-card>
-
-          <v-alert  type="info"
-                    color="grey"
-                    >
-            We protect information.
-
-              <v-btn color="white"
-                  outlined
-                  href="/policies"
-                  target="_blank">
-            Data Policies
-            <v-icon right>mdi-open-in-new</v-icon>
-              </v-btn>
-
-          </v-alert>
-
-        </v-card>
-      </div>
     </v-col>
 
 
@@ -205,9 +207,9 @@
         how_many_data_labelers: 0,
         how_many_data_labelers_tick_labels: [
           "None yet",
-          "5",
-          "25",
-          "250+"
+          "5 or less",
+          "25 or less",
+          "100+"
         ],
 
         first_name: String,
@@ -260,13 +262,8 @@
         ],
 
         demo_list: [
-            { 'name': 'demo',
-              'display_name': 'Yes, a Technical Demo.',
-              'icon': 'mdi-monitor-screenshot',
-              'color': 'primary'
-            },
             { 'name': 'sales',
-              'display_name': 'Please have Sales email me.',
+              'display_name': 'Yes. (Sales will contact you)',
               'icon': 'mdi-currency-usd',
               'color': 'primary'
             },
@@ -342,9 +339,8 @@
 
           } else {
             this.error = response.data.log.error
+            this.loading = false
           }
-
-          this.loading = false
 
 
         })
@@ -357,10 +353,11 @@
       route_new_project: async function () {
         if(this.project_string_id_param){
           let [project_data, error] = await getProject(this.project_string_id_param)
-          console.log('project ataa', project_data)
+
           this.$store.commit('set_project', project_data.project)
           if(error){
             this.error = this.$route_api_errors(error)
+            this.loading = false
           }
         }
         if(this.user_role === 'Editor'){
