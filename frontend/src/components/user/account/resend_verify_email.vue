@@ -15,7 +15,7 @@
 
       <v-alert type="success"
                v-if="start_verify">
-        Sent. You may need to check your spam folder. If you cannot receive the code
+        Sent to: {{$store.state.user.current.email}}. You may need to check your spam folder or double check email spelling. If you cannot receive the code
         please contact your site admin or support@diffgram.com and we will happily validate your account.
       </v-alert>
 
