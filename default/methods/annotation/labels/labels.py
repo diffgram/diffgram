@@ -117,12 +117,6 @@ def labelRefresh(project_string_id):
 
     """
 
-    # TODO pull different labels from different places depending on project
-    # Here is in context of a user editing...
-    # Need to know what branch / version...
-    # ie to get from project's master branch
-    # version = project.master_branch.latest_version
-
     with sessionMaker.session_scope() as session:
 
         project = Project.get_project(session, project_string_id)
