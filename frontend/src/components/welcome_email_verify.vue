@@ -82,7 +82,8 @@ export default Vue.extend( {
 
   },
   async created() {
-    this.mailgun = await is_mailgun_set()
+    const { mailgun } = await is_mailgun_set()
+    this.mailgun = mailgun
     if (this.mailgun == true) {
       this.is_user_verified_interval()
     } else {
