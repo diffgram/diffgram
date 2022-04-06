@@ -42,12 +42,15 @@ def upgrade():
                     )
     op.create_index('index_label_schema_link_schema_id', 'label_schema_link', ['schema_id'])
     op.create_index('index_label_schema_link_label_file_id', 'label_schema_link', ['label_file_id'])
+    
+    op.create_index('index_attribute_template_project_id', 'attribute_template', 'project_id')
 
 
 def downgrade():
     op.drop_index('index_label_schema_project_id', 'label_schema')
     op.drop_index('index_label_schema_link_schema_id', 'label_schema_link')
     op.drop_index('index_label_schema_link_label_file_id', 'label_schema_link')
+    op.drop_index('index_attribute_template_project_id', 'attribute_template')
 
     op.drop_table('label_schema')
     op.drop_table('label_schema_link')
