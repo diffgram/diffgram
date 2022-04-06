@@ -42,40 +42,35 @@ export const build_path = (array: Array<any>, parent_id, path) => {
 }
 
 export const construct_tree = (node_list: Array<Node>): Array<any> => {
-    root_path = [];
+    root_path = []
     const node_list_working_copy = [...node_list]
     const node_wait_list = []
     const tree = [];
+    const check_list = [];
 
     node_list_working_copy.map(item => {
         const render_item = item.get_render_data()
         if (!render_item.parent) {
             tree.push(render_item)
         } else {
-            const returned_path = build_path(tree, render_item.parent, [])
-            let track_item: any = tree
-            returned_path.map(q_item => {
-                track_item = track_item[q_item]
-            })
-            if (returned_path && returned_path.length !== 0 && track_item) {
-                track_item.children.push(render_item)
-            } else {
-                node_wait_list.push(render_item)
-            }
+            node_wait_list.push(render_item)
         }
     })
 
     while (node_wait_list.length !== 0) {
+        root_path = []
         const render_item = node_wait_list.shift()
         const returned_path = build_path(tree, render_item.parent, [])
         let track_item: any = tree
-        returned_path.map(q_item => {
+        root_path.map(q_item => {
             track_item = track_item[q_item]
         })
         if (returned_path && returned_path.length !== 0 && track_item) {
             track_item.children.push(render_item)
-        } else {
+        } else if (node_wait_list.find(item => item.id === render_item.parent)) {
             node_wait_list.push(render_item)
+        } else {
+          check_list.push(render_item)
         }
     }
 
