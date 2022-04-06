@@ -225,7 +225,7 @@ class Attribute_Template_Group(Base):
              project_id,
              archived = False,
              recursive = False,
-             limit = 100,
+             limit = None,
              return_kind = "objects",
              is_root = None,
              is_global = None
@@ -251,8 +251,10 @@ class Attribute_Template_Group(Base):
 
         # Future
         if recursive == True:
+            if limit:
+                query = query.limit(limit)
 
-            root_group_list = query.limit(limit).all()
+            root_group_list = query.all()
 
             for group in root_group_list:
                 # Caching / have_children? flag on attribute group?
@@ -273,12 +275,13 @@ class Attribute_Template_Group(Base):
 
                 return serialized
         ## end future
-
+        if limit:
+            query = query.limit(limit)
         if return_kind == "count":
-            return query.limit(limit).count()
+            return query.count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            return query.all()
 
     def generate_unselected_attribute_answer(self, nested_data = None, nested_result = None):
         if not self.tree_data:

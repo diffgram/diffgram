@@ -3,15 +3,16 @@ import testUser from "../../../../fixtures/users.json";
 describe("manual_user_assignment", () => {
   context("manual_user_assignment", () => {
     before(function() {
-      cy.createSampleTasksUsingBackend(10);
+
 
       Cypress.Cookies.debug(true, { verbose: true });
       Cypress.Cookies.defaults({
         preserve: ["session"]
       });
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.create_task_template();
+      cy.loginByForm(testUser.email, testUser.password)
+      .gotToProject(testUser.project_string_id)
+      .createSampleTasksUsingBackend(10)
+
     });
 
     it("Assign user to one task", () => {

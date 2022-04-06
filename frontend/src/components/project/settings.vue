@@ -15,38 +15,36 @@
             <v-card-text>
 
               <v-flex lg4>
-                <v-text-field label="Name"
+                <v-text-field label="Project Name"
                               v-model="project.name"
-                              :rules="[rules.name]">
+                              :rules="[rules.name]"
+                              @change="save">
                 </v-text-field>
               </v-flex>
 
-              <v-flex lg4>
-                <v-layout>
-
-                  <tooltip_button
-                      tooltip_message="Video help"
-                      href="https://diffgram.readme.io/docs/video-specifications"
-                      icon="help"
-                      :icon_style="true"
-                      color="primary">
-                  </tooltip_button>
-
-                </v-layout>
-              </v-flex>
-
             </v-card-text>
-            <v-card-actions>
-              <v-btn @click="save"
-                     color="primary">
-                Save settings
-              </v-btn>
-            </v-card-actions>
 
             </v-container>
           </v-card>
 
         </v-container>
+
+
+        <v-container>
+
+          <v_collaborate_list_existing :project_string_id="project_string_id">
+          </v_collaborate_list_existing>
+
+        </v-container>
+
+        <v-container>
+
+          <v_collaborate_new :project_string_id="project_string_id"
+                             :enable_view_existing="false">
+          </v_collaborate_new>
+
+        </v-container>
+
       <v-container>
 
         <v-card>
@@ -57,44 +55,13 @@
           </v-card-text>
         </v-card>
       </v-container>
-      <v-container>
-        <v-card>
-          <v-container>
-
-            <h2> Resources </h2>
-
-              <v-btn color="blue darken-1"
-                      text
-                      @click="$router.push('/project/' + project_string_id + '/attributes')"
-                     >
-                <v-icon left>mdi-collage</v-icon>
-                Attributes
-              </v-btn>
 
 
-          </v-container>
-        </v-card>
-      </v-container>
-
-
-      <v-container>
-
-        <v_collaborate_new :project_string_id="project_string_id">
-        </v_collaborate_new>
-
-        <v_collaborate_list_existing :project_string_id="project_string_id">
-        </v_collaborate_list_existing>
-
-        <v-divider></v-divider>
-
-      </v-container>
 
         <v-container>
           <v-card>
             <v-container>
-              <h2> Danger zone</h2>
-
-              <br />
+              <v-card-title> Danger zone</v-card-title>
 
               <v_info_multiple :info="info">
               </v_info_multiple>
@@ -204,6 +171,27 @@
               <!-- Shutdown project end -->
 
               </v-layout>
+
+              </v-container>
+          </v-card>
+        </v-container>
+
+        <v-container>
+          <v-card>
+            <v-container>
+              <v-card-title> Developer Features </v-card-title>
+
+              <v_info_multiple :info="info">
+              </v_info_multiple>
+
+              <v_error_multiple :error="error_multiple">
+              </v_error_multiple>
+
+              <v-btn @click="$router.push(`/status`)"
+                     color="primary">
+              <v-icon>mdi-info</v-icon>
+                Service Status
+              </v-btn>
 
               </v-container>
           </v-card>

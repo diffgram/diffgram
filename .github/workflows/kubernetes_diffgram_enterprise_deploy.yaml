@@ -1,205 +1,98 @@
-name: Kubernetes Enterprise Deploy
+name: Kubernetes Deploy
 on:
   workflow_dispatch:
     inputs:
-      release:
-        description: 'Choose a branch and leave as "$$current_branch" to deploy current selected branch. WARNING, redeploying the same branch will fail. Make a new branch off that for redeploy.  !! OR !! Ignore the branch selector, delete the "$$" text, and name a release version to deploy.'
-        required: true
-        default: $$current_branch
       environment:
-        description: 'Either "staging" or "production"'
-        required: true
-        default: "staging"
+        type: choice
+        description: Select Environment
+        options:
+        - staging
+        - production
+        default: staging
+  issue_comment:
+    types: [created]
+    inputs:
+      environment:
+        type: choice
+        description: Select Environment
+        options:
+        - staging
+        - production
+        default: staging
 jobs:
-  publish_default_branch:
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+  publishimages:
+    needs: [pr_commented]
+    if: "(!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))"
+    uses: ./.github/workflows/publish_docker_images.yaml
+    name: Publish Images
+    secrets:
+      GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-      - name: Extract branch name
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
 
-      - name: Configure GCP
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
 
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default -f default/Dockerfile.newrelic
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/default:newrelic-$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default:newrelic-$BRANCH_NAME
-
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default -f default/Dockerfile
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/default:$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/default:$BRANCH_NAME
-
-  publish_frontend_branch:
+  pr_commented:
+    # This job only runs for pull request comments
+    name: PR Comment Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
+      - run: |
+          echo A comment on PR $NUMBER
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+      - name: Check that comments belongs to org/repo
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+         (github.event.comment.author_association == 'OWNER' ||
+         github.event.comment.author_association == 'COLLABORATOR' ||
+         github.event.comment.author_association == 'MEMBER' )"
+        run: |
+          echo "valid_comment=true" >> $GITHUB_ENV
+
+      - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
+        id: comment-branch
+
+      - name: see vars
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github }}
+          echo ${{ github.event.issue.pull_request }}
+          echo ${{ github.event.issue.pull_request.base_ref }}
+          echo ${{ steps.comment-branch.outputs.head_ref }}
+          echo '${{ toJSON(github) }}'
+
+
+      - name: Get time
+        uses: actions/github-script@v3
+        id: get-time
         with:
-          ref: ${{ github.ref }}
+            script: return new Date().toString()
+            result-encoding: string
 
-      - name: Configure GCP
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-      - name: Extract branch name
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - name: Build and Push Docker Images
-        if: "github.event.inputs.release == '$$current_branch'"
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/frontend:newrelic-$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend:newrelic-$BRANCH_NAME
-
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend -f frontend/Dockerfile
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/frontend:$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/frontend:$BRANCH_NAME
-
-  publish_walrus_branch:
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
+      - name: Comment PR
+        uses: NejcZdovc/comment-pr@v1
+        if: "env.valid_comment"
         with:
-          ref: ${{ github.ref }}
+          message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n
+          Execution time: `${{steps.get-time.outputs.result}}` \n
+          To See Deployment Progress go to: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          identifier: "PR_DEPLOY_STARTED"
+          single_comment: false
 
-      - name: Configure GCP
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-      - name: Extract branch name
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - name: Build and Push Docker Images
-        if: "github.event.inputs.release == '$$current_branch'"
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'production' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus -f walrus/Dockerfile.newrelic
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/walrus:newrelic-$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus:newrelic-$BRANCH_NAME
-
-      - name: Build & Push to Docker
-        if: "github.event.inputs.environment == 'staging' && github.event.inputs.release == '$$current_branch'"
-        run: |
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus -f walrus/Dockerfile
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/walrus:$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/walrus:$BRANCH_NAME
-
-  publish_dispatcher_branch:
-    runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-
-
-      - name: Extract branch name
-        if: github.event_name != 'pull_request'
-        shell: bash
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - name: Configure GCP
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-      - name: Build and Push Docker Images
-        if: "github.event.inputs.release == '$$current_branch'"
-        run: |
-          sudo echo ${GOOGLE_SERVICE_ACCOUNT_ENCODED} | base64 --decode --ignore-garbage > ~/gcloud-service-key.json
-          cat ~/gcloud-service-key.json
-          gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
-          gcloud config list
-          gcloud config set project ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-          gcloud auth configure-docker --quiet
-
-          docker build . -t gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher -f local_dispatcher/Dockerfile
-          docker tag gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher gcr.io/${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}/local_dispatcher:$BRANCH_NAME
-          docker push gcr.io/${{secrets.DOCKER_IMAGE_PROJECT_NAME}}/local_dispatcher:$BRANCH_NAME
 
   Production-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
-    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
-    if: "github.event.inputs.environment == 'production'"
+    needs: [publishimages]
+    environment: production
+    if: "((!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))) && github.event.inputs.environment == 'production'"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
       DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
@@ -240,7 +133,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-
       - name: Extract branch name
         if: github.event_name != 'pull_request'
         shell: bash
@@ -253,14 +145,16 @@ jobs:
         uses: actions/checkout@master
         with:
           repository: diffgram/diffgram-helm
+      - name: Create Diffgram Version Production From Tag or Branch
+        run: |
+          echo "diffgram_version=newrelic-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release != '$$current_branch'"
         with:
           files: 'values.yaml'
         env:
-          diffgramVersion: newrelic-${{ github.event.inputs.release }}
+          diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
           diffgramDomain: diffgram.com
           useCertManager: true
@@ -311,65 +205,6 @@ jobs:
           frontendService.numReplicas: 1
           walrusService.numReplicas: 1
           nodeGroupLabel: diffgram-apps
-
-      - name: Prepare app.yaml for helm chart.
-        uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release == '$$current_branch'"
-        with:
-          files: 'values.yaml'
-        env:
-          diffgramVersion: newrelic-${{ env.BRANCH_NAME }}
-          diffgramEdition: opencore
-          diffgramDomain: diffgram.com
-          useCertManager: true
-          useTls: true
-          dbSettings.dbProvider: azure
-          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
-          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
-          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
-          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
-          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
-          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
-          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
-          diffgramSecrets.FERNET_KEY: ${{secrets.FERNET_KEY}}
-          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
-          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
-          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
-          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
-          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
-          diffgramSettings.USERDOMAIN: kubernetes_production
-          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
-          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
-          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.DIFFGRAM_AZURE_CONTAINER_NAME}}
-          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: ${{secrets.ML__DIFFGRAM_AZURE_CONTAINER_NAME}}
-          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
-          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
-          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
-          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
-          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
-          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
-          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
-          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
-          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
-          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
-          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
-          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
-          diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
-          walrusService.requests.memory: "32G"
-          walrusService.limits.memory: "32G"
-          walrusService.requests.cpu: "8"
-          walrusService.limits.cpu: "8"
-          defaultService.requests.memory: "4G"
-          defaultService.requests.cpu: "2"
-          frontendService.requests.memory: "2G"
-          frontendService.requests.cpu: "1"
-          defaultService.numReplicas: 3
-          frontendService.numReplicas: 1
-          walrusService.numReplicas: 1
-          nodeGroupLabel: diffgram-apps
-
 
       - name: Check values.yaml
         run: cat values.yaml
@@ -391,9 +226,13 @@ jobs:
 
   Staging-Deploy-Azure-Kubernetes:
     runs-on: ubuntu-latest
-    needs: [publish_default_branch, publish_frontend_branch, publish_walrus_branch, publish_dispatcher_branch]
-    environment: ${{ github.event.inputs.environment }}
-    if: "github.event.inputs.environment == 'staging'"
+    needs: [publishimages]
+    environment: staging
+    if: "((!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))) && github.event.inputs.environment == 'staging'"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
@@ -428,11 +267,30 @@ jobs:
       IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
     steps:
+      - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
+        id: comment-branch
+
+      - name: Check out repository code From PR Branch
+        if: "github.event.issue.pull_request"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+
       - name: Check out repository code
+        if: "!github.event.issue.pull_request"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
-
+      - run: |
+          ls -a ./
+          echo "----"
+          ls -a ./.github
+          echo "----"
+          ls -a ./.github/workflows
+          echo "----"
+          cd ./.github/workflows
+          pwd
       - name: Extract branch name
         if: github.event_name != 'pull_request'
         shell: bash
@@ -446,21 +304,93 @@ jobs:
         with:
           repository: diffgram/diffgram-helm
 
+      - name: Create Diffgram Version Production From Tag or Branch
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_version=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Create Diffgram Version Production From PR
+        if: "github.event.issue.pull_request"
+        run: |
+          echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
+
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+        with:
+          slug-maxlength: 30
+
+      - name: Create Diffgram Domain Slug from Manual Deploy
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ env.GITHUB_REF_SLUG }}" >> $GITHUB_ENV
+
+      - uses: gacts/github-slug@v1
+        if: "github.event.issue.pull_request"
+        id: slug
+        with:
+          # replace value in "to-slug" this on your choice
+          to-slug: ${{ steps.comment-branch.outputs.head_ref }}
+
+      - name: Truncate String
+        if: "github.event.issue.pull_request"
+        uses: 2428392/gh-truncate-string-action@v1.0.0
+        id: truncatedString
+        with:
+          stringToTruncate: ${{ steps.slug.outputs.slug }}
+          maxLength: 30
+
+      - name: Echo string
+        if: "github.event.issue.pull_request"
+        run: echo ${{ steps.truncatedString.outputs.string }}
+
+
+      - name: Create Diffgram Domain Slug from pr
+        if: "github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+      - name: Create Diffgram Domain Slug from pr
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        id: finalDomain
+        with:
+            source: ${{ env.GITHUB_REF_SLUG }}
+            find: '.'
+            replace: ''               # replace it with a blank string (ie. removing it)
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        id: finalDomain2
+        with:
+          source: ${{ steps.finalDomain.outputs.value }}
+          find: '.'
+          replace: ''               # replace it with a blank string (ie. removing it)
+      - run: echo ${{ steps.finalDomain2.outputs.value }}
+
+      - name: Create Diffgram Domain Slug from Dispatch
+
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.finalDomain2.outputs.value }}" >> $GITHUB_ENV
+
+
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release != '$$current_branch'"
         with:
           files: 'values.yaml'
         env:
-          diffgramVersion: ${{ github.event.inputs.release }}
+          diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
-          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
+          diffgramDomain: ${{ env.diffgram_domain_slug }}.dataannotation.info
           useCertManager: true
           useTls: true
           dbSettings.dbProvider: azure
           dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
           dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
+          dbSettings.dbName: db-staging-${{ env.diffgram_version }}
           dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
           diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
           diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
@@ -507,71 +437,19 @@ jobs:
           walrusService.limits.memory: "1G"
           nodeGroupLabel: null
 
-      - name: Prepare app.yaml for helm chart.
-        uses: microsoft/variable-substitution@v1
-        if: "github.event.inputs.release == '$$current_branch'"
-        with:
-          files: 'values.yaml'
-        env:
-          diffgramVersion: ${{ env.BRANCH_NAME }}
-          diffgramEdition: opencore
-          diffgramDomain: ${{ env.BRANCH_NAME }}.dataannotation.info
-          useCertManager: true
-          useTls: true
-          dbSettings.dbProvider: azure
-          dbSettings.azureSqlEndpoint: ${{secrets.AZURE_SQL_ENDPOINT}}
-          dbSettings.dbUser: ${{secrets.AZURE_DB_USER}}
-          dbSettings.dbName: ${{secrets.AZURE_DB_NAME}}
-          dbSettings.dbPassword: ${{secrets.AZURE_DB_PASSWORD}}
-          diffgramSecrets.STRIPE_API_KEY: ${{secrets.STRIPE_API_KEY}}
-          diffgramSecrets._ANALYTICS_WRITE_KEY: ${{secrets._ANALYTICS_WRITE_KEY}}
-          diffgramSecrets.MAILGUN_KEY: ${{secrets.MAILGUN_KEY}}
-          diffgramSecrets.HUB_SPOT_KEY: ${{secrets.HUB_SPOT_KEY}}
-          diffgramSecrets.SECRET_KEY: ${{secrets.SECRET_KEY}}
-          diffgramSecrets.INTER_SERVICE_SECRET: ${{secrets.INTER_SERVICE_SECRET}}
-          diffgramSecrets.USER_PASSWORDS_SECRET: ${{secrets.USER_PASSWORDS_SECRET}}
-          diffgramSecrets.SERVICE_ACCOUNT_JSON_B64: ${{secrets.SERVICE_ACCOUNT_JSON_B64}}
-          diffgramSecrets.DIFFGRAM_AZURE_CONNECTION_STRING: ${{secrets.DIFFGRAM_AZURE_CONNECTION_STRING}}
-          diffgramSettings.USERDOMAIN: kubernetes_production
-          diffgramSettings.DIFFGRAM_SYSTEM_MODE: production
-          diffgramSettings.DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
-          diffgramSettings.DIFFGRAM_AZURE_CONTAINER_NAME: staging1
-          diffgramSettings.ML__DIFFGRAM_AZURE_CONTAINER_NAME: staging1
-          diffgramSettings.DIFFGRAM_INSTALL_FINGERPRINT: ${{secrets.DIFFGRAM_INSTALL_FINGERPRINT}}
-          diffgramSettings.DIFFGRAM_HOST_OS: ${{secrets.DIFFGRAM_HOST_OS}}
-          diffgramSettings.DIFFGRAM_VERSION_TAG: ${{secrets.DIFFGRAM_VERSION_TAG}}
-          diffgramSettings.DATABASE_CONNECTION_POOL_SIZE: ${{secrets.DATABASE_CONNECTION_POOL_SIZE}}
-          diffgramSettings.WALRUS_SERVICE_URL_BASE: ${{secrets.WALRUS_SERVICE_URL_BASE}}
-          diffgramSettings.PROCESS_MEDIA_NUM_VIDEO_THREADS: ${{secrets.PROCESS_MEDIA_NUM_VIDEO_THREADS}}
-          diffgramSettings.PROCESS_MEDIA_NUM_FRAME_THREADS: ${{secrets.PROCESS_MEDIA_NUM_FRAME_THREADS}}
-          diffgramSettings.NEW_RELIC_LICENSE_KEY: ${{secrets.NEW_RELIC_LICENSE_KEY}}
-          diffgramSettings.EMAIL_DOMAIN_NAME: ${{secrets.EMAIL_DOMAIN_NAME}}
-          diffgramSettings.ALLOW_EVENTHUB: ${{secrets.ALLOW_EVENTHUB}}
-          diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
-          diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
-          diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
-          defaultService.numReplicas: 1
-          walrusService.numReplicas: 1
-          frontendService.numReplicas: 1
-          defaultService.requests.cpu: "2"
-          defaultService.requests.memory: "4G"
-          defaultService.limits.cpu: "2"
-          defaultService.limits.memory: "4G"
-          frontendService.requests.cpu: "2"
-          frontendService.requests.memory: "4G"
-          frontendService.limits.cpu: "2"
-          frontendService.limits.memory: "4G"
-          walrusService.requests.cpu: "2"
-          walrusService.requests.memory: "4G"
-          walrusService.limits.cpu: "2"
-          walrusService.limits.memory: "4G"
-          nodeGroupLabel: null
-
-
       - name: Check values.yaml
         run: cat values.yaml
 
+      - name: Get time
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                     (github.event.comment.author_association == 'OWNER' ||
+                     github.event.comment.author_association == 'COLLABORATOR' ||
+                     github.event.comment.author_association == 'MEMBER' )"
+        uses: actions/github-script@v3
+        id: get-time
+        with:
+            script: return new Date().toString()
+            result-encoding: string
 
       # Set the target Azure Kubernetes Service (AKS) cluster.
       - name: Set Kubernetes Cluster Context on AKS
@@ -584,4 +462,28 @@ jobs:
 
       - name: Upgrade Diffgram with Helm
         run: |
-          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging
+          kubectl create namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns --dry-run=client -o yaml | kubectl apply -f -
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns
+
+      - name: Comment PR
+        if: ${{ failure() && github.event.issue.pull_request}}
+        uses: NejcZdovc/comment-pr@v1
+        with:
+          message: "❌ This PR has failed to deploy \n
+           Execution time: `${{steps.get-time.outputs.result}}` \n
+           Details: https://github.com/diffgram/diffgram/actions/runs/${{ github.run_id }}"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          single_comment: false
+
+
+      - name: Comment PR
+        if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                     (github.event.comment.author_association == 'OWNER' ||
+                     github.event.comment.author_association == 'COLLABORATOR' ||
+                     github.event.comment.author_association == 'MEMBER' )"
+        uses: NejcZdovc/comment-pr@v1
+        with:
+          message: "✔️ This PR Has been Deployed in: https://${{ env.diffgram_domain_slug }}.dataannotation.info/user/login \n
+          Execution time: `${{steps.get-time.outputs.result}}`"
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          single_comment: false

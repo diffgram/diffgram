@@ -377,7 +377,7 @@ class DiffgramInstallTool:
             env_file = f"GCP_SERVICE_ACCOUNT_FILE_PATH={self.gcp_credentials_path}\n"
             env_file += f"CLOUD_STORAGE_BUCKET={self.bucket_name}\n"
             env_file += f"ML__CLOUD_STORAGE_BUCKET={self.bucket_name}\n"
-            env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
+            env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
         elif self.static_storage_provider == 'aws':
             env_file = f"DIFFGRAM_AWS_ACCESS_KEY_ID={self.s3_access_id}\n"
@@ -385,14 +385,14 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
             env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
-            env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
+            env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
             env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
         elif self.static_storage_provider == 'azure':
             env_file = f"DIFFGRAM_AZURE_CONNECTION_STRING={self.azure_connection_string}\n"
             env_file += f"DIFFGRAM_AZURE_CONTAINER_NAME={self.bucket_name}\n"
             env_file += f"ML__DIFFGRAM_AZURE_CONTAINER_NAME={self.bucket_name}\n"
-            env_file += 'SAME_HOST=False\n'.format(self.bucket_name)
+            env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
             env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
 

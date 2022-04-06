@@ -63,7 +63,7 @@ def route_same_host(path):
                     host_reached)
             }
         }
-        return jsonify(error), 500
+        return jsonify(error), 503
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
@@ -76,7 +76,7 @@ def route_multi_host(path):
     # Default host
     host = 'http://default:8080/'
     host_reached = 'default'
-    logging.warning("MULTI HOST {path}")
+    logging.warning(f"MULTI HOST {path}")
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
@@ -123,7 +123,7 @@ def route_multi_host(path):
                     host_reached)
             }
         }
-        return jsonify(error), 500
+        return jsonify(error), 503
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [(name, value) for (name, value) in resp.raw.headers.items()
                if name.lower() not in excluded_headers]
@@ -135,9 +135,6 @@ def route_multi_host(path):
 @app.route('/', defaults = {'path': ''}, methods = ['GET', 'POST'])
 @app.route('/<path:path>', methods = ['GET', 'POST'])
 def _proxy(path):
-    # TODO could switch the path thing to be "diffgram.com"
-    # if want to run front end with production end points
-    # (or could use a staging endpoint here too...)
     print(f"_proxy:*--------> {path}")
     logging.warning(f"_proxy:*--------> {path}")
     if SAME_HOST:
