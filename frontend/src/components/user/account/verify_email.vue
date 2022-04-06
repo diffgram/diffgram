@@ -27,7 +27,7 @@
           <v-btn large
                 color="primary"
                 :disabled="$store.state.user.current.security_email_verified != true"
-                @click="$router.push('/home/dashboard')">
+                @click="$router.push('/welcome/adventure')">
             Resume Onboarding
           </v-btn>
 
