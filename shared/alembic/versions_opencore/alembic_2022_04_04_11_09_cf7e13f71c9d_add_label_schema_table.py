@@ -14,6 +14,7 @@ from shared.database.user import User
 from shared.database.auth.member import Member
 from shared.database.project import Project, UserbaseProject
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
 from shared.database.source_control.file import File
 from sqlalchemy.ext.declarative import declarative_base
@@ -68,19 +69,19 @@ def add_schemas_to_projects(op):
             rel = new_schema.add_label_file(session, label_file.id, member.id)
             print(f'      --> Added Label: {label_file.label.name} to Schema')
 
-        attribute_groups_archived = Attribute_Template_Group.list(
-            session = session,
-            project_id = project.id,
-            archived = True,
-            limit = None
-        )
-        attribute_groups = Attribute_Template_Group.list(
-            session = session,
-            project_id = project.id,
-            archived = False,
-            limit = None
-        )
-        attribute_groups_list = attribute_groups + attribute_groups_archived
+        attribute_groups_list = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project.id
+        ).all()
+        for attr_grp in attribute_groups_list:
+            rel = new_schema.add_attribute_group(session, attr_grp.id, member.id)
+            print(f'      --> Added Attribute Group: [{attr_grp.name} - {attr_grp.prompt}] to Schema')
+
+        instance_template_list = session.query(InstanceTemplate).filter(
+            InstanceTemplate.project_id == project.id
+        ).all()
+        for template in instance_template_list:
+            rel = new_schema.add_instance_template(session, template.id, member.id)
+            print(f'      --> Added Attribute Group: {template.name} to Schema')
         print(f'Num Projects [{i}/{len(all_projects) - 1}]')
         i += 1
 
