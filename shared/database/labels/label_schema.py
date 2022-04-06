@@ -31,6 +31,13 @@ class LabelSchema(Base, SerializerMixin):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
+    def get_by_id(session: Session, id: int) -> 'LabelSchema':
+        result = session.query(LabelSchema).filter(
+            LabelSchema.id == id
+        ).first()
+        return result
+
+    @staticmethod
     def new(session: Session, name: str, project_id: int, member_created_id: int) -> 'LabelSchema':
         schema = LabelSchema(
             name = name,
@@ -55,7 +62,8 @@ class LabelSchema(Base, SerializerMixin):
     @staticmethod
     def list(session: Session, project_id: int):
         query = session.query(LabelSchema).filter(
-            LabelSchema.project_id == project_id
+            LabelSchema.project_id == project_id,
+            LabelSchema.archived == False
         )
         result = query.all()
         return result

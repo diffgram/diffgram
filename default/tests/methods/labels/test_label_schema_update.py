@@ -7,10 +7,10 @@ from unittest.mock import patch
 from methods.task.task_template import job_new_or_update
 from shared.utils.logging import DiffgramLogger
 from shared.database.labels.label_schema import LabelSchema
-from methods.labels.label_schema_list import label_schema_list_core
+from methods.labels.label_schema_update import label_schema_update_core
 
 
-class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
+class TestLabelSchemaUpdate(testing_setup.DiffgramBaseTestCase):
     """
 
 
@@ -20,7 +20,7 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
         # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestLabelSchemaList, self).setUp()
+        super(TestLabelSchemaUpdate, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
@@ -36,37 +36,34 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
 
-    def test_api_label_schema_list(self):
-        endpoint = f'/api/v1/project/{self.project.project_string_id}/labels-schema'
+    def test_api_label_schema_update(self):
         schema1 = LabelSchema.new(
             session = self.session,
             name = 'test',
             project_id = self.project.id,
             member_created_id = self.member.id
         )
-        schema2 = LabelSchema.new(
-            session = self.session,
-            name = 'test2',
-            project_id = self.project.id,
-            member_created_id = self.member.id
-        )
+
+        endpoint = f'/api/v1/project/{self.project.project_string_id}/labels-schema/{schema1.id}/update'
+        schema_name = 'test_schema'
         with self.client.session_transaction() as session:
             auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
             credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
 
-        response = self.client.get(
+        response = self.client.patch(
             endpoint,
-            data = json.dumps({}),
+            data = json.dumps({'name': schema_name, 'archived': True}),
             headers = {
                 'Authorization': f"Basic {credentials}"
             }
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json), 2)
-        for elm in response.json:
-            self.assertTrue(elm['id'] in [schema1.id, schema2.id])
+        self.assertEqual(response.json['name'], schema_name)
+        self.assertEqual(response.json['project_id'], self.project.id)
+        self.assertEqual(response.json['archived'], True)
+        self.assertEqual(response.json['id'], schema1.id)
 
     def test_label_schema_list_core(self):
         schema1 = LabelSchema.new(
@@ -75,28 +72,18 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
             project_id = self.project.id,
             member_created_id = self.member.id
         )
-        schema2 = LabelSchema.new(
-            session = self.session,
-            name = 'test2',
-            project_id = self.project.id,
-            member_created_id = self.member.id
-        )
-        schema3 = LabelSchema.new(
-            session = self.session,
-            name = 'test2',
-            project_id = self.project.id,
-            member_created_id = self.member.id
-        )
-        schema3.archived = True
-        self.session.add(schema3)
-        self.session.commit()
-        result, log = label_schema_list_core(
+        schema_name = 'test_schema'
+        result, log = label_schema_update_core(
             session = self.session,
             project = self.project,
-            member = self.member
+            member = self.member,
+            schema_id = schema1.id,
+            name = schema_name,
+            archived = True
         )
 
         self.assertTrue(len(log['error'].keys()) == 0)
-        self.assertEqual(len(result), 2)
-        for elm in result:
-            self.assertTrue(elm['id'] in [schema1.id, schema2.id])
+        self.assertEqual(result['name'], schema_name)
+        self.assertEqual(result['archived'], schema1.archived)
+        self.assertEqual(result['project_id'], self.project.id)
+        self.assertIsNotNone(result['id'])

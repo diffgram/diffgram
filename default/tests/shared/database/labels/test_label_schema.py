@@ -56,6 +56,19 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(schema.project_id, data['project_id'])
         self.assertEqual(schema.member_created_id, data['member_created_id'])
 
+    def test_get_by_id(self):
+        schema = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+
+        fetched_schema = LabelSchema.get_by_id(session = self.session, id = schema.id)
+
+        self.assertEqual(fetched_schema.id, schema.id)
+        self.assertEqual(fetched_schema.name, schema.name)
+        self.assertEqual(fetched_schema.project.id, schema.project.id)
 
     def test_serialize(self):
         project_data = data_mocking.create_project_with_context(
