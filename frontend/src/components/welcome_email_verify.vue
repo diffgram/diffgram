@@ -14,28 +14,30 @@
           <div class="text-center pa-4">
               <h2 class="font-weight-light"> {{$store.state.user.current.email}} </h2>
 
-              <div class="pa-4">
-                <p v-if="is_automatically_checking == true">
-                This page will automatically reload
-                </p>
+              <div v-if="success_state == false">
+                <div class="pa-4">
+                  <p v-if="is_automatically_checking == true">
+                  This page will automatically reload
+                  </p>
+                </div>
+
+                <tooltip_button
+                  v-if="is_automatically_checking == false"
+                  tooltip_message="Refresh"
+                  @click="attempts = 0, is_user_verified_interval()"
+                  :disabled="loading"
+                  color="primary"
+                  icon="mdi-refresh"
+                  :icon_style="true"
+                  :bottom="true"
+                >
+                </tooltip_button>
+
+                <div style="min-height: 30px"> </div>
+
+                <v_resend_verify_email v-if="is_automatically_checking == false"
+                                       @security_email_verified="declare_success()"/>
               </div>
-
-              <tooltip_button
-                v-if="is_automatically_checking == false"
-                tooltip_message="Refresh"
-                @click="attempts = 0, is_user_verified_interval()"
-                :disabled="loading"
-                color="primary"
-                icon="mdi-refresh"
-                :icon_style="true"
-                :bottom="true"
-              >
-              </tooltip_button>
-
-              <div style="min-height: 30px"> </div>
-
-              <v_resend_verify_email v-if="is_automatically_checking == false"
-                                     @security_email_verified="declare_success()"/>
 
           </div>
 
@@ -54,6 +56,7 @@
 import Vue from 'vue'
 
 import { is_user_verified } from "../services/userServices";
+import { is_mailgun_set } from "../services/configService";
 
 export default Vue.extend( {
   name: 'welcome_verify',
@@ -70,14 +73,22 @@ export default Vue.extend( {
        intervel: undefined,
        attempts: 0,
        max_attempts: 2,
-       check_intervel: 2000
+       check_intervel: 2000,
+       mailgun: undefined,
+       success_state: false
     }
   },
   watch: {
 
   },
-  created() {
-    this.is_user_verified_interval()
+  async created() {
+    this.mailgun = await is_mailgun_set()
+    if (this.mailgun == true) {
+      this.is_user_verified_interval()
+    } else {
+      this.declare_success()
+    }
+
   },
   computed: {
 
@@ -91,6 +102,7 @@ export default Vue.extend( {
     },
 
     declare_success() {
+      this.success_state = true
       clearInterval(this.intervel)
       this.is_automatically_checking = false
       this.$router.push('/welcome/adventure')
