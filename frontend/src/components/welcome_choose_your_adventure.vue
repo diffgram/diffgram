@@ -17,7 +17,8 @@
               <v-btn  large
                       outlined
                       color="primary"
-                      @click="">
+                      href="https://diffgram.com/studio/annotate/coco-dataset/explorer"
+                      target="_blank">
                 Explore Sample
               </v-btn>
             </div>
@@ -26,7 +27,8 @@
               <v-btn  large
                       outlined
                       color="primary"
-                      @click="">
+                      href="https://diffgram.readme.io/docs"
+                      target="_blank">
                  Learn Concepts
               </v-btn>
             </div>
@@ -35,14 +37,17 @@
               <v-btn  large
                       outlined
                       color="primary"
-                      @click="">
-                 Join an Existing Project
+                      href="https://www.youtube.com/channel/UC4ZVmvMA6oa3Lwaq6Si17pg"
+                      target="_blank">
+                 Watch Videos
               </v-btn>
             </div>
 
           </div>
           <div style="min-height: 50px"> </div>
-          <div class="text-center">
+
+          <div v-if="!$store.state.project.current.project_string_id"
+               class="text-center">
             Or Continue To your First Project
             <v-btn  x-large
                     block
@@ -52,6 +57,19 @@
               Continue
             </v-btn>
           </div>
+
+          <div v-if="$store.state.project.current.project_string_id"
+               class="text-center">
+            Or Continue To Annotate
+            <v-btn  x-large
+                    block
+                    outlined
+                    color="primary"
+                    @click="$router.push('/me')">
+              Continue
+            </v-btn>
+          </div>
+
         </div>
       </div>
 
