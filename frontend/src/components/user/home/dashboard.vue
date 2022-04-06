@@ -47,7 +47,7 @@
               Please verify your email: {{$store.state.user.current.email}}</h3>
         </v-card-title>
 
-        <p>Some actions may be restricted until verification.</p>
+        <p>Actions are restricted until verification.</p>
 
         <v-card-actions>
           <v_resend_verify_email />
@@ -86,6 +86,12 @@
         </v-card-text>
 
         <v-card-actions>
+          <v-btn large
+                color="primary"
+                @click="$router.push('/welcome')">
+            Resume Onboarding
+          </v-btn>
+
           <v-btn large
                 color="primary"
                 @click="$router.push('/a/project/new')">
