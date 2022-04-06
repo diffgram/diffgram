@@ -361,10 +361,10 @@
           }
         }
         if(this.user_role === 'Editor'){
-          this.$router.push('/me')
+          this.$router.push('/welcome')
         }
         else{
-          this.$router.push('/home/dashboard')
+          this.$router.push('/welcome')
         }
       },
 
