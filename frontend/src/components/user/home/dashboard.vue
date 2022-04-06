@@ -88,7 +88,6 @@
         <v-card-actions>
           <v-btn large
                 color="primary"
-                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
                 @click="$router.push('/a/project/new')">
             New Project
           </v-btn>
