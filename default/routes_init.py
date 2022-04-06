@@ -165,3 +165,4 @@ def do_routes_importing():
     from methods.task.task_template.task_template_member_list import task_template_members_list_api
 
     from methods.labels.label_schema_list import api_label_schema_list
+    from methods.labels.label_schema_new import api_label_schema_new
