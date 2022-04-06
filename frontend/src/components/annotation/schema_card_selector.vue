@@ -1,9 +1,30 @@
 <template>
 
   <v-card    width="256"
-             height="500"
-             style="position: sticky; top: 75px"
+             height="40%"
+             style="position: sticky; top: 75px; border: 1px solid #e0e0e0; min-height: 500px"
              class="justify-start mr-6">
+    <v-card-title class="d-flex justify-space-between">
+      Schemas
+      <button_with_menu
+        tooltip_message="Create Schema"
+        icon="mdi-plus"
+        color="primary"
+      >
+
+        <template slot="content">
+
+          <v-card>
+            <v-card-title>Create Schema:</v-card-title>
+            <v-card-text>
+              <v-text-field v-model="new_schema_name"></v-text-field>
+            </v-card-text>
+          </v-card>
+
+        </template>
+
+      </button_with_menu>
+    </v-card-title>
     <v-navigation-drawer>
       <v-list
         dense
@@ -15,12 +36,13 @@
           link
         >
           <v-list-item-icon>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon>mdi-group</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
+            <v-list-item-title>{{ item.name }}</v-list-item-title>
           </v-list-item-content>
+
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -33,6 +55,11 @@ export default {
   props: {
     'schema_list':{
 
+    }
+  },
+  data: function(){
+    return {
+      new_schema_name: ''
     }
   }
 }

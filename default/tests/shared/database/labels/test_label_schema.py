@@ -119,6 +119,7 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
         for elm in results2:
             self.assertTrue(elm.id in [schema4.id])
 
+
 class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
     """
 
@@ -145,7 +146,7 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
 
-    def test_new(self):
+    def test_new_label_link(self):
         schema = LabelSchema.new(
             session = self.session,
             name = 'test',
@@ -159,7 +160,7 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
             'label': label,
             'project_id': self.project.id
         }, self.session)
-        schema_link = LabelSchemaLink.new(
+        schema_link = LabelSchemaLink.new_label_link(
             session = self.session,
             schema_id = schema.id,
             label_file_id = label_file.id,
@@ -168,6 +169,46 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
 
         self.assertEqual(schema_link.schema_id, schema.id)
         self.assertEqual(schema_link.label_file_id, label_file.id)
+        self.assertEqual(schema_link.member_created_id, self.member.id)
+
+    def test_new_attribute_group_link(self):
+        schema = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        attribute_group = data_mocking.create_attribute_template_group({
+            'name': 'test'
+        }, self.session)
+        schema_link = LabelSchemaLink.new_attribute_group_link(
+            session = self.session,
+            schema_id = schema.id,
+            attribute_group_id = attribute_group.id,
+            member_created_id = self.member.id
+        )
+
+        self.assertEqual(schema_link.schema_id, schema.id)
+        self.assertEqual(schema_link.attribute_template_group_id, attribute_group.id)
+        self.assertEqual(schema_link.member_created_id, self.member.id)
+
+    def test_new_instance_template_link(self):
+        schema = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        instance_template = data_mocking.create_instance_template({'name': 'test'}, self.session)
+        schema_link = LabelSchemaLink.new_instance_template_link(
+            session = self.session,
+            schema_id = schema.id,
+            instance_template_id = instance_template.id,
+            member_created_id = self.member.id
+        )
+
+        self.assertEqual(schema_link.schema_id, schema.id)
+        self.assertEqual(schema_link.instance_template_id, instance_template.id)
         self.assertEqual(schema_link.member_created_id, self.member.id)
 
     def test_serialize(self):
@@ -184,7 +225,7 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
             'label': label,
             'project_id': self.project.id
         }, self.session)
-        schema_link = LabelSchemaLink.new(
+        schema_link = LabelSchemaLink.new_label_link(
             session = self.session,
             schema_id = schema.id,
             label_file_id = label_file.id,
@@ -196,4 +237,3 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(data['schema_id'], schema.id)
         self.assertEqual(data['label_file_id'], label_file.id)
         self.assertEqual(data['member_created_id'], self.member.id)
-

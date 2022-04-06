@@ -1,7 +1,7 @@
 <template>
 <div id="">
 
-  <v-container class="d-flex">
+  <v-container class="d-flex align-center justify-start">
 
     <h2 class="font-weight-medium text--primary flex-grow-1">
       Attributes:
@@ -16,13 +16,13 @@
       datacy="new_attribute_button"
       button_color="primary"
       tooltip_message="Create Attribute"
-      button_message="Create Attribute"
+      :icon_style="true"
       @click="api_attribute_group_new"
       icon="add"
       :large="true"
       :loading="loading"
       :disabled="loading"
-      color="white">
+      color="primary">
     </tooltip_button>
 
   </v-container>

@@ -1,14 +1,14 @@
 <template>
   <v-container fluid  v-cloak id="labels_view" class="d-flex flex-column pa-4">
 
-    <div class="d-flex mt-4">
+    <div class="d-flex">
       <v_error_multiple :error="error"></v_error_multiple>
 
       <v-layout row>
         <v-flex>
 
           <!-- TODO make max height the height of available space? -->
-          <v-card style="overflow-y:auto; max-height: 700px" elevation="3" class="mt-3">
+          <v-card style="overflow-y:auto; max-height: 700px" elevation="3">
 
             <v-card-title class="d-flex align-center">
               Label Templates

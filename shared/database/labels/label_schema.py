@@ -59,6 +59,33 @@ class LabelSchema(Base, SerializerMixin):
 
         return data
 
+    def add_label_file(self, session: Session, label_file_id: int, member_created_id: int):
+        rel = LabelSchemaLink.new_label_link(
+            session = session,
+            schema_id = self.id,
+            label_file_id = label_file_id,
+            member_created_id = member_created_id
+        )
+        return rel
+
+    def add_attribute_group(self, session: Session, attribute_group_id: int, member_created_id: int):
+        rel = LabelSchemaLink.new_attribute_group_link(
+            session = session,
+            schema_id = self.id,
+            attribute_group_id = attribute_group_id,
+            member_created_id = member_created_id
+        )
+        return rel
+
+    def add_instance_template(self, session: Session, instance_template_id: int, member_created_id: int):
+        rel = LabelSchemaLink.new_instance_template_link(
+            session = session,
+            schema_id = self.id,
+            instance_template_id = instance_template_id,
+            member_created_id = member_created_id
+        )
+        return rel
+
     @staticmethod
     def list(session: Session, project_id: int):
         query = session.query(LabelSchema).filter(
@@ -76,6 +103,12 @@ class LabelSchemaLink(Base, SerializerMixin):
     schema_id = Column(Integer, ForeignKey('label_schema.id'))
     schema = relationship("LabelSchema", foreign_keys = [schema_id])
 
+    instance_template_id = Column(Integer, ForeignKey('instance_template.id'))
+    instance_template = relationship("InstanceTemplate", foreign_keys = [instance_template_id])
+
+    attribute_template_group_id = Column(Integer, ForeignKey('attribute_template_group.id'))
+    attribute_template_group = relationship("Attribute_Template_Group", foreign_keys = [attribute_template_group_id])
+
     label_file_id = Column(Integer, ForeignKey('file.id'))
     label_file = relationship("File", foreign_keys = [label_file_id])
 
@@ -89,10 +122,36 @@ class LabelSchemaLink(Base, SerializerMixin):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
-    def new(session: Session, schema_id: int, label_file_id: int, member_created_id: int) -> 'LabelSchemaLink':
+    def new_label_link(session: Session, schema_id: int, label_file_id: int, member_created_id: int) -> 'LabelSchemaLink':
         schema_link = LabelSchemaLink(
             schema_id = schema_id,
             label_file_id = label_file_id,
+            member_created_id = member_created_id
+        )
+
+        session.add(schema_link)
+        session.flush()
+
+        return schema_link
+
+    @staticmethod
+    def new_attribute_group_link(session: Session, schema_id: int, attribute_group_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        schema_link = LabelSchemaLink(
+            schema_id = schema_id,
+            attribute_template_group_id = attribute_group_id,
+            member_created_id = member_created_id
+        )
+
+        session.add(schema_link)
+        session.flush()
+
+        return schema_link
+
+    @staticmethod
+    def new_instance_template_link(session: Session, schema_id: int, instance_template_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        schema_link = LabelSchemaLink(
+            schema_id = schema_id,
+            instance_template_id = instance_template_id,
             member_created_id = member_created_id
         )
 

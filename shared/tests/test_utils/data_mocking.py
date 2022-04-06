@@ -26,6 +26,7 @@ from shared.database.task.task_event import TaskEvent
 import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
@@ -68,6 +69,16 @@ def create_label_schema(schema_data, session):
     session.commit()
     return schema
 
+
+def create_attribute_template_group(group_data, session):
+    group = Attribute_Template_Group(
+        **group_data
+    )
+    session.add(group)
+    session.commit()
+    return group
+
+
 def create_project_migration(migration_data, session):
     p_migration = ProjectMigration(
         created_time = migration_data.get('created_time'),
@@ -90,6 +101,8 @@ def create_project_migration(migration_data, session):
     session.add(p_migration)
     session.commit()
     return p_migration
+
+
 def register_user(user_data: dict, session):
     """
 

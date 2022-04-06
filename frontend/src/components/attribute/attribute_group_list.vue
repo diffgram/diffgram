@@ -2,7 +2,7 @@
 <div id="">
 
 <div style="overflow-y:auto">
-  <v-layout v-if="mode == 'edit' " class="pa-8">
+  <v-layout v-if="mode == 'edit' " class="d-flex pa-4 align-center">
 
     <!-- TODO trying to separate out this from the list layout
       since we have different goals for annotation vs
@@ -13,16 +13,13 @@
 
     </attribute_group_new>
 
-    <v-spacer></v-spacer>
-
-    <tooltip_button
-        tooltip_message="Attribute Help"
-        href="https://diffgram.readme.io/docs/attributes-1"
-        icon="mdi-lifebuoy"
-        :icon_style="true"
-        :large="true"
-        color="red">
-    </tooltip_button>
+    <v-btn color="primary"
+           text
+           href="https://diffgram.readme.io/docs/attributes-1"
+           target="_blank"
+           icon>
+      <v-icon>help</v-icon>
+    </v-btn>
 
 
   </v-layout>

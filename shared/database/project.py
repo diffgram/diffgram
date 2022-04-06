@@ -486,7 +486,7 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
-    def get_label_list(self, session, directory):
+    def get_label_list(self, session, directory, out_type = 'serialized'):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
             WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
