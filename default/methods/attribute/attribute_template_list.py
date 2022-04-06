@@ -39,7 +39,8 @@ def api_attribute_template_list(project_string_id):
             session = session,
             group_id = input['group_id'],
             project_id = project.id,
-            return_kind = "objects"
+            return_kind = "objects",
+            limit = None
         )
 
         group_list_serialized = []
