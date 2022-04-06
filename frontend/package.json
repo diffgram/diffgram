@@ -63,6 +63,7 @@
     "vue-chartjs": "^3.5.0",
     "vue-code-diff": "^1.1.0",
     "vue-color": "^2.7.1",
+    "vue-confetti": "^2.3.0",
     "vue-highlight.js": "^4.0.1-beta",
     "vue-intercom": "^1.0.14",
     "vue-jest": "^4.0.1",
