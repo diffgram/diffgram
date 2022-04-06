@@ -51,7 +51,22 @@ def redeem_verify_via_email_api():
 		return jsonify(log = log), 200
 
 
-#def redeem_verify_via_email_core():
+@routes.route('/api/v1/user/verify/is_email_confirmed', 
+			  methods=['GET'])
+@General_permissions.grant_permission_for(['normal_user'])
+def is_email_confirmed_api():
+
+	log = regular_input.regular_log.default_api_log()
+	security_email_verified = False
+	with sessionMaker.session_scope() as session:
+
+		user = User.get(session)
+		security_email_verified = user.security_email_verified
+		log['success'] = True
+
+	return jsonify(log = log,
+                security_email_verified = security_email_verified), 200
+
 
 @routes.route('/api/v1/user/verify/start', 
 			  methods=['GET'])

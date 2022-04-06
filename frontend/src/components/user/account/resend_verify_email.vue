@@ -69,6 +69,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         if (this.error == "Already verified.") {
           this.$store.commit('patch_current_user', ['security_email_verified', true])
+          this.$emit('security_email_verified', true)
         }
 
         console.error(error);
