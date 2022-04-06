@@ -88,8 +88,6 @@ import Vue from "vue"; export default Vue.extend( {
 
       new_label_name: null,
 
-      default_sequences_to_single_frame: false,
-
       error: {},
 
       current_label: {

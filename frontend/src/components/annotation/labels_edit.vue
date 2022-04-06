@@ -69,27 +69,6 @@
           </v-expansion-panel>
         </v-expansion-panels>
 
-          <v-expansion-panels>
-            <v-expansion-panel>
-              <v-expansion-panel-content>
-              <div slot="header">Advanced Options</div>
-
-              <v-card>
-                <v-container>
-                  <h3> Video Defaults </h3>
-                  <v-checkbox
-                    label="New Sequences Default to Single Frame"
-                    v-model="current_label_file.label.default_sequences_to_single_frame"
-                    >
-
-                  </v-checkbox>
-                </v-container>
-              </v-card>
-
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-
         </v-container>
 
     </v-layout>

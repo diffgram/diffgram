@@ -8,8 +8,6 @@ class Label(Base):
     id = Column(Integer, primary_key = True)
     name = Column(String(200))
 
-    default_sequences_to_single_frame = Column(Boolean, default = False)
-
     # TODO colour is deprecated given storing in file directly now?
     # ie a name may be "universal" but the colour is not?
 
@@ -19,13 +17,6 @@ class Label(Base):
 
     # Remove soft delete?
     soft_delete = Column(Boolean)
-
-    # TODO part of super category or?
-
-    # TODO
-    # Label is now part of a file
-    # and a source control version
-    # Review as neither AI or project realy make sense here
 
     # project_id = Column(Integer, ForeignKey('project.id'))
     # project = relationship("Project", back_populates="label_list")
@@ -45,18 +36,14 @@ class Label(Base):
     def new(session,
             add_to_session = True,
             flush_session = True,
-            name = None,
-            default_sequences_to_single_frame = False):
+            name = None):
 
         label = session.query(Label).filter(
-            Label.name == name,
-            Label.default_sequences_to_single_frame == default_sequences_to_single_frame
+            Label.name == name
         ).first()
 
         if not label:
-            label = Label(
-                name = name,
-                default_sequences_to_single_frame = default_sequences_to_single_frame)
+            label = Label(name = name)
             if add_to_session:
                 session.add(label)
             if flush_session:
@@ -66,8 +53,7 @@ class Label(Base):
     def serialize(self):
         label = {
             'id': self.id,
-            'name': self.name,
-            'default_sequences_to_single_frame': self.default_sequences_to_single_frame
+            'name': self.name
         }
         return label
 

@@ -37,13 +37,6 @@
             {{label_list.indexOf(data.item) + 1}}</div>
           -->
 
-          <tooltip_icon
-            v-if="data.item.label.default_sequences_to_single_frame"
-            tooltip_message="Video Defaults to Single Frame"
-            icon="mdi-flag-checkered"
-            color="black">
-          </tooltip_icon>
-
 
           <div v-if="show_visibility_toggle
                   || data.item.is_visible == false">
@@ -92,11 +85,6 @@
               left
               :style="style_color(data.item.colour.hex)">
               flag
-            </v-icon>
-
-            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                    color="black">
-              mdi-flag-checkered
             </v-icon>
 
             {{ label_name_truncated(data.item.label.name) }}

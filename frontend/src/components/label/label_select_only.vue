@@ -23,13 +23,6 @@
             flag
           </v-icon>
 
-          <tooltip_icon
-            v-if="data.item.label.default_sequences_to_single_frame"
-            tooltip_message="Video Defaults to Single Frame"
-            icon="mdi-flag-checkered"
-            color="black">
-          </tooltip_icon>
-
 
           <!-- hacky word around because
               when we use the custom template select thing
@@ -74,10 +67,6 @@
               flag
             </v-icon>
 
-            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                    color="black">
-              mdi-flag-checkered
-            </v-icon>
 
             {{ data.item.label.name}}
           </span>

@@ -128,12 +128,6 @@
                       </v-icon>
                     </div>
 
-                    <tooltip_icon
-                      tooltip_message="Video Defaults to Single Frame"
-                      v-if="props.item.label && props.item.label.default_sequences_to_single_frame"
-                      icon="mdi-flag-checkered"
-                      color="black">
-                    </tooltip_icon>
 
                   <div v-if="props.item.id == current_label_file.id">
 

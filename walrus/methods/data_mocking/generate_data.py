@@ -295,9 +295,7 @@ class DiffgramDataMocker:
 
             label_name = f"Diffgram Sample Label {i + 1}"
             label = self.session.query(Label).filter(
-                Label.name == label_name,
-                Label.default_sequences_to_single_frame == False
-            ).first()
+                Label.name == label_name).first()
             if label:
                 existing_label_file = self.session.query(File).join(WorkingDirFileLink).filter(
                     File.type == "label",

@@ -637,8 +637,7 @@
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
                   colour: color_obj,
-                  name: label_name,
-                  default_sequences_to_single_frame: false
+                  name: label_name
                 });
               this.new_label_name = null
 

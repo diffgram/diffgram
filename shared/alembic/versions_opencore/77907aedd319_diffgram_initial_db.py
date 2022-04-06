@@ -51,7 +51,6 @@ def upgrade():
     op.create_table('label',
                     sa.Column('id', sa.Integer(), nullable=False),
                     sa.Column('name', sa.String(length=200), nullable=True),
-                    sa.Column('default_sequences_to_single_frame', sa.Boolean(), nullable=True),
                     sa.Column('colour', shared.database.core.JSONEncodedDict(), nullable=True),
                     sa.Column('soft_delete', sa.Boolean(), nullable=True),
                     sa.PrimaryKeyConstraint('id')
