@@ -164,7 +164,7 @@
               <v-btn  color="primary"
                       block
                       @click="builder_enable_api"
-                      data-cy="finish_singup_button"
+                      data-cy="finish_signup_button"
                       :disabled="loading"
                 >
                <v-icon left> mdi-flag-checkered </v-icon>

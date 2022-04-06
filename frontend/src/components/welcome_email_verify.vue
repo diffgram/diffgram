@@ -72,7 +72,7 @@ export default Vue.extend( {
        is_automatically_checking: true,
        intervel: undefined,
        attempts: 0,
-       max_attempts: 2,
+       max_attempts: 300,
        check_intervel: 2000,
        mailgun: undefined,
        success_state: false
