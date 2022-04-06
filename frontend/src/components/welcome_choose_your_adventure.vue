@@ -48,7 +48,7 @@
                     block
                     outlined
                     color="primary"
-                    @click="">
+                    @click="$router.push('/a/project/new')">
               Continue
             </v-btn>
           </div>

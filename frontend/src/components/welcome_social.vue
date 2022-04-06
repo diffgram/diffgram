@@ -27,7 +27,7 @@
             <v-btn  x-large
                     outlined
                     color="primary"
-                    @click="">
+                    @click="$router.push('/welcome/verify')">
               Continue
             </v-btn>
           </div>

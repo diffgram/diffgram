@@ -14,7 +14,7 @@
             <v-btn  x-large
                     outlined
                     color="primary"
-                    @click="">
+                    @click="$router.push('/welcome/social')">
               Continue
             </v-btn>
           </div>
