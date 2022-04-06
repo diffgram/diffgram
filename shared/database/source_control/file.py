@@ -19,6 +19,8 @@ from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
+from shared.helpers.performance import timeit
+
 
 logger = get_shared_logger()
 
@@ -295,6 +297,7 @@ class File(Base, Caching):
             'hash': self.hash
         }
 
+    @timeit
     def serialize_base_file(self):
 
         time_last_updated = None
@@ -355,6 +358,7 @@ class File(Base, Caching):
         ).first()
         return file
 
+    @timeit
     def serialize_with_type(self,
                             session = None
                             ):
@@ -380,25 +384,16 @@ class File(Base, Caching):
             if point_cloud_file and point_cloud_file.point_cloud:
                 file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
-        # Could also get parent file information here too...
         if self.type == "label":
-            if self.label:
+            label = Label.get_by_id(session, self.label_id)
 
-                # WIP
-                # TODO would prefer this to be a mode or something?
-                # context of only needing group list here
-                # if for label file from project
-                # where as from instance.serialize() we want
-                # the instances of attributes
+            #if session:
+            #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
+            #        session = session,
+            #       file_id = self.id)
 
-                if session:
-                    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
-                        session = session,
-                        file_id = self.id)
-
-                file['colour'] = self.colour
-
-                file['label'] = self.label.serialize()
+            file['colour'] = self.colour
+            file['label'] = label.serialize()
 
         return file
 
@@ -435,7 +430,7 @@ class File(Base, Caching):
         return self.serialize_with_type()
 
     # Don't share colour by default, use map
-
+    @timeit
     def serialize_with_label_and_colour(self, session):
         return self.serialize_with_type(session)
 
@@ -808,7 +803,6 @@ class File(Base, Caching):
     def new_label_file(
         session,
         name = None,
-        default_sequences_to_single_frame = False,
         working_dir_id = None,
         colour = None,
         project = None,
@@ -817,9 +811,8 @@ class File(Base, Caching):
     ):
         label = Label.new(
             session = session,
-            name = name,
-            default_sequences_to_single_frame = default_sequences_to_single_frame,
-        )
+            name = name)
+
         if not label:
             return None
         if existing_file is None:

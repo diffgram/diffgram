@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 from shared.database.common import *
-
+from shared.helpers.performance import timeit
 
 class Label(Base):
     __tablename__ = 'label'
@@ -10,9 +10,13 @@ class Label(Base):
 
     soft_delete = Column(Boolean)
 
-    # project_id = Column(Integer, ForeignKey('project.id'))
-    # project = relationship("Project", back_populates="label_list")
 
+    @staticmethod
+    @timeit
+    def get_by_id(session, id):
+        return session.query(Label).filter(
+            Label.id == id
+        ).first()
 
     @staticmethod
     def get_by_name(session, label_name):
@@ -38,10 +42,12 @@ class Label(Base):
                 session.flush()
         return label
 
+
+    @timeit
     def serialize(self):
         label = {
             'id': self.id,
-            'name': self.name
+            'name': self.name 
         }
         return label
 
