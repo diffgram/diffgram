@@ -371,7 +371,22 @@ const routerOptions = [
   },
   {
     path: '/welcome',
-    component: 'annotation/welcome_builder',
+    component: 'welcome_builder',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/social',
+    component: 'welcome_social',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/verify',
+    component: 'welcome_email_verify',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/adventure',
+    component: 'welcome_choose_your_adventure',
     meta: {requiresAuth: true}
   },
   {
