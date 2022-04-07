@@ -183,7 +183,7 @@ export default Vue.extend({
                     }
                     else if (instance.type === 'geo_box') {
                         const already_exists = this.existing_markers.find(marker => 
-                            marker._bounds && marker._bounds._northEast && marker._bounds._southWest &&
+                            marker._bounds && marker._bounds._northEast && marker._bounds._southWest && marker.options &&
                             marker._bounds._northEast.lat === instance.bounds[0][0] &&
                             marker._bounds._northEast.lng === instance.bounds[1][1] &&
                             marker._bounds._southWest.lat === instance.bounds[1][0] &&
@@ -197,6 +197,24 @@ export default Vue.extend({
                         }
                         else if (!already_exists && !instance.soft_delete) {
                             const marker = L.rectangle(instance.bounds, {color: instance.label_file.colour.hex})
+                            this.existing_markers.push(marker)
+                            this.map_instance.addLayer(marker)
+                        }
+                    }
+                    else if (instance.type === 'geo_polygon') {
+                        const already_exists = this.existing_markers.find(marker =>
+                            marker._latlngs && marker.options &&
+                            marker._latlngs[0].every((element, index) => 
+                                element.lat === instance.bounds[index][0] && element.lng === instance.bounds[index][1]
+                            )
+                        )
+                        if (already_exists && instance.soft_delete) {
+                            this.map_instance.removeLayer(already_exists)
+                            const indexToRemove = this.existing_markers.indexOf(already_exists)
+                            this.existing_markers.splice(indexToRemove, 1)
+                        }
+                        else if (!already_exists && !instance.soft_delete) {
+                            const marker = L.polygon(instance.bounds, {color: instance.label_file.colour.hex})
                             this.existing_markers.push(marker)
                             this.map_instance.addLayer(marker)
                         }
@@ -455,7 +473,7 @@ export default Vue.extend({
                 if (this.drawing_instance && (this.current_instance_type === 'geo_polygon' || this.current_instance_type === 'geo_polyline')) {
                     const newPoly = new GeoPoly(this.current_instance_type)
                     newPoly.create_frontend_instance(
-                        [[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], 
+                        [...this.drawing_poly_path, [this.drawing_latlng.lat, this.drawing_latlng.lng]], 
                         { ...this.current_label }
                     )
                     this.instance_list.push([newPoly])
