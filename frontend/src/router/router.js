@@ -212,7 +212,8 @@ const routerOptions = [
     alias: ['/project/:project_string_id'],
     component: 'annotation/annotation_ui_factory',
     props: (route) => ({
-      show_explorer_full_screen: true
+      show_explorer_full_screen: true,
+      project_string_id: route.params.project_string_id
     }),
     meta: {
       requiresAuth: true,
