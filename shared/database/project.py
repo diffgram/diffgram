@@ -10,7 +10,8 @@ from shared.database.report.report_dashboard import ReportDashboard
 from shared.database.org.org import Org
 from shared.database.account.account import Account
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
-
+from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
+from shared.database.labels.label import Label
 
 class Project(Base, Caching):
     """
@@ -486,7 +487,7 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
-    def get_label_list(self, session, directory, out_type = 'serialized'):
+    def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
             WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
@@ -497,6 +498,8 @@ class Project(Base, Caching):
         working_dir_file_list = session.query(File).filter(
             File.id == working_dir_sub_query.c.file_id).all()
 
+        if schema_id is not None:
+            links = LabelSchema.get_label_files(session = session, project_id = self.id)
         labels_out = []
 
         # Now getting label file colour map from working dir
@@ -510,6 +513,27 @@ class Project(Base, Caching):
         if rebuild_colour_map is True:
             colour_map = {}
 
+        file_id_list = [f.id for f in working_dir_file_list]
+        # Fetch Labels Data
+        label_ids = [file.label_id for file in working_dir_file_list]
+        labels = session.query(Label).filter(
+            Label.id.in_(label_ids)
+        )
+        labels_serialized_dict = {}
+        for label in labels:
+            labels_serialized_dict[label.id] = label.serialize()
+        # Fetch Attributes
+        group_relations = Attribute_Template_Group.get_group_relations_list(session = session,
+                                                                            file_id_list = file_id_list)
+
+        group_rel_ids = [rel.attribute_template_group_id for rel in group_relations]
+        attribute_groups_serialized_dict = {}
+        for rel in group_relations:
+            if not attribute_groups_serialized_dict.get(rel.file_id):
+                attribute_groups_serialized_dict[rel.file_id] = [rel.attribute_template_group.serialize_with_attributes(session = session)]
+            else:
+                attribute_groups_serialized_dict[rel.file_id].append(rel.attribute_template_group.serialize_with_attributes(session = session))
+
         # In context of a Label File!!
         for file in working_dir_file_list:
 
@@ -517,6 +541,12 @@ class Project(Base, Caching):
             # so can use for other aspects assoiated with label
 
             if file.state != "removed":
+                serialized_file_data = file.serialize_base_file()
+                serialized_file_data['colour'] = file.colour
+                serialized_file_data['label'] = labels_serialized_dict.get(file.label_id)
+                serialized_file_data['attribute_group_list'] = attribute_groups_serialized_dict.get(file.id)
+
+
                 labels_out.append(file.serialize_with_label_and_colour(
                     session = session))
             # label_file_colour_map[file.id] = file.colour

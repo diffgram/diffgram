@@ -95,6 +95,17 @@ class LabelSchema(Base, SerializerMixin):
         result = query.all()
         return result
 
+    def get_label_files(self, session: Session, project_id: int):
+        query = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == self.id,
+            LabelSchemaLink.label_file_id != None
+        )
+        links = query.all()
+        result = []
+        for elm in links:
+            result.append(elm.label_file)
+        return result
+
 
 class LabelSchemaLink(Base, SerializerMixin):
     __tablename__ = 'label_schema_link'

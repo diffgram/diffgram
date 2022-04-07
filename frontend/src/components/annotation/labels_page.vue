@@ -1,13 +1,19 @@
 <template>
   <div>
     <div class="pa-4 ml-12">
-      <h1 class="mb-4 font-weight-light">Project/{{project_string_id}}/Schema/ <strong class="text--secondary" v-if="current_schema">{{current_schema.name}}</strong></h1>
+      <h1 class="mb-4 font-weight-light">Project/{{project_string_id}}/Schema/
+        <v-icon color="secondary">mdi-group</v-icon>
+        <span class="secondary--text" v-if="current_schema">{{current_schema.name}}
+        </span></h1>
     </div>
     <v-container class="d-flex flex-column">
       <v_error_multiple :error="error"></v_error_multiple>
 
       <div class="d-flex">
-        <schema_card_selector :schema_list="label_schema_list">
+        <schema_card_selector
+          @schema_selected="on_schema_selected"
+          ref="schema_selector"
+          :schema_list="label_schema_list">
         </schema_card_selector>
         <div class="d-flex flex-column">
           <div>
@@ -38,7 +44,7 @@ import Vue from "vue";
 import {create_event} from "../event/create_event";
 import schema_card_selector from './schema_card_selector'
 import instance_template_list from '../instance_templates/instance_template_list'
-import get_schemas from '../../services/labelServices'
+import {get_schemas} from '../../services/labelServices'
 
 export default Vue.extend({
   name: 'labels_page',
@@ -57,14 +63,19 @@ export default Vue.extend({
     }
   },
   computed: {},
-  mounted() {
+  async mounted() {
     this.add_visit_history_event();
-  },
-  async created() {
     await this.fetch_schemas();
 
   },
+  async created() {
+
+
+  },
   methods: {
+    on_schema_selected: function(schema){
+      this.current_schema = schema;
+    },
     fetch_schemas: async function(){
       let [result, error] = await get_schemas(this.project_string_id);
       if(error){
@@ -72,6 +83,7 @@ export default Vue.extend({
       }
       if(result){
         this.label_schema_list = result;
+        this.$refs.schema_selector.select_schema(this.label_schema_list[0]);
       }
     },
     add_visit_history_event: async function(){

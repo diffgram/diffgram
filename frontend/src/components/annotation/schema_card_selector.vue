@@ -34,13 +34,14 @@
           v-for="item in schema_list"
           :key="item.title"
           link
+          :class="item.id === selected_schema.id ? 'selected': ''"
         >
           <v-list-item-icon>
-            <v-icon>mdi-group</v-icon>
+            <v-icon :color="item.id === selected_schema.id ? 'secondary': ''">mdi-group</v-icon>
           </v-list-item-icon>
 
-          <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
+          <v-list-item-content @click="select_schema(item)" :class="item.id === selected_schema.id ? 'secondary--text': ''">
+            <v-list-item-title >{{ item.name }}</v-list-item-title>
           </v-list-item-content>
 
         </v-list-item>
@@ -59,12 +60,21 @@ export default {
   },
   data: function(){
     return {
-      new_schema_name: ''
+      new_schema_name: '',
+      selected_schema: {}
+    }
+  },
+  methods: {
+    select_schema: function(item){
+      this.selected_schema = item;
+      this.$emit('schema_selected',item)
     }
   }
 }
 </script>
 
 <style scoped>
-
+  .selected{
+    background: #e0e0e0;
+  }
 </style>

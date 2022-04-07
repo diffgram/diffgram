@@ -120,13 +120,13 @@ def api_get_labels(project_string_id):
     # Need to know what branch / version...
     # ie to get from project's master branch
     # version = project.master_branch.latest_version
-
+    schema_id = request.args.get('schema_id')
     with sessionMaker.session_scope() as session:
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
 
-        labels_out = project.get_label_list(session, directory = directory)
+        labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
             session = session)

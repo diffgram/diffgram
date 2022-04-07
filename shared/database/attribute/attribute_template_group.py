@@ -3,7 +3,7 @@ from shared.database.common import *
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
 from sqlalchemy.dialects.postgresql import JSONB
-
+from sqlalchemy.orm import joinedload
 
 class Attribute_Template_Group(Base):
     """
@@ -217,6 +217,15 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.id == sub_query.c.attribute_template_group_id)
 
         return query.all()
+
+    @staticmethod
+    def get_group_relations_list(session, file_id_list):
+
+        result = session.query(Attribute_Template_Group_to_File).options(
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
+
+        return result
 
     # General from project or group id
     @staticmethod
