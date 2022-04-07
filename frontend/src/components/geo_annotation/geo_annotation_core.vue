@@ -235,7 +235,6 @@ export default Vue.extend({
                     icon: "mdi-vector-polygon",
                 },
                 { name: "geo_box", display_name: "Box", icon: "mdi-checkbox-blank" },
-                { name: "tag", display_name: "Tag", icon: "mdi-tag" },
                 { name: "geo_point", display_name: "Point", icon: "mdi-circle-slice-8" },
                 { name: "geo_polyline", display_name: "Polyine", icon: "mdi-minus" },
                 {
