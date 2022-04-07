@@ -182,9 +182,9 @@ export default Vue.extend({
                     else if (instance.type === 'geo_box') {
                         const already_exists = this.existing_markers.find(marker => 
                             marker._bounds._northEast.lat === instance.bounds[0][0] &&
-                            marker._bounds._northEast.lng === instance.bounds[0][1] &&
+                            marker._bounds._northEast.lng === instance.bounds[1][1] &&
                             marker._bounds._southWest.lat === instance.bounds[1][0] &&
-                            marker._bounds._southWest.lng === instance.bounds[1][1] &&
+                            marker._bounds._southWest.lng === instance.bounds[0][1] &&
                             marker.options.color === instance.label_file.colour.hex
                         )
                         if (already_exists && instance.soft_delete) {
@@ -271,6 +271,27 @@ export default Vue.extend({
         draw_instance: function(e) {
             if (!this.draw_mode) return;
 
+            if (this.current_instance_type === 'geo_point') {
+                const point = L.point(e.layerX, e.layerY)
+                const unproject = this.map_instance.layerPointToLatLng(point)
+                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
+                const use_coords = {
+                    lat: unproject.lat - deltas[0],
+                    lng: unproject.lng - deltas[1]
+                }
+                const newPoint = new GeoPoint()
+                newPoint.create_frontend_instance(
+                    {lat: use_coords.lat, lng: use_coords.lng}, 
+                    { ...this.current_label }
+                )
+                this.instance_list.push([newPoint])
+                this.drawing_poly_path = []
+                const command = new CreateInstanceCommand([newPoint], this.instance_list)
+                this.command_manager.executeCommand(command)
+                this.draw_instances
+                return
+            }
+
             if (!this.drawing_instance) {
                 this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
                 this.drawing_instance = true
@@ -287,26 +308,6 @@ export default Vue.extend({
                 return
             }
 
-            if (this.current_instance_type === 'geo_point') {
-                const point = L.point(e.layerX, e.layerY)
-                const unproject = this.map_instance.layerPointToLatLng(point)
-                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
-                const use_coords = {
-                    lat: unproject.lat - deltas[0],
-                    lng: unproject.lng - deltas[1]
-                }
-
-                const newPoint = new GeoPoint()
-                newPoint.create_frontend_instance(
-                    {lat: use_coords.lat, lng: use_coords.lng}, 
-                    { ...this.current_label }
-                )
-                this.instance_list.push([newPoint])
-                const command = new CreateInstanceCommand([newPoint], this.instance_list)
-                this.command_manager.executeCommand(command)
-                this.draw_instances
-                return
-            }
 
             if (this.current_instance_type === 'geo_box') {
                 const newBox = new GeoPoly("geo_box")
@@ -321,6 +322,7 @@ export default Vue.extend({
                 this.drawing_instance = false
                 this.draw_init = null
                 this.drawing_latlng = null
+                this.drawing_poly_path = []
                 this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
                 this.existing_markers.push(this.draw_marker_instance)
                 return
@@ -345,8 +347,10 @@ export default Vue.extend({
                 this.drawing_instance = false
                 this.draw_init = null
                 this.drawing_latlng = null
+                this.drawing_poly_path = []
                 this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
                 this.existing_markers.push(this.draw_marker_instance)
+                return 
             }
 
         },

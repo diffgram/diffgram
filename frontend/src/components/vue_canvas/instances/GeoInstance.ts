@@ -79,8 +79,6 @@ export class GeoPoly extends Instance implements InstanceInterface {
     }
 }
 
-class GeoLine extends Instance {}
-
 export class GeoPoint extends Instance implements InstanceInterface {
     public origin: Origin;
     public type: string = "geo_point";
@@ -115,6 +113,3 @@ export class GeoPoint extends Instance implements InstanceInterface {
     }
 }
 
-class GeoTag extends Instance {}
-
-class GeoPoligon extends Instance {}
