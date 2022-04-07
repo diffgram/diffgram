@@ -288,7 +288,9 @@ export default Vue.extend({
                 this.drawing_poly_path = []
                 const command = new CreateInstanceCommand([newPoint], this.instance_list)
                 this.command_manager.executeCommand(command)
-                this.draw_instances
+                const marker = L.circle(use_coords, {radius: 1, color: this.current_label.colour.hex})
+                this.existing_markers.push(marker)
+                this.map_instance.addLayer(marker)
                 return
             }
 
