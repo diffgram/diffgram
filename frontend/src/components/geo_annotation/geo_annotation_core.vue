@@ -110,6 +110,12 @@ export default Vue.extend({
                 else if (this.current_instance_type === 'geo_box') {
                     marker = L.rectangle([[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], {color: this.current_label.colour.hex});
                 }
+                else if (this.current_instance_type === 'geo_polygon') {
+                    marker = L.polygon([...this.drawing_poly_path, this.drawing_latlng], {color: this.current_label.colour.hex}).addTo(this.map_instance);
+                }
+                else if (this.current_instance_type === 'geo_polyline') {
+                    marker = L.polyline([...this.drawing_poly_path, this.drawing_latlng], {color: this.current_label.colour.hex}).addTo(this.map_instance);
+                }
                 this.map_instance.addLayer(marker)
                 this.draw_marker_instance = marker
             }
@@ -209,6 +215,7 @@ export default Vue.extend({
             has_changed: false,
             //
             drawing_instance: false,
+            drawing_poly_path: [],
             draw_init: null,
             drawing_latlng: null,
             draw_marker_instance: null,
@@ -261,8 +268,25 @@ export default Vue.extend({
             this.current_center = [center.lat, center.lng]
             this.map_instance.setView([center.lat, center.lng], this.zoom)
         },
+        // Need to refactore this function because too many reoetiotions
         draw_instance: function(e) {
             if (!this.draw_mode) return;
+
+            if (!this.drawing_instance) {
+                this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
+                this.drawing_instance = true
+                const point = L.point(e.layerX, e.layerY)
+                const unproject = this.map_instance.layerPointToLatLng(point)
+                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
+                const use_coords = {
+                    lat: unproject.lat - deltas[0],
+                    lng: unproject.lng - deltas[1]
+                }
+                this.drawing_poly_path.push([use_coords.lat, use_coords.lng])
+                this.draw_init = use_coords
+                this.drawing_latlng = use_coords
+                return
+            }
 
             if (this.current_instance_type === 'geo_point') {
                 const point = L.point(e.layerX, e.layerY)
@@ -285,22 +309,6 @@ export default Vue.extend({
                 return
             }
 
-            this.$refs.map.addEventListener('mousemove', this.move_mouse_listener)
-
-            if (!this.drawing_instance) {
-                this.drawing_instance = true
-                const point = L.point(e.layerX, e.layerY)
-                const unproject = this.map_instance.layerPointToLatLng(point)
-                const deltas = [this.initial_center[0] - this.current_center[0], this.initial_center[1] - this.current_center[1]]
-                const use_coords = {
-                    lat: unproject.lat - deltas[0],
-                    lng: unproject.lng - deltas[1]
-                }
-                this.draw_init = use_coords
-                this.drawing_latlng = use_coords
-                return
-            }
-
             if (this.current_instance_type === 'geo_box') {
                 const newBox = new GeoPoly("geo_box")
                 newBox.create_frontend_instance(
@@ -317,6 +325,10 @@ export default Vue.extend({
                 this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
                 this.existing_markers.push(this.draw_marker_instance)
                 return
+            }
+
+            if (this.current_instance_type === 'geo_polygon' || this.current_instance_type === 'geo_polyline') {
+                this.drawing_poly_path.push([this.drawing_latlng.lat, this.drawing_latlng.lng])
             }
 
             if (this.current_instance_type === 'geo_circle') {
@@ -429,6 +441,26 @@ export default Vue.extend({
                 this.drawing_latlng = null
                 this.map_instance.removeLayer(this.draw_marker_instance)
                 this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+            }
+
+            if (e.keyCode === 13) {
+                if (this.drawing_instance && (this.current_instance_type === 'geo_polygon' || this.current_instance_type === 'geo_polyline')) {
+                    const newPoly = new GeoPoly(this.current_instance_type)
+                    newPoly.create_frontend_instance(
+                        [[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], 
+                        { ...this.current_label }
+                    )
+                    this.instance_list.push([newPoly])
+                    const command = new CreateInstanceCommand([newPoly], this.instance_list)
+                    this.command_manager.executeCommand(command)
+                    
+                    this.drawing_instance = false
+                    this.draw_init = null
+                    this.drawing_latlng = null
+                    this.drawing_poly_path = []
+                    this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+                    this.existing_markers.push(this.draw_marker_instance)
+                }
             }
         }
     }

@@ -45,6 +45,18 @@
                         >
                             mdi-checkbox-blank
                         </v-icon>
+                        <v-icon 
+                            v-if="item.type === 'geo_polygon'"
+                            :color="item.label_file.colour.hex"
+                        >
+                            mdi-vector-polygon
+                        </v-icon>
+                        <v-icon 
+                            v-if="item.type === 'geo_polyline'"
+                            :color="item.label_file.colour.hex"
+                        >
+                            mdi-minus
+                        </v-icon>
                     </td>
                     <td class="centered-table-items">
                         {{ item.label_file.label.name }}
