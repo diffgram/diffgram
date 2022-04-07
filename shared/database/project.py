@@ -495,11 +495,19 @@ class Project(Base, Caching):
         # Caution, don't do "state != "removed" here,
         # Since we may have removed label files
         # With active instances, and still need this for colour map
-        working_dir_file_list = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id).all()
+
+        working_dir_file_list_query = session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id)
 
         if schema_id is not None:
-            links = LabelSchema.get_label_files(session = session, project_id = self.id)
+            schema = LabelSchema.get_by_id(session = session, id = schema_id)
+            label_files = schema.get_label_files(session = session, project_id = self.id)
+            link_file_id_list = [l.id for l in label_files]
+            working_dir_file_list_query = working_dir_file_list_query.filter(
+                File.id.in_(link_file_id_list)
+            )
+
+        working_dir_file_list = working_dir_file_list_query.all()
         labels_out = []
 
         # Now getting label file colour map from working dir

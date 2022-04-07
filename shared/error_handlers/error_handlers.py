@@ -21,7 +21,7 @@ def handle_exception(e):
     if settings.DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE:
         payload['trace'] = exc_traceback
     logger.error(exc_traceback)
-    return jsonify(payload), e.code
+    return jsonify(payload), e.code if e and hasattr(e, 'code') else 500
 
 
 @current_app.errorhandler(Forbidden)

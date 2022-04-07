@@ -166,3 +166,4 @@ def do_routes_importing():
 
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
+    from methods.labels.label_schema_update import api_label_schema_update

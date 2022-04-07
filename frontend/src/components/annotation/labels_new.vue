@@ -70,6 +70,9 @@ import Vue from "vue"; export default Vue.extend( {
   props: {
     menu_open: {
       default: false
+    },
+    schema_id: {
+      required: true
     }
   },
 
@@ -126,7 +129,8 @@ import Vue from "vue"; export default Vue.extend( {
         '/label/new', {
 
           colour: this.colour,
-          name: this.new_label_name
+          name: this.new_label_name,
+          schema_id: this.schema_id
 
       }).then(response => {
 

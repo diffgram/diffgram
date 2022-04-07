@@ -8,7 +8,7 @@
         <v-flex>
 
           <!-- TODO make max height the height of available space? -->
-          <v-card style="overflow-y:auto; max-height: 700px" elevation="3">
+          <v-card style="" elevation="3">
 
             <v-card-title class="d-flex align-center">
               Label Templates
@@ -29,7 +29,9 @@
 
                 <template slot="content">
 
-                  <v_labels_new @label_created="on_label_created">
+                  <v_labels_new
+                    :schema_id="schema_id"
+                    @label_created="on_label_created">
                   </v_labels_new>
 
                 </template>
@@ -44,36 +46,6 @@
                      icon>
                 <v-icon>help</v-icon>
               </v-btn>
-
-              <!-- For admins -->
-
-
-              <!-- refresh_labels_function is called
-                   on return because that updates the instance list /
-                  attribute group information (for annotation use,
-                  not managing it)-->
-
-              <!-- The 'set_user_is_typing_or_menu_open' is for disabling hotkeys -->
-
-              <!-- Attributes -->
-
-              <!-- TODO, do we need min width? it seems to nicely detect it by itself...
-                  min-width="600"
-                  And do we event want or need a direction here?
-
-                  [ ] is the new update return value working as expected?
-                  -->
-
-              <!-- Hide while WIP. TODO move to regular table -->
-              <!--
-              <v-text-field v-model="search"
-                            append-icon="search"
-                            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                            label="Search"
-                            single-line
-                            hide-details></v-text-field>
-              -->
 
               <tooltip_button
                 v-if="show_create_samples"
@@ -107,6 +79,7 @@
             >
 
               <regular_table
+                style="height: 100%"
                 :header_list="header_list"
                 :column_list="column_list"
                 datacy="labels_table"
@@ -310,21 +283,6 @@
 
           </v-card>
 
-          <!--
-          Only show on label main page
-          as known bug about it refreshing-->
-
-          <div class="pt-4" v-if="show_attributes_table">
-            <v-card>
-              <attribute_home :project_string_id="project_string_id">
-
-              </attribute_home>
-            </v-card>
-          </div>
-          <!--
-           Move attributes to be more visible to help reduce confusion.
-          -->
-
           <v-card v-if="show_edit_templates">
             <v-alert type="info"
                      dismissible
@@ -420,6 +378,7 @@
 
       props: {
         'project_string_id': {},
+        'schema_id': {},
         'with_next_instance_buttons': {
           default: false
         },
@@ -463,6 +422,9 @@
 
       },
       watch: {
+        schema_id: function(){
+          this.refresh_labels_function()
+        },
         loading: function (bool) {
           // this is used to detect change from parent loading
           this.loading_prop = bool

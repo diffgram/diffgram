@@ -32,3 +32,34 @@ export const get_schemas = async (project_string_id) => {
     return [null, e]
   }
 }
+
+export const create_schema = async (project_string_id, name) => {
+  try {
+    const response = await axios.post(
+      `/api/v1/project/${project_string_id}/labels-schema/new`,
+      {
+        name: name
+      }
+    );
+    return [response.data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
+export const update_schema = async (project_string_id, schema) => {
+  try {
+    const response = await axios.patch(
+      `/api/v1/project/${project_string_id}/labels-schema/${schema.id}/update`,
+      {
+        name: schema.name,
+        archived: schema.archived
+      }
+    );
+    return [response.data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}

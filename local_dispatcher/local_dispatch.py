@@ -47,6 +47,7 @@ def route_same_host(path):
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
 
     try:
+
         resp = requests.request(
             method = request.method,
             url = host + path_with_params,
@@ -132,8 +133,8 @@ def route_multi_host(path):
     return response
 
 
-@app.route('/', defaults = {'path': ''}, methods = ['GET', 'POST'])
-@app.route('/<path:path>', methods = ['GET', 'POST'])
+@app.route('/', defaults = {'path': ''}, methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
+@app.route('/<path:path>',  methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def _proxy(path):
     print(f"_proxy:*--------> {path}")
     logging.warning(f"_proxy:*--------> {path}")

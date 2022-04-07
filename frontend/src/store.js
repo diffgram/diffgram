@@ -769,6 +769,26 @@ const video = {
   }
 }
 
+const snackbar = {
+  state: {
+    show_snackbar: false,
+    text: '',
+    color: 'primary',
+  },
+  mutations: {
+    display_snackbar(state, payload) {
+      state.text = payload.text
+      state.color = payload.color
+      state.show_snackbar = true
+    },
+    hide_snackbar(state) {
+      state.text = ''
+      state.color = 'primary'
+      state.show_snackbar = false
+    },
+  }
+}
+
 const modulesToOmit = ['public_project', 'network']
 const my_store = new Vuex.Store({
   modules: {
@@ -795,7 +815,8 @@ const my_store = new Vuex.Store({
     input: input,
     clipboard: clipboard,
     public_project: public_project,
-    ui_schema: ui_schema
+    ui_schema: ui_schema,
+    snackbar: snackbar
   },
   plugins: [createPersistedState({
 

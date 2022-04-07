@@ -6,19 +6,27 @@
              class="justify-start mr-6">
     <v-card-title class="d-flex justify-space-between">
       Schemas
+
       <button_with_menu
         tooltip_message="Create Schema"
         icon="mdi-plus"
         color="primary"
+        ref="menu"
+        v-model="menu_open"
       >
 
         <template slot="content">
 
-          <v-card>
+          <v-card elevation="0" style="min-width: 500px">
             <v-card-title>Create Schema:</v-card-title>
             <v-card-text>
+              <v_error_multiple :error="error"></v_error_multiple>
               <v-text-field v-model="new_schema_name"></v-text-field>
             </v-card-text>
+            <v-card-actions class="d-flex justify-lg-space-between align-center">
+              <v-btn color="primary" small><v-icon>mdi-close</v-icon>Cancel</v-btn>
+              <v-btn color="success" small @click="create_schema"><v-icon>mdi-plus</v-icon>Create</v-btn>
+            </v-card-actions>
           </v-card>
 
         </template>
@@ -40,8 +48,10 @@
             <v-icon :color="item.id === selected_schema.id ? 'secondary': ''">mdi-group</v-icon>
           </v-list-item-icon>
 
-          <v-list-item-content @click="select_schema(item)" :class="item.id === selected_schema.id ? 'secondary--text': ''">
+          <v-list-item-content @click="select_schema(item)"
+                               :class="`${item.id === selected_schema.id ? 'secondary--text': ''} d-flex space-between align-center`">
             <v-list-item-title >{{ item.name }}</v-list-item-title>
+
           </v-list-item-content>
 
         </v-list-item>
@@ -51,23 +61,60 @@
 </template>
 
 <script>
+import {create_schema} from '../../services/labelServices'
+import sillyname from 'sillyname';
+
 export default {
   name: "schema_card_selector",
   props: {
+    'project_string_id': {
+      default: null,
+      required: true
+    },
     'schema_list':{
 
     }
   },
   data: function(){
     return {
-      new_schema_name: '',
-      selected_schema: {}
+      new_schema_name: sillyname().split(" ")[0],
+      selected_schema: {},
+      menu_open: false,
+      error: null,
     }
   },
   methods: {
     select_schema: function(item){
       this.selected_schema = item;
       this.$emit('schema_selected',item)
+    },
+    create_schema: async function(){
+      if(!this.$props.project_string_id){
+        this.error = {
+          project: 'Provide project_string_id.'
+        }
+        return
+      }
+      if(!this.new_schema_name || this.new_schema_name === ''){
+        this.error = {
+          name: 'Name must not be empty.'
+        }
+        return
+      }
+      let [result, error] = await create_schema(this.$props.project_string_id, this.new_schema_name)
+      if(error){
+        this.error = this.$route_api_errors(error)
+
+      }
+      if(result){
+        let new_schema = result;
+        this.$store.commit('display_snackbar', {
+          text: 'Schema created succesfully.',
+          color: 'success'
+        })
+        this.$refs.menu.close_menu();
+        this.$emit('schema_created', new_schema)
+      }
     }
   }
 }

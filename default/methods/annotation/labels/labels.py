@@ -16,7 +16,7 @@ from shared.database.video.video import Video
 
 from shared.helpers.permissions import getUserID
 from shared.helpers.permissions import get_gcs_service_account
-
+from shared.database.labels.label_schema import LabelSchema, LabelSchemaLink
 from shared.database.source_control.working_dir import WorkingDirFileLink
 
 
@@ -35,6 +35,7 @@ def api_label_new(project_string_id):
     spec_list = [
         {'name': str},
         {'colour': None},
+        {'schema_id': {"type": int, "required": True}},
         {"default_sequences_to_single_frame": {
             'default': False,
             'kind': bool
@@ -48,8 +49,8 @@ def api_label_new(project_string_id):
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-
-        label_file = new_label_file_object_core(session, input, project_string_id, log)
+        member = get_member(session)
+        label_file = new_label_file_object_core(session, input, project_string_id, input['schema_id'], member, log)
 
         if not label_file:
             return jsonify(log = log), 400
@@ -57,11 +58,15 @@ def api_label_new(project_string_id):
         return jsonify(log = log, label = label_file.serialize_with_label_and_colour(session)), 200
 
 
-def new_label_file_object_core(session, input, project_string_id, log):
+def new_label_file_object_core(session, input, project_string_id, schema_id, member, log):
     """
     Creates Label File specific to this project
     """
     project = Project.get_project(session, project_string_id)
+
+    if not schema_id:
+        log['error'] = 'Provide Schema_id'
+        return None
 
     colour = input['colour']
 
@@ -82,6 +87,9 @@ def new_label_file_object_core(session, input, project_string_id, log):
 
     if not label_file:
         return None
+
+    schema = LabelSchema.get_by_id(session, schema_id)
+    schema.add_label_file(session = session, label_file_id = label_file.id, member_created_id = member.id)
 
     member = get_member(session = session)
 
@@ -121,11 +129,15 @@ def api_get_labels(project_string_id):
     # ie to get from project's master branch
     # version = project.master_branch.latest_version
     schema_id = request.args.get('schema_id')
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
-
+        schema = LabelSchema.get_by_id(session = session, id = schema_id)
+        if schema and schema.project_id != project.id:
+            log['error']['project'] = 'Schema does not belong to this project'
+            return jsonify(log), 400
         labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
