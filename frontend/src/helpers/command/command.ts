@@ -1,4 +1,4 @@
-import { GeoBox, GeoCircle, GeoPoint } from "../../components/vue_canvas/instances/GeoInstance";
+import { GeoPoly, GeoCircle, GeoPoint } from "../../components/vue_canvas/instances/GeoInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
@@ -37,8 +37,12 @@ export abstract class Command implements CommandInterface {
             initializedInstance = new GeoPoint()
         }
 
-        if (instance.type === 'geo_box') {
-            initializedInstance = new GeoBox()
+        if (
+            instance.type === 'geo_box' || 
+            instance.type === 'geo_polygon' || 
+            instance.type === 'geo_polyline'
+        ) {
+            initializedInstance = new GeoPoly(instance.type)
         }
 
         initializedInstance.populate_from_instance_obj(newInstance)

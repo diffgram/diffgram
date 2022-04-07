@@ -44,12 +44,13 @@ export class GeoCircle extends Instance implements InstanceInterface {
     }
 }
 
-export class GeoBox extends Instance implements InstanceInterface {
+export class GeoPoly extends Instance implements InstanceInterface {
     public bounds: Array<number>;
-    public type: string = "geo_box";
+    public type: string;
 
-    constructor() {
+    constructor(type: string) {
         super();
+        this.type = type;
     }
 
     public create_instance() {}

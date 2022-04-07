@@ -55,7 +55,7 @@ import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
 import { CreateInstanceCommand, DeleteInstanceCommand, UpdateInstanceLabelCommand } from "../../helpers/command/available_commands"
-import { GeoBox, GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
+import { GeoPoly, GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
 import 'leaflet/dist/leaflet.css';
 
 export default Vue.extend({
@@ -223,14 +223,14 @@ export default Vue.extend({
             current_instance_type: "geo_circle",
             instance_type_list: [
                 {
-                    name: "polygon",
+                    name: "geo_polygon",
                     display_name: "Polygon",
                     icon: "mdi-vector-polygon",
                 },
                 { name: "geo_box", display_name: "Box", icon: "mdi-checkbox-blank" },
                 { name: "tag", display_name: "Tag", icon: "mdi-tag" },
                 { name: "geo_point", display_name: "Point", icon: "mdi-circle-slice-8" },
-                { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
+                { name: "geo_polyline", display_name: "Polyine", icon: "mdi-minus" },
                 {
                     name: "geo_circle",
                     display_name: "Circle",
@@ -302,7 +302,7 @@ export default Vue.extend({
             }
 
             if (this.current_instance_type === 'geo_box') {
-                const newBox = new GeoBox()
+                const newBox = new GeoPoly("geo_box")
                 newBox.create_frontend_instance(
                     [[this.draw_init.lat, this.draw_init.lng], [this.drawing_latlng.lat, this.drawing_latlng.lng]], 
                     { ...this.current_label }
@@ -319,22 +319,25 @@ export default Vue.extend({
                 return
             }
 
-            const newCircle = new GeoCircle()
-            const radius = this.getDistance(this.draw_init, this.drawing_latlng)
-            newCircle.create_frontend_instance(
-                {lat: this.draw_init.lat, lng: this.draw_init.lng}, 
-                radius, 
-                { ...this.current_label }
-            )
-            this.instance_list.push([newCircle])
-            const command = new CreateInstanceCommand([newCircle], this.instance_list)
-            this.command_manager.executeCommand(command)
+            if (this.current_instance_type === 'geo_circle') {
+                const newCircle = new GeoCircle()
+                const radius = this.getDistance(this.draw_init, this.drawing_latlng)
+                newCircle.create_frontend_instance(
+                    {lat: this.draw_init.lat, lng: this.draw_init.lng}, 
+                    radius, 
+                    { ...this.current_label }
+                )
+                this.instance_list.push([newCircle])
+                const command = new CreateInstanceCommand([newCircle], this.instance_list)
+                this.command_manager.executeCommand(command)
+    
+                this.drawing_instance = false
+                this.draw_init = null
+                this.drawing_latlng = null
+                this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
+                this.existing_markers.push(this.draw_marker_instance)
+            }
 
-            this.drawing_instance = false
-            this.draw_init = null
-            this.drawing_latlng = null
-            this.$refs.map.removeEventListener('mousemove', this.move_mouse_listener)
-            this.existing_markers.push(this.draw_marker_instance)
         },
         move_mouse_listener: function(e) {
             const point = L.point(e.layerX, e.layerY)
