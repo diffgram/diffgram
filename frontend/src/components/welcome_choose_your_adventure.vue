@@ -14,14 +14,26 @@
           <div class="text-center pt-2 d-flex">
 
             <div class="pa-2">
-              <v-btn  large
+              <v-btn  v-if="$store.state.system && $store.state.system.is_open_source == false"                
+                      large
                       outlined
                       color="primary"
                       href="https://diffgram.com/studio/annotate/coco-dataset/explorer"
                       target="_blank">
                 Explore Sample
               </v-btn>
+
+              <v-btn  v-if="$store.state.system && $store.state.system.is_open_source == true"                
+                      large
+                      outlined
+                      color="primary"
+                      href="https://diffgram.com/studio/annotate/coco-dataset/explorer"
+                      target="_blank">
+                Explore Sample on Diffgram.com
+              </v-btn>
+             
             </div>
+
 
             <div class="pa-2">
               <v-btn  large
@@ -98,7 +110,7 @@ export default Vue.extend( {
 
   },
   created() {
-
+    this.$store.commit('check_is_open_source')
   },
   computed: {
 
