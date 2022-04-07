@@ -146,6 +146,7 @@ export default Vue.extend({
                 this.instance_list.get_all().map(instance => {
                     if (instance.type === 'geo_circle') {
                         const already_exists = this.existing_markers.find(marker => 
+                            marker._latlng && marker.options &&
                             marker.options.radius === instance.radius && 
                             marker._latlng.lat === instance.origin.lat &&
                             marker._latlng.lng === instance.origin.lng &&
@@ -164,6 +165,7 @@ export default Vue.extend({
                     }
                     else if (instance.type === 'geo_point') {
                         const already_exists = this.existing_markers.find(marker => 
+                            marker._latlng &&
                             marker._latlng.lat === instance.origin.lat &&
                             marker._latlng.lng === instance.origin.lng &&
                             marker.options.color === instance.label_file.colour.hex
@@ -181,6 +183,7 @@ export default Vue.extend({
                     }
                     else if (instance.type === 'geo_box') {
                         const already_exists = this.existing_markers.find(marker => 
+                            marker._bounds && marker._bounds._northEast && marker._bounds._southWest &&
                             marker._bounds._northEast.lat === instance.bounds[0][0] &&
                             marker._bounds._northEast.lng === instance.bounds[1][1] &&
                             marker._bounds._southWest.lat === instance.bounds[1][0] &&
