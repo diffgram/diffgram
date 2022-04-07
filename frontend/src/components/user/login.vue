@@ -61,20 +61,22 @@
             </v-alert>
 
             <v-layout>
-              <v-flex>
-                <v-btn
-                  v-if="mode == 'password'"
-                  @click="login"
-                  color="primary"
-                  :loading="loading"
-                  data-cy="login"
-                  @click.native="loader = 'loading'"
-                  :disabled="loading"
-                >
-                  Login to Diffgram
-                </v-btn>
+              <v-btn
+                v-if="mode == 'password'"
+                @click="login"
+                large
+                color="primary"
+                :loading="loading"
+                data-cy="login"
+                @click.native="loader = 'loading'"
+                :disabled="loading"
+              >
+                Login
+              </v-btn>
 
+              <div class= "pl-2">
                 <v-btn
+                  large
                   v-if="mailgun"
                   @click="start_magic_login_api"
                   color="primary"
@@ -85,8 +87,8 @@
                   <v-icon left>mdi-auto-fix</v-icon>
                   Send Magic Link
                 </v-btn>
-
                 <v-btn
+                  large
                   v-if="mode != 'password'"
                   color="blue darken-1"
                   id="show_pass"
@@ -95,45 +97,46 @@
                   text
                   @click="mode = 'password'"
                 >
-                  Type password instead
+                  Use password
                 </v-btn>
-              </v-flex>
+               </div>
             </v-layout>
 
             <br />
 
-            <!-- TODO add to only show if not in component? -->
-            <!--
-      <v-btn color="blue darken-1" text
-             @click.native="$emit('exit', true)">Cancel</v-btn>
-      -->
-
               <v-layout>
-                <v-flex>
-                  <v-btn
-                    @click="route_account_new"
-                    color="primary"
-                    text
-                    :loading="loading"
-                    @click.native="loader = 'loading'"
-                    :disabled="loading"
-                  >
-                    <v-icon left>mdi-plus</v-icon>
-                    Create new account
-                  </v-btn>
 
-                  <v-btn
-                    @click="route_account_new"
-                    color="primary"
-                    text
+                 <v-spacer></v-spacer>
+
+                <v-btn
+                  @click="route_account_new"
+                  color="primary"
+                  text
+                  :loading="loading"
+                  @click.native="loader = 'loading'"
+                  :disabled="loading"
+                >
+                  <v-icon left>mdi-plus</v-icon>
+                  Create
+                </v-btn>
+
+                <tooltip_button
+                    tooltip_message="Join Slack Community"
+                    href="https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg"
+                    target="_blank"
+                    icon="mdi-slack"
+                    :icon_style="true"
+                    color="primary">
+                </tooltip_button>
+
+                <tooltip_button
+                    tooltip_message="Help"
                     href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
                     target="_blank"
-                    :disabled="loading"
-                  >
-                    <v-icon left>mdi-lifebuoy</v-icon>
-                    Help
-                  </v-btn>
-                </v-flex>
+                    icon="mdi-lifebuoy"
+                    :icon_style="true"
+                    color="primary">
+                </tooltip_button>
               </v-layout>
           </v-container>
         </div>

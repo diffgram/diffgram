@@ -3,33 +3,9 @@ import Router from 'vue-router'
 
 const routerOptions = [
   {
-    // home
-    path: '/',
-    component: 'marketing/home_unbounce',
-    meta: {external_page: true}
-  },
-  {
-    path: '/what_is_tdm',
-    component: 'marketing/what_is_tdm',
-    alias: ['/tdm'],
-    meta: {external_page: true}
-  },
-  {
-    path: '/install',
-    alias: ['/i'],
-    component: 'marketing/marketing_install',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
     path: '/learn/build_vs_buy',
     component: 'marketing/build_vs_buy',
     alias: ['/build_vs_buy'],
-    meta: {external_page: true}
-  },
-  {
-    path: '/pricing',
-    component: 'products/pricing',
     meta: {external_page: true}
   },
   {
@@ -43,11 +19,6 @@ const routerOptions = [
   {
     path: '/policies',
     component: 'company/policies',
-    meta: {external_page: true}
-  },
-  {
-    path: '/about',
-    component: 'company/about',
     meta: {external_page: true}
   },
   {
@@ -399,8 +370,23 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/welcome/builder',
-    component: 'annotation/welcome_builder',
+    path: '/welcome',
+    component: 'welcome_builder',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/social',
+    component: 'welcome_social',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/verify',
+    component: 'welcome_email_verify',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/adventure',
+    component: 'welcome_choose_your_adventure',
     meta: {requiresAuth: true}
   },
   {
@@ -493,37 +479,15 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/home/dashboard',
+    path: '/',
     component: 'user/home/dashboard',
+    alias: ['/home/dashboard'],
     props: false,
     meta: {
       requiresAuth: true,
       title: "Dashboard"
       }
   },
-  {
-    path: '/software',
-    component: 'marketing/software_marketing_unbounce',
-    props: false,
-    meta: {
-      requiresAuth: false,
-      title: "Software"
-    }
-  },
-  {
-    path: '/data_platform',
-    component: 'marketing/data_platform_signup_marketing_unbounce',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/pro',
-    alias: ['/pros'],
-    component: 'marketing/pro_signup_marketing_unbounce',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-
   {
     path: '/user/new',
     alias: ['/user/data_platform/new'],
