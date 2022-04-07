@@ -7,12 +7,16 @@
     </v-card-title>
     <v-card-text class="black--text">
       For Data Science & Software Engineering.
+
+      <!-- Pro Network not supported here yet --> 
+      <!--
       Bring your Team (SaaS or On-Prem). Optionally use The Fully Managed Pro Network
       <a class="pa-4"
           href="https://diffgram.readme.io/docs/create-tasks-for-pro-network"
           target="_blank">
           Learn More About the Pro Network
       </a>
+        -->
     </v-card-text>
     <v-card-actions>
       <v-btn  color="primary"
@@ -29,6 +33,8 @@
 
   <div class="pa-4"> </div>
 
+  <!-- Pro Network not supported here yet --> 
+  <!-- 
   <v-card>
     <v-card-title>
       Supervise AI
@@ -48,6 +54,8 @@
       </v-btn>
     </v-card-actions>
   </v-card>
+  -->
+
 </v-col>
 </div>
 </template>

@@ -39,6 +39,7 @@ export const get_default_status = async () => {
 }
 
 
+// or $store.commit('check_is_open_source') and $store.state.system.is_open_source
 export const is_open_source = async () => {
   try {
     const { data } = await axios.get('/api/configs/is-open-source')

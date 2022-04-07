@@ -769,6 +769,22 @@ const video = {
   }
 }
 
+export const system = {
+  state: {
+    is_open_source: undefined
+  },
+  mutations: {
+    check_is_open_source(state) {
+      if (window.location && window.location.hostname == "127.0.0.1") {
+        state.is_open_source = true
+        }
+      else {
+        state.is_open_source = false
+      }
+    },
+  }
+}
+
 const modulesToOmit = ['public_project', 'network']
 const my_store = new Vuex.Store({
   modules: {
@@ -795,7 +811,8 @@ const my_store = new Vuex.Store({
     input: input,
     clipboard: clipboard,
     public_project: public_project,
-    ui_schema: ui_schema
+    ui_schema: ui_schema,
+    system: system
   },
   plugins: [createPersistedState({
 
@@ -814,5 +831,6 @@ const my_store = new Vuex.Store({
 if (window.Cypress) {
   window.__store__ = my_store
 }
+
 
 export default my_store

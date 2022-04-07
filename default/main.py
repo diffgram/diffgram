@@ -82,6 +82,13 @@ def apply_security_rules(response):
 	return response
 
 
+@app.route('/install', defaults={'path' : ''}, methods=['GET'])
+@app.route('/install/', defaults={'path' : ''}, methods=['GET'])
+@app.route('/install/<path:path>', methods=['GET'])
+def install_redirect(path):
+	return redirect(f"https://diffgram.readme.io/install/{path}", code=301)
+
+
 @app.route('/docs', defaults={'path' : ''}, methods=['GET'])
 @app.route('/docs/', defaults={'path' : ''}, methods=['GET'])
 @app.route('/docs/<path:path>', methods=['GET'])
