@@ -23,6 +23,7 @@
           v-if="!changing_file"
           class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
+          :label_schema="current_label_schema"
           :model_run_id_list="model_run_id_list"
           :model_run_color_list="model_run_color_list"
           :task="task"
@@ -39,6 +40,7 @@
           :global_attribute_groups_list="global_attribute_groups_list"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
+          @change_label_schema="on_change_label_schema"
           @set_file_list="set_file_list"
           @request_new_task="change_task"
           @replace_file="current_file = $event"
@@ -163,6 +165,8 @@ import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import {get_labels} from '../../services/labelServices';
+import {get_schemas} from "../../services/labelServices";
+
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import Vue from "vue";
 
@@ -196,10 +200,12 @@ export default Vue.extend({
   data() {
     return {
       show_snackbar: false,
+      schema_list_loading: false,
       dialog: false,
       changing_file: false,
       enabled_edit_schema: false,
       user_has_credentials: false,
+      current_label_schema: null,
       credentials_granted: true,
       initializing: true,
       snackbar_message: "",
@@ -211,6 +217,7 @@ export default Vue.extend({
       request_save: false,
       model_run_id_list: [],
       missing_credentials: [],
+      label_schema_list: [],
 
       view_only: false,
 
@@ -284,7 +291,7 @@ export default Vue.extend({
       this.loading_project = false; // caution some assumptions around this flag for media loading
     }
     this.initializing = true
-    await this.get_labels_from_project();
+
     this.get_model_runs_from_query(this.$route.query);
     if (this.$route.query.view_only) {
       this.view_only = true;
@@ -313,11 +320,14 @@ export default Vue.extend({
           this.show_missing_credentials_dialog();
         }
       } else if (this.$props.file_id_prop) {
+        await this.fetch_schema_list()
         await this.fetch_single_file();
       } else {
+        await this.fetch_schema_list()
         await this.fetch_project_file_list();
       }
     }
+    await this.get_labels_from_project();
     this.initializing = false
   },
   computed: {
@@ -397,6 +407,25 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_change_label_schema: function(schema){
+
+      this.current_label_schema = schema;
+      this.labels_list_from_project = null;
+      this.get_labels_from_project()
+    },
+    fetch_schema_list: async function(){
+      this.schema_list_loading = true
+      let [result, error] = await get_schemas(this.project_string_id);
+      if(error){
+        this.error = this.$route_api_errors(error);
+        this.schema_list_loading = false;
+      }
+      if(result){
+        this.label_schema_list = result;
+        this.current_label_schema = this.label_schema_list[0];
+      }
+      this.schema_list_loading = false;
+    },
     show_missing_credentials_dialog: function(){
       if(this.$refs.no_credentials_dialog){
         this.$refs.no_credentials_dialog.open()
@@ -472,8 +501,14 @@ export default Vue.extend({
       if (!this.computed_project_string_id) {
         return
       }
+      if(!this.current_label_schema){
+        this.error = {
+          current_label_schema: 'Please set the curret label schema'
+        }
+        return
+      }
 
-      let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+      let [result, error] = await get_labels(this.project_string_id, this.current_label_schema.id)
       if(error){
         console.error(error)
         return

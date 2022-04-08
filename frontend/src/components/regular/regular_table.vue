@@ -7,6 +7,8 @@
         -->
 
       <v-data-table :items="item_list"
+                    :search="search"
+                    :custom-filter="on_search"
                     :items-per-page="items_per_page"
                     :headers="headers_view"
                     :class="`elevation-${elevation}`"
@@ -14,7 +16,16 @@
                     :hide-default-footer="hidedefaultfooter"
                     :data-cy="datacy"
                     v-model="selected_internal">
-
+        <template v-slot:top>
+          <v-text-field
+            style="width: 450px"
+            v-if="searchable"
+            v-model="search"
+            prepend-icon="mdi-magnify"
+            label="Search Labels"
+            class="mt-0 pt-0 ml-auto"
+          ></v-text-field>
+        </template>
         <!-- appears to have to be item for vuetify syntax-->
         <template slot="item" slot-scope="props">
 
@@ -58,7 +69,7 @@
                     :item="props.item"
                     :index="props.index"
                     >
-              </slot>            
+              </slot>
 
             </td>
 
@@ -177,6 +188,10 @@ export default Vue.extend( {
       default: null,
       type: Array
     },
+    'on_search':{
+      default: undefined,
+      type: Function
+    },
     'column_list': { // array of strings , the "selected" columns
       type: Array
     },
@@ -186,6 +201,9 @@ export default Vue.extend( {
     },
     'header_list': {  // array of dicts
       type: Array
+    },
+    'searchable':{
+      default: false
     },
     // built in vue js
     // this assumes we want to propgate "selected" up this way???
@@ -201,7 +219,7 @@ export default Vue.extend( {
       type: Boolean
     },
     'items_per_page':{
-      default: 25
+      default: undefined
     },
     // can you even disable a whole table?
     // apparently there is a 'loading' thing.
@@ -217,7 +235,7 @@ export default Vue.extend( {
   },
   data() {
     return {
-
+      search: '',
       row_hover_index: -1,
 
       selected_internal: [],
@@ -247,7 +265,7 @@ export default Vue.extend( {
            output_headers.push(header)
         }
       }
-      // start legacy, push headers without a defined header_string_id 
+      // start legacy, push headers without a defined header_string_id
       for (let header of this.header_list) {
         if (!header.header_string_id){
           output_headers.push(header)
@@ -260,6 +278,9 @@ export default Vue.extend( {
   },
   created(){
     this.selected_internal = this.value
+    if(this.items_per_page){
+      this.options.itemsPerPage = this.items_per_page
+    }
   },
 
   watch: {

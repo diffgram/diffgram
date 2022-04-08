@@ -1,6 +1,7 @@
 <template>
   <div id="annotation_core">
     <ui_schema_context_menu
+      :schema_id="label_schema.id"
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
       :label_settings="label_settings"
@@ -26,9 +27,11 @@
                 : save_loading_image
             "
             :annotations_loading="annotations_loading"
+            :label_schema="label_schema"
             :loading="loading"
             :view_only_mode="view_only_mode"
             :label_settings="label_settings"
+
             :project_string_id="project_string_id"
             :task="task"
             :file="file"
@@ -45,6 +48,7 @@
             :is_keypoint_template="is_keypoint_template"
             :enabled_edit_schema="enabled_edit_schema"
             :annotation_show_on="annotation_show_on"
+            @change_label_schema="on_change_label_schema"
             @label_settings_change="update_label_settings($event)"
             @change_label_file="change_current_label_file_template($event)"
             @update_label_file_visibility="update_label_file_visible($event)"
@@ -889,6 +893,7 @@
     -->
 
     <instance_template_creation_dialog
+      :schema_id="label_schema.id"
       :project_string_id="project_string_id"
       :instance_template="current_instance_template"
       ref="instance_template_creation_dialog"
@@ -1043,6 +1048,9 @@ export default Vue.extend({
     project_string_id: {
       default: null,
       type: String,
+    },
+    label_schema:{
+      required: true
     },
     // TODO review this being a prop...
     job_id: {
@@ -2163,6 +2171,9 @@ export default Vue.extend({
   },
 
   methods: {
+    on_change_label_schema: function(schema){
+      this.$emit('change_label_schema', schema)
+    },
     on_keypoints_mode_set: function(mode){
       this.instance_context.keypoints_draw_mode = mode;
       this.current_instance_template.mode = mode;
@@ -2750,6 +2761,7 @@ export default Vue.extend({
         const response = await axios.post(url, {
           name: name,
           reference_height: this.canvas_height,
+          schema_id: this.label_schema.id,
           reference_width: this.canvas_width,
           instance_list: [instance],
         });
@@ -2916,7 +2928,7 @@ export default Vue.extend({
       this.loading_instance_templates = true;
       this.canvas_element = document.getElementById("my_canvas");
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
-      const [data, error] = await getInstanceTemplatesFromProject(this.$props.project_string_id);
+      const [data, error] = await getInstanceTemplatesFromProject(this.$props.project_string_id, this.label_schema.id);
       if (data && data.instance_template_list) {
         this.instance_template_list =
           data.instance_template_list.map((instance_template) => {

@@ -95,17 +95,20 @@ class LabelSchema(Base, SerializerMixin):
         result = query.all()
         return result
 
-    def get_label_files(self, session: Session):
+    def get_label_files(self, session: Session, ids_only = False):
         query = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == self.id,
             LabelSchemaLink.label_file_id != None
         )
         links = query.all()
         result = []
-        for elm in links:
-            result.append(elm.label_file)
-        return result
-
+        if not ids_only:
+            for elm in links:
+                result.append(elm.label_file)
+            return result
+        else:
+            result = [l.label_file_id for l in links]
+            return result
     def get_attribute_groups(self, session: Session):
         query = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == self.id,

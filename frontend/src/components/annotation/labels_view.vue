@@ -80,6 +80,9 @@
 
               <regular_table
                 style="height: 100%"
+                :items_per_page="25"
+                :on_search="on_label_search"
+                :searchable="true"
                 :header_list="header_list"
                 :column_list="column_list"
                 datacy="labels_table"
@@ -631,6 +634,13 @@
       },
 
       methods: {
+        on_label_search:function(value, search, item){
+          if(!item.label){
+            return false
+          }
+          return item.label.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+          console.log('search', value, search, item)
+        },
         open_sample_labels_dialog: function(){
           this.dialog_confirm_sample_data = true;
         },

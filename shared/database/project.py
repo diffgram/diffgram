@@ -501,12 +501,11 @@ class Project(Base, Caching):
 
         if schema_id is not None:
             schema = LabelSchema.get_by_id(session = session, id = schema_id)
-            label_files = schema.get_label_files(session = session)
-            link_file_id_list = [l.id for l in label_files]
+            link_file_id_list = schema.get_label_files(session = session, ids_only = True)
             working_dir_file_list_query = working_dir_file_list_query.filter(
                 File.id.in_(link_file_id_list)
             )
-
+        t1 = time.time()
         working_dir_file_list = working_dir_file_list_query.all()
         labels_out = []
 
@@ -536,11 +535,11 @@ class Project(Base, Caching):
 
         group_rel_ids = [rel.attribute_template_group_id for rel in group_relations]
         attribute_groups_serialized_dict = {}
-        for rel in group_relations:
-            if not attribute_groups_serialized_dict.get(rel.file_id):
-                attribute_groups_serialized_dict[rel.file_id] = [rel.attribute_template_group.serialize_with_attributes(session = session)]
-            else:
-                attribute_groups_serialized_dict[rel.file_id].append(rel.attribute_template_group.serialize_with_attributes(session = session))
+        # for rel in group_relations:
+        #     if not attribute_groups_serialized_dict.get(rel.file_id):
+        #         attribute_groups_serialized_dict[rel.file_id] = [rel.attribute_template_group.serialize_with_attributes(session = session)]
+        #     else:
+        #         attribute_groups_serialized_dict[rel.file_id].append(rel.attribute_template_group.serialize_with_attributes(session = session))
 
         # In context of a Label File!!
         for file in working_dir_file_list:

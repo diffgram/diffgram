@@ -82,6 +82,9 @@
         'value': {   // built in vue js
           default: null
         },
+        'schema_id':{
+          required: true
+        },
         'kind': {
           default: 'human',
           type: String
@@ -205,7 +208,7 @@
       methods: {
         fetch_task_templates: async function(){
           this.loading = true;
-          let [data, error] = await getInstanceTemplatesFromProject(this.project_string_id)
+          let [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.schema_id)
           if(data && data.instance_template_list){
               this.instance_template_list = data.instance_template_list;
 
